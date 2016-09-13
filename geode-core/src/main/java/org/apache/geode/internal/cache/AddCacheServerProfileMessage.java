@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,12 +24,12 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.MessageWithReply;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.SerialDistributionMessage;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * OperationMessage synchronously propagates a change in the profile to

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import static javax.management.openmbean.SimpleType.BIGDECIMAL;
 import static javax.management.openmbean.SimpleType.BIGINTEGER;
@@ -63,7 +63,7 @@ import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularType;
 
-import com.gemstone.gemfire.management.ManagementException;
+import org.apache.geode.management.ManagementException;
 
 /**
  * It takes care of converting a Java type to an open types

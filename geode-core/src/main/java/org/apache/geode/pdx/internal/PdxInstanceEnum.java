@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -23,17 +23,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Sendable;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.pdx.WritablePdxInstance;
-import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.WritablePdxInstance;
+import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 /**
  * Used to represent an enum value as a PdxInstance
  * @since GemFire 6.6.2

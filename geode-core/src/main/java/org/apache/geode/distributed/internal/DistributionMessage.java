@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,32 +28,32 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.deadlock.MessageDependencyMonitor;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.sequencelog.MessageLogger;
-import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.internal.util.Breadcrumbs;
+import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.sequencelog.MessageLogger;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.internal.util.Breadcrumbs;
 
 /**
  * <P>A <code>DistributionMessage</code> carries some piece of
  * information to a distribution manager.  </P>
  *
  * <P>Messages that don't have strict ordering requirements should extend
- * {@link com.gemstone.gemfire.distributed.internal.PooledDistributionMessage}.
+ * {@link org.apache.geode.distributed.internal.PooledDistributionMessage}.
  * Messages that must be processed serially in the order they were received
  * can extend
- * {@link com.gemstone.gemfire.distributed.internal.SerialDistributionMessage}.
+ * {@link org.apache.geode.distributed.internal.SerialDistributionMessage}.
  * To customize the sequentialness/thread requirements of a message, extend
  * DistributionMessage and implement getExecutor().</P>
  *

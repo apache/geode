@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.operations.internal;
+package org.apache.geode.cache.operations.internal;
 
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.cache.operations.GetOperationContext;
-import com.gemstone.gemfire.internal.offheap.Releasable;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.geode.SerializationException;
+import org.apache.geode.cache.operations.GetOperationContext;
+import org.apache.geode.internal.offheap.Releasable;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  * This subclass's job is to keep customers from getting a reference to a value

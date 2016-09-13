@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.locks;
+package org.apache.geode.distributed.internal.locks;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.distributed.*;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ResourceEvent;
-import com.gemstone.gemfire.distributed.internal.deadlock.UnsafeThreadLocal;
-import com.gemstone.gemfire.distributed.internal.locks.DLockQueryProcessor.DLockQueryReplyMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
+import org.apache.geode.*;
+import org.apache.geode.distributed.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
+import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryReplyMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -2069,7 +2069,7 @@ public class DLockService extends DistributedLockService {
    * Caller must be synchronized on {@link 
    * DLockService#services}.
    * 
-   * @see com.gemstone.gemfire.distributed.DistributedLockService#create(String, DistributedSystem)
+   * @see org.apache.geode.distributed.DistributedLockService#create(String, DistributedSystem)
    */
   static DLockService basicCreate(String serviceName, 
                                   InternalDistributedSystem ds,
@@ -2338,7 +2338,7 @@ public class DLockService extends DistributedLockService {
    * Returns copy of the tokens map. Synchronizes on token map.
    * <p>
    * Called by {@link 
-   * com.gemstone.gemfire.internal.admin.remote.FetchDistLockInfoResponse}.
+   * org.apache.geode.internal.admin.remote.FetchDistLockInfoResponse}.
    * 
    * @return copy of the tokens map
    */
@@ -2406,7 +2406,7 @@ public class DLockService extends DistributedLockService {
   }
 
   /**
-   * @see com.gemstone.gemfire.distributed.DistributedLockService#destroy(String)
+   * @see org.apache.geode.distributed.DistributedLockService#destroy(String)
    */
   public static void destroyServiceNamed(String serviceName)
   throws IllegalArgumentException {
@@ -2930,7 +2930,7 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
   
   /**
-   * @see com.gemstone.gemfire.distributed.DistributedLockService#getServiceNamed(String)
+   * @see org.apache.geode.distributed.DistributedLockService#getServiceNamed(String)
    */
   public static DistributedLockService getServiceNamed(String serviceName) {
     DLockService svc = null;
@@ -2967,7 +2967,7 @@ public class DLockService extends DistributedLockService {
    *
    * @throws IllegalStateException if system is in process of disconnecting
    *
-   * @see com.gemstone.gemfire.distributed.DistributedLockService#create(String, DistributedSystem)
+   * @see org.apache.geode.distributed.DistributedLockService#create(String, DistributedSystem)
    */
   public static DistributedLockService create(String serviceName, 
                                               InternalDistributedSystem ds,

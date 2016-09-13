@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.membership;
+package org.apache.geode.management.membership;
 
-import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
+import org.apache.geode.internal.cache.tier.InternalClientMembership;
 
 /**
  * Provides utility methods for registering and unregistering

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,18 +23,18 @@ import java.util.Set;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.management.GatewayReceiverMXBean;
-import com.gemstone.gemfire.management.GatewaySenderMXBean;
-import com.gemstone.gemfire.management.LockServiceMXBean;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.RegionMXBean;
-import com.gemstone.gemfire.management.internal.FederationComponent;
-import com.gemstone.gemfire.management.internal.ProxyListener;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.LockServiceMXBean;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.RegionMXBean;
+import org.apache.geode.management.internal.FederationComponent;
+import org.apache.geode.management.internal.ProxyListener;
+import org.apache.geode.management.internal.SystemManagementService;
 
 /**
  * This class is responsible for creating Aggregate MBeans at GemFire layer. It

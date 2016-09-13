@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 import java.lang.reflect.*;

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 
 import java.io.File;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * @since GemFire 7.0

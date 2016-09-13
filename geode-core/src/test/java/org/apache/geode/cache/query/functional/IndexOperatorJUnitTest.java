@@ -19,7 +19,7 @@
  *
  * Created on March 23, 2005, 4:52 PM
  */
-package com.gemstone.gemfire.cache.query.functional;
+package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;
 
@@ -31,14 +31,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.Utils;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.Utils;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *

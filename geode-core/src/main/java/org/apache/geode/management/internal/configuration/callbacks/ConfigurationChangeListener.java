@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.callbacks;
+package org.apache.geode.management.internal.configuration.callbacks;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
 /****
  * CacheListener on ConfigRegion to write the configuration changes to file-system.
  *

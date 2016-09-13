@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,30 +31,30 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheStatistics;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
-import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
-import com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPoint;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.index.IndexCreationData;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a {@link Region} that is created declaratively.  Notice

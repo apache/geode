@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gemstone.gemfire.StatisticsFactory;
+import org.apache.geode.StatisticsFactory;
 
 /**
  * A holder for a disk Directory. Used for maintaining the available space and

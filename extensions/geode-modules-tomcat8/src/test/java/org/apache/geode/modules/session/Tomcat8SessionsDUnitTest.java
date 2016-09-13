@@ -14,16 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session;
+package org.apache.geode.modules.session;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
-import com.gemstone.gemfire.modules.session.catalina.PeerToPeerCacheLifecycleListener;
-import com.gemstone.gemfire.modules.session.catalina.Tomcat8DeltaSessionManager;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.modules.session.catalina.DeltaSessionManager;
+import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
+import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.AfterClass;
 import org.junit.Before;

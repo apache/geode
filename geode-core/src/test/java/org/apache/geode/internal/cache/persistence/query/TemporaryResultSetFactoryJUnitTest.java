@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query;
+package org.apache.geode.internal.cache.persistence.query;
 
 import static org.junit.Assert.*;
 
@@ -27,13 +27,13 @@ import java.util.TreeMap;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.persistence.query.IndexMap.IndexEntry;
-import com.gemstone.gemfire.internal.cache.persistence.query.mock.IndexMapImpl;
-import com.gemstone.gemfire.internal.cache.persistence.query.mock.NaturalComparator;
-import com.gemstone.gemfire.internal.cache.persistence.query.mock.Pair;
-import com.gemstone.gemfire.internal.cache.persistence.query.mock.PairComparator;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.persistence.query.IndexMap.IndexEntry;
+import org.apache.geode.internal.cache.persistence.query.mock.IndexMapImpl;
+import org.apache.geode.internal.cache.persistence.query.mock.NaturalComparator;
+import org.apache.geode.internal.cache.persistence.query.mock.Pair;
+import org.apache.geode.internal.cache.persistence.query.mock.PairComparator;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TemporaryResultSetFactoryJUnitTest {

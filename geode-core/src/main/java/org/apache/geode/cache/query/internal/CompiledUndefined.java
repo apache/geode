@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.IndexInfo;
-import com.gemstone.gemfire.cache.query.internal.index.IndexData;
-import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
-import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.types.StructType;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.IndexInfo;
+import org.apache.geode.cache.query.internal.index.IndexData;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
 
 /**
  * Predefined function for identity of the UNDEFINED literal

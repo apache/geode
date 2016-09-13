@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.admin.jmx.Agent;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.admin.remote.ClientHealthStats;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.admin.*;
+import org.apache.geode.admin.jmx.Agent;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.admin.remote.ClientHealthStats;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import mx4j.AbstractDynamicMBean;
 import org.apache.logging.log4j.Logger;
 

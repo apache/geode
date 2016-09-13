@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.File;
 import java.io.Serializable;
 
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.internal.cache.DiskStoreAttributes;
-import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
-import com.gemstone.gemfire.internal.cache.UserSpecifiedDiskStoreAttributes;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.internal.cache.DiskStoreAttributes;
+import org.apache.geode.internal.cache.DiskStoreFactoryImpl;
+import org.apache.geode.internal.cache.UserSpecifiedDiskStoreAttributes;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents {@link DiskStoreAttributes} that are created declaratively.

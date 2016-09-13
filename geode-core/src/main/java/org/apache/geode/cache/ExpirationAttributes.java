@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
 
 /** Immutable parameter object for accessing and setting the attributes associated with 
  * <code>timeToLive</code> and <code>idleTimeout</code>. If the expiration

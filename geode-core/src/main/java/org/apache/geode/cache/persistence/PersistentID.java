@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.persistence;
+package org.apache.geode.cache.persistence;
 
 import java.net.InetAddress;
 import java.util.UUID;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.admin.AdminDistributedSystem;
-import com.gemstone.gemfire.cache.DataPolicy;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.cache.DataPolicy;
 
 /**
  * A pattern describing a single member's a set of persistent files for a region.

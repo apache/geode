@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.cache.persistence.BackupInspector;
+import org.apache.geode.internal.cache.persistence.BackupInspector;
 
 /**
  * This class manages the state of the backup of an individual disk store. It
  * holds the list of oplogs that still need to be backed up, along with the
  * lists of oplog files that should be deleted when the oplog is backed up. See
- * {@link DiskStoreImpl#startBackup(File, BackupInspector, com.gemstone.gemfire.internal.cache.persistence.RestoreScript)}
+ * {@link DiskStoreImpl#startBackup(File, BackupInspector, org.apache.geode.internal.cache.persistence.RestoreScript)}
  * 
  * 
  */

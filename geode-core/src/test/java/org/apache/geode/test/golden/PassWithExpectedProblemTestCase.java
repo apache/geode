@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.golden;
+package org.apache.geode.test.golden;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import java.io.InputStreamReader;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.test.process.ProcessWrapper;
+import org.apache.geode.test.process.ProcessWrapper;
 
 /**
  * Abstract test case for golden testing framework. This provides basis for

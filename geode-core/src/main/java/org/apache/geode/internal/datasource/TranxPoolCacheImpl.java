@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
 /**
  */
@@ -26,8 +26,8 @@ import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * This class models a connection pool for transactional database connection.

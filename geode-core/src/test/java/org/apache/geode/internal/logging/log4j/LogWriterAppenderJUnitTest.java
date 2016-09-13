@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import static org.junit.Assert.*;
 
@@ -33,10 +33,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.PureLogWriter;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.PureLogWriter;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the LogWriterAppender.
@@ -83,7 +83,7 @@ public class LogWriterAppenderJUnitTest {
     
     final AppenderContext[] contexts = new AppenderContext[2];
     contexts[0] = rootContext; // root context
-    contexts[1] = LogService.getAppenderContext(LogService.BASE_LOGGER_NAME); // "com.gemstone" context
+    contexts[1] = LogService.getAppenderContext(LogService.BASE_LOGGER_NAME); // "org.apache" context
     
     this.appender = LogWriterAppender.create(contexts, LogService.MAIN_LOGGER_NAME, logWriter, null);
 
@@ -114,7 +114,7 @@ public class LogWriterAppenderJUnitTest {
 
     final AppenderContext[] contexts = new AppenderContext[2];
     contexts[0] = LogService.getAppenderContext(); // root context
-    contexts[1] = LogService.getAppenderContext(LogService.BASE_LOGGER_NAME); // "com.gemstone" context
+    contexts[1] = LogService.getAppenderContext(LogService.BASE_LOGGER_NAME); // "org.apache" context
     
     this.appender = LogWriterAppender.create(contexts, LogService.MAIN_LOGGER_NAME, logWriter, null);
 
@@ -177,7 +177,7 @@ public class LogWriterAppenderJUnitTest {
 
     final AppenderContext[] contexts = new AppenderContext[2];
     contexts[0] = LogService.getAppenderContext(); // root context
-    contexts[1] = LogService.getAppenderContext(LogService.BASE_LOGGER_NAME); // "com.gemstone" context
+    contexts[1] = LogService.getAppenderContext(LogService.BASE_LOGGER_NAME); // "org.apache" context
     
     this.appender = LogWriterAppender.create(contexts, loggerName, logWriter, null);
     

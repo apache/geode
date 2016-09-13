@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -26,23 +26,23 @@ import java.util.concurrent.RejectedExecutionException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * The DUnitTest checks whether the following Three counts are incremented
@@ -258,7 +258,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
   public static void checkStatistics() {
     try {
       Cache cache = CacheServerTestUtil.getCache();
-      com.gemstone.gemfire.LogWriter logger = cache.getLogger();
+      org.apache.geode.LogWriter logger = cache.getLogger();
       CacheServerImpl currentServer = (CacheServerImpl)(new ArrayList(cache
           .getCacheServers()).get(0));
       AcceptorImpl ai = currentServer.getAcceptor();
@@ -279,7 +279,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
       int queueDropCount, int enqueueCount) {
     try {
       Cache cache = CacheServerTestUtil.getCache();
-      com.gemstone.gemfire.LogWriter logger = cache.getLogger();
+      org.apache.geode.LogWriter logger = cache.getLogger();
       CacheServerImpl currentServer = (CacheServerImpl)(new ArrayList(cache
           .getCacheServers()).get(0));
       AcceptorImpl ai = currentServer.getAcceptor();

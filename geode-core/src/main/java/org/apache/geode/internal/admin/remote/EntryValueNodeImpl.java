@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.*;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.lang.reflect.*;
 import java.io.*;
@@ -30,7 +30,7 @@ import java.util.*;
  * stored in the cache.  They are built during construction of {@link
  * ObjectDetailsResponse} instances and returned to the console. This
  * class does not implement {@link
- * com.gemstone.gemfire.DataSerializable} since that
+ * org.apache.geode.DataSerializable} since that
  * mechanism gets confused by the often cyclical refrences between
  * instances of this class.
  */

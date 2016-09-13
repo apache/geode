@@ -25,10 +25,10 @@
 
   <async-event-queue id="testParallelAsyncEventQueueConfiguredFromXmlUsesFilter" parallel="true">
     <gateway-event-filter>
-      <class-name>com.gemstone.gemfire.internal.cache.wan.MyGatewayEventFilter</class-name>
+      <class-name>org.apache.geode.internal.cache.wan.MyGatewayEventFilter</class-name>
     </gateway-event-filter>
     <async-event-listener>
-      <class-name>com.gemstone.gemfire.internal.cache.wan.MyAsyncEventListener</class-name>
+      <class-name>org.apache.geode.internal.cache.wan.MyAsyncEventListener</class-name>
     </async-event-listener>
   </async-event-queue>
 

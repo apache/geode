@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
-import com.gemstone.gemfire.cache.*;
+package org.apache.geode.internal.cache;
+import org.apache.geode.cache.*;
 import java.util.*;
-import com.gemstone.gemfire.internal.offheap.Releasable;
+import org.apache.geode.internal.offheap.Releasable;
 
 /** <p>The internal implementation of the {@link TransactionEvent} interface
  * 

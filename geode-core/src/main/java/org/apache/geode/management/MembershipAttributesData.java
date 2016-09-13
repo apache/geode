@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
 import java.beans.ConstructorProperties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.Role;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.Role;
 
 /**
  * Composite data type used to distribute the membership attributes for

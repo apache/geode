@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * This exception will be thrown, when  {link @JSONFormatter} is unable to parse the 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import static org.junit.Assert.*;
 
@@ -38,14 +38,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of
  * the lifecycle launcher GemFire shell (Gfsh) commands.
  *
- * @see com.gemstone.gemfire.management.internal.cli.commands.LauncherLifecycleCommands
+ * @see org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics.platform;
+package org.apache.geode.internal.statistics.platform;
 
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 /**
  * Instances of this interface provide methods that create operating system
- * instances of {@link com.gemstone.gemfire.Statistics}. Its for internal use 
+ * instances of {@link org.apache.geode.Statistics}. Its for internal use 
  * only.
  *
- * {@link com.gemstone.gemfire.distributed.DistributedSystem} is an OS 
+ * {@link org.apache.geode.distributed.DistributedSystem} is an OS 
  * statistics factory.
  * <P>
  * @see <A href="package-summary.html#statistics">Package introduction</A>

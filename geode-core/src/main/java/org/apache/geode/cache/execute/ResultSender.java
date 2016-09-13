@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.execute;
+package org.apache.geode.cache.execute;
 
 /**
  * Provides methods to send results back to the ResultCollector. A ResultSender
  * adds the ability for an execute method to send a single result back, or break
  * its result into multiple pieces and send each piece back to the calling
  * thread's {@link ResultCollector}. For each result sent using this method,
- * {@link ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)} is called,
+ * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)} is called,
  * making that result available to the calling thread immediately.
  * 
  * <p>
@@ -48,13 +48,13 @@ package com.gemstone.gemfire.cache.execute;
  * 
  * @since GemFire 6.0
  * 
- * @see ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)
+ * @see ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)
  * 
  */
 public interface ResultSender<T> {
   /**
    * Sends a result back to the FunctionService calling thread and invokes
-   * {@link ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)}.
+   * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)}.
    * 
    * @param oneResult
    */
@@ -62,7 +62,7 @@ public interface ResultSender<T> {
 
   /**
    * Sends a result back to the FunctionService calling thread and invokes
-   * {@link ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)} and then
+   * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)} and then
    * {@link ResultCollector#endResults()} if it is the last instance of the
    * Function to report results. The ResultCollector will keep waiting for
    * results until it receives last result. Therefore, it is very important to

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
-import com.gemstone.gemfire.cache.InterestResultPolicy;
+import org.apache.geode.cache.InterestResultPolicy;
 
 /**
- * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGISTER_INTEREST} region operation for
+ * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGISTER_INTEREST} region operation for
  * the pre-operation case.
  * 
  * @since GemFire 5.5

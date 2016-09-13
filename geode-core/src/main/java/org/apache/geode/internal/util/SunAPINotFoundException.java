@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 /**
  * The SunAPINotFoundException class is a RuntimeException indicating that the Sun API classes and components could

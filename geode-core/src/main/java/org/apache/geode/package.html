@@ -18,19 +18,19 @@ limitations under the License.
 <BODY>
 
 <P>The base package of the GemFire Java product, featuring highly
-concurrent distributed {@linkplain com.gemstone.gemfire.cache.Cache caching}
-with {@linkplain com.gemstone.gemfire.cache.CacheEvent cache event} delivery,
-<a href="{@docRoot}/com/gemstone/gemfire/cache/query/package-summary.html#package_description">OQL querying</a>, and
-<a href="{@docRoot}/com/gemstone/gemfire/admin/package-summary.html#package_description">remote cache administration</a>, built using a {@linkplain
-com.gemstone.gemfire.distributed.DistributedSystem} which includes a
-{@linkplain com.gemstone.gemfire.distributed.DistributedLockService}.
+concurrent distributed {@linkplain org.apache.geode.cache.Cache caching}
+with {@linkplain org.apache.geode.cache.CacheEvent cache event} delivery,
+<a href="{@docRoot}/org/apache/geode/cache/query/package-summary.html#package_description">OQL querying</a>, and
+<a href="{@docRoot}/org/apache/geode/admin/package-summary.html#package_description">remote cache administration</a>, built using a {@linkplain
+org.apache.geode.distributed.DistributedSystem} which includes a
+{@linkplain org.apache.geode.distributed.DistributedLockService}.
 </P>
 
 <p>This package contains classes that are used throughout GemFire,
 providing enhanced serialization performance using the {@link
-com.gemstone.gemfire.DataSerializable} feature and the ability to
+org.apache.geode.DataSerializable} feature and the ability to
 profile your GemFire application using a handy {@link
-com.gemstone.gemfire.Statistics} infrastructure.
+org.apache.geode.Statistics} infrastructure.
 <p>
 
 <!-- ------------------------------------------------------------ -->
@@ -47,20 +47,20 @@ The statistics may be
 monitored at runtime using the Admin API or GemFire JMX Agent.</P>
 
 <P>Each application statistic is described by a
-{@link com.gemstone.gemfire.StatisticDescriptor} instance.
+{@link org.apache.geode.StatisticDescriptor} instance.
 Logical groupings of application statistics are described by a
-{@link com.gemstone.gemfire.StatisticsType} instance that contains the name
+{@link org.apache.geode.StatisticsType} instance that contains the name
 and description of each statistic.  Each instance of an type
 is represented by an instance of
-{@link com.gemstone.gemfire.Statistics}.
-The {@link com.gemstone.gemfire.StatisticDescriptor descriptors},
-{@link com.gemstone.gemfire.StatisticsType types}, and
-{@link com.gemstone.gemfire.Statistics instances} are created using an
-instance of the {@link com.gemstone.gemfire.StatisticsFactory} interface.
+{@link org.apache.geode.Statistics}.
+The {@link org.apache.geode.StatisticDescriptor descriptors},
+{@link org.apache.geode.StatisticsType types}, and
+{@link org.apache.geode.Statistics instances} are created using an
+instance of the {@link org.apache.geode.StatisticsFactory} interface.
 Each statistics instance
 (there may be multiple instances of a statistics type) can be identified
-by a {@link com.gemstone.gemfire.Statistics#getTextId text id}
-and/or a {@link com.gemstone.gemfire.Statistics#getNumericId numeric id}.
+by a {@link org.apache.geode.Statistics#getTextId text id}
+and/or a {@link org.apache.geode.Statistics#getNumericId numeric id}.
 The name, description, etc. of the statistic and its type
 are available in the Admin API or GemFire JMX Agent.</P>
 
@@ -75,7 +75,7 @@ by the Admin API and GemFire JMX Agent.  Statistics may also be archived
 to a file, the <A
 href="distributed/DistributedSystem.html#statistic-archive-file ">name
 and location</A> of which may be configured when creating a {@link
-com.gemstone.gemfire.distributed.DistributedSystem}. </P>
+org.apache.geode.distributed.DistributedSystem}. </P>
 
 <P>In addition to application statistics, GemFire maintains statistics
 about the distributed system, the distributed cache,

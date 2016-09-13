@@ -19,7 +19,7 @@
  *
  * Created on June 15, 2005, 12:49 PM
  */
-package com.gemstone.gemfire.cache.query.transaction;
+package org.apache.geode.cache.query.transaction;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -37,24 +37,24 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.internal.jta.CacheUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.QueryObserverAdapter;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.jta.CacheUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class QueryAndJtaJUnitTest {
@@ -384,7 +384,7 @@ public class QueryAndJtaJUnitTest {
     utx.commit();
 
     // verify results
-    com.gemstone.gemfire.cache.query.CacheUtils
+    org.apache.geode.cache.query.CacheUtils
         .compareResultsOfWithAndWithoutIndex(sr);
   }
 
@@ -452,7 +452,7 @@ public class QueryAndJtaJUnitTest {
     try {
       region.getCache().getCacheTransactionManager().commit();
       fail("commit should have thrown an exception because the index maintenance threw");
-    } catch (com.gemstone.gemfire.cache.query.IndexMaintenanceException ie) {
+    } catch (org.apache.geode.cache.query.IndexMaintenanceException ie) {
       // this is the desired case
     }
     Person p = (Person) region.get(x);

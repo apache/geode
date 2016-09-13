@@ -2,9 +2,9 @@
 <cache
     xmlns="http://geode.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:test="urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest"
+    xmlns:test="urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest"
     xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd
-                        urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest classpath:/com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest.xsd
-                        urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest XmlUtilsJUnitTest.xsd"
+                        urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest classpath:/org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest.xsd
+                        urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest XmlUtilsJUnitTest.xsd"
     version="1.0">
 </cache>

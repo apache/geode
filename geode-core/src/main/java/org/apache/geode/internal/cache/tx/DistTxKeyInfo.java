@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tx;
+package org.apache.geode.internal.cache.tx;
 
-import com.gemstone.gemfire.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.KeyInfo;
 
 /*
  * Created especially for Distributed Tx Purpose

@@ -24,9 +24,9 @@
 
 /**
  */
-package com.gemstone.gemfire.cache.query.functional;
+package org.apache.geode.cache.query.functional;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -43,39 +43,39 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Utils;
-import com.gemstone.gemfire.cache.query.data.ComparableWrapper;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.internal.index.CompactMapRangeIndex;
-import com.gemstone.gemfire.cache.query.internal.index.CompactRangeIndex;
-import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
-import com.gemstone.gemfire.cache.query.internal.index.RangeIndex;
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Utils;
+import org.apache.geode.cache.query.data.ComparableWrapper;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.QueryObserverAdapter;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.query.internal.index.CompactMapRangeIndex;
+import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.cache.query.internal.index.RangeIndex;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class IndexCreationJUnitTest {
@@ -151,10 +151,10 @@ public class IndexCreationJUnitTest {
       // pass
     }
 
-    idx = qs.createIndex("importsIndex", IndexType.FUNCTIONAL, "status", "/portfolios, (map<string,Position>)positions", "import com.gemstone.gemfire.cache.\"query\".data.Position");
+    idx = qs.createIndex("importsIndex", IndexType.FUNCTIONAL, "status", "/portfolios, (map<string,Position>)positions", "import org.apache.geode.cache.\"query\".data.Position");
     qs.removeIndex(idx);
 
-    idx = qs.createIndex("importsIndex2", IndexType.FUNCTIONAL, "status", "/portfolios, positions TYPE Position", "import com.gemstone.gemfire.cache.\"query\".data.Position");
+    idx = qs.createIndex("importsIndex2", IndexType.FUNCTIONAL, "status", "/portfolios, positions TYPE Position", "import org.apache.geode.cache.\"query\".data.Position");
   }
 
   @Test
@@ -180,7 +180,7 @@ public class IndexCreationJUnitTest {
       // testSimilarIndexCreation: Exception if duplicate index is
       // created with diffrenet name but same from clause & expression
     }
-    //com.gemstone.gemfire.cache.query.IndexExistsException: Similar Index
+    //org.apache.geode.cache.query.IndexExistsException: Similar Index
     // Exists
     try {
       qs.createIndex("statusIndexDuplicate", IndexType.FUNCTIONAL, "b.status", "/portfolios b, positions");
@@ -256,12 +256,12 @@ public class IndexCreationJUnitTest {
     // Task ID: ICM16
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    Index i3 = qs.createIndex("typeIndex", IndexType.FUNCTIONAL, "\"type\"", "/portfolios type Portfolio, positions b", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio");
+    Index i3 = qs.createIndex("typeIndex", IndexType.FUNCTIONAL, "\"type\"", "/portfolios type Portfolio, positions b", "IMPORT org.apache.geode.cache.\"query\".data.Portfolio");
     //TASK ICM3 Region 'IMPORT' not found:....[BUG : Verified Fixed ]
     //  Index i4=(Index)qs.createIndex("boolFunctionIndex",
     // IndexType.FUNCTIONAL,"boolFunction(pf.status)","/portfolios pf,
     // pf.positions.values b");
-    //TASK ICM5 com.gemstone.gemfire.cache.query.IndexInvalidException
+    //TASK ICM5 org.apache.geode.cache.query.IndexInvalidException
 
     Object indices[] = { i3 };   //remove any commented Index from Array
 

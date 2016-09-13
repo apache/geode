@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * A listener whose callback methods are invoked when members join or
@@ -23,7 +23,7 @@ package com.gemstone.gemfire.admin;
  * @see AdminDistributedSystem#addMembershipListener
  *
  * @since GemFire 3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMembershipListener {
 
@@ -52,7 +52,7 @@ public interface SystemMembershipListener {
 //   /**
 //    * Invoked when a member broadcasts an informational message.
 //    *
-//    * @see com.gemstone.gemfire.distributed.DistributedSystem#fireInfoEvent
+//    * @see org.apache.geode.distributed.DistributedSystem#fireInfoEvent
 //    *
 //    * @since GemFire 4.0
 //    */

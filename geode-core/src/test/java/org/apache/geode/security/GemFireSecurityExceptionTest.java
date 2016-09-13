@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 import static com.googlecode.catchexception.CatchException.*;
 import static org.assertj.core.api.Assertions.*;
@@ -30,8 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link GemFireSecurityException}.

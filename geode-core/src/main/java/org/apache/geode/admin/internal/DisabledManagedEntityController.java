@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * This is a disabled implementation of ManagedEntityController for bug #47909.

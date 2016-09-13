@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.client.internal.RegisterInterestOp.RegisterInterestOpImpl;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.client.internal.RegisterInterestOp.RegisterInterestOpImpl;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
  * Does a region registerInterestList on a server
@@ -110,7 +110,7 @@ public class RegisterInterestListOp {
   
   private static class RegisterInterestListOpImpl extends RegisterInterestOpImpl {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public RegisterInterestListOpImpl(String region,
                                       List keys,

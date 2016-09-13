@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate.internal;
+package org.apache.geode.modules.hibernate.internal;
 
 import java.util.Collections;
 import java.util.Map;
@@ -26,8 +26,8 @@ import org.hibernate.cache.TimestampsRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
 
 public class GemFireQueryResultsRegion implements QueryResultsRegion, TimestampsRegion {
 

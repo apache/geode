@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.Node;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.Node;
 
 /**
  * Versioned ArrayList which maintains the version everytime the list gets
@@ -271,7 +271,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
 
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.util.Versionable#getVersion()
+   * @see org.apache.geode.internal.util.Versionable#getVersion()
    */
   public synchronized Comparable getVersion()
   {

@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.partition;
+package org.apache.geode.cache.partition;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Describes a member that has been configured to provide storage space for
@@ -38,7 +38,7 @@ public interface PartitionMemberInfo {
   
   /**
    * Returns the {@link 
-   * com.gemstone.gemfire.cache.PartitionAttributes#getLocalMaxMemory() max 
+   * org.apache.geode.cache.PartitionAttributes#getLocalMaxMemory() max 
    * memory} in bytes that the member was configured to provide for storage
    * of data for the partitioned region.
    * 

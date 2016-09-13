@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.LogWriter;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.security.GemFireSecurityException;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -41,7 +41,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * A "connection" to a GemFire distributed system.  A
@@ -49,9 +49,9 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  * #connect} method with a configuration as described <a
  * href="#configuration">below</a>.  A <code>DistributedSystem</code>
  * is used when calling {@link
- * com.gemstone.gemfire.cache.CacheFactory#create}.  This class should
+ * org.apache.geode.cache.CacheFactory#create}.  This class should
  * not be confused with the {@link
- * com.gemstone.gemfire.admin.AdminDistributedSystem
+ * org.apache.geode.admin.AdminDistributedSystem
  * AdminDistributedSystem} interface that is used for administering a
  * distributed system.
  *
@@ -169,12 +169,12 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *         If a <code>DistributedSystem</code> with a different
    *         configuration has already been created in this VM or if
    *         this VM is {@link
-   *         com.gemstone.gemfire.admin.AdminDistributedSystem
+   *         org.apache.geode.admin.AdminDistributedSystem
    *         administering} a distributed system.
-   * @throws com.gemstone.gemfire.GemFireIOException
+   * @throws org.apache.geode.GemFireIOException
    *         Problems while reading configuration properties file or
    *         while opening the log file.
-   * @throws com.gemstone.gemfire.GemFireConfigException
+   * @throws org.apache.geode.GemFireConfigException
    *         The distribution transport is not configured correctly
    *
    * @deprecated as of 6.5 use {@link CacheFactory#create} or {@link ClientCacheFactory#create} instead.
@@ -349,7 +349,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   }
 
   /**
-   * see {@link com.gemstone.gemfire.admin.AdminDistributedSystemFactory}
+   * see {@link org.apache.geode.admin.AdminDistributedSystemFactory}
    * @since GemFire 5.7
    */
   protected static void setEnableAdministrationOnly(boolean adminOnly) {
@@ -372,11 +372,11 @@ public abstract class DistributedSystem implements StatisticsFactory {
 //    *        used when connecting to the distributed system
 //    * @param callback
 //    *        A user-specified object that is delivered with the {@link
-//    *        com.gemstone.gemfire.admin.SystemMembershipEvent}
+//    *        org.apache.geode.admin.SystemMembershipEvent}
 //    *        triggered by connecting.
 //    *
 //    * @see #connect(Properties)
-//    * @see com.gemstone.gemfire.admin.SystemMembershipListener#memberJoined
+//    * @see org.apache.geode.admin.SystemMembershipListener#memberJoined
 //    *
 //    * @since GemFire 4.0
 //    */
@@ -441,7 +441,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Disconnects from this distributed system.  This operation will
    * close the distribution manager and render the {@link
-   * com.gemstone.gemfire.cache.Cache Cache} and all distributed
+   * org.apache.geode.cache.Cache Cache} and all distributed
    * collections obtained from this distributed system inoperable.
    * After a disconnect has completed, a VM may connect to another
    * distributed system.
@@ -476,7 +476,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns a string that uniquely identifies this connection to the
    * distributed system.
    *
-   * @see com.gemstone.gemfire.admin.SystemMembershipEvent#getMemberId
+   * @see org.apache.geode.admin.SystemMembershipEvent#getMemberId
    *
    * @since GemFire 4.0
    * @deprecated as of GemFire 5.0, use {@link #getDistributedMember} instead

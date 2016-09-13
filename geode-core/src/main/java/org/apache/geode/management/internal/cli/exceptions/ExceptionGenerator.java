@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.exceptions;
+package org.apache.geode.management.internal.cli.exceptions;
 
 import joptsimple.OptionException;
 
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
+import org.apache.geode.management.internal.cli.parser.CommandTarget;
+import org.apache.geode.management.internal.cli.parser.Option;
+import org.apache.geode.management.internal.cli.parser.OptionSet;
 
 /**
  * Converts joptsimple exceptions into corresponding exceptions for cli

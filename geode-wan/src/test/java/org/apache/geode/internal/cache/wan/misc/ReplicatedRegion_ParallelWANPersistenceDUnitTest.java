@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.misc;
+package org.apache.geode.internal.cache.wan.misc;
 
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
@@ -22,14 +22,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.LogWriterUtils;
 
 @Category(DistributedTest.class)
 public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBase {

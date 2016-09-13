@@ -17,9 +17,9 @@
 /**
  * 
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * Thrown if the type of a PDX field was changed or the wrong type was used.

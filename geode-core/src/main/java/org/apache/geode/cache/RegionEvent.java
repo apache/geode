@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /** Contains information about an event affecting a region, including
  * its identity and the circumstances of the event.

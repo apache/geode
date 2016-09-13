@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.*;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.internal.Assert;
 
 
 /**

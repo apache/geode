@@ -17,13 +17,13 @@
 /**
  * 
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.DataSerializerPropogationDUnitTest;
 
 /**
  *
@@ -46,7 +46,7 @@ public class TestDataSerializer extends DataSerializer {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.DataSerializer#getSupportedClasses()
+   * @see org.apache.geode.DataSerializer#getSupportedClasses()
    */
   @Override
   public Class<?>[] getSupportedClasses() {
@@ -54,7 +54,7 @@ public class TestDataSerializer extends DataSerializer {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.DataSerializer#toData(java.lang.Object, java.io.DataOutput)
+   * @see org.apache.geode.DataSerializer#toData(java.lang.Object, java.io.DataOutput)
    */
   @Override
   public boolean toData(Object o, DataOutput out) throws IOException {
@@ -64,7 +64,7 @@ public class TestDataSerializer extends DataSerializer {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.DataSerializer#fromData(java.io.DataInput)
+   * @see org.apache.geode.DataSerializer#fromData(java.io.DataInput)
    */
   @Override
   public Object fromData(DataInput in) throws IOException,
@@ -73,7 +73,7 @@ public class TestDataSerializer extends DataSerializer {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.DataSerializer#getId()
+   * @see org.apache.geode.DataSerializer#getId()
    */
   @Override
   public int getId() {

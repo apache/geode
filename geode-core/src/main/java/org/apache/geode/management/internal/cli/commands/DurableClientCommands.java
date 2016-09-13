@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,26 +23,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.domain.DurableCqNamesResult;
-import com.gemstone.gemfire.management.internal.cli.domain.MemberResult;
-import com.gemstone.gemfire.management.internal.cli.domain.SubscriptionQueueSizeResult;
-import com.gemstone.gemfire.management.internal.cli.functions.CloseDurableClientFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.CloseDurableCqFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.GetSubscriptionQueueSizeFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.ListDurableCqNamesFunction;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
-import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.domain.DurableCqNamesResult;
+import org.apache.geode.management.internal.cli.domain.MemberResult;
+import org.apache.geode.management.internal.cli.domain.SubscriptionQueueSizeResult;
+import org.apache.geode.management.internal.cli.functions.CloseDurableClientFunction;
+import org.apache.geode.management.internal.cli.functions.CloseDurableCqFunction;
+import org.apache.geode.management.internal.cli.functions.GetSubscriptionQueueSizeFunction;
+import org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunction;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
+import org.apache.geode.management.internal.cli.result.ErrorResultData;
+import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 

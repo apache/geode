@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.cache.tier.InterestType;
+import org.apache.geode.internal.cache.tier.InterestType;
 
 /**
  * Interface <code>InterestRegistrationEvent</code> encapsulated interest

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 
 /**
  * Implementation of PageableLuceneQueryResults that fetchs a page at a time

@@ -20,9 +20,9 @@
  *
  * Created on March 3, 2005, 5:24 PM
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.sql.Connection;
@@ -42,11 +42,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(IntegrationTest.class)
 public class AbstractPoolCacheJUnitTest {
@@ -84,7 +84,7 @@ public class AbstractPoolCacheJUnitTest {
 
   /**
    * Test of returnPooledConnectionToPool method, of class
-   * com.gemstone.gemfire.internal.datasource.AbstractPoolCache.
+   * org.apache.geode.internal.datasource.AbstractPoolCache.
    */
   @Test
   public void testReturnPooledConnectionToPool() throws Exception {
@@ -110,7 +110,7 @@ public class AbstractPoolCacheJUnitTest {
 
   /**
    * Test of validateConnection method, of class
-   * com.gemstone.gemfire.internal.datasource.AbstractPoolCache.
+   * org.apache.geode.internal.datasource.AbstractPoolCache.
    */
   @Test
   public void testValidateConnection() throws Exception {
@@ -131,7 +131,7 @@ public class AbstractPoolCacheJUnitTest {
 
   /**
    * Test of getPooledConnectionFromPool method, of class
-   * com.gemstone.gemfire.internal.datasource.AbstractPoolCache.
+   * org.apache.geode.internal.datasource.AbstractPoolCache.
    */
   @Test
   public void testGetPooledConnectionFromPool() throws Exception {

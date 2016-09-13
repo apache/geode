@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntry;
 
 /**
  * All access to this class should be done through 

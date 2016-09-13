@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.Iterator;
 
-import com.gemstone.gemfire.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.CollectionType;
 
 /**
  * This interface is to be implemented by all SelectResults implementation which

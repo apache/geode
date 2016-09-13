@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 /**
  * The Orderable interface defines a contract for classes whose Objects can be sorted, or ordered according to the

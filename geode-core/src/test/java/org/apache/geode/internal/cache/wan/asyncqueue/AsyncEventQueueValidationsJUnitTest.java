@@ -17,9 +17,9 @@
 /**
  *
  */
-package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
+package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
@@ -34,17 +34,17 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueConfigurationException;
-import com.gemstone.gemfire.internal.cache.wan.MyGatewayEventFilter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
+import org.apache.geode.internal.cache.wan.MyGatewayEventFilter;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -67,7 +67,7 @@ public class AsyncEventQueueValidationsJUnitTest {
       fact.setParallel(true);
       fact.setDispatcherThreads(-5);
       fact.setOrderPolicy(OrderPolicy.KEY);
-      fact.create("id", new com.gemstone.gemfire.internal.cache.wan.MyAsyncEventListener());
+      fact.create("id", new org.apache.geode.internal.cache.wan.MyAsyncEventListener());
       fail("Expected AsyncEventQueueConfigurationException.");
     } catch (AsyncEventQueueConfigurationException e) {
       assertTrue(e.getMessage()
@@ -83,7 +83,7 @@ public class AsyncEventQueueValidationsJUnitTest {
       fact.setParallel(true);
       fact.setDispatcherThreads(5);
       fact.setOrderPolicy(OrderPolicy.THREAD);
-      fact.create("id", new com.gemstone.gemfire.internal.cache.wan.MyAsyncEventListener());
+      fact.create("id", new org.apache.geode.internal.cache.wan.MyAsyncEventListener());
       fail("Expected AsyncEventQueueConfigurationException.");
     } catch (AsyncEventQueueConfigurationException e) {
       assertTrue(e.getMessage()

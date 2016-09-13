@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.locks;
+package org.apache.geode.distributed.internal.locks;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.locks.DLockQueryProcessor.DLockQueryMessage;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.IdentityArrayList;
-import com.gemstone.gemfire.internal.cache.TXReservationMgr;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.LockServiceDestroyedException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryMessage;
+import org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.IdentityArrayList;
+import org.apache.geode.internal.cache.TXReservationMgr;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
@@ -585,12 +585,12 @@ public class DLockGrantor {
    * <p>
    * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
    * <p>
-   * see com.gemstone.gemfire.internal.cache.TXCommitMessage#updateLockMembers()
+   * see org.apache.geode.internal.cache.TXCommitMessage#updateLockMembers()
    *  
    * @param batchId the identifier for the batch to retrieve
    * @return the transaction lock batch identified by the given batchId
-   * @see com.gemstone.gemfire.internal.cache.locks.TXLockUpdateParticipantsMessage
-   * @see com.gemstone.gemfire.internal.cache.locks.TXLockBatch#getBatchId()
+   * @see org.apache.geode.internal.cache.locks.TXLockUpdateParticipantsMessage
+   * @see org.apache.geode.internal.cache.locks.TXLockBatch#getBatchId()
    */
   public DLockBatch getLockBatch(Object batchId) throws InterruptedException {
     DLockBatch ret = null;
@@ -624,12 +624,12 @@ public class DLockGrantor {
    * <p>
    * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
    * <p>
-   * see com.gemstone.gemfire.internal.cache.locks.TXCommitMessage#updateLockMembers()
+   * see org.apache.geode.internal.cache.locks.TXCommitMessage#updateLockMembers()
    * 
    * @param batchId the identify of the transaction lock batch
    * @param newBatch the new lock batch to be used
-   * @see com.gemstone.gemfire.internal.cache.locks.TXLockUpdateParticipantsMessage
-   * @see com.gemstone.gemfire.internal.cache.locks.TXLockBatch#getBatchId()
+   * @see org.apache.geode.internal.cache.locks.TXLockUpdateParticipantsMessage
+   * @see org.apache.geode.internal.cache.locks.TXLockBatch#getBatchId()
    */
   public void updateLockBatch(Object batchId, DLockBatch newBatch) throws InterruptedException {
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
@@ -1115,7 +1115,7 @@ public class DLockGrantor {
       throws InterruptedException {
     // bug 32657 has another cause in this method... interrupted thread from
     // connection/channel layer caused acquireDestroyReadLock to fail... 
-    // fixed by Darrel in com.gemstone.gemfire.internal.tcp.Connection
+    // fixed by Darrel in org.apache.geode.internal.tcp.Connection
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
     if (acquireDestroyReadLock(0)) {
       try {
@@ -3112,7 +3112,7 @@ public class DLockGrantor {
      * Returns true if this lock represents suspend locking.
      * 
      * @return true if this lock represents suspend locking
-     * @see com.gemstone.gemfire.distributed.DistributedLockService#suspendLocking(long)
+     * @see org.apache.geode.distributed.DistributedLockService#suspendLocking(long)
      */
     boolean isSuspendLockingToken() {
       return DLockService.SUSPEND_LOCKING_TOKEN.equals(this.lockName);

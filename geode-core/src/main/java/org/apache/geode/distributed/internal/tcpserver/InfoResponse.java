@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.tcpserver;
+package org.apache.geode.distributed.internal.tcpserver;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 /**
  * A response from the TCP server with information

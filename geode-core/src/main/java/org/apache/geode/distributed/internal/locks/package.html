@@ -22,7 +22,7 @@ limitations under the License.
 The GemFire Distributed Lock Service (also know as "dlock" or "DLS")
 provides synchronization locks that span multiple members of a
 distributed system.  The user creates a {@link
-com.gemstone.gemfire.distributed.DistributedLockService} with a given
+org.apache.geode.distributed.DistributedLockService} with a given
 name and uses to acquire distributed locks.  Lock coordination and
 management is provided by an instance of the distributed lock service
 referred to as the "grantor".  Each lock service instance knows which
@@ -39,7 +39,7 @@ out which member hosts the lock service's "grantor".  The "elder"
 member is defined as the oldest member in the JavaGroups view of the
 distributed system.  The member that is creating the lock service
 sends the elder a {@link
-com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage} to
+org.apache.geode.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage} to
 find out who the current grantor is.  If no member is currently the
 grantor of the distributed lock service, then the member that sent the
 request is chosen to be the grantor.
@@ -68,21 +68,21 @@ need it.
 Once a distributed lock service has been created and initialized, it
 can be used to obtain a distributed lock.  The member that wishes to
 obtain a lock sends a {@link
-com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage} to the
+org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage} to the
 lock service's grantor.  The grantor will process the lock request and
 will grant the lock once it becomes available.
 
 <P>
 
 However, it is possible that the member that the requester sent the
-{@link com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}
+{@link org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}
 to is no longer the grantor.  That is, there can be a race between the
 requester requesting the lock and the grantor lock service being
 destroyed.  In this scenario, the member replies to the requester with
 a <code>LockResponseMessage</code> that
 indicates that the member is not the grantor.  The requester will then
 send a {@link
-com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage} to
+org.apache.geode.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage} to
 the elder to determine who the new grantor is.
 
 <P>
@@ -93,14 +93,14 @@ is the grantor.  That is, the elder might inform a requester of the
 identity of a grantor before the grantor member has fully initialized
 (or has even heard back from the elder that it is the grantor).  This
 race condition is resolved by blocking the processing of a {@link
-com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage} until
+org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage} until
 the member knows whether or not it is the grantor.
 
 <H2>Lock Service Destruction</H2>
 
 When an application has finished using a lock service, the service can
 be {@linkplain
-com.gemstone.gemfire.distributed.DistributedLockService#destroy
+org.apache.geode.distributed.DistributedLockService#destroy
 destroyed}.  When a non-grantor distributed lock service is destroyed,
 the member destroying the lock service sends a
 <code>DestroyServiceMessage</code> to the grantor.  Upon receiving the
@@ -197,7 +197,7 @@ to optimize this scenario by ensuring that the member that requests
 the locks is also the grantor.  The grantor member can grant itself
 locks faster that it can grant locks to other members because there is
 no messaging involved.  The {@link
-com.gemstone.gemfire.distributed.DistributedLockService#becomeLockGrantor}
+org.apache.geode.distributed.DistributedLockService#becomeLockGrantor}
 transfers grantorship to a distributed lock service instance.
 
 <P>
@@ -208,10 +208,10 @@ to the elder.  The elder notes that the young turk is now the grantor
 and instructs the current grantor that it is no longer the grantor and
 that it should expect to hear from the young turk shortly.  Once the
 current grantor has received this message, it will reply to {@link
-com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s with a
+org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s with a
 response that indicates that it is not the grantor.  Note that the
 young turk will not reply to {@link
-com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s until
+org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s until
 grantorship has been fully transferred.
 
 <P>
@@ -239,7 +239,7 @@ transfer from another young turk, the older turk gives up its dreams
 of becoming grantor and "passes through" the lock information to the
 younger turk when that information arrives.  After the older turk
 gives up, it replies to any pending {@link
-com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s with
+org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage}s with
 "not grantor".
 
 <P>
@@ -276,7 +276,7 @@ member is the eldest.  (Note that we assume that all members of the
 distributed system have identical JavaGroups views and will, thus,
 choose the same member as the elder.)  The member then sends a
 grantor-related message (such as a {@link
-com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage}) to
+org.apache.geode.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestMessage}) to
 the member it believes to the elder.  If a member receives a
 grantor-related message, it assumes it is the elder and begins to act
 as such.

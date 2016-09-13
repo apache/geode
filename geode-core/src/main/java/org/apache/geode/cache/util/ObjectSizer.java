@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.internal.size.ReflectionObjectSizer;
-import com.gemstone.gemfire.internal.size.SizeClassOnceObjectSizer;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
 
 /**
  * The sizer interface defines a method that when called returns the size of the

@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 /**
  *  

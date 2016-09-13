@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal.locator.wan;
+package org.apache.geode.cache.client.internal.locator.wan;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.cache.wan.GatewayReceiverFactoryImpl;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderFactoryImpl;
-import com.gemstone.gemfire.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.cache.wan.GatewayReceiverFactoryImpl;
+import org.apache.geode.internal.cache.wan.GatewaySenderFactoryImpl;
+import org.apache.geode.internal.cache.wan.spi.WANFactory;
 
 public class WANFactoryImpl implements WANFactory {
   

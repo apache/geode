@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.internal.cache.LocalDataSet;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.LocalDataSet;
 
 /**
  * Context available to data dependent functions. When function is executed

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.domain;
+package org.apache.geode.management.internal.web.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,13 +28,13 @@ import java.util.TreeSet;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * The LinkIndex class is abstraction for modeling an index of Links.
  * <p/>
  * @see javax.xml.bind.annotation.XmlRootElement
- * @see com.gemstone.gemfire.management.internal.web.domain.Link
+ * @see org.apache.geode.management.internal.web.domain.Link
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

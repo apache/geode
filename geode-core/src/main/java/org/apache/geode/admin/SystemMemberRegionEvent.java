@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * An event that describes an operation on a region.
@@ -22,7 +22,7 @@ package com.gemstone.gemfire.admin;
  * a region comes or goes.
  *
  * @since GemFire 5.0
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberRegionEvent extends SystemMemberCacheEvent {
   /**

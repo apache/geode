@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.cli.functions;
+package org.apache.geode.cache.lucene.internal.cli.functions;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -23,22 +23,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneQuery;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
-import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
-import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneResultStructImpl;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneQueryInfo;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneSearchResults;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.fake.Fakes;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneQuery;
+import org.apache.geode.cache.lucene.LuceneQueryException;
+import org.apache.geode.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+import org.apache.geode.cache.lucene.internal.InternalLuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneResultStructImpl;
+import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
+import org.apache.geode.cache.lucene.internal.cli.LuceneSearchResults;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

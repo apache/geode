@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.partitioned;
+package org.apache.geode.cache.query.partitioned;
 
 import static org.junit.Assert.fail;
 
@@ -25,18 +25,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.PortfolioData;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.data.PortfolioData;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Class verifies Region#query(String predicate) API for PartitionedRegion on a

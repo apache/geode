@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import javax.management.NotificationBroadcasterSupport;
 
-import com.gemstone.gemfire.management.EvictionAttributesData;
-import com.gemstone.gemfire.management.FixedPartitionAttributesData;
-import com.gemstone.gemfire.management.MembershipAttributesData;
-import com.gemstone.gemfire.management.PartitionAttributesData;
-import com.gemstone.gemfire.management.RegionAttributesData;
-import com.gemstone.gemfire.management.RegionMXBean;
+import org.apache.geode.management.EvictionAttributesData;
+import org.apache.geode.management.FixedPartitionAttributesData;
+import org.apache.geode.management.MembershipAttributesData;
+import org.apache.geode.management.PartitionAttributesData;
+import org.apache.geode.management.RegionAttributesData;
+import org.apache.geode.management.RegionMXBean;
 
 /**
  * Concrete implementation of RegionMXBean which exposes various configuration

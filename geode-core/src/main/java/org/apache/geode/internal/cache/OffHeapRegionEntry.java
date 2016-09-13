@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.internal.offheap.Releasable;
+import org.apache.geode.internal.offheap.Releasable;
 
 /**
  * Any RegionEntry that is stored off heap must

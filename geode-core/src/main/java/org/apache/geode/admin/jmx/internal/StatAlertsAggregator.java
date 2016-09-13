@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.StatAlert;
-import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.StatAlert;
+import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
  * This interface represents an Aggregator entity and resides in JMXAgent.

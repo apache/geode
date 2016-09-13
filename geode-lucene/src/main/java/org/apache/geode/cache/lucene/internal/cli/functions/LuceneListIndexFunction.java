@@ -15,30 +15,30 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.cli.functions;
+package org.apache.geode.cache.lucene.internal.cli.functions;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexDetails;
-import com.gemstone.gemfire.internal.InternalEntity;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
+import org.apache.geode.internal.InternalEntity;
 
 /**
  * The LuceneListIndexFunction class is a function used to collect the information on all lucene indexes in
  * the entire Cache.
  * </p>
  * @see Cache
- * @see com.gemstone.gemfire.cache.execute.Function
+ * @see org.apache.geode.cache.execute.Function
  * @see FunctionAdapter
  * @see FunctionContext
  * @see InternalEntity

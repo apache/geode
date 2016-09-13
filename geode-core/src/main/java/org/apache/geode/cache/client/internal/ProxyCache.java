@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.internal.ProxyQueryService;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxInstanceFactory;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.ProxyQueryService;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -173,7 +173,7 @@ public class ProxyCache implements RegionService {
 
   protected class Stopper extends CancelCriterion {
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.CancelCriterion#cancelInProgress()
+     * @see org.apache.geode.CancelCriterion#cancelInProgress()
      */
     @Override
     public String cancelInProgress() {
@@ -188,7 +188,7 @@ public class ProxyCache implements RegionService {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.CancelCriterion#generateCancelledException(java.lang.Throwable)
+     * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
      */
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
@@ -221,7 +221,7 @@ public class ProxyCache implements RegionService {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.RegionService#rootRegions()
+   * @see org.apache.geode.cache.RegionService#rootRegions()
    */
   public Set<Region<?, ?>> rootRegions() {
     preOp();

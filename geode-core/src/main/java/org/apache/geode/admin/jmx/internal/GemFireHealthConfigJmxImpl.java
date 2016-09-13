@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBean;
 
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.admin.internal.GemFireHealthConfigImpl;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.admin.internal.GemFireHealthConfigImpl;
 
 /**
  * The JMX "managed resource" that represents the configuration for

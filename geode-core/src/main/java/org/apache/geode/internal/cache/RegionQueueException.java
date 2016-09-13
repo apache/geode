@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.CacheException;
+import org.apache.geode.cache.CacheException;
 /**
  * An exception thrown by a <code>RegionQueue</code>.
  *

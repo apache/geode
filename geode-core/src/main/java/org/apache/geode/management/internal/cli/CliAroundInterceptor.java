@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.shell.GfshExecutionStrategy;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 
 /**
  * Interceptor interface which {@link GfshExecutionStrategy} can use to

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.directory;
+package org.apache.geode.cache.lucene.internal.directory;
 
 import static org.mockito.Mockito.mock;
 
@@ -30,10 +30,10 @@ import org.apache.lucene.store.Directory;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
+import org.apache.geode.cache.lucene.internal.filesystem.File;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * A unit test of the RegionDirectory class that uses the Directory test

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,42 +24,42 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.ReplySender;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.cache.DataLocationException;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
-import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
-import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplySender;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.DataLocationException;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.FilterRoutingInfo;
+import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.annotations.Released;
 
 public final class InvalidateMessage extends DestroyMessage {
   private static final Logger logger = LogService.getLogger();
 
   /**
-   * Empty constructor to satisfy {@link com.gemstone.gemfire.DataSerializer}
+   * Empty constructor to satisfy {@link org.apache.geode.DataSerializer}
    * requirements
    */
   public InvalidateMessage() {
@@ -130,7 +130,7 @@ public final class InvalidateMessage extends DestroyMessage {
   
   /**
    * Sends an InvalidateMessage
-   * {@link com.gemstone.gemfire.cache.Region#invalidate(Object)}message to the
+   * {@link org.apache.geode.cache.Region#invalidate(Object)}message to the
    * recipient
    * 
    * @param recipient the recipient of the message
@@ -138,7 +138,7 @@ public final class InvalidateMessage extends DestroyMessage {
    *          the PartitionedRegion for which the invalidate was performed
    * @param event the event causing this message
    * @return the InvalidateResponse processor used to await the potential
-   *         {@link com.gemstone.gemfire.cache.CacheException}
+   *         {@link org.apache.geode.cache.CacheException}
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static InvalidateResponse send(DistributedMember recipient,

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 /**
  * Indicates that attempts to allocate more objects in off-heap memory has

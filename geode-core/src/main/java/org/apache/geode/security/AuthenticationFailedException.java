@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 /**
  * Thrown if authentication of this client/peer fails.

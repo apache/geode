@@ -17,14 +17,14 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository;
+package org.apache.geode.cache.lucene.internal.repository;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.SerializerUtil;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;

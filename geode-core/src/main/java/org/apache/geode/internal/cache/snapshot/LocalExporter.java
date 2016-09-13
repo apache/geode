@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
 import java.io.IOException;
 import java.util.Map.Entry;
 
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
-import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
+import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 
 /**
  * Exports snapshot data directly to the supplied {@link ExportSink}.  All data

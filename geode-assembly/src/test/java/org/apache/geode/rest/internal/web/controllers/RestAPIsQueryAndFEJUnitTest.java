@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
@@ -45,30 +45,30 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.management.internal.AgentUtil;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.management.internal.AgentUtil;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class RestAPIsQueryAndFEJUnitTest {
@@ -92,7 +92,7 @@ public class RestAPIsQueryAndFEJUnitTest {
   private Map<Integer, QueryResultData> queryResultByIndex;
  
   private final String ORDER1_AS_JSON = "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 111," + "\"customerId\": 101,"
       + "\"description\": \"Purchase order for company - A\"," + "\"orderDate\": \"01/10/2014\"," + "\"deliveryDate\": \"01/20/2014\","
       + "\"contact\": \"Nilkanthkumar N Patel\","
@@ -105,7 +105,7 @@ public class RestAPIsQueryAndFEJUnitTest {
       + "}" + "]" + "}";
   
   private final String MALFORMED_JSON = "{"
-      + "\"@type\" \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\" \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 111," + "\"customerId\": 101,"
       + "\"description\": \"Purchase order for company - A\"," + "\"orderDate\": \"01/10/2014\"," + "\"deliveryDate\": \"01/20/2014\","
       + "\"contact\": \"Nilkanthkumar N Patel\","
@@ -118,7 +118,7 @@ public class RestAPIsQueryAndFEJUnitTest {
       + "}" + "]" + "}";
   
   private final String ORDER2_AS_JSON = "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 112," + "\"customerId\": 102,"
       + "\"description\": \"Purchase order for company - B\"," + "\"orderDate\": \"02/10/2014\"," + "\"deliveryDate\": \"02/20/2014\","
       + "\"contact\": \"John Blum\","
@@ -131,7 +131,7 @@ public class RestAPIsQueryAndFEJUnitTest {
       + "}" + "]" + "}";
   
   private final String ORDER2_UPDATED_AS_JSON = "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 1112," + "\"customerId\": 102,"
       + "\"description\": \"Purchase order for company - B\","  + "\"orderDate\": \"02/10/2014\"," + "\"deliveryDate\": \"02/20/2014\","
       + "\"contact\": \"John Blum\","
@@ -145,25 +145,25 @@ public class RestAPIsQueryAndFEJUnitTest {
   
   final String CUSTOMER_LIST1_AS_JSON = "[" 
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 1,"
       + " \"firstName\": \"Vishal\","
       + " \"lastName\": \"Roa\"" 
       + "},"
       +"{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 2,"
       + " \"firstName\": \"Nilkanth\","
       + " \"lastName\": \"Patel\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 3,"
       + " \"firstName\": \"Avinash Dongre\","
       + " \"lastName\": \"Roa\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 4,"
       + " \"firstName\": \"Avinash Dongre\","
       + " \"lastName\": \"Roa\"" 
@@ -172,181 +172,181 @@ public class RestAPIsQueryAndFEJUnitTest {
       
   final String CUSTOMER_LIST_AS_JSON = "[" 
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 101,"
       + " \"firstName\": \"Vishal\","
       + " \"lastName\": \"Roa\"" 
       + "},"
       +"{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 102,"
       + " \"firstName\": \"Nilkanth\","
       + " \"lastName\": \"Patel\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 103,"
       + " \"firstName\": \"Avinash Dongre\","
       + " \"lastName\": \"Roa\"" 
       + "},"
       +"{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 104,"
       + " \"firstName\": \"John\","
       + " \"lastName\": \"Blum\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 105,"
       + " \"firstName\": \"Shankar\","
       + " \"lastName\": \"Hundekar\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 106,"
       + " \"firstName\": \"Amey\","
       + " \"lastName\": \"Barve\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 107,"
       + " \"firstName\": \"Vishal\","
       + " \"lastName\": \"Roa\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 108,"
       + " \"firstName\": \"Supriya\","
       + " \"lastName\": \"Pillai\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 109,"
       + " \"firstName\": \"Tushar\","
       + " \"lastName\": \"khairnar\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 110,"
       + " \"firstName\": \"Rishitesh\","
       + " \"lastName\": \"Mishra\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 111,"
       + " \"firstName\": \"Ajay\","
       + " \"lastName\": \"Pandey\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 112,"
       + " \"firstName\": \"Suyog\","
       + " \"lastName\": \"Bokare\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 113,"
       + " \"firstName\": \"Rajesh\","
       + " \"lastName\": \"kumar\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 114,"
       + " \"firstName\": \"swati\","
       + " \"lastName\": \"sawant\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 115,"
       + " \"firstName\": \"sonal\","
       + " \"lastName\": \"Agrawal\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 116,"
       + " \"firstName\": \"Amogh\","
       + " \"lastName\": \"Shetkar\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 117,"
       + " \"firstName\": \"Viren\","
       + " \"lastName\": \"Balaut\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 118,"
       + " \"firstName\": \"Namrata\","
       + " \"lastName\": \"Tanvi\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 119,"
       + " \"firstName\": \"Rahul\","
       + " \"lastName\": \"Diyekar\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 120,"
       + " \"firstName\": \"Varun\","
       + " \"lastName\": \"Agrawal\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 121,"
       + " \"firstName\": \"Hemant\","
       + " \"lastName\": \"Bhanavat\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 122,"
       + " \"firstName\": \"Sunil\","
       + " \"lastName\": \"jigyasu\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 123,"
       + " \"firstName\": \"Sumedh\","
       + " \"lastName\": \"wale\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 124,"
       + " \"firstName\": \"saobhik\","
       + " \"lastName\": \"chaudhari\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 125,"
       + " \"firstName\": \"Ketki\","
       + " \"lastName\": \"Naidu\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 126,"
       + " \"firstName\": \"YOgesh\","
       + " \"lastName\": \"Mahajan\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 127,"
       + " \"firstName\": \"Surinder\","
       + " \"lastName\": \"Bindra\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 128,"
       + " \"firstName\": \"sandip\","
       + " \"lastName\": \"kasbe\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 129,"
       + " \"firstName\": \"shivam\","
       + " \"lastName\": \"Panada\"" 
       + "},"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Customer\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
       +"\"customerId\": 130,"
       + " \"firstName\": \"Preeti\","
       + " \"lastName\": \"Kumari\"" 
@@ -506,7 +506,7 @@ public class RestAPIsQueryAndFEJUnitTest {
   private final String ORDER_AS_CASJSON = "{"
       + "\"@old\" :" 
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 111," + "\"customerId\": 101,"
       + "\"description\": \"Purchase order for company - A\"," + "\"orderDate\": \"01/10/2014\"," + "\"deliveryDate\": \"01/20/2014\","
       + "\"contact\": \"Nilkanthkumar N Patel\","
@@ -520,7 +520,7 @@ public class RestAPIsQueryAndFEJUnitTest {
       + "},"
       + "\"@new\" :" 
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 11101," + "\"customerId\": 101,"
       + "\"description\": \"Purchase order for company - A\"," + "\"orderDate\": \"01/10/2014\"," + "\"deliveryDate\": \"01/20/2014\","
       + "\"contact\": \"Nilkanthkumar N Patel\","
@@ -555,7 +555,7 @@ public class RestAPIsQueryAndFEJUnitTest {
   private final String MALFORMED_CAS_JSON = "{"
       + "\"@old\" :" 
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 111," + "\"customerId\": 101,"
       + "\"description\": \"Purchase order for company - A\"," + "\"orderDate\": \"01/10/2014\"," + "\"deliveryDate\": \"01/20/2014\","
       + "\"contact\": \"Nilkanthkumar N Patel\","
@@ -569,7 +569,7 @@ public class RestAPIsQueryAndFEJUnitTest {
       + "},"
        
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Order\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Order\","
       + "\"purchaseOrderNo\": 11101," + "\"customerId\": 101,"
       + "\"description\": \"Purchase order for company - A\"," + "\"orderDate\": \"01/10/2014\"," + "\"deliveryDate\": \"01/20/2014\","
       + "\"contact\": \"Nilkanthkumar N Patel\","
@@ -672,7 +672,7 @@ public class RestAPIsQueryAndFEJUnitTest {
     +        "\"@value\": 210"
     +    "},"
     +    "{"
-    +        "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Item\","
+    +        "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Item\","
     +        "\"itemNo\": \"599\","
     +        "\"description\": \"Part X Free on Bumper Offer\","
     +        "\"quantity\": \"2\","
@@ -1477,11 +1477,11 @@ public class RestAPIsQueryAndFEJUnitTest {
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
     } else if (index == 7) {
-      expectedEx = "com.gemstone.gemfire.cache.TimeoutException";
+      expectedEx = "org.apache.geode.cache.TimeoutException";
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
     } else if (index == 11 || index == 15) {
-      expectedEx = "com.gemstone.gemfire.cache.CacheWriterException";
+      expectedEx = "org.apache.geode.cache.CacheWriterException";
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
     } else if (index == 19) {
@@ -1489,7 +1489,7 @@ public class RestAPIsQueryAndFEJUnitTest {
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
     } else if (index == 38 || index == 41 ) {
-      expectedEx = "com.gemstone.gemfire.cache.RegionDestroyedException";
+      expectedEx = "org.apache.geode.cache.RegionDestroyedException";
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
     }

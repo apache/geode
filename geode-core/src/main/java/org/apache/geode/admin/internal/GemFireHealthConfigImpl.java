@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.admin.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo davidw Delegate to a "parent" config for properties that are not overridden.
 // This will be made easier with a special <code>HealthConfigAttribute</code> class.

@@ -26,11 +26,11 @@ system, and processes that host GemFire Caches.</P>
 The Admin API provides interfaces for administrative control, 
 monitoring, and custom management of a GemFire system.
 <P>
-The {@link com.gemstone.gemfire.admin.AdminDistributedSystemFactory}
+The {@link org.apache.geode.admin.AdminDistributedSystemFactory}
 is the starting point.  It creates an instance of
 <code>AdminDistributedSystem</code> that administers the distributed
 system to which a VM is {@linkplain
-com.gemstone.gemfire.distributed.DistributedSystem connected}.
+org.apache.geode.distributed.DistributedSystem connected}.
 <P>
 <pre><code>
 DistributedSystem connection = DistributedSystem.connect(new Properties());
@@ -39,38 +39,38 @@ AdminDistributedSystem system =
 system.connect(new File("admin.log"), "info");
 </code></pre>
 <P>
-This {@link com.gemstone.gemfire.admin.AdminDistributedSystem}
+This {@link org.apache.geode.admin.AdminDistributedSystem}
 interface exposes methods for such tasks as connecting to the system,
 merging system logs, getting administrative interfaces to 
 applications that host GemFire Caches.
 
 <H3>Monitoring the Health of GemFire</H3>
 
-<P>The {@link com.gemstone.gemfire.admin.GemFireHealth} interface
+<P>The {@link org.apache.geode.admin.GemFireHealth} interface
 allows the overall health of GemFire to be monitored.
 <code>GemFireHealth</code> monitors the behavior the members of a
 distributed system namely 
-application VMs that may host {@link com.gemstone.gemfire.cache.Cache
+application VMs that may host {@link org.apache.geode.cache.Cache
 cache} instances.  There are three levels of health: {@linkplain
-com.gemstone.gemfire.admin.GemFireHealth#GOOD_HEALTH good health} that
+org.apache.geode.admin.GemFireHealth#GOOD_HEALTH good health} that
 indicates that all GemFire components are behaving reasonably,
-{@linkplain com.gemstone.gemfire.admin.GemFireHealth#OKAY_HEALTH okay
+{@linkplain org.apache.geode.admin.GemFireHealth#OKAY_HEALTH okay
 health} that indicates that one or more GemFire components is slightly
 unhealthy and may need some attention, and {@linkplain
-com.gemstone.gemfire.admin.GemFireHealth#POOR_HEALTH poor health} that
+org.apache.geode.admin.GemFireHealth#POOR_HEALTH poor health} that
 indicates that a GemFire component is unhealthy and needs immediate
 attention.</P>
 
 <P>Because each GemFire application has its own definition of what it
 means to be "healthy", the metrics that are used to determine health
 are configurable.  {@link
-com.gemstone.gemfire.admin.GemFireHealthConfig} provides methods for
+org.apache.geode.admin.GemFireHealthConfig} provides methods for
 configuring how the health of {@linkplain
-com.gemstone.gemfire.admin.DistributedSystemHealthConfig the
+org.apache.geode.admin.DistributedSystemHealthConfig the
 distributed system},
-{@linkplain com.gemstone.gemfire.admin.CacheHealthConfig members that
+{@linkplain org.apache.geode.admin.CacheHealthConfig members that
 host Cache instances}, and {@linkplain
-com.gemstone.gemfire.admin.MemberHealthConfig individual members} of
+org.apache.geode.admin.MemberHealthConfig individual members} of
 the distributed system.  <code>GemFireHealthConfig</code> also allows
 you to configure how often GemFire's health is evaluated.</P>
 

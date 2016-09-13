@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 
 /**
  * The MissingPersistentIdResonse we return 662 peers. This response

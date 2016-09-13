@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.fixed;
+package org.apache.geode.internal.cache.partitioned.fixed;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,12 +25,12 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.FixedPartitionResolver;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.FixedPartitionResolver;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 public class QuarterPartitionResolver implements FixedPartitionResolver,
     Declarable2, DataSerializable {
@@ -113,7 +113,7 @@ public class QuarterPartitionResolver implements FixedPartitionResolver,
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.xmlcache.Declarable2#getConfig()
+   * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
   public Properties getConfig() {
     return this.resolveProps;
@@ -122,7 +122,7 @@ public class QuarterPartitionResolver implements FixedPartitionResolver,
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+   * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
    */
   public void init(Properties props) {
     this.resolveProps.putAll(props);

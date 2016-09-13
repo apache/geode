@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionQueryEvaluator.PRQueryResultCollector;
-import com.gemstone.gemfire.internal.cache.execute.BucketMovedException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.PRQueryResultCollector;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;

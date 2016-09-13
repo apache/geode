@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.memcached;
+package org.apache.geode.memcached;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,17 +33,17 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.memcached.KeyWrapper;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.memcached.KeyWrapper;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.ConnectionFactoryBuilder;

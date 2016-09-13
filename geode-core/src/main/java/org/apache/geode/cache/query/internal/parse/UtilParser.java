@@ -20,7 +20,7 @@
  * Created on January 19, 2005, 2:18 PM
  */
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
 import antlr.collections.*;
@@ -71,7 +71,7 @@ public class UtilParser extends LLkParser {
         OQLParser parser = new OQLParser(lexer);
         // by default use Unsupported AST class, overridden for supported
         // operators in the grammer proper
-        parser.setASTNodeClass("com.gemstone.gemfire.cache.query.internal.parse.ASTUnsupported");
+        parser.setASTNodeClass("org.apache.geode.cache.query.internal.parse.ASTUnsupported");
         parser.queryProgram();
         AST t = parser.getAST();
         if (useFrame) {

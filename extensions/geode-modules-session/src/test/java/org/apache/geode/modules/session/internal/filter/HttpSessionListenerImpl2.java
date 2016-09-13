@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
-import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
+import org.apache.geode.modules.session.filter.SessionCachingFilter;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;

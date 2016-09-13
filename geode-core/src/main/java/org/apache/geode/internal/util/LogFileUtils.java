@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import java.io.File;
 import java.io.RandomAccessFile;

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
 
-import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.lru.LRUStatistics;
 
 import java.io.Serializable;
 

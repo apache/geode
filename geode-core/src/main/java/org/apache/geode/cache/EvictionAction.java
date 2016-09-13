@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import javax.print.attribute.EnumSyntax;
 /**
- * The action that an {@link com.gemstone.gemfire.cache.EvictionAlgorithm} takes.
+ * The action that an {@link org.apache.geode.cache.EvictionAlgorithm} takes.
  * @since GemFire 5.0
- * @see com.gemstone.gemfire.cache.EvictionAlgorithm
- * @see com.gemstone.gemfire.internal.cache.EvictionAttributesImpl
+ * @see org.apache.geode.cache.EvictionAlgorithm
+ * @see org.apache.geode.internal.cache.EvictionAttributesImpl
  */
 public final class EvictionAction extends EnumSyntax
 {
@@ -30,7 +30,7 @@ public final class EvictionAction extends EnumSyntax
    */
   public static final EvictionAction NONE = new EvictionAction(0);
   
-  /** Perform a {@link com.gemstone.gemfire.cache.Region#localDestroy(Object)
+  /** Perform a {@link org.apache.geode.cache.Region#localDestroy(Object)
    * localDestory} on the least recently used region entry. */
   public static final EvictionAction LOCAL_DESTROY = new EvictionAction(1);
 

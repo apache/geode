@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.installer;
+package org.apache.geode.modules.session.installer;
 
 import static org.junit.Assert.*;
 
@@ -23,8 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;

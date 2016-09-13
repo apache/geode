@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,29 +28,29 @@ import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisee;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.UpdateAttributesProcessor;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.UpdateAttributesProcessor;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class GatewaySenderAdvisor extends DistributionAdvisor {
   private static final Logger logger = LogService.getLogger();
@@ -169,7 +169,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     }
 
     List<String> senderEventFilterClassNames = new ArrayList<String>();
-    for (com.gemstone.gemfire.cache.wan.GatewayEventFilter filter : sender
+    for (org.apache.geode.cache.wan.GatewayEventFilter filter : sender
         .getGatewayEventFilters()) {
       senderEventFilterClassNames.add(filter.getClass().getName());
     }
@@ -556,7 +556,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       this.dispatcherThreads = in.readInt();
       if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
           Version.CURRENT) < 0) {
-        com.gemstone.gemfire.cache.util.Gateway.OrderPolicy oldOrderPolicy = DataSerializer
+        org.apache.geode.cache.util.Gateway.OrderPolicy oldOrderPolicy = DataSerializer
             .readObject(in);
         if (oldOrderPolicy != null) {
           if (oldOrderPolicy.name().equals(OrderPolicy.KEY.name())) {
@@ -603,16 +603,16 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
           Version.CURRENT) < 0 && this.orderPolicy != null) {
         String orderPolicyName = this.orderPolicy.name();
-        if (orderPolicyName.equals(com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.KEY.name())) {
+        if (orderPolicyName.equals(org.apache.geode.cache.util.Gateway.OrderPolicy.KEY.name())) {
           DataSerializer.writeObject(
-              com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.KEY, out);
+              org.apache.geode.cache.util.Gateway.OrderPolicy.KEY, out);
         }
-        else if(orderPolicyName.equals(com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.THREAD.name())) {
+        else if(orderPolicyName.equals(org.apache.geode.cache.util.Gateway.OrderPolicy.THREAD.name())) {
           DataSerializer.writeObject(
-              com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.THREAD, out);
+              org.apache.geode.cache.util.Gateway.OrderPolicy.THREAD, out);
         }else{
           DataSerializer.writeObject(
-              com.gemstone.gemfire.cache.util.Gateway.OrderPolicy.PARTITION, out);
+              org.apache.geode.cache.util.Gateway.OrderPolicy.PARTITION, out);
         }
       }
       else {

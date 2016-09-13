@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
-import com.gemstone.gemfire.GemFireCheckedException;
+import org.apache.geode.GemFireCheckedException;
 
 /**
  * Exception thrown from Connection Pool.

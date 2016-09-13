@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import com.gemstone.gemfire.SystemFailure;
+import org.apache.geode.SystemFailure;
 
 /**
 * 

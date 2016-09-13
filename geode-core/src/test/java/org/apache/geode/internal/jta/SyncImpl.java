@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
 import javax.transaction.Synchronization;
 

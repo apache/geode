@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.i18n.StringId;
 
 /**
  * A log writer that logs all types of log messages as a warning.
@@ -65,7 +65,7 @@ final public class DebugLogWriter extends LogWriterImpl
   /**
    * Handles internationalized log messages.
    * @param params each Object has toString() called and substituted into the msg
-   * @see com.gemstone.gemfire.i18n.StringId
+   * @see org.apache.geode.i18n.StringId
    * @since GemFire 6.0
    */
   @Override

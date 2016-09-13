@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.converters;
+package org.apache.geode.management.internal.cli.converters;
 
 import java.io.File;
 import java.util.List;
@@ -24,9 +24,9 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.support.util.FileUtils;
 import org.springframework.util.Assert;
 
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.internal.cli.MultipleValueAdapter;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.MultipleValueAdapter;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  *

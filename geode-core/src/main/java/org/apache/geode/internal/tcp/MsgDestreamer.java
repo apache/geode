@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.VersionedDataInputStream;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /** <p>MsgDestreamer supports destreaming a streamed message from a tcp Connection
  * that arrives in chunks.
@@ -298,7 +298,7 @@ public class MsgDestreamer {
       }
 
       /* (non-Javadoc)
-       * @see com.gemstone.gemfire.CancelCriterion#cancelInProgress()
+       * @see org.apache.geode.CancelCriterion#cancelInProgress()
        */
       @Override
       public String cancelInProgress() {
@@ -313,7 +313,7 @@ public class MsgDestreamer {
       }
 
       /* (non-Javadoc)
-       * @see com.gemstone.gemfire.CancelCriterion#generateCancelledException(java.lang.Throwable)
+       * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
        */
       @Override
       public RuntimeException generateCancelledException(Throwable e) {

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * TXEntryUserAttrState is the entity that tracks transactional changes

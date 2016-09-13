@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
@@ -44,14 +44,14 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.internal.cache.execute.FunctionContextImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TODO: Need to fix this testDeclarableFunctionsWithParms and testClassOnClasspath on Windows:
@@ -144,9 +144,9 @@ public class JarClassLoaderJUnitTest {
   @Test
   public void testFailingCompilation() throws Exception {
     StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("import com.gemstone.gemfire.cache.Declarable;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.FunctionContext;");
+    stringBuffer.append("import org.apache.geode.cache.Declarable;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
     stringBuffer.append("public class JarClassLoaderJUnitFunction implements Function {}");
     String functionString = stringBuffer.toString();
 
@@ -167,9 +167,9 @@ public class JarClassLoaderJUnitTest {
     // Test creating a JAR file with a function
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append("import java.util.Properties;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.Declarable;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.FunctionContext;");
+    stringBuffer.append("import org.apache.geode.cache.Declarable;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
     stringBuffer.append("public class JarClassLoaderJUnitFunction implements Function {");
     stringBuffer.append("public void init(Properties props) {}");
     stringBuffer.append("public boolean hasResult() {return true;}");
@@ -235,7 +235,7 @@ public class JarClassLoaderJUnitTest {
 
     // Add an abstract Function to the Classpath
     StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
     stringBuffer.append("public abstract class JarClassLoaderJUnitFunction implements Function {");
     stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}}");
     String functionString = stringBuffer.toString();
@@ -263,9 +263,9 @@ public class JarClassLoaderJUnitTest {
     // Add a Declarable Function without parameters for the class to the Classpath
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append("import java.util.Properties;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.Declarable;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.FunctionContext;");
+    stringBuffer.append("import org.apache.geode.cache.Declarable;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
     stringBuffer.append("public class JarClassLoaderJUnitFunctionNoXml implements Function, Declarable {");
     stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunctionNoXml\";}");
     stringBuffer.append("public void init(Properties props) {}");
@@ -308,9 +308,9 @@ public class JarClassLoaderJUnitTest {
     // Add a Declarable Function without parameters for the class to the Classpath
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append("import java.util.Properties;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.Declarable;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.FunctionContext;");
+    stringBuffer.append("import org.apache.geode.cache.Declarable;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
     stringBuffer.append("public class JarClassLoaderJUnitFunction implements Function, Declarable {");
     stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}");
     stringBuffer.append("public void init(Properties props) {}");
@@ -384,9 +384,9 @@ public class JarClassLoaderJUnitTest {
     // Add a Declarable Function with parameters to the class to the Classpath
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append("import java.util.Properties;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.Declarable;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.FunctionContext;");
+    stringBuffer.append("import org.apache.geode.cache.Declarable;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
     stringBuffer.append("public class JarClassLoaderJUnitFunction implements Function, Declarable {");
     stringBuffer.append("private Properties properties;");
     stringBuffer.append("public String getId() {if(this.properties==null) {return \"JarClassLoaderJUnitFunction\";} else {return (String) this.properties.get(\"id\");}}");
@@ -524,8 +524,8 @@ public class JarClassLoaderJUnitTest {
     stringBuffer.append("package jcljunit.function;");
     stringBuffer.append("import jcljunit.parent.JarClassLoaderJUnitParent;");
     stringBuffer.append("import jcljunit.uses.JarClassLoaderJUnitUses;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.Function;");
-    stringBuffer.append("import com.gemstone.gemfire.cache.execute.FunctionContext;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
     stringBuffer.append("public class JarClassLoaderJUnitFunction  extends JarClassLoaderJUnitParent implements Function {");
     stringBuffer.append("private JarClassLoaderJUnitUses uses = new JarClassLoaderJUnitUses();");
     stringBuffer.append("public boolean hasResult() {return true;}");

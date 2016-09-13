@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -29,14 +29,14 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.admin.remote.AlertListenerMessage;
-import com.gemstone.gemfire.internal.lang.ThreadUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.admin.remote.AlertListenerMessage;
+import org.apache.geode.internal.lang.ThreadUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.tcp.ReenteredConnectException;
 
 /**
  * A Log4j Appender which will notify listeners whenever a message of the

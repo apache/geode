@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.stats50;
+package org.apache.geode.internal.stats50;
 
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.GarbageCollectorMXBean;
@@ -35,17 +35,17 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.statistics.VMStatsContract;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.statistics.VMStatsContract;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Statistics related to a Java VM.

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.utils;
+package org.apache.geode.cache.query.internal.utils;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.query.internal.StructImpl;
-import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.internal.PdxString;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.PdxString;
 
 public class PDXUtils {
 

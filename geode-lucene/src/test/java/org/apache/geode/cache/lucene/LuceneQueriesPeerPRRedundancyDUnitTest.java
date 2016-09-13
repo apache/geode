@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
-import static com.gemstone.gemfire.cache.lucene.test.IndexRepositorySpy.*;
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
+import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.lucene.test.IndexRegionSpy;
-import com.gemstone.gemfire.cache.lucene.test.IndexRepositorySpy;
-import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.partitioned.BecomePrimaryBucketMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
-import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.lucene.test.IndexRegionSpy;
+import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import com.jayway.awaitility.Awaitility;
 
 import org.junit.Test;

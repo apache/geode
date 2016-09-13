@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import static org.junit.Assert.*;
 
@@ -33,11 +33,11 @@ import java.util.TreeSet;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class NWayMergeResultsJUnitTest {

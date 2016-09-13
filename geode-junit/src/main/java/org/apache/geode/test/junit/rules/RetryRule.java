@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules;
+package org.apache.geode.test.junit.rules;
 
 import java.io.Serializable;
 
@@ -22,7 +22,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import com.gemstone.gemfire.test.junit.Retry;
+import org.apache.geode.test.junit.Retry;
 
 /**
  * JUnit Rule that enables retrying a failed test up to a maximum number of retries.

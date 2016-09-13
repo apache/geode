@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
-import com.gemstone.gemfire.pdx.internal.PdxType;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.pdx.internal.PdxType;
 
 /**
  * Retrieve the PDXType, given an integer PDX id, from a server.
@@ -47,7 +47,7 @@ public class GetPDXIdForTypeOp {
   
   private static class GetPDXIdForTypeOpImpl extends AbstractOp {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public GetPDXIdForTypeOpImpl(PdxType type) {
       super(MessageType.GET_PDX_ID_FOR_TYPE, 1);

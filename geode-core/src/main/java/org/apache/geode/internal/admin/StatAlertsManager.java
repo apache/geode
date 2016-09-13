@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,23 +27,23 @@ import java.util.TimerTask;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.admin.jmx.internal.StatAlertsAggregator;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.SystemTimer;
-import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
-import com.gemstone.gemfire.internal.admin.remote.AlertsNotificationMessage;
-import com.gemstone.gemfire.internal.admin.remote.UpdateAlertDefinitionMessage;
-import com.gemstone.gemfire.internal.admin.statalerts.DummyStatisticInfoImpl;
-import com.gemstone.gemfire.internal.admin.statalerts.StatisticInfo;
-import com.gemstone.gemfire.internal.admin.statalerts.StatisticInfoImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.CancelException;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.admin.jmx.internal.StatAlertsAggregator;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.SystemTimer.SystemTimerTask;
+import org.apache.geode.internal.admin.remote.AlertsNotificationMessage;
+import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
+import org.apache.geode.internal.admin.statalerts.DummyStatisticInfoImpl;
+import org.apache.geode.internal.admin.statalerts.StatisticInfo;
+import org.apache.geode.internal.admin.statalerts.StatisticInfoImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * The alert manager maintains the list of alert definitions (added by client
@@ -179,7 +179,7 @@ public class StatAlertsManager {
     // Get the swarm.  Currently rather UGLY.
     InternalDistributedSystem system = dm.getSystem();
     if (system == null || system.getDistributionManager() != dm) {
-      throw new com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException(
+      throw new org.apache.geode.distributed.DistributedSystemDisconnectedException(
           "This manager has been cancelled");
     }
     // start and schedule new timer

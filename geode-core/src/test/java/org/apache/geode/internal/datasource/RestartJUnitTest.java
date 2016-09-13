@@ -17,25 +17,25 @@
 /*
  * Created on Mar 22, 2005
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import javax.transaction.TransactionManager;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.fail;
 
-//import com.gemstone.gemfire.internal.jta.CacheUtils;
+//import org.apache.geode.internal.jta.CacheUtils;
 
 /**
  * 

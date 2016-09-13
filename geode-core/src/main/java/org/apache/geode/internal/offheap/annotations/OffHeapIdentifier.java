@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap.annotations;
+package org.apache.geode.internal.offheap.annotations;
 
 
 
@@ -27,14 +27,14 @@ public enum OffHeapIdentifier {
    */
   DEFAULT("DEFAULT"),
   
-  ENTRY_EVENT_NEW_VALUE("com.gemstone.gemfire.internal.cache.KeyInfo.newValue"),
-  ENTRY_EVENT_OLD_VALUE("com.gemstone.gemfire.internal.cache.EntryEventImpl.oldValue"),
-  TX_ENTRY_STATE("com.gemstone.gemfire.internal.cache.originalVersionId"),
-  GATEWAY_SENDER_EVENT_IMPL_VALUE("com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl.valueObj"),
-  TEST_OFF_HEAP_REGION_BASE_LISTENER("com.gemstone.gemfire.internal.offheap.OffHeapRegionBase.MyCacheListener.ohOldValue and ohNewValue"),
+  ENTRY_EVENT_NEW_VALUE("org.apache.geode.internal.cache.KeyInfo.newValue"),
+  ENTRY_EVENT_OLD_VALUE("org.apache.geode.internal.cache.EntryEventImpl.oldValue"),
+  TX_ENTRY_STATE("org.apache.geode.internal.cache.originalVersionId"),
+  GATEWAY_SENDER_EVENT_IMPL_VALUE("org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.valueObj"),
+  TEST_OFF_HEAP_REGION_BASE_LISTENER("org.apache.geode.internal.offheap.OffHeapRegionBase.MyCacheListener.ohOldValue and ohNewValue"),
   REGION_ENTRY_VALUE(""),
-  ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE("com.gemstone.gemfire.internal.cache.AbstractRegionEntry.prepareValueForCache(...)"),
-  ABSTRACT_REGION_ENTRY_FILL_IN_VALUE("com.gemstone.gemfire.internal.cache.AbstractRegionEntry.fillInValue(...)"),
+  ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE("org.apache.geode.internal.cache.AbstractRegionEntry.prepareValueForCache(...)"),
+  ABSTRACT_REGION_ENTRY_FILL_IN_VALUE("org.apache.geode.internal.cache.AbstractRegionEntry.fillInValue(...)"),
   GEMFIRE_TRANSACTION_BYTE_SOURCE(""),
   
   /**

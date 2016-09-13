@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.lru;
+package org.apache.geode.internal.cache.lru;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 
@@ -45,7 +45,7 @@ import java.util.*;
  *  <pre>
  *  &lt;region-attributes&gt;
  *    &lt;capacity-controller&gt;
- *      &lt;classname&gt;com.gemstone.gemfire.cache.LRUCapacityController&lt;/classname&gt;
+ *      &lt;classname&gt;org.apache.geode.cache.LRUCapacityController&lt;/classname&gt;
  *      &lt;parameter name="maximum-entries"&gt;1000&lt;/parameter&gt;
  *    &lt;/capacity-controller&gt;
  *  &lt;/region-attributes&gt;
@@ -113,7 +113,7 @@ public final class LRUCapacityController extends LRUAlgorithm
    * Creates an LRU capacity controller that allows the {@link
    * #DEFAULT_MAXIMUM_ENTRIES default} maximum number of entries and
    * the {@link 
-   * com.gemstone.gemfire.cache.EvictionAction#DEFAULT_EVICTION_ACTION default} 
+   * org.apache.geode.cache.EvictionAction#DEFAULT_EVICTION_ACTION default} 
    * eviction action.
    *
    * @see #LRUCapacityController(int,Region)

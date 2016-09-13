@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 /**
  * A <code>GemFireIOException</code> is thrown when a 

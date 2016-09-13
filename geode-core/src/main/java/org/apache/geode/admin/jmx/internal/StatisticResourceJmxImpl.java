@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -24,14 +24,14 @@ import javax.naming.OperationNotSupportedException;
 import org.apache.commons.modeler.ManagedBean;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.Statistic;
-import com.gemstone.gemfire.internal.admin.StatResource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.Statistic;
+import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Provides MBean support for the monitoring of a statistic resource.
@@ -40,9 +40,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
  *
  */
 public class StatisticResourceJmxImpl 
-extends com.gemstone.gemfire.admin.internal.StatisticResourceImpl
+extends org.apache.geode.admin.internal.StatisticResourceImpl
 implements javax.management.NotificationListener, 
-           com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
+           org.apache.geode.admin.jmx.internal.ManagedResource {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -67,19 +67,19 @@ implements javax.management.NotificationListener,
    *
    * @param statResource  the admin StatResource to manage/monitor
    * @param member        the SystemMember owning this resource
-   * @exception com.gemstone.gemfire.admin.AdminException 
+   * @exception org.apache.geode.admin.AdminException 
    *            if unable to create this StatisticResource for administration
    */
   public StatisticResourceJmxImpl(StatResource statResource,
                                   SystemMemberJmx member)
-                           throws com.gemstone.gemfire.admin.AdminException {
+                           throws org.apache.geode.admin.AdminException {
     super(statResource, member);
     initializeMBean();
   }
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     this.mbeanName = new StringBuffer("GemFire.Statistic:")
                       .append("source=").append(MBeanUtil.makeCompliantMBeanNameProperty(this.member.getId()))
                       .append(",type=").append(MBeanUtil.makeCompliantMBeanNameProperty(getType()))
@@ -199,9 +199,9 @@ implements javax.management.NotificationListener,
       try {
         refresh();
 
-      } catch (com.gemstone.gemfire.admin.AdminException e) {
+      } catch (org.apache.geode.admin.AdminException e) {
         logger.warn(e.getMessage(), e);
-      } catch (com.gemstone.gemfire.admin.OperationCancelledException e) {
+      } catch (org.apache.geode.admin.OperationCancelledException e) {
         // underlying resource is no longer reachable by remote admin
         logger.warn(e.getMessage(), e);
         _setRefreshInterval(0);
@@ -240,7 +240,7 @@ implements javax.management.NotificationListener,
    *         with the new attributes added
    */
   ManagedBean addDynamicAttributes(ManagedBean managed) 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     if (managed == null) {
       throw new IllegalArgumentException(LocalizedStrings.StatisticResourceJmxImpl_MANAGEDBEAN_IS_NULL.toLocalizedString());
     }

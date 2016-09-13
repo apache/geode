@@ -15,29 +15,29 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.modules.session.bootstrap.AbstractCache;
-import com.gemstone.gemfire.modules.session.bootstrap.ClientServerCache;
-import com.gemstone.gemfire.modules.session.bootstrap.LifecycleTypeAdapter;
-import com.gemstone.gemfire.modules.session.bootstrap.PeerToPeerCache;
-import com.gemstone.gemfire.modules.session.internal.common.CacheProperty;
-import com.gemstone.gemfire.modules.session.internal.common.ClientServerSessionCache;
-import com.gemstone.gemfire.modules.session.internal.common.PeerToPeerSessionCache;
-import com.gemstone.gemfire.modules.session.internal.common.SessionCache;
-import com.gemstone.gemfire.modules.session.internal.filter.attributes.AbstractSessionAttributes;
-import com.gemstone.gemfire.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
-import com.gemstone.gemfire.modules.session.internal.filter.attributes.DeltaSessionAttributes;
-import com.gemstone.gemfire.modules.session.internal.filter.attributes.ImmediateSessionAttributes;
-import com.gemstone.gemfire.modules.session.internal.filter.util.TypeAwareMap;
-import com.gemstone.gemfire.modules.session.internal.jmx.SessionStatistics;
-import com.gemstone.gemfire.modules.util.RegionHelper;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.modules.session.bootstrap.AbstractCache;
+import org.apache.geode.modules.session.bootstrap.ClientServerCache;
+import org.apache.geode.modules.session.bootstrap.LifecycleTypeAdapter;
+import org.apache.geode.modules.session.bootstrap.PeerToPeerCache;
+import org.apache.geode.modules.session.internal.common.CacheProperty;
+import org.apache.geode.modules.session.internal.common.ClientServerSessionCache;
+import org.apache.geode.modules.session.internal.common.PeerToPeerSessionCache;
+import org.apache.geode.modules.session.internal.common.SessionCache;
+import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
+import org.apache.geode.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
+import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionAttributes;
+import org.apache.geode.modules.session.internal.filter.attributes.ImmediateSessionAttributes;
+import org.apache.geode.modules.session.internal.filter.util.TypeAwareMap;
+import org.apache.geode.modules.session.internal.jmx.SessionStatistics;
+import org.apache.geode.modules.util.RegionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for DistributedSystem class.

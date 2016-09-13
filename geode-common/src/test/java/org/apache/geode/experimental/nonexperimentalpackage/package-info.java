@@ -18,6 +18,6 @@
  * Used by <tt>ExperimentalJUnitTest</tt>. This is a non-<tt>Experimental</tt> 
  * package.
  * 
- * @see com.gemstone.gemfire.annotations.ExperimentalJUnitTest
+ * @see org.apache.geode.annotations.ExperimentalJUnitTest
  */
-package com.gemstone.gemfire.experimental.nonexperimentalpackage;
+package org.apache.geode.experimental.nonexperimentalpackage;

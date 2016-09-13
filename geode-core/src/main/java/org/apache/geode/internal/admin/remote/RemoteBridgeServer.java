@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,23 +22,23 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.ClientSession;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.server.ServerLoadProbeAdapter;
-import com.gemstone.gemfire.cache.server.ServerMetrics;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
-import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.ClientSession;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.geode.cache.server.ServerLoadProbeAdapter;
+import org.apache.geode.cache.server.ServerMetrics;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.admin.AdminBridgeServer;
+import org.apache.geode.internal.cache.AbstractCacheServer;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code>

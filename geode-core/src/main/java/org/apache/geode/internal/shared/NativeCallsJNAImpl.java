@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.shared;
+package org.apache.geode.internal.shared;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.process.signal.Signal;
-import com.gemstone.gemfire.internal.shared.NativeCalls.RehashServerOnSIGHUP;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.process.signal.Signal;
+import org.apache.geode.internal.shared.NativeCalls.RehashServerOnSIGHUP;
 import com.sun.jna.Callback;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Library;
@@ -299,7 +299,7 @@ public final class NativeCallsJNAImpl {
     @Override
     public void preBlow(String path, long maxSize, boolean preAllocate)
         throws IOException {
-      final com.gemstone.gemfire.LogWriter logger; 
+      final org.apache.geode.LogWriter logger; 
       if (InternalDistributedSystem.getAnyInstance() != null) {
         logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
       }
@@ -699,7 +699,7 @@ public final class NativeCallsJNAImpl {
      * return false even if it on local file system for now.
      */
     public boolean isOnLocalFileSystem(final String path) {
-      final com.gemstone.gemfire.LogWriter logger; 
+      final org.apache.geode.LogWriter logger; 
       if (InternalDistributedSystem.getAnyInstance() != null) {
         logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
       }

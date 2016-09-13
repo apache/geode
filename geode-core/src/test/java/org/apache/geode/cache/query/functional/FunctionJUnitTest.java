@@ -20,7 +20,7 @@
  *
  * Created on March 10, 2005, 4:13 PM
  */
-package com.gemstone.gemfire.cache.query.functional;
+package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.*;
 
@@ -34,18 +34,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.internal.CompiledFunction;
-import com.gemstone.gemfire.cache.query.internal.CompiledLiteral;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.CompiledFunction;
+import org.apache.geode.cache.query.internal.CompiledLiteral;
+import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class FunctionJUnitTest {

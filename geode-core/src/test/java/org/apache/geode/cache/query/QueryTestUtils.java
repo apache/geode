@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,20 +25,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
 
 /**
  * Utility class for testing supported queries
@@ -76,12 +76,12 @@ public class QueryTestUtils implements Serializable {
     bindQueries.put("8", "$3 IN $2");
     bindQueries.put("9", "(SELECT DISTINCT * FROM /root/exampleRegion WHERE ID < $1).size");
     bindQueries.put("10", "/exampleRegion.containsValue($1)");
-    bindQueries.put("11", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects  type Student$Subject  where subject='Hindi'");
-    bindQueries.put("12", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects x  type Student$Subject  where x.subject='Hindi'");
-    bindQueries.put("13", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 , (list<Student$Subject>) it1.subjects   where subject='Hindi'");
-    bindQueries.put("14", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers  type Student$Teacher  where teacher='Y'");
-    bindQueries.put("15", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers x  type Student$Teacher  where x.teacher='Y'");
-    bindQueries.put("16", "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 , (list<Student$Teacher>) it1.teachers  where teacher='Y'");
+    bindQueries.put("11", "IMPORT org.apache.geode.cache.\"query\".data.Student;IMPORT org.apache.geode.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects  type Student$Subject  where subject='Hindi'");
+    bindQueries.put("12", "IMPORT org.apache.geode.cache.\"query\".data.Student;IMPORT org.apache.geode.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 ,  it1.subjects x  type Student$Subject  where x.subject='Hindi'");
+    bindQueries.put("13", "IMPORT org.apache.geode.cache.\"query\".data.Student;IMPORT org.apache.geode.cache.\"query\".data.Student$Subject;Select distinct * from  $1 as it1 , (list<Student$Subject>) it1.subjects   where subject='Hindi'");
+    bindQueries.put("14", "IMPORT org.apache.geode.cache.\"query\".data.Student;IMPORT org.apache.geode.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers  type Student$Teacher  where teacher='Y'");
+    bindQueries.put("15", "IMPORT org.apache.geode.cache.\"query\".data.Student;IMPORT org.apache.geode.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 ,  it1.teachers x  type Student$Teacher  where x.teacher='Y'");
+    bindQueries.put("16", "IMPORT org.apache.geode.cache.\"query\".data.Student;IMPORT org.apache.geode.cache.\"query\".data.Student$Teacher;Select distinct * from  $1 as it1 , (list<Student$Teacher>) it1.teachers  where teacher='Y'");
     bindQueries.put("17", "IS_DEFINED($1)");
     bindQueries.put("18", "IS_UNDEFINED($1)");
     bindQueries.put("19", "NOT $1");
@@ -134,9 +134,9 @@ public class QueryTestUtils implements Serializable {
     bindQueries.put("66", "Select distinct intValue from (list<int>) $1");
     bindQueries.put("67", "Select distinct keys.hashCode  from /exampleRegion.keys() keys where keys.hashCode >= $1");
     bindQueries.put("68", "Select distinct value.secId from /exampleRegion , getPositions($1)");
-    bindQueries.put("69", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct * from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
-    bindQueries.put("70", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct r from $1 r, r.positions.values pVal TYPE Position where pVal.mktValue < $2");
-    bindQueries.put("71", "import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct r.ID, status, mktValue from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
+    bindQueries.put("69", "import org.apache.geode.cache.\"query\".data.Position;select distinct * from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
+    bindQueries.put("70", "import org.apache.geode.cache.\"query\".data.Position;select distinct r from $1 r, r.positions.values pVal TYPE Position where pVal.mktValue < $2");
+    bindQueries.put("71", "import org.apache.geode.cache.\"query\".data.Position;select distinct r.ID, status, mktValue from $1 r, r.positions.values pVal TYPE Position where r.status = 'active' AND pVal.mktValue >= 25.00");
     bindQueries.put("72", "import java.util.Map$Entry as Entry;select distinct value.secId from /exampleRegion, getPositions(23) type Entry");
     bindQueries.put("73", "select * from $1");
     bindQueries.put("74", "select ALL * from $1");
@@ -188,13 +188,13 @@ public class QueryTestUtils implements Serializable {
     queries.put("35","/exampleRegion.size > 0");
     queries.put("36","/exampleRegion.size");
     queries.put("37","2 IN SET(1,2,3)");
-    queries.put("38","IMPORT com.gemstone.gemfire.cache.\"query\".data.Manager;SELECT DISTINCT manager_id FROM (set<Manager>)/exampleRegion where empId > 0");
-    queries.put("39","IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio; SELECT DISTINCT * FROM (set<Portfolio>)/exampleRegion where iD > 0");
-    queries.put("40","IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;SELECT DISTINCT secId FROM (set<Portfolio>)/exampleRegion, (set<Position>)positions.values WHERE iD > 0");
-    queries.put("41","IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;SELECT DISTINCT pos.secId FROM /exampleRegion, pos IN positions.values TYPE Position WHERE iD > 0");
-    queries.put("42","IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;SELECT DISTINCT secId FROM /exampleRegion,  positions.values pos TYPE Position WHERE iD > 0");
-    queries.put("43","IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;SELECT DISTINCT secId FROM /exampleRegion, (set<Position>)positions.values WHERE iD > 0");
-    queries.put("44","IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;SELECT DISTINCT secId FROM /exampleRegion, positions.values AS pos TYPE Position WHERE iD > 0");
+    queries.put("38","IMPORT org.apache.geode.cache.\"query\".data.Manager;SELECT DISTINCT manager_id FROM (set<Manager>)/exampleRegion where empId > 0");
+    queries.put("39","IMPORT org.apache.geode.cache.\"query\".data.Portfolio; SELECT DISTINCT * FROM (set<Portfolio>)/exampleRegion where iD > 0");
+    queries.put("40","IMPORT org.apache.geode.cache.\"query\".data.Position;IMPORT org.apache.geode.cache.\"query\".data.Portfolio;SELECT DISTINCT secId FROM (set<Portfolio>)/exampleRegion, (set<Position>)positions.values WHERE iD > 0");
+    queries.put("41","IMPORT org.apache.geode.cache.\"query\".data.Position;SELECT DISTINCT pos.secId FROM /exampleRegion, pos IN positions.values TYPE Position WHERE iD > 0");
+    queries.put("42","IMPORT org.apache.geode.cache.\"query\".data.Position;SELECT DISTINCT secId FROM /exampleRegion,  positions.values pos TYPE Position WHERE iD > 0");
+    queries.put("43","IMPORT org.apache.geode.cache.\"query\".data.Position;SELECT DISTINCT secId FROM /exampleRegion, (set<Position>)positions.values WHERE iD > 0");
+    queries.put("44","IMPORT org.apache.geode.cache.\"query\".data.Position;SELECT DISTINCT secId FROM /exampleRegion, positions.values AS pos TYPE Position WHERE iD > 0");
     queries.put("45","SELECT   DISTINCT iD as portfolio_id, pos.secId as sec_id from /exampleRegion p , p.positions.values pos  where p.status= 'active'");
     queries.put("46","SELECT  distinct * FROM /exampleRegion order by pkid desc");
     queries.put("47","SELECT  distinct * FROM /exampleRegion pf1  order by pkid asc");
@@ -496,8 +496,8 @@ public class QueryTestUtils implements Serializable {
     queries.put("343","Select pf.ID from /exampleRegion pf where pf.ID > 2 and pf.ID < 100");
     queries.put("344","Select status from /exampleRegion pf where status='active'");
     queries.put("345","'a' IN SET('x','y','z')");
-    queries.put("346","import com.gemstone.gemfire.cache.\"query\".data.Portfolio; select distinct * from /exampleRegion, (select distinct * from /exampleRegion p TYPE Portfolio, p.positions where value!=null)");
-    queries.put("347","import com.gemstone.gemfire.cache.\"query\".data.Position;select distinct value.secId from /exampleRegion, (map<string, Position>)getPositions(23)");
+    queries.put("346","import org.apache.geode.cache.\"query\".data.Portfolio; select distinct * from /exampleRegion, (select distinct * from /exampleRegion p TYPE Portfolio, p.positions where value!=null)");
+    queries.put("347","import org.apache.geode.cache.\"query\".data.Position;select distinct value.secId from /exampleRegion, (map<string, Position>)getPositions(23)");
     queries.put("348","select  * from /exampleRegion pf where pf.getID  > 1 and pf.getID < 12000");
     queries.put("349","select  * from /exampleRegion pf where pf.status != 'active' and pf.status != null");
     queries.put("350","select  distinct p.status  from /exampleRegion p  where   p.ID IN  SET( 0) AND p.createTime IN SET( 4l ) AND  p.\"type\" IN SET( 'type0') AND p.status IN SET( 'active')");
@@ -702,7 +702,7 @@ public class QueryTestUtils implements Serializable {
     //NESTED QUERIES
     queries.put("701","SELECT ID, status FROM /exampleRegion portfolio WHERE NOT (SELECT DISTINCT * FROM portfolio.positions.values positions WHERE positions.secId='AOL' OR positions.secId='SAP').isEmpty");
     queries.put("702","SELECT * FROM /exampleRegion p where p.status = ELEMENT(SELECT DISTINCT * FROM /exampleRegion p2 WHERE p2.ID = 0).status");
-    queries.put("703","IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio; SELECT * FROM /exampleRegion, (SELECT DISTINCT * from /exampleRegion p TYPE Portfolio, p.positions WHERE value!=null)");
+    queries.put("703","IMPORT org.apache.geode.cache.\"query\".data.Portfolio; SELECT * FROM /exampleRegion, (SELECT DISTINCT * from /exampleRegion p TYPE Portfolio, p.positions WHERE value!=null)");
     queries.put("704","SELECT DISTINCT * FROM (SELECT DISTINCT * FROM /exampleRegion portfolios, positions pos) WHERE pos.value.secId = 'IBM'");
     queries.put("705","SELECT * FROM /exampleRegion portfolio WHERE portfolio.ID IN (SELECT p2.ID  FROM /exampleRegion2 p2 where p2.ID > 1)");
     queries.put("706","SELECT * FROM /root/exampleRegion p where NOT(SELECT DISTINCT * FROM positions.values pos  WHERE pos.secId in SET('YHOO', 'SUN', 'IBM', 'YHOO', 'GOOG',  'MSFT', 'AOL', 'APPL', 'ORCL', 'SAP', 'DELL', 'RHAT', 'NOVL', 'HP')).isEmpty");
@@ -1346,7 +1346,7 @@ public class QueryTestUtils implements Serializable {
   
   public static File createTestRootDiskStore(String testName) throws IOException {
     File diskDir = new File(testName).getAbsoluteFile();
-    com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    org.apache.geode.internal.FileUtil.delete(diskDir);
     diskDir.mkdir();
     diskDir.deleteOnExit();
     return diskDir;

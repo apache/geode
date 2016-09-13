@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 
-import com.gemstone.gemfire.cache.NoSubscriptionServersAvailableException;
-import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import org.apache.geode.cache.NoSubscriptionServersAvailableException;
+import org.apache.geode.cache.client.SubscriptionNotEnabledException;
+import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Provides methods to execute AbstractOp instances on a client pool.

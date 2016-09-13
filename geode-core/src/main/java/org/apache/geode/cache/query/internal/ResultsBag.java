@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,13 +22,13 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.ObjectIntHashMap.Entry;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.ObjectIntHashMap.Entry;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachePerfStats;
 
 public class ResultsBag extends Bag implements
     DataSerializableFixedID {

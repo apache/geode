@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;
 
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 public class LuceneRawIndexFactory extends LuceneIndexFactory {
   public LuceneIndexImpl create(String indexName, String regionPath, GemFireCacheImpl cache) {

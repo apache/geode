@@ -14,7 +14,7 @@
  * See the license for the specific language governing permissions and
  * limitations under the license.
  */
-package com.gemstone.gemfire.internal.logging.log4j.message;
+package org.apache.geode.internal.logging.log4j.message;
 
 import org.apache.logging.log4j.message.AbstractMessageFactory;
 import org.apache.logging.log4j.message.Message;

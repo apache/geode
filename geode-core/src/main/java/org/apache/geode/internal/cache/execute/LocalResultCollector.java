@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
 
 /**
  * Extends {@link ResultCollector} interface to provide for methods that are

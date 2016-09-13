@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.util.Date;
 
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.logging.DateFormatter;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.logging.DateFormatter;
+import org.apache.geode.internal.logging.LogWriterImpl;
 
 public class AlertDetails {
 

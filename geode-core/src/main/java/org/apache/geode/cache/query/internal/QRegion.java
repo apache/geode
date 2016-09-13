@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 import java.io.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.query.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.*;
 import java.util.concurrent.locks.Lock;
-import com.gemstone.gemfire.cache.query.types.*;
-import com.gemstone.gemfire.cache.query.internal.types.*;
-import com.gemstone.gemfire.internal.cache.LocalDataSet;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * @since GemFire 4.0

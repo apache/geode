@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.io.*;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 /**
  * An UNDEFINED value is the result of accessing an attribute of a null-valued
@@ -41,7 +41,7 @@ public final class Undefined implements DataSerializableFixedID, Comparable, Ser
     Support.assertState(QueryService.UNDEFINED == null,
         "UNDEFINED constant already instantiated");
 
-    // com.gemstone.persistence.CanonicalizationHelper
+    // org.apache.persistence.CanonicalizationHelper
     // .putCanonicalObj("com/gemstone/persistence/query/QueryService.UNDEFINED",
     // this);
   }

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.client.ClientCacheFactory;
 
 /**
  * PdxInstance provides run time access to the fields of a PDX without 

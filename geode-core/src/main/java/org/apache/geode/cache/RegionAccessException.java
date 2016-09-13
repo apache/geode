@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.*;
 import java.util.*;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.membership.InternalRole;
 
 /**
  * Indicates that an attempt to access the region has failed.  Failure is

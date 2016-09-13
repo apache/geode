@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.locks;
+package org.apache.geode.distributed.internal.locks;
 
 import java.io.Serializable;
 
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService.ThreadRequestState;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.locks.DLockService.ThreadRequestState;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -31,7 +31,7 @@ import java.util.concurrent.locks.Lock;
 /**
  * Distributed lock which is owned by a member rather than a single thread.
  * Any thread within the {@link 
- * com.gemstone.gemfire.distributed.DistributedMember} may unlock a held
+ * org.apache.geode.distributed.DistributedMember} may unlock a held
  * <code>DistributedMemberLock</code>.
  *
  * While this member holds the lock, another member will not be able to
@@ -39,7 +39,7 @@ import java.util.concurrent.locks.Lock;
  * lock.
  * 
  * Operations delegate to {@link 
- * com.gemstone.gemfire.distributed.DistributedLockService} and may throw
+ * org.apache.geode.distributed.DistributedLockService} and may throw
  * LockNotHeldException or LockServiceDestroyedException.
  * 
  * @since GemFire 5.1

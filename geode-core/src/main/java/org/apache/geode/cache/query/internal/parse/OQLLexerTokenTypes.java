@@ -1,8 +1,8 @@
 // $ANTLR 2.7.4: "oql.g" -> "OQLParser.java"$
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 import java.util.*;
-import com.gemstone.gemfire.cache.query.internal.types.*;
+import org.apache.geode.cache.query.internal.types.*;
 
 public interface OQLLexerTokenTypes {
 	int EOF = 1;

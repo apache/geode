@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.SerializationException;
+import org.apache.geode.internal.cache.EntryEventImpl;
 
 
 /**

@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 import java.security.Principal;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheCallback;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.operations.OperationContext;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Specifies the interface to authorize operations at the cache or region level
@@ -88,8 +88,8 @@ public interface AccessControl extends CacheCallback {
    * 
    * @param regionName
    *                When null then it indicates a cache-level operation (i.e.
-   *                one of {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_DESTROY} or
-   *                {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#QUERY}, else the name of the region
+   *                one of {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_DESTROY} or
+   *                {@link org.apache.geode.cache.operations.OperationContext.OperationCode#QUERY}, else the name of the region
    *                for the operation.
    * @param context
    *                When invoked before the operation then the data required by

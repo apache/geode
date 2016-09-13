@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.membership.InternalRole;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.util.*;
@@ -120,7 +120,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
   }
   
   /**
-   * Returns the set of {@linkplain com.gemstone.gemfire.distributed.Role 
+   * Returns the set of {@linkplain org.apache.geode.distributed.Role 
    * Role}s that are required for the reliability of this region.
    */
   public Set<Role> getRequiredRoles() {

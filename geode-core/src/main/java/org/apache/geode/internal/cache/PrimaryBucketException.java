@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * An exception thrown if a bucket instance is not primary yet was requested

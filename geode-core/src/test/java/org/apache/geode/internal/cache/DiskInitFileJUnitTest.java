@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -30,9 +30,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class DiskInitFileJUnitTest {

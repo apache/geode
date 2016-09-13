@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
-import com.gemstone.gemfire.GemFireCheckedException;
+import org.apache.geode.GemFireCheckedException;
 
 /**
  * Thrown when a lucene query fails.

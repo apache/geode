@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.ha;
+package org.apache.geode.internal.cache.ha;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
  * @since GemFire 5.7

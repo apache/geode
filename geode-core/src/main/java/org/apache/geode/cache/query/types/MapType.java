@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.types;
+package org.apache.geode.cache.query.types;
 
 /**
  * Represents the type of a Map, a collection that contains keys as well

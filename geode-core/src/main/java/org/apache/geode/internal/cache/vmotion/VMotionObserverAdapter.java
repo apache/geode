@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.vmotion;
+package org.apache.geode.internal.cache.vmotion;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 
 /**
  * This class provides 'do-nothing' implementations of all of the methods of

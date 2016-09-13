@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.internal.PdxSerializerObject;
+import org.apache.geode.internal.PdxSerializerObject;
 
 public abstract class DomainObject implements PdxSerializerObject {
   private String string_0;

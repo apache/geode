@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -61,37 +61,37 @@ import javax.net.ssl.SSLException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.SystemTimer;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.partitioned.AllBucketProfilesUpdateMessage;
-import com.gemstone.gemfire.internal.cache.tier.Acceptor;
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
-import com.gemstone.gemfire.internal.cache.wan.GatewayReceiverStats;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
-import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.ToDataException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.BucketAdvisor;
+import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessage;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurableComponent;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.ArrayUtils;
 
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from
@@ -1269,7 +1269,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
         // thread Server connection from balrog.gemstone.com:58478
         // java.lang.NullPointerException
         //   at
-        // com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection.run(ServerConnection.java:107)
+        // org.apache.geode.internal.cache.tier.sockets.ServerConnection.run(ServerConnection.java:107)
 
         synchronized (this.syncLock) {
           if (!isRunning()) {

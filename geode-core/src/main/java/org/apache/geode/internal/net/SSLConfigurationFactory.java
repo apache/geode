@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.net;
+package org.apache.geode.internal.net;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,10 +24,10 @@ import java.util.Properties;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 public class SSLConfigurationFactory {
 

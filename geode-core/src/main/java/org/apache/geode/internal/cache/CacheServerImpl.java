@@ -14,36 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.InvalidValueException;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.server.internal.LoadMonitor;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.admin.ClientHealthMonitoringRegion;
-import com.gemstone.gemfire.internal.cache.CacheServerAdvisor.CacheServerProfile;
-import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.internal.cache.tier.Acceptor;
-import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.management.membership.ClientMembership;
-import com.gemstone.gemfire.management.membership.ClientMembershipListener;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.InvalidValueException;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.geode.cache.server.internal.LoadMonitor;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
+import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
+import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.management.membership.ClientMembership;
+import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;

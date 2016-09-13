@@ -17,15 +17,15 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.cache.StatisticsDisabledException;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
+import org.apache.geode.cache.StatisticsDisabledException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
   private long hitCount;

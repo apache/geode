@@ -47,7 +47,7 @@
  * http://creativecommons.org/licenses/publicdomain
  */
 
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -67,14 +67,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
-import com.gemstone.gemfire.internal.cache.OffHeapRegionEntry;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.offheap.OffHeapRegionEntryHelper;
-import com.gemstone.gemfire.internal.size.SingleObjectSizer;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
+import org.apache.geode.CancelException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.OffHeapRegionEntry;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.size.SingleObjectSizer;
+import org.apache.geode.internal.util.ArrayUtils;
 
 /**
  * A hash table supporting full concurrency of retrievals and adjustable
@@ -275,7 +275,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
    * never exported out as a user-visible Map.Entry.
    * 
    * Made this public so RegionEntries can directly implement this to reduce
-   * memory overhead of separate {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects for each entry in the
+   * memory overhead of separate {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects for each entry in the
    * map.
    */
   public static interface HashEntry<K, V> {
@@ -398,13 +398,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
   }
 
   /**
-   * Interface to enable creation of new {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects by caller.
+   * Interface to enable creation of new {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects by caller.
    * This can be used, for example, to return GemFire RegionEntries directly.
    */
   public static interface HashEntryCreator<K, V> {
 
     /**
-     * Create a new {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} given the key, hash, value and next
+     * Create a new {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} given the key, hash, value and next
      * element.
      */
     public HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next,
@@ -502,12 +502,12 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
 // GemStone addition
 
     /**
-     * {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntryCreator} for the map to create {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}s.
+     * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntryCreator} for the map to create {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}s.
      */
     final HashEntryCreator<K, V> entryCreator;
 
     /**
-     * Lock used when updating the {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry#getNextEntry()} link of an
+     * Lock used when updating the {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry#getNextEntry()} link of an
      * entry.
      */
     final ReentrantReadWriteLock listUpdateLock;
@@ -1129,7 +1129,7 @@ RETRYLOOP:
   }
 
   /**
-   * Extension of {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.Segment} using reference-equality comparison for key,
+   * Extension of {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Segment} using reference-equality comparison for key,
    * value equality instead of equals method.
    * 
    * swale
@@ -1737,7 +1737,7 @@ RETRYLOOP:
 
   /**
    * Simple adapter class providing empty default implementations for
-   * {@link com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback}.
+   * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback}.
    */
   public static class MapCallbackAdapter<K, V, C, P> implements
       MapCallback<K, V, C, P> {

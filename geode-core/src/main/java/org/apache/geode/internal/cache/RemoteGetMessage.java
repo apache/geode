@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,35 +25,35 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.ReplySender;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.TransactionDataNotColocatedException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplySender;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.BucketRegion.RawValue;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.util.BlobHelper;
 
 /**
  * This message is used as the request for a
- * {@link com.gemstone.gemfire.cache.Region#get(Object)}operation. The reply is
- * sent in a {@link com.gemstone.gemfire.internal.cache.RemoteGetMessage.GetReplyMessage}. 
+ * {@link org.apache.geode.cache.Region#get(Object)}operation. The reply is
+ * sent in a {@link org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}. 
  * 
  * Replicate regions can use this message to send a Get request to another peer.
  * 
@@ -187,7 +187,7 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
 
   /**
    * Sends a ReplicateRegion
-   * {@link com.gemstone.gemfire.cache.Region#get(Object)} message   
+   * {@link org.apache.geode.cache.Region#get(Object)} message   
    * 
    * @param recipient
    *          the member that the get message is sent to
@@ -218,10 +218,10 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
 
   /**
    * This message is used for the reply to a
-   * {@link com.gemstone.gemfire.cache.Region#get(Object)}operation This is the
+   * {@link org.apache.geode.cache.Region#get(Object)}operation This is the
    * reply to a {@link RemoteGetMessage}.
    * 
-   * Since the {@link com.gemstone.gemfire.cache.Region#get(Object)}operation
+   * Since the {@link org.apache.geode.cache.Region#get(Object)}operation
    * is used <bold>very </bold> frequently the performance of this class is
    * critical.
    * 
@@ -358,7 +358,7 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
 
   /**
    * A processor to capture the value returned by {@link 
-   * com.gemstone.gemfire.internal.cache.RemoteGetMessage.GetReplyMessage}
+   * org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}
    * 
    * @since GemFire 5.0
    */

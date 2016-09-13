@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
@@ -39,40 +39,40 @@ import java.util.TreeSet;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheStatistics;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionReinitializedException;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
-import com.gemstone.gemfire.internal.cache.EntrySnapshot;
-import com.gemstone.gemfire.internal.cache.ExpiryTask;
-import com.gemstone.gemfire.internal.cache.ExpiryTask.ExpiryTaskListener;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionReinitializedException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.EntryExpiryTask;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.ExpiryTask;
+import org.apache.geode.internal.cache.ExpiryTask.ExpiryTaskListener;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * An abstract class whose test methods test the functionality of a
@@ -219,7 +219,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       // partitioned regions are logging the EntryExistsException, so emit
       // a directive to ignore it
       region.getCache().getLogger().info("<ExpectedException action=add>"
-          + "com.gemstone.gemfire.cache.EntryExistsException"
+          + "org.apache.geode.cache.EntryExistsException"
           + "</ExpectedException>");
       region.create(key, value);
       fail("Should have thrown an EntryExistsException");
@@ -229,7 +229,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
     finally {
       region.getCache().getLogger().info("<ExpectedException action=remove>"
-          + "com.gemstone.gemfire.cache.EntryExistsException"
+          + "org.apache.geode.cache.EntryExistsException"
           + "</ExpectedException>");
     }
   }
@@ -261,7 +261,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       assertEquals(value, values.iterator().next());
     }
     catch (UnsupportedOperationException uoe) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Region.values() reported UnsupportedOperation");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Region.values() reported UnsupportedOperation");
     }
   }
   
@@ -468,7 +468,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     region.destroy(key);
     
     Region.Entry entry2 = region.getEntry(key);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Found entry for destroyed key: " + entry2);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Found entry for destroyed key: " + entry2);
     assertNull(entry2);
     if (entry.isLocal()) {
       assertTrue(entry.isDestroyed());
@@ -1090,7 +1090,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     region.put(key, value);
     
     int beforeInvalidates =
-            ((com.gemstone.gemfire.internal.cache.GemFireCacheImpl)getCache()).
+            ((org.apache.geode.internal.cache.GemFireCacheImpl)getCache()).
             getCachePerfStats().getInvalidates();
     Region.Entry entry = region.getEntry(key);
     region.invalidate(key);
@@ -1099,7 +1099,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
     assertNull(region.get(key));
     int afterInvalidates =
-              ((com.gemstone.gemfire.internal.cache.GemFireCacheImpl)getCache()).
+              ((org.apache.geode.internal.cache.GemFireCacheImpl)getCache()).
               getCachePerfStats().getInvalidates();
     assertEquals("Invalidate CachePerfStats incorrect",
             beforeInvalidates + 1, afterInvalidates);
@@ -1999,7 +1999,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         continue;
       }
       if (now >= tilt - SLOP) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().warning("Entry invalidated sloppily "
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning("Entry invalidated sloppily "
             + "now=" + now + " tilt=" + tilt + " delta = " + (tilt - now));
         break;
       }
@@ -2070,7 +2070,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         continue;
       }
       if (now >= tilt - SLOP) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().warning("Entry destroyed sloppily "
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning("Entry destroyed sloppily "
             + "now=" + now + " tilt=" + tilt + " delta = " + (tilt - now));
         break;
       }
@@ -2114,7 +2114,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         continue;
       }
       if (now >= tilt - SLOP) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().warning("Region destroyed sloppily "
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning("Region destroyed sloppily "
             + "now=" + now + " tilt=" + tilt + " delta = " + (tilt - now));
         break;
       }
@@ -2897,7 +2897,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
     
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.CustomExpiry#getExpiry(com.gemstone.gemfire.cache.Region.Entry)
+     * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
     public ExpirationAttributes getExpiry(Entry entry) {
 //      getCache().getLogger().fine("Calculating expiry for " + entry.getKey()
@@ -2910,13 +2910,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+     * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
     public void init(Properties props) {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.CacheCallback#close()
+     * @see org.apache.geode.cache.CacheCallback#close()
      */
     public void close() {
     }
@@ -3373,7 +3373,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
     
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.CustomExpiry#getExpiry(com.gemstone.gemfire.cache.Region.Entry)
+     * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
     public ExpirationAttributes getExpiry(Entry entry) {
       Object key = entry.getKey();
@@ -3393,13 +3393,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+     * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
     public void init(Properties props) {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.CacheCallback#close()
+     * @see org.apache.geode.cache.CacheCallback#close()
      */
     public void close() {
     }

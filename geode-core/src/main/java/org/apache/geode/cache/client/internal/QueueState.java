@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.concurrent.ScheduledExecutorService;
-import com.gemstone.gemfire.internal.cache.EventID;
+import org.apache.geode.internal.cache.EventID;
 
 public interface QueueState {
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.diskPerf;
+package org.apache.geode.internal.cache.diskPerf;
 
 import static org.junit.Assert.*;
 
@@ -23,14 +23,14 @@ import java.util.Arrays;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
-import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
-import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.DiskRegionHelperFactory;
+import org.apache.geode.internal.cache.DiskRegionProperties;
+import org.apache.geode.internal.cache.DiskRegionTestingBase;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region Perf test for Overflow only with Sync writes. 1) Performance of

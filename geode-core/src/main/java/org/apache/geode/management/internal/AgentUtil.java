@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.util.LinkedList;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.ManagementService;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.ManagementService;
 
 /**
  * Class to handle Region path. 

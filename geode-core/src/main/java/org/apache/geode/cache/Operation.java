@@ -16,10 +16,10 @@
  */
 
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 import java.io.*;
-import com.gemstone.gemfire.internal.cache.OpType;
-import com.gemstone.gemfire.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.OpType;
+import org.apache.geode.cache.execute.FunctionService;
 
 /**
  * Enumerated type for an event operation.

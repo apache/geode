@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.util.Date;
 
-import com.gemstone.gemfire.pdx.PdxFieldTypeMismatchException;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.pdx.PdxFieldTypeMismatchException;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 
 /**
  * Adds additional methods for reading pdx fields for internal use.

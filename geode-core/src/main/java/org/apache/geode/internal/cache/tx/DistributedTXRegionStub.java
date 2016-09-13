@@ -14,43 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tx;
+package org.apache.geode.internal.cache.tx;
 
 import java.util.Collections;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TransactionDataNodeHasDepartedException;
-import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation;
-import com.gemstone.gemfire.internal.cache.DistributedRemoveAllOperation;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.KeyInfo;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionException;
-import com.gemstone.gemfire.internal.cache.RemoteContainsKeyValueMessage;
-import com.gemstone.gemfire.internal.cache.RemoteDestroyMessage;
-import com.gemstone.gemfire.internal.cache.RemoteFetchEntryMessage;
-import com.gemstone.gemfire.internal.cache.RemoteGetMessage;
-import com.gemstone.gemfire.internal.cache.RemoteInvalidateMessage;
-import com.gemstone.gemfire.internal.cache.RemoteOperationException;
-import com.gemstone.gemfire.internal.cache.RemotePutAllMessage;
-import com.gemstone.gemfire.internal.cache.RemotePutMessage;
-import com.gemstone.gemfire.internal.cache.RemoteRemoveAllMessage;
-import com.gemstone.gemfire.internal.cache.TXStateStub;
-import com.gemstone.gemfire.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueResponse;
-import com.gemstone.gemfire.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
-import com.gemstone.gemfire.internal.cache.RemotePutMessage.PutResult;
-import com.gemstone.gemfire.internal.cache.RemotePutMessage.RemotePutResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoteSizeMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
+import org.apache.geode.cache.TransactionDataNotColocatedException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.DistributedPutAllOperation;
+import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegionException;
+import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage;
+import org.apache.geode.internal.cache.RemoteDestroyMessage;
+import org.apache.geode.internal.cache.RemoteFetchEntryMessage;
+import org.apache.geode.internal.cache.RemoteGetMessage;
+import org.apache.geode.internal.cache.RemoteInvalidateMessage;
+import org.apache.geode.internal.cache.RemoteOperationException;
+import org.apache.geode.internal.cache.RemotePutAllMessage;
+import org.apache.geode.internal.cache.RemotePutMessage;
+import org.apache.geode.internal.cache.RemoteRemoveAllMessage;
+import org.apache.geode.internal.cache.TXStateStub;
+import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueResponse;
+import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
+import org.apache.geode.internal.cache.RemotePutMessage.PutResult;
+import org.apache.geode.internal.cache.RemotePutMessage.RemotePutResponse;
+import org.apache.geode.internal.cache.partitioned.RemoteSizeMessage;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   

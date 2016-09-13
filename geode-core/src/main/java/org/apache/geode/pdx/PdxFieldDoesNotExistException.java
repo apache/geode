@@ -17,9 +17,9 @@
 /**
  * 
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * Thrown when a PDX field does not exist and the current operation requires its existence.

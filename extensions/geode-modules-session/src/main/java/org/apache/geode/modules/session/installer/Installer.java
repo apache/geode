@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.installer;
+package org.apache.geode.modules.session.installer;
 
-import com.gemstone.gemfire.modules.session.installer.args.Argument;
-import com.gemstone.gemfire.modules.session.installer.args.ArgumentProcessor;
-import com.gemstone.gemfire.modules.session.installer.args.ArgumentValues;
-import com.gemstone.gemfire.modules.session.installer.args.UnknownArgumentHandler;
-import com.gemstone.gemfire.modules.session.installer.args.UsageException;
+import org.apache.geode.modules.session.installer.args.Argument;
+import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
+import org.apache.geode.modules.session.installer.args.ArgumentValues;
+import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
+import org.apache.geode.modules.session.installer.args.UsageException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -45,10 +45,10 @@ import java.io.OutputStream;
 public class Installer {
 
   private static final String GEMFIRE_FILTER_CLASS =
-      "com.gemstone.gemfire.modules.session.filter.SessionCachingFilter";
+      "org.apache.geode.modules.session.filter.SessionCachingFilter";
 
   private static final String GEMFIRE_LISTENER_CLASS =
-      "com.gemstone.gemfire.modules.session.filter.SessionListener";
+      "org.apache.geode.modules.session.filter.SessionListener";
 
   private ArgumentValues argValues;
 

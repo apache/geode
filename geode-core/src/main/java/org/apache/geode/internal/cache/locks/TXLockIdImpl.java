@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.DataSerializer;
 import java.io.*;
 
-import com.gemstone.gemfire.distributed.internal.locks.LockGrantorId;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.locks.LockGrantorId;
+import org.apache.geode.distributed.internal.membership.*;
 
 /** 
  * Identifies a group of transaction locks.

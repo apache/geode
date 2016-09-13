@@ -15,14 +15,14 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

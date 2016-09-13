@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 import java.io.*;
 
@@ -34,7 +34,7 @@ import java.io.*;
  * When possible, GemFire respects the <code>DataSerializable</code>
  * contract to provide optimal object serialization.  For instance, if
  * a <code>DataSerializable</code> object is 
- * {@linkplain com.gemstone.gemfire.cache.Region#put(Object, Object) placed} into a distributed
+ * {@linkplain org.apache.geode.cache.Region#put(Object, Object) placed} into a distributed
  * cache region, its <code>toData</code> method will be used to
  * serialize it when it is sent to another member of the distributed
  * system.

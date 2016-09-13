@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Before;
 import org.junit.Test;

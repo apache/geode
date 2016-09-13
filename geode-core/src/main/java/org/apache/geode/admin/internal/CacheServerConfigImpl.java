@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.CacheServerConfig;
-import com.gemstone.gemfire.admin.CacheVmConfig;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.CacheVmConfig;
+import org.apache.geode.internal.admin.GemFireVM;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * An implementation of <code>CacheVmConfig</code>

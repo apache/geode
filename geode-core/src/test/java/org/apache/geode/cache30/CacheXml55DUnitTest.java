@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the declarative caching functionality introduced in the GemFire

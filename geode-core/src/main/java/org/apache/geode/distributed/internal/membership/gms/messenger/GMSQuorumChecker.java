@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
+package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,11 +34,11 @@ import org.jgroups.Message;
 import org.jgroups.Receiver;
 import org.jgroups.View;
 
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import org.apache.geode.internal.logging.LogService;
 
 public class GMSQuorumChecker implements QuorumChecker {
   private static final Logger logger = LogService.getLogger();

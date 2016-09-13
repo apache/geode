@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.size;
+package org.apache.geode.internal.size;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.size.ObjectTraverser.Visitor;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.size.ObjectTraverser.Visitor;
 
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;

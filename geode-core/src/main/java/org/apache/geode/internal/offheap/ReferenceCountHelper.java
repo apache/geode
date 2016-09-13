@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

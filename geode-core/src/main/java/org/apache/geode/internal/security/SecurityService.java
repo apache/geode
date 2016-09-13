@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.security;
+package org.apache.geode.internal.security;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -25,7 +25,7 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.security.ResourceOperation;
 
 public interface SecurityService {
 

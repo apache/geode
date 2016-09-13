@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
+package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -24,11 +24,11 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import org.apache.geode.pdx.PdxInstance;
 
 /**
  * An implementation of LuceneSerializer that reads the fields

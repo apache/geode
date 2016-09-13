@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.UnsupportedVersionException;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.deadlock.MessageDependencyMonitor;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DSFIDNotFoundException;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.util.Breadcrumbs;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DSFIDNotFoundException;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.util.Breadcrumbs;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;

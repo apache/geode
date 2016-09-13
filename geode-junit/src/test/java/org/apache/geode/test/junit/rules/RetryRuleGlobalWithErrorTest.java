@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.fail;
@@ -28,14 +28,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import com.gemstone.gemfire.test.junit.Retry;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.Retry;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link RetryRule} involving global scope (ie rule affects all
  * tests in the test class) with failures due to an {@code Error}.
  * 
- * @see com.gemstone.gemfire.test.junit.rules.RetryRule
+ * @see org.apache.geode.test.junit.rules.RetryRule
  */
 @Category(UnitTest.class)
 public class RetryRuleGlobalWithErrorTest {

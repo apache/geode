@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
@@ -48,32 +48,32 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.internal.LocatorTestBase;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.ManagementTestBase;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.internal.LocatorTestBase;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.ManagementTestBase;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
@@ -119,14 +119,14 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
   final static String PERSON_AS_JSON_CAS = "{"
       + "\"@old\" :"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 101," + " \"firstName\": \"Mithali\","
       + " \"middleName\": \"Dorai\"," + " \"lastName\": \"Raj\","
       + " \"birthDate\": \"12/04/1982\"," + "\"gender\": \"FEMALE\""
       + "},"
       + "\"@new\" :"
       + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 1101," + " \"firstName\": \"Virat\","
       + " \"middleName\": \"Premkumar\"," + " \"lastName\": \"Kohli\","
       + " \"birthDate\": \"08/11/1988\"," + "\"gender\": \"MALE\""
@@ -134,50 +134,50 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       + "}";
 
   final static String PERSON_AS_JSON_REPLACE = "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 501," + " \"firstName\": \"Barack\","
       + " \"middleName\": \"Hussein\"," + " \"lastName\": \"Obama\","
       + " \"birthDate\": \"04/08/1961\"," + "\"gender\": \"MALE\""
       + "}";
 
   private static final String PERSON_LIST_AS_JSON = "[" + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 3," + " \"firstName\": \"Nishka3\","
       + " \"middleName\": \"Nilkanth3\"," + " \"lastName\": \"Patel3\","
       + " \"birthDate\": \"07/31/2009\"," + "\"gender\": \"FEMALE\"" + "},"
-      + "{" + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 4," + " \"firstName\": \"Tanay4\","
       + " \"middleName\": \"kiran4\"," + " \"lastName\": \"Patel4\","
       + " \"birthDate\": \"23/08/2012\"," + "\"gender\": \"MALE\"" + "}," + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 5," + " \"firstName\": \"Nishka5\","
       + " \"middleName\": \"Nilkanth5\"," + " \"lastName\": \"Patel5\","
       + " \"birthDate\": \"31/09/2009\"," + "\"gender\": \"FEMALE\"" + "},"
-      + "{" + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 6," + " \"firstName\": \"Tanay6\","
       + " \"middleName\": \"Kiran6\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"23/08/2012\"," + "\"gender\": \"MALE\"" + "}," + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 7," + " \"firstName\": \"Nishka7\","
       + " \"middleName\": \"Nilkanth7\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"31/09/2009\"," + "\"gender\": \"FEMALE\"" + "},"
-      + "{" + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 8," + " \"firstName\": \"Tanay8\","
       + " \"middleName\": \"kiran8\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"23/08/2012\"," + "\"gender\": \"MALE\"" + "}," + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 9," + " \"firstName\": \"Nishka9\","
       + " \"middleName\": \"Nilkanth9\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"31/09/2009\"," + "\"gender\": \"FEMALE\"" + "},"
-      + "{" + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 10," + " \"firstName\": \"Tanay10\","
       + " \"middleName\": \"kiran10\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"23/08/2012\"," + "\"gender\": \"MALE\"" + "}," + "{"
-      + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 11," + " \"firstName\": \"Nishka11\","
       + " \"middleName\": \"Nilkanth11\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"31/09/2009\"," + "\"gender\": \"FEMALE\"" + "},"
-      + "{" + "\"@type\": \"com.gemstone.gemfire.rest.internal.web.controllers.Person\","
+      + "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Person\","
       + "\"id\": 12," + " \"firstName\": \"Tanay12\","
       + " \"middleName\": \"kiran12\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"23/08/2012\"," + "\"gender\": \"MALE\"" + "}" + "]";

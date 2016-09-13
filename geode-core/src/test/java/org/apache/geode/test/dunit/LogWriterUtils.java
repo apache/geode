@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterFactory;
-import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.LogWriter;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.ManagerLogWriter;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Properties;
@@ -38,7 +38,7 @@ import java.util.Properties;
  * however, they are intended to be referenced through static import:
  *
  * <pre>
- * import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+ * import static org.apache.geode.test.dunit.LogWriterUtils.*;
  *    ...
  *    LogWriter logWriter = getLogWriter(...);
  * </pre>

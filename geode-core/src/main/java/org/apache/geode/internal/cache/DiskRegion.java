@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
-import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.AsyncDiskEntry;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIIStatus;
-import com.gemstone.gemfire.internal.cache.LocalRegion.RegionEntryCallback;
-import com.gemstone.gemfire.internal.cache.persistence.BytesAndBits;
-import com.gemstone.gemfire.internal.cache.persistence.DiskExceptionHandler;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
+import org.apache.geode.internal.cache.DiskStoreImpl.AsyncDiskEntry;
+import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
+import org.apache.geode.internal.cache.LocalRegion.RegionEntryCallback;
+import org.apache.geode.internal.cache.persistence.BytesAndBits;
+import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import joptsimple.internal.Strings;
 
 /**

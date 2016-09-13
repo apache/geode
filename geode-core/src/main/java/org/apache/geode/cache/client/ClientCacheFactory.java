@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.cache.CacheConfig;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxSerializer;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializer;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
- * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or more GemFire Cache Servers. If the application wants to connect to GemFire as a peer it should use {@link com.gemstone.gemfire.cache.CacheFactory} instead.
+ * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or more GemFire Cache Servers. If the application wants to connect to GemFire as a peer it should use {@link org.apache.geode.cache.CacheFactory} instead.
  * <p> Once the factory has been configured using its set* methods you produce a {@link ClientCache} by calling the {@link #create} method.
- * The {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CACHE_XML_FILE}
+ * The {@link org.apache.geode.distributed.ConfigurationProperties#CACHE_XML_FILE}
  * property can be used to specify a cache.xml file to initialize the cache with.
  * The contents of this file must comply with the
  * <code>"doc-files/cache8_0.dtd"</code> file and the top level element must be a <code>client-cache</code> element.
@@ -138,7 +138,7 @@ public class ClientCacheFactory {
    *
    * @param props The initial gemfire properties to be used.
    *              These properties can be overridden using the {@link #set} method
-   *              For a full list of valid gemfire properties see {@link com.gemstone.gemfire.distributed.ConfigurationProperties}.
+   *              For a full list of valid gemfire properties see {@link org.apache.geode.distributed.ConfigurationProperties}.
    */
   public ClientCacheFactory(Properties props) {
     if (props == null) {
@@ -149,7 +149,7 @@ public class ClientCacheFactory {
 
   /**
    * Sets a gemfire property that will be used when creating the ClientCache.
-   * For a full list of valid gemfire properties see {@link com.gemstone.gemfire.distributed.ConfigurationProperties}.
+   * For a full list of valid gemfire properties see {@link org.apache.geode.distributed.ConfigurationProperties}.
    *
    * @param name  the name of the gemfire property
    * @param value the value of the gemfire property
@@ -559,7 +559,7 @@ public class ClientCacheFactory {
    * By default setPRSingleHopEnabled is <code>true</code>
    * in which case the client is aware of the location of partitions on servers hosting
    * {@link Region regions} with
-   * {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}.
+   * {@link org.apache.geode.cache.DataPolicy#PARTITION}.
    * Using this information, the client routes the client cache operations
    * directly to the server which is hosting the required partition for the
    * cache operation using a single network hop.
@@ -572,9 +572,9 @@ public class ClientCacheFactory {
    * to go to the required partition for that cache operation.
    * The client will use fewer network connections to the servers.
    * <p>
-   * Caution: for {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION partition} regions
+   * Caution: for {@link org.apache.geode.cache.DataPolicy#PARTITION partition} regions
    * with
-   * {@link com.gemstone.gemfire.cache.PartitionAttributesFactory#setLocalMaxMemory(int) local-max-memory}
+   * {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int) local-max-memory}
    * equal to zero, no cache operations mentioned above will be routed to those
    * servers as they do not host any partitions.
    *
@@ -646,7 +646,7 @@ public class ClientCacheFactory {
    *  @param pdxReadSerialized true to prefer PdxInstance
    *  @return this ClientCacheFactory
    *  @since GemFire 6.6
-   *  @see com.gemstone.gemfire.pdx.PdxInstance 
+   *  @see org.apache.geode.pdx.PdxInstance 
    */
   public ClientCacheFactory setPdxReadSerialized(boolean pdxReadSerialized) {
     this.cacheConfig.setPdxReadSerialized(pdxReadSerialized);

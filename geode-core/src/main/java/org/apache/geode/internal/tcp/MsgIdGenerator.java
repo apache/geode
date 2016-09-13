@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
-import com.gemstone.gemfire.internal.UniqueIdGenerator;
+import org.apache.geode.internal.UniqueIdGenerator;
 
 /** MsgId is used to generate unique ids to attach to messages.
  * To get a new id call obtain. When you are done with the id call release.

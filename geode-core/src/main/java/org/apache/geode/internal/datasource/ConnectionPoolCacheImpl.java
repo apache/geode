@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
 /**
  * This class models a connection pool for non-transactional database
@@ -29,10 +29,10 @@ import javax.sql.PooledConnection;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.jta.TransactionUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.jta.TransactionUtils;
+import org.apache.geode.internal.logging.LogService;
 
 public class ConnectionPoolCacheImpl extends AbstractPoolCache {
   private static final Logger logger = LogService.getLogger();

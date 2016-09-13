@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,16 +28,16 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
-import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.BucketServerLocation66;
+import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Stores the information such as partition attributes and meta data details

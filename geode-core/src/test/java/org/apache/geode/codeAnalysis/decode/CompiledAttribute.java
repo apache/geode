@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis.decode;
+package org.apache.geode.codeAnalysis.decode;
 import java.io.*;
 
-import com.gemstone.gemfire.codeAnalysis.decode.cp.CpUtf8;
+import org.apache.geode.codeAnalysis.decode.cp.CpUtf8;
 
 
 public class CompiledAttribute {

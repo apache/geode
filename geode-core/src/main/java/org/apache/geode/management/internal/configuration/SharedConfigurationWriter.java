@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration;
+package org.apache.geode.management.internal.configuration;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,19 +23,19 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.configuration.domain.ConfigurationChangeResult;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.management.internal.configuration.functions.AddJarFunction;
-import com.gemstone.gemfire.management.internal.configuration.functions.AddXmlEntityFunction;
-import com.gemstone.gemfire.management.internal.configuration.functions.DeleteJarFunction;
-import com.gemstone.gemfire.management.internal.configuration.functions.DeleteXmlEntityFunction;
-import com.gemstone.gemfire.management.internal.configuration.functions.ModifyPropertiesFunction;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.configuration.domain.ConfigurationChangeResult;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.configuration.functions.AddJarFunction;
+import org.apache.geode.management.internal.configuration.functions.AddXmlEntityFunction;
+import org.apache.geode.management.internal.configuration.functions.DeleteJarFunction;
+import org.apache.geode.management.internal.configuration.functions.DeleteXmlEntityFunction;
+import org.apache.geode.management.internal.configuration.functions.ModifyPropertiesFunction;
 
 /***
  * Class for writing configuration changes to the Shared Configuration at the Locator(s).

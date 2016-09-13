@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.distributed.internal.locks.*;
-import com.gemstone.gemfire.distributed.internal.*;
+import org.apache.geode.distributed.internal.locks.*;
+import org.apache.geode.distributed.internal.*;
 
 /**
  * <p>A named instance of DistributedLockService defines a space for
@@ -351,7 +351,7 @@ public abstract class DistributedLockService {
    * @throws IllegalArgumentException if <code>serviceName<code> does not
    * refer to any registered locking service in this process
    *
-   * @see com.gemstone.gemfire.distributed.DistributedLockService#becomeLockGrantor()
+   * @see org.apache.geode.distributed.DistributedLockService#becomeLockGrantor()
    */
   public static void becomeLockGrantor(String serviceName)
   throws IllegalArgumentException {
@@ -362,7 +362,7 @@ public abstract class DistributedLockService {
    * Returns true if this member is currently the lock authority responsible
    * for granting locks for this service.  This can be explicitly requested by
    * calling {@link 
-   * com.gemstone.gemfire.distributed.DistributedLockService#becomeLockGrantor()}.
+   * org.apache.geode.distributed.DistributedLockService#becomeLockGrantor()}.
    * If no member has explicitly requested grantor authority, then one member 
    * participating in the service will be implicitly selected.  In either case, 
    * this method returns true if the calling member is the grantor.
@@ -383,7 +383,7 @@ public abstract class DistributedLockService {
    * @throws IllegalArgumentException if <code>serviceName<code> does not
    * refer to any registered locking service in this process
    *
-   * @see com.gemstone.gemfire.distributed.DistributedLockService#isLockGrantor()
+   * @see org.apache.geode.distributed.DistributedLockService#isLockGrantor()
    */
   public static boolean isLockGrantor(String serviceName)
   throws IllegalArgumentException {

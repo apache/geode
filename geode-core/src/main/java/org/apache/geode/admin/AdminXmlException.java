@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * Thrown when a problem is encountered while working with
@@ -23,7 +23,7 @@ package com.gemstone.gemfire.admin;
  * @see DistributedSystemConfig#getEntityConfigXMLFile
  *
  * @since GemFire 4.0
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public class AdminXmlException extends RuntimeAdminException {
   private static final long serialVersionUID = -6848726449157550169L;

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 
 /**
- * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_DESTROY} operation for both the
+ * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_DESTROY} operation for both the
  * pre-operation and post-operation cases.
  * 
  * @since GemFire 5.5

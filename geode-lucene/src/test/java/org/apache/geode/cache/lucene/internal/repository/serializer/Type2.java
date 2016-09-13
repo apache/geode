@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
+package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 /**
  * A test type to get mapped to a lucene document

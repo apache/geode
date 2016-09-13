@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,18 +23,18 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.distributed.internal.ConflationKey;
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.internal.ConflationKey;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
  * Handles distribution messaging for destroying an entry in a region.

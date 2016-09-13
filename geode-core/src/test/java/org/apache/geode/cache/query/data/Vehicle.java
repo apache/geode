@@ -20,7 +20,7 @@
  * Created on October 20, 2005, 6:01 PM
  */
 
-package com.gemstone.gemfire.cache.query.data;
+package org.apache.geode.cache.query.data;
 
 /**
  *

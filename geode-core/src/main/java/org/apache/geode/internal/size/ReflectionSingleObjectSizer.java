@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.size;
+package org.apache.geode.internal.size;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.SharedLibrary;
-import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.SharedLibrary;
+import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 
 /**
  * Figure out the size of an object using reflection. This class

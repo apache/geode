@@ -14,38 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * Make sure entry expiration does not happen during gii for bug 35214
@@ -94,8 +94,8 @@ public class Bug35214DUnitTest extends JUnit4CacheTestCase {
           // during his gii
           {
             // wait for profile of getInitialImage cache to show up
-            com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor adv =
-              ((com.gemstone.gemfire.internal.cache.DistributedRegion)r1).getCacheDistributionAdvisor();
+            org.apache.geode.internal.cache.CacheDistributionAdvisor adv =
+              ((org.apache.geode.internal.cache.DistributedRegion)r1).getCacheDistributionAdvisor();
             int numProfiles;
             int expectedProfiles = 1;
             for (;;) {
@@ -173,7 +173,7 @@ public class Bug35214DUnitTest extends JUnit4CacheTestCase {
       Assert.fail("failed due to "+e1, e1);
     }
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 30;
+    org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 30;
     callbackFailure = false;
     
     try {
@@ -193,7 +193,7 @@ public class Bug35214DUnitTest extends JUnit4CacheTestCase {
             callbackAssertTrue("not initialized", 
                 ((LocalRegion)e.getRegion()).isInitialized());
             expirationCount++;
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
         };
       af.addCacheListener(cl1);
@@ -215,7 +215,7 @@ public class Bug35214DUnitTest extends JUnit4CacheTestCase {
 
     } 
     finally {
-      com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+      org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
       System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
       assertEquals(null, System.getProperty(LocalRegion.EXPIRY_MS_PROPERTY));
     }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.internal;
+package org.apache.geode.test.dunit.internal;
 
 import java.io.Serializable;
 import java.util.Properties;
@@ -23,11 +23,11 @@ import junit.framework.TestCase;
 import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class is the superclass of all distributed tests using JUnit 3.

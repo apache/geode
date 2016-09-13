@@ -58,7 +58,7 @@ fi
 if [ "x$WINDIR" != "x" ]; then
   if [ "${UNAME}" = "cygwin" ]; then
 #	Added for making backspace work under cygwin
-	JLINE_TERMINAL="-Djline.terminal=com.gemstone.gemfire.management.internal.cli.shell.jline.CygwinMinttyTerminal"
+	JLINE_TERMINAL="-Djline.terminal=org.apache.geode.management.internal.cli.shell.jline.CygwinMinttyTerminal"
   else
     echo "ERROR: The variable WINDIR is set indicating this script is running in a Windows OS, please use the .bat file version instead."
     exit 1
@@ -91,7 +91,7 @@ CLASSPATH=$GEMFIRE_JARS
 #  mkdir -p $HOME/.gemfire/gfsh
 #fi
 
-LAUNCHER=com.gemstone.gemfire.management.internal.cli.Launcher
+LAUNCHER=org.apache.geode.management.internal.cli.Launcher
 
 if [ "x$JAVA_ARGS" != "x" ]; then
   JAVA_ARGS="$JAVA_ARGS"

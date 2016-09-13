@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis;
+package org.apache.geode.codeAnalysis;
 
 import static org.junit.Assert.fail;
 
@@ -36,11 +36,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledField;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
+import org.apache.geode.codeAnalysis.decode.CompiledField;
+import org.apache.geode.codeAnalysis.decode.CompiledMethod;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(IntegrationTest.class)
 public class AnalyzeSerializablesJUnitTest {
@@ -185,7 +185,7 @@ public class AnalyzeSerializablesJUnitTest {
       System.out.println("++++++++++++++++++++++++++++++testDataSerializables found discrepencies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
       fail(diff+"\n\nIf the class is not persisted or sent over the wire add it to the excludedClasses.txt file in the "
-            + "\ncom/gemstone/gemfire/codeAnalysis directory.  Otherwise if this doesn't "
+            + "\norg/apache/geode/codeAnalysis directory.  Otherwise if this doesn't "
             + "\nbreak backward compatibility move the file actualDataSerializables.dat to the codeAnalysis "
             + "\ntest directory and rename to sanctionedDataSerializables.txt");
     }
@@ -228,7 +228,7 @@ public class AnalyzeSerializablesJUnitTest {
       System.out.println("++++++++++++++++++++++++++++++testSerializables found discrepencies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
       fail(diff+"\n\nIf the class is not persisted or sent over the wire add it to the excludedClasses.txt file in the "
-            + "\n/com/gemstone/gemfire/codeAnalysis/ directory.  Otherwise if this doesn't "
+            + "\n/org/apache/geode/codeAnalysis/ directory.  Otherwise if this doesn't "
             + "\nbreak backward compatibility move the file actualSerializables.dat to the "
             + "\ncodeAnalysis test directory and rename to sanctionedSerializables.txt");
     }

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.UnmodifiableConfigurationException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.UnmodifiableConfigurationException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.File;
 //import java.net.InetAddress;
@@ -34,7 +34,7 @@ import java.util.List;
  *
  */
 public class ConfigurationParameterImpl
-implements com.gemstone.gemfire.admin.ConfigurationParameter {
+implements org.apache.geode.admin.ConfigurationParameter {
   
   /** Identifying name of this configuration parameter */
   protected String name;

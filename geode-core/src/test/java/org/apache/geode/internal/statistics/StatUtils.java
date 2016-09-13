@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -29,9 +29,9 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gemstone.gemfire.internal.SystemAdmin.StatSpec;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.ResourceInst;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.internal.SystemAdmin.StatSpec;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 
 /**
  * @since Geode 1.0

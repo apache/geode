@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 public class BucketMovedException extends GemFireException {
     private static final long serialVersionUID = 4893171227542647452L;

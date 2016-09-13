@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 /**
  * A <code>LockNotHeldException</code> is thrown when attempting

@@ -15,11 +15,11 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter.attributes;
+package org.apache.geode.modules.session.internal.filter.attributes;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Delta;
-import com.gemstone.gemfire.InvalidDeltaException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.InvalidDeltaException;
 
 import java.io.DataInput;
 import java.io.DataOutput;

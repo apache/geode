@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension.mock;
+package org.apache.geode.internal.cache.extension.mock;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * Mock Extension for {@link Cache}.
  * 
  * <dl>
  * <dt>Uses</dt>
- * <dd>com.gemstone.gemfire.management.internal.configuration.ClusterConfigurationDUnitTest</dd>
- * <dd>{@link com.gemstone.gemfire.cache30.CacheXml81DUnitTest}</dd>
+ * <dd>org.apache.geode.management.internal.configuration.ClusterConfigurationDUnitTest</dd>
+ * <dd>{@link org.apache.geode.cache30.CacheXml81DUnitTest}</dd>
  * </dl>
  * 
  *

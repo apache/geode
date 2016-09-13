@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
-import com.gemstone.gemfire.cache.query.internal.QCompiler;
+import org.apache.geode.cache.query.internal.QCompiler;
 
 public class ASTAnd extends GemFireAST {
   private static final long serialVersionUID = 7100190044926605881L;

@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
+package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.NetMember;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetMember;
 
 public interface HealthMonitor extends Service {
 

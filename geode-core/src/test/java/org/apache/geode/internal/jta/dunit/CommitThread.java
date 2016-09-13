@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta.dunit;
+package org.apache.geode.internal.jta.dunit;
                                                                                                                              
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -25,9 +25,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.jta.CacheUtils;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.jta.CacheUtils;
                                                                                                                              
 /**
 *This is thread class

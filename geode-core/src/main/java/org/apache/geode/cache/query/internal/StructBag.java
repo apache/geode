@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import it.unimi.dsi.fastutil.Hash;
 
@@ -26,14 +26,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
-import com.gemstone.gemfire.cache.query.types.CollectionType;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A Bag constrained to contain Structs of all the same type. To conserve on

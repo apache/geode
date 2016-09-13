@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jndi;
+package org.apache.geode.internal.jndi;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.datasource.AbstractDataSource;
-import com.gemstone.gemfire.internal.datasource.ClientConnectionFactoryWrapper;
-import com.gemstone.gemfire.internal.datasource.DataSourceCreateException;
-import com.gemstone.gemfire.internal.datasource.DataSourceFactory;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.jta.TransactionManagerImpl;
-import com.gemstone.gemfire.internal.jta.TransactionUtils;
-import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.datasource.AbstractDataSource;
+import org.apache.geode.internal.datasource.ClientConnectionFactoryWrapper;
+import org.apache.geode.internal.datasource.DataSourceCreateException;
+import org.apache.geode.internal.datasource.DataSourceFactory;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.jta.TransactionManagerImpl;
+import org.apache.geode.internal.jta.TransactionUtils;
+import org.apache.geode.internal.jta.UserTransactionImpl;
 
 import javax.naming.*;
 import javax.transaction.SystemException;
@@ -305,7 +305,7 @@ public class JNDIInvoker  {
   private static void initializeGemFireContext() throws NamingException {
     Hashtable table = new Hashtable();
     table.put(Context.INITIAL_CONTEXT_FACTORY,
-        "com.gemstone.gemfire.internal.jndi.InitialContextFactoryImpl");
+        "org.apache.geode.internal.jndi.InitialContextFactoryImpl");
     ctx = new InitialContext(table);
   }
 

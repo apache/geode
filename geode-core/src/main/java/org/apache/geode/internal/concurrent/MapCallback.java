@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.concurrent;
+package org.apache.geode.internal.concurrent;
 
 import java.util.concurrent.ConcurrentMap;
 

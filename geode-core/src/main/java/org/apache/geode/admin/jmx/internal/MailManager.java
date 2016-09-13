@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,10 +30,10 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Provides the ways to send emails to all the registered email id It also

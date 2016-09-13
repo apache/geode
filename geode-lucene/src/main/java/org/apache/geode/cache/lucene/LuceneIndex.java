@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 
-import com.gemstone.gemfire.annotations.Experimental;
+import org.apache.geode.annotations.Experimental;
 
 
 /**

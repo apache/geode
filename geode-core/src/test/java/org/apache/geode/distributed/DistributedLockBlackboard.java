@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import java.io.Serializable;
 import java.rmi.Remote;

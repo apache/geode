@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -27,26 +27,26 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurableComponent;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
@@ -326,10 +326,10 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
       //getLogWriter().info("ExceptionCause at clientVM " + e);
-      if (e instanceof com.gemstone.gemfire.cache.client.ServerOperationException) {
+      if (e instanceof org.apache.geode.cache.client.ServerOperationException) {
         Throwable t = e.getCause();
         //getLogWriter().info("Cause is " + t);
-        assertTrue(t instanceof com.gemstone.gemfire.security.AuthenticationRequiredException);
+        assertTrue(t instanceof org.apache.geode.security.AuthenticationRequiredException);
       } else {
         //getLogWriter().error("Unexpected exception ", e);
         fail("Unexpected Exception: " + e + " expected: " + AuthenticationRequiredException.class);
@@ -365,10 +365,10 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
       //getLogWriter().info("ExceptionCause at clientVM " + e);
-      if (e instanceof com.gemstone.gemfire.cache.client.ServerOperationException) {
+      if (e instanceof org.apache.geode.cache.client.ServerOperationException) {
         Throwable t = e.getCause();
         //getLogWriter().info("Cause is " + t);
-        assertTrue(t instanceof com.gemstone.gemfire.security.AuthenticationRequiredException);
+        assertTrue(t instanceof org.apache.geode.security.AuthenticationRequiredException);
       } else {
         //getLogWriter().error("Unexpected exception ", e);
         fail("Unexpected Exception...expected " + AuthenticationRequiredException.class);

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
@@ -28,32 +28,32 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionException;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.PureLogWriter;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.PartitionedRegionException;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.PureLogWriter;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region}
@@ -192,7 +192,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
         fact.addCacheListener(new CacheListenerAdapter(){
           @Override
           public void afterInvalidate(EntryEvent event) {
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("afterInvalidate invoked with " + event);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("afterInvalidate invoked with " + event);
             InvalidateInvoked = true;
           }
         });
@@ -275,7 +275,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
             region = createRegion(regionName, "root", getRegionAttributes());
             // since random keys are being used, we might hit duplicates
             region.getCache().getLogger().info("<ExpectedException action=add>"
-                + "com.gemstone.gemfire.cache.EntryExistsException"
+                + "org.apache.geode.cache.EntryExistsException"
                 + "</ExpectedException>");
             java.util.Random rand = new java.util.Random(System.currentTimeMillis());
             for (int i=0; i<numVals; i++) {
@@ -299,7 +299,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
           finally {
             if (region != null) {
               region.getCache().getLogger().info("<ExpectedException action=remove>"
-                + "com.gemstone.gemfire.cache.EntryExistsException"
+                + "org.apache.geode.cache.EntryExistsException"
                 + "</ExpectedException>");
             }
           }

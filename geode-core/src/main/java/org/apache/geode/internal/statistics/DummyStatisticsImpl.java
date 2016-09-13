@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 /**
  * An implementation of {@link Statistics} that does nothing.

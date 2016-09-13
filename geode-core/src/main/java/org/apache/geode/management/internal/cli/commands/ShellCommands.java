@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -52,41 +52,41 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.lang.Initializer;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.internal.util.PasswordUtil;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.JmxManagerLocatorRequest;
-import com.gemstone.gemfire.management.internal.JmxManagerLocatorResponse;
-import com.gemstone.gemfire.management.internal.SSLUtil;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.internal.cli.converters.ConnectionEndpointConverter;
-import com.gemstone.gemfire.management.internal.cli.domain.ConnectToLocatorResult;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
-import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.shell.JmxOperationInvoker;
-import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
-import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshHistory;
-import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.http.support.SimpleHttpRequester;
-import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
-import com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.lang.Initializer;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.PasswordUtil;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.JmxManagerLocatorRequest;
+import org.apache.geode.management.internal.JmxManagerLocatorResponse;
+import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.annotation.CliArgument;
+import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
+import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.ErrorResultData;
+import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
+import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
+import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.http.support.SimpleHttpRequester;
+import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
+import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
+import org.apache.geode.security.AuthenticationFailedException;
 
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.ExitShellRequest;
@@ -94,7 +94,7 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  *
@@ -724,7 +724,7 @@ public class ShellCommands implements CommandMarker {
           infoResultData.addLine(CliStrings
             .format(CliStrings.DISCONNECT__MSG__DISCONNECTED, operationInvoker.toString()));
           LogWrapper.getInstance().info(CliStrings.format(CliStrings.DISCONNECT__MSG__DISCONNECTED, operationInvoker.toString()));
-          gfshInstance.setPromptPath(com.gemstone.gemfire.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+          gfshInstance.setPromptPath(org.apache.geode.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
         }
         else {
           infoResultData.addLine(CliStrings.DISCONNECT__MSG__NOTCONNECTED);

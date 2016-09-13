@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.distributed;
+package org.apache.geode.cache.lucene.internal.distributed;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,13 +30,13 @@ import java.util.PriorityQueue;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries.EntryScoreComparator;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntries.EntryScoreComparator;
+import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * An implementation of {@link CollectorManager} for managing {@link TopEntriesCollector}. This is used by a member to

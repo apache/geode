@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.util;
+package org.apache.geode.rest.internal.web.util;
 
 import org.springframework.util.StringUtils;
 
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.internal.lang.ClassUtils;
+import org.apache.geode.internal.lang.ClassUtils;
 
 /**
  * The NumberUtils class is a utility class for working with numbers.

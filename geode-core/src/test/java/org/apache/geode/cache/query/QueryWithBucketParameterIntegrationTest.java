@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import static com.gemstone.gemfire.cache.query.data.TestData.*;
+import static org.apache.geode.cache.query.data.TestData.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.internal.cache.LocalDataSet;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import org.junit.After;
 import org.junit.Before;

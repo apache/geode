@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import static com.googlecode.catchexception.CatchException.*;
 import static org.assertj.core.api.Assertions.*;
@@ -27,12 +27,12 @@ import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState;
-import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
-import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.distributed.AbstractLauncher.ServiceState;
+import org.apache.geode.distributed.AbstractLauncher.Status;
+import org.apache.geode.distributed.LocatorLauncher.LocatorState;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for LocatorLauncher.LocatorState

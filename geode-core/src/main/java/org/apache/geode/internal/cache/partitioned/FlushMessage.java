@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,16 +22,16 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.MessageWithReply;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.SerialDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * A Partitioned Region specific message whose reply guarantees that all operations
@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * <p>This messages implementation is unique in that it uses another instance of itself
  * as the reply.  This was to leverage the fact that the message is a 
- * {@link com.gemstone.gemfire.distributed.internal.SerialDistributionMessage}.</p>
+ * {@link org.apache.geode.distributed.internal.SerialDistributionMessage}.</p>
  * 
  * @since GemFire 5.1
  */

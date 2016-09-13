@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.parser;
+package org.apache.geode.management.internal.cli.parser;
 
 import java.util.LinkedList;
 
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliException;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.exceptions.CliException;
 
 /**
  * Delegate used for parsing by {@link GfshParser}

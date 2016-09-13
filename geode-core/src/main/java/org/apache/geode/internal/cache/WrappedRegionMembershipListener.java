@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionMembershipListener;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionMembershipListener;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * WrappedRegionMembershipListener is used during initialization of new
@@ -58,7 +58,7 @@ class WrappedRegionMembershipListener implements
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.RegionMembershipListener#afterRemoteRegionCrash(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.RegionMembershipListener#afterRemoteRegionCrash(org.apache.geode.cache.RegionEvent)
    */
   public void afterRemoteRegionCrash(RegionEvent event) {
     synchronized(this.initLock) {
@@ -69,7 +69,7 @@ class WrappedRegionMembershipListener implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.RegionMembershipListener#afterRemoteRegionCreate(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.RegionMembershipListener#afterRemoteRegionCreate(org.apache.geode.cache.RegionEvent)
    */
   public void afterRemoteRegionCreate(RegionEvent event) {
     synchronized(this.initLock) {
@@ -80,7 +80,7 @@ class WrappedRegionMembershipListener implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.RegionMembershipListener#afterRemoteRegionDeparture(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.RegionMembershipListener#afterRemoteRegionDeparture(org.apache.geode.cache.RegionEvent)
    */
   public void afterRemoteRegionDeparture(RegionEvent event) {
     synchronized(this.initLock) {
@@ -91,7 +91,7 @@ class WrappedRegionMembershipListener implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.RegionMembershipListener#initialMembers(com.gemstone.gemfire.cache.Region, com.gemstone.gemfire.distributed.DistributedMember[])
+   * @see org.apache.geode.cache.RegionMembershipListener#initialMembers(org.apache.geode.cache.Region, org.apache.geode.distributed.DistributedMember[])
    */
   public void initialMembers(Region region, DistributedMember[] initialMembers) {
     synchronized(this.initLock) {
@@ -103,70 +103,70 @@ class WrappedRegionMembershipListener implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterCreate(com.gemstone.gemfire.cache.EntryEvent)
+   * @see org.apache.geode.cache.CacheListener#afterCreate(org.apache.geode.cache.EntryEvent)
    */
   public void afterCreate(EntryEvent event) {
     this.wrappedListener.afterCreate(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterDestroy(com.gemstone.gemfire.cache.EntryEvent)
+   * @see org.apache.geode.cache.CacheListener#afterDestroy(org.apache.geode.cache.EntryEvent)
    */
   public void afterDestroy(EntryEvent event) {
     this.wrappedListener.afterDestroy(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterInvalidate(com.gemstone.gemfire.cache.EntryEvent)
+   * @see org.apache.geode.cache.CacheListener#afterInvalidate(org.apache.geode.cache.EntryEvent)
    */
   public void afterInvalidate(EntryEvent event) {
     this.wrappedListener.afterInvalidate(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterRegionClear(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.CacheListener#afterRegionClear(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionClear(RegionEvent event) {
     this.wrappedListener.afterRegionClear(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterRegionCreate(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.CacheListener#afterRegionCreate(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionCreate(RegionEvent event) {
     this.wrappedListener.afterRegionCreate(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterRegionDestroy(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.CacheListener#afterRegionDestroy(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionDestroy(RegionEvent event) {
     this.wrappedListener.afterRegionDestroy(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterRegionInvalidate(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.CacheListener#afterRegionInvalidate(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionInvalidate(RegionEvent event) {
     this.wrappedListener.afterRegionInvalidate(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterRegionLive(com.gemstone.gemfire.cache.RegionEvent)
+   * @see org.apache.geode.cache.CacheListener#afterRegionLive(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionLive(RegionEvent event) {
     this.wrappedListener.afterRegionLive(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheListener#afterUpdate(com.gemstone.gemfire.cache.EntryEvent)
+   * @see org.apache.geode.cache.CacheListener#afterUpdate(org.apache.geode.cache.EntryEvent)
    */
   public void afterUpdate(EntryEvent event) {
     this.wrappedListener.afterUpdate(event);
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.CacheCallback#close()
+   * @see org.apache.geode.cache.CacheCallback#close()
    */
   public void close() {
     this.wrappedListener.close();

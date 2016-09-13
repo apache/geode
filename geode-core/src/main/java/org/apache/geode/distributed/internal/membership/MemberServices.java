@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.LocatorStats;
-import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.LocatorStats;
+import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -28,7 +28,7 @@ import java.net.InetAddress;
 /**
  * This is the SPI for a provider of membership services.
  * 
- * @see com.gemstone.gemfire.distributed.internal.membership.NetMember
+ * @see org.apache.geode.distributed.internal.membership.NetMember
  */
 public interface MemberServices {
 

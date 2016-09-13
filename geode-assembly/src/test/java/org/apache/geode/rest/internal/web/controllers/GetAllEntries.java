@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 
 /**
  * The GetAllEntries is function that will return a map as a result of its execution.

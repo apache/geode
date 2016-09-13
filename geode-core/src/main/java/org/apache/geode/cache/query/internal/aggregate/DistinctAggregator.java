@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.aggregate;
+package org.apache.geode.cache.query.internal.aggregate;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.query.QueryService;
+import org.apache.geode.cache.query.QueryService;
 
 /**
  * The class used to hold the distinct values. This will get instantiated on the

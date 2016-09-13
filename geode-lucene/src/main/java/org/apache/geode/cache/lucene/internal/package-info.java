@@ -20,4 +20,4 @@
  * Internal lucene classes, not intended to be used directly.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.TransactionEvent;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.TransactionWriterException;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.TransactionWriterException;
 
 public class TestTransactionWriter implements TransactionWriter,Declarable {
 

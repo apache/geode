@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
-import com.gemstone.gemfire.modules.session.internal.filter.attributes.AbstractSessionAttributes;
+import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
 
 import java.util.HashMap;
 import java.util.Map;

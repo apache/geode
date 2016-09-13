@@ -16,12 +16,12 @@
  */
 
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
-import com.gemstone.gemfire.cache.query.internal.QCompiler;
-import com.gemstone.gemfire.cache.query.types.*;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.cache.query.internal.QCompiler;
+import org.apache.geode.cache.query.types.*;
+import org.apache.geode.internal.Assert;
 
 
 public class ASTType extends GemFireAST {

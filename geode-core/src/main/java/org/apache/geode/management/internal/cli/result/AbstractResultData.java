@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.result;
+package org.apache.geode.management.internal.cli.result;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,14 +25,14 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.zip.DataFormatException;
 
-import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.CliUtil.DeflaterInflaterData;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * 

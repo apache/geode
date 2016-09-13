@@ -14,33 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is a dunit test for PartitionedRegion creation and Region API's
  * for put and get functionality in case of Custom Partitioning.
  */
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.internal.cache.EntryOperationImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.BucketVisitor;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-import com.gemstone.gemfire.test.dunit.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.internal.cache.EntryOperationImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketVisitor;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.test.dunit.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -534,7 +534,7 @@ class MonthBasedPartitionResolver implements PartitionResolver, Declarable2 {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.xmlcache.Declarable2#getConfig()
+   * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
   public Properties getConfig() {
     return this.properties;

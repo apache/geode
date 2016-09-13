@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.golden;
+package org.apache.geode.test.golden;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.test.process.ProcessWrapper;
+import org.apache.geode.test.process.ProcessWrapper;
 
 /**
  * Abstract test case for tests verifying that test output with a

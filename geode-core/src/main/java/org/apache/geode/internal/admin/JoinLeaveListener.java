@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 /**
  * Interface implemented by those who want to be alerted when a node joins or leaves a distributed GemFire system

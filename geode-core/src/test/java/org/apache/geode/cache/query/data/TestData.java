@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.data;
+package org.apache.geode.cache.query.data;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 
 public class TestData {
   public static void populateRegion(Region region, int numValues) {

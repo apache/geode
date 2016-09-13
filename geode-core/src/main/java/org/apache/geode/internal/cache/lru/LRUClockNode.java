@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.lru;
+package org.apache.geode.internal.cache.lru;
 
 public interface LRUClockNode {
 

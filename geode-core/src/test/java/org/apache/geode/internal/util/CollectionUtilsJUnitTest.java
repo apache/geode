@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import static org.junit.Assert.*;
 
@@ -34,9 +34,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.lang.Filter;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.lang.Filter;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,7 +45,7 @@ import org.junit.experimental.categories.Category;
  * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * CollectionUtils class.
  * <p/>
- * @see com.gemstone.gemfire.internal.util.CollectionUtils
+ * @see org.apache.geode.internal.util.CollectionUtils
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0

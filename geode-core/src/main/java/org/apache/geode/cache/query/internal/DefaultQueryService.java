@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.LowMemoryException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.client.internal.InternalPool;
-import com.gemstone.gemfire.cache.client.internal.ProxyCache;
-import com.gemstone.gemfire.cache.client.internal.ServerProxy;
-import com.gemstone.gemfire.cache.client.internal.UserAttributes;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.cq.ClientCQ;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
-import com.gemstone.gemfire.cache.query.internal.index.*;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.client.internal.InternalPool;
+import org.apache.geode.cache.client.internal.ProxyCache;
+import org.apache.geode.cache.client.internal.ServerProxy;
+import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.cq.ClientCQ;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.cache.query.internal.index.*;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.control.MemoryThresholds;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
@@ -82,7 +82,7 @@ public class DefaultQueryService implements QueryService {
    * 
    * @return The new <code>Query</code> object.
    * @throws IllegalArgumentException if the query syntax is invalid.
-   * @see com.gemstone.gemfire.cache.query.Query
+   * @see org.apache.geode.cache.query.Query
    */
   public Query newQuery(String queryString) {
     if (QueryMonitor.isLowMemory()) {

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 
-import com.gemstone.gemfire.DataSerializable;
+import org.apache.geode.DataSerializable;
 
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in

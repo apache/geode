@@ -17,14 +17,14 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
 import java.io.Serializable;
 
 import org.apache.lucene.search.Query;
 
-import com.gemstone.gemfire.annotations.Experimental;
-import com.gemstone.gemfire.cache.query.QueryException;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.query.QueryException;
 
 /**
  * The instances of this class will be used for distributing Lucene Query objects and re-constructing the Query object.

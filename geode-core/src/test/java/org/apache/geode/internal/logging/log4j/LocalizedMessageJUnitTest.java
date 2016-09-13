@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests for LocalizedMessage which bridges our StringId LocalizedStrings for 

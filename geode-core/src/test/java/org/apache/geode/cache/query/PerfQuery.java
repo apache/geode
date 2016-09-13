@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 
@@ -24,17 +24,17 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.internal.ResultsSet;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.NanoTimer;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.ResultsSet;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.NanoTimer;
 
 /**
  *

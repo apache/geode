@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.Version;
 
 import java.io.*;
 import java.text.*;

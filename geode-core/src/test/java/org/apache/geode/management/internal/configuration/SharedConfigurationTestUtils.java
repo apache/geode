@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration;
+package org.apache.geode.management.internal.configuration;
 
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.internal.JUnit3DistributedTestCase;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.internal.JUnit3DistributedTestCase;
 
 public class SharedConfigurationTestUtils {
 

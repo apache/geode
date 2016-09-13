@@ -16,32 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
-import static com.gemstone.gemfire.internal.AvailablePort.*;
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.internal.AvailablePort.*;
+import static org.apache.geode.security.SecurityTestUtils.*;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import com.gemstone.gemfire.internal.AvailablePortHelper;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
-import com.gemstone.gemfire.security.generator.CredentialGenerator;
-import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
-import com.gemstone.gemfire.security.generator.XmlAuthzCredentialGenerator;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.security.generator.AuthzCredentialGenerator;
+import org.apache.geode.security.generator.CredentialGenerator;
+import org.apache.geode.security.generator.DummyCredentialGenerator;
+import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * Tests for authorization from client to server. This tests for authorization
@@ -208,7 +208,7 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
     getLogWriter().info("testInvalidAccessor: Using authenticator: " + authenticator);
 
     // Start server1 with invalid accessor
-    Properties serverProps = buildProperties(authenticator, "com.gemstone.none", false, extraAuthProps, extraAuthzProps);
+    Properties serverProps = buildProperties(authenticator, "org.apache.none", false, extraAuthProps, extraAuthzProps);
 
     int port1 = createServer1(javaProps, serverProps);
     int port2 = getRandomAvailablePort(SOCKET);

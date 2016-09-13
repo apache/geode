@@ -22,7 +22,7 @@
 /*
  * 
  */
-package com.gemstone.gemfire.cache.query.functional;
+package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;
 
@@ -31,13 +31,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Utils;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Utils;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class IteratorTypeDefJUnitTest {
@@ -60,11 +60,11 @@ public class IteratorTypeDefJUnitTest {
   @Test
   public void testIteratorDefSyntax() throws Exception {
     String queries[] = {
-        "IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;"
+        "IMPORT org.apache.geode.cache.\"query\".data.Position;"
             + "SELECT DISTINCT secId FROM /portfolios,  positions.values pos TYPE Position WHERE iD > 0",
-        "IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;"
+        "IMPORT org.apache.geode.cache.\"query\".data.Position;"
             + "SELECT DISTINCT secId FROM /portfolios, positions.values AS pos TYPE Position WHERE iD > 0",
-        "IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;"
+        "IMPORT org.apache.geode.cache.\"query\".data.Position;"
             + "SELECT DISTINCT pos.secId FROM /portfolios, pos IN positions.values TYPE Position WHERE iD > 0",
         "SELECT DISTINCT pos.secId FROM /portfolios,  positions.values AS pos  WHERE iD > 0",
         "SELECT DISTINCT pos.secId FROM /portfolios, pos IN positions.values  WHERE iD > 0",};
@@ -86,7 +86,7 @@ public class IteratorTypeDefJUnitTest {
  @Test
   public void testIteratorDefSyntaxForObtainingResultBag() throws Exception {
     String queries[] = {
-     "IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;"+ 
+     "IMPORT org.apache.geode.cache.\"query\".data.Position;"+ 
 "SELECT DISTINCT secId FROM /portfolios, (set<Position>)positions.values WHERE iD > 0",
     };
     for (int i = 0; i < queries.length; i++) {
@@ -113,7 +113,7 @@ public class IteratorTypeDefJUnitTest {
   public void testNOValueconstraintInCreatRegion() throws Exception {
       CacheUtils.createRegion("pos", null);  
       String queries[] = {
-        "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;"+ 
+        "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;"+ 
 "SELECT DISTINCT * FROM (set<Portfolio>)/pos where iD > 0"
     };
     for (int i = 0; i < queries.length; i++) {
@@ -139,8 +139,8 @@ public class IteratorTypeDefJUnitTest {
     }
     CacheUtils.log(region);
       String queries[] = {
-"IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;"+ 
-"IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;"+
+"IMPORT org.apache.geode.cache.\"query\".data.Position;"+ 
+"IMPORT org.apache.geode.cache.\"query\".data.Portfolio;"+
 "SELECT DISTINCT secId FROM (set<Portfolio>)/portfl, (set<Position>)positions.values WHERE iD > 0",
     };
     for (int i = 0; i < queries.length; i++) {

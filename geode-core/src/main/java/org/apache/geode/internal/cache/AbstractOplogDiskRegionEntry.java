@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
  * Abstract implementation class of RegionEntry interface.

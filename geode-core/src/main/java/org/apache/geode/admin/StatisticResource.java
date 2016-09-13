@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * Adminitrative interface for monitoring a statistic resource in a GemFire
@@ -23,7 +23,7 @@ package com.gemstone.gemfire.admin;
  *
  * @since GemFire     3.5
  *
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface StatisticResource {
   
@@ -76,10 +76,10 @@ public interface StatisticResource {
    * Refreshes the values of every {@link Statistic} in this resource by
    * retrieving them from the member's VM.
    *
-   * @throws com.gemstone.gemfire.admin.AdminException 
+   * @throws org.apache.geode.admin.AdminException 
    *         if unable to refresh statistic values
    */
-  public void refresh() throws com.gemstone.gemfire.admin.AdminException;
+  public void refresh() throws org.apache.geode.admin.AdminException;
   
 }
 

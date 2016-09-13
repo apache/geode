@@ -16,9 +16,9 @@
  */
 
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.internal.cache.tier.sockets.InterestResultPolicyImpl;
+import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
@@ -28,8 +28,8 @@ import java.io.Serializable;
  * can be the keys and current values, just the keys or nothing.
  *
  *
- * @see com.gemstone.gemfire.cache.Region#registerInterest(Object)
- * @see com.gemstone.gemfire.cache.Region#registerInterestRegex(String)
+ * @see org.apache.geode.cache.Region#registerInterest(Object)
+ * @see org.apache.geode.cache.Region#registerInterestRegex(String)
  *
  * @since GemFire 4.2.3
  */

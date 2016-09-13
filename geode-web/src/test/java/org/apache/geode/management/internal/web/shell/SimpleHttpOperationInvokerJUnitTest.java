@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.shell;
+package org.apache.geode.management.internal.web.shell;
 
 import static org.junit.Assert.*;
 
 import java.util.Collections;
 
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
-import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
-import com.gemstone.gemfire.management.internal.web.http.HttpHeader;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.cli.CommandRequest;
+import org.apache.geode.management.internal.web.AbstractWebTestCase;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.http.ClientHttpRequest;
+import org.apache.geode.management.internal.web.http.HttpHeader;
+import org.apache.geode.management.internal.web.http.HttpMethod;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,8 +40,8 @@ import org.springframework.web.client.ResourceAccessException;
  * The SimpleHttpOperationInvokerJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * SimpleHttpOperationInvoker class.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
- * @see com.gemstone.gemfire.management.internal.web.shell.SimpleHttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.AbstractWebTestCase
+ * @see org.apache.geode.management.internal.web.shell.SimpleHttpOperationInvoker
  * @see org.junit.Assert
  * @see org.junit.After
  * @see org.junit.Before

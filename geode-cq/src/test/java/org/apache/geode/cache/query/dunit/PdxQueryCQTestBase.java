@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.dunit;
+package org.apache.geode.cache.query.dunit;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -26,38 +26,38 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.data.PortfolioPdx;
-import com.gemstone.gemfire.cache.query.data.PositionPdx;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.data.PortfolioPdx;
+import org.apache.geode.cache.query.data.PositionPdx;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
@@ -134,7 +134,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
             cpf.setSubscriptionEnabled(subscriptionEnabled);
             cpf.setSubscriptionRedundancy(redundancy);
             for (int i=0; i < servers.length; i++){
-              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
+              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
               cpf.addServer(servers[i], ports[i]);
             }
             cpf.create(poolName);
@@ -160,14 +160,14 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
         }          
   
         try {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query on server:" + queryStr);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query on server:" + queryStr);
           Query query = remoteQueryService.newQuery(queryStr);
           rs[0][0] = (SelectResults)query.execute();
           //printResults (rs[0][0], " ### Remote Query Results : ####");
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query locally:" + queryStr);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query locally:" + queryStr);
           query = localQueryService.newQuery(queryStr);
           rs[0][1] = (SelectResults)query.execute();
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Remote Query rs size: " + (rs[0][0]).size() + 
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Remote Query rs size: " + (rs[0][0]).size() + 
               "Local Query rs size: " + (rs[0][1]).size());
           //printResults (rs[0][1], " ### Local Query Results : ####");
           // Compare local and remote query results.
@@ -258,7 +258,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
   
     for (int i=0; i < queryString.length; i++){
       try {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query :" + queryString[i]);
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Executing Query :" + queryString[i]);
         Query query = qService.newQuery(queryString[i]);
         results = (SelectResults)query.execute(params[i]);
       } catch (Exception e) {
@@ -297,12 +297,12 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     SerializableRunnable closeCache =
       new CacheSerializableRunnable("Close Client") {
       public void run2() throws CacheException {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Close Client. ###");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Close Client. ###");
         try {
           closeCache();
           disconnectFromDS();
         } catch (Exception ex) {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Failed to get close client. ###");
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Failed to get close client. ###");
         }
       }
     };
@@ -337,13 +337,13 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     
     @Override
     public boolean equals(Object o){
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("In TestObject2.equals() this: " + this + " other :" + o);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("In TestObject2.equals() this: " + this + " other :" + o);
       GemFireCacheImpl.getInstance().getLoggerI18n().fine("In TestObject2.equals() this: " + this + " other :" + o);
       TestObject2 other = (TestObject2)o;
       if (_id == other._id) {
         return true;
       } else {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("NOT EQUALS");  
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("NOT EQUALS");  
         return false;
       }
     }

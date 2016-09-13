@@ -17,15 +17,15 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.directory;
+package org.apache.geode.cache.lucene.internal.directory;
 
 import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.lucene.store.IndexInput;
 
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.SeekableInputStream;
+import org.apache.geode.cache.lucene.internal.filesystem.File;
+import org.apache.geode.cache.lucene.internal.filesystem.SeekableInputStream;
 
 final class FileIndexInput extends IndexInput {
   private final File file;

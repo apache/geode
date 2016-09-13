@@ -19,8 +19,8 @@
 /**
  * A distributed filesystem implementation that uses a geode region as the underlying storage mechanism.
  *
- * Users of this filesystem should interact with the {@link com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystem} class.
+ * Users of this filesystem should interact with the {@link org.apache.geode.cache.lucene.internal.filesystem.FileSystem} class.
  *
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.filesystem;
+package org.apache.geode.cache.lucene.internal.filesystem;

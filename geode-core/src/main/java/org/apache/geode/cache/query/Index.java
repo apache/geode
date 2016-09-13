@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 //import java.util.*;
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 /**
  * An index that is built over the data stored in a GemFire {@link

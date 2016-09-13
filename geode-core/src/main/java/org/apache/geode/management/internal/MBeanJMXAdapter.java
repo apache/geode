@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Type;
@@ -37,24 +37,24 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.management.AsyncEventQueueMXBean;
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.management.DiskStoreMXBean;
-import com.gemstone.gemfire.management.DistributedLockServiceMXBean;
-import com.gemstone.gemfire.management.DistributedRegionMXBean;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.GatewayReceiverMXBean;
-import com.gemstone.gemfire.management.GatewaySenderMXBean;
-import com.gemstone.gemfire.management.LocatorMXBean;
-import com.gemstone.gemfire.management.LockServiceMXBean;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.ManagerMXBean;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.RegionMXBean;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.management.AsyncEventQueueMXBean;
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.DiskStoreMXBean;
+import org.apache.geode.management.DistributedLockServiceMXBean;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.LocatorMXBean;
+import org.apache.geode.management.LockServiceMXBean;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.RegionMXBean;
 
 /**
  * Utility class to interact with the JMX server

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import static org.junit.Assert.*;
 
@@ -31,12 +31,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.stats50.VMStats50;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.stats50.VMStats50;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for {@link SimpleStatSampler}.

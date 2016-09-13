@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension;
+package org.apache.geode.internal.cache.extension;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * Interface used for objects wishing to extend and {@link Extensible} object.

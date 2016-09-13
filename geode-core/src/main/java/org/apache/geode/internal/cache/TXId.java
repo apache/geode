@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
-import com.gemstone.gemfire.internal.ExternalizableDSFID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.internal.DSFIDFactory;
+package org.apache.geode.internal.cache;
+import org.apache.geode.internal.ExternalizableDSFID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.internal.DSFIDFactory;
 import java.io.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /** The implementation of the {@link TransactionId} interface stored
  * in the transaction state and used, amoung other things, to uniquely
@@ -33,7 +33,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * @since GemFire 4.0
  * 
  * @see TXManagerImpl#begin
- * @see com.gemstone.gemfire.cache.CacheTransactionManager#getTransactionId
+ * @see org.apache.geode.cache.CacheTransactionManager#getTransactionId
  */
 public final class TXId
   extends ExternalizableDSFID

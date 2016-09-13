@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
 /**
  * <p>
@@ -44,10 +44,10 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.geode.CancelException;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 public class TransactionManagerImpl implements TransactionManager, Serializable {
   private static final long serialVersionUID = 5033392316185449821L;

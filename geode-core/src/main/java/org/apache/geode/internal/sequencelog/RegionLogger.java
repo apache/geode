@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.sequencelog;
+package org.apache.geode.internal.sequencelog;
 
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
 /**
  * A Wrapper around the graph logger that logs region level

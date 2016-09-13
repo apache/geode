@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension;
+package org.apache.geode.internal.cache.extension;
 
 import java.util.ArrayList;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.util.CollectionUtils;
 
 /**
  * Simple implementation of {@link ExtensionPoint} for easy integration with

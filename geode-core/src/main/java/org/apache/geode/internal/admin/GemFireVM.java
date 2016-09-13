@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.admin.GemFireMemberStatus;
-import com.gemstone.gemfire.admin.RegionSubRegionSnapshot;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Config;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.admin.GemFireMemberStatus;
+import org.apache.geode.admin.RegionSubRegionSnapshot;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Config;
 
 /**
  * Represents one java vm connected to a GemFire distributed system
@@ -158,7 +158,7 @@ public interface GemFireVM {
   public Config getConfig();
 
   /**
-   * Returns the runtime {@link com.gemstone.gemfire.admin.GemFireMemberStatus} from the vm
+   * Returns the runtime {@link org.apache.geode.admin.GemFireMemberStatus} from the vm
    * The idea is this snapshot is similar to stats that represent the current state of a 
    * running VM. However, this is a bit higher level than a stat 
    * @since GemFire 5.7
@@ -166,7 +166,7 @@ public interface GemFireVM {
   public GemFireMemberStatus getSnapshot();
   
   /**
-   * Returns the runtime {@link com.gemstone.gemfire.admin.RegionSubRegionSnapshot} from the vm
+   * Returns the runtime {@link org.apache.geode.admin.RegionSubRegionSnapshot} from the vm
    * The idea is this snapshot is quickly salvageable to present a cache's region's info 
    * @since GemFire 5.7
    */
@@ -276,7 +276,7 @@ public interface GemFireVM {
   
   
   /**
-   * Returns the name given to the {@link com.gemstone.gemfire.GemFireConnection}
+   * Returns the name given to the {@link org.apache.geode.GemFireConnection}
    * of this process
    */
   //public String getName();

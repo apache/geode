@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.generator;
+package org.apache.geode.security.generator;
 
 import java.security.Principal;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Properties;
 
-import com.gemstone.gemfire.security.templates.PKCSAuthInit;
-import com.gemstone.gemfire.security.templates.PKCSAuthenticator;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.security.templates.PKCSAuthInit;
+import org.apache.geode.security.templates.PKCSAuthenticator;
+import org.apache.geode.util.test.TestUtil;
 
 public class PKCSCredentialGenerator extends CredentialGenerator {
 
@@ -44,9 +44,9 @@ public class PKCSCredentialGenerator extends CredentialGenerator {
   private static String getKeyStoreDir() {
     usesIBMJSSE = usesIBMProviders();
     if (usesIBMJSSE) {
-      return "/com/gemstone/gemfire/security/generator/keys/ibm";
+      return "/org/apache/geode/security/generator/keys/ibm";
     } else {
-      return "/com/gemstone/gemfire/security/generator/keys";
+      return "/org/apache/geode/security/generator/keys";
     }
   }
 

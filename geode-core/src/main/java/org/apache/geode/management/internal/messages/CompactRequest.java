@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.messages;
+package org.apache.geode.management.internal.messages;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,21 +28,21 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.internal.admin.remote.AdminMultipleReplyProcessor;
-import com.gemstone.gemfire.internal.admin.remote.AdminRequest;
-import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
+import org.apache.geode.internal.admin.remote.AdminRequest;
+import org.apache.geode.internal.admin.remote.AdminResponse;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * An instruction to all members with cache that they should 
@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * @since GemFire 7.0
  */
-// NOTE: This is copied from com/gemstone/gemfire/internal/admin/remote/CompactRequest.java
+// NOTE: This is copied from org/apache/geode/internal/admin/remote/CompactRequest.java
 // and modified as per requirements. (original-author Dan Smith)
 public class CompactRequest extends AdminRequest {
   private static final Logger logger = LogService.getLogger();

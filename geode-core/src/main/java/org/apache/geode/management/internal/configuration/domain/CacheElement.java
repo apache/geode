@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.domain;
+package org.apache.geode.management.internal.configuration.domain;
 
-import static com.gemstone.gemfire.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
-import static com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.getAttribute;
+import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
+import static org.apache.geode.management.internal.configuration.utils.XmlUtils.getAttribute;
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 
 import java.io.IOException;
@@ -38,10 +38,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParser;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
 
 /**
  * Domain class to determine the order of an element Currently being used to

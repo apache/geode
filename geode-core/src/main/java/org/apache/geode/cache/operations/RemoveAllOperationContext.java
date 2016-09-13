@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import com.gemstone.gemfire.cache.operations.OperationContext;
+import org.apache.geode.cache.operations.OperationContext;
 
 /**
- * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REMOVEALL} operation for both the
+ * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REMOVEALL} operation for both the
  * pre-operation and post-operation cases.
  * 
  * @since GemFire 8.1

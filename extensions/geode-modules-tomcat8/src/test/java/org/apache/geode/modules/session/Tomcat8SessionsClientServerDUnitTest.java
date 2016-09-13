@@ -14,28 +14,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session;
+package org.apache.geode.modules.session;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.internal.cache.CacheServerLauncher.serverPort;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.cache.CacheServerLauncher.serverPort;
 
 import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.modules.session.catalina.ClientServerCacheLifecycleListener;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
-import com.gemstone.gemfire.modules.session.catalina.Tomcat8DeltaSessionManager;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener;
+import org.apache.geode.modules.session.catalina.DeltaSessionManager;
+import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(DistributedTest.class)
 public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Base {

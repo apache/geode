@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -28,12 +28,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test verifies the flag's on-off switching for

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.swagger.config;
+package org.apache.geode.rest.internal.web.swagger.config;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import com.mangofactory.swagger.configuration.JacksonScalaSupport;
 import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
 import com.mangofactory.swagger.configuration.SpringSwaggerModelConfig;

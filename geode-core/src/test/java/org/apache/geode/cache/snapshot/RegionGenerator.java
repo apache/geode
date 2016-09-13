@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.snapshot;
+package org.apache.geode.cache.snapshot;
 
 import com.examples.snapshot.MyDataSerializer;
 import com.examples.snapshot.MyDataSerializer.MyObjectDataSerializable2;
@@ -23,12 +23,12 @@ import com.examples.snapshot.MyObjectDataSerializable;
 import com.examples.snapshot.MyObjectPdx;
 import com.examples.snapshot.MyObjectPdx.MyEnumPdx;
 import com.examples.snapshot.MyPdxSerializer.MyObjectPdx2;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 
 public class RegionGenerator {
   public enum RegionType {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 /**
  * The PdxSerializer interface allows domain classes to be 
@@ -23,8 +23,8 @@ package com.gemstone.gemfire.pdx;
  * have a public zero-arg constructor and that it provides read and write access
  * to the PDX serialized fields.
  * <p>GemFire allows a single PdxSerializer to be configured on a cache
- * using {@link com.gemstone.gemfire.cache.CacheFactory#setPdxSerializer(PdxSerializer) setPdxSerializer}
- * or {@link com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxSerializer(PdxSerializer) client setPdxSerializer}.
+ * using {@link org.apache.geode.cache.CacheFactory#setPdxSerializer(PdxSerializer) setPdxSerializer}
+ * or {@link org.apache.geode.cache.client.ClientCacheFactory#setPdxSerializer(PdxSerializer) client setPdxSerializer}.
  * It can also be configured in <code>cache.xml</code> using the <code>pdx-serializer</code> element.
  * The same PdxSerializer should be configured on each member of a distributed
  * system that can serialize or deserialize PDX data.

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
-import com.gemstone.gemfire.management.DistributedRegionMXBean;
-import com.gemstone.gemfire.management.EvictionAttributesData;
-import com.gemstone.gemfire.management.FixedPartitionAttributesData;
-import com.gemstone.gemfire.management.MembershipAttributesData;
-import com.gemstone.gemfire.management.PartitionAttributesData;
-import com.gemstone.gemfire.management.RegionAttributesData;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.EvictionAttributesData;
+import org.apache.geode.management.FixedPartitionAttributesData;
+import org.apache.geode.management.MembershipAttributesData;
+import org.apache.geode.management.PartitionAttributesData;
+import org.apache.geode.management.RegionAttributesData;
 
 /**
  * System-wide aggregate of a named Region. Provides high-level view of a Region

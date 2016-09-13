@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans.stats;
+package org.apache.geode.management.internal.beans.stats;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.management.internal.FederationComponent;
+import org.apache.geode.management.internal.FederationComponent;
 
 /**
  *

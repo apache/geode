@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.types;
+package org.apache.geode.cache.query.types;
 
 
 /**
  * Describes the field names and types for each field in a {@link
- * com.gemstone.gemfire.cache.query.Struct}.
+ * org.apache.geode.cache.query.Struct}.
  *
  * @since GemFire 4.0
  */

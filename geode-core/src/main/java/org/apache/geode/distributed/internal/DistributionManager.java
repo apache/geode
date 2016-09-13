@@ -14,34 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.locks.ElderState;
-import com.gemstone.gemfire.distributed.internal.membership.*;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.admin.remote.AdminConsoleDisconnectMessage;
-import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.sequencelog.MembershipLogger;
-import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.*;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.locks.ElderState;
+import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
+import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.sequencelog.MembershipLogger;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.tcp.ReenteredConnectException;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
@@ -89,7 +89,7 @@ public class DistributionManager
 
   /**
    * WARNING: setting this to true may break dunit tests.
-   * <p>see com.gemstone.gemfire.cache30.ClearMultiVmCallBkDUnitTest
+   * <p>see org.apache.geode.cache30.ClearMultiVmCallBkDUnitTest
    */
   public static final boolean INLINE_PROCESS = 
     !Boolean.getBoolean("DistributionManager.enqueueOrderedMessages");
@@ -177,7 +177,7 @@ public class DistributionManager
 
   /**
    * an NIO priority type
-   * @see com.gemstone.gemfire.distributed.internal.PooledDistributionMessage
+   * @see org.apache.geode.distributed.internal.PooledDistributionMessage
    * @see #SERIAL_EXECUTOR
    * @see #HIGH_PRIORITY_EXECUTOR
    * @see #WAITING_POOL_EXECUTOR
@@ -187,7 +187,7 @@ public class DistributionManager
   /**
    * an NIO priority type
    * 
-   * @see com.gemstone.gemfire.distributed.internal.SerialDistributionMessage
+   * @see org.apache.geode.distributed.internal.SerialDistributionMessage
    * @see #STANDARD_EXECUTOR
    */
   public static final int SERIAL_EXECUTOR = 74;
@@ -195,7 +195,7 @@ public class DistributionManager
   /**
    * an NIO priority type
 
-   * @see com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage
+   * @see org.apache.geode.distributed.internal.HighPriorityDistributionMessage
    * @see #STANDARD_EXECUTOR
    */
   public static final int HIGH_PRIORITY_EXECUTOR = 75;
@@ -205,7 +205,7 @@ public class DistributionManager
   /**
    * an NIO priority type
    * 
-   * @see com.gemstone.gemfire.internal.cache.InitialImageOperation
+   * @see org.apache.geode.internal.cache.InitialImageOperation
    * @see #STANDARD_EXECUTOR
    */
   public static final int WAITING_POOL_EXECUTOR = 77;
@@ -213,7 +213,7 @@ public class DistributionManager
   /**
    * an NIO priority type
    * 
-   * @see com.gemstone.gemfire.internal.cache.InitialImageOperation
+   * @see org.apache.geode.internal.cache.InitialImageOperation
    * @see #STANDARD_EXECUTOR
    */
   public static final int PARTITIONED_REGION_EXECUTOR = 78;
@@ -222,7 +222,7 @@ public class DistributionManager
   /**
    * Executor for view related messages
    * 
-   * @see com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage
+   * @see org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage
    * @see #STANDARD_EXECUTOR
    */
   public static final int VIEW_EXECUTOR = 79;
@@ -390,8 +390,8 @@ public class DistributionManager
   private ThreadPoolExecutor prMetaDataCleanupThreadPool;
   
   /**
-   * Thread used to decouple {@link com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage}s from 
-   * {@link com.gemstone.gemfire.internal.cache.DistributedCacheOperation}s </b>
+   * Thread used to decouple {@link org.apache.geode.internal.cache.partitioned.PartitionMessage}s from 
+   * {@link org.apache.geode.internal.cache.DistributedCacheOperation}s </b>
    * @see #SERIAL_EXECUTOR
    */
   private ThreadPoolExecutor partitionedRegionThread;
@@ -403,7 +403,7 @@ public class DistributionManager
   private ThreadPoolExecutor serialThread;
   
   /** Message processing executor for view messages
-   * @see com.gemstone.gemfire.distributed.internal.membership.gms.messages.ViewAckMessage 
+   * @see org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage 
    */
   private ThreadPoolExecutor viewThread;
   
@@ -2365,9 +2365,9 @@ public class DistributionManager
   /**
    * This thread processes member events as they occur.
    * 
-   * @see com.gemstone.gemfire.distributed.internal.DistributionManager.MemberCrashedEvent
-   * @see com.gemstone.gemfire.distributed.internal.DistributionManager.MemberJoinedEvent
-   * @see com.gemstone.gemfire.distributed.internal.DistributionManager.MemberDepartedEvent
+   * @see org.apache.geode.distributed.internal.DistributionManager.MemberCrashedEvent
+   * @see org.apache.geode.distributed.internal.DistributionManager.MemberJoinedEvent
+   * @see org.apache.geode.distributed.internal.DistributionManager.MemberDepartedEvent
    *
    */
   protected class MemberEventInvoker implements Runnable {
@@ -2557,10 +2557,10 @@ public class DistributionManager
   public Set addAllMembershipListenerAndGetAllIds(MembershipListener l) {
     // TO fix this deadlock:
     // "View Message Processor":
-    //  waiting to lock monitor 0x080f691c (object 0xe3ba7680, a com.gemstone.gemfire.distributed.internal.DistributionManager$MembersLock),
+    //  waiting to lock monitor 0x080f691c (object 0xe3ba7680, a org.apache.geode.distributed.internal.DistributionManager$MembersLock),
     //  which is held by "RMI TCP Connection(259)-10.80.10.55"
     // "RMI TCP Connection(259)-10.80.10.55":
-    //  waiting to lock monitor 0x080f6598 (object 0xe3bacd90, a com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager$ViewLock),
+    //  waiting to lock monitor 0x080f6598 (object 0xe3bacd90, a org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager$ViewLock),
     //  which is held by "View Message Processor"
     // NEED to prevent view changes while installing a listener.
     DistributionChannel ch = this.channel;
@@ -3470,7 +3470,7 @@ public class DistributionManager
       for (int i = 0; i < message.getRecipients().length; i ++)
         result.add(message.getRecipients()[i]);
       return result;
-   /*   if (ex instanceof com.gemstone.gemfire.GemFireIpcResourceException) {
+   /*   if (ex instanceof org.apache.geode.GemFireIpcResourceException) {
         return;
       }*/
     }
@@ -4546,21 +4546,21 @@ public class DistributionManager
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DM#getRootCause()
+   * @see org.apache.geode.distributed.internal.DM#getRootCause()
    */
   public Throwable getRootCause() {
     return this.rootCause;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DM#setRootCause(java.lang.Throwable)
+   * @see org.apache.geode.distributed.internal.DM#setRootCause(java.lang.Throwable)
    */
   public void setRootCause(Throwable t) {
     this.rootCause = t;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DM#getMembersOnThisHost()
+   * @see org.apache.geode.distributed.internal.DM#getMembersOnThisHost()
    * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {

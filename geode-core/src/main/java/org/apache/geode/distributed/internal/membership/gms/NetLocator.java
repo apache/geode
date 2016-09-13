@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms;
 
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 
 public interface NetLocator extends TcpHandler {
 

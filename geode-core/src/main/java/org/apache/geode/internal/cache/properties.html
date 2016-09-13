@@ -49,7 +49,7 @@ valid attribute name, then looks for a System property with that value.  If
 such a property name exists, it overrides any read from a property file or
 any properties passed into the caller.
 <p>
-<code>com.gemstone.gemfire.internal.cache.Oplog</code> looks for properties
+<code>org.apache.geode.internal.cache.Oplog</code> looks for properties
 of the form:
 <ul>
 
@@ -81,7 +81,7 @@ bound)"
 <p>
 <em>Integer</em> (default is 60000)
 <p>
-See <code>com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl#TIMEOUT_MS</code>.
+See <code>org.apache.geode.admin.internal.AdminDistributedSystemImpl#TIMEOUT_MS</code>.
 <p>
 TBA
 </dd>
@@ -94,7 +94,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.AvailablePort</code>.
+See <code>org.apache.geode.internal.AvailablePort</code>.
 <p>
 If true, an instance of <code>java.util.Random</code> is used instead of
 <code>java.security.SecureRandom</code> to randomly select a port.
@@ -110,7 +110,7 @@ with random port selection.
 <p>
 <em>Integer</em> (default is 2000)
 <p>
-See <code>com.gemstone.gemfire.internal.AvailablePort#isPortAvailable</code>.
+See <code>org.apache.geode.internal.AvailablePort#isPortAvailable</code>.
 <p>
 When establishing a JGroups locator, this sets the <code>SO_TIMEOUT</code>
 characteristic on the UDP port that we attempt to test.
@@ -123,7 +123,7 @@ Units are in milliseconds.
 <dd>
 <em>Public:</em> false
 <p>
-See <code>com.gemstone.gemfire.internal.cache.BridgeServerImpl.#VERBOSE</code>.
+See <code>org.apache.geode.internal.cache.BridgeServerImpl.#VERBOSE</code>.
 <p>
 Enable verbose logging in the BridgeServer
 <p>
@@ -136,7 +136,7 @@ Enable verbose logging in the BridgeServer
 <p>
 <em>Integer</em> (default is 4)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl#HANDSHAKE_POOL_SIZE</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#HANDSHAKE_POOL_SIZE</code>.
 <p>
 TBA
 </dd>
@@ -148,7 +148,7 @@ TBA
 <p>
 <em>Integer</em> (default is 100)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection#maximumChunkSize</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.ServerConnection#maximumChunkSize</code>.
 <p>
 TBA
 </dd>
@@ -160,7 +160,7 @@ TBA
 <p>
 <em>Integer</em> (default is -1)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection#MAX_INCOMING_DATA</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.ServerConnection#MAX_INCOMING_DATA</code>.
 <p>
 <pre>
    Maximum number of concurrent incoming client message bytes that a bridge server will allow.
@@ -179,7 +179,7 @@ TBA
 <p>
 <em>Integer</em> (default is -1)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection#MAX_INCOMING_MSGS</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.ServerConnection#MAX_INCOMING_MSGS</code>.
 <p>
 <pre>
    Maximum number of concurrent incoming client messages that a bridge server will allow.
@@ -197,7 +197,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl#DEPRECATED_SELECTOR</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#DEPRECATED_SELECTOR</code>.
 <p>
 TBA
 </dd>
@@ -209,7 +209,7 @@ TBA
 <p>
 <em>Integer</em> (default is 16)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl#DEPRECATED_SELECTOR_POOL_SIZE</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#DEPRECATED_SELECTOR_POOL_SIZE</code>.
 <p>
 <pre>
    This system property is only used if max-threads == 0.
@@ -227,9 +227,9 @@ TBA
 <p>
 <em>Integer</em> (default is 32768)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier#socketBufferSize</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier#socketBufferSize</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientUpdater#CacheClietnUpdater(String, EndpointImpl, List, LogWriter, boolean, DistributedSystem)</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater#CacheClietnUpdater(String, EndpointImpl, List, LogWriter, boolean, DistributedSystem)</code>.
 <p>
 <pre>
    The size of the server-to-client communication socket buffers. This can be
@@ -246,7 +246,7 @@ TBA
 <p>
 <em>Integer</em> (default is 2900)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl#acceptTimeout</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#acceptTimeout</code>.
 <p>
 Units are in milliseconds.
 <p>
@@ -264,7 +264,7 @@ TBA
 <p>
 <em>Integer</em> (default is 1000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl</code>
+See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl</code>
 constructor.
 <p>
 This is the TCP accept backlog for the acceptor thread's listening socket.
@@ -277,7 +277,7 @@ This is the TCP accept backlog for the acceptor thread's listening socket.
 <p>
 <em>Integer</em> (default is 59000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl#handShakeTimeout</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#handShakeTimeout</code>.
 <p>
 <pre>
   Test value for handshake timeout
@@ -295,7 +295,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.CacheServerLauncher#PRINT_LAUNCH_COMMAND</code>.
+See <code>org.apache.geode.internal.cache.CacheServerLauncher#PRINT_LAUNCH_COMMAND</code>.
 <p>
 TBA
 </dd>
@@ -307,7 +307,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.DataSerializer#DEBUG</code>
+See <code>org.apache.geode.DataSerializer#DEBUG</code>
 <p>
 TBA
 </dd>
@@ -319,7 +319,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.DataSerializer#DUMP_SERIALIZED</code>
+See <code>org.apache.geode.DataSerializer#DUMP_SERIALIZED</code>
 <p>
 TBA
 </dd>
@@ -331,7 +331,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockLogWriter#VERBOSE</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockLogWriter#VERBOSE</code>.
 <p>
 Enables logging for this class.
 </dd>
@@ -343,7 +343,7 @@ Enables logging for this class.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager</code>.
 <p>
 See <code>com.gemstone.org.jgroups.stack.Protocol#trace/<code>.
 <p>
@@ -357,7 +357,7 @@ Enables JGroups-package debug logging.
 <p>
 <em>Long</em> (default is 10 * 1000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.InternalDistributedSystem#MAX_DISCONNECT_WAIT</code>.
+See <code>org.apache.geode.distributed.internal.InternalDistributedSystem#MAX_DISCONNECT_WAIT</code>.
 <p>
 <pre>
    This is how much time, in milliseconds to allow a disconnect listener
@@ -374,7 +374,7 @@ TBA
 <p>
 <em>Integer</em> (default is 80000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#INCOMING_QUEUE_LIMIT</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#INCOMING_QUEUE_LIMIT</code>.
 <p>
 TBA
 </dd>
@@ -386,7 +386,7 @@ TBA
 <p>
 <em>Integer</em> (default is INCOMING_QUEUE_LIMIT * .75)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#INCOMING_QUEUE_THROTTLE</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#INCOMING_QUEUE_THROTTLE</code>.
 <p>
 TBA
 </dd>
@@ -398,11 +398,11 @@ TBA
 <p>
 <em>String</em>
 <p>
-If multicast is enabled, the default is com/gemstone/gemfire/distributed/internal/javagroups-mcast.txt.
+If multicast is enabled, the default is org/apache/geode/distributed/internal/javagroups-mcast.txt.
 <p>
-If multicast is not enabled, the default is com/gemstone/gemfire/distributed/internal/javagroups-config.txt.
+If multicast is not enabled, the default is org/apache/geode/distributed/internal/javagroups-config.txt.
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 <pre>
    The system property that specifies the name of a file from which to read
@@ -421,7 +421,7 @@ TBA
 <p>
 Maximum function execution threads.
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#MAX_FE_THREADS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#MAX_FE_THREADS</code>.
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -431,7 +431,7 @@ See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#MAX_FE_T
 <p>
 <em>Integer</em> (default is 1)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#MAX_PR_THREADS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#MAX_PR_THREADS</code>.
 <p>
 TBA
 </dd>
@@ -443,7 +443,7 @@ TBA
 <p>
 <em>Integer</em> (default is 20)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#MAX_SERIAL_QUEUE_THREAD</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#MAX_SERIAL_QUEUE_THREAD</code>.
 <p>
 <pre>
   Max number of serial Queue executors, in case of multi-serial-queue executor
@@ -459,7 +459,7 @@ TBA
 <p>
 <em>Integer</em> (default is 100)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#MAX_THREADS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#MAX_THREADS</code>.
 <p>
 TBA
 </dd>
@@ -471,7 +471,7 @@ TBA
 <p>
 <em>Integer</em> (default is Integer.MAX_VALUE)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#MAX_WAITING_THREADS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#MAX_WAITING_THREADS</code>.
 <p>
 TBA
 </dd>
@@ -483,7 +483,7 @@ TBA
 <p>
 <em>Integer</em> (default is 2000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.SearchLoadAndWriteProcessor#SMALL_BLOB_SIZE</code>.
+See <code>org.apache.geode.internal.cache.SearchLoadAndWriteProcessor#SMALL_BLOB_SIZE</code>.
 <p>
 TBA
 </dd>
@@ -495,7 +495,7 @@ TBA
 <p>
 <em>Integer</em> (default is 4096)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#PUSHER_QUEUE_SIZE</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#PUSHER_QUEUE_SIZE</code>.
 <p>
 TBA
 </dd>
@@ -507,7 +507,7 @@ TBA
 <p>
 <em>Integer</em> (default is 50)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#PUSHER_THREADS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#PUSHER_THREADS</code>.
 <p>
 TBA
 </dd>
@@ -519,7 +519,7 @@ TBA
 <p>
 <em>Integer</em> (default is 40 * 1024 * 1024)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#SERIAL_QUEUE_BYTE_LIMIT</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#SERIAL_QUEUE_BYTE_LIMIT</code>.
 <p>
 TBA
 </dd>
@@ -531,7 +531,7 @@ TBA
 <p>
 <em>Integer</em> (default is 20000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#SERIAL_QUEUE_SIZE_LIMIT</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#SERIAL_QUEUE_SIZE_LIMIT</code>.
 <p>
 TBA
 </dd>
@@ -543,7 +543,7 @@ TBA
 <p>
 <em>Integer</em> (default is SERIAL_QUEUE_SIZE_LIMIT * THROTTLE_PERCENT)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#SERIAL_QUEUE_THROTTLE</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#SERIAL_QUEUE_THROTTLE</code>.
 <p>
 TBA
 </dd>
@@ -555,7 +555,7 @@ TBA
 <p>
 <em>Integer</em> (default is 75)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#THROTTLE_PERCENT</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#THROTTLE_PERCENT</code>.
 <p>
 TBA
 </dd>
@@ -567,7 +567,7 @@ TBA
 <p>
 <em>Integer</em> (default is 15000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#STARTUP_TIMEOUT</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#STARTUP_TIMEOUT</code>.
 <p>
 Units are in milliseconds.  This is how long a Startup message waits before
 it declares the peer to be nonresponsive.
@@ -582,7 +582,7 @@ TBA
 <p>
 <em>Long</em> (default is -1)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#TIMEOUT</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#TIMEOUT</code>.
 <p>
 <pre>
   The number of milliseconds to wait for distribution-related
@@ -599,7 +599,7 @@ TBA
 <p>
 <em>Integer</em> (default is 80 * 1024 * 1024)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#TOTAL_SERIAL_QUEUE_BYTE_LIMIT</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#TOTAL_SERIAL_QUEUE_BYTE_LIMIT</code>.
 <p>
 TBA
 </dd>
@@ -611,7 +611,7 @@ TBA
 <p>
 <em>Integer</em> (default is SERIAL_QUEUE_BYTE_LIMIT * THROTTLE_PERCENT)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#TOTAL_SERIAL_QUEUE_THROTTLE</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#TOTAL_SERIAL_QUEUE_THROTTLE</code>.
 <p>
 TBA
 </dd>
@@ -623,7 +623,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#VERBOSE</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#VERBOSE</code>.
 <p>
 Enables certain additional (fine-level?) logging.
 </dd>
@@ -635,7 +635,7 @@ Enables certain additional (fine-level?) logging.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#VERBOSE_VIEWS</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#VERBOSE_VIEWS</code>.
 <p>
 Enables additional info-level logging
 (see <code>#addShunnedMember</code> and <code>#addSurpriseMember</code>).
@@ -648,7 +648,7 @@ Enables additional info-level logging
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#INLINE_PROCESS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#INLINE_PROCESS</code>.
 <p>
 TBA
 </dd>
@@ -660,7 +660,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#sendStartupMessage</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#sendStartupMessage</code>.
 <p>
 Fail distributed system join unless a startup response is received from
 <em>all</em> peers.
@@ -673,7 +673,7 @@ Fail distributed system join unless a startup response is received from
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#MULTI_SERIAL_EXECUTORS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#MULTI_SERIAL_EXECUTORS</code>.
 <p>
 TBA
 </dd>
@@ -685,7 +685,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionManager#SYNC_EVENTS</code>.
+See <code>org.apache.geode.distributed.internal.DistributionManager#SYNC_EVENTS</code>.
 <p>
 TBA
 </dd>
@@ -697,7 +697,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.cache.DynamicRegionFactory#DISABLE_PERSIST_BACKUP</code>.
+See <code>org.apache.geode.cache.DynamicRegionFactory#DISABLE_PERSIST_BACKUP</code>.
 <p>
 TBA
 </dd>
@@ -709,7 +709,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.cache.DynamicRegionFactory#DISABLE_REGISTER_INTEREST</code>.
+See <code>org.apache.geode.cache.DynamicRegionFactory#DISABLE_REGISTER_INTEREST</code>.
 <p>
 TBA
 </dd>
@@ -721,7 +721,7 @@ TBA
 <p>
 <em>Long</em> (default is 250)
 <p>
-See <code>com.gemstone.gemfire.cache.DynamicRegionFactory#regionCreateSleepMillis</code>.
+See <code>org.apache.geode.cache.DynamicRegionFactory#regionCreateSleepMillis</code>.
 <p>
 <pre>
    This controls the delay introduced to try and avoid any race conditions
@@ -739,7 +739,7 @@ TBA
 <p>
 <em>Integer</em> (default is 5 * 60 * 1000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GatewayImpl.EventWrapper#EVENT_TIMEOUT</code>.
+See <code>org.apache.geode.internal.cache.GatewayImpl.EventWrapper#EVENT_TIMEOUT</code>.
 <p>
 Units are in milliseconds.
 <p>
@@ -753,7 +753,7 @@ TBA
 <p>
 <em>Integer</em> (default is 20)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GatewayImpl.#MAXIMUM_SHUTDOWN_PEEKS</code>.
+See <code>org.apache.geode.internal.cache.GatewayImpl.#MAXIMUM_SHUTDOWN_PEEKS</code>.
 <p>
 <pre>
   The number of times to peek on shutdown before giving up and shutting down.
@@ -769,7 +769,7 @@ TBA
 <p>
 <em>Integer</em> (default is 5000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GatewayImpl.#QUEUE_SIZE_THRESHOLD</code>.
+See <code>org.apache.geode.internal.cache.GatewayImpl.#QUEUE_SIZE_THRESHOLD</code>.
 <p>
 <pre>
   The queue size threshold used to warn the user. If the queue reaches this
@@ -786,7 +786,7 @@ TBA
 <p>
 <em>Integer</em> (default is 15000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GatewayImpl.#TOKEN_TIMEOUT</code>.
+See <code>org.apache.geode.internal.cache.GatewayImpl.#TOKEN_TIMEOUT</code>.
 <p>
 <pre>
   Timeout tokens in the unprocessedEvents map after this many milliseconds.
@@ -802,7 +802,7 @@ TBA
 <p>
 <em>Integer</em> (default is 500 * 1024)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.InitialImageOperation#CHUNK_SIZE_IN_BYTES</code>.
+See <code>org.apache.geode.internal.cache.InitialImageOperation#CHUNK_SIZE_IN_BYTES</code>.
 <p>
 <pre>
    maximum number of bytes to put in a single message
@@ -818,7 +818,7 @@ TBA
 <p>
 <em>Long</em> (default is 100)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor#ELDER_CHANGE_SLEEP</code>.
+See <code>org.apache.geode.distributed.internal.locks.GrantorRequestProcessor#ELDER_CHANGE_SLEEP</code>.
 <p>
 <pre>
    The number of milliseconds to sleep for elder change if current elder
@@ -835,7 +835,7 @@ TBA
 <p>
 <em>Integer</em> (default is 90)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#isShunned</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#isShunned</code>.
 <p>
 This is the length of time during which incoming messages from a departed peer
 are regarded as out-of-order messages and are hence ignored (shunned).
@@ -850,7 +850,7 @@ Units are in seconds.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.InternalLocator#FORCE_ADMIN_DM_TYPE</code>.
+See <code>org.apache.geode.distributed.internal.InternalLocator#FORCE_ADMIN_DM_TYPE</code>.
 <p>
 No longer exists as of 7.0.
 </dd>
@@ -874,7 +874,7 @@ As of 7.0.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.InternalLocator#INHIBIT_DM_BANNER</code>.
+See <code>org.apache.geode.distributed.internal.InternalLocator#INHIBIT_DM_BANNER</code>.
 <p>
 TBA
 </dd>
@@ -886,7 +886,7 @@ TBA
 <p>
 <em>Integer</em> (default is 20)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.ComplexDiskRegion#MAX_WAIT_FOR_SPACE</code>.
+See <code>org.apache.geode.internal.cache.ComplexDiskRegion#MAX_WAIT_FOR_SPACE</code>.
 <p>
 Units are in seconds.
 <p>
@@ -900,9 +900,9 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.StatArchiveReader(File[], ValueFilter[], boolean)</code>.
+See <code>org.apache.geode.internal.StatArchiveReader(File[], ValueFilter[], boolean)</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.StatArchiveReader#dump(PrintWriter)</code>.
+See <code>org.apache.geode.internal.StatArchiveReader#dump(PrintWriter)</code>.
 <p>
 </dd>
 
@@ -913,7 +913,7 @@ See <code>com.gemstone.gemfire.internal.StatArchiveReader#dump(PrintWriter)</cod
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.StatArchiveReader(File[], ValueFilter[], boolean)</code>.
+See <code>org.apache.geode.internal.StatArchiveReader(File[], ValueFilter[], boolean)</code>.
 <p>
 TBA
 </dd>
@@ -927,7 +927,7 @@ TBA
 <p>
 <em>Boolean</em>
 <p>
-See <code>com.gemstone.gemfire.internal.cache.StateFlushOperation#DEBUG</code>.
+See <code>org.apache.geode.internal.cache.StateFlushOperation#DEBUG</code>.
 <p>
 TBA
 </dd>
@@ -939,7 +939,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.ReplyProcessor21#THROW_EXCEPTION_ON_TIMEOUT</code>.
+See <code>org.apache.geode.distributed.internal.ReplyProcessor21#THROW_EXCEPTION_ON_TIMEOUT</code>.
 <p>
 TBA
 </dd>
@@ -979,13 +979,13 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>com.gemstone.gemfire.internal.OSProcess.trace</strong></dt>
+<dt><strong>org.apache.geode.internal.OSProcess.trace</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
 <em>String</em>
 <p>
-See <code>com.gemstone.gemfire.internal.OSProcess#bgexec(String[], File, File, boolean)</code>.
+See <code>org.apache.geode.internal.OSProcess#bgexec(String[], File, File, boolean)</code>.
 <p>
 If this property exists and has non-zero length, additional information about
 the executed command is printed to <code>System.out</code>.
@@ -994,25 +994,25 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>com.gemstone.gemfire.internal.cache.PartitionedRegion-logging</strong></dt>
+<dt><strong>org.apache.geode.internal.cache.PartitionedRegion-logging</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegion#initPrInternals</code>.
+See <code>org.apache.geode.internal.cache.PartitionedRegion#initPrInternals</code>.
 <p>
 TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore-logging (constructor)</strong></dt>
+<dt><strong>org.apache.geode.internal.cache.PartitionedRegionDataStore-logging (constructor)</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.PartitionedRegionDataStore(PartitionedRegion)</code>.
+See <code>org.apache.geode.internal.cache.PartitionedRegionDataStore.PartitionedRegionDataStore(PartitionedRegion)</code>.
 <p>
 TBA
 </dd>
@@ -1024,7 +1024,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionAdvisor#disabled</code>.
+See <code>org.apache.geode.distributed.internal.DistributionAdvisor#disabled</code>.
 <p>
 TBA
 </dd>
@@ -1084,7 +1084,7 @@ If true then transactions on persistent regions are allowed.
 <p>
 <em>Integer</em> -1
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GatewayEventRemoteDispatcher#ARTIFICIAL_DELAY</code>
+See <code>org.apache.geode.internal.cache.GatewayEventRemoteDispatcher#ARTIFICIAL_DELAY</code>
 <p>
 Introduce artificial delay (in ms) before batch sending to simulate a real WAN link
 </dd>
@@ -1096,9 +1096,9 @@ Introduce artificial delay (in ms) before batch sending to simulate a real WAN l
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.MsgStreamer#ASCII_STRINGS</code>.
+See <code>org.apache.geode.internal.tcp.MsgStreamer#ASCII_STRINGS</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.HeapDataOutputStream#ASCII_STRINGS</code>.
+See <code>org.apache.geode.internal.HeapDataOutputStream#ASCII_STRINGS</code>.
 <p>
 Causes GemFire's implementation of writeUTF to only work for Strings that use the ASCII
 character set. So Strings that use the international characters will be serialized incorrectly.
@@ -1142,7 +1142,7 @@ silently not use it if it is not available.
 <p>
 <em>Long</em> (default is 2)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PRHAFailureAndRecoveryPRovider#BUCKET_RECOVERY_DELAY</code>.
+See <code>org.apache.geode.internal.cache.PRHAFailureAndRecoveryPRovider#BUCKET_RECOVERY_DELAY</code>.
 <p>
 Mean amount of time, in seconds, to delay before starting to
 recover a bucket.
@@ -1157,7 +1157,7 @@ TBA
 <p>
 <em>Long</em> (default is 200)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PRHAFailureAndRecoveryPRovider#BUCKET_RECOVERY_JITTER</code>.
+See <code>org.apache.geode.internal.cache.PRHAFailureAndRecoveryPRovider#BUCKET_RECOVERY_JITTER</code>.
 <p>
 <pre>
    Maximum additional amount of time, in milliseconds, to skew bucket creation, 
@@ -1174,7 +1174,7 @@ TBA
 <p>
 <em>Long</em> (default is 1000 * 60)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.BucketAdvisor#GET_PRIMARY_TIMEOUT</code>.
+See <code>org.apache.geode.internal.cache.BucketAdvisor#GET_PRIMARY_TIMEOUT</code>.
 <p>
 <pre>
    Specifies the timeout to wait for a primary when calling {@link 
@@ -1193,7 +1193,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GemFireCache#ASYNC_EVENT_LISTENERS</code>.
+See <code>org.apache.geode.internal.cache.GemFireCache#ASYNC_EVENT_LISTENERS</code>.
 <p>
 If true then cache event listeners will be invoked by a background thread.
 By default they are invoked by the same thread that is doing the cache operation.
@@ -1206,7 +1206,7 @@ By default they are invoked by the same thread that is doing the cache operation
 <p>
 <em>Integer</em> (default is 4096)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GemFireCache#EVENT_QUEUE_LIMIT</code>.
+See <code>org.apache.geode.internal.cache.GemFireCache#EVENT_QUEUE_LIMIT</code>.
 <p>
 TBA
 </dd>
@@ -1218,7 +1218,7 @@ TBA
 <p>
 <em>Integer</em> (default is 120)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GemFireCache#DEFAULT_LOCK_LEASE</code>.
+See <code>org.apache.geode.internal.cache.GemFireCache#DEFAULT_LOCK_LEASE</code>.
 <p>
 <pre>
   The default duration (in seconds) of a lease on a distributed lock
@@ -1234,7 +1234,7 @@ TBA
 <p>
 <em>Integer</em> (default is 60)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GemFireCache#DEFAULT_LOCK_TIMEOUT</code>.
+See <code>org.apache.geode.internal.cache.GemFireCache#DEFAULT_LOCK_TIMEOUT</code>.
 <p>
 <pre>
   The default number of seconds to wait for a distributed lock
@@ -1250,7 +1250,7 @@ TBA
 <p>
 <em>Integer</em> (default is 300)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GemFireCache#DEFAULT_SEARCH_TIMEOUT</code>.
+See <code>org.apache.geode.internal.cache.GemFireCache#DEFAULT_SEARCH_TIMEOUT</code>.
 <p>
 <pre>
   The default amount of time to wait for a <code>netSearch</code> to
@@ -1269,7 +1269,7 @@ TBA
 <p>
 <em>Integer</em> (default is Integer.MAX_VALUE - 10)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GemFireCache#START_SERIAL_NUMBER</code>.
+See <code>org.apache.geode.internal.cache.GemFireCache#START_SERIAL_NUMBER</code>.
 <p>
 <pre>
   Specifies the starting serial number for the {@link #serialNumberSequencer
@@ -1285,7 +1285,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.CacheServerLauncher.ASSIGN_BUCKETS</code>.
+See <code>org.apache.geode.internal.cache.CacheServerLauncher.ASSIGN_BUCKETS</code>.
 <p>
 If a cache server is started using that CacheServerLauncher and this property is set to true, the cache
 server will create all of the buckets when it is started.
@@ -1299,7 +1299,7 @@ server will create all of the buckets when it is started.
 <p>
 <em>Integer</em> (default is 1000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor#ROLLOVER_THRESHOLD</code>.
+See <code>org.apache.geode.internal.cache.CacheDistributionAdvisor#ROLLOVER_THRESHOLD</code>.
 <p>
 <pre>
   Used to compare profile versioning numbers against 
@@ -1317,7 +1317,7 @@ TBA
 <p>
 <em>Integer</em> (default is 230000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.ha.HARegionQueueAttributes#BLOCKING_QUEUE_CAPACITY</code>.
+See <code>org.apache.geode.internal.cache.ha.HARegionQueueAttributes#BLOCKING_QUEUE_CAPACITY</code>.
 <p>
 TBA
 </dd>
@@ -1329,7 +1329,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.ExpirationScheduler#DEBUG</code>.
+See <code>org.apache.geode.internal.cache.ExpirationScheduler#DEBUG</code>.
 <p>
 TBA
 </dd>
@@ -1341,7 +1341,7 @@ TBA
 <p>
 <em>Long</em> (default is 1024 * 1024 * 1024)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl#DEFAULT_MAX_OPLOG_SIZE</code>.
+See <code>org.apache.geode.internal.cache.DiskWriteAttributesImpl#DEFAULT_MAX_OPLOG_SIZE</code>.
 <p>
 <pre>
   default max in bytes
@@ -1357,7 +1357,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See com.gemstone.gemfire.distributed.internal.locks.DLockService.DLockService(String, DistributedSystem, boolean, boolean, boolean).
+See org.apache.geode.distributed.internal.locks.DLockService.DLockService(String, DistributedSystem, boolean, boolean, boolean).
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -1367,7 +1367,7 @@ See com.gemstone.gemfire.distributed.internal.locks.DLockService.DLockService(St
 <p>
 <em>Integer</em> (default is 10000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.LockGrantorId#ROLLOVER_MARGIN</code>.
+See <code>org.apache.geode.distributed.internal.locks.LockGrantorId#ROLLOVER_MARGIN</code>.
 <p>
 TBA
 </dd>
@@ -1379,7 +1379,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#DEBUG_LOCK_REQUEST_LOOP</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#DEBUG_LOCK_REQUEST_LOOP</code>.
 <p>
 TBA
 </dd>
@@ -1391,7 +1391,7 @@ TBA
 <p>
 <em>Integer</em> (default is 20)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#DEBUG_LOCK_REQUEST_LOOP_COUNT</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#DEBUG_LOCK_REQUEST_LOOP_COUNT</code>.
 <p>
 TBA
 </dd>
@@ -1403,7 +1403,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#DEBUG_DISALLOW_NOT_HOLDER</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#DEBUG_DISALLOW_NOT_HOLDER</code>.
 <p>
 TBA
 </dd>
@@ -1415,7 +1415,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#DEBUG_ENFORCE_SAFE_EXIT</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#DEBUG_ENFORCE_SAFE_EXIT</code>.
 <p>
 TBA
 </dd>
@@ -1427,7 +1427,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#DEBUG_NONGRANTOR_DESTROY_LOOP</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#DEBUG_NONGRANTOR_DESTROY_LOOP</code>.
 <p>
 TBA
 </dd>
@@ -1439,7 +1439,7 @@ TBA
 <p>
 <em>Integer</em> (default is 20)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT</code>.
 <p>
 TBA
 </dd>
@@ -1451,7 +1451,7 @@ TBA
 <p>
 <em>Long</em> (default is 2000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#NOT_GRANTOR_SLEEP</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#NOT_GRANTOR_SLEEP</code>.
 <p>
 Units are in milliseconds.
 <p>
@@ -1465,7 +1465,7 @@ TBA
 <p>
 <em>Integer</em> (default is Integer.MAX_VALUE - 10)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.locks.DLockService#START_SERIAL_NUMBER</code>.
+See <code>org.apache.geode.distributed.internal.locks.DLockService#START_SERIAL_NUMBER</code>.
 <p>
 <pre>
   Specifies the starting serial number for the {@link #serialNumberSequencer}
@@ -1481,7 +1481,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.LocalRegion#DO_EXPENSIVE_VALIDATIONS</code>.
+See <code>org.apache.geode.internal.cache.LocalRegion#DO_EXPENSIVE_VALIDATIONS</code>.
 <p>
 TBA
 </dd>
@@ -1493,7 +1493,7 @@ TBA
 <p>
 <em>Integer</em> (default is Integer.MAX_VALUE - 10)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionAdvisor#START_VERSION_NUMBER</code>.
+See <code>org.apache.geode.distributed.internal.DistributionAdvisor#START_VERSION_NUMBER</code>.
 <p>
 <pre>
    Specifies the starting version number for the {@link 
@@ -1510,7 +1510,7 @@ TBA
 <p>
 <em>Integer</em> (default is 0)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.ExpiryTask class init</code>
+See <code>org.apache.geode.internal.cache.ExpiryTask class init</code>
 <p>
 TBA
 </dd>
@@ -1522,7 +1522,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.LocalRegion#EXPIRY_UNITS_MS</code>.
+See <code>org.apache.geode.internal.cache.LocalRegion#EXPIRY_UNITS_MS</code>.
 <p>
 <pre>
    Used by unit tests to set expiry to milliseconds instead of the default
@@ -1539,7 +1539,7 @@ TBA
 <p>
 <em>Long</em> (default is 0)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 If <code>gemfire.useFD</code> is true or this property's value is non-zero,
 the <code>FD</code> protocol is inserted on the JGroups stack.
@@ -1559,7 +1559,7 @@ TBA
 <p>
 <em>Integer</em> (default is 15000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.PooledExecutorWithDMStats#PooledExecutorWithDMStats(BlockingQueue, int, PoolStatHelper, ThreadFactory)</code>.
+See <code>org.apache.geode.distributed.internal.PooledExecutorWithDMStats#PooledExecutorWithDMStats(BlockingQueue, int, PoolStatHelper, ThreadFactory)</code>.
 <p>
 Units are in milliseconds.
 <p>
@@ -1573,7 +1573,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.CacheServerLauncher.#isDedicatedCacheServer</code>
+See <code>org.apache.geode.internal.cache.CacheServerLauncher.#isDedicatedCacheServer</code>
 <p>
 Tell admin API whether the member is a dedicated cache server
 </dd>
@@ -1585,7 +1585,7 @@ Tell admin API whether the member is a dedicated cache server
 <p>
 <em>Integer</em> (default for Sun/Oracle is 1 and for others 5)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.control.InternalResourceManager.#MEMORY_EVENT_TOLERANCE</code>
+See <code>org.apache.geode.internal.cache.control.InternalResourceManager.#MEMORY_EVENT_TOLERANCE</code>
 <p>
 Number of memory events that ResourceManager will tolerate before throwing a LME. Useful with JVM 1.7
 </dd>
@@ -1598,7 +1598,7 @@ Number of memory events that ResourceManager will tolerate before throwing a LME
 <p>
 <em>Integer</em> (default is 10000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.ExpirationScheduler#MAX_PENDING_CANCELS</code>.
+See <code>org.apache.geode.internal.cache.ExpirationScheduler#MAX_PENDING_CANCELS</code>.
 <p>
 TBA
 </dd>
@@ -1610,7 +1610,7 @@ TBA
 <p>
 <em>Integer</em> (default is 1)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.partitioned.SizedBasedLoadProbe.#MIN_BUCKET_SIZE</code>
+See <code>org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe.#MIN_BUCKET_SIZE</code>
 <p>
 Allows setting the minimum bucket size to be used during rebalance
 </dd>
@@ -1632,7 +1632,7 @@ If true then pr primary buckets will not be balanced when a new member is starte
 <p>
 <em>Integer</em> (default is 180)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.ha.HARegionQueue#REGION_ENTRY_EXPIRY_TIME</code>.
+See <code>org.apache.geode.internal.cache.ha.HARegionQueue#REGION_ENTRY_EXPIRY_TIME</code>.
 <p>
 <pre>
    Constant used to set region entry expiry time using system property.
@@ -1650,7 +1650,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.cache.client.internal.PoolImpl</code>
+See <code>org.apache.geode.cache.client.internal.PoolImpl</code>
 <p>
 Clear pdxType ids when client disconnects from servers
 </dd>
@@ -1662,15 +1662,15 @@ Clear pdxType ids when client disconnects from servers
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.admin.GemFireMonitorService#processGetValCommand</code>.
+See <code>org.apache.geode.admin.GemFireMonitorService#processGetValCommand</code>.
 <p>
-See <code>com.gemstone.gemfire.admin.remote.RemoteCacheInfo.RemoteCacheInfo(GemFireCache)</code>.
+See <code>org.apache.geode.admin.remote.RemoteCacheInfo.RemoteCacheInfo(GemFireCache)</code>.
 <p>
-See <code>com.gemstone.gemfire.admin.remote.RootRegionResponse#create(DistributionManager, InternalDistributedMember)</code>.
+See <code>org.apache.geode.admin.remote.RootRegionResponse#create(DistributionManager, InternalDistributedMember)</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore#createBucketRegion(int)</code>.
+See <code>org.apache.geode.internal.cache.PartitionedRegionDataStore#createBucketRegion(int)</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegionHelper#getPRConfigRegion(Region, Cache)</code>.
+See <code>org.apache.geode.internal.cache.PartitionedRegionHelper#getPRConfigRegion(Region, Cache)</code>.
 <p>
 TBA
 </dd>
@@ -1682,7 +1682,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.CachedDeserializableFactory#PREFER_DESERIALIZED</code>.
+See <code>org.apache.geode.internal.cache.CachedDeserializableFactory#PREFER_DESERIALIZED</code>.
 <p>
 TBA
 </dd>
@@ -1694,7 +1694,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <P>
-See <code>com.gemstone.gemfire.internal.cache.CachedDeserializableFactory.#PREFER_DESERIALIZED</code>
+See <code>org.apache.geode.internal.cache.CachedDeserializableFactory.#PREFER_DESERIALIZED</code>
 <p>
 Enable storing the values in serialized form
 </dd>
@@ -1706,7 +1706,7 @@ Enable storing the values in serialized form
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.partitioned.PRSanityCheckMessage#schedule</code>.
+See <code>org.apache.geode.internal.cache.partitioned.PRSanityCheckMessage#schedule</code>.
 <p>
 TBA
 </dd>
@@ -1718,7 +1718,7 @@ TBA
 <p>
 <em>Integer</em> (default is 5000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.partitioned.PRSanityCheckMessage#schedule</code>.
+See <code>org.apache.geode.internal.cache.partitioned.PRSanityCheckMessage#schedule</code>.
 <p>
 Units are in milliseconds.
 <p>
@@ -1732,7 +1732,7 @@ TBA
 <p>
 <em>Long</em> (defaults to NanoTimer.getTime())
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegion#rand</code>.
+See <code>org.apache.geode.internal.cache.PartitionedRegion#rand</code>.
 <p>
 Seed for the random number generator in this class.
 <p>
@@ -1746,7 +1746,7 @@ TBA
 <p>
 <em>Integer</em> (defaults to 10 * 60 * 1000)
 <p>
-See <code>com.gemstone.gemfire.cache.query.internal.DefaultQuery.#COMPILED_QUERY_CLEAR_TIME</code>
+See <code>org.apache.geode.cache.query.internal.DefaultQuery.#COMPILED_QUERY_CLEAR_TIME</code>
 <p>
 Frequency of clean up compiled queries
 </dd>
@@ -1757,7 +1757,7 @@ Frequency of clean up compiled queries
 <em>Public:</em> false
 <p>
 <p>
-See <code>com.gemstone.gemfire.cache.query.internal.DefaultQuery.#QUERY_VERBOSE</code><em>Boolean</em> (defaults to false)
+See <code>org.apache.geode.cache.query.internal.DefaultQuery.#QUERY_VERBOSE</code><em>Boolean</em> (defaults to false)
 <p>
 Enable verbose logging in the query execution
 </dd>
@@ -1769,7 +1769,7 @@ Enable verbose logging in the query execution
 <p>
 <em>Boolean</em> (defaults to true)
 <p>
-See <code>com.gemstone.gemfire.cache.query.internal.DefaultQueryService.#QUERY_HETEROGENEOUS_OBJECTS</code>
+See <code>org.apache.geode.cache.query.internal.DefaultQueryService.#QUERY_HETEROGENEOUS_OBJECTS</code>
 <p>
 Allow query on region with heterogeneous objects
 </dd>
@@ -1781,7 +1781,7 @@ Allow query on region with heterogeneous objects
 <p>
 <em>Boolean</em> (defaults to false)
 <p>
-See <code>com.gemstone.gemfire.cache.execute.internal.FunctionServiceManager.#RANDOM_onMember</code>
+See <code>org.apache.geode.cache.execute.internal.FunctionServiceManager.#RANDOM_onMember</code>
 <p>
 When set, onMember execution will be executed on a random member.
 </dd>
@@ -1793,7 +1793,7 @@ When set, onMember execution will be executed on a random member.
 <p>
 <em>Integer</em> (default is 1)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor#VOLUNTERING_THREAD_COUNT</code>.
+See <code>org.apache.geode.internal.cache.partitioned.RegionAdvisor#VOLUNTERING_THREAD_COUNT</code>.
 <p>
 <pre>
   Number of threads allowed to concurrently volunteer for bucket primary.
@@ -1827,7 +1827,7 @@ TBA
 <p>
 <em>Long</em> (default is Long.MAX_VALUE)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegion#VM_OWNERSHIP_WAIT_TIME</code>
+See <code>org.apache.geode.internal.cache.PartitionedRegion#VM_OWNERSHIP_WAIT_TIME</code>
 <p>
 <pre>
   Time to wait for for acquiring distributed lock ownership
@@ -1845,7 +1845,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GatewayHubImpl#USE_ASYNCHRONOUS_DISTRIBUTION</code>.
+See <code>org.apache.geode.internal.cache.GatewayHubImpl#USE_ASYNCHRONOUS_DISTRIBUTION</code>.
 <p>
 TBA
 </dd>
@@ -1857,7 +1857,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.ConnectionProxyImpl#disableShufflingOfEndpoints</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.ConnectionProxyImpl#disableShufflingOfEndpoints</code>.
 <p>
 <pre>
    A debug flag, which can be toggled by tests to disable/enable shuffling of
@@ -1888,7 +1888,7 @@ TBA
 <p>
 <em>Integer</em> 10
 <p>
-See <code>com.gemstone.gemfire.internal.cache.BridgeServerImpl.#FORCE_LOAD_UPDATE_FREQUENCY</code>
+See <code>org.apache.geode.internal.cache.BridgeServerImpl.#FORCE_LOAD_UPDATE_FREQUENCY</code>
 <p>
 How often to force a BridgeServer load message to be sent
 </dd>
@@ -1900,7 +1900,7 @@ How often to force a BridgeServer load message to be sent
 <p>
 <em>Boolean</em> default is false
 <p>
-See <code>com.gemstone.gemfire.internal.cache.BucketRegion.#FORCE_LOCAL_LISTENERS_INVOCATION</code>
+See <code>org.apache.geode.internal.cache.BucketRegion.#FORCE_LOCAL_LISTENERS_INVOCATION</code>
 <p>
 Enable invocation of listeners in both primary and secondary buckets
 </dd>
@@ -1912,7 +1912,7 @@ Enable invocation of listeners in both primary and secondary buckets
 <p>
 <em>Integer</em> default is -1
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GemFireCacheImpl.#MAX_QUERY_EXECUTION_TIME</code>
+See <code>org.apache.geode.internal.cache.GemFireCacheImpl.#MAX_QUERY_EXECUTION_TIME</code>
 <p>
 Limit the max query execution time (ms)
 </dd>
@@ -1924,7 +1924,7 @@ Limit the max query execution time (ms)
 <p>
 <em>Integer</em> default is 0
 <p>
-See <code>com.gemstone.gemfire.cache.client.internal.ConnectioImpl.#CLIENT_FUNCTION_TIMEOUT</code>
+See <code>org.apache.geode.cache.client.internal.ConnectioImpl.#CLIENT_FUNCTION_TIMEOUT</code>
 <p>
 Timeout to set for client function execution
 </dd>
@@ -1936,7 +1936,7 @@ Timeout to set for client function execution
 <p>
 <em>String</em> (default is unset, to use System.out)
 <p>
-See <code>com.gemstone.gemfire.admin.GemFireClientAdminTool#logFileName</code>.
+See <code>org.apache.geode.admin.GemFireClientAdminTool#logFileName</code>.
 <p>
 This is a file name.
 <p>
@@ -1950,7 +1950,7 @@ TBA
 <p>
 <em>String</em>
 <p>
-See <code>com.gemstone.gemfire.internal.SocketCreator</code>
+See <code>org.apache.geode.internal.SocketCreator</code>
 <p>
 Non-standard Socket creator
 </dd>
@@ -1962,7 +1962,7 @@ Non-standard Socket creator
 <p>
 <em>Boolean</em> true
 <p>
-See <code>com.gemstone.gemfire.cache.query.internal.CqService.#EXECUTE_QUERY_DURING_INIT</code>
+See <code>org.apache.geode.cache.query.internal.CqService.#EXECUTE_QUERY_DURING_INIT</code>
 <p>
 When set to false, avoid query execution during CQ when initial results are not required
 </dd>
@@ -1974,7 +1974,7 @@ When set to false, avoid query execution during CQ when initial results are not 
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.SharedLibrary#getName</code>.
+See <code>org.apache.geode.internal.SharedLibrary#getName</code>.
 <p>
 TBA
 </dd>
@@ -1998,7 +1998,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.AbstractRegionEntry.#DISABLE_ACCESS_TIME_UPDATE_ON_PUT</code>
+See <code>org.apache.geode.internal.cache.AbstractRegionEntry.#DISABLE_ACCESS_TIME_UPDATE_ON_PUT</code>
 <p>
 Disable access time updates on put event
 </dd>
@@ -2010,7 +2010,7 @@ Disable access time updates on put event
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.EntryEventImpl#EVENT_OLD_VALUE</code>.
+See <code>org.apache.geode.internal.cache.EntryEventImpl#EVENT_OLD_VALUE</code>.
 <p>
 Discussing EVENT_OLD_VALUE = !Boolean.getBoolean():
 <pre>
@@ -2028,7 +2028,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegion.#DISABLE_SECONDARY_BUCKET_ACK</code>
+See <code>org.apache.geode.internal.cache.PartitionedRegion.#DISABLE_SECONDARY_BUCKET_ACK</code>
 <p>
 Enable no-ack replication in bucket regions
 </dd>
@@ -2040,7 +2040,7 @@ Enable no-ack replication in bucket regions
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.DistributedCacheOperation#UDP_DISABLE_DIRECT_ACK</code>.
+See <code>org.apache.geode.internal.cache.DistributedCacheOperation#UDP_DISABLE_DIRECT_ACK</code>.
 <p>
 TBA
 </dd>
@@ -2052,7 +2052,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy#LOG_DROPPED_MSGS</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.CacheClientProxy#LOG_DROPPED_MSGS</code>.
 <p>
 Discussing LOG_DROPPED_MSGS = !Boolean.getBoolean():
 <pre>
@@ -2093,7 +2093,7 @@ to a non-default value.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.SimpleDiskRegion</code>.
+See <code>org.apache.geode.internal.cache.SimpleDiskRegion</code>.
 <p>
 <pre>
   Whether to get the values from disk to memory on recovery
@@ -2109,7 +2109,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.LocalRegion.#EXPIRATIONS_CAUSE_CONFLICTS</code>
+See <code>org.apache.geode.internal.cache.LocalRegion.#EXPIRATIONS_CAUSE_CONFLICTS</code>
 <p>
 Allow expirations to be done by multiple threads, avoiding the 
 pendingExpires list (set in conjunction with gemfire.EXPIRY_THREADS)
@@ -2178,7 +2178,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.GatewayHubImpl#ALLOW_CONSERVE_SOCKETS</code>.
+See <code>org.apache.geode.internal.cache.GatewayHubImpl#ALLOW_CONSERVE_SOCKETS</code>.
 <p>
 <pre>
    A boolean that defines whether the value of the conserve-sockets property
@@ -2199,7 +2199,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.SingleWriteSingleReadRegionQueue#NO_ACK</code>.
+See <code>org.apache.geode.internal.cache.SingleWriteSingleReadRegionQueue#NO_ACK</code>.
 <p>
 <pre>
    Whether the <code>Gateway</code> queue should be no-ack instead of ack.
@@ -2225,7 +2225,7 @@ If true causes the GatewayReceiver will apply batches it has already received.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection#APPLY_RETRIES</code>.
+See <code>org.apache.geode.internal.cache.tier.sockets.ServerConnection#APPLY_RETRIES</code>.
 <p>
 TBA
 </dd>
@@ -2237,7 +2237,7 @@ TBA
 <p>
 <em>Integer</em> (default is 16)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.InitialImageOperation.#CHUNK_PERMITS</code>
+See <code>org.apache.geode.internal.cache.InitialImageOperation.#CHUNK_PERMITS</code>
 <p>
 Allowed number of in-flight initial image chunks. This property controls how many requests for GII chunks can be handled simultaneously.
 </dd>
@@ -2249,7 +2249,7 @@ Allowed number of in-flight initial image chunks. This property controls how man
 <p>
 <em>Integer</em> (default is 5)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.InitialImageOperation.#MAX_PARALLEL_GIIS </code>
+See <code>org.apache.geode.internal.cache.InitialImageOperation.#MAX_PARALLEL_GIIS </code>
 <p>
 Allowed number of GIIs in parallel. This property controls how many regions can do GII simultaneously. Each replicated region and partitioned region bucket counts against this number.
 </dd>
@@ -2261,7 +2261,7 @@ Allowed number of GIIs in parallel. This property controls how many regions can 
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.Assert#debug</code>.
+See <code>org.apache.geode.internal.Assert#debug</code>.
 <p>
 Causes VM to hang on assertion failure (to allow a debugger to be attached)
 instead of exiting the process.
@@ -2297,7 +2297,7 @@ signal handlers using sun.misc.Signal.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.gui.RemoteCommandManager#getLocatorStart</code>.
+See <code>org.apache.geode.internal.gui.RemoteCommandManager#getLocatorStart</code>.
 <p>
 Adds the "-lightweight" argument when creating the locator.
 </dd>
@@ -2309,7 +2309,7 @@ Adds the "-lightweight" argument when creating the locator.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.PureJavaMode#debug</code>.
+See <code>org.apache.geode.internal.PureJavaMode#debug</code>.
 <p>
 TBA
 </dd>
@@ -2321,9 +2321,9 @@ TBA
 <p>
 <em>String</em>
 <p>
-See <code>com.gemstone.gemfire.internal.gui.RemoteCommandManager#getLocatorStart</code>.
+See <code>org.apache.geode.internal.gui.RemoteCommandManager#getLocatorStart</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.gui.StartStopManager#startLocalLocator</code>.
+See <code>org.apache.geode.internal.gui.StartStopManager#startLocalLocator</code>.
 <p>
 A JVM property, esp. "-Xms150m".
 <p>
@@ -2337,9 +2337,9 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-See <code>com.gemstone.gemfire.internal.gui.RemoteCommandManager#getLocatorStart</code>.
+See <code>org.apache.geode.internal.gui.RemoteCommandManager#getLocatorStart</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.gui.StartStopManager#startLocalLocator</code>.
+See <code>org.apache.geode.internal.gui.StartStopManager#startLocalLocator</code>.
 <p>
 A JVM property, esp. "-Xmx400m"
 <p>
@@ -2353,7 +2353,7 @@ TBA
 <p>
 <em>String</em>
 <p>
-See the constructor for <code>com.gemstone.gemfire.distributed.internal.InternalLocator</code>.
+See the constructor for <code>org.apache.geode.distributed.internal.InternalLocator</code>.
 <p>
 If this property is not found in gemfire.properties, the system property
 of the same name is used.
@@ -2367,7 +2367,7 @@ of the same name is used.
 <p>
 <em>Integer</em> (default is -1)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand#maxEntries</code>.
+See <code>org.apache.geode.internal.cache.lru.NewLRUClockHand#maxEntries</code>.
 <p>
 This is the maximum number of "good enough" entries to pass over for eviction
 before settling on the next acceptable entry.  This prevents excessive cache
@@ -2382,7 +2382,7 @@ processing to find a candidate for eviction.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.partitioned.GetMessage#ORDER_PR_GETS</code>.
+See <code>org.apache.geode.internal.cache.partitioned.GetMessage#ORDER_PR_GETS</code>.
 <p>
 TBA
 </dd>
@@ -2394,7 +2394,7 @@ TBA
 <p>
 <em>Integer</em> (default is 60 * 60 * 1000)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegion#retryTimeout</code>
+See <code>org.apache.geode.internal.cache.PartitionedRegion#retryTimeout</code>
 <p>
 <pre>
   The maximum milliseconds for retrying operations
@@ -2410,7 +2410,7 @@ TBA
 <p>
 <em>Integer</em> 1+ (default is 2)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PRQueryProcessor#executeQuery</code>
+See <code>org.apache.geode.internal.cache.PRQueryProcessor#executeQuery</code>
 <p>
 <pre>
   The number of concurrent threads to use within a single VM to execute queries
@@ -2428,7 +2428,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.PureJavaMode class init</code>.
+See <code>org.apache.geode.internal.PureJavaMode class init</code>.
 <p>
 Force use of "pure" Java mode (native libraries will not be loaded)
 </dd>
@@ -2440,7 +2440,7 @@ Force use of "pure" Java mode (native libraries will not be loaded)
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.cache.client.internal.PoolImpl.#SPECIAL_DURABLE</code>
+See <code>org.apache.geode.cache.client.internal.PoolImpl.#SPECIAL_DURABLE</code>
 <p>
 Makes multiple durable subscriptions from same client unique. on java client ensures only a single server proxy is created but will limit the client to a single active client pool at a time
 </dd>
@@ -2452,7 +2452,7 @@ Makes multiple durable subscriptions from same client unique. on java client ens
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.InternalDistributedSystem#statsDisabled</code>.
+See <code>org.apache.geode.distributed.internal.InternalDistributedSystem#statsDisabled</code>.
 <p>
 TBA
 </dd>
@@ -2464,7 +2464,7 @@ TBA
 <p>
 <em>Long</em> (default is 5000)
 <p>
-See <code>com.gemstone.gemfire.admin.GemFireClientAdminTool#_statusPollingDelay</code>.
+See <code>org.apache.geode.admin.GemFireClientAdminTool#_statusPollingDelay</code>.
 <p>
 Units are in milliseconds.
 <p>
@@ -2478,7 +2478,7 @@ TBA
 <p>
 <em>Boolean</em>
 <p>
-See <code>com.gemstone.gemfire.internal.cache.Oplog#SYNC_WRITES</code>.
+See <code>org.apache.geode.internal.cache.Oplog#SYNC_WRITES</code>.
 <p>
 <pre>
    This system property instructs that writes be synchronously written to disk
@@ -2511,7 +2511,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 TBA
 </dd>
@@ -2523,7 +2523,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionConfig#VALIDATE</code>.
+See <code>org.apache.geode.distributed.internal.DistributionConfig#VALIDATE</code>.
 <p>
 TBA
 </dd>
@@ -2535,7 +2535,7 @@ TBA
 <p>
 <em>Integer</em> (default is 8 * 1024 * 1024)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.DistributionConfig#VALIDATE_CEILING</code>.
+See <code>org.apache.geode.distributed.internal.DistributionConfig#VALIDATE_CEILING</code>.
 <p>
 TBA
 </dd>
@@ -2547,7 +2547,7 @@ TBA
 <p>
 <em>String</em>
 <p>
-See <code>com.gemstone.gemfire.distributed.DistributedSystem#PROPERTY_FILE</code>.
+See <code>org.apache.geode.distributed.DistributedSystem#PROPERTY_FILE</code>.
 <p>
 <pre>
      The <code>PROPERTY_FILE</code> is the name of the
@@ -2581,7 +2581,7 @@ TBA
 <p>
 <em>Integer</em> (default is 20)
 <p>
-See <code>com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.BucketRecoverer#grabBuckets</code>.
+See <code>org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketRecoverer#grabBuckets</code>.
 <p>
 TBA
 </dd>
@@ -2593,7 +2593,7 @@ TBA
 <p>
 <em>Boolean</em>
 <p>
-See <code>com.gemstone.gemfire.admin.jmx.internal.AgentImpl#checkDebug</code>.
+See <code>org.apache.geode.admin.jmx.internal.AgentImpl#checkDebug</code>.
 <p>
 <pre>
   Enables mx4j tracing if Agent debugging is enabled.
@@ -2609,7 +2609,7 @@ TBA
 <p>
 <em>String</em>
 <p>
-See <code>com.gemstone.gemfire.admin.jmx.internal.AgentConfigImpl#retrievePropertyFile</code>.
+See <code>org.apache.geode.admin.jmx.internal.AgentConfigImpl#retrievePropertyFile</code>.
 <p>
 <pre>
    The <code>propertyFile</code> is the name of the property file that will 
@@ -2640,7 +2640,7 @@ TBA
 <p>
 <em>String</em>
 <p>
-See <code>com.gemstone.gemfire.internal.gui.Service#initProps()</code>.
+See <code>org.apache.geode.internal.gui.Service#initProps()</code>.
 <p>
 This is name of a <code>Properties</code> file read at startup.
 <p>
@@ -2651,7 +2651,7 @@ TBA
 <dt><strong>gfc.propertyfile.onclose</strong></dt>
 <em>String</em>
 <p>
-See <code>com.gemstone.gemfire.internal.gui.Service#saveProps</code>.
+See <code>org.apache.geode.internal.gui.Service#saveProps</code>.
 <dd>
 <em>Public:</em> false
 <p>
@@ -2685,9 +2685,9 @@ This is used in MPING, FD_SOCK, and TP.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.gui.NavigationPane#NavigationPane()</code>.
+See <code>org.apache.geode.internal.gui.NavigationPane#NavigationPane()</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.gui.Service#Service()</code>.
+See <code>org.apache.geode.internal.gui.Service#Service()</code>.
 <p>
 TBA
 </dd>
@@ -2745,9 +2745,9 @@ If you manage to get here without setting mcast_port, the default value is 7600.
 <p>
 <em>Boolean</em>
 <p>
-See <code>com.gemstone.gemfire.internal.jta.GlobalTransaction#VERBOSE</code>.
+See <code>org.apache.geode.internal.jta.GlobalTransaction#VERBOSE</code>.
 <p>
-See <code>com.gemstone.gemfire.internal.jta.TransactionManagerImpl#VERBOSE</code>.
+See <code>org.apache.geode.internal.jta.TransactionManagerImpl#VERBOSE</code>.
 <p>
 TBA
 </dd>
@@ -2759,7 +2759,7 @@ TBA
 <p>
 <em>Integer</em> (default is 600)
 <p>
-See <code>com.gemstone.gemfire.internal.jta.TransactionManagerImpl#DEFAULT_TRANSACTION_TIMEOUT</code>.
+See <code>org.apache.geode.internal.jta.TransactionManagerImpl#DEFAULT_TRANSACTION_TIMEOUT</code>.
 <p>
 Units are in seconds.
 <p>
@@ -2787,7 +2787,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.LogFileParser#TRIM_TIMESTAMPS</code>.
+See <code>org.apache.geode.internal.LogFileParser#TRIM_TIMESTAMPS</code>.
 <p>
 TBA
 </dd>
@@ -2799,7 +2799,7 @@ TBA
 <p>
 <em>String</em> (default is org.apache.commons.logging.impl.SimpleLog)
 <p>
-See <code>com.gemstone.gemfire.admin.jmx.internal.AgentImpl class init</code>.
+See <code>org.apache.geode.admin.jmx.internal.AgentImpl class init</code>.
 <p>
 This is the name of a class.
 <p>
@@ -2815,7 +2815,7 @@ because of its explicit use in the JMX Agent.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.GemFireStatSampler#osStatsDisabled</code>.
+See <code>org.apache.geode.internal.GemFireStatSampler#osStatsDisabled</code>.
 <p>
 TBA
 </dd>
@@ -2827,7 +2827,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.TCPConduit#DEBUG</code>.
+See <code>org.apache.geode.internal.tcp.TCPConduit#DEBUG</code>.
 <p>
 TBA
 </dd>
@@ -2851,7 +2851,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.TCPConduit#QUIET</code>.
+See <code>org.apache.geode.internal.tcp.TCPConduit#QUIET</code>.
 <p>
 TBA
 </dd>
@@ -2877,7 +2877,7 @@ TBA
 <p>
 <em>Integer</em> (default is 50)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.TCPConduit#BACKLOG</code>.
+See <code>org.apache.geode.internal.tcp.TCPConduit#BACKLOG</code>.
 <p>
 <pre>
   backlog is the "accept" backlog configuration parameter all
@@ -2894,7 +2894,7 @@ TBA
 <p>
 <em>Integer</em> (default is 1024 * 1024)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#BATCH_BUFFER_SIZE</code>.
+See <code>org.apache.geode.internal.tcp.Connection#BATCH_BUFFER_SIZE</code>.
 <p>
 TBA
 </dd>
@@ -2906,9 +2906,9 @@ TBA
 <p>
 <em>Long</em> in JGroups, <em>Integer</em> in Connection.
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code> (default is 20).
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code> (default is 20).
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#BATCH_FLUSH_MS</code>.
+See <code>org.apache.geode.internal.tcp.Connection#BATCH_FLUSH_MS</code>.
 (Default is 50)
 <p>
 Replaces <code>BUNDLING_TIMEOUT</code> in the JGroups config template.
@@ -2931,7 +2931,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#BATCH_SENDS</code>.
+See <code>org.apache.geode.internal.tcp.Connection#BATCH_SENDS</code>.
 <p>
 TBA
 </dd>
@@ -2943,7 +2943,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 TBA
 </dd>
@@ -2956,7 +2956,7 @@ TBA
 <em>Integer</em> (default is the number of processors on current machine,
 but no less than 2)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.direct.DirectChannel#DEFAULT_CONCURRENCY_LEVEL</code>.
+See <code>org.apache.geode.distributed.internal.direct.DirectChannel#DEFAULT_CONCURRENCY_LEVEL</code>.
 <p>
 <pre>
    Return how many concurrent operations should be allowed by default.
@@ -2972,7 +2972,7 @@ TBA
 <p>
 <em>String</em> (one of "config", "fine", "finer", or "finest")
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.TCPConduit#getLogger</code>.
+See <code>org.apache.geode.internal.tcp.TCPConduit#getLogger</code>.
 <p>
 Used only if this class needs to create a logger.
 <p>
@@ -3004,7 +3004,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 If true, sets <code>ENABLE_BUNDLING</code> to false and
 <code>BUNDLING_TIMEOUT</code> to 30 in the JGroups config template; otherwise
@@ -3044,7 +3044,7 @@ TBA
 <p>
 <em>Boolean</em> (defaults to false)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#SOCKET_WRITE_DISABLED</code>.
+See <code>org.apache.geode.internal.tcp.Connection#SOCKET_WRITE_DISABLED</code>.
 <p>
 <pre>
   use to test message prep overhead (no socket write).
@@ -3061,7 +3061,7 @@ TBA
 <p>
 <em>Integer</em> (default is 3000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#destroyMember</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#destroyMember</code>.
 <p>
 TBA Workaround for bug 34010: small pause inserted before closing
 reader threads for a departed member.
@@ -3074,7 +3074,7 @@ reader threads for a departed member.
 <p>
 <em>Integer</em> (default is 2)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 This substitutes the <code>NUM_PING_REQUESTS</code> field in the JGroups
 config template, which in turn sets the <code>num_ping_requests</code> property
@@ -3094,7 +3094,7 @@ TBA
 <p>
 <em>Long</em> (default is 1000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 Sets the <code>DISCOVERY_TIMEOUT</code> field in the JGroups template, which
 in turn sets the <code>timeout</code> property in the <code>Discovery</code>
@@ -3112,7 +3112,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 See <code>com.gemstone.org.jgroups.protocols.pbcast.GMS#setProperties</code>.
 <p>
@@ -3130,7 +3130,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#enableJgStackStats</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#enableJgStackStats</code>.
 <p>
 <pre>
   whether time-based statistics should be gathered for up/down events
@@ -3146,7 +3146,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#DISABLE_UCAST_FLUSH</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#DISABLE_UCAST_FLUSH</code>.
 <p>
 Regarding the <code>DISABLE_UCAST_FLUSH = !Boolean.getBoolean()</code>:
 <pre>
@@ -3166,7 +3166,7 @@ TBA
 <p>
 <em>Integer</em> (default is 59000)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#HANDSHAKE_TIMEOUT_MS</code>.
+See <code>org.apache.geode.internal.tcp.Connection#HANDSHAKE_TIMEOUT_MS</code>.
 <p>
 TBA
 </dd>
@@ -3178,7 +3178,7 @@ TBA
 <p>
 <em>Integer</em> (default is 10)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp</code>.
+See <code>org.apache.geode.internal.tcp</code>.
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -3188,7 +3188,7 @@ See <code>com.gemstone.gemfire.internal.tcp</code>.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 Substitutes <code>INCOMING_PACKET_HANDLER</code> in the JGroups template
 string, which in turn sets the <code>use_incoming_packet_handler</code>
@@ -3205,7 +3205,7 @@ dispatch JGroups events.
 <p>
 <em>Long</em> (default is 10000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 Sets the <code>JOIN_TIMEOUT</code> field in the JGroups config template, which
 in turn sets the <code>join_timeout</code> property in the
@@ -3223,7 +3223,7 @@ TBA
 <p>
 <em>Integer</em> (default is 5000)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#Connection(ConnectionTable, Socket)</code>.
+See <code>org.apache.geode.internal.tcp.Connection#Connection(ConnectionTable, Socket)</code>.
 <p>
 Sets the <code>SO_LINGER</code> time on direct channel TCP sockets.
 Units are in milliseconds.
@@ -3236,7 +3236,7 @@ Units are in milliseconds.
 <p>
 <em>Integer</em> (default is 60000)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.TCPConduit#LISTENER_CLOSE_TIMEOUT</code>.
+See <code>org.apache.geode.internal.tcp.TCPConduit#LISTENER_CLOSE_TIMEOUT</code>.
 <p>
 <pre>
   max amount of time (ms) to wait for listener threads to stop
@@ -3252,7 +3252,7 @@ TBA
 <p>
 <em>Integer</em> (default is p2p.defaultConcurrencyLevel)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#MAX_SENDERS</code>.
+See <code>org.apache.geode.internal.tcp.Connection#MAX_SENDERS</code>.
 <p>
 <pre>
   The maximum number of concurrent senders sending a message to a single
@@ -3269,7 +3269,7 @@ TBA
 <p>
 <em>Integer</em> (default is p2p.defaultConcurrencyLevel)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.direct.DirectChannel#MAX_GROUP_SENDERS</code>.
+See <code>org.apache.geode.distributed.internal.direct.DirectChannel#MAX_GROUP_SENDERS</code>.
 <p>
 <pre>
   The maximum number of concurrent senders sending a message to a group of
@@ -3286,7 +3286,7 @@ TBA
 <p>
 <em>Long</em> (default is 100000)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 This substitutes the <code>MAX_SENT_MSGS_SIZE</code> field in the JGroups
 config template, which in turn sets the <code>max_sent_msgs_size</code>
@@ -3307,7 +3307,7 @@ protocol layer (this is a GemStone addition).
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.TCPConduit#useDirectBuffers</code>.
+See <code>org.apache.geode.internal.tcp.TCPConduit#useDirectBuffers</code>.
 <p>
 <pre>
   use direct ByteBuffers instead of heap ByteBuffers for NIO operations
@@ -3323,7 +3323,7 @@ TBA
 <p>
 <em>Integer</em> (default is 1)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 This substitutes the <code>NUM_INITIAL_MEMBERS</code> string in the JGroups
 config template, which in turn sets the <code>num_initial_members</code>
@@ -3343,7 +3343,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.TCPConduit#useNIO</code>.
+See <code>org.apache.geode.internal.tcp.TCPConduit#useNIO</code>.
 <p>
 If set, don't use java.nio.
 </dd>
@@ -3355,7 +3355,7 @@ If set, don't use java.nio.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 Sets <code>OUTGOING_PACKET_HANDLER</code> in the JGroups config template,
 which in turn sets the <code>use_outgoing_packet_handler</code> property in
@@ -3372,7 +3372,7 @@ related events.
 <p>
 <em>Integer</em> (default is 32768)
 <p>
-See <code>com.gemstone.gemfire.internal.tcp.Connection#INITIAL_CAPACITY</code>.
+See <code>org.apache.geode.internal.tcp.Connection#INITIAL_CAPACITY</code>.
 <p>
 TBA
 </dd>
@@ -3396,7 +3396,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 If true, inserts a <code>DISCARD</code> protocol into the JGroups stack.
 <p>
@@ -3410,7 +3410,7 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 Sets the <code>up</code> property in the JGroups <code>DISCARD</code> protocol.
 <p>
@@ -3424,7 +3424,7 @@ TBA
 <p>
 <em>Double</em> (between 0 and 1, default is 0.05)
 <p>
-See <code>com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
+See <code>org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel</code>.
 <p>
 Sets the <code>down</code> property in the JGroups <code>DISCARD</code>
 protocol.
@@ -3439,7 +3439,7 @@ TBA
 <p>
 <em>Long</em> (default is 60000)
 <p>
-See com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel.
+See org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager#createChannel.
 <p>
 Substitutes the <code>SOCKET_TIMEOUT</code> field in the JGroups config
 template, which in turn sets the <code>socket_timeout</code> field in the
@@ -3474,7 +3474,7 @@ Units are are bytes.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See com.gemstone.gemfire.internal.tcp.TCPConduit#startAcceptor(int, int, InetAddress).
+See org.apache.geode.internal.tcp.TCPConduit#startAcceptor(int, int, InetAddress).
 <p>
 TBA 
 </dd>
@@ -3486,7 +3486,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See com.gemstone.gemfire.internal.tcp.TCPConduit#useSSL.
+See org.apache.geode.internal.tcp.TCPConduit#useSSL.
 <p>
 TBA 
 </dd>
@@ -3512,7 +3512,7 @@ Note: this class is not used by GemFire.
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See com.gemstone.gemfire.cache.query.internal.index.IndexUtils#indexesEnabled.
+See org.apache.geode.cache.query.internal.index.IndexUtils#indexesEnabled.
 <p>
 TBA 
 </dd>
@@ -3524,7 +3524,7 @@ TBA
 <p>
 <em>Integer</em> (default is 10, unless the Integer.parseInt throws a NumberFormatException in which case, the value is 5)
 <p>
-See com.gemstone.gemfire.internal.admin.remote.RemoteCall#getPopupTime.
+See org.apache.geode.internal.admin.remote.RemoteCall#getPopupTime.
 <p>
 Units are in seconds.
 <p>
@@ -3538,7 +3538,7 @@ TBA
 <p>
 <em>Integer</em> (default is 1800)
 <p>
-See com.gemstone.gemfire.internal.admin.remote.AdminWaiters#getWaitTimeout.
+See org.apache.geode.internal.admin.remote.AdminWaiters#getWaitTimeout.
 <p>
 Units are in seconds.
 <p>
@@ -3596,7 +3596,7 @@ TBA
 <p>
 <em>Long</em> (default is 5000)
 <p>
-See com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy.MessageDispatcher#slowStartTimeForTesting.
+See org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.MessageDispatcher#slowStartTimeForTesting.
 <p>
 Units are in milliseconds.
 <p>
@@ -3610,7 +3610,7 @@ TBA
 <p>
 <em>String</em>
 <p>
-See com.gemstone.gemfire.internal.SimpleStatSampler#archiveFileName.
+See org.apache.geode.internal.SimpleStatSampler#archiveFileName.
 <p>
 This is a filename.
 <p>
@@ -3624,7 +3624,7 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See com.gemstone.gemfire.internal.LocalStatisticsFactory#statsDisabled.
+See org.apache.geode.internal.LocalStatisticsFactory#statsDisabled.
 <p>
 TBA 
 </dd>
@@ -3636,7 +3636,7 @@ TBA
 <p>
 <em>Long</em> (default is 1024 * 1024)
 <p>
-See com.gemstone.gemfire.internal.SimpleStatSampler#archiveDiskSpaceLimit.
+See org.apache.geode.internal.SimpleStatSampler#archiveDiskSpaceLimit.
 <p>
 TBA 
 </dd>
@@ -3648,7 +3648,7 @@ TBA
 <p>
 <em>Long</em> (default is 0)
 <p>
-See com.gemstone.gemfire.internal.SimpleStatSampler#archiveFileSizeLimit.
+See org.apache.geode.internal.SimpleStatSampler#archiveFileSizeLimit.
 <p>
 Units are in megabytes
 <p>
@@ -3662,7 +3662,7 @@ TBA
 <p>
 <em>String</em> (See LogWriterImpl.levelNameToCode)
 <p>
-See com.gemstone.gemfire.internal.LocalStatisticsFactory#logLevel.
+See org.apache.geode.internal.LocalStatisticsFactory#logLevel.
 <p>
 TBA 
 </dd>
@@ -3674,7 +3674,7 @@ TBA
 <p>
 <em>String</em>
 <p>
-See com.gemstone.gemfire.internal.LocalStatisticsFactory#name.
+See org.apache.geode.internal.LocalStatisticsFactory#name.
 <p>
 TBA 
 </dd>
@@ -3686,7 +3686,7 @@ TBA
 <p>
 <em>Integer</em> (default is 1000)
 <p>
-See com.gemstone.gemfire.internal.SimpleStatSampler#sampleRate.
+See org.apache.geode.internal.SimpleStatSampler#sampleRate.
 <p>
 Units are in milliseconds.
 <p>
@@ -3700,7 +3700,7 @@ TBA
 <p>
 <em>Integer</em>
 <p>
-See com.gemstone.gemfire.internal.gui.Service#Service().
+See org.apache.geode.internal.gui.Service#Service().
 <p>
 <pre>
       A multicast port for a distributed system that will
@@ -3718,7 +3718,7 @@ TBA
 <p>
 <em>Integer</em> (default is the tcp-port property in the distribution config)
 <p>
-See com.gemstone.gemfire.distributed.internal.direct.DirectChannel#DirectChannel(MembershipManager, DistributedMembershipListener, DistributionConfig, LogWriter, Properties).
+See org.apache.geode.distributed.internal.direct.DirectChannel#DirectChannel(MembershipManager, DistributedMembershipListener, DistributionConfig, LogWriter, Properties).
 <p>
 TBA 
 </dd>

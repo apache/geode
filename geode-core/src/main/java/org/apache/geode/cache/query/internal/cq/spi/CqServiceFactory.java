@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq.spi;
+package org.apache.geode.cache.query.internal.cq.spi;
 
 import java.io.DataInput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.ServerCQ;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 public interface CqServiceFactory {
   

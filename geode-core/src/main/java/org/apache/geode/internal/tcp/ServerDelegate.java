@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.*;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.i18n.LogWriterI18n;
 
 
 /** <p>ServerDelegate is a conduit plugin that receives
-    {@link com.gemstone.gemfire.distributed.internal.DistributionMessage}
+    {@link org.apache.geode.distributed.internal.DistributionMessage}
     objects received from other conduits.</p>
 
-    @see com.gemstone.gemfire.distributed.internal.direct.DirectChannel
+    @see org.apache.geode.distributed.internal.direct.DirectChannel
 
     @since GemFire 2.0
    

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
-import com.gemstone.gemfire.internal.cache.ColocationHelper;
-import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionStats;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion.RecoveryLock;
+import org.apache.geode.internal.cache.ColocationHelper;
+import org.apache.geode.internal.cache.PRHARedundancyProvider;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
 
 /**
  * A task for creating buckets in a child colocated region that

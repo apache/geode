@@ -20,14 +20,14 @@ limitations under the License.
 <P>Provides information about, access to, and common tools for GemFire
 distributed systems.  When a program wishes to access distributed dtaa
 data stored in GemFire, it first creates a {@link
-com.gemstone.gemfire.distributed.DistributedSystem} that will connect
+org.apache.geode.distributed.DistributedSystem} that will connect
 to the distributed system.  GemFire provides two means of discovering
 the other members in a distributed group.  The first uses IP multicast
 to broadcast a message to all members that listen on a given <A
 href="DistributedSystem.html#mcast-port"/>port</A> and <A
 href="DistributedSystem.html#mcast-address">address</A>.  The second
 method of discovery uses special VMs called {@linkplain
-com.gemstone.gemfire.distributed.Locator "locators"} to keep track of
+org.apache.geode.distributed.Locator "locators"} to keep track of
 the members of the distributed system.  Each locator is identified by
 a host/port pair that is <A
 href="DistributedSystem.html#locators">specified</A> when connecting

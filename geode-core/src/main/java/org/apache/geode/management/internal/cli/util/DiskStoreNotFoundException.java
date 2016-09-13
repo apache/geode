@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * The DiskStoreNotFoundException is a GemFireException class indicating that a disk store by name could not be found
  * on a member specified by name!
  * </p>
- * @see com.gemstone.gemfire.GemFireException
+ * @see org.apache.geode.GemFireException
  * @since GemFire 7.0
  */
 // TODO this GemFireException should be moved to a more appropriate package!

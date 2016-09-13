@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.tcpserver;
+package org.apache.geode.distributed.internal.tcpserver;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.SharedConfiguration;
 
 /**
  * A handler which responds to messages for the {@link TcpServer}

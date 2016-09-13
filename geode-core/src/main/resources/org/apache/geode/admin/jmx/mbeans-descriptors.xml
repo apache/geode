@@ -5,19 +5,19 @@
 
 <!-- ===================================================================== -->
 <!-- MBeans are defined in this file for these components:                 -->
-<!--   com.gemstone.gemfire.admin.jmx.Agent                                -->
-<!--   com.gemstone.gemfire.admin.AdminDistributedSystem                   -->
-<!--   com.gemstone.gemfire.admin.SystemMember                             -->
-<!--   com.gemstone.gemfire.admin.GemFireManager                           -->
-<!--   com.gemstone.gemfire.admin.StatisticResource                        -->
-<!--   com.gemstone.gemfire.admin.DistributionLocator                      -->
-<!--   com.gemstone.gemfire.admin.SystemMemberCache                        -->
-<!--   com.gemstone.gemfire.admin.SystemMemberRegion                       -->
-<!--   com.gemstone.gemfire.admin.SystemMemberCacheServer                  -->
-<!--   com.gemstone.gemfire.admin.CacheVm                                  -->
-<!--   com.gemstone.gemfire.admin.GemFireHealth                            -->
-<!--   com.gemstone.gemfire.admin.DistributedSystemHealthConfig            -->
-<!--   com.gemstone.gemfire.admin.GemFireHealthConfig                      -->
+<!--   org.apache.geode.admin.jmx.Agent                                -->
+<!--   org.apache.geode.admin.AdminDistributedSystem                   -->
+<!--   org.apache.geode.admin.SystemMember                             -->
+<!--   org.apache.geode.admin.GemFireManager                           -->
+<!--   org.apache.geode.admin.StatisticResource                        -->
+<!--   org.apache.geode.admin.DistributionLocator                      -->
+<!--   org.apache.geode.admin.SystemMemberCache                        -->
+<!--   org.apache.geode.admin.SystemMemberRegion                       -->
+<!--   org.apache.geode.admin.SystemMemberCacheServer                  -->
+<!--   org.apache.geode.admin.CacheVm                                  -->
+<!--   org.apache.geode.admin.GemFireHealth                            -->
+<!--   org.apache.geode.admin.DistributedSystemHealthConfig            -->
+<!--   org.apache.geode.admin.GemFireHealthConfig                      -->
 <!--                                                                       -->
 <!-- Each component is a managed resource wrapped by a Model MBean built   -->
 <!-- by Jakarta Commons-Modeler.                                           -->
@@ -28,11 +28,11 @@
 <mbeans-descriptors>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.jmx.Agent                                -->
+  <!-- org.apache.geode.admin.jmx.Agent                                -->
   <!-- =================================================================== -->
   <mbean          name="GemFireAgent"
            description="GemFire JMX Agent"
-                  type="com.gemstone.gemfire.admin.jmx.Agent">
+                  type="org.apache.geode.admin.jmx.Agent">
                  
     <attribute    name="logFileSizeLimit"
            description="The maximum size of the JMX Agent log file; a value (in megabytes) in the range 0..1000000."
@@ -170,11 +170,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.AdminDistributedSystem                   -->
+  <!-- org.apache.geode.admin.AdminDistributedSystem                   -->
   <!-- =================================================================== -->
   <mbean          name="AdminDistributedSystem"
            description="GemFire distributed system"
-                  type="com.gemstone.gemfire.admin.AdminDistributedSystem">
+                  type="org.apache.geode.admin.AdminDistributedSystem">
                   
     <attribute    name="id"
            description="A string that uniquely identifies this distributed system."
@@ -376,13 +376,13 @@
            returnType="javax.management.ObjectName">
       <parameter name="distributedMember" 
           description="The distributed member to manage"
-                 type="com.gemstone.gemfire.distributed.DistributedMember" />
+                 type="org.apache.geode.distributed.DistributedMember" />
     </operation>
     
     <operation   name="getAllStatAlertDefinitions"
           description="Return an array of all available Stat Alert Definitions objects."
                impact="INFO"
-           returnType="[Lcom.gemstone.gemfire.internal.admin.StatAlertDefinition;">
+           returnType="[Lorg.apache.geode.internal.admin.StatAlertDefinition;">
     </operation>
     
     <operation   name="updateAlertDefinition"
@@ -391,7 +391,7 @@
            returnType="void">
       <parameter name="alertDefinition" 
           description="The Admin Stat Alert Definition to be updated/added to the Aggregator"
-                 type="com.gemstone.gemfire.internal.admin.StatAlertDefinition" />
+                 type="org.apache.geode.internal.admin.StatAlertDefinition" />
     </operation>
     
     <operation   name="removeAlertDefinition"
@@ -409,7 +409,7 @@
            returnType="boolean">
       <parameter name="alertDefinition" 
           description="The Admin Stat Alert Definition to be checked"
-                 type="com.gemstone.gemfire.internal.admin.StatAlertDefinition" />
+                 type="org.apache.geode.internal.admin.StatAlertDefinition" />
     </operation>
     <operation   name="revokePersistentMember"
           description="Indicate to the distributed system that persistent files have been lost."
@@ -438,11 +438,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.SystemMember                             -->
+  <!-- org.apache.geode.admin.SystemMember                             -->
   <!-- =================================================================== -->
   <mbean         name="SystemMember"
           description="GemFire system member"
-                 type="com.gemstone.gemfire.admin.SystemMember">
+                 type="org.apache.geode.admin.SystemMember">
 
     <attribute   name="id"
           description="A string that uniquely identifies the application within the distributed system."
@@ -477,7 +477,7 @@
 
     <attribute    name="distributedMember"
            description="Distributed membership identity."
-                  type="com.gemstone.gemfire.distributed.DistributedMember"
+                  type="org.apache.geode.distributed.DistributedMember"
              writeable="false"/>
     
     <notification name="gemfire.distributedsystem.cache.created"
@@ -598,16 +598,16 @@
     <operation   name="getConfiguration"
           description="Returns the current configuration attributes for this application, using the gemfire.properties file."
                impact="ACTION"
-           returnType="[Lcom.gemstone.gemfire.admin.ConfigurationParameter;">
+           returnType="[Lorg.apache.geode.admin.ConfigurationParameter;">
     </operation>
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.StatisticResource                        -->
+  <!-- org.apache.geode.admin.StatisticResource                        -->
   <!-- =================================================================== -->
   <mbean         name="StatisticResource"
           description="GemFire statistic resource"
-                 type="com.gemstone.gemfire.admin.StatisticResource">
+                 type="org.apache.geode.admin.StatisticResource">
 
     <attribute   name="name"
           description="The JMX ObjectName of this statistic resource."
@@ -642,17 +642,17 @@
     <operation   name="getStatistics"
           description="Returns a current snapshot of statistics."
                impact="INFO"
-           returnType="[Lcom.gemstone.gemfire.admin.Statistic;">
+           returnType="[Lorg.apache.geode.admin.Statistic;">
     </operation>
     
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.DistributionLocator                      -->
+  <!-- org.apache.geode.admin.DistributionLocator                      -->
   <!-- =================================================================== -->
   <mbean         name="DistributionLocator"
           description="GemFire distribution locator service"
-                 type="com.gemstone.gemfire.admin.DistributionLocator">
+                 type="org.apache.geode.admin.DistributionLocator">
 
     <attribute   name="id"
           description="Id of the distribution locator."
@@ -731,11 +731,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.SystemMemberCache                        -->
+  <!-- org.apache.geode.admin.SystemMemberCache                        -->
   <!-- =================================================================== -->
   <mbean         name="SystemMemberCache"
           description="GemFire system member cache"
-                 type="com.gemstone.gemfire.admin.SystemMemberCache">
+                 type="org.apache.geode.admin.SystemMemberCache">
                  
     <attribute   name="name"
           description="The name of the Cache"
@@ -775,12 +775,12 @@
     <operation   name="getSnapshot"
           description="Get Member Cache Status"
                impact="INFO"
-           returnType="com.gemstone.gemfire.admin.GemFireMemberStatus">
+           returnType="org.apache.geode.admin.GemFireMemberStatus">
     </operation>
     <operation   name="getRegionSnapshot"
           description="Get Member Cache's Region Snapshot"
                impact="INFO"
-           returnType="com.gemstone.gemfire.admin.RegionSubRegionSnapshot">
+           returnType="org.apache.geode.admin.RegionSubRegionSnapshot">
     </operation>
     <operation   name="manageRegion"
           description="Creates a SystemMemberRegion MBean for the region with the specified path."
@@ -793,7 +793,7 @@
     <operation   name="getStatistics"
           description="Returns a current snapshot of cache statistics."
                impact="INFO"
-           returnType="[Lcom.gemstone.gemfire.admin.Statistic;">
+           returnType="[Lorg.apache.geode.admin.Statistic;">
     </operation>
     <operation   name="refresh"
           description="Updates each attribute in this MBean."
@@ -823,11 +823,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.SystemMemberRegion                       -->
+  <!-- org.apache.geode.admin.SystemMemberRegion                       -->
   <!-- =================================================================== -->
   <mbean         name="SystemMemberRegion"
           description="View of a GemFire system member cache's region"
-                 type="com.gemstone.gemfire.admin.SystemMemberRegion">
+                 type="org.apache.geode.admin.SystemMemberRegion">
                  
     <attribute   name="name"
           description="The name (not the full-path) of this region."
@@ -851,7 +851,7 @@
             writeable="false"/>
     <attribute   name="evictionAttributes"
           description="Description of the region's eviction attributes."
-                 type="com.gemstone.gemfire.cache.EvictionAttributes"
+                 type="org.apache.geode.cache.EvictionAttributes"
             writeable="false"/>
     <attribute   name="cacheListener"
           description="Description of the region's cache listener. This attribute is deprecated as of 6.0. Use getCacheListeners method instead."
@@ -933,7 +933,7 @@
             writeable="false"/>
     <attribute   name="diskWriteAttributes"
           description="Description of how the region's contents is written to disk "
-                 type="com.gemstone.gemfire.cache.DiskWriteAttributes"
+                 type="org.apache.geode.cache.DiskWriteAttributes"
             writeable="false"/>
     <attribute   name="diskDirs"
           description="Directories to which the region's contents are written"
@@ -977,15 +977,15 @@
             writeable="false"/>
     <attribute   name="membershipAttributes"
           description="Description of the region's membership attributes."
-                 type="com.gemstone.gemfire.cache.MembershipAttributes"
+                 type="org.apache.geode.cache.MembershipAttributes"
             writeable="false"/>
     <attribute   name="subscriptionAttributes"
           description="Description of the region's subscription attributes."
-                 type="com.gemstone.gemfire.cache.SubscriptionAttributes"
+                 type="org.apache.geode.cache.SubscriptionAttributes"
             writeable="false"/>
     <attribute   name="partitionAttributes"
           description="Description of the region's partition attributes."
-                 type="com.gemstone.gemfire.cache.PartitionAttributes"
+                 type="org.apache.geode.cache.PartitionAttributes"
             writeable="false"/>        
     <attribute   name="concurrencyChecksEnabled"
           description="True if concurrent modifications are handled on this region."
@@ -1005,11 +1005,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.SystemMemberCacheServer                 -->
+  <!-- org.apache.geode.admin.SystemMemberCacheServer                 -->
   <!-- =================================================================== -->
   <mbean         name="SystemMemberCacheServer"
           description="View of a GemFire system member's cache server"
-                 type="com.gemstone.gemfire.admin.SystemMemberCacheServer">
+                 type="org.apache.geode.admin.SystemMemberCacheServer">
                  
     <attribute   name="port"
           description="The port on which this cache server listens for clients."
@@ -1089,11 +1089,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.CacheVm                                  -->
+  <!-- org.apache.geode.admin.CacheVm                                  -->
   <!-- =================================================================== -->
   <mbean         name="CacheVm"
           description="A dedicated Server VM that contains a GemFire Cache"
-                 type="com.gemstone.gemfire.admin.CacheVm">
+                 type="org.apache.geode.admin.CacheVm">
                  
     <attribute   name="id"
           description="A string that uniquely identifies the cache vm."
@@ -1128,7 +1128,7 @@
              
     <attribute    name="distributedMember"
            description="Distributed membership identity."
-                  type="com.gemstone.gemfire.distributed.DistributedMember"
+                  type="org.apache.geode.distributed.DistributedMember"
              writeable="false"/>             
 
     <attribute   name="productDirectory"
@@ -1305,21 +1305,21 @@
     <operation   name="getConfiguration"
           description="Returns the current configuration attributes for this application, using the gemfire.properties file."
                impact="ACTION"
-           returnType="[Lcom.gemstone.gemfire.admin.ConfigurationParameter;">
+           returnType="[Lorg.apache.geode.admin.ConfigurationParameter;">
     </operation>
     
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.GemFireHealth                            -->
+  <!-- org.apache.geode.admin.GemFireHealth                            -->
   <!-- =================================================================== -->
   <mbean         name="GemFireHealth"
           description="Monitors the Health of GemFire"
-                 type="com.gemstone.gemfire.admin.GemFireHealth">
+                 type="org.apache.geode.admin.GemFireHealth">
 
     <attribute   name="health"
           description="The overall health of the distributed system: Good, Okay, or Poor."
-                 type="com.gemstone.gemfire.admin.GemFireHealth$Health"
+                 type="org.apache.geode.admin.GemFireHealth$Health"
             writeable="false"/>
 
     <attribute   name="healthStatus"
@@ -1351,11 +1351,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.DistributedSystemHealthConfig            -->
+  <!-- org.apache.geode.admin.DistributedSystemHealthConfig            -->
   <!-- =================================================================== -->
   <mbean         name="DistributedSystemHealthConfig"
           description="Configures how the health of a distributed system is determined"
-                 type="com.gemstone.gemfire.admin.DistributedSystemHealthConfig">
+                 type="org.apache.geode.admin.DistributedSystemHealthConfig">
 
     <attribute   name="maxDepartedApplications"
           description="The maximum number of system members that can unexpectedly leave a healthy distributed system."
@@ -1371,11 +1371,11 @@
   </mbean>
 
   <!-- =================================================================== -->
-  <!-- com.gemstone.gemfire.admin.GemFireHealthConfig                      -->
+  <!-- org.apache.geode.admin.GemFireHealthConfig                      -->
   <!-- =================================================================== -->
   <mbean         name="GemFireHealthConfig"
           description="Configures how the health of GemFire components is determined"
-                 type="com.gemstone.gemfire.admin.GemFireHealthConfig">
+                 type="org.apache.geode.admin.GemFireHealthConfig">
 
     <attribute   name="healthEvaluationInterval"
           description="The number of seconds to wait between two health assessments of this distributed system."

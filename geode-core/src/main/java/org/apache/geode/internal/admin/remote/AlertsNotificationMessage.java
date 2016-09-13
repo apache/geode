@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.admin.jmx.internal.StatAlertsAggregator;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.internal.admin.StatAlert;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.admin.jmx.internal.StatAlertsAggregator;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.admin.StatAlert;
 
 /**
  * Distribution message to be sent to alert aggregator

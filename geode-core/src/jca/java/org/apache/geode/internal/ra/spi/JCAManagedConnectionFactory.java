@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.ra.spi;
+package org.apache.geode.internal.ra.spi;
 
 import java.io.PrintWriter;
 import java.util.Set;
@@ -26,7 +26,7 @@ import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
 
-import com.gemstone.gemfire.internal.ra.GFConnectionFactoryImpl;
+import org.apache.geode.internal.ra.GFConnectionFactoryImpl;
 /**
  * 
  *

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
 import java.util.concurrent.Callable;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,8 +33,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The FunctionCommandsController class implements GemFire Management REST API web service endpoints for the
  * Gfsh Function Commands.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.cli.commands.FunctionCommands
- * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
+ * @see org.apache.geode.management.internal.cli.commands.FunctionCommands
+ * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable
  * @see org.springframework.web.bind.annotation.RequestMapping

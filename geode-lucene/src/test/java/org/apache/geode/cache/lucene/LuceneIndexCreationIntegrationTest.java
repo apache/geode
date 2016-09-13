@@ -17,10 +17,10 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
-import static com.gemstone.gemfire.cache.RegionShortcut.*;
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
+import static org.apache.geode.cache.RegionShortcut.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
@@ -37,25 +37,25 @@ import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexFactory;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneRawIndex;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneRawIndexFactory;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
-import com.gemstone.gemfire.cache.lucene.test.TestObject;
-import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.internal.LuceneRawIndex;
+import org.apache.geode.cache.lucene.internal.LuceneRawIndexFactory;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.cache.lucene.test.TestObject;
+import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.Awaitility;
 
 import org.apache.lucene.analysis.Analyzer;

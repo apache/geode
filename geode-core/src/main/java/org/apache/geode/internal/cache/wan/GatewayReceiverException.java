@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
-import com.gemstone.gemfire.cache.OperationAbortedException;
+import org.apache.geode.cache.OperationAbortedException;
 
 /**
  * Exception observed during GatewayReceiver operations.

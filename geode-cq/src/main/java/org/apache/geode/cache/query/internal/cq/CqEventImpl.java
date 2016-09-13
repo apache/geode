@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
 
 /**
@@ -24,13 +24,13 @@ package com.gemstone.gemfire.cache.query.internal.cq;
  * @since GemFire 5.5
  */
 
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.client.internal.QueueManager;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.client.internal.QueueManager;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class CqEventImpl implements CqEvent {
   

@@ -17,14 +17,14 @@
 /**
  *
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.UUID;
 
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
 
 /**
  * Creates an attribute object for DiskStore.
@@ -73,28 +73,28 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   }
 
   /* (non-Javadoc)
-  * @see com.gemstone.gemfire.cache.DiskStore#getAllowForceCompaction()
+  * @see org.apache.geode.cache.DiskStore#getAllowForceCompaction()
   */
   public boolean getAllowForceCompaction() {
     return this.allowForceCompaction;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getAutoCompact()
+   * @see org.apache.geode.cache.DiskStore#getAutoCompact()
    */
   public boolean getAutoCompact() {
     return this.autoCompact;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getCompactionThreshold()
+   * @see org.apache.geode.cache.DiskStore#getCompactionThreshold()
    */
   public int getCompactionThreshold() {
     return this.compactionThreshold;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getDiskDirSizes()
+   * @see org.apache.geode.cache.DiskStore#getDiskDirSizes()
    */
   public int[] getDiskDirSizes() {
     int[] result = new int[this.diskDirSizes.length];
@@ -103,7 +103,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getDiskDirs()
+   * @see org.apache.geode.cache.DiskStore#getDiskDirs()
    */
   public File[] getDiskDirs() {
     File[] result = new File[this.diskDirs.length];
@@ -112,7 +112,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getMaxOplogSize()
+   * @see org.apache.geode.cache.DiskStore#getMaxOplogSize()
    */
   public long getMaxOplogSize() {
     // TODO Auto-generated method stub
@@ -127,28 +127,28 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getName()
+   * @see org.apache.geode.cache.DiskStore#getName()
    */
   public String getName() {
     return this.name;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getQueueSize()
+   * @see org.apache.geode.cache.DiskStore#getQueueSize()
    */
   public int getQueueSize() {
     return this.queueSize;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getTimeInterval()
+   * @see org.apache.geode.cache.DiskStore#getTimeInterval()
    */
   public long getTimeInterval() {
     return this.timeInterval;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.DiskStore#getWriteBufferSize()
+   * @see org.apache.geode.cache.DiskStore#getWriteBufferSize()
    */
   public int getWriteBufferSize() {
     return this.writeBufferSize;

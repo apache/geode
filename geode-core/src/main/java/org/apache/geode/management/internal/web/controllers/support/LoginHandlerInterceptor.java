@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers.support;
+package org.apache.geode.management.internal.web.controllers.support;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -27,15 +27,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.management.internal.web.util.UriUtils;
-import com.gemstone.gemfire.security.Authenticator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.web.util.UriUtils;
+import org.apache.geode.security.Authenticator;
 
 /**
  * The GetEnvironmentHandlerInterceptor class handles extracting Gfsh environment variables encoded in the HTTP request

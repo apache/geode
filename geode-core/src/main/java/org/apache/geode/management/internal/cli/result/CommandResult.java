@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.result;
+package org.apache.geode.management.internal.cli.result;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,15 +25,15 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilder.Row;
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilder.RowGroup;
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilder.Table;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.TableBuilder.Row;
+import org.apache.geode.management.internal.cli.result.TableBuilder.RowGroup;
+import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
 
 /**
  * Wraps the Result of a command execution. 

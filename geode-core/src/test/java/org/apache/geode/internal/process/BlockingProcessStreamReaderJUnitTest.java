@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
@@ -32,10 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.process.ProcessStreamReader.InputListener;
-import com.gemstone.gemfire.internal.process.ProcessStreamReader.ReadingMode;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests BlockingProcessStreamReader. Most tests are skipped on Windows due to 

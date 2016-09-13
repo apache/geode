@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,39 +25,39 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
-import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails.IndexStatisticsDetails;
-import com.gemstone.gemfire.management.internal.cli.domain.IndexInfo;
-import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
-import com.gemstone.gemfire.management.internal.cli.functions.CreateDefinedIndexesFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.CreateIndexFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.DestroyIndexFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
-import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.domain.IndexDetails;
+import org.apache.geode.management.internal.cli.domain.IndexDetails.IndexStatisticsDetails;
+import org.apache.geode.management.internal.cli.domain.IndexInfo;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction;
+import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
+import org.apache.geode.management.internal.cli.functions.DestroyIndexFunction;
+import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
+import org.apache.geode.management.internal.cli.result.ErrorResultData;
+import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -68,9 +68,9 @@ import org.springframework.shell.core.annotation.CliOption;
 /**
  * The IndexCommands class encapsulates all GemFire shell (Gfsh) commands related to indexes defined in GemFire.
  * </p>
- * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
- * @see com.gemstone.gemfire.management.internal.cli.domain.IndexDetails
- * @see com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction
+ * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ * @see org.apache.geode.management.internal.cli.domain.IndexDetails
+ * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")

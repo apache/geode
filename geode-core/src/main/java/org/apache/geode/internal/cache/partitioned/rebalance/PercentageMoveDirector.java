@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance;
 
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Bucket;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Member;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Bucket;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Member;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Move buckets from one node to another, up to a certain

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * A probe which calculates the load of a PR in a given member. This class

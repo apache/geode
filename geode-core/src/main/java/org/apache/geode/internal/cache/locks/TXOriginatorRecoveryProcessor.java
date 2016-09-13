@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -26,20 +26,20 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.MessageWithReply;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.locks.DLockGrantor;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.TXCommitMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.locks.DLockGrantor;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Sends <code>TXOriginatorRecoveryMessage</code> to all participants of
@@ -173,7 +173,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21  {
         // when the grantor receives reply it will release txLock...
         /* TODO: implement waitToReleaseTXLockId here
            testTXOriginatorRecoveryProcessor in 
-           com.gemstone.gemfire.internal.cache.locks.TXLockServiceTest
+           org.apache.geode.internal.cache.locks.TXLockServiceTest
            should be expanded upon also...
         */
       }

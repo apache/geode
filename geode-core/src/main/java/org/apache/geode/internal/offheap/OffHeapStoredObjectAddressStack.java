@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.offheap.FreeListManager.LongStack;
+import org.apache.geode.internal.offheap.FreeListManager.LongStack;
 
 /**
  * A "stack" of addresses of OffHeapStoredObject instances. The stored objects are not kept

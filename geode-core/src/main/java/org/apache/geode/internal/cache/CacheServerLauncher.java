@@ -15,36 +15,36 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.PureJavaMode;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.process.StartupStatus;
-import com.gemstone.gemfire.internal.process.StartupStatusListener;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.process.StartupStatus;
+import org.apache.geode.internal.process.StartupStatusListener;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.JavaCommandBuilder;
 
 import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOG_FILE;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 
 /**
  * Launcher program to start a cache server.

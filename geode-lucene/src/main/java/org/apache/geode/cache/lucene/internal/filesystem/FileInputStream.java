@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.filesystem;
+package org.apache.geode.cache.lucene.internal.filesystem;
 
 import java.io.EOFException;
 import java.io.IOException;

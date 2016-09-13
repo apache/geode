@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * Provides configuration information relating to the health of a
  * member of a GemFire distributed system that hosts a GemFire {@link
- * com.gemstone.gemfire.cache.Cache Cache}.
+ * org.apache.geode.cache.Cache Cache}.
  *
  * <P>
  *
@@ -40,7 +40,7 @@ package com.gemstone.gemfire.admin;
  * <LI>The number of entries in the Cache {@link #getMaxEventQueueSize
  * event delivery queue} is too large.</LI>
  * 
- * <LI>If one of the regions is configured with {@link com.gemstone.gemfire.cache.LossAction#FULL_ACCESS FULL_ACCESS}
+ * <LI>If one of the regions is configured with {@link org.apache.geode.cache.LossAction#FULL_ACCESS FULL_ACCESS}
  * on role loss.</LI>
  *
  * </UL>
@@ -50,10 +50,10 @@ package com.gemstone.gemfire.admin;
  * 
  * <UL>
  * 
- * <LI>If one of the regions is configured with {@link com.gemstone.gemfire.cache.LossAction#NO_ACCESS NO_ACCESS}
+ * <LI>If one of the regions is configured with {@link org.apache.geode.cache.LossAction#NO_ACCESS NO_ACCESS}
  * on role loss.</LI> 
  * 
- * <LI>If one of the regions is configured with {@link com.gemstone.gemfire.cache.LossAction#LIMITED_ACCESS LIMITED_ACCESS}
+ * <LI>If one of the regions is configured with {@link org.apache.geode.cache.LossAction#LIMITED_ACCESS LIMITED_ACCESS}
  * on role loss.</LI> 
  * 
  * </UL>
@@ -64,7 +64,7 @@ package com.gemstone.gemfire.admin;
  *
  *
  * @since GemFire 3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  * */
 public interface CacheHealthConfig {
 

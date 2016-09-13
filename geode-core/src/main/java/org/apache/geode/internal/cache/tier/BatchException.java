@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier;
+package org.apache.geode.internal.cache.tier;
 
-import com.gemstone.gemfire.GemFireCheckedException;
+import org.apache.geode.GemFireCheckedException;
 /**
  * An exception thrown during batch processing.
  *

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import javax.management.NotificationBroadcasterSupport;
 
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.management.ClientHealthStatus;
-import com.gemstone.gemfire.management.ClientQueueDetail;
-import com.gemstone.gemfire.management.ServerLoadData;
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.ClientHealthStatus;
+import org.apache.geode.management.ClientQueueDetail;
+import org.apache.geode.management.ServerLoadData;
 
 /**
  * Represents the GemFire CacheServer . Provides data and notifications about

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.filesystem;
+package org.apache.geode.cache.lucene.internal.filesystem;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -45,9 +45,9 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.DiskDirRule;
 
 @Category(UnitTest.class)
 public class FileSystemJUnitTest {

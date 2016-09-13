@@ -2504,9 +2504,9 @@
 3698   = ライセンスのシグネチャは有効です。
 3699   = このライセンスは無効です。 {0}
 3700   = <gemfire.jarが見つかりませんでした>
-3701   = <リソースcom/gemstone/gemfire/internal/{0}が見つかりませんでした>
-3702   = <リソースcom/gemstone/gemfire/internal/{0}からプロパティを読み取れませんでした。原因: {1}>
-3703   = <リソースcom/gemstone/gemfire/internal/{1}のプロパティ{0}が不明です>
+3701   = <リソースorg/apache/geode/internal/{0}が見つかりませんでした>
+3702   = <リソースorg/apache/geode/internal/{0}からプロパティを読み取れませんでした。原因: {1}>
+3703   = <リソースorg/apache/geode/internal/{1}のプロパティ{0}が不明です>
 3704   = 動作中。場所: {0}
 3705   = 警告。予期していたJavaのバージョン: {0}
 3706   = 警告。予期していたネイティブ・バージョン: {0}

@@ -16,17 +16,17 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.admin.*;
-//import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.locks.*;
-//import com.gemstone.gemfire.internal.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.admin.*;
+//import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.locks.*;
+//import org.apache.geode.internal.*;
 import java.io.*;
 import java.util.Date;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 public class RemoteDLockInfo implements DLockInfo, DataSerializable {
   private static final long serialVersionUID = 3350265007784675017L;

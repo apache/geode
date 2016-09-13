@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.shell;
+package org.apache.geode.management.internal.cli.shell;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,30 +37,30 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import com.gemstone.gemfire.internal.Banner;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.lang.ClassUtils;
-import com.gemstone.gemfire.internal.process.signal.AbstractSignalNotificationHandler;
-import com.gemstone.gemfire.internal.util.HostName;
-import com.gemstone.gemfire.internal.util.SunAPINotFoundException;
-import com.gemstone.gemfire.management.cli.CommandProcessingException;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.CommandManager;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.shell.jline.ANSIHandler;
-import com.gemstone.gemfire.management.internal.cli.shell.jline.ANSIHandler.ANSIStyle;
-import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshHistory;
-import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
-import com.gemstone.gemfire.management.internal.cli.shell.unsafe.GfshSignalHandler;
-import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
+import org.apache.geode.internal.Banner;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
+import org.apache.geode.internal.util.HostName;
+import org.apache.geode.internal.util.SunAPINotFoundException;
+import org.apache.geode.management.cli.CommandProcessingException;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler;
+import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler.ANSIStyle;
+import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
+import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
+import org.apache.geode.management.internal.cli.shell.unsafe.GfshSignalHandler;
+import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 
 import org.springframework.shell.core.AbstractShell;
 import org.springframework.shell.core.CommandMarker;
@@ -288,7 +288,7 @@ public class Gfsh extends JLineShell {
     env.put(ENV_SYS_OS_LINE_SEPARATOR, System.getProperty("line.separator"));
     env.put(ENV_SYS_GEMFIRE_DIR,       System.getenv("GEMFIRE"));
 
-    env.put(ENV_APP_NAME,                       com.gemstone.gemfire.management.internal.cli.shell.Gfsh.GFSH_APP_NAME);
+    env.put(ENV_APP_NAME,                       org.apache.geode.management.internal.cli.shell.Gfsh.GFSH_APP_NAME);
     readonlyAppEnv.add(ENV_APP_NAME);
     env.put(ENV_APP_LOGGING_ENABLED,                String.valueOf(!Level.OFF.equals(this.gfshConfig.getLogLevel())) );
     readonlyAppEnv.add(ENV_APP_LOGGING_ENABLED);
@@ -1076,7 +1076,7 @@ public class Gfsh extends JLineShell {
     if (gfshFileLogger.severeEnabled()) {
       gfshFileLogger.severe(message);
     }
-    setPromptPath(com.gemstone.gemfire.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+    setPromptPath(org.apache.geode.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
   }
 
   public boolean getDebug(){
@@ -1232,7 +1232,7 @@ class ScriptExecutionDetails {
       section.addData("Command-"+String.valueOf(commandSrNo), commandAndStatus.command);
       section.addData("Status", commandAndStatus.status);
       if (commandAndStatus.status.equals("FAILED")) {
-        compositeResultData.setStatus(com.gemstone.gemfire.management.cli.Result.Status.ERROR);
+        compositeResultData.setStatus(org.apache.geode.management.cli.Result.Status.ERROR);
       }
       if (i != this.commandAndStatusList.size()) {
         section.setFooter(Gfsh.LINE_SEPARATOR);

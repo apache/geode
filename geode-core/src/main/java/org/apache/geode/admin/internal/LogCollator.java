@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.ApplicationVM;
-import com.gemstone.gemfire.internal.logging.MergeLogFiles;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.ApplicationVM;
+import org.apache.geode.internal.logging.MergeLogFiles;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;  

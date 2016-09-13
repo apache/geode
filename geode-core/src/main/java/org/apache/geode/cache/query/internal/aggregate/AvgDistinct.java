@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.aggregate;
+package org.apache.geode.cache.query.internal.aggregate;
 
-import com.gemstone.gemfire.cache.query.QueryService;
+import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the average of distinct values for replicated region based queries.

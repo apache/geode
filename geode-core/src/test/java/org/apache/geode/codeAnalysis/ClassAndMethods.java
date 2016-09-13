@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis;
+package org.apache.geode.codeAnalysis;
 
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
+import org.apache.geode.codeAnalysis.decode.CompiledMethod;
 
 import java.util.HashMap;
 import java.util.Map;

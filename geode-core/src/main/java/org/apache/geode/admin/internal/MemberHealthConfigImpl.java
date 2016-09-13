@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.*;
+import org.apache.geode.admin.*;
 
 // @todo Make this class (and all of its subclasses) {@link java.io.Externalizable} or
-// {@link com.gemstone.gemfire.DataSerializable}. 
+// {@link org.apache.geode.DataSerializable}. 
 /**
  * The implementation of <code>MemberHealthConfig</code>
  *

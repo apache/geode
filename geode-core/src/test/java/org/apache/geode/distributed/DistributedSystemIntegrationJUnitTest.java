@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for DistributedSystem class. These tests require file system I/O.

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.util;
+package org.apache.geode.management.internal.web.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.web.io.MultipartFileResourceAdapter;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.web.io.MultipartFileResourceAdapter;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -33,7 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
  * The ConvertUtils class is a support class for performing conversions used by the GemFire web application
  * and REST interface.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.cli.CliUtil
+ * @see org.apache.geode.management.internal.cli.CliUtil
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
@@ -48,8 +48,8 @@ public abstract class ConvertUtils {
    * transmitted by Gfsh to the GemFire Manager.
    * @see org.springframework.core.io.ByteArrayResource
    * @see org.springframework.core.io.Resource
-   * @see com.gemstone.gemfire.management.internal.cli.CliUtil#bytesToData(byte[][])
-   * @see com.gemstone.gemfire.management.internal.cli.CliUtil#bytesToNames(byte[][])
+   * @see org.apache.geode.management.internal.cli.CliUtil#bytesToData(byte[][])
+   * @see org.apache.geode.management.internal.cli.CliUtil#bytesToNames(byte[][])
    */
   public static Resource[] convert(final byte[][] fileData) {
     if (fileData != null) {

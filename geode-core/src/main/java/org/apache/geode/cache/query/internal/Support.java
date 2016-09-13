@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.InternalGemFireError;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.InternalGemFireError;
 
 
 
@@ -88,7 +88,7 @@ public class Support
                 throw new InternalGemFireError(LocalizedStrings.Support_ERROR_ASSERTION_FAILED_0.toLocalizedString(message));
         }
         
-            // com.gemstone.persistence.jdo.GsRuntime.notifyCDebugger(null);
+            // org.apache.persistence.jdo.GsRuntime.notifyCDebugger(null);
     }
     
 

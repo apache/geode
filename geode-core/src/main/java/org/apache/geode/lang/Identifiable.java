@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.lang;
+package org.apache.geode.lang;
 
 import java.io.Serializable;
 

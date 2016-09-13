@@ -17,14 +17,14 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  *

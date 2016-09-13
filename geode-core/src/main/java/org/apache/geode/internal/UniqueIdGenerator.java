@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /** UniqueIdGenerator is factory that will produce unique ids that fall
  * in a range between 0 and numIds-1 inclusive.

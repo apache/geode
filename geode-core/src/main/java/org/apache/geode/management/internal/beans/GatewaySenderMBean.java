@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
-import com.gemstone.gemfire.management.GatewaySenderMXBean;
+import org.apache.geode.management.GatewaySenderMXBean;
 import javax.management.NotificationBroadcasterSupport;
 
 public class GatewaySenderMBean extends NotificationBroadcasterSupport

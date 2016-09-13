@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,15 +23,15 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.ExpirationAction;
-//import com.gemstone.gemfire.internal.*;
-//import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.ExpirationAction;
+//import org.apache.geode.internal.*;
+//import org.apache.geode.internal.admin.*;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 //import java.util.*;
 
 /**

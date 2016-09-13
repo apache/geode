@@ -17,14 +17,14 @@
 /**
  * 
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Before;
@@ -34,8 +34,8 @@ import org.junit.experimental.categories.Category;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static com.jayway.awaitility.Awaitility.with;
 import static org.junit.Assert.fail;
 

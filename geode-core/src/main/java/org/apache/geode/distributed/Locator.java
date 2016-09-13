@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a distribution locator server that provides discovery information
@@ -105,10 +105,10 @@ public abstract class Locator {
    *
    * @throws IllegalArgumentException
    *         If <code>port</code> is not in the range 0 to 65536
-   * @throws com.gemstone.gemfire.SystemIsRunningException
+   * @throws org.apache.geode.SystemIsRunningException
    *         If another locator is already running in
    *         <code>outputDir</code>
-   * @throws com.gemstone.gemfire.GemFireIOException
+   * @throws org.apache.geode.GemFireIOException
    *         If the directory containing the <code>logFile</code> does
    *         not exist or cannot be written to
    * @throws IOException
@@ -151,10 +151,10 @@ public abstract class Locator {
    * 
    * @throws IllegalArgumentException
    *                 If <code>port</code> is not in the range 0 to 65536
-   * @throws com.gemstone.gemfire.SystemIsRunningException
+   * @throws org.apache.geode.SystemIsRunningException
    *                 If another locator is already running in
    *                 <code>outputDir</code>
-   * @throws com.gemstone.gemfire.GemFireIOException
+   * @throws org.apache.geode.GemFireIOException
    *                 If the directory containing the <code>logFile</code> does
    *                 not exist or cannot be written to
    * @throws IOException
@@ -186,10 +186,10 @@ public abstract class Locator {
    *
    * @throws IllegalArgumentException
    *         If <code>port</code> is not in the range 0 to 65536
-   * @throws com.gemstone.gemfire.SystemIsRunningException
+   * @throws org.apache.geode.SystemIsRunningException
    *         If another locator is already running in
    *         <code>outputDir</code>
-   * @throws com.gemstone.gemfire.GemFireIOException
+   * @throws org.apache.geode.GemFireIOException
    *         If the directory containing the <code>logFile</code> does
    *         not exist or cannot be written to
    * @throws IOException
@@ -233,10 +233,10 @@ public abstract class Locator {
    *
    * @throws IllegalArgumentException
    *         If <code>port</code> is not in the range 0 to 65536
-   * @throws com.gemstone.gemfire.SystemIsRunningException
+   * @throws org.apache.geode.SystemIsRunningException
    *         If another locator is already running in
    *         <code>outputDir</code>
-   * @throws com.gemstone.gemfire.GemFireIOException
+   * @throws org.apache.geode.GemFireIOException
    *         If the directory containing the <code>logFile</code> does
    *         not exist or cannot be written to
    * @throws IOException
@@ -292,10 +292,10 @@ public abstract class Locator {
    *         If <code>port</code> is not in the range 0 to 65536
    *         or <code>peerLocator</code> and <code> serverLocator</code>
    *         are both false.
-   * @throws com.gemstone.gemfire.SystemIsRunningException
+   * @throws org.apache.geode.SystemIsRunningException
    *         If another locator is already running in
    *         <code>outputDir</code>
-   * @throws com.gemstone.gemfire.GemFireIOException
+   * @throws org.apache.geode.GemFireIOException
    *         If the directory containing the <code>logFile</code> does
    *         not exist or cannot be written to
    * @throws IOException
@@ -511,7 +511,7 @@ public abstract class Locator {
    * The <i>gemfire stop-locator</i> command can be used to stop
    * a locator that is started with this class.
    * <p>
-   * java com.gemstone.gemfire.distributed.Locator port [bind-address] [gemfire-properties-file] [peer] [server]
+   * java org.apache.geode.distributed.Locator port [bind-address] [gemfire-properties-file] [peer] [server]
    * <p>
    * port - the tcp/ip port that the locator should listen on.  This is the
    * port number that applications will refer to in their <i>locators</i> property
@@ -539,7 +539,7 @@ public abstract class Locator {
    * @since GemFire 5.0
    */
   public static void main(String args[]) {
-    com.gemstone.gemfire.internal.DistributionLocator.main(args);
+    org.apache.geode.internal.DistributionLocator.main(args);
   }
 
 }

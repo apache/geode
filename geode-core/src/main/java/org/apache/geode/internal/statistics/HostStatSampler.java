@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.statistics.platform.OsStatisticsFactory;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.Statistics;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;

@@ -19,7 +19,7 @@
  *
  * Created on March 20, 2005, 6:47 PM
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,31 +27,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
-import com.gemstone.gemfire.cache.query.internal.QueryObserver;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.internal.QueryUtils;
-import com.gemstone.gemfire.cache.query.internal.RuntimeIterator;
-import com.gemstone.gemfire.cache.query.internal.Support;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.internal.PdxString;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.QueryObserver;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.query.internal.QueryUtils;
+import org.apache.geode.cache.query.internal.RuntimeIterator;
+import org.apache.geode.cache.query.internal.Support;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * 
@@ -351,7 +351,7 @@ public class PrimaryKeyIndex extends AbstractIndex  {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.cache.query.internal.index.AbstractIndex#lockedQuery(java.lang.Object,
+   * @see org.apache.geode.cache.query.internal.index.AbstractIndex#lockedQuery(java.lang.Object,
    *      int, java.lang.Object, int, java.util.Collection, java.util.Set)
    */
 

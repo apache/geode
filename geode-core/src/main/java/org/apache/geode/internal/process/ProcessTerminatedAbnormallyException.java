@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * The ProcessTerminatedAbnormallyException class is a GemFireException (or RuntimeException) indicating that a process
  * terminated abnormally, and it's exit code is captured along with this RuntimeException.
  * </p>
- * @see com.gemstone.gemfire.GemFireException
+ * @see org.apache.geode.GemFireException
  * @since GemFire 7.0
  */
 public final class ProcessTerminatedAbnormallyException extends GemFireException {

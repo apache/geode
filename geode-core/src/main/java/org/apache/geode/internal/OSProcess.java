@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.io.TeePrintStream;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.io.TeePrintStream;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
@@ -207,7 +207,7 @@ public class OSProcess {
 		throw new IOException(LocalizedStrings.OSProcess_COULD_NOT_CREATE_LOG_FILE_0_BECAUSE_1.toLocalizedString(new Object[] {logfile.getPath(), io.getMessage()}));
 	    }
 	}
-	String trace = System.getProperty("com.gemstone.gemfire.internal.OSProcess.trace");
+	String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
 	if (trace != null && trace.length() > 0) {
 	    for (int i=0; i < cmdarray.length; i++) {
 		System.out.println("cmdarray[" + i + "] = "
@@ -515,7 +515,7 @@ public class OSProcess {
 	    try {
 		pids.remove(Integer.valueOf(pid));
 	    } catch (Exception ignore) {}
-	    String trace = System.getProperty("com.gemstone.gemfire.internal.OSProcess.trace");
+	    String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
 	    if (trace != null && trace.length() > 0) {
 		System.out.println("reaped pid: " + pid);
 	    }
@@ -614,7 +614,7 @@ public class OSProcess {
                   myPid[0] = getProcessId();
                   reaperStarted = true;
                 }
-		String trace = System.getProperty("com.gemstone.gemfire.internal.OSProcess.trace");
+		String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
 		int secondsToSleep = (1000 * 60) * 1; // one minute
 		if (trace != null && trace.length() > 0) {
 		    secondsToSleep = 1000; // every second

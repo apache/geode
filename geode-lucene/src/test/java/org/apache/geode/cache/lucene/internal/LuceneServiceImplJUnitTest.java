@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;
 
 import static org.junit.Assert.*;
 
 import java.util.Collections;
 
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Rule;
 import org.junit.Test;

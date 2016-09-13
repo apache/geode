@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.wan;
+package org.apache.geode.cache.wan;
 
-import com.gemstone.gemfire.cache.CacheCallback;
-import com.gemstone.gemfire.cache.EntryEvent;
+import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.EntryEvent;
 
 /**
  * Interface <code>GatewayEventSubstitutionFilter</code> provides a way to

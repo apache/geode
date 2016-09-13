@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -30,17 +30,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.query.NameNotFoundException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.pdx.internal.FieldNotFoundInPdxVersion;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
-import com.gemstone.gemfire.pdx.JSONFormatter;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.query.NameNotFoundException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.JSONFormatter;
 
 /**
  * Utility for managing an attribute
@@ -91,7 +91,7 @@ public class AttributeDescriptor {
     Support.Assert(target != null);
     Support.Assert(target != QueryService.UNDEFINED);
     Member m;
-    if (target.getClass().getName().startsWith("com.gemstone.gemfire.internal.cache.Token$")) {
+    if (target.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")) {
       return QueryService.UNDEFINED;
     } else {
       m = getReadMember(resolutionClass);
@@ -99,7 +99,7 @@ public class AttributeDescriptor {
     try {
       if (m instanceof Method) {
         try {
-          if (target.getClass().getName().startsWith("com.gemstone.gemfire.internal.cache.Token$")) {
+          if (target.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")) {
             return QueryService.UNDEFINED;
           } else {            
             return ((Method)m).invoke(target, (Object[])null);
@@ -123,7 +123,7 @@ public class AttributeDescriptor {
         }
       } else {
         try {
-          if (target.getClass().getName().startsWith("com.gemstone.gemfire.internal.cache.Token$")) {
+          if (target.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")) {
             return QueryService.UNDEFINED;
           } else {
             return ((Field)m).get(target);

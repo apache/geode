@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -22,19 +22,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.query.internal.cq.spi.CqServiceFactory;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CommandInitializer;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.CloseCQ;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.ExecuteCQ;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.ExecuteCQ61;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.GetCQStats;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.GetDurableCQs;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.MonitorCQ;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.StopCQ;
+import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
+import org.apache.geode.internal.cache.tier.sockets.command.CloseCQ;
+import org.apache.geode.internal.cache.tier.sockets.command.ExecuteCQ;
+import org.apache.geode.internal.cache.tier.sockets.command.ExecuteCQ61;
+import org.apache.geode.internal.cache.tier.sockets.command.GetCQStats;
+import org.apache.geode.internal.cache.tier.sockets.command.GetDurableCQs;
+import org.apache.geode.internal.cache.tier.sockets.command.MonitorCQ;
+import org.apache.geode.internal.cache.tier.sockets.command.StopCQ;
 
 public class CqServiceFactoryImpl implements CqServiceFactory {
   

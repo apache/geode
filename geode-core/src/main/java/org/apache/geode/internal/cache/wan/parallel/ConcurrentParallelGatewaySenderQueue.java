@@ -17,26 +17,26 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.wan.parallel;
+package org.apache.geode.internal.cache.wan.parallel;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.Conflatable;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.RegionQueue;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
-import com.gemstone.gemfire.internal.size.SingleObjectSizer;
+import org.apache.geode.internal.size.SingleObjectSizer;
 
 /**
  * Queue built on top of {@link ParallelGatewaySenderQueue} which allows

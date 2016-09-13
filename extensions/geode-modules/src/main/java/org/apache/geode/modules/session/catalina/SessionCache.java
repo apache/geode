@@ -14,11 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionStatistics;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 import org.apache.catalina.Session;
 
 import javax.servlet.http.HttpSession;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
 /**
  * <p>
@@ -24,15 +24,15 @@ package com.gemstone.gemfire.internal.jta;
  * 
  * @since GemFire 4.0
  */
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.util.*;
 import javax.transaction.xa.*;
 import javax.transaction.*;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 public class GlobalTransaction  {
 

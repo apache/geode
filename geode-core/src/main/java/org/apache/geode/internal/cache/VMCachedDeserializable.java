@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.lru.LRUEntry;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.pdx.PdxInstance;
 
 /**
  * The first time someone asks this instance for its Object it will deserialize
@@ -86,7 +86,7 @@ public final class VMCachedDeserializable implements CachedDeserializable, DataS
   public Object getDeserializedValue(Region r, RegionEntry re) {
     Object v = this.value;
     if (v instanceof byte[]) {
-//       com.gemstone.gemfire.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG getDeserializedValue r=" + r + " re=" + re, new RuntimeException("STACK"));
+//       org.apache.geode.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG getDeserializedValue r=" + r + " re=" + re, new RuntimeException("STACK"));
       LRUEntry le = null;
       if (re != null) {
         assert r != null;

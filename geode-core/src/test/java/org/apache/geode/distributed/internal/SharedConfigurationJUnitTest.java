@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.management.internal.configuration.utils.XmlConstants.*;
+import static org.apache.geode.management.internal.configuration.utils.XmlConstants.*;
 import static javax.xml.XMLConstants.*;
 import static org.junit.Assert.*;
 
@@ -25,9 +25,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SharedConfiguration}.

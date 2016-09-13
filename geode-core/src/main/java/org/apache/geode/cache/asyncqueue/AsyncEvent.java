@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.asyncqueue;
+package org.apache.geode.cache.asyncqueue;
 
-import com.gemstone.gemfire.cache.wan.EventSequenceID;
-import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
+import org.apache.geode.cache.wan.EventSequenceID;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 
 /**
  * Represents <code>Cache</code> events delivered to <code>AsyncEventListener</code>.

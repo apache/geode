@@ -14,18 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionStatistics;
-import com.gemstone.gemfire.modules.util.ContextMapper;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
-import com.gemstone.gemfire.modules.util.RegionHelper;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
+import org.apache.geode.modules.util.ContextMapper;
+import org.apache.geode.modules.util.RegionConfiguration;
+import org.apache.geode.modules.util.RegionHelper;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;

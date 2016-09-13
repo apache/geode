@@ -16,17 +16,17 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.cache.CacheServerLauncher;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -41,7 +41,7 @@ import java.net.UnknownHostException;
 
 /**
  * A message that is sent to a particular distribution manager to
- * get its current {@link com.gemstone.gemfire.internal.Config}
+ * get its current {@link org.apache.geode.internal.Config}
  */
 public final class FetchHostResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
@@ -29,7 +29,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
  */
 public class AppenderContext {
   
-  /** "com.gemstone" is a good alternative for limiting alerts to just gemstone packages, otherwise ROOT is used */
+  /** "org.apache" is a good alternative for limiting alerts to just gemstone packages, otherwise ROOT is used */
   public static final String LOGGER_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "logging.appenders.LOGGER";
   
   public AppenderContext() {

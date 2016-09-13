@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.fixed;
+package org.apache.geode.internal.cache.partitioned.fixed;
 
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.PartitionResolver;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionResolver;
 
 public class MyDate2 extends Date implements PartitionResolver{
 

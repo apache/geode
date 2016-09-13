@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.cli;
+package org.apache.geode.management.cli;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.gemstone.gemfire.management.internal.cli.CliAroundInterceptor;
+import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 
 /**
  * An annotation to define additional meta-data for commands.
@@ -53,19 +53,19 @@ public @interface CliMetaData {
   boolean writesToSharedConfiguration() default false;
   
   /** In help, topics that are related to this command **/
-  String[] relatedTopic() default com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.DEFAULT_TOPIC_GEODE;
+  String[] relatedTopic() default org.apache.geode.management.internal.cli.i18n.CliStrings.DEFAULT_TOPIC_GEODE;
 
   /**
    * The fully qualified name of a class which implements the
    * {@link CliAroundInterceptor} interface in order to provide additional pre-
    * and post-execution functionality for a command.
    */
-  String interceptor() default com.gemstone.gemfire.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
+  String interceptor() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
 
   /**
    * String used as a separator when multiple values for a command are specified
    */
-  String valueSeparator() default com.gemstone.gemfire.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
+  String valueSeparator() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
 
 
   // TODO - Abhishek - refactor to group this
@@ -94,7 +94,7 @@ public @interface CliMetaData {
     /**
      * String describing the availability condition.
      */
-    String availabilityDescription() default com.gemstone.gemfire.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
+    String availabilityDescription() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
   }
 
 }

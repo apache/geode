@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance;
 
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
 
 /**
  * A director to move buckets to improve the load balance of a

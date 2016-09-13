@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
 
 import java.io.File;
 import java.util.Iterator;
@@ -29,7 +29,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * <code>DistributedTestUtils</code> provides static utility methods that 
@@ -39,7 +39,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  * however, they are intended to be referenced through static import:
  *
  * <pre>
- * import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
+ * import static org.apache.geode.test.dunit.DistributedTestUtils.*;
  *    ...
  *    crashDistributedSystem(...);
  * </pre>

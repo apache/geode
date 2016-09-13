@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.beans.IntrospectionException;
 import java.util.Iterator;
@@ -26,11 +26,11 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.ManagementException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.ManagementException;
 
 /**
  * Instance of this class is responsible for proxy creation/deletion etc.
@@ -83,7 +83,7 @@ public class MBeanProxyFactory {
    * {@link MBeanProxyInfoRepository}
    * 
    * @param member
-   *          {@link com.gemstone.gemfire.distributed.DistributedMember}
+   *          {@link org.apache.geode.distributed.DistributedMember}
    * @param objectName
    *          {@link javax.management.ObjectName} of the Bean
    * @param monitoringRegion
@@ -148,7 +148,7 @@ public class MBeanProxyFactory {
    * It will be called from GII or when a member joins the system
    * 
    * @param member
-   *          {@link com.gemstone.gemfire.distributed.DistributedMember}
+   *          {@link org.apache.geode.distributed.DistributedMember}
    * @param monitoringRegion
    *          monitoring region containing the proxies
    */
@@ -217,7 +217,7 @@ public class MBeanProxyFactory {
   /**
    * Removes all proxies for a given member
    * @param member
-   *          {@link com.gemstone.gemfire.distributed.DistributedMember}
+   *          {@link org.apache.geode.distributed.DistributedMember}
    * @param monitoringRegion
    *          monitoring region containing the proxies
    */
@@ -252,7 +252,7 @@ public class MBeanProxyFactory {
    * Removes the proxy
    * 
    * @param member
-   *          {@link com.gemstone.gemfire.distributed.DistributedMember}
+   *          {@link org.apache.geode.distributed.DistributedMember}
    * @param objectName
    *          {@link javax.management.ObjectName} of the Bean
    */
@@ -298,7 +298,7 @@ public class MBeanProxyFactory {
 
   /**
    * Find a particular proxy instance for a {@link javax.management.ObjectName}
-   * , {@link com.gemstone.gemfire.distributed.DistributedMember} and interface
+   * , {@link org.apache.geode.distributed.DistributedMember} and interface
    * class If the proxy interface does not implement the given interface class a
    * {@link java.lang.ClassCastException}. will be thrown
    * 
@@ -323,10 +323,10 @@ public class MBeanProxyFactory {
 
   /**
    * Find a set of proxies given a
-   * {@link com.gemstone.gemfire.distributed.DistributedMember}
+   * {@link org.apache.geode.distributed.DistributedMember}
    * 
    * @param member
-   *          {@link com.gemstone.gemfire.distributed.DistributedMember}
+   *          {@link org.apache.geode.distributed.DistributedMember}
    * @return a set of {@link javax.management.ObjectName}
    */
   public Set<ObjectName> findAllProxies(DistributedMember member) {

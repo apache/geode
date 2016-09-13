@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.i18n;
+package org.apache.geode.internal.i18n;
 
 import static org.junit.Assert.*;
 
@@ -29,8 +29,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This class tests all basic i18n functionality.
@@ -299,10 +299,10 @@ public class BasicI18nJUnitTest {
    */
   private Set<String> getStringIdDefiningClasses() {
     final Set<String> StringIdDefiningClasses = new LinkedHashSet<String>();
-    final String pkg = "com.gemstone.gemfire.internal.i18n.";
+    final String pkg = "org.apache.geode.internal.i18n.";
 //    StringIdDefiningClasses.add(pkg + "ParentLocalizedStrings");
     StringIdDefiningClasses.add(pkg + "LocalizedStrings");
-    StringIdDefiningClasses.add("com.gemstone.gemfire.management.internal.ManagementStrings");
+    StringIdDefiningClasses.add("org.apache.geode.management.internal.ManagementStrings");
     return StringIdDefiningClasses;
   }
 

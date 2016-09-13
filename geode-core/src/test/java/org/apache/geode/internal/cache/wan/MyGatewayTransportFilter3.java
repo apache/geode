@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 
 public class MyGatewayTransportFilter3 implements GatewayTransportFilter, Serializable {
   String Id = "MyGatewayTransportFilter3";

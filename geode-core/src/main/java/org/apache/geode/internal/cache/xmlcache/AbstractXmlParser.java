@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
 import java.util.Stack;
 
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.i18n.LogWriterI18n;
 
 /**
  * Abstract for {@link XmlParser} that throws

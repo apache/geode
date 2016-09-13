@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.persistence.logging;
+package org.apache.persistence.logging;
 
 /**
  * Abstract class that formats LogRecords
@@ -23,7 +23,7 @@ public abstract class Formatter {
 
   /** Should we print a stack trace along with logging messages */
   protected static boolean STACK_TRACE =
-    Boolean.getBoolean("com.gemstone.persistence.logging.StackTraces");
+    Boolean.getBoolean("org.apache.persistence.logging.StackTraces");
 
   /**
    * Formats the given log record as a String

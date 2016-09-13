@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.index.AbstractIndex;
-import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.index.AbstractIndex;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 
 public class IndexInfo
 {

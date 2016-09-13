@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal.locator.wan;
+package org.apache.geode.cache.client.internal.locator.wan;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -22,11 +22,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
-import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
+import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 /**
  * This is a helper class which helps to add the locator information to the allLocatorInfoMap.
  * 

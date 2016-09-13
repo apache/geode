@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
-import com.gemstone.gemfire.pdx.*;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.pdx.*;
+import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 
 import java.io.DataOutput;
 import java.io.IOException;

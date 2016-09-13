@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
-import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.CqState;
-import com.gemstone.gemfire.cache.query.internal.CqQueryVsdStats;
-import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import org.apache.geode.cache.query.CqClosedException;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.CqState;
+import org.apache.geode.cache.query.internal.CqQueryVsdStats;
+import org.apache.geode.cache.query.internal.CqStateImpl;
+import org.apache.geode.internal.cache.LocalRegion;
 
 public interface InternalCqQuery extends CqQuery {
 

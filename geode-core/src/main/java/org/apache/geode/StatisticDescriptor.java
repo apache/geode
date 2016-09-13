@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
-//import com.gemstone.gemfire.internal.Assert;
-//import com.gemstone.gemfire.internal.FieldInfo;
+//import org.apache.geode.internal.Assert;
+//import org.apache.geode.internal.FieldInfo;
 
 /**
  * Describes an individual statistic whose value is updated by an

@@ -17,7 +17,7 @@
 /**
  * File comment
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,14 +25,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Synchronization;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 
 /**
  * An entity that tracks transactions must implement this interface. 

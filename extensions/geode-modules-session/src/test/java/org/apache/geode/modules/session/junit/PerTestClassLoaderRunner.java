@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.junit;
+package org.apache.geode.modules.session.junit;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

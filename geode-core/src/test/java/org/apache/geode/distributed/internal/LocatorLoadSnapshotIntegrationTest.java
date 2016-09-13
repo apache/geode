@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import static org.junit.Assert.*;
 
@@ -27,8 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests extracted from LocatorLoadSnapshotJUnitTest

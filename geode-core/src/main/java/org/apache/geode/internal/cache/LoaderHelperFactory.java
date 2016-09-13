@@ -20,13 +20,13 @@
  * outside the context of the Region the loader invoked from.
  * @since GemFire 5.0
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.LoaderHelper;
+import org.apache.geode.cache.LoaderHelper;
 
 /**
  * The LoaderHelperFactory creates a LoaderHelper class which is used by a 
- * {@link com.gemstone.gemfire.cache.CacheLoader}.
+ * {@link org.apache.geode.cache.CacheLoader}.
  *  
  * @since GemFire 5.0
  */

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+import org.apache.geode.test.junit.categories.PerformanceTest;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")

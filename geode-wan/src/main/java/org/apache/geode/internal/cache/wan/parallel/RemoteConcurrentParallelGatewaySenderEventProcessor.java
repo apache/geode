@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.parallel;
+package org.apache.geode.internal.cache.wan.parallel;
 
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 /**
  * Remote version of GatewaySenderEvent Processor
  *

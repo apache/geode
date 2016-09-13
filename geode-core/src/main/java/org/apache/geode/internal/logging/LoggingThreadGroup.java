@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,12 +22,12 @@ import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.i18n.StringId;
 
 /**
  * A <code>ThreadGroup</code> that logs all {@linkplain

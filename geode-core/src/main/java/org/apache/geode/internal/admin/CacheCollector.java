@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-//import com.gemstone.gemfire.internal.admin.remote.*;
-//import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.GemFireCacheException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+//import org.apache.geode.internal.admin.remote.*;
+//import org.apache.geode.cache.*;
+//import org.apache.geode.GemFireCacheException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 
@@ -79,7 +79,7 @@ public class CacheCollector {
    * Initiates a snapshot of the all of the Cache regions in a
    * distributed system.
    *
-   * @see com.gemstone.gemfire.internal.admin.ApplicationVM#takeRegionSnapshot(String, int)
+   * @see org.apache.geode.internal.admin.ApplicationVM#takeRegionSnapshot(String, int)
    */
   public synchronized void takeSnapshot(String regionName) {
     flush();

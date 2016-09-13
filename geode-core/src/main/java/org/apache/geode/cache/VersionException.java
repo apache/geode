@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.GemFireCheckedException;
+import org.apache.geode.GemFireCheckedException;
 
 /**
  * An <code>VersionException</code> is an exception that indicates

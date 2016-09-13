@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.util.Arrays;
@@ -23,8 +23,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region perf test for Persist only with Async writes and  Buffer.

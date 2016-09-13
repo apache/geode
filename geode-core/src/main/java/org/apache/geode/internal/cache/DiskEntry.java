@@ -14,40 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.AsyncDiskEntry;
-import com.gemstone.gemfire.internal.cache.Token.Tombstone;
-import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
-import com.gemstone.gemfire.internal.cache.lru.LRUClockNode;
-import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
-import com.gemstone.gemfire.internal.cache.persistence.BytesAndBits;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
-import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
-import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.DiskStoreImpl.AsyncDiskEntry;
+import org.apache.geode.internal.cache.Token.Tombstone;
+import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.lru.LRUClockNode;
+import org.apache.geode.internal.cache.lru.LRUEntry;
+import org.apache.geode.internal.cache.persistence.BytesAndBits;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.AddressableMemoryManager;
+import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.offheap.ReferenceCountHelper;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.util.BlobHelper;
 
 /**
  * Represents an entry in an {@link RegionMap} whose value may be

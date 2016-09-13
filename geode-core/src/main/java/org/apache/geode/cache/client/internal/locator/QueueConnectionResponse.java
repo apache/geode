@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal.locator;
+package org.apache.geode.cache.client.internal.locator;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
 
 /**
  * A response from locator to client indicating the servers

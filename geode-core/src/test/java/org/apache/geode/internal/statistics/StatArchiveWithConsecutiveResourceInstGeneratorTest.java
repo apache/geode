@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import static com.gemstone.gemfire.internal.statistics.StatUtils.*;
+import static org.apache.geode.internal.statistics.StatUtils.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Compares the output results of {@link StatArchiveWithConsecutiveResourceInstGenerator} against the saved stat

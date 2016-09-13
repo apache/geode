@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -31,26 +31,26 @@ import java.util.concurrent.locks.Lock;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
-import com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPoint;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AbstractRegion}.
@@ -64,7 +64,7 @@ public class AbstractRegionJUnitTest {
    * Test method for {@link AbstractRegion#getExtensionPoint()}.
    * 
    * Assert that method returns a {@link SimpleExtensionPoint} instance and
-   * assume that {@link com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPointJUnitTest} has covered the rest.
+   * assume that {@link org.apache.geode.internal.cache.extension.SimpleExtensionPointJUnitTest} has covered the rest.
    */
   @Test
   public void testGetExtensionPoint() {

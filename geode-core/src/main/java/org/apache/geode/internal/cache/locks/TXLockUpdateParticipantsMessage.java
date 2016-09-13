@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.distributed.internal.MessageWithReply;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.distributed.internal.locks.DLockGrantor;
-import com.gemstone.gemfire.distributed.internal.locks.LockGrantorDestroyedException;
+package org.apache.geode.internal.cache.locks;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.locks.DLockGrantor;
+import org.apache.geode.distributed.internal.locks.LockGrantorDestroyedException;
 import java.io.*;
 import java.util.Set;
 
@@ -37,14 +37,14 @@ import java.util.Set;
  * crashes/departs before or while sending the TXCommitMessage but
  * after making the reservation for the transaction.
  * 
- * @see com.gemstone.gemfire.internal.cache.TXCommitMessage#send(TXLockId)
- * @see com.gemstone.gemfire.internal.cache.TXCommitMessage#updateLockMembers
- * @see com.gemstone.gemfire.distributed.internal.locks.DLockGrantor#getLockBatch(Object)
- * @see com.gemstone.gemfire.distributed.internal.locks.DLockGrantor#updateLockBatch(Object, com.gemstone.gemfire.distributed.internal.locks.DLockBatch)
+ * @see org.apache.geode.internal.cache.TXCommitMessage#send(TXLockId)
+ * @see org.apache.geode.internal.cache.TXCommitMessage#updateLockMembers
+ * @see org.apache.geode.distributed.internal.locks.DLockGrantor#getLockBatch(Object)
+ * @see org.apache.geode.distributed.internal.locks.DLockGrantor#updateLockBatch(Object, org.apache.geode.distributed.internal.locks.DLockBatch)
  * @see TXLockBatch#getBatchId
  * @see TXLessorDepartureHandler
  * @see TXOriginatorRecoveryProcessor
- * @see com.gemstone.gemfire.internal.cache.TXFarSideCMTracker
+ * @see org.apache.geode.internal.cache.TXFarSideCMTracker
  * 
  * @since GemFire 4.1.1
  */

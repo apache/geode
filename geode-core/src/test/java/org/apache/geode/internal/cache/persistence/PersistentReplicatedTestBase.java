@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import static org.junit.Assert.*;
 
@@ -23,22 +23,22 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
@@ -52,7 +52,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
     Invoke.invokeInEveryVM(PersistentReplicatedTestBase.class,"setRegionName", new Object[]{getUniqueName()});
     setRegionName(getUniqueName());
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
-    com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    org.apache.geode.internal.FileUtil.delete(diskDir);
     diskDir.mkdir();
     diskDir.deleteOnExit();
   }
@@ -63,7 +63,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    org.apache.geode.internal.FileUtil.delete(diskDir);
     postTearDownPersistentReplicatedTestBase();
   }
   

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.distributed;
+package org.apache.geode.cache.lucene.internal.distributed;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -26,10 +26,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 /**
  * Holds a ordered collection of entries matching a search query.

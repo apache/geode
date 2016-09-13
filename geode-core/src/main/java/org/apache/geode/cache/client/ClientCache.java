@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
 import java.net.InetSocketAddress;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.query.QueryService;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.QueryService;
 
 /**
  * A ClientCache instance controls the life cycle of the local singleton cache in a client. 
@@ -160,7 +160,7 @@ public interface ClientCache extends GemFireCache {
    * Returns the default server pool. If one or more non-default pools were
    * configured, this may return null.
    * @since GemFire 7.0
-   * @see com.gemstone.gemfire.cache.client.Pool
+   * @see org.apache.geode.cache.client.Pool
    */
   public Pool getDefaultPool();
   

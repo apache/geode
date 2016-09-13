@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal.pooling;
+package org.apache.geode.cache.client.internal.pooling;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.GatewayConfigurationException;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.client.internal.*;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
-import com.gemstone.gemfire.distributed.PoolCancelledException;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.internal.cache.PoolStats;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.GatewayConfigurationException;
+import org.apache.geode.cache.client.*;
+import org.apache.geode.cache.client.internal.*;
+import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
+import org.apache.geode.distributed.PoolCancelledException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.logging.log4j.Logger;
 
 import java.net.SocketException;
@@ -141,7 +141,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManager#borrowConnection(long)
+   * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#borrowConnection(long)
    */
   public Connection borrowConnection(long acquireTimeout) throws AllConnectionsInUseException, NoAvailableServersException {
     
@@ -464,7 +464,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManager#invalidateServer(com.gemstone.gemfire.distributed.internal.ServerLocation)
+   * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#invalidateServer(org.apache.geode.distributed.internal.ServerLocation)
    */
   protected void invalidateServer(Endpoint endpoint) {
     Set badConnections = allConnectionsMap.removeEndpoint(endpoint);
@@ -524,7 +524,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManager#returnConnection(com.gemstone.gemfire.cache.client.internal.Connection)
+   * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#returnConnection(org.apache.geode.cache.client.internal.Connection)
    */
   public void returnConnection(Connection connection) {
     returnConnection(connection, true);
@@ -611,7 +611,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManager#close(boolean, long)
+   * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#close(boolean, long)
    */
   public void close(boolean keepAlive) {
     if(logger.isDebugEnabled()) {

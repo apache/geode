@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 /**
  * Instances that implement this interface must have release called on them

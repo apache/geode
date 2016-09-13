@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.deadlock;
+package org.apache.geode.distributed.internal.deadlock;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 
 /**
  * A singleton which keeps track of all of the dependency monitors registered in

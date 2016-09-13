@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueStats;
-import com.gemstone.gemfire.management.internal.ManagementStrings;
-import com.gemstone.gemfire.management.internal.beans.stats.MBeanStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueStats;
+import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.StatsKey;
 
 /**
  * 

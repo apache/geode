@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.generator;
+package org.apache.geode.security.generator;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.security.AuthInitialize;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.security.AuthInitialize;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 
 import java.util.Iterator;
 import java.util.Properties;

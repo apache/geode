@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.snapshot;
+package org.apache.geode.cache.snapshot;
 
 import java.io.File;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import com.gemstone.gemfire.pdx.PdxSerializer;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import org.apache.geode.pdx.PdxSerializer;
 
 /**
  * Allows a snapshot of cache data to be imported and exported. Each region in 

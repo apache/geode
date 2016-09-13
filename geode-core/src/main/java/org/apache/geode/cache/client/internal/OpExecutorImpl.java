@@ -14,35 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.SynchronizationCommitConflictException;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionOpImpl;
-import com.gemstone.gemfire.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
-import com.gemstone.gemfire.cache.client.internal.QueueManager.QueueConnections;
-import com.gemstone.gemfire.cache.client.internal.pooling.ConnectionDestroyedException;
-import com.gemstone.gemfire.cache.client.internal.pooling.ConnectionManager;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.internal.cache.PutAllPartialResultException;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.cache.execute.InternalFunctionInvocationTargetException;
-import com.gemstone.gemfire.internal.cache.tier.BatchException;
-import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
-import com.gemstone.gemfire.internal.cache.wan.BatchException70;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.geode.*;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.client.*;
+import org.apache.geode.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionOpImpl;
+import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
+import org.apache.geode.cache.client.internal.QueueManager.QueueConnections;
+import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
+import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.PutAllPartialResultException;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
+import org.apache.geode.internal.cache.tier.BatchException;
+import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
+import org.apache.geode.internal.cache.wan.BatchException70;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.logging.log4j.Logger;
 
 import java.io.EOFException;
@@ -312,7 +312,7 @@ public class OpExecutorImpl implements ExecutablePool {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.OpExecutor#executeOn(com.gemstone.gemfire.distributed.internal.ServerLocation, com.gemstone.gemfire.cache.client.internal.Op)
+   * @see org.apache.geode.cache.client.internal.OpExecutor#executeOn(org.apache.geode.distributed.internal.ServerLocation, org.apache.geode.cache.client.internal.Op)
    */
   public Object executeOn(ServerLocation server, Op op) {
     return executeOn(server, op, true,false);
@@ -447,7 +447,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   /*
    * (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ExecutablePool#executeOnPrimary(com.gemstone.gemfire.cache.client.internal.Op)
+   * @see org.apache.geode.cache.client.internal.ExecutablePool#executeOnPrimary(org.apache.geode.cache.client.internal.Op)
    */
   public Object executeOnPrimary(Op op) {
     if(queueManager == null) {
@@ -512,7 +512,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   /*
    * (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ExecutablePool#executeOnAllQueueServers(com.gemstone.gemfire.cache.client.internal.Op)
+   * @see org.apache.geode.cache.client.internal.ExecutablePool#executeOnAllQueueServers(org.apache.geode.cache.client.internal.Op)
    */
   public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
     if(queueManager == null) {

@@ -14,43 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.cache.server.ServerLoadProbeAdapter;
-import com.gemstone.gemfire.cache.server.ServerMetrics;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.distributed.internal.ServerLocator;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
+import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.cache.server.ServerLoadProbeAdapter;
+import org.apache.geode.cache.server.ServerMetrics;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocator;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
 import com.jayway.awaitility.Awaitility;
 import org.junit.Assert;
 

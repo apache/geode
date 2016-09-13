@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
-import com.gemstone.gemfire.internal.process.ProcessUtils.InternalProcessUtils;
-import com.gemstone.gemfire.internal.shared.NativeCalls;
+import org.apache.geode.internal.process.ProcessUtils.InternalProcessUtils;
+import org.apache.geode.internal.shared.NativeCalls;
 
 /**
  * Implementation of the {@link ProcessUtils} SPI that uses {@link NativeCalls}.

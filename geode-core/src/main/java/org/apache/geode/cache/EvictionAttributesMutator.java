@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
+import org.apache.geode.internal.cache.EvictionAttributesImpl;
 
 /**
  * The EvictionAttributesMutator allows changes to be made to a 
- * {@link com.gemstone.gemfire.cache.EvictionAttributes}. It is returned
- * by {@link com.gemstone.gemfire.cache.AttributesMutator#getEvictionAttributesMutator()}
+ * {@link org.apache.geode.cache.EvictionAttributes}. It is returned
+ * by {@link org.apache.geode.cache.AttributesMutator#getEvictionAttributesMutator()}
  * @since GemFire 5.0
  */
 public interface EvictionAttributesMutator

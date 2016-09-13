@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
-//import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+//import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
  * Class <code>ClientRegionEventImpl</code> is a

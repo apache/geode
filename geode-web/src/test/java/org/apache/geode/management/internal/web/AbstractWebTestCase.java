@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web;
+package org.apache.geode.management.internal.web;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -24,17 +24,17 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.web.domain.Link;
 
 /**
  * The AbstractWebDomainTests class is abstract base class containing functionality common to a test suite classes
- * in the com.gemstone.gemfire.management.internal.web.domain package.
+ * in the org.apache.geode.management.internal.web.domain package.
  * <p/>
  * @see java.net.URI
  * @see java.net.URLDecoder
  * @see java.net.URLEncoder
- * @see com.gemstone.gemfire.management.internal.web.domain.Link
+ * @see org.apache.geode.management.internal.web.domain.Link
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

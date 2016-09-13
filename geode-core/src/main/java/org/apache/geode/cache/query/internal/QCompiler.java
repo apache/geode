@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -30,28 +30,28 @@ import org.apache.logging.log4j.Logger;
 import antlr.collections.AST;
 import antlr.debug.misc.ASTFrame;
 
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.parse.GemFireAST;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexer;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLParser;
-import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.MapTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
-import com.gemstone.gemfire.cache.query.types.CollectionType;
-import com.gemstone.gemfire.cache.query.types.MapType;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.parse.GemFireAST;
+import org.apache.geode.cache.query.internal.parse.OQLLexer;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.parse.OQLParser;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.internal.types.MapTypeImpl;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.MapType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Class Description
@@ -82,7 +82,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       OQLParser parser = new OQLParser (lexer);
       // by default use Unsupported AST class, overridden for supported
       // operators in the grammer proper
-      parser.setASTNodeClass ("com.gemstone.gemfire.cache.query.internal.parse.ASTUnsupported");
+      parser.setASTNodeClass ("org.apache.geode.cache.query.internal.parse.ASTUnsupported");
       parser.queryProgram ();
       GemFireAST n = (GemFireAST)parser.getAST ();
       n.compile(this);
@@ -100,7 +100,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       OQLParser parser = new OQLParser (lexer);
       // by default use Unsupported AST class, overridden for supported
       // operators in the grammer proper
-      parser.setASTNodeClass ("com.gemstone.gemfire.cache.query.internal.parse.ASTUnsupported");
+      parser.setASTNodeClass ("org.apache.geode.cache.query.internal.parse.ASTUnsupported");
       parser.loneFromClause ();
       GemFireAST n = (GemFireAST)parser.getAST ();
       n.compile(this);
@@ -119,7 +119,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       OQLParser parser = new OQLParser (lexer);
       // by default use Unsupported AST class, overridden for supported
       // operators in the grammer proper
-      parser.setASTNodeClass ("com.gemstone.gemfire.cache.query.internal.parse.ASTUnsupported");
+      parser.setASTNodeClass ("org.apache.geode.cache.query.internal.parse.ASTUnsupported");
       parser.loneProjectionAttributes ();
       GemFireAST n = (GemFireAST)parser.getAST ();
       // don't compile TOK_STAR
@@ -185,7 +185,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       OQLParser parser = new OQLParser (lexer);
       // by default use Unsupported AST class, overridden for supported
       // operators in the grammer proper
-      parser.setASTNodeClass ("com.gemstone.gemfire.cache.query.internal.parse.ASTUnsupported");
+      parser.setASTNodeClass ("org.apache.geode.cache.query.internal.parse.ASTUnsupported");
       parser.loneImports();
       GemFireAST n = (GemFireAST)parser.getAST ();
       n.compile(this);

@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.types;
+package org.apache.geode.cache.query.internal.types;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.types.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.types.*;
 
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of StructType

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 
 /**
  * <P>This class represents a host on which a remote method may be

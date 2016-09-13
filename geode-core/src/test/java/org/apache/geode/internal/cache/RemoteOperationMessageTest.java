@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.mockito.Mockito.*;
 
@@ -23,13 +23,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.internal.stubbing.answers.CallsRealMethods;
 
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
-import com.gemstone.gemfire.test.fake.Fakes;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.TXStateProxyImpl;
+import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 
 @Category(UnitTest.class)

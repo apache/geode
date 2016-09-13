@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package org.apache.geode.management.internal.security;
 
-import static com.gemstone.gemfire.internal.Assert.*;
+import static org.apache.geode.internal.Assert.*;
 
 import org.apache.geode.security.templates.SamplePostProcessor;
 import org.junit.Before;
@@ -25,10 +25,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.management.internal.cli.HeadlessGfsh;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ IntegrationTest.class, SecurityTest.class })
 public class GfshCommandsPostProcessorTest {
@@ -39,7 +39,7 @@ public class GfshCommandsPostProcessorTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json", SamplePostProcessor.class);
+      jmxPort, "org/apache/geode/management/internal/security/cacheServer.json", SamplePostProcessor.class);
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort);

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -30,20 +30,20 @@ import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.partitioned.InternalPartitionDetails;
-import com.gemstone.gemfire.internal.cache.partitioned.OfflineMemberDetails;
-import com.gemstone.gemfire.internal.cache.partitioned.PRLoad;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionMemberInfoImpl;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.InternalPartitionDetails;
+import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
+import org.apache.geode.internal.cache.partitioned.PRLoad;
+import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A model of the load on all of the members for a partitioned region. This

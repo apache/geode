@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.fixed;
+package org.apache.geode.internal.cache.partitioned.fixed;
 
 import static org.junit.Assert.*;
 
@@ -33,45 +33,45 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
-import com.gemstone.gemfire.cache.control.RebalanceResults;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
-import com.gemstone.gemfire.internal.cache.HARegion;
-import com.gemstone.gemfire.internal.cache.PartitionRegionConfig;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
-import com.gemstone.gemfire.internal.cache.execute.data.CustId;
-import com.gemstone.gemfire.internal.cache.execute.data.Customer;
-import com.gemstone.gemfire.internal.cache.execute.data.Order;
-import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
-import com.gemstone.gemfire.internal.cache.execute.data.Shipment;
-import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverAdapter;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.cache.HARegion;
+import org.apache.geode.internal.cache.PartitionRegionConfig;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.cache.execute.data.Customer;
+import org.apache.geode.internal.cache.execute.data.Order;
+import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.execute.data.Shipment;
+import org.apache.geode.internal.cache.execute.data.ShipmentId;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserver;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverAdapter;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is the base class to do operations
@@ -149,7 +149,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
       assertNotNull(cache);
     }
     catch (Exception e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Failed while creating the cache", e);
+      org.apache.geode.test.dunit.Assert.fail("Failed while creating the cache", e);
     }
   }
 
@@ -190,7 +190,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     try {
       RebalanceResults result = operation.getResults();
     } catch (InterruptedException e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Not expecting exception", e);
+      org.apache.geode.test.dunit.Assert.fail("Not expecting exception", e);
     }
     
   }
@@ -337,7 +337,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           assertEquals(customer, region_Cust.get(custid));
         }
         catch (Exception e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail(
+          org.apache.geode.test.dunit.Assert.fail(
               "getForColocation : failed while doing get operation in CustomerPartitionedRegion ",
               e);
         }
@@ -452,7 +452,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
         partitionedregion.put(custid, customer);
       }
       catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
             e);
       }
@@ -476,7 +476,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           partitionedregion.put(orderId, order);
         }
         catch (Exception e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail(
+          org.apache.geode.test.dunit.Assert.fail(
               "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
               e);
         }
@@ -503,7 +503,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
             partitionedregion.put(shipmentId, shipment);
           }
           catch (Exception e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail(
+            org.apache.geode.test.dunit.Assert.fail(
                 "putShipmentPartitionedRegion : failed while doing put operation in ShipmentPartitionedRegion ",
                 e);
           }
@@ -527,7 +527,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
         partitionedregion.put(custid, customer);
       }
       catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
             e);
       }
@@ -551,7 +551,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           partitionedregion.put(orderId, order);
         }
         catch (Exception e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail(
+          org.apache.geode.test.dunit.Assert.fail(
               "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
               e);
         }
@@ -578,7 +578,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
             partitionedregion.put(shipmentId, shipment);
           }
           catch (Exception e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail(
+            org.apache.geode.test.dunit.Assert.fail(
                 "putShipmentPartitionedRegion : failed while doing put operation in ShipmentPartitionedRegion ",
                 e);
           }
@@ -603,7 +603,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           partitionedregion.put(custid, customer);
         }
         catch (Exception e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail(
+          org.apache.geode.test.dunit.Assert.fail(
               "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
               e);
         }
@@ -630,7 +630,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
             partitionedregion.put(orderId, order);
           }
           catch (Exception e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail(
+            org.apache.geode.test.dunit.Assert.fail(
                 "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
                 e);
           }
@@ -659,7 +659,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
               partitionedregion.put(shipmentId, shipment);
             }
             catch (Exception e) {
-              com.gemstone.gemfire.test.dunit.Assert.fail(
+              org.apache.geode.test.dunit.Assert.fail(
                   "putShipmentPartitionedRegion : failed while doing put operation in ShipmentPartitionedRegion ",
                   e);
             }
@@ -685,7 +685,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           partitionedregion.put(custid, customer);
         }
         catch (Exception e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail(
+          org.apache.geode.test.dunit.Assert.fail(
               "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
               e);
         }
@@ -712,7 +712,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
             partitionedregion.put(orderId, order);
           }
           catch (Exception e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail(
+            org.apache.geode.test.dunit.Assert.fail(
                 "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
                 e);
           }
@@ -741,7 +741,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
               partitionedregion.put(shipmentId, shipment);
             }
             catch (Exception e) {
-              com.gemstone.gemfire.test.dunit.Assert.fail(
+              org.apache.geode.test.dunit.Assert.fail(
                   "putShipmentPartitionedRegion : failed while doing put operation in ShipmentPartitionedRegion ",
                   e);
             }
@@ -795,7 +795,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
       }
     }
     catch (ParseException e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Exception occurred while parsing date", e);
+      org.apache.geode.test.dunit.Assert.fail("Exception occurred while parsing date", e);
     }
     return null;
   }
@@ -817,7 +817,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           .getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
     }
     catch (Exception e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail(
+      org.apache.geode.test.dunit.Assert.fail(
           "validateAfterPutPartitionedRegion : failed while getting the region",
           e);
     }
@@ -1126,7 +1126,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           .getRegion(Region.SEPARATOR + customerPartitionedRegionName);
     }
     catch (Exception e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail(
+      org.apache.geode.test.dunit.Assert.fail(
           "validateAfterPutPartitionedRegion : failed while getting the region",
           e);
     }
@@ -1154,7 +1154,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           .getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
     }
     catch (Exception e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail(
+      org.apache.geode.test.dunit.Assert.fail(
           "validateAfterPutPartitionedRegion : failed while getting the region",
           e);
     }
@@ -1205,7 +1205,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
           .getRegion(Region.SEPARATOR + shipmentPartitionedRegionName);
     }
     catch (Exception e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail(
+      org.apache.geode.test.dunit.Assert.fail(
           "validateAfterPutPartitionedRegion : failed while getting the region",
           e);
     }

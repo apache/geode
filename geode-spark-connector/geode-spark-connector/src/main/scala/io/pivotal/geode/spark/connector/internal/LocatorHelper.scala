@@ -19,9 +19,9 @@ package io.pivotal.geode.spark.connector.internal
 import java.net.InetSocketAddress
 import java.util.{ArrayList => JArrayList}
 
-import com.gemstone.gemfire.cache.client.internal.locator.{GetAllServersResponse, GetAllServersRequest}
-import com.gemstone.gemfire.distributed.internal.ServerLocation
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient
+import org.apache.geode.cache.client.internal.locator.{GetAllServersResponse, GetAllServersRequest}
+import org.apache.geode.distributed.internal.ServerLocation
+import org.apache.geode.distributed.internal.tcpserver.TcpClient
 import org.apache.spark.Logging
 
 import scala.util.{Failure, Success, Try}

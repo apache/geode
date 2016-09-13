@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.internal.process.ProcessController.Arguments;
+import org.apache.geode.internal.process.ProcessController.Arguments;
 
 /**
  * Defines {@link ProcessController} {@link Arguments} that must be implemented

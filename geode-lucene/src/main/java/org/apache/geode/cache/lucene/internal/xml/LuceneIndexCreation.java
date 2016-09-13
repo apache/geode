@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.xml;
+package org.apache.geode.cache.lucene.internal.xml;
 
 import java.util.*;
 
@@ -25,15 +25,15 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
-import com.gemstone.gemfire.internal.cache.extension.Extension;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.extension.Extension;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>> {
   private Region region;

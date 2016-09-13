@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,12 +27,12 @@ import org.junit.Rule;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
-import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
-import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.DistributionLocator;
+import org.apache.geode.distributed.AbstractLauncher.Status;
+import org.apache.geode.distributed.LocatorLauncher.Builder;
+import org.apache.geode.distributed.LocatorLauncher.LocatorState;
+import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.DistributionLocator;
 import org.junit.runners.Parameterized;
 
 /**

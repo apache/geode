@@ -15,19 +15,19 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.admin.internal.GemFireHealthEvaluator;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.admin.remote.HealthListenerMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.admin.internal.GemFireHealthEvaluator;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.remote.HealthListenerMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Implements a thread that monitors the health of the vm it lives in.

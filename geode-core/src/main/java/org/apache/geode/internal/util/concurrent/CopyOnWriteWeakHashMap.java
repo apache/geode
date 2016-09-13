@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
 import java.util.AbstractMap;
 import java.util.Collections;

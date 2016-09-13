@@ -17,15 +17,15 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.filesystem;
+package org.apache.geode.cache.lucene.internal.filesystem;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 /**
  * The key for a single chunk on a file stored within a region.

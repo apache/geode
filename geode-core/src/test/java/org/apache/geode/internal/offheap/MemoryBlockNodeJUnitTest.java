@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.offheap.MemoryBlock.State;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
 import org.junit.Before;

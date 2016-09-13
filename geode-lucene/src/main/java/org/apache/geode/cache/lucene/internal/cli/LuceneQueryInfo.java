@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.cli;
+package org.apache.geode.cache.lucene.internal.cli;
 
 import java.io.Serializable;
 
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.cache.lucene.LuceneQueryFactory;
 
 public class LuceneQueryInfo implements Serializable {
   private static final long serialVersionUID = 1L;

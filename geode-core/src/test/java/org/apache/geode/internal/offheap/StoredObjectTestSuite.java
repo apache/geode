@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate.internal;
+package org.apache.geode.modules.hibernate.internal;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -29,11 +29,11 @@ import org.hibernate.cache.entry.CollectionCacheEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ServerOperationException;
 
 public class CollectionAccess implements
     CollectionRegionAccessStrategy {

@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier;
+package org.apache.geode.internal.cache.tier;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Principal;
 
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
  * <code>ClientHandShake</code> represents a handshake from the client.

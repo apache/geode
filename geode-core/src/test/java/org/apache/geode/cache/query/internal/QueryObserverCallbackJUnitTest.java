@@ -20,7 +20,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -34,19 +34,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.Address;
-import com.gemstone.gemfire.cache.query.data.Employee;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.data.Address;
+import org.apache.geode.cache.query.data.Employee;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *
@@ -387,7 +387,7 @@ public class QueryObserverCallbackJUnitTest{
 
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.query.internal.QueryObserver#beforeIndexLookup(com.gemstone.gemfire.cache.query.Index, int, java.lang.Object, int, java.lang.Object, java.util.Set)
+     * @see org.apache.geode.cache.query.internal.QueryObserver#beforeIndexLookup(org.apache.geode.cache.query.Index, int, java.lang.Object, int, java.lang.Object, java.util.Set)
      */
     public void beforeIndexLookup(Index index, int lowerBoundOperator,
         Object lowerBoundKey, int upperBoundOperator, Object upperBoundKey,

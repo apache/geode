@@ -17,7 +17,7 @@ limitations under the License.
 <config xmlns="urn:org:jgroups"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
-<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.Transport
+<org.apache.geode.distributed.internal.membership.gms.messenger.Transport
   BIND_ADDR_SETTING
   bind_port="MEMBERSHIP_PORT_RANGE_START"
   port_range="MEMBERSHIP_PORT_RANGE"
@@ -54,8 +54,8 @@ limitations under the License.
   oob_thread_pool.queue_max_size="100"
   oob_thread_pool.rejection_policy="discard"
   />
-<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.AddressManager/>
-<com.gemstone.gemfire.distributed.internal.membership.gms.messenger.StatRecorder/>
+<org.apache.geode.distributed.internal.membership.gms.messenger.AddressManager/>
+<org.apache.geode.distributed.internal.membership.gms.messenger.StatRecorder/>
 <UNICAST3
   xmit_interval="500"
   xmit_table_num_rows="100"

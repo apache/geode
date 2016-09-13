@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.*; // import
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.*; // import
 import java.io.*;
 
 /**
@@ -86,7 +86,7 @@ public class DurableClientInfoRequest extends AdminRequest
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return DURABLE_CLIENT_INFO_REQUEST;

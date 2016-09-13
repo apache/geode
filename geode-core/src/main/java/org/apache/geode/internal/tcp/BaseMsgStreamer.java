@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
 import java.util.List;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.i18n.LogWriterI18n;
 
 /**
  * Base interface for {@link MsgStreamer} and {@link MsgStreamerList} to send a

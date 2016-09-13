@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached;
+package org.apache.geode.internal.memcached;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.memcached.commands.ClientError;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.memcached.commands.ClientError;
+import org.apache.geode.memcached.GemFireMemcachedServer;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * One instance of ConnectionHandle is created for each

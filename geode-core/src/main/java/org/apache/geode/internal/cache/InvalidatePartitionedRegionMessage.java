@@ -17,15 +17,15 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -61,7 +61,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage#operateOnPartitionedRegion(com.gemstone.gemfire.distributed.internal.DistributionManager, com.gemstone.gemfire.internal.cache.PartitionedRegion, long)
+   * @see org.apache.geode.internal.cache.partitioned.PartitionMessage#operateOnPartitionedRegion(org.apache.geode.distributed.internal.DistributionManager, org.apache.geode.internal.cache.PartitionedRegion, long)
    */
   @Override
   protected boolean operateOnPartitionedRegion(DistributionManager dm,
@@ -75,14 +75,14 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return INVALIDATE_PARTITIONED_REGION_MESSAGE;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage#fromData(java.io.DataInput)
+   * @see org.apache.geode.internal.cache.partitioned.PartitionMessage#fromData(java.io.DataInput)
    */
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -91,7 +91,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage#toData(java.io.DataOutput)
+   * @see org.apache.geode.internal.cache.partitioned.PartitionMessage#toData(java.io.DataOutput)
    */
   @Override
   public void toData(DataOutput out) throws IOException {

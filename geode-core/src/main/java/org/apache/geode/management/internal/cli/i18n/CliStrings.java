@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.i18n;
+package org.apache.geode.management.internal.cli.i18n;
 
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 import java.text.MessageFormat;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**-
  *  * Contains 'String' constants used as key to the Localized strings to be used
- * in classes under <code>com.gemstone.gemfire.management.internal.cli</code>
+ * in classes under <code>org.apache.geode.management.internal.cli</code>
  * for Command Line Interface (CLI).
  * NOTES:
  * 1. CONVENTIONS: Defining constants for Command Name, option, argument, help:
@@ -355,7 +355,7 @@ public class CliStrings {
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__DISKSTORE_IN_USE_COMPACT_DISKSTORE_CAN_BE_USED = "This disk store is in use by other process. \""
       + CliStrings.COMPACT_DISK_STORE + "\" can be used to compact disk store that is current in use.";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__CANNOT_ACCESS_DISKSTORE_0_FROM_1_CHECK_GFSH_LOGS = "Can not access disk store \"{0}\" from  \"{1}\". Check "
-      + com.gemstone.gemfire.management.internal.cli.shell.Gfsh.GFSH_APP_NAME + " logs for error.";
+      + org.apache.geode.management.internal.cli.shell.Gfsh.GFSH_APP_NAME + " logs for error.";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2 = "While compacting disk store={0} {1}. Reason: {2}";
 
   /* connect command */

@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.serial;
+package org.apache.geode.internal.cache.wan.serial;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
+import static org.apache.geode.test.dunit.Wait.*;
+import static org.apache.geode.test.dunit.IgnoredException.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import com.jayway.awaitility.Awaitility;
 
 @Category(DistributedTest.class)

@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.PureLogWriter;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.PureLogWriter;
 
 /**
  * Contains Utility functions for use by JTA

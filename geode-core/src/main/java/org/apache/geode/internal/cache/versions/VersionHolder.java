@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 /**
  * Read only interface for an object that holds an entry version.

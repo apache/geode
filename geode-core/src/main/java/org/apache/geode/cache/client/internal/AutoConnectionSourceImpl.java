@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -36,26 +36,26 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientReplacementRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorListRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorListResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationResponse;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.net.*;
+import org.apache.geode.cache.client.NoAvailableLocatorsException;
+import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
+import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
+import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
+import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
+import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
+import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
+import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
+import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
+import org.apache.geode.cache.client.internal.locator.ServerLocationResponse;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.*;
 
 /**
  * A connection source which uses locators to find

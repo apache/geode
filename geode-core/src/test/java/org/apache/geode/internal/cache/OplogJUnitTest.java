@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -38,25 +38,25 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.Oplog.OPLOG_TYPE;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Testing Oplog API's
@@ -123,7 +123,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * Test method for 'com.gemstone.gemfire.internal.cache.Oplog.isBackup()'
+   * Test method for 'org.apache.geode.internal.cache.Oplog.isBackup()'
    */
   @Test
   public void testIsBackup()
@@ -151,7 +151,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   }
 
   /*
-   * Test method for 'com.gemstone.gemfire.internal.cache.Oplog.useSyncWrites()'
+   * Test method for 'org.apache.geode.internal.cache.Oplog.useSyncWrites()'
    */
   @Test
   public void testUseSyncWrites()
@@ -216,7 +216,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   /**
    * Asif: Tests the correct behaviour of attributes like byte-threshhold,
    * asynch thread wait time,etc.
-   * 'com.gemstone.gemfire.internal.cache.Oplog.bufferOperations()'
+   * 'org.apache.geode.internal.cache.Oplog.bufferOperations()'
    */
 //   @Test
 // public void testBufferOperations()
@@ -303,7 +303,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 //   }
 
   /**
-   * Test method for 'com.gemstone.gemfire.internal.cache.Oplog.clear(File)'
+   * Test method for 'org.apache.geode.internal.cache.Oplog.clear(File)'
    */
   @Test
   public void testClear()
@@ -341,7 +341,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * Test method for 'com.gemstone.gemfire.internal.cache.Oplog.close()'
+   * Test method for 'org.apache.geode.internal.cache.Oplog.close()'
    */
   @Test
   public void testClose()
@@ -421,7 +421,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * Test method for 'com.gemstone.gemfire.internal.cache.Oplog.destroy()'
+   * Test method for 'org.apache.geode.internal.cache.Oplog.destroy()'
    */
   @Test
   public void testDestroy()
@@ -481,7 +481,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * Test method for 'com.gemstone.gemfire.internal.cache.Oplog.remove(long)'
+   * Test method for 'org.apache.geode.internal.cache.Oplog.remove(long)'
    */
   @Test
   public void testRemove()

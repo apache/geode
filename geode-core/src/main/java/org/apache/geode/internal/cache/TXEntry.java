@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Hashtable;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.CacheStatistics;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.StatisticsDisabledException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.StatisticsDisabledException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /** ******************* Class Entry ***************************************** */
 

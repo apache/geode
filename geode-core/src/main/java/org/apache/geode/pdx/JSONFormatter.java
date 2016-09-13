@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -25,10 +25,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.internal.json.PdxInstanceHelper;
-import com.gemstone.gemfire.pdx.internal.json.PdxListHelper;
-import com.gemstone.gemfire.pdx.internal.json.PdxToJSON;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.json.PdxInstanceHelper;
+import org.apache.geode.pdx.internal.json.PdxListHelper;
+import org.apache.geode.pdx.internal.json.PdxToJSON;
 
 
 /**

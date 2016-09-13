@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.cache.internal;
+package org.apache.geode.test.dunit.cache.internal;
 
-import com.gemstone.gemfire.test.dunit.internal.DistributedTestFixture;
+import org.apache.geode.test.dunit.internal.DistributedTestFixture;
 
 /**
  * Defines the {@code CacheTestCase} methods that can be overridden by its subclasses.

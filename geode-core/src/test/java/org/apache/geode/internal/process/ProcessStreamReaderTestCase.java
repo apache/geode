@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import org.junit.After;
 import org.junit.Test;
 
-import com.gemstone.gemfire.internal.util.StopWatch;
+import org.apache.geode.internal.util.StopWatch;
 
 /**
  * Functional tests for ProcessStreamReader.

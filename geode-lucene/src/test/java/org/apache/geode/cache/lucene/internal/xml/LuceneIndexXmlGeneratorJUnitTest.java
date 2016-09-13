@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.xml;
+package org.apache.geode.cache.lucene.internal.xml;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
@@ -32,9 +32,9 @@ import org.mockito.ArgumentCaptor;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneIndexXmlGeneratorJUnitTest {

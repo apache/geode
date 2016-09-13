@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 /**
  * EntryExpiryTask represents a timeout event for a region entry.
  */
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.locks.Lock;

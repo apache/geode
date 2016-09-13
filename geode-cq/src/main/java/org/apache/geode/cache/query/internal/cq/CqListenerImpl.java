@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * CqListener class, implements CqListener interface methods. 

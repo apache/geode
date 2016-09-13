@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.util;
+package org.apache.geode.rest.internal.web.util;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -36,13 +36,13 @@ import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.internal.StructImpl;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
-import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
-import com.gemstone.gemfire.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 
 /**
  * The JsonWriter class is an utility to write various java types as a JSON string.

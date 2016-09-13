@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,12 +23,12 @@ import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.offheap.AddressableMemoryManager;
+import org.apache.geode.internal.offheap.StoredObject;
 
 /**
  * Represents one unit of information (essentially a <code>byte</code>

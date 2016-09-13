@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * A marker interface that denotes {@link DistributionMessage}s that
@@ -30,7 +30,7 @@ public interface MessageWithReply {
 
   /**
    * Returns the id of the {@link 
-   * com.gemstone.gemfire.distributed.internal.ReplyProcessor21} that is used to
+   * org.apache.geode.distributed.internal.ReplyProcessor21} that is used to
    * handle the reply to this message.
    */
   public int getProcessorId();

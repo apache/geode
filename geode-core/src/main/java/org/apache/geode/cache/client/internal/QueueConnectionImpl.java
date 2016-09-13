@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,11 +26,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.client.internal.ServerBlackList.FailureTracker;
-import com.gemstone.gemfire.cache.client.internal.pooling.ConnectionDestroyedException;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
+import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
+import org.apache.geode.internal.logging.LogService;
 
 
 /**

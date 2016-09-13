@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -37,7 +37,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
   /** The location of the DTD for the MBean descriptions */
   private static final String DTD_LOCATION =
-    "/com/gemstone/gemfire/admin/jmx/internal/doc-files/mbeans-descriptors.dtd";
+    "/org/apache/geode/admin/jmx/internal/doc-files/mbeans-descriptors.dtd";
 
 //  /** The system id of MBean description's DTD */
 //  private static final String SYSTEM_ID = 

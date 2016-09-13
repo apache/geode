@@ -14,12 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session;
+package org.apache.geode.modules.session;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gemstone.gemfire.modules.session.catalina.Tomcat7DeltaSessionManager;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;

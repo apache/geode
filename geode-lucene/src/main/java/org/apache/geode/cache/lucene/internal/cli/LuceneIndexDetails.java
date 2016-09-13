@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.cli;
+package org.apache.geode.cache.lucene.internal.cli;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 
 import org.apache.lucene.analysis.Analyzer;
 

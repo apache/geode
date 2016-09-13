@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.auth.GMSAuthenticator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.*;
-import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.*;
+import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
+import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Timer;
@@ -137,7 +137,7 @@ public class Services {
     this.manager.init(this);
     this.joinLeave.init(this);
     this.healthMon.init(this);
-    InternalLocator l = (InternalLocator)com.gemstone.gemfire.distributed.Locator.getLocator();
+    InternalLocator l = (InternalLocator)org.apache.geode.distributed.Locator.getLocator();
     if (l != null && l.getLocatorHandler() != null) {
       if (l.getLocatorHandler().setMembershipManager((MembershipManager)this.manager)) {
         this.locator = (Locator)l.getLocatorHandler();

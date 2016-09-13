@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -24,12 +24,12 @@ import java.nio.ByteBuffer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {

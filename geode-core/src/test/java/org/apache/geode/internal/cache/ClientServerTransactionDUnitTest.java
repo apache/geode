@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,32 +40,32 @@ import javax.transaction.UserTransaction;
 
 import com.jayway.awaitility.Awaitility;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.execute.*;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.cache.util.TransactionListenerAdapter;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.execute.data.CustId;
-import com.gemstone.gemfire.internal.cache.execute.data.Customer;
-import com.gemstone.gemfire.internal.cache.execute.data.Order;
-import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
-import com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub;
-import com.gemstone.gemfire.test.dunit.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.client.*;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.cache.util.TransactionListenerAdapter;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.cache.execute.data.Customer;
+import org.apache.geode.internal.cache.execute.data.Order;
+import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.tx.ClientTXStateStub;
+import org.apache.geode.test.dunit.*;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * Tests the basic client-server transaction functionality
@@ -204,7 +204,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RemoteTransactionDUnitTest#getVMForTransactions(dunit.VM, dunit.VM)
+   * @see org.apache.geode.internal.cache.RemoteTransactionDUnitTest#getVMForTransactions(dunit.VM, dunit.VM)
    */
   @Override
   public VM getVMForTransactions(VM accessor, VM datastore) {
@@ -340,7 +340,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           Wait.waitForCriterion(new WaitCriterion() {
             public boolean done() {
               Set states = txmgr.getTransactionsForClient((InternalDistributedMember)myId);
-              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("found " + states.size() + " tx states for " + myId);
+              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("found " + states.size() + " tx states for " + myId);
               return states.isEmpty();
             }
             public String description() {
@@ -588,17 +588,17 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertEquals(initSize, pr.size());
         assertEquals(initSize, r.size());
 
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Looking up transaction manager");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Looking up transaction manager");
         TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
         Context ctx = getCache().getJNDIContext();
         UserTransaction utx = (UserTransaction)ctx.lookup("java:/UserTransaction");
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("starting transaction");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("starting transaction");
         if (useJTA) {
           utx.begin();
         } else {
           mgr.begin();
         }
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("done starting transaction");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("done starting transaction");
         for (int i = 0; i < MAX_ENTRIES; i++) {
           CustId custId = new CustId(i);
           Customer cust = new Customer("name"+suffix+i, "address"+suffix+i);
@@ -610,10 +610,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           Customer cust = new Customer("name"+suffix+i, "address"+suffix+i);
           assertEquals(cust, r.get(custId));
           assertEquals(cust, pr.get(custId));
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("SWAP:get:"+r.get(custId));
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("SWAP:get:"+pr.get(custId));
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("SWAP:get:"+r.get(custId));
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("SWAP:get:"+pr.get(custId));
         }
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("suspending transaction");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("suspending transaction");
         if (!useJTA) {
           TXStateProxy tx = mgr.internalSuspend();
           if (prePopulateData) {
@@ -628,7 +628,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             assertNull(r.get(new CustId(i)));
             assertNull(pr.get(new CustId(i)));
           }
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("resuming transaction");
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("resuming transaction");
           mgr.resume(tx);
         }
         assertEquals(
@@ -637,7 +637,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertEquals(
             "pr sized should be " + MAX_ENTRIES + " but it is:" + pr.size(),
             MAX_ENTRIES, pr.size());
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("committing transaction");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("committing transaction");
         if (isCommit) {
           if (useJTA) {
             utx.commit();
@@ -651,7 +651,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             getCache().getCacheTransactionManager().rollback();
           }
         }
-        com.gemstone.gemfire.test.dunit.LogWriterUtils. getLogWriter().info("done " + (isCommit ? "committing" : "rollingback") + "transaction");
+        org.apache.geode.test.dunit.LogWriterUtils. getLogWriter().info("done " + (isCommit ? "committing" : "rollingback") + "transaction");
         int expectedRegionSize = isCommit ? MAX_ENTRIES : 5;
 
         assertEquals(
@@ -896,7 +896,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         Order order = (orderRegion.getAll(keys)).get(orderId);
         assertNotNull(order);
         mgr.rollback();
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("entry for " + orderId + " = " + orderRegion.getEntry(orderId));
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("entry for " + orderId + " = " + orderRegion.getEntry(orderId));
         assertNull(orderRegion.getEntry(orderId));
         return null;
       }
@@ -2985,7 +2985,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
               );
 
           Region cust = getCache().getRegion(CUSTOMER);
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().fine("SWAP:doing first get from client");
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().fine("SWAP:doing first get from client");
           assertNull(cust.get(new CustId(0)));
           assertNull(cust.get(new CustId(1)));
           ArrayList args = new ArrayList();
@@ -3663,7 +3663,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       Wait.waitForCriterion(new WaitCriterion() {
         public boolean done() {
           Set states = txmgr.getTransactionsForClient((InternalDistributedMember)myId);
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("found " + states.size() + " tx states for " + myId);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("found " + states.size() + " tx states for " + myId);
           return states.isEmpty();
         }
         public String description() {

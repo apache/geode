@@ -18,7 +18,7 @@
   -->
 
 <!DOCTYPE acl PUBLIC "-//GemStone Systems, Inc.//GemFire XML Authorization 1.0//EN"
-        "com/gemstone/gemfire/security/templates/authz5_5.dtd" >
+        "org/apache/geode/security/templates/authz5_5.dtd" >
 <acl>
 
   <role name="reader">

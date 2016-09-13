@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.golden;
+package org.apache.geode.test.golden;
 
 import static org.junit.Assert.*;
 
@@ -25,8 +25,8 @@ import java.io.InputStreamReader;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.process.ProcessWrapper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.process.ProcessWrapper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Basic unit testing of the golden testing framework. This tests an 

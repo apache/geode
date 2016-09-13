@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,7 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
-import com.gemstone.gemfire.internal.util.IOUtils;
+import org.apache.geode.internal.util.IOUtils;
 
 /**
  * Utility operations for processes such as identifying the process id (pid).
@@ -140,7 +140,7 @@ public final class ProcessUtils {
     // 2) try NativeCalls but make sure it doesn't throw UnsupportedOperationException
     try {
       // TODO: get rid of Class.forName usage if NativeCalls always safely loads
-      Class.forName("com.gemstone.gemfire.internal.shared.NativeCalls");
+      Class.forName("org.apache.geode.internal.shared.NativeCalls");
       NativeProcessUtils inst = new NativeProcessUtils();
       boolean result = inst.isProcessAlive(identifyPid());
       if (result) {

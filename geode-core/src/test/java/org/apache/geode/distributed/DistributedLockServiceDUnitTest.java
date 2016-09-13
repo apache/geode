@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import static org.junit.Assert.*;
 
@@ -31,33 +31,33 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
-import com.gemstone.gemfire.distributed.internal.locks.DLockGrantor;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRemoteToken;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockResponseMessage;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.distributed.internal.locks.DLockToken;
-import com.gemstone.gemfire.distributed.internal.locks.RemoteThread;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.RMIException;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.locks.DLockGrantor;
+import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
+import org.apache.geode.distributed.internal.locks.DLockRequestProcessor;
+import org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage;
+import org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockResponseMessage;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.locks.DLockToken;
+import org.apache.geode.distributed.internal.locks.RemoteThread;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests distributed ownership via the DistributedLockService api.
@@ -247,7 +247,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
     ThreadUtils.join(remoteWaitingThread, 10 * 1000);
     if (remoteWaitingThread.exceptionOccurred()) {
       Throwable e = remoteWaitingThread.getException();
-      com.gemstone.gemfire.test.dunit.Assert.fail(e.getMessage(), e);
+      org.apache.geode.test.dunit.Assert.fail(e.getMessage(), e);
     }
     
     // make sure LockServiceDestroyedException is thrown
@@ -2852,7 +2852,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
             }
           }
           catch (InterruptedException e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail(e.getMessage(), e);
+            org.apache.geode.test.dunit.Assert.fail(e.getMessage(), e);
           }
           
           LogWriterUtils.getLogWriter().info("[testLockQuery] vm1 unlocks key1");
@@ -2941,7 +2941,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
       
       ThreadUtils.join(whileVM1Locks, 10 * 1000);
       if (whileVM1Locks.exceptionOccurred()) {
-        com.gemstone.gemfire.test.dunit.Assert.fail("Test failed", whileVM1Locks.getException());
+        org.apache.geode.test.dunit.Assert.fail("Test failed", whileVM1Locks.getException());
       }
     }
 

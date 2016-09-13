@@ -1,8 +1,8 @@
 // $ANTLR 2.7.4: "oql.g" -> "OQLParser.java"$
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 import java.util.*;
-import com.gemstone.gemfire.cache.query.internal.types.*;
+import org.apache.geode.cache.query.internal.types.*;
 
 import antlr.TokenBuffer;
 import antlr.TokenStreamException;
@@ -24,7 +24,7 @@ import antlr.ASTPair;
 import antlr.collections.impl.ASTArray;
 
 /***************************** OQL PARSER *************************************/
-public class OQLParser extends com.gemstone.gemfire.cache.query.internal.parse.UtilParser       implements OQLLexerTokenTypes
+public class OQLParser extends org.apache.geode.cache.query.internal.parse.UtilParser       implements OQLLexerTokenTypes
  {
 
 protected OQLParser(TokenBuffer tokenBuf, int k) {
@@ -135,7 +135,7 @@ public OQLParser(ParserSharedInputState state) {
 		if ( inputState.guessing==0 ) {
 			queryProgram_AST = (AST)currentAST.root;
 			queryProgram_AST =
-			(AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(QUERY_PROGRAM,"queryProgram","com.gemstone.gemfire.cache.query.internal.parse.GemFireAST")).add(queryProgram_AST));
+			(AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(QUERY_PROGRAM,"queryProgram","org.apache.geode.cache.query.internal.parse.GemFireAST")).add(queryProgram_AST));
 			currentAST.root = queryProgram_AST;
 			currentAST.child = queryProgram_AST!=null &&queryProgram_AST.getFirstChild()!=null ?
 				queryProgram_AST.getFirstChild() : queryProgram_AST;
@@ -153,8 +153,8 @@ public OQLParser(ParserSharedInputState state) {
 		
 		{
 		match(TOK_LT);
-		com.gemstone.gemfire.cache.query.internal.parse.ASTTrace tmp7_AST = null;
-		tmp7_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTTrace)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTTrace");
+		org.apache.geode.cache.query.internal.parse.ASTTrace tmp7_AST = null;
+		tmp7_AST = (org.apache.geode.cache.query.internal.parse.ASTTrace)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTTrace");
 		astFactory.makeASTRoot(currentAST, tmp7_AST);
 		match(LITERAL_trace);
 		match(TOK_GT);
@@ -256,7 +256,7 @@ public OQLParser(ParserSharedInputState state) {
 		if ( inputState.guessing==0 ) {
 			loneFromClause_AST = (AST)currentAST.root;
 			loneFromClause_AST =
-			(AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LITERAL_from,"from","com.gemstone.gemfire.cache.query.internal.parse.ASTCombination")).add(loneFromClause_AST));
+			(AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LITERAL_from,"from","org.apache.geode.cache.query.internal.parse.ASTCombination")).add(loneFromClause_AST));
 			currentAST.root = loneFromClause_AST;
 			currentAST.child = loneFromClause_AST!=null &&loneFromClause_AST.getFirstChild()!=null ?
 				loneFromClause_AST.getFirstChild() : loneFromClause_AST;
@@ -316,7 +316,7 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			if ( inputState.guessing==0 ) {
 				iteratorDef_AST = (AST)currentAST.root;
-				iteratorDef_AST = (AST)astFactory.make( (new ASTArray(4)).add((AST)astFactory.create(ITERATOR_DEF,"iterDef","com.gemstone.gemfire.cache.query.internal.parse.ASTIteratorDef")).add(ex1_AST).add(id1_AST).add(t1_AST));
+				iteratorDef_AST = (AST)astFactory.make( (new ASTArray(4)).add((AST)astFactory.create(ITERATOR_DEF,"iterDef","org.apache.geode.cache.query.internal.parse.ASTIteratorDef")).add(ex1_AST).add(id1_AST).add(t1_AST));
 				currentAST.root = iteratorDef_AST;
 				currentAST.child = iteratorDef_AST!=null &&iteratorDef_AST.getFirstChild()!=null ?
 					iteratorDef_AST.getFirstChild() : iteratorDef_AST;
@@ -364,7 +364,7 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			if ( inputState.guessing==0 ) {
 				iteratorDef_AST = (AST)currentAST.root;
-				iteratorDef_AST = (AST)astFactory.make( (new ASTArray(4)).add((AST)astFactory.create(ITERATOR_DEF,"iterDef","com.gemstone.gemfire.cache.query.internal.parse.ASTIteratorDef")).add(ex2_AST).add(id2_AST).add(t2_AST));
+				iteratorDef_AST = (AST)astFactory.make( (new ASTArray(4)).add((AST)astFactory.create(ITERATOR_DEF,"iterDef","org.apache.geode.cache.query.internal.parse.ASTIteratorDef")).add(ex2_AST).add(id2_AST).add(t2_AST));
 				currentAST.root = iteratorDef_AST;
 				currentAST.child = iteratorDef_AST!=null &&iteratorDef_AST.getFirstChild()!=null ?
 					iteratorDef_AST.getFirstChild() : iteratorDef_AST;
@@ -417,7 +417,7 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			if ( inputState.guessing==0 ) {
 				projectionAttributes_AST = (AST)currentAST.root;
-				projectionAttributes_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(PROJECTION_ATTRS,"projectionAttrs","com.gemstone.gemfire.cache.query.internal.parse.ASTCombination")).add(projectionAttributes_AST));
+				projectionAttributes_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(PROJECTION_ATTRS,"projectionAttrs","org.apache.geode.cache.query.internal.parse.ASTCombination")).add(projectionAttributes_AST));
 				currentAST.root = projectionAttributes_AST;
 				currentAST.child = projectionAttributes_AST!=null &&projectionAttributes_AST.getFirstChild()!=null ?
 					projectionAttributes_AST.getFirstChild() : projectionAttributes_AST;
@@ -425,8 +425,8 @@ public OQLParser(ParserSharedInputState state) {
 			}
 		}
 		else if ((LA(1)==TOK_STAR)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp17_AST = null;
-			tmp17_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
+			org.apache.geode.cache.query.internal.parse.ASTDummy tmp17_AST = null;
+			tmp17_AST = (org.apache.geode.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTDummy");
 			astFactory.addASTChild(currentAST, tmp17_AST);
 			match(TOK_STAR);
 		}
@@ -507,8 +507,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST importQuery_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTImport tmp24_AST = null;
-		tmp24_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTImport)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTImport");
+		org.apache.geode.cache.query.internal.parse.ASTImport tmp24_AST = null;
+		tmp24_AST = (org.apache.geode.cache.query.internal.parse.ASTImport)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTImport");
 		astFactory.makeASTRoot(currentAST, tmp24_AST);
 		match(LITERAL_import);
 		qualifiedName();
@@ -626,18 +626,18 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST identifier_AST = null;
 		Token  q = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier q_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTIdentifier q_AST = null;
 		
 		if ((LA(1)==Identifier)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier tmp31_AST = null;
-			tmp31_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier");
+			org.apache.geode.cache.query.internal.parse.ASTIdentifier tmp31_AST = null;
+			tmp31_AST = (org.apache.geode.cache.query.internal.parse.ASTIdentifier)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTIdentifier");
 			astFactory.addASTChild(currentAST, tmp31_AST);
 			match(Identifier);
 			identifier_AST = (AST)currentAST.root;
 		}
 		else if ((LA(1)==QuotedIdentifier)) {
 			q = LT(1);
-			q_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier)astFactory.create(q,"com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier");
+			q_AST = (org.apache.geode.cache.query.internal.parse.ASTIdentifier)astFactory.create(q,"org.apache.geode.cache.query.internal.parse.ASTIdentifier");
 			astFactory.addASTChild(currentAST, q_AST);
 			match(QuotedIdentifier);
 			if ( inputState.guessing==0 ) {
@@ -688,7 +688,7 @@ public OQLParser(ParserSharedInputState state) {
 		match(Token.EOF_TYPE);
 		if ( inputState.guessing==0 ) {
 			loneImports_AST = (AST)currentAST.root;
-			loneImports_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(IMPORTS,"imports","com.gemstone.gemfire.cache.query.internal.parse.GemFireAST")).add(loneImports_AST));
+			loneImports_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(IMPORTS,"imports","org.apache.geode.cache.query.internal.parse.GemFireAST")).add(loneImports_AST));
 			currentAST.root = loneImports_AST;
 			currentAST.child = loneImports_AST!=null &&loneImports_AST.getFirstChild()!=null ?
 				loneImports_AST.getFirstChild() : loneImports_AST;
@@ -712,7 +712,7 @@ public OQLParser(ParserSharedInputState state) {
 		match(NUM_INT);
 		if ( inputState.guessing==0 ) {
 			queryParam_AST = (AST)currentAST.root;
-			queryParam_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(QUERY_PARAM,"queryParam","com.gemstone.gemfire.cache.query.internal.parse.ASTParameter")).add(tmp36_AST));
+			queryParam_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(QUERY_PARAM,"queryParam","org.apache.geode.cache.query.internal.parse.ASTParameter")).add(tmp36_AST));
 			currentAST.root = queryParam_AST;
 			currentAST.child = queryParam_AST!=null &&queryParam_AST.getFirstChild()!=null ?
 				queryParam_AST.getFirstChild() : queryParam_AST;
@@ -727,43 +727,43 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST type_AST = null;
 		Token  typ00 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ00_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ00_AST = null;
 		Token  typ01 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ01_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ01_AST = null;
 		Token  typ02 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ02_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ02_AST = null;
 		Token  typ03 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ03_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ03_AST = null;
 		Token  typ04 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ04_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ04_AST = null;
 		Token  typ05 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ05_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ05_AST = null;
 		Token  typ06 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ06_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ06_AST = null;
 		Token  typ07 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ07_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ07_AST = null;
 		Token  typ08 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ08_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ08_AST = null;
 		Token  typ09 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ09_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ09_AST = null;
 		Token  typ10 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ10_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ10_AST = null;
 		Token  typ11 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ11_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ11_AST = null;
 		Token  typ12 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ12_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ12_AST = null;
 		Token  typ13 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ13_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ13_AST = null;
 		Token  typ14 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ14_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ14_AST = null;
 		Token  typ15 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ15_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ15_AST = null;
 		Token  typ16 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ16_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ16_AST = null;
 		Token  typ17 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ17_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ17_AST = null;
 		Token  typ18 = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTType typ18_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTType typ18_AST = null;
 		AST id_AST = null;
 		
 		{
@@ -771,7 +771,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_short:
 		{
 			typ00 = LT(1);
-			typ00_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ00,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ00_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ00,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ00_AST);
 			match(LITERAL_short);
 			if ( inputState.guessing==0 ) {
@@ -782,7 +782,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_long:
 		{
 			typ01 = LT(1);
-			typ01_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ01,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ01_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ01,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ01_AST);
 			match(LITERAL_long);
 			if ( inputState.guessing==0 ) {
@@ -793,7 +793,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_int:
 		{
 			typ02 = LT(1);
-			typ02_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ02,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ02_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ02,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ02_AST);
 			match(LITERAL_int);
 			if ( inputState.guessing==0 ) {
@@ -804,7 +804,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_float:
 		{
 			typ03 = LT(1);
-			typ03_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ03,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ03_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ03,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ03_AST);
 			match(LITERAL_float);
 			if ( inputState.guessing==0 ) {
@@ -815,7 +815,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_double:
 		{
 			typ04 = LT(1);
-			typ04_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ04,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ04_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ04,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ04_AST);
 			match(LITERAL_double);
 			if ( inputState.guessing==0 ) {
@@ -826,7 +826,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_char:
 		{
 			typ05 = LT(1);
-			typ05_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ05,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ05_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ05,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ05_AST);
 			match(LITERAL_char);
 			if ( inputState.guessing==0 ) {
@@ -837,7 +837,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_string:
 		{
 			typ06 = LT(1);
-			typ06_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ06,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ06_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ06,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ06_AST);
 			match(LITERAL_string);
 			if ( inputState.guessing==0 ) {
@@ -848,7 +848,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_boolean:
 		{
 			typ07 = LT(1);
-			typ07_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ07,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ07_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ07,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ07_AST);
 			match(LITERAL_boolean);
 			if ( inputState.guessing==0 ) {
@@ -859,7 +859,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_byte:
 		{
 			typ08 = LT(1);
-			typ08_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ08,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ08_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ08,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ08_AST);
 			match(LITERAL_byte);
 			if ( inputState.guessing==0 ) {
@@ -870,7 +870,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_octet:
 		{
 			typ09 = LT(1);
-			typ09_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ09,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ09_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ09,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ09_AST);
 			match(LITERAL_octet);
 			if ( inputState.guessing==0 ) {
@@ -907,7 +907,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_date:
 		{
 			typ10 = LT(1);
-			typ10_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ10,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ10_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ10,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ10_AST);
 			match(LITERAL_date);
 			if ( inputState.guessing==0 ) {
@@ -918,7 +918,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_time:
 		{
 			typ11 = LT(1);
-			typ11_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ11,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ11_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ11,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ11_AST);
 			match(LITERAL_time);
 			if ( inputState.guessing==0 ) {
@@ -937,7 +937,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_timestamp:
 		{
 			typ12 = LT(1);
-			typ12_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ12,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ12_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ12,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.addASTChild(currentAST, typ12_AST);
 			match(LITERAL_timestamp);
 			if ( inputState.guessing==0 ) {
@@ -948,7 +948,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_set:
 		{
 			typ13 = LT(1);
-			typ13_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ13,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ13_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ13,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.makeASTRoot(currentAST, typ13_AST);
 			match(LITERAL_set);
 			match(TOK_LT);
@@ -963,7 +963,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_collection:
 		{
 			typ14 = LT(1);
-			typ14_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ14,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ14_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ14,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.makeASTRoot(currentAST, typ14_AST);
 			match(LITERAL_collection);
 			match(TOK_LT);
@@ -990,7 +990,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_list:
 		{
 			typ15 = LT(1);
-			typ15_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ15,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ15_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ15,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.makeASTRoot(currentAST, typ15_AST);
 			match(LITERAL_list);
 			match(TOK_LT);
@@ -1005,7 +1005,7 @@ public OQLParser(ParserSharedInputState state) {
 		case LITERAL_array:
 		{
 			typ16 = LT(1);
-			typ16_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ16,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+			typ16_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ16,"org.apache.geode.cache.query.internal.parse.ASTType");
 			astFactory.makeASTRoot(currentAST, typ16_AST);
 			match(LITERAL_array);
 			match(TOK_LT);
@@ -1023,7 +1023,7 @@ public OQLParser(ParserSharedInputState state) {
 			{
 			if ((LA(1)==LITERAL_dictionary)) {
 				typ17 = LT(1);
-				typ17_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ17,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+				typ17_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ17,"org.apache.geode.cache.query.internal.parse.ASTType");
 				astFactory.makeASTRoot(currentAST, typ17_AST);
 				match(LITERAL_dictionary);
 				if ( inputState.guessing==0 ) {
@@ -1032,7 +1032,7 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			else if ((LA(1)==LITERAL_map)) {
 				typ18 = LT(1);
-				typ18_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTType)astFactory.create(typ18,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+				typ18_AST = (org.apache.geode.cache.query.internal.parse.ASTType)astFactory.create(typ18,"org.apache.geode.cache.query.internal.parse.ASTType");
 				astFactory.makeASTRoot(currentAST, typ18_AST);
 				match(LITERAL_map);
 				if ( inputState.guessing==0 ) {
@@ -1061,7 +1061,7 @@ public OQLParser(ParserSharedInputState state) {
 			if ( inputState.guessing==0 ) {
 				type_AST = (AST)currentAST.root;
 				String txt = id_AST.getText();
-				type_AST = (AST)astFactory.create(Identifier,txt,"com.gemstone.gemfire.cache.query.internal.parse.ASTType");
+				type_AST = (AST)astFactory.create(Identifier,txt,"org.apache.geode.cache.query.internal.parse.ASTType");
 				((ASTType)type_AST).setTypeName(txt);
 				currentAST.root = type_AST;
 				currentAST.child = type_AST!=null &&type_AST.getFirstChild()!=null ?
@@ -1098,20 +1098,20 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		
 		}
-		com.gemstone.gemfire.cache.query.internal.parse.ASTSelect tmp54_AST = null;
-		tmp54_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTSelect)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTSelect");
+		org.apache.geode.cache.query.internal.parse.ASTSelect tmp54_AST = null;
+		tmp54_AST = (org.apache.geode.cache.query.internal.parse.ASTSelect)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTSelect");
 		astFactory.makeASTRoot(currentAST, tmp54_AST);
 		match(LITERAL_select);
 		{
 		if ((LA(1)==LITERAL_distinct) && (_tokenSet_9.member(LA(2)))) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp55_AST = null;
-			tmp55_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
+			org.apache.geode.cache.query.internal.parse.ASTDummy tmp55_AST = null;
+			tmp55_AST = (org.apache.geode.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTDummy");
 			astFactory.addASTChild(currentAST, tmp55_AST);
 			match(LITERAL_distinct);
 		}
 		else if ((LA(1)==LITERAL_all)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp56_AST = null;
-			tmp56_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
+			org.apache.geode.cache.query.internal.parse.ASTDummy tmp56_AST = null;
+			tmp56_AST = (org.apache.geode.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTDummy");
 			astFactory.addASTChild(currentAST, tmp56_AST);
 			match(LITERAL_all);
 		}
@@ -1199,8 +1199,8 @@ public OQLParser(ParserSharedInputState state) {
 		AST hintCommand_AST = null;
 		
 		match(TOK_LT);
-		com.gemstone.gemfire.cache.query.internal.parse.ASTHint tmp58_AST = null;
-		tmp58_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTHint)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTHint");
+		org.apache.geode.cache.query.internal.parse.ASTHint tmp58_AST = null;
+		tmp58_AST = (org.apache.geode.cache.query.internal.parse.ASTHint)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTHint");
 		astFactory.makeASTRoot(currentAST, tmp58_AST);
 		match(LITERAL_hint);
 		hintIdentifier();
@@ -1230,8 +1230,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST fromClause_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTCombination tmp61_AST = null;
-		tmp61_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCombination)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCombination");
+		org.apache.geode.cache.query.internal.parse.ASTCombination tmp61_AST = null;
+		tmp61_AST = (org.apache.geode.cache.query.internal.parse.ASTCombination)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTCombination");
 		astFactory.makeASTRoot(currentAST, tmp61_AST);
 		match(LITERAL_from);
 		iteratorDef();
@@ -1273,8 +1273,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST groupClause_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy tmp64_AST = null;
-		tmp64_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy");
+		org.apache.geode.cache.query.internal.parse.ASTGroupBy tmp64_AST = null;
+		tmp64_AST = (org.apache.geode.cache.query.internal.parse.ASTGroupBy)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTGroupBy");
 		astFactory.makeASTRoot(currentAST, tmp64_AST);
 		match(LITERAL_group);
 		match(LITERAL_by);
@@ -1303,8 +1303,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST orderClause_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy tmp67_AST = null;
-		tmp67_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy");
+		org.apache.geode.cache.query.internal.parse.ASTOrderBy tmp67_AST = null;
+		tmp67_AST = (org.apache.geode.cache.query.internal.parse.ASTOrderBy)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTOrderBy");
 		astFactory.makeASTRoot(currentAST, tmp67_AST);
 		match(LITERAL_order);
 		match(LITERAL_by);
@@ -1347,7 +1347,7 @@ public OQLParser(ParserSharedInputState state) {
 			match(NUM_INT);
 			if ( inputState.guessing==0 ) {
 				limitClause_AST = (AST)currentAST.root;
-				limitClause_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LIMIT,"limitParam","com.gemstone.gemfire.cache.query.internal.parse.ASTParameter")).add(tmp72_AST));
+				limitClause_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LIMIT,"limitParam","org.apache.geode.cache.query.internal.parse.ASTParameter")).add(tmp72_AST));
 				currentAST.root = limitClause_AST;
 				currentAST.child = limitClause_AST!=null &&limitClause_AST.getFirstChild()!=null ?
 					limitClause_AST.getFirstChild() : limitClause_AST;
@@ -1360,7 +1360,7 @@ public OQLParser(ParserSharedInputState state) {
 			match(NUM_INT);
 			if ( inputState.guessing==0 ) {
 				limitClause_AST = (AST)currentAST.root;
-				limitClause_AST =(AST)astFactory.create(LIMIT,n.getText(),"com.gemstone.gemfire.cache.query.internal.parse.ASTLimit") ;
+				limitClause_AST =(AST)astFactory.create(LIMIT,n.getText(),"org.apache.geode.cache.query.internal.parse.ASTLimit") ;
 				currentAST.root = limitClause_AST;
 				currentAST.child = limitClause_AST!=null &&limitClause_AST.getFirstChild()!=null ?
 					limitClause_AST.getFirstChild() : limitClause_AST;
@@ -1414,7 +1414,7 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			if ( inputState.guessing==0 ) {
 				projection_AST = (AST)currentAST.root;
-				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","com.gemstone.gemfire.cache.query.internal.parse.ASTProjection")).add(node).add(lb1_AST));
+				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","org.apache.geode.cache.query.internal.parse.ASTProjection")).add(node).add(lb1_AST));
 				currentAST.root = projection_AST;
 				currentAST.child = projection_AST!=null &&projection_AST.getFirstChild()!=null ?
 					projection_AST.getFirstChild() : projection_AST;
@@ -1457,7 +1457,7 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			if ( inputState.guessing==0 ) {
 				projection_AST = (AST)currentAST.root;
-				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","com.gemstone.gemfire.cache.query.internal.parse.ASTProjection")).add(node).add(lb2_AST));
+				projection_AST = (AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(PROJECTION,"projection","org.apache.geode.cache.query.internal.parse.ASTProjection")).add(node).add(lb2_AST));
 				currentAST.root = projection_AST;
 				currentAST.child = projection_AST!=null &&projection_AST.getFirstChild()!=null ?
 					projection_AST.getFirstChild() : projection_AST;
@@ -1526,7 +1526,7 @@ public OQLParser(ParserSharedInputState state) {
 			match(TOK_RPAREN);
 			if ( inputState.guessing==0 ) {
 				aggregateExpr_AST = (AST)currentAST.root;
-				aggregateExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(AGG_FUNC,"aggregate","com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc")).add(tokExpr1_AST)); 
+				aggregateExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(AGG_FUNC,"aggregate","org.apache.geode.cache.query.internal.parse.ASTAggregateFunc")).add(tokExpr1_AST)); 
 				((ASTAggregateFunc)aggregateExpr_AST).setAggregateFunctionType(aggFunc);
 				((ASTAggregateFunc)aggregateExpr_AST).setDistinctOnly(distinctOnly);
 				
@@ -1568,7 +1568,7 @@ public OQLParser(ParserSharedInputState state) {
 			match(TOK_RPAREN);
 			if ( inputState.guessing==0 ) {
 				aggregateExpr_AST = (AST)currentAST.root;
-				aggregateExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(AGG_FUNC,"aggregate","com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc")).add(tokExpr2_AST)); 
+				aggregateExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(AGG_FUNC,"aggregate","org.apache.geode.cache.query.internal.parse.ASTAggregateFunc")).add(tokExpr2_AST)); 
 				((ASTAggregateFunc)aggregateExpr_AST).setAggregateFunctionType(aggFunc);               
 				
 				currentAST.root = aggregateExpr_AST;
@@ -1580,15 +1580,15 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		case LITERAL_count:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc tmp84_AST = null;
-			tmp84_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc");
+			org.apache.geode.cache.query.internal.parse.ASTAggregateFunc tmp84_AST = null;
+			tmp84_AST = (org.apache.geode.cache.query.internal.parse.ASTAggregateFunc)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTAggregateFunc");
 			astFactory.makeASTRoot(currentAST, tmp84_AST);
 			match(LITERAL_count);
 			match(TOK_LPAREN);
 			{
 			if ((LA(1)==TOK_STAR)) {
-				com.gemstone.gemfire.cache.query.internal.parse.ASTDummy tmp86_AST = null;
-				tmp86_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTDummy");
+				org.apache.geode.cache.query.internal.parse.ASTDummy tmp86_AST = null;
+				tmp86_AST = (org.apache.geode.cache.query.internal.parse.ASTDummy)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTDummy");
 				astFactory.addASTChild(currentAST, tmp86_AST);
 				match(TOK_STAR);
 			}
@@ -1675,7 +1675,7 @@ public OQLParser(ParserSharedInputState state) {
 		match(StringLiteral);
 		if ( inputState.guessing==0 ) {
 			hintIdentifier_AST = (AST)currentAST.root;
-			hintIdentifier_AST =(AST)astFactory.create(HINT,n.getText(),"com.gemstone.gemfire.cache.query.internal.parse.ASTHintIdentifier") ;
+			hintIdentifier_AST =(AST)astFactory.create(HINT,n.getText(),"org.apache.geode.cache.query.internal.parse.ASTHintIdentifier") ;
 			currentAST.root = hintIdentifier_AST;
 			currentAST.child = hintIdentifier_AST!=null &&hintIdentifier_AST.getFirstChild()!=null ?
 				hintIdentifier_AST.getFirstChild() : hintIdentifier_AST;
@@ -1697,7 +1697,7 @@ public OQLParser(ParserSharedInputState state) {
 		astFactory.addASTChild(currentAST, returnAST);
 		if ( inputState.guessing==0 ) {
 			sortCriterion_AST = (AST)currentAST.root;
-			sortCriterion_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(SORT_CRITERION,"asc","com.gemstone.gemfire.cache.query.internal.parse.ASTSortCriterion")).add(tok_AST));
+			sortCriterion_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(SORT_CRITERION,"asc","org.apache.geode.cache.query.internal.parse.ASTSortCriterion")).add(tok_AST));
 			currentAST.root = sortCriterion_AST;
 			currentAST.child = sortCriterion_AST!=null &&sortCriterion_AST.getFirstChild()!=null ?
 				sortCriterion_AST.getFirstChild() : sortCriterion_AST;
@@ -1747,7 +1747,7 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST castExpr_AST = null;
 		Token  lp = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTTypeCast lp_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTTypeCast lp_AST = null;
 		
 		boolean synPredMatched183 = false;
 		if (((LA(1)==TOK_LPAREN) && (_tokenSet_17.member(LA(2))))) {
@@ -1770,7 +1770,7 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		if ( synPredMatched183 ) {
 			lp = LT(1);
-			lp_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTTypeCast)astFactory.create(lp,"com.gemstone.gemfire.cache.query.internal.parse.ASTTypeCast");
+			lp_AST = (org.apache.geode.cache.query.internal.parse.ASTTypeCast)astFactory.create(lp,"org.apache.geode.cache.query.internal.parse.ASTTypeCast");
 			astFactory.makeASTRoot(currentAST, lp_AST);
 			match(TOK_LPAREN);
 			if ( inputState.guessing==0 ) {
@@ -1824,7 +1824,7 @@ public OQLParser(ParserSharedInputState state) {
 		if ( inputState.guessing==0 ) {
 			orExpr_AST = (AST)currentAST.root;
 			if (cmplx) {
-			orExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LITERAL_or,"or","com.gemstone.gemfire.cache.query.internal.parse.ASTOr")).add(orExpr_AST)); }
+			orExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LITERAL_or,"or","org.apache.geode.cache.query.internal.parse.ASTOr")).add(orExpr_AST)); }
 			currentAST.root = orExpr_AST;
 			currentAST.child = orExpr_AST!=null &&orExpr_AST.getFirstChild()!=null ?
 				orExpr_AST.getFirstChild() : orExpr_AST;
@@ -1901,7 +1901,7 @@ public OQLParser(ParserSharedInputState state) {
 		if ( inputState.guessing==0 ) {
 			andExpr_AST = (AST)currentAST.root;
 			if (cmplx) {
-			andExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LITERAL_and,"and","com.gemstone.gemfire.cache.query.internal.parse.ASTAnd")).add(andExpr_AST)); }
+			andExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(LITERAL_and,"and","org.apache.geode.cache.query.internal.parse.ASTAnd")).add(andExpr_AST)); }
 			currentAST.root = andExpr_AST;
 			currentAST.child = andExpr_AST!=null &&andExpr_AST.getFirstChild()!=null ?
 				andExpr_AST.getFirstChild() : andExpr_AST;
@@ -2043,14 +2043,14 @@ public OQLParser(ParserSharedInputState state) {
 				if ((LA(1)==TOK_EQ||LA(1)==TOK_NE)) {
 					{
 					if ((LA(1)==TOK_EQ)) {
-						com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp103_AST = null;
-						tmp103_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+						org.apache.geode.cache.query.internal.parse.ASTCompareOp tmp103_AST = null;
+						tmp103_AST = (org.apache.geode.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTCompareOp");
 						astFactory.makeASTRoot(currentAST, tmp103_AST);
 						match(TOK_EQ);
 					}
 					else if ((LA(1)==TOK_NE)) {
-						com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp104_AST = null;
-						tmp104_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+						org.apache.geode.cache.query.internal.parse.ASTCompareOp tmp104_AST = null;
+						tmp104_AST = (org.apache.geode.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTCompareOp");
 						astFactory.makeASTRoot(currentAST, tmp104_AST);
 						match(TOK_NE);
 					}
@@ -2155,8 +2155,8 @@ public OQLParser(ParserSharedInputState state) {
 			_loop207:
 			do {
 				if ((LA(1)==LITERAL_like)) {
-					com.gemstone.gemfire.cache.query.internal.parse.ASTLike tmp108_AST = null;
-					tmp108_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLike)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLike");
+					org.apache.geode.cache.query.internal.parse.ASTLike tmp108_AST = null;
+					tmp108_AST = (org.apache.geode.cache.query.internal.parse.ASTLike)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLike");
 					astFactory.makeASTRoot(currentAST, tmp108_AST);
 					match(LITERAL_like);
 					relationalExpr();
@@ -2194,32 +2194,32 @@ public OQLParser(ParserSharedInputState state) {
 				switch ( LA(1)) {
 				case TOK_LT:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp109_AST = null;
-					tmp109_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					org.apache.geode.cache.query.internal.parse.ASTCompareOp tmp109_AST = null;
+					tmp109_AST = (org.apache.geode.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTCompareOp");
 					astFactory.makeASTRoot(currentAST, tmp109_AST);
 					match(TOK_LT);
 					break;
 				}
 				case TOK_GT:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp110_AST = null;
-					tmp110_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					org.apache.geode.cache.query.internal.parse.ASTCompareOp tmp110_AST = null;
+					tmp110_AST = (org.apache.geode.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTCompareOp");
 					astFactory.makeASTRoot(currentAST, tmp110_AST);
 					match(TOK_GT);
 					break;
 				}
 				case TOK_LE:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp111_AST = null;
-					tmp111_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					org.apache.geode.cache.query.internal.parse.ASTCompareOp tmp111_AST = null;
+					tmp111_AST = (org.apache.geode.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTCompareOp");
 					astFactory.makeASTRoot(currentAST, tmp111_AST);
 					match(TOK_LE);
 					break;
 				}
 				case TOK_GE:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp tmp112_AST = null;
-					tmp112_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp");
+					org.apache.geode.cache.query.internal.parse.ASTCompareOp tmp112_AST = null;
+					tmp112_AST = (org.apache.geode.cache.query.internal.parse.ASTCompareOp)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTCompareOp");
 					astFactory.makeASTRoot(currentAST, tmp112_AST);
 					match(TOK_GE);
 					break;
@@ -2435,8 +2435,8 @@ public OQLParser(ParserSharedInputState state) {
 		astFactory.addASTChild(currentAST, returnAST);
 		{
 		if ((LA(1)==LITERAL_in)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTIn tmp125_AST = null;
-			tmp125_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTIn)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTIn");
+			org.apache.geode.cache.query.internal.parse.ASTIn tmp125_AST = null;
+			tmp125_AST = (org.apache.geode.cache.query.internal.parse.ASTIn)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTIn");
 			astFactory.makeASTRoot(currentAST, tmp125_AST);
 			match(LITERAL_in);
 			unaryExpr();
@@ -2472,8 +2472,8 @@ public OQLParser(ParserSharedInputState state) {
 				}
 				case TOK_MINUS:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTUnary tmp127_AST = null;
-					tmp127_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUnary");
+					org.apache.geode.cache.query.internal.parse.ASTUnary tmp127_AST = null;
+					tmp127_AST = (org.apache.geode.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTUnary");
 					astFactory.makeASTRoot(currentAST, tmp127_AST);
 					match(TOK_MINUS);
 					break;
@@ -2488,8 +2488,8 @@ public OQLParser(ParserSharedInputState state) {
 				}
 				case LITERAL_not:
 				{
-					com.gemstone.gemfire.cache.query.internal.parse.ASTUnary tmp129_AST = null;
-					tmp129_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUnary");
+					org.apache.geode.cache.query.internal.parse.ASTUnary tmp129_AST = null;
+					tmp129_AST = (org.apache.geode.cache.query.internal.parse.ASTUnary)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTUnary");
 					astFactory.makeASTRoot(currentAST, tmp129_AST);
 					match(LITERAL_not);
 					break;
@@ -2574,7 +2574,7 @@ public OQLParser(ParserSharedInputState state) {
 		if ( inputState.guessing==0 ) {
 			postfixExpr_AST = (AST)currentAST.root;
 			if (cmplx) {
-			postfixExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(POSTFIX,"postfix","com.gemstone.gemfire.cache.query.internal.parse.ASTPostfix")).add(postfixExpr_AST));
+			postfixExpr_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(POSTFIX,"postfix","org.apache.geode.cache.query.internal.parse.ASTPostfix")).add(postfixExpr_AST));
 			}
 			
 			currentAST.root = postfixExpr_AST;
@@ -2681,8 +2681,8 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		case RegionPath:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath tmp136_AST = null;
-			tmp136_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath");
+			org.apache.geode.cache.query.internal.parse.ASTRegionPath tmp136_AST = null;
+			tmp136_AST = (org.apache.geode.cache.query.internal.parse.ASTRegionPath)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTRegionPath");
 			astFactory.addASTChild(currentAST, tmp136_AST);
 			match(RegionPath);
 			break;
@@ -2782,7 +2782,7 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		if ( inputState.guessing==0 ) {
 			index_AST = (AST)currentAST.root;
-			index_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(TOK_LBRACK,"index","com.gemstone.gemfire.cache.query.internal.parse.ASTCombination")).add(index_AST));
+			index_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(TOK_LBRACK,"index","org.apache.geode.cache.query.internal.parse.ASTCombination")).add(index_AST));
 			
 			currentAST.root = index_AST;
 			currentAST.child = index_AST!=null &&index_AST.getFirstChild()!=null ?
@@ -2810,7 +2810,7 @@ public OQLParser(ParserSharedInputState state) {
 		if ( inputState.guessing==0 ) {
 			methodInvocation_AST = (AST)currentAST.root;
 			methodInvocation_AST =
-			(AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(METHOD_INV,"methodInv","com.gemstone.gemfire.cache.query.internal.parse.ASTMethodInvocation")).add(methodName_AST).add(args_AST)); 
+			(AST)astFactory.make( (new ASTArray(3)).add((AST)astFactory.create(METHOD_INV,"methodInv","org.apache.geode.cache.query.internal.parse.ASTMethodInvocation")).add(methodName_AST).add(args_AST)); 
 			((ASTMethodInvocation)methodInvocation_AST).setImplicitReceiver(implicitReceiver);
 			currentAST.root = methodInvocation_AST;
 			currentAST.child = methodInvocation_AST!=null &&methodInvocation_AST.getFirstChild()!=null ?
@@ -2826,10 +2826,10 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST argList_AST = null;
 		Token  t = null;
-		com.gemstone.gemfire.cache.query.internal.parse.ASTCombination t_AST = null;
+		org.apache.geode.cache.query.internal.parse.ASTCombination t_AST = null;
 		
 		t = LT(1);
-		t_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTCombination)astFactory.create(t,"com.gemstone.gemfire.cache.query.internal.parse.ASTCombination");
+		t_AST = (org.apache.geode.cache.query.internal.parse.ASTCombination)astFactory.create(t,"org.apache.geode.cache.query.internal.parse.ASTCombination");
 		astFactory.makeASTRoot(currentAST, t_AST);
 		match(TOK_LPAREN);
 		{
@@ -2888,8 +2888,8 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			case LITERAL_element:
 			{
-				com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp143_AST = null;
-				tmp143_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
+				org.apache.geode.cache.query.internal.parse.ASTConversionExpr tmp143_AST = null;
+				tmp143_AST = (org.apache.geode.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTConversionExpr");
 				astFactory.makeASTRoot(currentAST, tmp143_AST);
 				match(LITERAL_element);
 				break;
@@ -2926,8 +2926,8 @@ public OQLParser(ParserSharedInputState state) {
 		{
 			{
 			{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp148_AST = null;
-			tmp148_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
+			org.apache.geode.cache.query.internal.parse.ASTConversionExpr tmp148_AST = null;
+			tmp148_AST = (org.apache.geode.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTConversionExpr");
 			astFactory.makeASTRoot(currentAST, tmp148_AST);
 			match(LITERAL_nvl);
 			}
@@ -2945,8 +2945,8 @@ public OQLParser(ParserSharedInputState state) {
 		{
 			{
 			{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr tmp152_AST = null;
-			tmp152_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr");
+			org.apache.geode.cache.query.internal.parse.ASTConversionExpr tmp152_AST = null;
+			tmp152_AST = (org.apache.geode.cache.query.internal.parse.ASTConversionExpr)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTConversionExpr");
 			astFactory.makeASTRoot(currentAST, tmp152_AST);
 			match(LITERAL_to_date);
 			}
@@ -3032,14 +3032,14 @@ public OQLParser(ParserSharedInputState state) {
 		
 		{
 		if ((LA(1)==LITERAL_is_undefined)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp162_AST = null;
-			tmp162_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
+			org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr tmp162_AST = null;
+			tmp162_AST = (org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr");
 			astFactory.makeASTRoot(currentAST, tmp162_AST);
 			match(LITERAL_is_undefined);
 		}
 		else if ((LA(1)==LITERAL_is_defined)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp163_AST = null;
-			tmp163_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
+			org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr tmp163_AST = null;
+			tmp163_AST = (org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr");
 			astFactory.makeASTRoot(currentAST, tmp163_AST);
 			match(LITERAL_is_defined);
 		}
@@ -3118,8 +3118,8 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			case LITERAL_set:
 			{
-				com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction tmp171_AST = null;
-				tmp171_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction");
+				org.apache.geode.cache.query.internal.parse.ASTConstruction tmp171_AST = null;
+				tmp171_AST = (org.apache.geode.cache.query.internal.parse.ASTConstruction)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTConstruction");
 				astFactory.makeASTRoot(currentAST, tmp171_AST);
 				match(LITERAL_set);
 				break;
@@ -3292,8 +3292,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST stringLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp178_AST = null;
-		tmp178_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		org.apache.geode.cache.query.internal.parse.ASTLiteral tmp178_AST = null;
+		tmp178_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 		astFactory.addASTChild(currentAST, tmp178_AST);
 		match(StringLiteral);
 		stringLiteral_AST = (AST)currentAST.root;
@@ -3330,7 +3330,7 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		if ( inputState.guessing==0 ) {
 			fieldList_AST = (AST)currentAST.root;
-			fieldList_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(COMBO,"fieldList","com.gemstone.gemfire.cache.query.internal.parse.ASTCombination")).add(fieldList_AST));
+			fieldList_AST = (AST)astFactory.make( (new ASTArray(2)).add((AST)astFactory.create(COMBO,"fieldList","org.apache.geode.cache.query.internal.parse.ASTCombination")).add(fieldList_AST));
 			currentAST.root = fieldList_AST;
 			currentAST.child = fieldList_AST!=null &&fieldList_AST.getFirstChild()!=null ?
 				fieldList_AST.getFirstChild() : fieldList_AST;
@@ -3349,8 +3349,8 @@ public OQLParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_nil:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp182_AST = null;
-			tmp182_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp182_AST = null;
+			tmp182_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp182_AST);
 			match(LITERAL_nil);
 			objectLiteral_AST = (AST)currentAST.root;
@@ -3358,8 +3358,8 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		case LITERAL_null:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp183_AST = null;
-			tmp183_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp183_AST = null;
+			tmp183_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp183_AST);
 			match(LITERAL_null);
 			objectLiteral_AST = (AST)currentAST.root;
@@ -3367,8 +3367,8 @@ public OQLParser(ParserSharedInputState state) {
 		}
 		case LITERAL_undefined:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp184_AST = null;
-			tmp184_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp184_AST = null;
+			tmp184_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp184_AST);
 			match(LITERAL_undefined);
 			objectLiteral_AST = (AST)currentAST.root;
@@ -3390,14 +3390,14 @@ public OQLParser(ParserSharedInputState state) {
 		
 		{
 		if ((LA(1)==LITERAL_true)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp185_AST = null;
-			tmp185_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp185_AST = null;
+			tmp185_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp185_AST);
 			match(LITERAL_true);
 		}
 		else if ((LA(1)==LITERAL_false)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp186_AST = null;
-			tmp186_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp186_AST = null;
+			tmp186_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp186_AST);
 			match(LITERAL_false);
 		}
@@ -3420,32 +3420,32 @@ public OQLParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case NUM_INT:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp187_AST = null;
-			tmp187_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp187_AST = null;
+			tmp187_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp187_AST);
 			match(NUM_INT);
 			break;
 		}
 		case NUM_LONG:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp188_AST = null;
-			tmp188_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp188_AST = null;
+			tmp188_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp188_AST);
 			match(NUM_LONG);
 			break;
 		}
 		case NUM_FLOAT:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp189_AST = null;
-			tmp189_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp189_AST = null;
+			tmp189_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp189_AST);
 			match(NUM_FLOAT);
 			break;
 		}
 		case NUM_DOUBLE:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp190_AST = null;
-			tmp190_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			org.apache.geode.cache.query.internal.parse.ASTLiteral tmp190_AST = null;
+			tmp190_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 			astFactory.addASTChild(currentAST, tmp190_AST);
 			match(NUM_DOUBLE);
 			break;
@@ -3466,8 +3466,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST charLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp191_AST = null;
-		tmp191_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		org.apache.geode.cache.query.internal.parse.ASTLiteral tmp191_AST = null;
+		tmp191_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 		astFactory.makeASTRoot(currentAST, tmp191_AST);
 		match(LITERAL_char);
 		AST tmp192_AST = null;
@@ -3484,8 +3484,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST dateLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp193_AST = null;
-		tmp193_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		org.apache.geode.cache.query.internal.parse.ASTLiteral tmp193_AST = null;
+		tmp193_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 		astFactory.makeASTRoot(currentAST, tmp193_AST);
 		match(LITERAL_date);
 		AST tmp194_AST = null;
@@ -3502,8 +3502,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST timeLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp195_AST = null;
-		tmp195_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		org.apache.geode.cache.query.internal.parse.ASTLiteral tmp195_AST = null;
+		tmp195_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 		astFactory.makeASTRoot(currentAST, tmp195_AST);
 		match(LITERAL_time);
 		AST tmp196_AST = null;
@@ -3520,8 +3520,8 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST timestampLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp197_AST = null;
-		tmp197_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		org.apache.geode.cache.query.internal.parse.ASTLiteral tmp197_AST = null;
+		tmp197_AST = (org.apache.geode.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"org.apache.geode.cache.query.internal.parse.ASTLiteral");
 		astFactory.makeASTRoot(currentAST, tmp197_AST);
 		match(LITERAL_timestamp);
 		AST tmp198_AST = null;

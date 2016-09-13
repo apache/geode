@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.Assert;
 
 /**
  * Indicates that the current partitioned region operation failed.  It
  * is only thrown in a context where the higher level operation needs to
  * instigate a retry of some sort.
  * 
- * @see com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage
+ * @see org.apache.geode.internal.cache.partitioned.PartitionMessage
  * @since GemFire 5.0
  */
 public class ForceReattemptException extends

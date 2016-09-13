@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.sequencelog.visualization.text;
+package org.apache.geode.internal.sequencelog.visualization.text;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -22,10 +22,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.internal.sequencelog.GraphType;
-import com.gemstone.gemfire.internal.sequencelog.io.Filter;
-import com.gemstone.gemfire.internal.sequencelog.io.InputStreamReader;
-import com.gemstone.gemfire.internal.sequencelog.model.GraphReaderCallback;
+import org.apache.geode.internal.sequencelog.GraphType;
+import org.apache.geode.internal.sequencelog.io.Filter;
+import org.apache.geode.internal.sequencelog.io.InputStreamReader;
+import org.apache.geode.internal.sequencelog.model.GraphReaderCallback;
 
 /**
  *

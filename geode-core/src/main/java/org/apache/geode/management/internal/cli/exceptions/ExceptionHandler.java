@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.exceptions;
+package org.apache.geode.management.internal.cli.exceptions;
 
 import java.util.logging.Logger;
 
-import com.gemstone.gemfire.management.internal.cli.util.CLIConsoleBufferUtil;
+import org.apache.geode.management.internal.cli.util.CLIConsoleBufferUtil;
 
 /**
  * Prints the warning according the CliException

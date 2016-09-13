@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.test.junit.categories.PerformanceTest;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")

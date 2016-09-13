@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.Collections;
 import java.util.Map;
 
 import javax.management.NotificationBroadcasterSupport;
 
-import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.management.GemFireProperties;
-import com.gemstone.gemfire.management.JVMMetrics;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.OSMetrics;
-import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.management.GemFireProperties;
+import org.apache.geode.management.JVMMetrics;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.OSMetrics;
+import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 
 /**
  * This MBean is a gateway to cache and a member

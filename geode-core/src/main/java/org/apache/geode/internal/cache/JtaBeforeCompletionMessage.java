@@ -17,21 +17,21 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReliableReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReliableReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  *
@@ -59,7 +59,7 @@ public class JtaBeforeCompletionMessage extends TXMessage {
 
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXMessage#operateOnTx(com.gemstone.gemfire.internal.cache.TXId)
+   * @see org.apache.geode.internal.cache.TXMessage#operateOnTx(org.apache.geode.internal.cache.TXId)
    */
   @Override
   protected boolean operateOnTx(TXId txId,DistributionManager dm) {
@@ -73,7 +73,7 @@ public class JtaBeforeCompletionMessage extends TXMessage {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return JTA_BEFORE_COMPLETION_MESSAGE;

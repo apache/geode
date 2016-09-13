@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.internal.cache.CacheService;
-import com.gemstone.gemfire.internal.cache.extension.Extension;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.cache.extension.Extension;
 
 public interface InternalLuceneService extends LuceneService, Extension<Cache>, CacheService {
 

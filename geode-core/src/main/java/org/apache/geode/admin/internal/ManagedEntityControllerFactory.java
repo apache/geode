@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.AdminDistributedSystem;
-import com.gemstone.gemfire.admin.ManagedEntity;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.ManagedEntity;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * Creates ManagedEntityController for administration (starting, stopping, etc.) 
@@ -33,7 +33,7 @@ public class ManagedEntityControllerFactory {
 
   private static final Logger logger = LogService.getLogger();
   
-  private static final String ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME = "com.gemstone.gemfire.admin.internal.EnabledManagedEntityController";
+  private static final String ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME = "org.apache.geode.admin.internal.EnabledManagedEntityController";
   
   static ManagedEntityController createManagedEntityController(final AdminDistributedSystem system) {
     if (isEnabledManagedEntityController()) {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import static org.mockito.Mockito.*;
 
@@ -30,8 +30,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link CallbackSampler}.

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.shell;
+package org.apache.geode.management.internal.cli.shell;
 
 /**
  * RuntimeException to wrap all the exception that could occur for JMX

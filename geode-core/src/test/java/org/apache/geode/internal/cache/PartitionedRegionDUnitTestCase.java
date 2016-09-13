@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -22,26 +22,26 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.internal.logging.PureLogWriter;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.PureLogWriter;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class is extended by some PartitionedRegion related DUnit test cases 
@@ -208,10 +208,10 @@ public class PartitionedRegionDUnitTestCase extends JUnit4CacheTestCase {
                 prPrefix + i,
                 PartitionedRegionTestHelper.createRegionAttrsForPR(redundancy,
                     localmaxMemory, recoveryDelay));
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Created Region  new  --- " + prPrefix + i);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Created Region  new  --- " + prPrefix + i);
           } catch (RegionExistsException ignore) {}
         }
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("getCreateMultiplePRregion() - Partition Regions Successfully Completed ");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("getCreateMultiplePRregion() - Partition Regions Successfully Completed ");
       }
     };
   }

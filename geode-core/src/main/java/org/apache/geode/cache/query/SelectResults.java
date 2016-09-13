@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import java.util.*;
-import com.gemstone.gemfire.cache.query.types.*;
+import org.apache.geode.cache.query.types.*;
 
 /**
- * Contains the results of a {@linkplain com.gemstone.gemfire.cache.query.Query#execute() executing} a
+ * Contains the results of a {@linkplain org.apache.geode.cache.query.Query#execute() executing} a
  * <code>SELECT</code> expression within a query. A <code>SELECT</code>
  * expression results in <code>SelectResults</code> that contain instances of
  * {@link Struct} if: (a) there is more than one projection in the projection
@@ -60,7 +60,7 @@ import com.gemstone.gemfire.cache.query.types.*;
  *
  * </pre>
  *
- * @see com.gemstone.gemfire.cache.query.Query#execute()
+ * @see org.apache.geode.cache.query.Query#execute()
  *
  * @since GemFire 4.0
  */

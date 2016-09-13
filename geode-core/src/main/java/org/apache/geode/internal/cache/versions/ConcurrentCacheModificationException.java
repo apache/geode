@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 import java.util.ConcurrentModificationException;
 

@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.compression.Compressor;
+import org.apache.geode.compression.Compressor;
 
 /**
  * Provides important contextual information that allows a {@link RegionEntry} to manage its state.
  * @since GemFire 8.0
  */
 public interface RegionEntryContext extends HasCachePerfStats {
-  public static final String DEFAULT_COMPRESSION_PROVIDER="com.gemstone.gemfire.compression.SnappyCompressor";
+  public static final String DEFAULT_COMPRESSION_PROVIDER="org.apache.geode.compression.SnappyCompressor";
   
   /**
    * Returns the compressor to be used by this region entry when storing the

@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.TXManagerCancelledException;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap;
-import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
-import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.TXManagerCancelledException;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.SystemTimer.SystemTimerTask;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
+import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
+import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -146,7 +146,7 @@ public class TXManagerImpl implements CacheTransactionManager,
   private int transactionTimeToLive;
   
   /** Constructor that implements the {@link CacheTransactionManager}
-   * interface. Only only one instance per {@link com.gemstone.gemfire.cache.Cache}
+   * interface. Only only one instance per {@link org.apache.geode.cache.Cache}
    *
    * @param cachePerfStats 
    */

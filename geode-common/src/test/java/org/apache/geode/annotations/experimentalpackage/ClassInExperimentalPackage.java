@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.annotations.experimentalpackage;
+package org.apache.geode.annotations.experimentalpackage;
 
 /**
  * Used by <tt>ExperimentalJUnitTest</tt>. This is a class in an
  * <tt>Experimental</tt> package.
  * 
- * @see com.gemstone.gemfire.annotations.ExperimentalJUnitTest
+ * @see org.apache.geode.annotations.ExperimentalJUnitTest
  */
 public class ClassInExperimentalPackage {
 }

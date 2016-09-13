@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 public class InvalidVersionException extends GemFireException {
   private static final long serialVersionUID = 6342040462194322698L;

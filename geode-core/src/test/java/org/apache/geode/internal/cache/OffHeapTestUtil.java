@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.offheap.MemoryBlock;
-import com.gemstone.gemfire.internal.offheap.RefCountChangeInfo;
-import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.offheap.MemoryBlock;
+import org.apache.geode.internal.offheap.RefCountChangeInfo;
+import org.apache.geode.internal.offheap.ReferenceCountHelper;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {

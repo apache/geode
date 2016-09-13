@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.util.Properties;
 
-import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 
 /**
  * Factory for getting DiskWriteAttribute objects

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import static org.junit.Assert.*;
 
@@ -32,12 +32,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the AlertAppender.

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.util;
+package org.apache.geode.management.internal.web.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * The UriUtils is a utility class for processing URIs and URLs.

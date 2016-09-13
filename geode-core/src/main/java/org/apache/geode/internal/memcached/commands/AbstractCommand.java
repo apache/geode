@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached.commands;
+package org.apache.geode.internal.memcached.commands;
 
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -24,19 +24,19 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.internal.memcached.CommandProcessor;
-import com.gemstone.gemfire.internal.memcached.KeyWrapper;
-import com.gemstone.gemfire.internal.memcached.RequestReader;
-import com.gemstone.gemfire.internal.memcached.ResponseStatus;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
-import com.gemstone.gemfire.internal.memcached.ValueWrapper;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.memcached.CommandProcessor;
+import org.apache.geode.internal.memcached.KeyWrapper;
+import org.apache.geode.internal.memcached.RequestReader;
+import org.apache.geode.internal.memcached.ResponseStatus;
+import org.apache.geode.memcached.GemFireMemcachedServer;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.internal.memcached.ValueWrapper;
 
 /**
  * Abstract class with utility methods for all Command classes.

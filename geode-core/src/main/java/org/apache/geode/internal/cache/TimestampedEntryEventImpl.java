@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import org.apache.geode.cache.util.TimestampedEntryEvent;
+import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
  * A subclass of EntryEventImpl used in WAN conflict resolution
@@ -40,7 +40,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements
     this.oldTimestamp = oldTimestamp;
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.util.TimestampedEntryEvent#getNewDistributedSystemID()
+   * @see org.apache.geode.internal.cache.util.TimestampedEntryEvent#getNewDistributedSystemID()
    */
   @Override
   public int getNewDistributedSystemID() {
@@ -48,7 +48,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.util.TimestampedEntryEvent#getOldDistributedSystemID()
+   * @see org.apache.geode.internal.cache.util.TimestampedEntryEvent#getOldDistributedSystemID()
    */
   @Override
   public int getOldDistributedSystemID() {
@@ -56,7 +56,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.util.TimestampedEntryEvent#getNewTimestamp()
+   * @see org.apache.geode.internal.cache.util.TimestampedEntryEvent#getNewTimestamp()
    */
   @Override
   public long getNewTimestamp() {
@@ -64,7 +64,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.util.TimestampedEntryEvent#getOldTimestamp()
+   * @see org.apache.geode.internal.cache.util.TimestampedEntryEvent#getOldTimestamp()
    */
   @Override
   public long getOldTimestamp() {

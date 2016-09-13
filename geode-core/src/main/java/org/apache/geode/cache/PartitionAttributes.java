@@ -15,27 +15,27 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.List;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.partition.PartitionListener;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.partition.PartitionListener;
 
 /**
  * 
  * Attributes that define the partitioned character of a Partitioned Region.  
  * This interface allows for the discovery of Partitioned Region attributes using 
- * {@link com.gemstone.gemfire.cache.RegionAttributes#getPartitionAttributes()} as well
- * as the configuration of a Partitioned Region using {@link com.gemstone.gemfire.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)}.
+ * {@link org.apache.geode.cache.RegionAttributes#getPartitionAttributes()} as well
+ * as the configuration of a Partitioned Region using {@link org.apache.geode.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)}.
  * 
- * PartitionAttributes are created using the {@link com.gemstone.gemfire.cache.PartitionAttributesFactory}
+ * PartitionAttributes are created using the {@link org.apache.geode.cache.PartitionAttributesFactory}
  * 
- * The default PartitionAttributes can be determined using {@link com.gemstone.gemfire.cache.PartitionAttributesFactory#create()} with out
- * calling any of its mutator methods e.g.  {@link com.gemstone.gemfire.cache.PartitionAttributesFactory#setLocalMaxMemory(int)}
+ * The default PartitionAttributes can be determined using {@link org.apache.geode.cache.PartitionAttributesFactory#create()} with out
+ * calling any of its mutator methods e.g.  {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)}
  *
- * Also see {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}.
+ * Also see {@link org.apache.geode.cache.DataPolicy#PARTITION}.
  * 
  * @since GemFire 5.0
  * 

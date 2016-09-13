@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.text.*;
@@ -24,7 +24,7 @@ import java.util.*;
 
 /**
  * Parses a log file written by a {@link
- * com.gemstone.gemfire.i18n.LogWriterI18n} into {@link
+ * org.apache.geode.i18n.LogWriterI18n} into {@link
  * LogFileParser.LogEntry}s.  It behaves sort of like an {@link
  * java.util.StringTokenizer}. 
  *

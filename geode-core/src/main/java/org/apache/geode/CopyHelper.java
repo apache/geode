@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -25,14 +25,14 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.UUID;
 
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.WritablePdxInstance;
-import com.gemstone.gemfire.pdx.internal.PdxUnreadData;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.WritablePdxInstance;
+import org.apache.geode.pdx.internal.PdxUnreadData;
 
 /**
  * A static helper for optimally creating copies.  Creating copies
@@ -52,8 +52,8 @@ import com.gemstone.gemfire.pdx.internal.PdxUnreadData;
  * @see Cloneable
  * @see Serializable
  * @see DataSerializer
- * @see com.gemstone.gemfire.cache.Cache#setCopyOnRead
- * @see com.gemstone.gemfire.cache.CacheTransactionManager
+ * @see org.apache.geode.cache.Cache#setCopyOnRead
+ * @see org.apache.geode.cache.CacheTransactionManager
  *
  * @since GemFire 4.0
  */

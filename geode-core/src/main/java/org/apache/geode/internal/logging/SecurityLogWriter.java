@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.i18n.StringId;
 
 /**
  * A log writer for security related logs. This will prefix all messages with

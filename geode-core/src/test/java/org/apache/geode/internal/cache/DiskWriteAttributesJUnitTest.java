@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.DiskWriteAttributes;
-import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.DiskWriteAttributes;
+import org.apache.geode.cache.DiskWriteAttributesFactory;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests if DiskWriteAttributeFactory returns the correct DWA object with the
@@ -34,7 +34,7 @@ public class DiskWriteAttributesJUnitTest {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultInstance()'
+   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultInstance()'
    */
   @Test
   public void testGetDefaultInstance() {
@@ -46,7 +46,7 @@ public class DiskWriteAttributesJUnitTest {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultSync()'
+   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultSync()'
    */
   @Test
   public void testGetDefaultSync() {
@@ -59,7 +59,7 @@ public class DiskWriteAttributesJUnitTest {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultAsync()'
+   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultAsync()'
    */
   @Test
   public void testGetDefaultAsync() {
@@ -71,7 +71,7 @@ public class DiskWriteAttributesJUnitTest {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultRollingSync()'
+   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultRollingSync()'
    */
   @Test
   public void testGetDefaultRollingSync() {
@@ -85,7 +85,7 @@ public class DiskWriteAttributesJUnitTest {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultRollingAsync()'
+   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultRollingAsync()'
    */
   @Test
   public void testGetDefaultRollingAsync() {
@@ -97,7 +97,7 @@ public class DiskWriteAttributesJUnitTest {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultNonRollingSync()'
+   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultNonRollingSync()'
    */
   @Test
   public void testGetDefaultNonRollingSync() {
@@ -111,7 +111,7 @@ public class DiskWriteAttributesJUnitTest {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultNonRollingAsync()'
+   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultNonRollingAsync()'
    */
   @Test
   public void testGetDefaultNonRollingAsync() {

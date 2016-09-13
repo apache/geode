@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx;
+package org.apache.geode.admin.jmx;
 
-//import com.gemstone.gemfire.admin.AdminDistributedSystem;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.jmx.internal.AgentConfigImpl;
-import com.gemstone.gemfire.admin.jmx.internal.AgentImpl;
+//import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.jmx.internal.AgentConfigImpl;
+import org.apache.geode.admin.jmx.internal.AgentImpl;
 
 /**
  * A factory class that creates JMX administration entities.
  *
  * @since GemFire 4.0
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public class AgentFactory {
 

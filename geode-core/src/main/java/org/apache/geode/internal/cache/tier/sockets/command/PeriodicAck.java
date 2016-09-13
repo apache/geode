@@ -17,11 +17,11 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets.command;
+package org.apache.geode.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import java.io.IOException;
 
 public class PeriodicAck extends BaseCommand {

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.cache.RegionAttributes;
+import org.apache.geode.cache.RegionAttributes;
 
 /**
  * Administrative interface that represent's the {@link SystemMember}'s view
- * of its {@link com.gemstone.gemfire.cache.Cache}.
+ * of its {@link org.apache.geode.cache.Cache}.
  *
  * @since GemFire     3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberCache {
   // attributes
@@ -53,7 +53,7 @@ public interface SystemMemberCache {
    *         If a problem is encountered while setting the lock
    *         timeout 
    *
-   * @see com.gemstone.gemfire.cache.Cache#setLockTimeout
+   * @see org.apache.geode.cache.Cache#setLockTimeout
    */
   public void setLockTimeout(int seconds) throws AdminException;
   
@@ -70,13 +70,13 @@ public interface SystemMemberCache {
    *         If a problem is encountered while setting the lock
    *         lease
    *
-   * @see com.gemstone.gemfire.cache.Cache#setLockLease
+   * @see org.apache.geode.cache.Cache#setLockLease
    */
   public void setLockLease(int seconds) throws AdminException;
   
   /**
    * Gets the number of seconds a cache
-   * {@link com.gemstone.gemfire.cache.Region#get(Object) get} operation
+   * {@link org.apache.geode.cache.Region#get(Object) get} operation
    * can spend searching for a value before it times out.
    * The search includes any time spent loading the object.
    * When the search times out it causes the get to fail by throwing
@@ -91,7 +91,7 @@ public interface SystemMemberCache {
    *         If a problem is encountered while setting the search
    *         timeout 
    *
-   * @see com.gemstone.gemfire.cache.Cache#setSearchTimeout
+   * @see org.apache.geode.cache.Cache#setSearchTimeout
    */
   public void setSearchTimeout(int seconds) throws AdminException;
   /**
@@ -171,7 +171,7 @@ public interface SystemMemberCache {
    * Adds a new, unstarted cache server that will serve the contents
    * of this cache to clients.
    *
-   * @see com.gemstone.gemfire.cache.Cache#addCacheServer
+   * @see org.apache.geode.cache.Cache#addCacheServer
    *
    * @since GemFire 5.7
    */
@@ -183,7 +183,7 @@ public interface SystemMemberCache {
    * that this list will not be updated until {@link #refresh} is
    * called.
    *
-   * @see com.gemstone.gemfire.cache.Cache#getCacheServers
+   * @see org.apache.geode.cache.Cache#getCacheServers
    *
    * @since GemFire 5.7
    */

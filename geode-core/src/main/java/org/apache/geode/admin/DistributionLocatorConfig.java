@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 import java.util.Properties;
 
 /**
@@ -36,10 +36,10 @@ import java.util.Properties;
  * invoking the {@link Object#clone} method.
  *
  * @see AdminDistributedSystem#addDistributionLocator
- * @see com.gemstone.gemfire.distributed.Locator
+ * @see org.apache.geode.distributed.Locator
  *
  * @since GemFire 4.0
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface DistributionLocatorConfig
   extends ManagedEntityConfig {

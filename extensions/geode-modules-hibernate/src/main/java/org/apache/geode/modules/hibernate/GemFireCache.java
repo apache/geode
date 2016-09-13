@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate;
+package org.apache.geode.modules.hibernate;
 
 import java.util.Map;
 
@@ -22,11 +22,11 @@ import org.hibernate.cache.Cache;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.Timestamper;
 
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.internal.cache.LocalRegion;
 
 public class GemFireCache implements Cache {
   private Region region;
@@ -77,7 +77,7 @@ public class GemFireCache implements Cache {
           "GemFireCache: retrieved: " + key + "-->" + value);
       return value;
     }
-    catch (com.gemstone.gemfire.cache.CacheException e) {
+    catch (org.apache.geode.cache.CacheException e) {
       throw new CacheException(e);
     }
   }
@@ -171,7 +171,7 @@ public class GemFireCache implements Cache {
       GemFireCacheProvider.getLogger().debug(
           "GemFireCache: put " + key + "-->" + value);
     }
-    catch (com.gemstone.gemfire.cache.CacheException e) {
+    catch (org.apache.geode.cache.CacheException e) {
       throw new CacheException(e);
     }
   }
@@ -195,7 +195,7 @@ public class GemFireCache implements Cache {
     catch (EntryNotFoundException e) {
       // We can silently ignore this
     }
-    catch (com.gemstone.gemfire.cache.CacheException e) {
+    catch (org.apache.geode.cache.CacheException e) {
       throw new CacheException(e);
     }
   }

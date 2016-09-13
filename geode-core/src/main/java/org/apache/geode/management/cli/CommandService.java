@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.cli;
+package org.apache.geode.management.cli;
 
 import java.util.Collections;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.management.DependenciesNotFoundException;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.remote.MemberCommandService;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.management.DependenciesNotFoundException;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.remote.MemberCommandService;
 
 /**
  * Processes remote GemFire Command Line Interface (CLI) commands. Refer to the

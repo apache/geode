@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j.custom;
+package org.apache.geode.internal.logging.log4j.custom;
 
 import java.io.Serializable;
 import java.util.ArrayList;

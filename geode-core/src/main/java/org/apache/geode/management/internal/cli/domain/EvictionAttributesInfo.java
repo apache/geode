@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.domain;
+package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesDefault;
-import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.management.internal.cli.util.RegionAttributesDefault;
+import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 
 public class EvictionAttributesInfo implements Serializable{
 	

@@ -14,14 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
-import com.gemstone.gemfire.modules.session.junit.PerTestClassLoaderRunner;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.modules.session.filter.SessionCachingFilter;
+import org.apache.geode.modules.session.junit.PerTestClassLoaderRunner;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.jasper.servlet.JspServlet;
 import org.eclipse.jetty.http.HttpTester;
 import org.eclipse.jetty.servlet.FilterHolder;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,16 +26,16 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.statistics.DummyStatisticsFactory;
-import com.gemstone.gemfire.internal.cache.PoolStats;
-import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.statistics.DummyStatisticsFactory;
+import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.cache.tier.InternalClientMembership;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  *
@@ -60,7 +60,7 @@ public class EndpointManagerImpl implements EndpointManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.EndpointManager#referenceEndpoint(com.gemstone.gemfire.distributed.internal.ServerLocation)
+   * @see org.apache.geode.cache.client.internal.EndpointManager#referenceEndpoint(org.apache.geode.distributed.internal.ServerLocation)
    */
   public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
     //logger.warn("REFENDPOINT server:"+server+" memberId:"+memberId);
@@ -94,7 +94,7 @@ public class EndpointManagerImpl implements EndpointManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.EndpointManager#serverCrashed(com.gemstone.gemfire.cache.client.internal.Endpoint)
+   * @see org.apache.geode.cache.client.internal.EndpointManager#serverCrashed(org.apache.geode.cache.client.internal.Endpoint)
    */
   public void serverCrashed(Endpoint endpoint) {
     removeEndpoint(endpoint, true);
@@ -161,14 +161,14 @@ public class EndpointManagerImpl implements EndpointManager {
   
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.EndpointManager#getEndpointMap()
+   * @see org.apache.geode.cache.client.internal.EndpointManager#getEndpointMap()
    */
   public Map<ServerLocation, Endpoint> getEndpointMap() {
     return endpointMap;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.EndpointManager#close()
+   * @see org.apache.geode.cache.client.internal.EndpointManager#close()
    */
   public synchronized void close() {
     for(Iterator<ConnectionStats> itr = statMap.values().iterator(); itr.hasNext(); ) {
@@ -182,14 +182,14 @@ public class EndpointManagerImpl implements EndpointManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.EndpointManager#addListener(com.gemstone.gemfire.cache.client.internal.EndpointManagerImpl.EndpointListener)
+   * @see org.apache.geode.cache.client.internal.EndpointManager#addListener(org.apache.geode.cache.client.internal.EndpointManagerImpl.EndpointListener)
    */
   public void addListener(EndpointManager.EndpointListener listener) {
     this.listener.addListener(listener);
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.EndpointManager#removeListener(com.gemstone.gemfire.cache.client.internal.EndpointManagerImpl.EndpointListener)
+   * @see org.apache.geode.cache.client.internal.EndpointManager#removeListener(org.apache.geode.cache.client.internal.EndpointManagerImpl.EndpointListener)
    */
   public void removeListener(EndpointManager.EndpointListener listener) {
     this.listener.removeListener(listener);

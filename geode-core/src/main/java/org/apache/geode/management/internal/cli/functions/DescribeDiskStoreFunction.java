@@ -15,33 +15,33 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.functions;
+package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
-import com.gemstone.gemfire.management.internal.cli.util.DiskStoreNotFoundException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
+import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -49,12 +49,12 @@ import org.apache.logging.log4j.Logger;
  * The DescribeDiskStoreFunction class is an implementation of a GemFire Function used to collect information
  * and details about a particular disk store for a particular GemFire distributed system member.
  *
- * @see com.gemstone.gemfire.cache.DiskStore
- * @see com.gemstone.gemfire.cache.execute.Function
- * @see com.gemstone.gemfire.cache.execute.FunctionAdapter
- * @see com.gemstone.gemfire.cache.execute.FunctionContext
- * @see com.gemstone.gemfire.internal.InternalEntity
- * @see com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails
+ * @see org.apache.geode.cache.DiskStore
+ * @see org.apache.geode.cache.execute.Function
+ * @see org.apache.geode.cache.execute.FunctionAdapter
+ * @see org.apache.geode.cache.execute.FunctionContext
+ * @see org.apache.geode.internal.InternalEntity
+ * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
  * @since GemFire 7.0
  */
 public class DescribeDiskStoreFunction extends FunctionAdapter implements InternalEntity {

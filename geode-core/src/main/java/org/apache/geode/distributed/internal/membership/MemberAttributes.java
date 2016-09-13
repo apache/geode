@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.DurableClientAttributes;
 
 /**
  * The attributes of a distributed member.  This is largely deprecated as

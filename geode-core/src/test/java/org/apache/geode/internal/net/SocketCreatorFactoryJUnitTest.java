@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.net;
+package org.apache.geode.internal.net;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,11 +25,11 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(UnitTest.class)
 public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
@@ -175,8 +175,8 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   public void testNewSSLConfigSSLComponentAliasWithMultiKeyStore() {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.ALL.getConstant());
 
-    properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKey.jks"));
-    properties.setProperty(SSL_TRUSTSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKeyTrust.jks"));
+    properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
+    properties.setProperty(SSL_TRUSTSTORE, TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks"));
 
     properties.setProperty(SSL_CLUSTER_ALIAS, "clusterKey");
     properties.setProperty(SSL_DEFAULT_ALIAS, "serverKey");
@@ -196,8 +196,8 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   public void testNewSSLConfigSSLComponentWithoutAliasWithMultiKeyStore() {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.ALL.getConstant());
 
-    properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKey.jks"));
-    properties.setProperty(SSL_TRUSTSTORE, TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKeyTrust.jks"));
+    properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
+    properties.setProperty(SSL_TRUSTSTORE, TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks"));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);

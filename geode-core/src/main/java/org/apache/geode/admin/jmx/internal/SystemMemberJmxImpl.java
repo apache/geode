@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,21 +34,21 @@ import javax.naming.OperationNotSupportedException;
 import org.apache.commons.modeler.ManagedBean;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.StatisticResource;
-import com.gemstone.gemfire.admin.SystemMemberCache;
-import com.gemstone.gemfire.admin.SystemMemberCacheEvent;
-import com.gemstone.gemfire.admin.SystemMemberRegionEvent;
-import com.gemstone.gemfire.admin.internal.ConfigurationParameterImpl;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.admin.ApplicationVM;
-import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.StatResource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.StatisticResource;
+import org.apache.geode.admin.SystemMemberCache;
+import org.apache.geode.admin.SystemMemberCacheEvent;
+import org.apache.geode.admin.SystemMemberRegionEvent;
+import org.apache.geode.admin.internal.ConfigurationParameterImpl;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.admin.ApplicationVM;
+import org.apache.geode.internal.admin.ClientMembershipMessage;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Provides MBean support for managing a SystemMember application.
@@ -61,9 +61,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
  *
  */
 public class SystemMemberJmxImpl 
-extends com.gemstone.gemfire.admin.internal.SystemMemberImpl
+extends org.apache.geode.admin.internal.SystemMemberImpl
 implements SystemMemberJmx, javax.management.NotificationListener,
-           com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
+           org.apache.geode.admin.jmx.internal.ManagedResource {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -95,7 +95,7 @@ implements SystemMemberJmx, javax.management.NotificationListener,
    */
   public SystemMemberJmxImpl(AdminDistributedSystemJmxImpl system,
                              ApplicationVM application)
-                      throws com.gemstone.gemfire.admin.AdminException { 
+                      throws org.apache.geode.admin.AdminException { 
     super(system, application);
     initializeMBean();
   }
@@ -123,7 +123,7 @@ implements SystemMemberJmx, javax.management.NotificationListener,
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     //initialize Managed Resources for stats & cache first.
 //    initializeManagedResources();
 
@@ -194,7 +194,7 @@ implements SystemMemberJmx, javax.management.NotificationListener,
   //   MBean Operations
   // -------------------------------------------------------------------------
 
-  public void refreshConfig() throws com.gemstone.gemfire.admin.AdminException {
+  public void refreshConfig() throws org.apache.geode.admin.AdminException {
     // 1st call to refreshConfig would trigger
     // the auto-refresh if an interval is set
     if (this.refreshInterval > 0) {
@@ -324,7 +324,7 @@ implements SystemMemberJmx, javax.management.NotificationListener,
    */
   @Override
   protected StatisticResource createStatisticResource(StatResource stat)
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     StatisticResourceJmxImpl managedStatisticResource = null;
     
     synchronized (this.managedStatisticsResourcesMap) {
@@ -356,7 +356,7 @@ implements SystemMemberJmx, javax.management.NotificationListener,
    */
   @Override
   protected SystemMemberCache createSystemMemberCache(GemFireVM vm)
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     if (managedSystemMemberCache == null) {
       managedSystemMemberCache = new SystemMemberCacheJmxImpl(vm);
     }

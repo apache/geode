@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 import java.io.*;
 
-import com.gemstone.gemfire.internal.ExternalizableDSFID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ExternalizableDSFID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * Stores information about a PartitionedRegion singleton instance running

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,25 +23,25 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.cache.client.internal.AddPDXEnumOp;
-import com.gemstone.gemfire.cache.client.internal.AddPDXTypeOp;
-import com.gemstone.gemfire.cache.client.internal.ExecutablePool;
-import com.gemstone.gemfire.cache.client.internal.GetPDXEnumByIdOp;
-import com.gemstone.gemfire.cache.client.internal.GetPDXEnumsOp;
-import com.gemstone.gemfire.cache.client.internal.GetPDXIdForEnumOp;
-import com.gemstone.gemfire.cache.client.internal.GetPDXIdForTypeOp;
-import com.gemstone.gemfire.cache.client.internal.GetPDXTypeByIdOp;
-import com.gemstone.gemfire.cache.client.internal.GetPDXTypesOp;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.pdx.PdxInitializationException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.internal.AddPDXEnumOp;
+import org.apache.geode.cache.client.internal.AddPDXTypeOp;
+import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.cache.client.internal.GetPDXEnumByIdOp;
+import org.apache.geode.cache.client.internal.GetPDXEnumsOp;
+import org.apache.geode.cache.client.internal.GetPDXIdForEnumOp;
+import org.apache.geode.cache.client.internal.GetPDXIdForTypeOp;
+import org.apache.geode.cache.client.internal.GetPDXTypeByIdOp;
+import org.apache.geode.cache.client.internal.GetPDXTypesOp;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.PdxInitializationException;
 
 /**
  *

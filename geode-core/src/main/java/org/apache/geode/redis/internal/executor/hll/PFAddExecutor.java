@@ -18,8 +18,8 @@ package org.apache.geode.redis.internal.executor.hll;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.hll.HyperLogLogPlus;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.Coder;

@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 /**
  * thrown by {@linkplain ReliableReplyProcessor21} when a message has not been delivered

@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.management;
+package org.apache.geode.cache.lucene.internal.management;
 
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 import javax.management.NotificationBroadcasterSupport;
 

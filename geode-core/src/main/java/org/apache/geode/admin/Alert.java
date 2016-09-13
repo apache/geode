@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * An administration alert that is issued by a member of a GemFire
  * distributed system.  It is similar to a {@linkplain
- * com.gemstone.gemfire.i18n.LogWriterI18n log message}.
+ * org.apache.geode.i18n.LogWriterI18n log message}.
  *
  * @see       AlertListener
  * @since GemFire     3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface Alert {
   
@@ -38,7 +38,7 @@ public interface Alert {
 
   /** 
    * The name of the {@linkplain
-   * com.gemstone.gemfire.distributed.DistributedSystem#getName
+   * org.apache.geode.distributed.DistributedSystem#getName
    * distributed system}) through which the alert was issued.
    */
   public String getConnectionName();

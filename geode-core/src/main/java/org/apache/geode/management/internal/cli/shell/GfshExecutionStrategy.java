@@ -14,29 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.shell;
+package org.apache.geode.management.internal.cli.shell;
 
-import static com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper.*;
+import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.*;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.CommandProcessingException;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.CliAroundInterceptor;
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
-import com.gemstone.gemfire.management.internal.cli.CommandResponse;
-import com.gemstone.gemfire.management.internal.cli.CommandResponseBuilder;
-import com.gemstone.gemfire.management.internal.cli.GfshParseResult;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.multistep.MultiStepCommand;
-import com.gemstone.gemfire.management.internal.cli.result.FileResult;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.CommandProcessingException;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.CliAroundInterceptor;
+import org.apache.geode.management.internal.cli.CommandRequest;
+import org.apache.geode.management.internal.cli.CommandResponse;
+import org.apache.geode.management.internal.cli.CommandResponseBuilder;
+import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.multistep.MultiStepCommand;
+import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.security.NotAuthorizedException;
 
 import org.springframework.shell.core.ExecutionStrategy;
 import org.springframework.shell.core.Shell;

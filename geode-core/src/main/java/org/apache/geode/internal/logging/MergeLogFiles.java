@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,14 +39,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This program merges entries from multiple GemFire log files (those
- * written using a {@link com.gemstone.gemfire.i18n.LogWriterI18n} together,
+ * written using a {@link org.apache.geode.i18n.LogWriterI18n} together,
  * sorting them by their timestamp.  Note that this program assumes
  * that the entries in the individual log files are themselves sorted
  * by timestamp.<p>

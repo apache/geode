@@ -17,17 +17,17 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets.command;
+package org.apache.geode.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.cache.operations.QueryOperationContext;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.cache.operations.QueryOperationContext;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.QueryInvalidException;
 import java.io.IOException;
 import java.util.Set;
 
@@ -91,7 +91,7 @@ public class Query651 extends BaseCommandQuery {
       // Create query
       QueryService queryService = ((GemFireCacheImpl)servConn.getCachedRegionHelper().getCache())
       .getLocalQueryService();
-      com.gemstone.gemfire.cache.query.Query query = null;
+      org.apache.geode.cache.query.Query query = null;
 
       if (queryParams != null){
         // Its a compiled query.

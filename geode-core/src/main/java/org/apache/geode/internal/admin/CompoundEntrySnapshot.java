@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
-//import com.gemstone.gemfire.cache.*;
+//import org.apache.geode.cache.*;
 
 /**
  * Presents an amalgam snapshot of all the {@linkplain
- * com.gemstone.gemfire.cache.Region.Entry regions entries} in a
+ * org.apache.geode.cache.Region.Entry regions entries} in a
  * distributed system.
  */
 public class CompoundEntrySnapshot implements EntrySnapshot {

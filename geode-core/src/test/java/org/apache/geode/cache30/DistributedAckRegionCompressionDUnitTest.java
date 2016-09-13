@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests Distributed Ack Region with compression.

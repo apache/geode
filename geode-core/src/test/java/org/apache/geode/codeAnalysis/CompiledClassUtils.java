@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis;
+package org.apache.geode.codeAnalysis;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,9 +34,9 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledField;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
+import org.apache.geode.codeAnalysis.decode.CompiledField;
+import org.apache.geode.codeAnalysis.decode.CompiledMethod;
 
 
 

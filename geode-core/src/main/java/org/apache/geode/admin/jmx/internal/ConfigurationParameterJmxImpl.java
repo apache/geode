@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.logging.log4j.Level;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.UnmodifiableConfigurationException;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.UnmodifiableConfigurationException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides MBean support for managing accessing a ConfigurationParameter.
@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *
  */
 public class ConfigurationParameterJmxImpl
-extends com.gemstone.gemfire.admin.internal.ConfigurationParameterImpl
+extends org.apache.geode.admin.internal.ConfigurationParameterImpl
 implements Serializable {
 
   private static final long serialVersionUID = -7822171853906772375L;

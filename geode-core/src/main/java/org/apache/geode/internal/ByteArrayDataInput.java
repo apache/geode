@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.DataInput;
 import java.io.EOFException;
@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UTFDataFormatException;
 
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.VersionedDataStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataStream;
 
 /**
  * A reusable {@link DataInput} implementation that wraps a given byte array. It

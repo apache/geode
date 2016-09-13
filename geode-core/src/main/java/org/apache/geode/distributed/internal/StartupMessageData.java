@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -26,8 +26,8 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.GemFireVersion;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.GemFireVersion;
 
 /**
  * Provides optional data fields as properties for StartupMessage and 

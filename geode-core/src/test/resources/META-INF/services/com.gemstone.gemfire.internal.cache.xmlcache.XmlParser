@@ -1,5 +1,5 @@
-# com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParserJUnitTest.testGetDelegate XmlParser
-com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParserJUnitTest$MockXmlParser
+# org.apache.geode.internal.cache.xmlcache.CacheXmlParserJUnitTest.testGetDelegate XmlParser
+org.apache.geode.internal.cache.xmlcache.CacheXmlParserJUnitTest$MockXmlParser
 
 # Mock Extension XmlParser
-com.gemstone.gemfire.internal.cache.extension.mock.MockExtensionXmlParser
+org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser

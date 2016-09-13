@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.security.templates;
+package org.apache.geode.security.templates;
 
 import java.io.Serializable;
 import java.security.Principal;

@@ -14,21 +14,21 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Delta;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.lru.Sizeable;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.modules.gatewaydelta.GatewayDelta;
-import com.gemstone.gemfire.modules.gatewaydelta.GatewayDeltaEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.modules.gatewaydelta.GatewayDelta;
+import org.apache.geode.modules.gatewaydelta.GatewayDeltaEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
 import org.apache.catalina.Manager;
 import org.apache.catalina.ha.session.SerializablePrincipal;
 import org.apache.catalina.realm.GenericPrincipal;
@@ -86,7 +86,7 @@ public class DeltaSession extends StandardSession implements DataSerializable, D
    * The string manager for this package.
    */
 //  protected static StringManager STRING_MANAGER =
-//    StringManager.getManager("com.gemstone.gemfire.modules.session.catalina");
+//    StringManager.getManager("org.apache.geode.modules.session.catalina");
 
   /**
    * Construct a new <code>Session</code> associated with no <code>Manager</code>. The <code>Manager</code> will be

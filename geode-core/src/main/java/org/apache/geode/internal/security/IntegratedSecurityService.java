@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.security;
+package org.apache.geode.internal.security;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -46,20 +46,20 @@ import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
-import com.gemstone.gemfire.internal.security.shiro.GeodeAuthenticationToken;
-import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.shiro.CustomAuthRealm;
+import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
+import org.apache.geode.internal.security.shiro.ShiroPrincipal;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.NotAuthorizedException;
 
 public class IntegratedSecurityService implements SecurityService{
 
@@ -346,7 +346,7 @@ public class IntegratedSecurityService implements SecurityService{
 
       // we will need to make sure that shiro uses a case sensitive permission resolver
       Section main = factory.getIni().addSection("main");
-      main.put("geodePermissionResolver", "com.gemstone.gemfire.internal.security.shiro.GeodePermissionResolver");
+      main.put("geodePermissionResolver", "org.apache.geode.internal.security.shiro.GeodePermissionResolver");
       if (!main.containsKey("iniRealm.permissionResolver")) {
         main.put("iniRealm.permissionResolver", "$geodePermissionResolver");
       }

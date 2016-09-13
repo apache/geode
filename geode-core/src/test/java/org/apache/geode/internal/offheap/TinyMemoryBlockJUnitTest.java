@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -31,9 +31,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.offheap.MemoryBlock.State;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TinyMemoryBlockJUnitTest {

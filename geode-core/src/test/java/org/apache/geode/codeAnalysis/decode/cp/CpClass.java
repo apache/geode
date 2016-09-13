@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis.decode.cp;
+package org.apache.geode.codeAnalysis.decode.cp;
 import java.io.*;
 
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
 
 
 public class CpClass extends Cp {

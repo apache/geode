@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.utils;
+package org.apache.geode.management.internal.configuration.utils;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.commons.io.FileUtils;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;

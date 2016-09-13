@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 /**
  * RegionExpiryTask represents a timeout event for region expiration
  */
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.TimeoutException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TimeoutException;
 
 abstract class RegionExpiryTask extends ExpiryTask
   {

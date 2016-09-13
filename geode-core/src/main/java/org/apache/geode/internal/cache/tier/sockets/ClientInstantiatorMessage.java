@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
  * Class <code>ClientInstantiatorMessage</code> represents a message that is
@@ -66,7 +66,7 @@ public final class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   /* (non-Javadoc)
    * reimplemented to state that all clients are interested in this message.
-   * @see com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl#isClientInterested(com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID)
+   * @see org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl#isClientInterested(org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID)
    */
   @Override
   public boolean isClientInterested(ClientProxyMembershipID clientId) {

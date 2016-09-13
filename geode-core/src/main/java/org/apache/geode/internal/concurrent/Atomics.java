@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.concurrent;
+package org.apache.geode.internal.concurrent;
 
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.statistics.LocalStatisticsImpl;
-import com.gemstone.gemfire.internal.statistics.StatisticsManager;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeImpl;
-import com.gemstone.gemfire.internal.stats50.Atomic50StatisticsImpl;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.statistics.LocalStatisticsImpl;
+import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.internal.statistics.StatisticsTypeImpl;
+import org.apache.geode.internal.stats50.Atomic50StatisticsImpl;
 
 import java.util.concurrent.atomic.AtomicLong;
 

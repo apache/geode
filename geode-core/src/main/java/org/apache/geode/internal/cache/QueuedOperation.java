@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedMember;
 import java.io.*;
 
 /**
@@ -42,7 +42,7 @@ public class QueuedOperation
 
   /**
    * Deserialization policies defined in AbstractUpdateOperation
-   * @see com.gemstone.gemfire.internal.cache.AbstractUpdateOperation
+   * @see org.apache.geode.internal.cache.AbstractUpdateOperation
    */
   private final byte deserializationPolicy;
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import static org.junit.Assert.*;
 
@@ -31,23 +31,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.util.MemberNotFoundException;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The AbstractCommandsSupportJUnitTest class is a test suite of test cases testing the contract and functionality
  * of the AbstractCommandsSupport class for implementing GemFire shell (Gfsh) commands.
  * </p>
- * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
+ * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
  * @see org.jmock.lib.legacy.ClassImposteriser

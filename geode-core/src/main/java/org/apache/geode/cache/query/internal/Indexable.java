@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
-import com.gemstone.gemfire.cache.query.AmbiguousNameException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.TypeMismatchException;
 
 /**
  * Interface implemented by CompiledComparision and CompiledUndefibed to

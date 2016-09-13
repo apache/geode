@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.statistics.StatisticsImpl;
-import com.gemstone.gemfire.internal.statistics.StatisticsManager;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeImpl;
-//import com.gemstone.gemfire.util.IntArray;
-//import com.gemstone.gemfire.util.LongArray;
+import org.apache.geode.*;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.statistics.StatisticsImpl;
+import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.internal.statistics.StatisticsTypeImpl;
+//import org.apache.geode.util.IntArray;
+//import org.apache.geode.util.LongArray;
 
 /**
  * An implementation of {@link Statistics} that stores its statistics

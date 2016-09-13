@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * The CommandRequest class encapsulates information pertaining to the command the user entered in Gfsh.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.cli.GfshParseResult
+ * @see org.apache.geode.management.internal.cli.GfshParseResult
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

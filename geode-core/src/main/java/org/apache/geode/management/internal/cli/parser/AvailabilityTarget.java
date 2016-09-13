@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.parser;
+package org.apache.geode.management.internal.cli.parser;
 
 import java.lang.reflect.Method;
 
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.CliMetaData.AvailabilityMetadata;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.CliMetaData.AvailabilityMetadata;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * Used for checking availability of a command

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension.mock;
+package org.apache.geode.internal.cache.extension.mock;
 
 import static org.junit.Assert.*;
 
@@ -23,10 +23,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.AbstractXmlParser;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
+import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
+import org.apache.geode.internal.cache.xmlcache.XmlParser;
 
 /**
  * Mock Extension {@link XmlParser}.
@@ -41,7 +41,7 @@ public class MockExtensionXmlParser extends AbstractXmlParser {
   public static final String ELEMENT_CACHE_QNAME = "mock:cache";
   public static final String ELEMENT_CACHE = "cache";
 
-  public static final String NAMESPACE = "urn:java:com.gemstone.gemfire.internal.cache.extension.mock.MockExtensionXmlParser";
+  public static final String NAMESPACE = "urn:java:org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser";
   public static final String PREFIX = "mock";
 
   @Override

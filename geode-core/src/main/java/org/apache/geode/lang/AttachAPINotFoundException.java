@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.lang;
+package org.apache.geode.lang;
 
 /**
  * The AttachAPINotFoundException class is a RuntimeException indicating that the JDK tools.jar has not been properly

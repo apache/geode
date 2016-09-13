@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.partitioned;
+package org.apache.geode.cache.query.partitioned;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test creates partition regions with one Accessor node & two Datastores
@@ -33,23 +33,23 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  * 
  */
 
-import static com.gemstone.gemfire.cache.query.Utils.createPortfolioData;
+import static org.apache.geode.cache.query.Utils.createPortfolioData;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import com.gemstone.gemfire.cache.query.data.PortfolioData;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
+import org.apache.geode.cache.query.data.PortfolioData;
+import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.internal.cache.ForceReattemptException;
 
 @Category(DistributedTest.class)
 public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase

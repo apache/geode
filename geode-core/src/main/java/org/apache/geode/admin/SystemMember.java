@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedMember;
 
 import java.net.InetAddress;
 
@@ -25,7 +25,7 @@ import java.net.InetAddress;
  *
  * @since GemFire     3.5
  *
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMember {
   
@@ -43,10 +43,10 @@ public interface SystemMember {
    * Retrieves display friendly name for this member.  If this member defined 
    * an optional name for its connection to the distributed system, that name 
    * will be returned.  Otherwise the returned value will be {@link
-   * com.gemstone.gemfire.admin.SystemMember#getId}.
+   * org.apache.geode.admin.SystemMember#getId}.
    *
-   * @see com.gemstone.gemfire.distributed.DistributedSystem#connect
-   * @see com.gemstone.gemfire.distributed.DistributedSystem#getName
+   * @see org.apache.geode.distributed.DistributedSystem#connect
+   * @see org.apache.geode.distributed.DistributedSystem#getName
    */
   public String getName();
   
@@ -86,13 +86,13 @@ public interface SystemMember {
    *
    * @param parms subset of the configuration parameters to be changed
    * @return all configuration parameters including those that were changed
-   * @throws com.gemstone.gemfire.admin.AdminException
+   * @throws org.apache.geode.admin.AdminException
    *         if this fails to make the configuration changes
    */
-  public ConfigurationParameter[] setConfiguration(ConfigurationParameter[] parms) throws com.gemstone.gemfire.admin.AdminException;
+  public ConfigurationParameter[] setConfiguration(ConfigurationParameter[] parms) throws org.apache.geode.admin.AdminException;
   
   /** Refreshes this member's configuration from the member or it's properties */
-  public void refreshConfig() throws com.gemstone.gemfire.admin.AdminException;
+  public void refreshConfig() throws org.apache.geode.admin.AdminException;
   
   /** 
    * Retrieves this members statistic resources. If the member is not running 
@@ -102,7 +102,7 @@ public interface SystemMember {
    * @return array of runtime statistic resources owned by this member
    * @since GemFire 5.7
    */
-  public StatisticResource[] getStat(String statisticsTypeName) throws com.gemstone.gemfire.admin.AdminException;
+  public StatisticResource[] getStat(String statisticsTypeName) throws org.apache.geode.admin.AdminException;
   
   /** 
    * Retrieves this members statistic resources. If the member is not running 
@@ -110,22 +110,22 @@ public interface SystemMember {
    *
    * @return array of runtime statistic resources owned by this member
    */
-  public StatisticResource[] getStats() throws com.gemstone.gemfire.admin.AdminException;
+  public StatisticResource[] getStats() throws org.apache.geode.admin.AdminException;
   
   /**
    * Returns whether or not this system member hosts a GemFire {@link
-   * com.gemstone.gemfire.cache.Cache Cache}.
+   * org.apache.geode.cache.Cache Cache}.
    *
    * @see #getCache
    */
   public boolean hasCache()
-    throws com.gemstone.gemfire.admin.AdminException;
+    throws org.apache.geode.admin.AdminException;
 
   /**
    * Returns an object that provides admin access to this member's cache.
    * If the member currently has no cache then <code>null</code> is returned.
    */
-  public SystemMemberCache getCache() throws com.gemstone.gemfire.admin.AdminException;
+  public SystemMemberCache getCache() throws org.apache.geode.admin.AdminException;
   
   /**
    * Returns the names of the membership roles filled by this member.
@@ -136,7 +136,7 @@ public interface SystemMember {
   public String[] getRoles();
   
   /**
-   * Returns the {@link com.gemstone.gemfire.distributed.DistributedMember}
+   * Returns the {@link org.apache.geode.distributed.DistributedMember}
    * that represents this system member.
    *
    * @return DistributedMember instance representing this system member

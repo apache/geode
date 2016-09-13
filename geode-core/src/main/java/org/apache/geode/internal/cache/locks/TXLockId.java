@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
-import com.gemstone.gemfire.distributed.internal.locks.DLockBatchId;
-import com.gemstone.gemfire.distributed.internal.locks.LockGrantorId;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.locks.DLockBatchId;
+import org.apache.geode.distributed.internal.locks.LockGrantorId;
+import org.apache.geode.distributed.internal.membership.*;
 
 /** Specifies a set of keys to try-lock within the scope of a region */
 public interface TXLockId extends DLockBatchId {

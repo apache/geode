@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Just like its parent but enables the server thread pool (aka selector).

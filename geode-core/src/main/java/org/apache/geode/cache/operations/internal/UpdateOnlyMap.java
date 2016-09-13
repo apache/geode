@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.operations.internal;
+package org.apache.geode.cache.operations.internal;
 
 import java.io.Serializable;
 
@@ -28,8 +28,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.Token;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.Token;
 
 /**
  * This map only allows updates. No creates or removes.

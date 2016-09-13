@@ -17,10 +17,10 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;
 
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 
 public interface InternalLuceneIndex extends LuceneIndex {
   

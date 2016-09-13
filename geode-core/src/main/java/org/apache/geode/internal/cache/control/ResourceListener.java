@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.control;
+package org.apache.geode.internal.cache.control;
 
 /**
- * Provides notification of {@link com.gemstone.gemfire.cache.Cache}
+ * Provides notification of {@link org.apache.geode.cache.Cache}
  * resource management events.
  * 
  * @since GemFire 6.0

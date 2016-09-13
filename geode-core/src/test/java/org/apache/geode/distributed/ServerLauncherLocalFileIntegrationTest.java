@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import static org.junit.Assert.*;
 
@@ -23,8 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.process.ProcessControllerFactory;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Subclass of ServerLauncherLocalDUnitTest which forces the code to not find 

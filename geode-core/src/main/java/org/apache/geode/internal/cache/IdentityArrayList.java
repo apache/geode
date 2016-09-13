@@ -18,7 +18,7 @@
  * This is a modified version of the fastutil ObjectArrayList.  It is modified
  * to use identity checks rather than equality checks for higher performance.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;

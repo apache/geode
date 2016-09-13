@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.management.internal.cli.GfshParser;
 
 /**
  * 

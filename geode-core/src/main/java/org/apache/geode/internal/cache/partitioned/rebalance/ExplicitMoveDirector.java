@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Bucket;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Member;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.RefusalReason;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Bucket;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Member;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.RefusalReason;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
   

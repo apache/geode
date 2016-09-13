@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import static junitparams.JUnitParamsRunner.*;
 import static org.assertj.core.api.Assertions.*;
@@ -31,9 +31,9 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.logging.log4j.AppenderContext;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.logging.log4j.AppenderContext;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for LogService

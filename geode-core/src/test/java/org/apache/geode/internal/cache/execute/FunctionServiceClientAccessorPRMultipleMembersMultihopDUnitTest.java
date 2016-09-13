@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;

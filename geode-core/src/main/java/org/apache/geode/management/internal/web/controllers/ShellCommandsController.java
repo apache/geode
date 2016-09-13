@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
 import java.io.IOException;
 import java.util.Set;
@@ -34,21 +34,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.domain.QueryParameterSource;
+import org.apache.geode.management.internal.web.http.HttpMethod;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
  * 
- * @see com.gemstone.gemfire.management.internal.cli.commands.ShellCommands
- * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
+ * @see org.apache.geode.management.internal.cli.commands.ShellCommands
+ * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestBody
  * @see org.springframework.web.bind.annotation.RequestMapping
@@ -142,11 +142,11 @@ public class ShellCommandsController extends AbstractCommandsController {
    * using GemFire shell (Gfsh).
    * 
    * @return a LinkIndex containing Links for all web service endpoints, REST API calls in GemFire.
-   * @see com.gemstone.gemfire.management.internal.cli.i18n.CliStrings
+   * @see org.apache.geode.management.internal.cli.i18n.CliStrings
    * @see AbstractCommandsController#toUri(String, String)
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
-   * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
-   * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
+   * @see org.apache.geode.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.domain.LinkIndex
+   * @see org.apache.geode.management.internal.web.http.HttpMethod
    */
   // TODO figure out a better way to maintain this link index, such as using an automated way to introspect
   // the Spring Web MVC Controller RequestMapping Annotations.

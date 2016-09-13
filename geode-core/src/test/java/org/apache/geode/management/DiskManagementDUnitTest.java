@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.util.Arrays;
@@ -33,29 +33,29 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.DiskRegion;
-import com.gemstone.gemfire.internal.cache.DiskRegionStats;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberManager;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.DiskRegionStats;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * Test cases to cover all test cases which pertains to disk from Management
@@ -89,7 +89,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
     super();
   
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
-    com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    org.apache.geode.internal.FileUtil.delete(diskDir);
     diskDir.mkdir();
     diskDir.deleteOnExit();
   }
@@ -102,7 +102,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
   @Override
   protected final void postTearDownManagementTestBase() throws Exception {
-    com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+    org.apache.geode.internal.FileUtil.delete(diskDir);
   }
 
   /**
@@ -191,9 +191,9 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
     VM vm1 = getManagedNodeList().get(1);
     VM vm2 = getManagedNodeList().get(2);
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM0");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM1");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
 
     putAnEntry(vm0);
@@ -212,12 +212,12 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
       }
     });
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm0");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm0");
     closeRegion(vm0);
 
     updateTheEntry(vm1);
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm1");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm1");
     closeRegion(vm1);
     AsyncInvocation future = createPersistentRegionAsync(vm0);
     waitForBlockedInitialization(vm0);
@@ -232,14 +232,14 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
         DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         PersistentMemberDetails[] missingDiskStores = bean
         .listMissingDiskStores();
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting members=" + missingDiskStores);
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("waiting members=" + missingDiskStores);
         assertNotNull(missingDiskStores);
         assertEquals(1, missingDiskStores.length);
 
         for (PersistentMemberDetails id : missingDiskStores) {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Missing DiskStoreID is =" + id.getDiskStoreId());
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Missing Host is =" + id.getHost());
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Missing Directory is =" + id.getDirectory());
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Missing DiskStoreID is =" + id.getDiskStoreId());
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Missing Host is =" + id.getHost());
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Missing Directory is =" + id.getDirectory());
 
           try {
             bean.revokeMissingDiskStores(id.getDiskStoreId());
@@ -392,11 +392,11 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
         DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("putting key1");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("putting key1");
         region.put("key1", "value1");
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("putting key2");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("putting key2");
         region.put("key2", "value2");
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("removing key2");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("removing key2");
         region.remove("key2");
         // now that it is compactable the following forceCompaction should
         // go ahead and do a roll and compact it.
@@ -428,7 +428,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
         assertTrue(compactedDiskStores.length > 0);
         for (int i = 0; i < compactedDiskStores.length; i++) {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Compacted Store " + i + " "
                   + compactedDiskStores[i] + "</ExpectedString> ");
         }
@@ -478,13 +478,13 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
             String[] allDisks = bean.listDiskStores(true);
             assertNotNull(allDisks);
             List<String> listString = Arrays.asList(allDisks);
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
                 "<ExpectedString> Remote All Disk Stores Are  "
                     + listString.toString() + "</ExpectedString> ");
             String[] compactedDiskStores = bean.compactAllDiskStores();
             assertTrue(compactedDiskStores.length > 0);
             for (int i = 0; i < compactedDiskStores.length; i++) {
-              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
                   "<ExpectedString> Remote Compacted Store " + i + " "
                       + compactedDiskStores[i] + "</ExpectedString> ");
             }
@@ -733,7 +733,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
    */
   protected static File getBackupDir(String name) throws Exception {
     File backUpDir = new File("BackupDir-" + name).getAbsoluteFile();
-    com.gemstone.gemfire.internal.FileUtil.delete(backUpDir);
+    org.apache.geode.internal.FileUtil.delete(backUpDir);
     backUpDir.mkdir();
     backUpDir.deleteOnExit();
     return backUpDir;

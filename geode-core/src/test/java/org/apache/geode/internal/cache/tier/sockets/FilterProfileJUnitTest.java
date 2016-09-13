@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -28,11 +28,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.FilterProfile;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.FilterProfile;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class FilterProfileJUnitTest {
@@ -236,13 +236,13 @@ public class FilterProfileJUnitTest {
 
   private void unregisterFilterClass(boolean inv, boolean twoClients) {
     String clientId = "client";
-    fprofile.registerClientInterest(clientId, "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
+    fprofile.registerClientInterest(clientId, "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     if (twoClients) {
-      fprofile.registerClientInterest("client2", "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
+      fprofile.registerClientInterest("client2", "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     }
     boolean isClientInterested = fprofile.hasFilterInterestFor(clientId, inv);
     assertTrue(isClientInterested);
-    fprofile.unregisterClientInterest(clientId, "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS);
+    fprofile.unregisterClientInterest(clientId, "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS);
     assertFalse(fprofile.hasFilterInterestFor(clientId, inv));
   }
 
@@ -263,9 +263,9 @@ public class FilterProfileJUnitTest {
 
   private void unregisterAllFilterClass(boolean inv, boolean twoClients) {
     String clientId = "client";
-    fprofile.registerClientInterest(clientId, "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
+    fprofile.registerClientInterest(clientId, "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     if (twoClients) {
-      fprofile.registerClientInterest("client2", "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
+      fprofile.registerClientInterest("client2", "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     }
     boolean isClientInterested = fprofile.hasFilterInterestFor(clientId, inv);
     assertTrue(isClientInterested);
@@ -345,9 +345,9 @@ public class FilterProfileJUnitTest {
   
   private void unregisterFilterNotRegistered(boolean inv, boolean twoClients) {
     String clientId = "client";
-    fprofile.registerClientInterest(clientId, "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
+    fprofile.registerClientInterest(clientId, "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     if (twoClients) {
-      fprofile.registerClientInterest("client2", "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
+      fprofile.registerClientInterest("client2", "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     }
     boolean isClientInterested = fprofile.hasFilterInterestFor(clientId, inv);
     assertTrue(isClientInterested);
@@ -398,11 +398,11 @@ public class FilterProfileJUnitTest {
   private void unregisterAllFilterNotRegistered(boolean inv, boolean twoClients) {
     String clientId = "client";
     if (twoClients) {
-      fprofile.registerClientInterest("client2", "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
+      fprofile.registerClientInterest("client2", "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     }
     boolean isClientInterested = fprofile.hasFilterInterestFor(clientId, inv);
     assertFalse(isClientInterested);
-    fprofile.unregisterClientInterest(clientId, "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS);
+    fprofile.unregisterClientInterest(clientId, "org.apache.geode.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS);
     assertFalse(fprofile.hasFilterInterestFor(clientId, inv));
   }
   

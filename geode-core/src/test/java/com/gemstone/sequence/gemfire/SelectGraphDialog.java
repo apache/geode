@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.sequence.gemfire;
+package org.apache.sequence.gemfire;
 
-import com.gemstone.gemfire.internal.sequencelog.model.GraphID;
-import com.gemstone.gemfire.internal.sequencelog.model.GraphSet;
+import org.apache.geode.internal.sequencelog.model.GraphID;
+import org.apache.geode.internal.sequencelog.model.GraphSet;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

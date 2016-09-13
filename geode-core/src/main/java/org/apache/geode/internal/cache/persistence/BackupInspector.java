@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import java.io.BufferedReader;
 import java.io.File;

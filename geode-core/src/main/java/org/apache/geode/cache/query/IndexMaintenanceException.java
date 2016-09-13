@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import com.gemstone.gemfire.cache.CacheRuntimeException;
+import org.apache.geode.cache.CacheRuntimeException;
 /**
  * Thrown if an error occurs while updating query indexes during
  * region modification.

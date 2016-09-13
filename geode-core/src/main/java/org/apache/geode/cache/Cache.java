@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.snapshot.CacheSnapshotService;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
 
 
 /** 
@@ -84,7 +84,7 @@ public interface Cache extends GemFireCache {
    * @return the region object
    * @throws RegionExistsException if a region is already in
    * this cache
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheClosedException if the cache is closed
    * @throws IllegalStateException If the supplied RegionAttributes violate the
@@ -103,7 +103,7 @@ public interface Cache extends GemFireCache {
    * @param aRegionAttributes the attributes of the root region
    * @return the region object
    * @throws RegionExistsException if a region is already in this cache
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheClosedException if the cache is closed
    * @throws IllegalStateException If the supplied RegionAttributes violate the
@@ -224,7 +224,7 @@ public interface Cache extends GemFireCache {
   
   /**
    * Gets the number of seconds a cache
-   * {@link com.gemstone.gemfire.cache.Region#get(Object) get} operation
+   * {@link org.apache.geode.cache.Region#get(Object) get} operation
    * can spend searching for a value before it times out.
    * The search includes any time spent loading the object.
    * When the search times out it causes the get to fail by throwing
@@ -245,9 +245,9 @@ public interface Cache extends GemFireCache {
    * Creates a new cache server, with the default configuration,
    * that will allow clients to access this cache.
    * <p>For the default configuration see the constants in
-   * {@link com.gemstone.gemfire.cache.server.CacheServer}.
+   * {@link org.apache.geode.cache.server.CacheServer}.
    * 
-   * @see com.gemstone.gemfire.cache.server.CacheServer
+   * @see org.apache.geode.cache.server.CacheServer
    *
    * @since GemFire 5.7
    */
@@ -286,7 +286,7 @@ public interface Cache extends GemFireCache {
    * Sets whether or not this <code>Cache</code> resides in a
    * long-running "cache server" VM.  A cache server may be an
    * application VM or may be a stand-along VM launched using {@linkplain
-   * com.gemstone.gemfire.admin.AdminDistributedSystem#addCacheServer
+   * org.apache.geode.admin.AdminDistributedSystem#addCacheServer
    * administration API} or the <code>cacheserver</code> command line
    * utility.
    *

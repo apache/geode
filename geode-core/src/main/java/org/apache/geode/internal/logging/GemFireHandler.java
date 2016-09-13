@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.util.logging.ErrorManager;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.GemFireException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 /**
  * Implementation of the standard JDK handler that publishes a log record

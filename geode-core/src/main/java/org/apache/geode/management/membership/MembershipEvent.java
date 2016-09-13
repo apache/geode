@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.membership;
+package org.apache.geode.management.membership;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * An event that describes the member that originated this event.

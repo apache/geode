@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedMember;
 /**
  * An event that describes the distributed member originated this event.
  * Instances of this are delivered to a {@link SystemMembershipListener} when a
  * member has joined or left the distributed system.
  *
  * @since GemFire 3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMembershipEvent {
   /**

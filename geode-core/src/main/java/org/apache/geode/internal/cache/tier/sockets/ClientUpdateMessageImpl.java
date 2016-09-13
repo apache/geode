@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -32,32 +32,32 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Sendable;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl.NewValueImporter;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.WrappedCallbackArgument;
-import com.gemstone.gemfire.internal.cache.ha.HAContainerRegion;
-import com.gemstone.gemfire.internal.cache.lru.Sizeable;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
+import org.apache.geode.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.WrappedCallbackArgument;
+import org.apache.geode.internal.cache.ha.HAContainerRegion;
+import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 
 
 /**
@@ -381,7 +381,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * @return a <code>Message</code> generated from the fields of this
    *         <code>ClientUpdateMessage</code>
    * @throws IOException
-   * @see com.gemstone.gemfire.internal.cache.tier.sockets.Message
+   * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
   
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException
@@ -1528,7 +1528,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessage#needsNoAuthorizationCheck()
+   * @see org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage#needsNoAuthorizationCheck()
    */
   public boolean needsNoAuthorizationCheck() {
     return false;

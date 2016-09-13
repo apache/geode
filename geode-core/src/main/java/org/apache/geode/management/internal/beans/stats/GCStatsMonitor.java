@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans.stats;
+package org.apache.geode.management.internal.beans.stats;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.statistics.StatisticId;
-import com.gemstone.gemfire.internal.statistics.StatisticNotFoundException;
-import com.gemstone.gemfire.internal.statistics.StatisticsNotification;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.statistics.StatisticId;
+import org.apache.geode.internal.statistics.StatisticNotFoundException;
+import org.apache.geode.internal.statistics.StatisticsNotification;
 
 /**
  * 

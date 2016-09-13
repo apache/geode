@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 
 import java.io.Serializable;
 import java.util.Properties;
 
 
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 public class CacheXMLPartitionResolver implements PartitionResolver, Serializable, Declarable2 {
   private final Properties resolveProps;
@@ -63,14 +63,14 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.xmlcache.Declarable2#getConfig()
+   * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
   public Properties getConfig() {
     return this.resolveProps;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+   * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
    */
   public void init(Properties props) {
     this.resolveProps.putAll(props);

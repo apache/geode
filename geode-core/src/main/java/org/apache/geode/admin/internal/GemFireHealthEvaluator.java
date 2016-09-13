@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,12 +22,12 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Evaluates the health of various GemFire components in the VM

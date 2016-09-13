@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
-import com.gemstone.gemfire.cache.query.types.CollectionType;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.CachePerfStats;
 
 /**
  * This results set is used to sort the data allowing duplicates. If the data

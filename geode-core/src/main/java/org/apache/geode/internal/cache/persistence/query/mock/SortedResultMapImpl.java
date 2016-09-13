@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query.mock;
+package org.apache.geode.internal.cache.persistence.query.mock;
 
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.PreferBytesCachedDeserializable;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-import com.gemstone.gemfire.internal.cache.persistence.query.ResultMap;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.PreferBytesCachedDeserializable;
+import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.internal.cache.persistence.query.ResultMap;
 
 public class SortedResultMapImpl implements ResultMap {
   //This should be <CachedDeserializable, CachedDeserializable>, except

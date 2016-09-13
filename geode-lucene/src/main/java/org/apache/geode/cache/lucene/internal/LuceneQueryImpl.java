@@ -17,31 +17,31 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.lucene.LuceneQuery;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
-import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
-import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollectorManager;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesFunctionCollector;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.LuceneQuery;
+import org.apache.geode.cache.lucene.LuceneQueryException;
+import org.apache.geode.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.cache.lucene.LuceneQueryProvider;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneFunction;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntriesFunctionCollector;
 
 public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   private int limit = LuceneQueryFactory.DEFAULT_LIMIT;

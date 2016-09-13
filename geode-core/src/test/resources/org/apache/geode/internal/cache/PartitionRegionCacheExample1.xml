@@ -23,7 +23,7 @@
 		<region-attributes >
 		    <partition-attributes redundant-copies="1" local-max-memory="200"/>
         	    <cache-loader>
-		          <class-name>com.gemstone.gemfire.internal.cache.PartitionedRegionCacheLoaderForRootRegion</class-name>
+		          <class-name>org.apache.geode.internal.cache.PartitionedRegionCacheLoaderForRootRegion</class-name>
 		          <parameter name="URL">
 			      <string>jdbc:cloudscape:rmi:MyData</string>
 		          </parameter>

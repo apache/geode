@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.golden;
+package org.apache.geode.test.golden;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that test output containing an unexpected warning message

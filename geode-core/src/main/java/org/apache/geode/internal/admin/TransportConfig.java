@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 /**
  * A simple value object to contain information needed to connect to a

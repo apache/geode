@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ObjIdMap;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.admin.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ObjIdMap;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 
@@ -136,7 +136,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   }
 
   public SystemMemberRegion getRegion(String path)
-    throws com.gemstone.gemfire.admin.AdminException
+    throws org.apache.geode.admin.AdminException
   {
     Region r = this.vm.getRegion(this.info, path);
     if (r == null) {
@@ -234,7 +234,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     return new StatisticImpl(stat);
   }
   protected SystemMemberRegion createSystemMemberRegion(Region r)
-    throws com.gemstone.gemfire.admin.AdminException
+    throws org.apache.geode.admin.AdminException
   {
     SystemMemberRegionImpl sysMemberRegion = new SystemMemberRegionImpl(this, r);
     sysMemberRegion.refresh();

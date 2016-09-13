@@ -16,14 +16,14 @@
  */
 
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
 import java.util.*;
 import java.sql.*;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.QCompiler;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.QCompiler;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class ASTLiteral extends GemFireAST {
   private static final long serialVersionUID = 8374021603235812835L;

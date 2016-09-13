@@ -25,16 +25,16 @@
   11Jun1998  dl               Create public version
  */
 
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
-import static com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch.RETRY_TIME;
+import static org.apache.geode.internal.util.concurrent.StoppableCountDownLatch.RETRY_TIME;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.internal.Assert;
 
 /**
  * This class is functionally equivalent to {@link java.util.concurrent.locks.Condition};

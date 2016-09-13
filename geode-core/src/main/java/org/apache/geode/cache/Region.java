@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,17 +27,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.SubscriptionNotEnabledException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
 
 /** Manages subregions and cached data. Each region
  * can contain multiple subregions and entries for data.
@@ -49,10 +49,10 @@ import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
  * The Region interface basically contains two set of APIs: Region management
  * APIs; and (potentially) distributed operations on entries. Non-distributed
  * operations on entries
- * are provided by the inner interface, {@link com.gemstone.gemfire.cache.Region.Entry}.
+ * are provided by the inner interface, {@link org.apache.geode.cache.Region.Entry}.
  * <p>
  *
- * Each {@link com.gemstone.gemfire.cache.Cache} defines a single top region called the root region.
+ * Each {@link org.apache.geode.cache.Cache} defines a single top region called the root region.
  * User applications can use the root region to create subregions
  * for isolated name space and object grouping.
  * <p>
@@ -241,7 +241,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * <p>
    * Does not update any <code>CacheStatistics</code>.
    *
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for <code>Scope.GLOBAL</code>
    * @see CacheListener#afterRegionInvalidate
    */
@@ -257,7 +257,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * Does not update any <code>CacheStatistics</code>.
    * @param aCallbackArgument a user-defined parameter to pass to callback events
    *        triggered by this method. Can be null. Should be serializable.
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for <code>Scope.GLOBAL</code>
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for <code>Scope.GLOBAL</code>
    * @throws TimeoutException if timed out getting distributed lock for <code>Scope.GLOBAL</code>
    * @throws IllegalArgumentException if aCallbackArgument is not serializable
    * @see CacheListener#afterRegionInvalidate
@@ -313,7 +313,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @throws CacheWriterException if a CacheWriter aborts the operation; if this
    *         occurs some subregions may have already been successfully destroyed.
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @see CacheListener#afterRegionDestroy
    * @see CacheWriter#beforeRegionDestroy
@@ -334,7 +334,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *        triggered by this method. Can be null. Should be serializable.
    * @throws CacheWriterException if a CacheWriter aborts the operation; if this
    *         occurs some subregions may have already been successfully destroyed.
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws IllegalArgumentException if aCallbackArgument is not serializable
    * @see CacheListener#afterRegionDestroy
@@ -455,7 +455,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws CacheWriterException if a CacheWriter aborts the destroyRegion
    *         operation; if this occurs some subregions may have already been
    *         successfully destroyed.
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws UnsupportedOperationException If the region is a partitioned region
    *
@@ -499,7 +499,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         <a href="AttributesFactory.html#creationConstraints">region creation constraints</a>
    *         with a region of the same name in another cache in the distributed system
    *         or with this (parent) region.
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws RegionExistsException if a subregion by the specified name already exists
    * @throws UnsupportedOperationException If the region is a partitioned region
@@ -580,7 +580,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws NullPointerException if the key is null
    * @throws IllegalArgumentException if the key does not meet
    *         the serializability requirements
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out doing a {@link Cache#getSearchTimeout search} for distributed or getting a distributed lock for Scope.GLOBAL
    * @throws CacheLoaderException if a cache loader throws an exception, or if
    *         the cache loader returns an object that is not serializable and this
@@ -642,7 +642,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * is not found and can't be loaded
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if aCallbackArgument is not serializable
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out doing a {@link Cache#getSearchTimeout search} for distributed or getting a distributed lock for Scope.GLOBAL
    * @throws CacheLoaderException if a cache loader throws an exception, or if
    *         the cache loader returns an object that is not serializable and this
@@ -682,7 +682,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         is null (use invalidate instead), or if the key or value do not
    *         meet serializability requirements
    * @throws ClassCastException if key does not satisfy the keyConstraint
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
@@ -727,7 +727,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws IllegalArgumentException if key, value, or
    *         aCallbackArgument do not meet serializability requirements
    * @throws ClassCastException if key does not satisfy the keyConstraint
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
@@ -762,7 +762,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws IllegalArgumentException if the key or value
    *         is not serializable and this is a distributed region
    * @throws ClassCastException if key does not satisfy the keyConstraint
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for <code>Scope.GLOBAL</code>
    * @throws EntryExistsException if an entry with this key already exists
    * @throws CacheWriterException if a CacheWriter aborts the operation
@@ -799,7 +799,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws IllegalArgumentException if the key, value, or
    *         aCallbackArgument do not meet serializability requirements
    * @throws ClassCastException if key does not satisfy the keyConstraint
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for <code>Scope.GLOBAL</code>
    * @throws EntryExistsException if an entry with this key already exists
    * @throws CacheWriterException if a CacheWriter aborts the operation
@@ -826,7 +826,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if the key does not
    *         meet serializability requirements
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for <code>Scope.GLOBAL</code>
    * @throws EntryNotFoundException if the entry does not exist in this region
    * @see CacheListener#afterInvalidate
@@ -848,7 +848,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if the key or the
    *         aCallbackArgument do not meet serializability requirements
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for <code>Scope.GLOBAL</code>
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for <code>Scope.GLOBAL</code>
    * @throws TimeoutException if timed out getting distributed lock for <code>Scope.GLOBAL</code>
    * @throws EntryNotFoundException if this entry does not exist in this region
    * @see CacheListener#afterInvalidate
@@ -923,7 +923,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if key does not meet
    *         serializability requirements
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws EntryNotFoundException if the entry does not exist in this region
    * @throws CacheWriterException if a CacheWriter aborts the operation
@@ -959,7 +959,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if the key or aCallbackArgument
    *         do not meet serializability requirements
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws EntryNotFoundException if the entry does not exist in this region
    * @throws CacheWriterException if a CacheWriter aborts the operation
@@ -1574,7 +1574,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws NullPointerException if key is null
    * @throws IllegalArgumentException if key does not meet
    *         serializability requirements
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @see Region#destroy(Object)
@@ -2193,7 +2193,7 @@ public boolean containsKeyOnServer(Object key);
   *         and this map does not permit null keys or values
   * @throws IllegalArgumentException if some property of the specified key
   *         or value prevents it from being stored in this map
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
@@ -2227,7 +2227,7 @@ public boolean containsKeyOnServer(Object key);
   *         type for this map (optional)
   * @throws NullPointerException if the specified key or value is null,
   *         and this map does not permit null keys or values (optional)
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
@@ -2263,7 +2263,7 @@ public boolean containsKeyOnServer(Object key);
   *         and this map does not permit null keys
   * @throws IllegalArgumentException if some property of a specified key
   *         or value prevents it from being stored in this map
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
@@ -2299,7 +2299,7 @@ public boolean containsKeyOnServer(Object key);
   *         and this map does not permit null keys or values
   * @throws IllegalArgumentException if some property of the specified key
   *         or value prevents it from being stored in this map
-   * @throws com.gemstone.gemfire.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
+   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.

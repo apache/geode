@@ -17,11 +17,11 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.execute.data;
+package org.apache.geode.internal.cache.execute.data;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.cache.execute.PRColocationDUnitTest;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.cache.execute.PRColocationDUnitTest;
 
 import java.io.DataInput;
 import java.io.DataOutput;

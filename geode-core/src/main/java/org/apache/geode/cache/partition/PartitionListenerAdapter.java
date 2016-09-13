@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.partition;
+package org.apache.geode.cache.partition;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 
 /**
  * <p>Utility class that implements all methods in <code>PartitionListener</code>
  * with empty implementations. Applications can subclass this class and only
  * override the methods of interest.<p>
  * 
- * <p>Subclasses declared in a Cache XML file, it must also implement {@link com.gemstone.gemfire.cache.Declarable}
+ * <p>Subclasses declared in a Cache XML file, it must also implement {@link org.apache.geode.cache.Declarable}
  * </p>
  * 
  * Note : Please request help on the Geode developer mailing list

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,25 +30,25 @@ import javax.management.modelmbean.ModelMBean;
 import org.apache.commons.modeler.ManagedBean;
 import org.apache.logging.log4j.Level;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.SystemMemberCacheServer;
-import com.gemstone.gemfire.admin.SystemMemberRegion;
-import com.gemstone.gemfire.admin.internal.SystemMemberBridgeServerImpl;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.SystemMemberCacheServer;
+import org.apache.geode.admin.SystemMemberRegion;
+import org.apache.geode.admin.internal.SystemMemberBridgeServerImpl;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.admin.AdminBridgeServer;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
- * MBean representation of {@link com.gemstone.gemfire.admin.SystemMemberCache}.
+ * MBean representation of {@link org.apache.geode.admin.SystemMemberCache}.
  *
  * @since GemFire     3.5
  */
 public class SystemMemberCacheJmxImpl 
-extends com.gemstone.gemfire.admin.internal.SystemMemberCacheImpl
-implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
+extends org.apache.geode.admin.internal.SystemMemberCacheImpl
+implements org.apache.geode.admin.jmx.internal.ManagedResource {
 
   /** The object name of this managed resource */
   private ObjectName objectName;
@@ -68,14 +68,14 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
    *        The vm owning the cache this object will manage
    */
   public SystemMemberCacheJmxImpl(GemFireVM vm)
-  throws com.gemstone.gemfire.admin.AdminException { 
+  throws org.apache.geode.admin.AdminException { 
     super(vm);
     initializeMBean();
   }
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     this.mbeanName = new StringBuffer("GemFire.Cache:")
         .append("name=")
         .append(MBeanUtil.makeCompliantMBeanNameProperty(getName()))
@@ -109,7 +109,7 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
    */
   @Override  
   protected SystemMemberRegion createSystemMemberRegion(Region r)
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     SystemMemberRegionJmxImpl managedSystemMemberRegion = null;
     boolean needsRefresh = false;
     synchronized (this.managedRegionResourcesMap) {
@@ -177,7 +177,7 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
    *         with the new attributes added
    */
   ManagedBean addDynamicAttributes(ManagedBean managed)
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     if (managed == null) {
       throw new IllegalArgumentException(LocalizedStrings.SystemMemberCacheJmxImpl_MANAGEDBEAN_IS_NULL.toLocalizedString());
     }

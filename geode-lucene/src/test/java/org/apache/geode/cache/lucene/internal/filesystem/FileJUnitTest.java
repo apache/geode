@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.filesystem;
+package org.apache.geode.cache.lucene.internal.filesystem;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class FileJUnitTest {

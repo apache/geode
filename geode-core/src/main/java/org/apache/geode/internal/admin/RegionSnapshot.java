@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-import com.gemstone.gemfire.cache.RegionAttributes;
+import org.apache.geode.cache.RegionAttributes;
 
 /**
  * A snapshot of a GemFire <code>Region</code>

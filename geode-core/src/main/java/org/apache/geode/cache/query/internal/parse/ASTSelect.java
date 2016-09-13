@@ -16,7 +16,7 @@
  */
 
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +24,8 @@ import java.util.Map;
 import antlr.*;
 import antlr.collections.*;
 
-import com.gemstone.gemfire.cache.query.internal.QCompiler;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.QCompiler;
+import org.apache.geode.cache.query.internal.CompiledValue;
 
 public class ASTSelect extends GemFireAST {
   private static final long serialVersionUID = 1389351692304773456L;

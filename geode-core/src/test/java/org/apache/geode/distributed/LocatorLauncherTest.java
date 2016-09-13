@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
-import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.distributed.LocatorLauncher.Builder;
+import org.apache.geode.distributed.LocatorLauncher.Command;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.junit.categories.UnitTest;
 import joptsimple.OptionException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,15 +32,15 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The LocatorLauncherTest class is a test suite of test cases for testing the contract and functionality of
  * launching a GemFire Locator.
  *
- * @see com.gemstone.gemfire.distributed.LocatorLauncher
- * @see com.gemstone.gemfire.distributed.LocatorLauncher.Builder
- * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command
+ * @see org.apache.geode.distributed.LocatorLauncher
+ * @see org.apache.geode.distributed.LocatorLauncher.Builder
+ * @see org.apache.geode.distributed.LocatorLauncher.Command
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0

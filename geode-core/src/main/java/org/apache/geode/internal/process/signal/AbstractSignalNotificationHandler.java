@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.process.signal;
+package org.apache.geode.internal.process.signal;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,9 +28,9 @@ import java.util.Set;
 /**
  * The AbstractSignalNotificationHandler class...
  * </p>
- * @see com.gemstone.gemfire.internal.process.signal.Signal
- * @see com.gemstone.gemfire.internal.process.signal.SignalEvent
- * @see com.gemstone.gemfire.internal.process.signal.SignalListener
+ * @see org.apache.geode.internal.process.signal.Signal
+ * @see org.apache.geode.internal.process.signal.SignalEvent
+ * @see org.apache.geode.internal.process.signal.SignalListener
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository;
+package org.apache.geode.cache.lucene.internal.repository;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -42,15 +42,15 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
-import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Type2;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
+import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
+import org.apache.geode.cache.lucene.internal.filesystem.File;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.Type2;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test of the {@link IndexRepository} and everything below

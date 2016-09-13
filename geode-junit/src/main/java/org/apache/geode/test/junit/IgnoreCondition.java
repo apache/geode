@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit;
+package org.apache.geode.test.junit;
 
 import org.junit.runner.Description;
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.NotSerializableException;
 

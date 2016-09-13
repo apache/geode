@@ -22,11 +22,11 @@
 /*
  * 
  */
-package com.gemstone.gemfire.cache.query.functional;
+package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;
 
-//import com.gemstone.gemfire.cache.query.internal.StructSet;
+//import org.apache.geode.cache.query.internal.StructSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,14 +35,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.Utils;
-import com.gemstone.gemfire.cache.query.data.Address;
-import com.gemstone.gemfire.cache.query.data.Employee;
-import com.gemstone.gemfire.cache.query.data.Manager;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.Utils;
+import org.apache.geode.cache.query.data.Address;
+import org.apache.geode.cache.query.data.Employee;
+import org.apache.geode.cache.query.data.Manager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class IteratorTypeDefEmpJUnitTest {
@@ -68,7 +68,7 @@ public class IteratorTypeDefEmpJUnitTest {
 
   @Test
   public void testIteratorDef() throws Exception {
-    String queries[] = { "IMPORT com.gemstone.gemfire.cache.\"query\".data.Manager;"
+    String queries[] = { "IMPORT org.apache.geode.cache.\"query\".data.Manager;"
         + "SELECT DISTINCT manager_id FROM (set<Manager>)/employees where empId > 0"};
     Query q = null;
     for (int i = 0; i < queries.length; i++) {

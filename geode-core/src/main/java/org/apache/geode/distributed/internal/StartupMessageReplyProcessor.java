@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.util.Set;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.LogWriterI18n;
 
 public class StartupMessageReplyProcessor extends ReplyProcessor21
 {

@@ -19,7 +19,7 @@
  *
  * Created on April 7, 2005, 6:05 PM
  */
-package com.gemstone.gemfire.cache.query.data;
+package org.apache.geode.cache.query.data;
 
 import java.util.Set;
 

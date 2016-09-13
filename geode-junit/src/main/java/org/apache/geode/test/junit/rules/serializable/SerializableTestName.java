@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.serializable;
+package org.apache.geode.test.junit.rules.serializable;
 
-import static com.gemstone.gemfire.test.junit.rules.serializable.FieldSerializationUtils.*;
-import static com.gemstone.gemfire.test.junit.rules.serializable.FieldsOfTestName.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTestName.*;
 
 import org.junit.rules.TestName;
 import org.junit.runner.Description;

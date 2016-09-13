@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics.platform;
+package org.apache.geode.internal.statistics.platform;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
@@ -488,7 +488,7 @@ Inter-|   Receive                                                |  Transmit
       longs[LinuxSystemStats.timeIosInProgressLONG] = timeIosInProgress;
       longs[LinuxSystemStats.ioTimeLONG] = ioTime;
     } catch (NoSuchElementException nsee) {
-//       com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.getAnyInstance().getLoggerI18n().fine("unexpected NoSuchElementException line=" + line, nsee);
+//       org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance().getLoggerI18n().fine("unexpected NoSuchElementException line=" + line, nsee);
     } catch (IOException ioe) {
     } finally {
       st.releaseResources();

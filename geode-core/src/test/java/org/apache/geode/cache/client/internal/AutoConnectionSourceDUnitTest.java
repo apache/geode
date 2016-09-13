@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import static org.junit.Assert.*;
 
@@ -26,15 +26,15 @@ import org.junit.Assert;
 import org.junit.*;
 import org.junit.experimental.categories.*;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.server.*;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.management.membership.*;
-import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.client.*;
+import org.apache.geode.cache.server.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.management.membership.*;
+import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.junit.categories.*;
 
 /**
  * Tests cases that are particular for the auto connection source
@@ -412,7 +412,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         System.err.println("Attempt: " + (i++));
         putInVM(vm, regionName, key, value);
         break;
-      } catch (NoAvailableLocatorsException | com.gemstone.gemfire.test.dunit.RMIException e) {
+      } catch (NoAvailableLocatorsException | org.apache.geode.test.dunit.RMIException e) {
         if (!(e instanceof NoAvailableLocatorsException)
             && !(e.getCause() instanceof NoAvailableServersException)) {
           throw e;

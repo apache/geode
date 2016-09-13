@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.lru;
+package org.apache.geode.internal.cache.lru;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.PlaceHolderDiskRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.util.*;
@@ -39,7 +39,7 @@ import java.util.*;
  *
  * <LI>If the capacity of a region is to be controlled by an LRU
  * algorithm, then the region must be <b>created</b> with 
- * {@link com.gemstone.gemfire.cache.EvictionAttributes}
+ * {@link org.apache.geode.cache.EvictionAttributes}
  *
  * <LI>The eviction controller of a region governed by an LRU
  * algorithm cannot be changed.</LI>
@@ -50,17 +50,17 @@ import java.util.*;
  * </UL> 
  *
  * LRU algorithms also specify what {@linkplain 
- * com.gemstone.gemfire.cache.EvictionAction
+ * org.apache.geode.cache.EvictionAction
  * action} should be performed upon the least recently used entry when
  * the capacity is reached.  Currently, there are two supported
- * actions: {@linkplain com.gemstone.gemfire.cache.EvictionAction#LOCAL_DESTROY locally destroying} the entry
- * (which is the {@linkplain com.gemstone.gemfire.cache.EvictionAction#DEFAULT_EVICTION_ACTION default}), thus
- * freeing up space in the VM, and {@linkplain com.gemstone.gemfire.cache.EvictionAction#OVERFLOW_TO_DISK
+ * actions: {@linkplain org.apache.geode.cache.EvictionAction#LOCAL_DESTROY locally destroying} the entry
+ * (which is the {@linkplain org.apache.geode.cache.EvictionAction#DEFAULT_EVICTION_ACTION default}), thus
+ * freeing up space in the VM, and {@linkplain org.apache.geode.cache.EvictionAction#OVERFLOW_TO_DISK
  * overflowing} the value of the entry to disk.
  *
  * <P>
  *
- * {@link com.gemstone.gemfire.cache.EvictionAttributes Eviction controllers} that use an LRU
+ * {@link org.apache.geode.cache.EvictionAttributes Eviction controllers} that use an LRU
  * algorithm maintain certain region-dependent state (such as the
  * maximum number of entries allowed in the region).  As a result, an
  * instance of <code>LRUAlgorithm</code> cannot be shared among

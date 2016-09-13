@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.Assert;
 
 /**
  * Used to create subclasses that wrap another callback argument by having

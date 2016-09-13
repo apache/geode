@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.parallel;
+package org.apache.geode.internal.cache.wan.parallel;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * The exception could be thrown if the BucketRegionQueue on which the operation

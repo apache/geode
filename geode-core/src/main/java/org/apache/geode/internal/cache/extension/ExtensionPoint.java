@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension;
+package org.apache.geode.internal.cache.extension;
 
 /**
  * Allows {@link Extensible} objects to add and remove {@link Extension}s.

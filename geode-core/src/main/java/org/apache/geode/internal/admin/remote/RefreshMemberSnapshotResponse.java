@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.admin.GemFireMemberStatus;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.admin.GemFireMemberStatus;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
  * A message that is sent to a particular distribution manager to get its
- * current {@link com.gemstone.gemfire.admin.GemFireMemberStatus}.
+ * current {@link org.apache.geode.admin.GemFireMemberStatus}.
  * 
  */
 public class RefreshMemberSnapshotResponse extends AdminResponse {

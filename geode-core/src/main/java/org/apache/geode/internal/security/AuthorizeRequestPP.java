@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.security;
+package org.apache.geode.internal.security;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -23,15 +23,15 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.*;
-import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.operations.*;
+import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.security.AccessControl;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * This class implements post-processing authorization calls for various

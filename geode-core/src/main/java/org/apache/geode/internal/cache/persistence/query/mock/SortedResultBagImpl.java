@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query.mock;
+package org.apache.geode.internal.cache.persistence.query.mock;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-import com.gemstone.gemfire.internal.cache.persistence.query.IdentityExtractor;
-import com.gemstone.gemfire.internal.cache.persistence.query.ResultBag;
-import com.gemstone.gemfire.internal.cache.persistence.query.SortKeyExtractor;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.internal.cache.persistence.query.IdentityExtractor;
+import org.apache.geode.internal.cache.persistence.query.ResultBag;
+import org.apache.geode.internal.cache.persistence.query.SortKeyExtractor;
 
 /**
  * Mock sorted bag implementation. Uses the mock index map

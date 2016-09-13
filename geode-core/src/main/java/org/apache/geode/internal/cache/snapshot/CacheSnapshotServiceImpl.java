@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -22,15 +22,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Set;
 
-import com.gemstone.gemfire.admin.RegionNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.admin.RegionNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.CacheSnapshotService;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
+import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides an implementation for cache snapshots.  Most of the implementation

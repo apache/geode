@@ -19,14 +19,14 @@
  *
  * Created on October 13, 2005, 11:28 AM
  */
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.query.data.*;
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.data.*;
+import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import java.util.*;
 import java.io.*;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal.json; 
+package org.apache.geode.pdx.internal.json; 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,11 +29,11 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.pdx.JSONFormatter;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
-import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 
 /*
  * This class converts a PdxInstance into a JSON document.
@@ -51,7 +51,7 @@ public class PdxToJSON
   {
     JsonFactory jf = new JsonFactory();
    // OutputStream os = new ByteArrayOutputStream();
-    HeapDataOutputStream hdos = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
       enableDisableJSONGeneratorFeature(jg);
@@ -68,7 +68,7 @@ public class PdxToJSON
   public byte[] getJSONByteArray()
   {
     JsonFactory jf = new JsonFactory();
-    HeapDataOutputStream hdos = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
       enableDisableJSONGeneratorFeature(jg);

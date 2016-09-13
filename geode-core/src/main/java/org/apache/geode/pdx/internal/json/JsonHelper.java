@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal.json;
+package org.apache.geode.pdx.internal.json;
 
 import java.io.IOException;
 import java.math.BigDecimal;

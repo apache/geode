@@ -21,4 +21,4 @@
  * the schema.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.xml;
+package org.apache.geode.cache.lucene.internal.xml;

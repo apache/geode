@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.common;
+package org.apache.geode.modules.session.internal.common;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionStatistics;
-import com.gemstone.gemfire.modules.session.internal.filter.util.TypeAwareMap;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
+import org.apache.geode.cache.Region;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
+import org.apache.geode.modules.session.internal.filter.util.TypeAwareMap;
+import org.apache.geode.modules.util.RegionConfiguration;
 
 import java.util.Map;
 import javax.servlet.http.HttpSession;

@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
-import com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPoint;
-import com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPointJUnitTest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
+import org.apache.geode.internal.cache.extension.SimpleExtensionPointJUnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test for {@link RegionCreation}.

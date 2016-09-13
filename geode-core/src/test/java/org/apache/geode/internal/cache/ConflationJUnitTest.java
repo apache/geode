@@ -20,7 +20,7 @@
  * TODO To change the template for this generated file go to Window -
  * Preferences - Java - Code Style - Code Templates
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Collection;
 
@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test does a check that conflation in the buffer happen correctly

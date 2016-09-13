@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.internal.PdxString;
-import com.gemstone.gemfire.cache.query.AmbiguousNameException;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxString;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.TypeMismatchException;
 
 /**
  * Class Description

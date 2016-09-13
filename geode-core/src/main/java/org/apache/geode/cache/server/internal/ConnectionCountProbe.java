@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.server.internal;
+package org.apache.geode.cache.server.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.cache.server.ServerLoadProbeAdapter;
-import com.gemstone.gemfire.cache.server.ServerMetrics;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.cache.server.ServerLoadProbeAdapter;
+import org.apache.geode.cache.server.ServerMetrics;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 /**
  * A load probe which returns load as a function of the

@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.domain;
+package org.apache.geode.management.internal.web.domain;
 
 import java.io.Serializable;
 import java.net.URI;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.gemfire.management.internal.web.util.UriUtils;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.web.http.HttpMethod;
+import org.apache.geode.management.internal.web.util.UriUtils;
 
 /**
  * The Link class models hypermedia controls/link relations.
@@ -34,9 +34,9 @@ import com.gemstone.gemfire.management.internal.web.util.UriUtils;
  * @see java.net.URI
  * @see javax.xml.bind.annotation.XmlAttribute
  * @see javax.xml.bind.annotation.XmlType
- * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
- * @see com.gemstone.gemfire.management.internal.web.util.UriUtils
- * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
+ * @see org.apache.geode.management.internal.web.domain.LinkIndex
+ * @see org.apache.geode.management.internal.web.util.UriUtils
+ * @see org.apache.geode.management.internal.web.http.HttpMethod
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
@@ -139,7 +139,7 @@ public class Link implements Comparable<Link>, Serializable {
    * <p/>
    * @return a String representation of the HTTP request-line.
    * @see java.net.URI
-   * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
+   * @see org.apache.geode.management.internal.web.http.HttpMethod
    * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html</a>
    */
   public String toHttpRequestLine() {

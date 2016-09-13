@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,14 +30,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionMissingException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionNotApplicableException;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
-import com.gemstone.gemfire.management.internal.cli.parser.jopt.JoptOptionParser;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.cli.exceptions.CliCommandOptionException;
+import org.apache.geode.management.internal.cli.exceptions.CliCommandOptionMissingException;
+import org.apache.geode.management.internal.cli.exceptions.CliCommandOptionNotApplicableException;
+import org.apache.geode.management.internal.cli.parser.Argument;
+import org.apache.geode.management.internal.cli.parser.Option;
+import org.apache.geode.management.internal.cli.parser.OptionSet;
+import org.apache.geode.management.internal.cli.parser.jopt.JoptOptionParser;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)

@@ -15,17 +15,17 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that

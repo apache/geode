@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter.util;
+package org.apache.geode.modules.session.internal.filter.util;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.concurrent.ThreadFactory;

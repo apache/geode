@@ -16,11 +16,11 @@
  */
 
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.internal.Assert;
 
 public class ASTConstruction extends GemFireAST {  
   private static final long serialVersionUID = 6647545354866647845L;

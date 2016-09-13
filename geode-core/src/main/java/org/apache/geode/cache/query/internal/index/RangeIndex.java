@@ -19,7 +19,7 @@
  *
  * Created on February 4, 2005, 11:10 AM
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -34,32 +34,32 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.CompiledSortCriterion;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
-import com.gemstone.gemfire.cache.query.internal.QueryObserver;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.internal.RuntimeIterator;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager.TestHook;
-import com.gemstone.gemfire.cache.query.internal.index.IndexStore.IndexStoreEntry;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.CompiledSortCriterion;
+import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.QueryObserver;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.query.internal.RuntimeIterator;
+import org.apache.geode.cache.query.internal.index.IndexManager.TestHook;
+import org.apache.geode.cache.query.internal.index.IndexStore.IndexStoreEntry;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  */
@@ -158,7 +158,7 @@ public class RangeIndex extends AbstractIndex  {
       
       if (indxResultSet != null) {
         if (indxResultSet.getClass().getName()
-            .startsWith("com.gemstone.gemfire.internal.cache.Token$")
+            .startsWith("org.apache.geode.internal.cache.Token$")
             || indxResultSet == QueryService.UNDEFINED) {
           // do nothing, Entries are either removed or invalidated or destroyed
           // by other thread.
@@ -468,7 +468,7 @@ public class RangeIndex extends AbstractIndex  {
     else if (key == QueryService.UNDEFINED) {
       if (value != null) {
         if (value.getClass().getName()
-            .startsWith("com.gemstone.gemfire.internal.cache.Token$")
+            .startsWith("org.apache.geode.internal.cache.Token$")
             || value == QueryService.UNDEFINED) {
           // do nothing, Entries are either removed or invalidated or destroyed
           // by other thread.

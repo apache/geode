@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /** A user-defined object defined in the {@link RegionAttributes} that is
  * called synchronously before a region or entry in the cache is

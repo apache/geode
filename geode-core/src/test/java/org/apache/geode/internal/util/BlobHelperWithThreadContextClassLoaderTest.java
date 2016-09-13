@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -44,7 +44,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link BlobHelper} with Thread Context ClassLoader.
@@ -54,8 +54,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class BlobHelperWithThreadContextClassLoaderTest {
 
-  private static final String CLASS_NAME_SERIALIZABLE_IMPL = "com.gemstone.gemfire.internal.util.SerializableImpl";
-  private static final String CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE = "com.gemstone.gemfire.internal.util.SerializableImplWithValue";
+  private static final String CLASS_NAME_SERIALIZABLE_IMPL = "org.apache.geode.internal.util.SerializableImpl";
+  private static final String CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE = "org.apache.geode.internal.util.SerializableImplWithValue";
   private static final String VALUE = "value";
   private static final String SET_VALUE = "setValue";
   private static final String GET_VALUE = "getValue";
@@ -253,7 +253,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
       // constructor with arg
       InstructionList ctor = new InstructionList();
-      MethodGen ctorMethod = new MethodGen(Constants.ACC_PUBLIC, Type.VOID, new Type[] { Type.OBJECT }, new String[] { "arg0" }, "<init>", "com.gemstone.gemfire.internal.util.bcel.SerializableImplWithValue", ctor, cp);
+      MethodGen ctorMethod = new MethodGen(Constants.ACC_PUBLIC, Type.VOID, new Type[] { Type.OBJECT }, new String[] { "arg0" }, "<init>", "org.apache.geode.internal.util.bcel.SerializableImplWithValue", ctor, cp);
       ctorMethod.setMaxStack(2);
 
       InstructionHandle ctor_ih_0 = ctor.append(fac.createLoad(Type.OBJECT, 0));

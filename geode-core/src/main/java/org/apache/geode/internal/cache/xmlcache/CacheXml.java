@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.xml.sax.*;
 import org.xml.sax.ext.EntityResolver2;
 
@@ -29,7 +29,7 @@ import java.util.ServiceLoader;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link
- * com.gemstone.gemfire.cache.Cache} and vice versa. It provides helper methods
+ * org.apache.geode.cache.Cache} and vice versa. It provides helper methods
  * and constants.
  *
  * @since GemFire 3.0
@@ -127,7 +127,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_8_0 = "8_0";
   /** The location of the GemFire 8.0 DTD file */
   protected static final String DTD_8_0_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache8_0.dtd";
+    "/org/apache/geode/cache/doc-files/cache8_0.dtd";
   /** The URL for the 8.0 DTD */
   protected static final String SYSTEM_ID_8_0 =
     "http://www.gemstone.com/dtd/cache8_0.dtd";
@@ -140,7 +140,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_7_0 = "7_0";
   /** The location of the GemFire 7.0 DTD file */
   protected static final String DTD_7_0_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache7_0.dtd";
+    "/org/apache/geode/cache/doc-files/cache7_0.dtd";
   /** The URL for the 7.0 DTD */
   protected static final String SYSTEM_ID_7_0 =
     "http://www.gemstone.com/dtd/cache7_0.dtd";
@@ -153,7 +153,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_6_6 = "6_6";
   /** The location of the GemFire 6.6 DTD file */
   protected static final String DTD_6_6_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache6_6.dtd";
+    "/org/apache/geode/cache/doc-files/cache6_6.dtd";
   /** The URL for the 6.6 DTD */
   protected static final String SYSTEM_ID_6_6 =
     "http://www.gemstone.com/dtd/cache6_6.dtd";
@@ -166,7 +166,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_6_5 = "6_5";
   /** The location of the GemFire 6.5 DTD file */
   protected static final String DTD_6_5_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache6_5.dtd";
+    "/org/apache/geode/cache/doc-files/cache6_5.dtd";
   /** The URL for the 6.5 DTD */
   protected static final String SYSTEM_ID_6_5 =
     "http://www.gemstone.com/dtd/cache6_5.dtd";
@@ -179,7 +179,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_6_1 = "6_1";
   /** The location of the GemFire 6.1 DTD file */
   protected static final String DTD_6_1_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache6_1.dtd";
+    "/org/apache/geode/cache/doc-files/cache6_1.dtd";
   /** The URL for the 6.1 DTD */
   protected static final String SYSTEM_ID_6_1 =
     "http://www.gemstone.com/dtd/cache6_1.dtd";
@@ -192,7 +192,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_6_0 = "6_0";
   /** The location of the GemFire 6.0 DTD file */
   protected static final String DTD_6_0_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache6_0.dtd";
+    "/org/apache/geode/cache/doc-files/cache6_0.dtd";
   /** The URL for the 6.0 DTD */
   protected static final String SYSTEM_ID_6_0 =
     "http://www.gemstone.com/dtd/cache6_0.dtd";
@@ -205,7 +205,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_5_8 = "5_8";
   /** The location of the GemFire 5.8 DTD file */
   protected static final String DTD_5_8_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache5_8.dtd";
+    "/org/apache/geode/cache/doc-files/cache5_8.dtd";
   /** The URL for the 5.8 DTD */
   protected static final String SYSTEM_ID_5_8 =
     "http://www.gemstone.com/dtd/cache5_8.dtd";
@@ -218,7 +218,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_5_7 = "5_7";
   /** The location of the GemFire 5.7 DTD file */
   protected static final String DTD_5_7_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache5_7.dtd";
+    "/org/apache/geode/cache/doc-files/cache5_7.dtd";
   /** The URL for the 5.7 DTD */
   protected static final String SYSTEM_ID_5_7 =
     "http://www.gemstone.com/dtd/cache5_7.dtd";
@@ -231,7 +231,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_5_5 = "5_5";
   /** The location of the GemFire 5.5 DTD file */
   protected static final String DTD_5_5_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache5_5.dtd";
+    "/org/apache/geode/cache/doc-files/cache5_5.dtd";
   /** The URL for the 5.5 DTD */
   protected static final String SYSTEM_ID_5_5 =
     "http://www.gemstone.com/dtd/cache5_5.dtd";
@@ -244,7 +244,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_5_1 = "5_1";
   /** The location of the GemFire 5.1 DTD file */
   protected static final String DTD_5_1_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache5_1.dtd";
+    "/org/apache/geode/cache/doc-files/cache5_1.dtd";
   /** The URL for the 5.1 DTD */
   protected static final String SYSTEM_ID_5_1 =
     "http://www.gemstone.com/dtd/cache5_1.dtd";
@@ -257,7 +257,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String VERSION_5_0 = "5_0";
   /** The location of the GemFire 5.0 DTD file */
   protected static final String DTD_5_0_LOCATION =
-    "/com/gemstone/gemfire/cache/doc-files/cache5_0.dtd";
+    "/org/apache/geode/cache/doc-files/cache5_0.dtd";
   /** The URL for the 5.0 DTD */
   protected static final String SYSTEM_ID_5_0 =
     "http://www.gemstone.com/dtd/cache5_0.dtd";
@@ -269,7 +269,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** Version string for GemFire 4.1 */
   public static final String VERSION_4_1 = "4_1";
   /** The location of the GemFire 4.1 DTD file */
-  protected static final String DTD_4_1_LOCATION = "/com/gemstone/gemfire/cache/doc-files/cache4_1.dtd";
+  protected static final String DTD_4_1_LOCATION = "/org/apache/geode/cache/doc-files/cache4_1.dtd";
   /** The URL for the 4.1 DTD */
   protected static final String SYSTEM_ID_4_1 = "http://www.gemstone.com/dtd/cache4_1.dtd";
   /** The public ID for the 4.1 DTD */
@@ -278,7 +278,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** Version string for GemFire 4.0 */
   public static final String VERSION_4_0 = "4_0";
   /** The location of the GemFire 4.0 DTD file */
-  protected static final String DTD_4_0_LOCATION = "/com/gemstone/gemfire/cache/doc-files/cache4_0.dtd";
+  protected static final String DTD_4_0_LOCATION = "/org/apache/geode/cache/doc-files/cache4_0.dtd";
   /** The URL for the 4.0 DTD */
   protected static final String SYSTEM_ID_4_0 = "http://www.gemstone.com/dtd/cache4_0.dtd";
   /** The public ID for the 4.0 DTD */
@@ -288,7 +288,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** Version string for GemFire 3.0 */
   public static final String VERSION_3_0 = "3_0";
   /** The location of the GemFire 3.0 DTD file */
-  protected static final String DTD_3_0_LOCATION = "/com/gemstone/gemfire/cache/doc-files/cache3_0.dtd";
+  protected static final String DTD_3_0_LOCATION = "/org/apache/geode/cache/doc-files/cache3_0.dtd";
   /** The URL for the 3.0 DTD */
   protected static final String SYSTEM_ID_3_0 = "http://www.gemstone.com/dtd/cache3_0.dtd";
   /** The public ID for the 3.0 DTD */

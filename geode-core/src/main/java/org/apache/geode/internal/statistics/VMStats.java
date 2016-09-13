@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 /**
  * Statistics related to a Java VM. Currently they all come from
@@ -72,14 +72,14 @@ public class VMStats implements VMStatsContract {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.statistics.VMStatsContract#getFdsOpen()
+   * @see org.apache.geode.internal.statistics.VMStatsContract#getFdsOpen()
    */
   public long getFdsOpen() {
     return -1;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.statistics.VMStatsContract#getFdLimit()
+   * @see org.apache.geode.internal.statistics.VMStatsContract#getFdLimit()
    */
   public long getFdLimit() {
     return 0;

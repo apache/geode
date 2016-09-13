@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.Map;
 
 import java.util.concurrent.ScheduledExecutorService;
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.internal.cache.PoolStats;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.internal.cache.PoolStats;
 
 /**
  * The contract between a connection source and a connection pool.

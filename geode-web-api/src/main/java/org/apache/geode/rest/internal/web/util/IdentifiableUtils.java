@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.util;
+package org.apache.geode.rest.internal.web.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;

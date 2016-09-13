@@ -1,1 +1,1 @@
-com.gemstone.gemfire.distributed.MockServerLauncherCacheProvider
+org.apache.geode.distributed.MockServerLauncherCacheProvider

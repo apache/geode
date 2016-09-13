@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session;
+package org.apache.geode.modules.session;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -41,7 +41,7 @@ import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-import com.gemstone.gemfire.modules.session.catalina.JvmRouteBinderValve;
+import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
 /**
  *

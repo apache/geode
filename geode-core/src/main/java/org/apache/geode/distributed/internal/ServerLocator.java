@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,38 +29,38 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientReplacementRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorListRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorListResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest;
-import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.cache.CacheServerAdvisor.CacheServerProfile;
-import com.gemstone.gemfire.internal.cache.ControllerAdvisor;
-import com.gemstone.gemfire.internal.cache.ControllerAdvisor.ControllerProfile;
-import com.gemstone.gemfire.internal.cache.FindDurableQueueProcessor;
-import com.gemstone.gemfire.internal.cache.GridAdvisor.GridProfile;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
+import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
+import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
+import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
+import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
+import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
+import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
+import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
+import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
+import org.apache.geode.internal.cache.ControllerAdvisor;
+import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
+import org.apache.geode.internal.cache.FindDurableQueueProcessor;
+import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * 

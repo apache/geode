@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.distributed.internal.ResourceEvent;
-import com.gemstone.gemfire.internal.cache.DiskStoreAttributes;
-import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.internal.cache.xmlcache.DiskStoreAttributesCreation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.internal.TypeRegistry;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.internal.cache.DiskStoreAttributes;
+import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.DiskStoreAttributesCreation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Implementation of DiskStoreFactory 

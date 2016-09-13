@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.vmotion;
+package org.apache.geode.internal.cache.vmotion;
 
-import com.gemstone.gemfire.cache.query.internal.Support;
+import org.apache.geode.cache.query.internal.Support;
 
 /**
  * This class is intended to hold a single 'observer' which will receive

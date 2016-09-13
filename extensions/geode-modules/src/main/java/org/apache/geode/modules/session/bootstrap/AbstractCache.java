@@ -14,16 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.bootstrap;
+package org.apache.geode.modules.session.bootstrap;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.distributed.internal.AbstractDistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.modules.util.Banner;
-import com.gemstone.gemfire.modules.util.RegionHelper;
-import com.gemstone.gemfire.modules.util.ResourceManagerValidator;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.distributed.internal.AbstractDistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.modules.util.Banner;
+import org.apache.geode.modules.util.RegionHelper;
+import org.apache.geode.modules.util.ResourceManagerValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 public abstract class AbstractCache {
 

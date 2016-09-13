@@ -19,7 +19,7 @@
  * and open the template in the editor.
  */
 
-package com.gemstone.gemfire.modules.session.bootstrap;
+package org.apache.geode.modules.session.bootstrap;
 
 /**
  * Adapter for the Catalina Lifecycle event types

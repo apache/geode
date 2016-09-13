@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.rules;
+package org.apache.geode.test.dunit.rules;
 
-import com.gemstone.gemfire.test.junit.rules.serializable.SerializableExternalResource;
+import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
  * Distributed version of SerializableExternalResource which affects all remote

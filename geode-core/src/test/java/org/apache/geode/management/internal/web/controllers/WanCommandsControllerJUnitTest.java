@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
-import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.*;
 import static junitparams.JUnitParamsRunner.*;
 import static org.assertj.core.api.Assertions.*;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Before;
 import org.junit.Test;

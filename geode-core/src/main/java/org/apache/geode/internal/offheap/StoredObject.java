@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.Sendable;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  * Represents an object stored in the cache.

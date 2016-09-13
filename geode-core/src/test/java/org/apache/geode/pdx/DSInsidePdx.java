@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializable;
+import org.apache.geode.DataSerializable;
 
 public class DSInsidePdx implements PdxSerializable {
 

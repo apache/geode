@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
-import com.gemstone.gemfire.GemFireCheckedException;
+import org.apache.geode.GemFireCheckedException;
 
 import java.util.ArrayList;
 import java.util.List;

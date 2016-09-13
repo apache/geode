@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.bean.stats;
+package org.apache.geode.management.bean.stats;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -22,11 +22,11 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
-import com.gemstone.gemfire.management.internal.beans.GatewaySenderMBeanBridge;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.management.internal.beans.GatewaySenderMBeanBridge;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import io.codearte.catchexception.shade.mockito.Mockito;
 

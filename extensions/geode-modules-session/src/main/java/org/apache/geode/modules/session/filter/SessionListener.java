@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.filter;
+package org.apache.geode.modules.session.filter;
 
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

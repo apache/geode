@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import com.gemstone.gemfire.cache.Operation;
+import org.apache.geode.cache.Operation;
 
 
 /**

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
 import java.util.Collection;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 
-import com.gemstone.gemfire.annotations.Experimental;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexCreationProfile;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 
 /**
  * LuceneService instance is a singleton for each cache.

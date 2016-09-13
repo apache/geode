@@ -1,7 +1,7 @@
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.internal.cache.InterestEvent;
-import com.gemstone.gemfire.internal.cache.InterestFilter;
+import org.apache.geode.internal.cache.InterestEvent;
+import org.apache.geode.internal.cache.InterestFilter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more

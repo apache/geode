@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package org.apache.geode.management.internal.security;
 
 import static org.junit.Assert.*;
 
@@ -27,15 +27,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.HeadlessGfsh;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.ErrorResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ IntegrationTest.class, SecurityTest.class })
 public class GfshCommandsSecurityTest {
@@ -48,7 +48,7 @@ public class GfshCommandsSecurityTest {
 
   @ClassRule
   public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxPort, httpPort, "com/gemstone/gemfire/management/internal/security/cacheServer.json");
+      jmxPort, httpPort, "org/apache/geode/management/internal/security/cacheServer.json");
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, false);

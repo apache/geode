@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.statalerts;
+package org.apache.geode.internal.admin.statalerts;
 
-import com.gemstone.gemfire.DataSerializable;
+import org.apache.geode.DataSerializable;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 
 /**
  * Provides informations of the statistic

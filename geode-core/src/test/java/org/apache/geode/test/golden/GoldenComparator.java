@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.golden;
+package org.apache.geode.test.golden;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +27,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.test.process.OutputFormatter;
+import org.apache.geode.test.process.OutputFormatter;
 
 /**
  * Compares test output to golden text file.

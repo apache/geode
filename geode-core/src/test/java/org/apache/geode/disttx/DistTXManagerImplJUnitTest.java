@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.disttx;
+package org.apache.geode.disttx;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static junit.framework.TestCase.*;
 
 import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXManagerImplJUnitTest;
-import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXManagerImplJUnitTest;
+import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Same tests as that of {@link TXManagerImplJUnitTest} after setting

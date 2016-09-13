@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 /**
  * This exception wraps any checked exception encountered during invocation of

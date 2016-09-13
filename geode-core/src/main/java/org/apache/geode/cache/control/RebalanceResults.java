@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.control;
+package org.apache.geode.cache.control;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
+import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 
 /**
  * The results of rebalancing <code>Cache</code> resources.

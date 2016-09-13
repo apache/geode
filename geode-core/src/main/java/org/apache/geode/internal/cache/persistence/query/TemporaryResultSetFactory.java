@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query;
+package org.apache.geode.internal.cache.persistence.query;
 
-import com.gemstone.gemfire.internal.cache.persistence.query.mock.ResultListImpl;
-import com.gemstone.gemfire.internal.cache.persistence.query.mock.SortedResultBagImpl;
-import com.gemstone.gemfire.internal.cache.persistence.query.mock.SortedResultSetImpl;
+import org.apache.geode.internal.cache.persistence.query.mock.ResultListImpl;
+import org.apache.geode.internal.cache.persistence.query.mock.SortedResultBagImpl;
+import org.apache.geode.internal.cache.persistence.query.mock.SortedResultSetImpl;
 
 /**
  * This is a factory for temporary result sets that overflow to disk.

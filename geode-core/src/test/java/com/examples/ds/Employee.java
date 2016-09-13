@@ -16,8 +16,8 @@
  */
 package com.examples.ds;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import java.io.*;
 import java.util.Date;
 

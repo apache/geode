@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 
 public class GatewayReceiverStats extends CacheServerStats {
 

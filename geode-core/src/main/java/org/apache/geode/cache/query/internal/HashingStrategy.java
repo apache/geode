@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.io.Serializable;
 

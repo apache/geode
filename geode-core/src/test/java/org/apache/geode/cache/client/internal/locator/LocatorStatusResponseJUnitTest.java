@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal.locator;
+package org.apache.geode.cache.client.internal.locator;
 
 import static org.junit.Assert.*;
 
@@ -27,13 +27,13 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The LocatorStatusResponseJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * LocatorStatusResponse class.
  * </p>
- * @see com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse
+ * @see org.apache.geode.cache.client.internal.locator.LocatorStatusResponse
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0

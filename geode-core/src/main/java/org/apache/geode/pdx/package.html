@@ -17,10 +17,10 @@ limitations under the License.
 -->
 <HTML>
   <HEAD>
-    <TITLE>com.gemstone.gemfire.pdx package</TITLE>
+    <TITLE>org.apache.geode.pdx package</TITLE>
   </HEAD>
   <BODY>
-  The <code>com.gemstone.gemfire.pdx</code> package provides APIs used
+  The <code>org.apache.geode.pdx</code> package provides APIs used
   for object serialization. PDX stands for Portable Data eXchange and has the following
   advantages over other object serialization APIs:
 <ul>
@@ -40,15 +40,15 @@ limitations under the License.
      is encoded in the serialized form. This saves memory and time.
 </ul>
 <p>
-To use PDX either implement {@link com.gemstone.gemfire.pdx.PdxSerializable}
-on your domain class or implement a {@link com.gemstone.gemfire.pdx.PdxSerializer}.
-In either case you use a {@link com.gemstone.gemfire.pdx.PdxWriter}
+To use PDX either implement {@link org.apache.geode.pdx.PdxSerializable}
+on your domain class or implement a {@link org.apache.geode.pdx.PdxSerializer}.
+In either case you use a {@link org.apache.geode.pdx.PdxWriter}
 to serialize your data and a
-{@link com.gemstone.gemfire.pdx.PdxReader} to deserialize.
+{@link org.apache.geode.pdx.PdxReader} to deserialize.
 <p>
 An auto serialization mechanism is also provided as an early access feature.
 This has the potential to obviate the need for any augmentation of domain
-classes to allow them to be serialized. See {@link com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer}
+classes to allow them to be serialized. See {@link org.apache.geode.pdx.ReflectionBasedAutoSerializer}
 for more details.
 <p>
 The PDX object model is that a PDX type has a name and an ordered list of PDX fields.
@@ -73,21 +73,21 @@ So field two will be unread. But when this object is reserialized it will preser
 the unread field data and include it in the serialized form (unless you configure
 ignore-unread-fields to true). You can optimize the amount of memory consumed
 by unread fields by managing them yourself by calling
-{@link com.gemstone.gemfire.pdx.PdxReader#readUnreadFields}
-and {@link com.gemstone.gemfire.pdx.PdxWriter#writeUnreadFields}.
+{@link org.apache.geode.pdx.PdxReader#readUnreadFields}
+and {@link org.apache.geode.pdx.PdxWriter#writeUnreadFields}.
 <p>
 To read the fields of a PDX without deserializing it see
-{@link com.gemstone.gemfire.pdx.PdxInstance}.
+{@link org.apache.geode.pdx.PdxInstance}.
 To modify the fields of a PDX without deserializing it see
-{@link com.gemstone.gemfire.pdx.WritablePdxInstance}.
+{@link org.apache.geode.pdx.WritablePdxInstance}.
 
 <p>
 <em>PDX Configuration</em>
 <p>
 The GemFire Cache has a number of configuration attributes related to PDX.
 They can be configured using API method on
-{@link com.gemstone.gemfire.cache.CacheFactory}
-or {@link com.gemstone.gemfire.cache.client.ClientCacheFactory}.
+{@link org.apache.geode.cache.CacheFactory}
+or {@link org.apache.geode.cache.client.ClientCacheFactory}.
 They can also be configured in a cache.xml using the <code>pdx</code> element.
 The following describes the dtd elements and attribute names but corresponding
 method names are also available on the cache factories.
@@ -103,7 +103,7 @@ or WAN gateways. This causes the PDX type information to be written to disk.
 to configure what disk store the PDX type data will be store in. By default
 the default disk store is used.
 <li><code>pdx-serializer</code> Allows you to configure the
-{@link com.gemstone.gemfire.pdx.PdxSerializer} for this GemFire member.
+{@link org.apache.geode.pdx.PdxSerializer} for this GemFire member.
 <li><code>distributed-system-id</code> When using PDX with WAN gateways each
 distributed system must set this gemfire property to a unique value in the
 range 0..255 inclusive.

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Instance of this object behaves as a cache wide repository in the context of

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.io.EOFException;
 
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
 
 /**
  * Tell a server that a connection is being closed
@@ -48,7 +48,7 @@ public class CloseConnectionOp {
   
   private static class CloseConnectionOpImpl extends AbstractOp {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public CloseConnectionOpImpl(boolean keepAlive)  {
       super(MessageType.CLOSE_CONNECTION, 1);

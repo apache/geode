@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
-import com.gemstone.gemfire.distributed.internal.QueueStatHelper;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.*;
+import org.apache.geode.internal.*;
+import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.QueueStatHelper;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * CachePerfStats tracks statistics about GemFire cache performance.

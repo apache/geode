@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance;
 
 /**
  * The composite director performs a complete rebalance, which can remove over

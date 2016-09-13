@@ -6,7 +6,7 @@
  * See the terms of the MX4J License in the documentation provided with this software.
  */
 
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,7 +58,7 @@ import mx4j.persist.MBeanPersister;
 import mx4j.persist.PersisterMBean;
 import mx4j.util.Utils;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * @author <a href="mailto:biorn_steedom@users.sourceforge.net">Simone Bordet</a>

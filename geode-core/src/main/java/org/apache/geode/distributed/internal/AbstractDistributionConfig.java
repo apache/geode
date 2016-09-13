@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -32,18 +32,18 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.InvalidValueException;
-import com.gemstone.gemfire.UnmodifiableException;
-import com.gemstone.gemfire.internal.AbstractConfig;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.InvalidValueException;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.internal.AbstractConfig;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurableComponent;
+import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that

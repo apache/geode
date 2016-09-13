@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,20 +39,20 @@ import java.util.TreeMap;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.jmx.Agent;
-import com.gemstone.gemfire.admin.jmx.AgentConfig;
-import com.gemstone.gemfire.admin.jmx.AgentFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.PureJavaMode;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
+import org.apache.geode.GemFireException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.jmx.Agent;
+import org.apache.geode.admin.jmx.AgentConfig;
+import org.apache.geode.admin.jmx.AgentFactory;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.JavaCommandBuilder;
 
 /**
  * A command line utility inspired by the <code>CacheServerLauncher</code> that is responsible for administering

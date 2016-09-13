@@ -20,7 +20,7 @@
  * Created on April 12, 2005, 11:45 AM
  */
 
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
 /**
  *
@@ -29,9 +29,9 @@ package com.gemstone.gemfire.internal.jta;
 //import java.io.*;
 import java.util.*;
 //import java.net.*;
-import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.distributed.*;
-//import com.gemstone.gemfire.util.concurrent.locks.*;
+import org.apache.geode.cache.*;
+//import org.apache.geode.distributed.*;
+//import org.apache.geode.util.concurrent.locks.*;
 //import java.util.Hashtable;
 //import javax.naming.InitialContext;
 import javax.naming.Context;
@@ -44,7 +44,7 @@ import javax.sql.*;
 import javax.naming.NamingException;
 //import javax.naming.NoInitialContextException;
 //import javax.transaction.SystemException;
-//import com.gemstone.gemfire.internal.jta.CacheUtils;
+//import org.apache.geode.internal.jta.CacheUtils;
 
 public class JTAUtils {
     

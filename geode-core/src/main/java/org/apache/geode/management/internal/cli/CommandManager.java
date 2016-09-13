@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.internal.cli.help.CliTopic;
-import com.gemstone.gemfire.management.internal.cli.parser.*;
-import com.gemstone.gemfire.management.internal.cli.parser.jopt.JoptOptionParser;
-import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.annotation.CliArgument;
+import org.apache.geode.management.internal.cli.help.CliTopic;
+import org.apache.geode.management.internal.cli.parser.*;
+import org.apache.geode.management.internal.cli.parser.jopt.JoptOptionParser;
+import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * 
@@ -158,7 +158,7 @@ public class CommandManager {
     //CommandMarkers
     Set<Class<?>> foundClasses = null;
     try {
-      foundClasses = ClasspathScanLoadHelper.loadAndGet("com.gemstone.gemfire.management.internal.cli.commands", CommandMarker.class, true);
+      foundClasses = ClasspathScanLoadHelper.loadAndGet("org.apache.geode.management.internal.cli.commands", CommandMarker.class, true);
       for (Class<?> klass : foundClasses) {
         try {
           add((CommandMarker)klass.newInstance());
@@ -180,7 +180,7 @@ public class CommandManager {
     
     //Converters
     try {
-      foundClasses = ClasspathScanLoadHelper.loadAndGet("com.gemstone.gemfire.management.internal.cli.converters", Converter.class, true);
+      foundClasses = ClasspathScanLoadHelper.loadAndGet("org.apache.geode.management.internal.cli.converters", Converter.class, true);
       for (Class<?> klass : foundClasses) {
         try {
           add((Converter<?>)klass.newInstance());

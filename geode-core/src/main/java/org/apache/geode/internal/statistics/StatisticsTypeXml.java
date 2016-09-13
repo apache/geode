@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.util.*;
@@ -61,7 +61,7 @@ public class StatisticsTypeXml
        systemId.endsWith(DTD)) {
 
       // Public ID for system config DTD
-      String location = "/com/gemstone/gemfire/" + DTD;
+      String location = "/org/apache/geode/" + DTD;
       InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
       if (stream != null) {
         return new InputSource(stream);

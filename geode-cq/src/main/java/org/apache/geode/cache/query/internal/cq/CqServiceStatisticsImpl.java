@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.query.CqServiceStatistics;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.query.CqServiceStatistics;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
  * Provides statistical information about CqService.

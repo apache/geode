@@ -17,14 +17,14 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.distributed;
+package org.apache.geode.cache.lucene.internal.distributed;
 
 import java.io.IOException;
 import java.util.Collection;
 
-import com.gemstone.gemfire.annotations.Experimental;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
+import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 
 /**
  * {@link CollectorManager}s create instances of {@link IndexResultCollector} and utility methods to aggregate results

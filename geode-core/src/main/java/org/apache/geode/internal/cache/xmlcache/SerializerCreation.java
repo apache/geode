@@ -17,14 +17,14 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 import java.util.Map;
 import java.util.Vector;
@@ -54,7 +54,7 @@ public class SerializerCreation {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.Instantiator#newInstance()
+     * @see org.apache.geode.Instantiator#newInstance()
      */
     @Override
     public DataSerializable newInstance() {

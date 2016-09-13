@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
+package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.internal.Version;
 
 public class GMSPingPonger {
   private byte[] pingInBytes = new byte[] { 'p', 'i', 'n', 'g' };

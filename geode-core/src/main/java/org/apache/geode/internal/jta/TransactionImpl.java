@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
 /**
  * TransactionImpl implements the JTA Transaction interface.
@@ -23,8 +23,8 @@ package com.gemstone.gemfire.internal.jta;
 import javax.transaction.xa.*;
 import javax.transaction.*;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 

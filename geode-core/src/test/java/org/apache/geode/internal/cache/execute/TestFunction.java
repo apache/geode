@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
 import java.io.Serializable;
 import java.util.Properties;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 public class TestFunction extends FunctionAdapter {
 
@@ -133,7 +133,7 @@ public class TestFunction extends FunctionAdapter {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.xmlcache.Declarable2#getConfig()
+   * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
   public Properties getConfig() {
     return this.props;
@@ -142,7 +142,7 @@ public class TestFunction extends FunctionAdapter {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.cache.Declarable#init(java.util.Properties)
+   * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
    */
   public void init(Properties props) {
     this.props.putAll(props);

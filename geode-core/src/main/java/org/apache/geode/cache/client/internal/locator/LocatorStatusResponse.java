@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client.internal.locator;
+package org.apache.geode.cache.client.internal.locator;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -26,17 +26,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.process.PidUnavailableException;
-import com.gemstone.gemfire.internal.process.ProcessUtils;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessUtils;
 
 /**
  * The LocatorStatusResponse class...
  * </p>
- * @see com.gemstone.gemfire.cache.client.internal.locator.ServerLocationResponse
+ * @see org.apache.geode.cache.client.internal.locator.ServerLocationResponse
  * @since GemFire 7.0
  */
 public class LocatorStatusResponse extends ServerLocationResponse {

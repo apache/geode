@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 import java.io.File;
 import java.net.MalformedURLException;

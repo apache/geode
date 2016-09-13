@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-//import com.gemstone.gemfire.admin.DistributedSystemConfig;
-//import com.gemstone.gemfire.admin.ManagedEntity;
-import com.gemstone.gemfire.admin.ManagedEntityConfig;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.net.SocketCreator;
+//import org.apache.geode.admin.DistributedSystemConfig;
+//import org.apache.geode.admin.ManagedEntity;
+import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.SocketCreator;
 
 import java.io.File;
 import java.net.*;

@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.server;
+package org.apache.geode.cache.server;
 
 import java.io.IOException;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.ClientSession;
-import com.gemstone.gemfire.cache.InterestRegistrationListener;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.cache.server.internal.ConnectionCountProbe;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.ClientSession;
+import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.geode.cache.server.internal.ConnectionCountProbe;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * A cache server that serves the contents of a
@@ -34,8 +34,8 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * client {@link Pool} to connect two regions
  * that reside in different distributed systems.
  *
- * @see com.gemstone.gemfire.cache.Cache#addCacheServer
- * @see com.gemstone.gemfire.cache.Cache#getCacheServers
+ * @see org.apache.geode.cache.Cache#addCacheServer
+ * @see org.apache.geode.cache.Cache#getCacheServers
  *
  * @since GemFire 5.7
  */
@@ -175,7 +175,7 @@ public interface CacheServer {
    * <p>Setting a specific bind address will cause the cache server to always
    * use this address and ignore any address specified by "server-bind-address"
    * or "bind-address" in the <code>gemfire.properties</code> file
-   * (see {@link com.gemstone.gemfire.distributed.DistributedSystem}
+   * (see {@link org.apache.geode.distributed.DistributedSystem}
    * for a description of these properties).
    * <p> The value <code>""</code> does not override the <code>gemfire.properties</code>.
    * It will cause the local machine's default address to be listened on if the

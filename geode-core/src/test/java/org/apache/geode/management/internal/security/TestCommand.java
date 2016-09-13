@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package org.apache.geode.management.internal.security;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -182,7 +182,7 @@ public class TestCommand {
 
     // PDX Commands
     createTestCommand("configure pdx --read-serialized=true", dataManage);
-    //createTestCommand("pdx rename --old=com.gemstone --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1", dataManage);
+    //createTestCommand("pdx rename --old=org.apache --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1", dataManage);
 
     // Queue Commands
     createTestCommand("create async-event-queue --id=myAEQ --listener=myApp.myListener", dataManage);

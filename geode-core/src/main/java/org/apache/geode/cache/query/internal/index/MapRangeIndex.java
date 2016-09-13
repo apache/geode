@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
 import java.util.Iterator;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 
 public class MapRangeIndex extends AbstractMapIndex
 {

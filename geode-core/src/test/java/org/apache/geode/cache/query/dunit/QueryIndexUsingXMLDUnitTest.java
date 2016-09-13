@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.dunit;
+package org.apache.geode.cache.query.dunit;
 
 import static org.junit.Assert.*;
 
@@ -28,42 +28,42 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheExistsException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.functional.StructSetOrResultsSet;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
-import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.functional.StructSetOrResultsSet;
+import org.apache.geode.cache.query.internal.QueryObserverAdapter;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.index.PartitionedIndex;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
@@ -145,7 +145,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     AsyncInvocation asyInvk0 = vm0.invokeAsync(createIndexThrougXML("vm0testCreateIndexThroughXML", name, fileName));
@@ -213,7 +213,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     vm0.invoke(createIndexThrougXML("vm0testCreateIndexWhileDoingGII", name, fileName));
@@ -268,7 +268,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     vm0.invoke(createIndexThrougXML("vm0testRRegionCreateIndexWhileDoingGII", repRegName, fileName));
@@ -318,7 +318,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     vm0.invoke(createIndexThrougXML("vm0testPersistentPRRegion", persistentRegName, fileName));
@@ -383,7 +383,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### in testCreateIndexWhileDoingGIIWithEmptyPRRegion.");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### in testCreateIndexWhileDoingGIIWithEmptyPRRegion.");
     
 
     vm0.invoke(createIndexThrougXML("vm0testGIIWithEmptyPRRegion", name, fileName));
@@ -421,7 +421,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     AsyncInvocation asyInvk0 = vm0.invokeAsync(createIndexThrougXML("vm0testAsyncIndexWhileDoingGII", name, fileName));
@@ -468,7 +468,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     vm0.invoke(createIndexThrougXML("vm0testIndexCompareQResults", name, fileName));
@@ -530,7 +530,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     AsyncInvocation asyInvk0 = vm0.invokeAsync(createIndexThrougXML("vm0testCreateAsyncIndexGIIAndQuery", name, fileName));
@@ -582,7 +582,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     
     vm0.invoke(createIndexThrougXML("vm0testAsyncIndexAndCompareQResults", name, fileName));
@@ -626,7 +626,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final String fileName = "IndexCreation.xml";
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Creating index using an xml file name : " + fileName);
     //create index using xml
     vm0.invoke(createIndexThrougXML("vm0testIndexCreationForReplicatedPersistentOverFlowRegionOnRestart", persistentOverFlowRegName, fileName));
@@ -866,7 +866,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
             }
 
             // compare.
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Execute query : \n queryStr with index: " + s[0]  + " \n queryStr without index: " + s[1]);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Execute query : \n queryStr with index: " + s[0]  + " \n queryStr without index: " + s[1]);
             ssORrs.CompareQueryResultsWithoutAndWithIndexes(sr, 1, s);
           }
         }
@@ -907,7 +907,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
         // remove the disk store.
         File diskDir = new File(diskStoreName).getAbsoluteFile();
         try {
-          com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
+          org.apache.geode.internal.FileUtil.delete(diskDir);
         } catch (Exception ex) {
           fail("Failed to delete the disDir");
         }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jndi;
+package org.apache.geode.internal.jndi;
 
 import static org.junit.Assert.*;
 
@@ -34,7 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests all basic methods of ContextImpl.
@@ -50,7 +50,7 @@ public class ContextJUnitTest {
   @Before
   public void setUp() throws Exception {
     Hashtable table = new Hashtable();
-    table.put(Context.INITIAL_CONTEXT_FACTORY, "com.gemstone.gemfire.internal.jndi.InitialContextFactoryImpl");
+    table.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.geode.internal.jndi.InitialContextFactoryImpl");
     initialContext = new InitialContext(table);
     initialContext.bind("java:gf/env/datasource/oracle", "a");
     gemfireContext = (Context) initialContext.lookup("java:gf");

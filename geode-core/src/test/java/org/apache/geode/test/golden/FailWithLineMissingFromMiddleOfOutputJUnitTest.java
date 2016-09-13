@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.golden;
+package org.apache.geode.test.golden;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.process.ProcessWrapper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.process.ProcessWrapper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that test output missing an expected line (at the middle 

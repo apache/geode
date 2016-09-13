@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 /**
  * The Filter interface defines a contract for implementing objects that act as a filter to segregate other objects.

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,22 +34,22 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.HasCachePerfStats;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.management.ManagementException;
+import org.apache.geode.CancelException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.HasCachePerfStats;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.management.ManagementException;
 
 /**
  * DistributionHelper solves the following problems
@@ -191,7 +191,7 @@ public class LocalManager extends Manager {
               monitoringRegionAttrs, internalArgs));
           monitoringRegionCreated = true;
 
-        } catch (com.gemstone.gemfire.cache.TimeoutException e) {
+        } catch (org.apache.geode.cache.TimeoutException e) {
           throw new ManagementException(e);
         } catch (RegionExistsException e) {
           throw new ManagementException(e);
@@ -206,7 +206,7 @@ public class LocalManager extends Manager {
               ManagementConstants.NOTIFICATION_REGION + "_" + appender,
               notifRegionAttrs, internalArgs));
           notifRegionCreated = true;
-        } catch (com.gemstone.gemfire.cache.TimeoutException e) {
+        } catch (org.apache.geode.cache.TimeoutException e) {
           throw new ManagementException(e);
         } catch (RegionExistsException e) {
           throw new ManagementException(e);

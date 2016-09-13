@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 /**
  * Indicates that serious error has occurred within the GemFire system.

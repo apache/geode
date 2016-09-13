@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal.pooling;
+package org.apache.geode.cache.client.internal.pooling;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,14 +23,14 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.client.internal.ConnectionImpl;
-import com.gemstone.gemfire.cache.client.internal.ConnectionStats;
-import com.gemstone.gemfire.cache.client.internal.Endpoint;
-import com.gemstone.gemfire.cache.client.internal.Op;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ConnectionImpl;
+import org.apache.geode.cache.client.internal.ConnectionStats;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.Op;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 
 /**
  * A connection managed by the connection manager. Keeps track

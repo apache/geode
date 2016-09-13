@@ -15,36 +15,36 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
-import com.gemstone.gemfire.internal.cache.AbstractRegionMap.ARMLockTestHook;
-import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
-import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionHolder;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
+import org.apache.geode.internal.cache.lru.LRUEntry;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionHolder;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is
@@ -532,7 +532,7 @@ final class ProxyRegionMap implements RegionMap {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
     }
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.cache.RegionEntry#getSerializedValueOnDisk(com.gemstone.gemfire.internal.cache.LocalRegion)
+     * @see org.apache.geode.internal.cache.RegionEntry#getSerializedValueOnDisk(org.apache.geode.internal.cache.LocalRegion)
      */
     public Object getSerializedValueOnDisk(LocalRegion localRegion) {
       throw new UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
@@ -588,7 +588,7 @@ final class ProxyRegionMap implements RegionMap {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.cache.RegionEntry#concurrencyCheck(com.gemstone.gemfire.internal.cache.LocalRegion, com.gemstone.gemfire.internal.cache.versions.VersionTag, com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember, com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember)
+     * @see org.apache.geode.internal.cache.RegionEntry#concurrencyCheck(org.apache.geode.internal.cache.LocalRegion, org.apache.geode.internal.cache.versions.VersionTag, org.apache.geode.distributed.internal.membership.InternalDistributedMember, org.apache.geode.distributed.internal.membership.InternalDistributedMember)
      */
     public void processVersionTag(LocalRegion r, VersionTag tag,
         InternalDistributedMember thisVM, InternalDistributedMember sender) {

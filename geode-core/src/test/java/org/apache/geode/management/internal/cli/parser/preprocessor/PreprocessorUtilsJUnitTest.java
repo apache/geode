@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.parser.preprocessor;
+package org.apache.geode.management.internal.cli.parser.preprocessor;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Includes tests for all utility methods in {@link PreprocessorUtils}

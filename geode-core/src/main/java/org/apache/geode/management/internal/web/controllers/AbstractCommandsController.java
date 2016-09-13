@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -34,24 +34,24 @@ import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
 
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.web.controllers.support.LoginHandlerInterceptor;
-import com.gemstone.gemfire.management.internal.web.util.UriUtils;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
+import org.apache.geode.management.internal.web.util.UriUtils;
+import org.apache.geode.security.NotAuthorizedException;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
@@ -70,8 +70,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  * Management Controller classes that expose REST API web service endpoints (URLs/URIs) for GemFire shell (Gfsh)
  * commands.
  * 
- * @see com.gemstone.gemfire.management.MemberMXBean
- * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+ * @see org.apache.geode.management.MemberMXBean
+ * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.ExceptionHandler
  * @see org.springframework.web.bind.annotation.InitBinder
@@ -94,7 +94,7 @@ public abstract class AbstractCommandsController {
 
   // Convert a predefined exception to an HTTP Status code
   @ResponseStatus(value=HttpStatus.UNAUTHORIZED, reason="Not authenticated")  // 401
-  @ExceptionHandler(com.gemstone.gemfire.security.AuthenticationFailedException.class)
+  @ExceptionHandler(org.apache.geode.security.AuthenticationFailedException.class)
   public void authenticate() {
 
   }
@@ -161,7 +161,7 @@ public abstract class AbstractCommandsController {
    * 
    * @param encodedValue the encoded String value to decode.
    * @return the decoded value of the String or encodedValue if the UTF-8 encoding is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#decode(String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#decode(String)
    */
   protected static String decode(final String encodedValue) {
     return UriUtils.decode(encodedValue);
@@ -175,7 +175,7 @@ public abstract class AbstractCommandsController {
    * @param encodedValue a String value encoded in the encoding.
    * @param encoding a String value specifying the encoding.
    * @return the decoded value of the String or encodedValue if the specified encoding is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#decode(String, String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#decode(String, String)
    */
   protected static String decode(final String encodedValue, final String encoding) {
     return UriUtils.decode(encodedValue, encoding);
@@ -199,7 +199,7 @@ public abstract class AbstractCommandsController {
    * @param value the String value to encode.
    * @return an encoded value of the String using the default encoding UTF-8 or value if the UTF-8 encoding
    * is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#encode(String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String)
    */
   protected static String encode(final String value) {
     return UriUtils.encode(value);
@@ -212,7 +212,7 @@ public abstract class AbstractCommandsController {
    * @param encoding a String value indicating the encoding.
    * @return an encoded value of the String using the specified encoding or value if the specified encoding
    * is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#encode(String, String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String, String)
    */
   protected static String encode(final String value, final String encoding) {
     return UriUtils.encode(value, encoding);
@@ -378,7 +378,7 @@ public abstract class AbstractCommandsController {
    * @see javax.management.QueryExp
    * @see javax.management.MBeanServer#queryNames(javax.management.ObjectName, javax.management.QueryExp)
    * @see javax.management.JMX#newMXBeanProxy(javax.management.MBeanServerConnection, javax.management.ObjectName, Class)
-   * @see com.gemstone.gemfire.management.MemberMXBean
+   * @see org.apache.geode.management.MemberMXBean
    */
   protected MemberMXBean getMemberMXBean(final String memberNameId) {
     try {
@@ -427,8 +427,8 @@ public abstract class AbstractCommandsController {
    * @return a proxy instance to the MemberMXBean of the GemFire Manager.
    * @see #getMBeanServer()
    * @see #createMemberMXBeanForManagerUsingProxy(javax.management.MBeanServer, javax.management.ObjectName)
-   * @see com.gemstone.gemfire.management.DistributedSystemMXBean
-   * @see com.gemstone.gemfire.management.MemberMXBean
+   * @see org.apache.geode.management.DistributedSystemMXBean
+   * @see org.apache.geode.management.MemberMXBean
    */
   protected synchronized MemberMXBean getManagingMemberMXBean() {
     if (managingMemberMXBeanProxy == null) {
@@ -495,7 +495,7 @@ public abstract class AbstractCommandsController {
    * @param optionValue the value for the named command option.
    * @see #hasValue(Object)
    * @see #hasValue(String[])
-   * @see com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder
+   * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
    * @see org.springframework.web.context.request.WebRequest
    */
   protected void addCommandOption(final WebRequest request,
@@ -525,7 +525,7 @@ public abstract class AbstractCommandsController {
    *
    * @param command a String value containing a valid command String as would be entered by the user in Gfsh.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
@@ -567,7 +567,7 @@ public abstract class AbstractCommandsController {
    * @param fileData is a two-dimensional byte array containing the pathnames and contents of file data streamed to
    * the Manager, usually for the 'deploy' Gfsh command.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
@@ -586,7 +586,7 @@ public abstract class AbstractCommandsController {
    * is a specified mapping in the "environment.  Note, it is common for the REST API to act as a bridge, or an adapter
    * between Gfsh and the Manager, and thus need to specify this key/value pair mapping.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    * @see LoginHandlerInterceptor#getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
    */
@@ -606,7 +606,7 @@ public abstract class AbstractCommandsController {
    * @param fileData is a two-dimensional byte array containing the pathnames and contents of file data streamed to
    * the Manager, usually for the 'deploy' Gfsh command.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
-   * @see com.gemstone.gemfire.management.MemberMXBean#processCommand(String, java.util.Map, Byte[][])
+   * @see org.apache.geode.management.MemberMXBean#processCommand(String, java.util.Map, Byte[][])
    */
   protected String processCommand(final String command, final Map<String, String> environment, final byte[][] fileData) {
     logger.info(LogMarker.CONFIG, "Processing Command ({}) with Environment ({}) having File Data ({})...", command,

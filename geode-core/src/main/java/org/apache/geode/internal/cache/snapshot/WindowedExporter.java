@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.*;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.execute.InternalExecution;
-import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
-import com.gemstone.gemfire.internal.cache.snapshot.FlowController.Window;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
-import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.execute.InternalExecution;
+import org.apache.geode.internal.cache.execute.LocalResultCollector;
+import org.apache.geode.internal.cache.snapshot.FlowController.Window;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
+import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -46,7 +46,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.getLoggerI18n;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.getLoggerI18n;
 
 /**
  * Exports snapshot data using a sliding window to prevent the nodes in a 
@@ -225,7 +225,7 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
 
     @Override
     public String getId() {
-      return "com.gemstone.gemfire.cache.snapshot.WindowedExport";
+      return "org.apache.geode.cache.snapshot.WindowedExport";
     }
 
     @Override

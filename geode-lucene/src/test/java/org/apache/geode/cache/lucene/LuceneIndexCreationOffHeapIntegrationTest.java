@@ -16,22 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.function.Consumer;
 
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.createIndex;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.createIndex;
 import static org.junit.Assert.assertEquals;
 
 /**

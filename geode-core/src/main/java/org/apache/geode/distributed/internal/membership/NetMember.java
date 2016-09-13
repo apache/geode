@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.internal.Version;
 
 /**
  * This is the SPI for the basic element of membership provided in the

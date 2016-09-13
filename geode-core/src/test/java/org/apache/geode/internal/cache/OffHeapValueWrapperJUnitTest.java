@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -26,14 +26,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
-import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
-import com.gemstone.gemfire.internal.offheap.SlabImpl;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.DiskEntry.Helper.Flushable;
+import org.apache.geode.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.internal.offheap.NullOffHeapMemoryStats;
+import org.apache.geode.internal.offheap.NullOutOfOffHeapMemoryListener;
+import org.apache.geode.internal.offheap.SlabImpl;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OffHeapValueWrapperJUnitTest {

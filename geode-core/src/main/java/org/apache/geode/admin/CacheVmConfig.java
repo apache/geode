@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * Configuration for a GemFire cache server VM that is managed by the
@@ -23,7 +23,7 @@ package com.gemstone.gemfire.admin;
  * @see AdminDistributedSystem#addCacheVm()
  *
  * @since GemFire 5.7
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface CacheVmConfig extends ManagedEntityConfig {
   /**

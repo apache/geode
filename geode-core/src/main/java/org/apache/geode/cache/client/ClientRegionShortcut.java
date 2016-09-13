@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 /**
  * Each enum represents a predefined {@link RegionAttributes} in a {@link ClientCache}.

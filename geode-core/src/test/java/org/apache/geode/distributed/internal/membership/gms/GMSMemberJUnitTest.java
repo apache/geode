@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -25,9 +25,9 @@ import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({ UnitTest.class, SecurityTest.class })
 public class GMSMemberJUnitTest {

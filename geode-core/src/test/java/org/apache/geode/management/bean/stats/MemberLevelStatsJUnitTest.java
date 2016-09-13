@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.bean.stats;
+package org.apache.geode.management.bean.stats;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,20 +28,20 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.locks.DLockStats;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.statistics.VMStatsContract;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.DiskStoreStats;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionStats;
-import com.gemstone.gemfire.internal.cache.execute.FunctionServiceStats;
-import com.gemstone.gemfire.internal.stats50.VMStats50;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.internal.beans.MemberMBeanBridge;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.locks.DLockStats;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.statistics.VMStatsContract;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DiskStoreStats;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.internal.cache.execute.FunctionServiceStats;
+import org.apache.geode.internal.stats50.VMStats50;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.beans.MemberMBeanBridge;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  */

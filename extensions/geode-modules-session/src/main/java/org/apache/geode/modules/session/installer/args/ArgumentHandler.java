@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.installer.args;
+package org.apache.geode.modules.session.installer.args;
 
 /**
  * Interface specifying the requirements for objects wiching to be able to

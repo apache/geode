@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 
 import java.io.DataInput;
@@ -28,11 +28,11 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.versions.RVVException.ReceivedVersionsIterator;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * RegionVersionHolders are part of a RegionVersionVector.  A RVH holds the
@@ -630,7 +630,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.DataSerializable#toData(java.io.DataOutput)
+   * @see org.apache.geode.DataSerializable#toData(java.io.DataOutput)
    * 
    * Version Holders serialized to disk, so if the serialization
    * format of version holder changes, we need to upgrade our persistence
@@ -650,7 +650,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.DataSerializable#fromData(java.io.DataInput)
+   * @see org.apache.geode.DataSerializable#fromData(java.io.DataInput)
    */
   public void fromData(DataInput in) throws IOException {
     this.version = InternalDataSerializer.readUnsignedVL(in);

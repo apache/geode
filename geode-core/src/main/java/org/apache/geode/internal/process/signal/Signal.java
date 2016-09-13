@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.process.signal;
+package org.apache.geode.internal.process.signal;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * Signals defined in the enumerated type were based on Open BSD and the IBM JVM...
  * </p>
- * @see com.gemstone.gemfire.internal.process.signal.SignalType
+ * @see org.apache.geode.internal.process.signal.SignalType
  * @since GemFire 7.0
  * @see <a href="http://www.fromdual.com/operating-system-signals">http://www.fromdual.com/operating-system-signals</a>
  * @see <a href="http://www.ibm.com/developerworks/java/library/i-signalhandling/#table1">http://www.ibm.com/developerworks/java/library/i-signalhandling/#table1</a>

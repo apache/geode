@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.persistence.ConflictingPersistentDataException;
-import com.gemstone.gemfire.cache.persistence.RevokedPersistentDataException;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
-import com.gemstone.gemfire.internal.cache.DiskRegionStats;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberManager.MemberRevocationListener;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.process.StartupStatus;
-import com.gemstone.gemfire.internal.util.TransformUtils;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
+import org.apache.geode.cache.persistence.RevokedPersistentDataException;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import org.apache.geode.internal.cache.DiskRegionStats;
+import org.apache.geode.internal.cache.persistence.PersistentMemberManager.MemberRevocationListener;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.process.StartupStatus;
+import org.apache.geode.internal.util.TransformUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;

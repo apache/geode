@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.admin.internal.DistributedSystemConfigImpl;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LocalLogWriter;
 
 import java.util.Properties;
 
@@ -32,7 +32,7 @@ import java.util.Properties;
  * Factory for creating GemFire administration entities. 
  *
  * @since GemFire     3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public class AdminDistributedSystemFactory {
   
@@ -84,8 +84,8 @@ public class AdminDistributedSystemFactory {
    * before {@link DistributedSystem#connect} is when creating a colocated distributed system.
    * <p>
    * Once it has been enabled be careful to only use GemFire APIs from the
-   * <code>com.gemstone.gemfire.admin</code> package. In particular do not create
-   * a {@link com.gemstone.gemfire.cache.Cache} or a normal {@link DistributedSystem}.
+   * <code>org.apache.geode.admin</code> package. In particular do not create
+   * a {@link org.apache.geode.cache.Cache} or a normal {@link DistributedSystem}.
    * @param adminOnly <code>true</code> if this VM should be limited to administration APIs;
    *  <code>false</code> if this VM should allow all GemFire APIs.
    * @throws IllegalStateException if a {@link DistributedSystem}

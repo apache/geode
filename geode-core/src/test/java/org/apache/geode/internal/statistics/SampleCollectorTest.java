@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -27,15 +27,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.statistics.TestSampleHandler.Info;
-import com.gemstone.gemfire.internal.statistics.TestSampleHandler.ResourceInstanceInfo;
-import com.gemstone.gemfire.internal.statistics.TestSampleHandler.ResourceTypeInfo;
-import com.gemstone.gemfire.internal.statistics.TestSampleHandler.SampledInfo;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.statistics.TestSampleHandler.Info;
+import org.apache.geode.internal.statistics.TestSampleHandler.ResourceInstanceInfo;
+import org.apache.geode.internal.statistics.TestSampleHandler.ResourceTypeInfo;
+import org.apache.geode.internal.statistics.TestSampleHandler.SampledInfo;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SampleCollector}.

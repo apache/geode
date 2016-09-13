@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @see org.springframework.web.bind.annotation.RequestMapping
  * @see org.springframework.web.bind.annotation.RequestMethod
  * @see org.springframework.web.bind.annotation.ResponseBody
- * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
+ * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @since GemFire 8.0
  */
 @Controller("clusterController")

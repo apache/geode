@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,13 +22,13 @@ import java.io.StringReader;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class DiskStoreUpgrader {
   

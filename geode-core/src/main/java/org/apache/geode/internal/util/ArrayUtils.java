@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import java.util.Arrays;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  *

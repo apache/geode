@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.asyncqueue.internal;
+package org.apache.geode.cache.asyncqueue.internal;
 
-import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueConfigurationException;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAttributes;
-import com.gemstone.gemfire.internal.cache.xmlcache.AsyncEventQueueCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.ParallelGatewaySenderCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.SerialAsyncEventQueueCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.SerialGatewaySenderCreation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
+import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
+import org.apache.geode.internal.cache.xmlcache.SerialAsyncEventQueueCreation;
+import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 

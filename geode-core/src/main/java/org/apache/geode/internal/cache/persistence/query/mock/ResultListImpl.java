@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query.mock;
+package org.apache.geode.internal.cache.persistence.query.mock;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-import com.gemstone.gemfire.internal.cache.persistence.query.ResultList;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.internal.cache.persistence.query.ResultList;
 
 public class ResultListImpl implements ResultList {
   private final SortedResultMapImpl map;

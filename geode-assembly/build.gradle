@@ -99,7 +99,7 @@ tasks.withType(Test){
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/gemfire.properties")
-  main 'com.gemstone.gemfire.distributed.internal.DistributionConfigImpl'
+  main 'org.apache.geode.distributed.internal.DistributionConfigImpl'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
   workingDir buildDir
   
@@ -110,7 +110,7 @@ task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
 
 task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/cache.xml")
-  main 'com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator'
+  main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
   workingDir buildDir
 
@@ -215,12 +215,12 @@ task docs(type: Javadoc) {
     source parent.subprojects*.javadoc*.source
     classpath = files(parent.subprojects*.javadoc*.classpath)
     title = "${productName} ${project.version}"
-    include 'com/gemstone/gemfire/**/'
-    exclude 'com/gemstone/gemfire/internal/**/'
-    exclude 'com/gemstone/gemfire/**/internal/**/'
-    exclude 'com/gemstone/gemfire/**/xml/**/'
-    exclude 'com/gemstone/gemfire/distributed/**/util/**/'
-    exclude 'com/gemstone/gemfire/test/**/'
+    include 'org/apache/geode/**/'
+    exclude 'org/apache/geode/internal/**/'
+    exclude 'org/apache/geode/**/internal/**/'
+    exclude 'org/apache/geode/**/xml/**/'
+    exclude 'org/apache/geode/distributed/**/util/**/'
+    exclude 'org/apache/geode/test/**/'
     destinationDir = docsDir
 
     doLast {

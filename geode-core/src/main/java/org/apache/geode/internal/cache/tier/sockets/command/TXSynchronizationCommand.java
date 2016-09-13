@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets.command;
+package org.apache.geode.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.cache.SynchronizationCommitConflictException;
-import com.gemstone.gemfire.cache.client.internal.TXSynchronizationOp.CompletionType;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.TXCommitMessage;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.cache.TXSynchronizationRunnable;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.client.internal.TXSynchronizationOp.CompletionType;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.TXSynchronizationRunnable;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -48,7 +48,7 @@ public class TXSynchronizationCommand extends BaseCommand {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand#shouldMasqueradeForTx(com.gemstone.gemfire.internal.cache.tier.sockets.Message, com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection)
+   * @see org.apache.geode.internal.cache.tier.sockets.BaseCommand#shouldMasqueradeForTx(org.apache.geode.internal.cache.tier.sockets.Message, org.apache.geode.internal.cache.tier.sockets.ServerConnection)
    */
   @Override
   protected boolean shouldMasqueradeForTx(Message msg, ServerConnection servConn) {
@@ -57,7 +57,7 @@ public class TXSynchronizationCommand extends BaseCommand {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand#cmdExecute(com.gemstone.gemfire.internal.cache.tier.sockets.Message, com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection, long)
+   * @see org.apache.geode.internal.cache.tier.sockets.BaseCommand#cmdExecute(org.apache.geode.internal.cache.tier.sockets.Message, org.apache.geode.internal.cache.tier.sockets.ServerConnection, long)
    */
   @Override
   public void cmdExecute(final Message msg, final ServerConnection servConn, long start)

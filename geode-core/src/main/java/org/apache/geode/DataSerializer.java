@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -48,25 +48,25 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.RegionNotFoundException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.ObjToByteArraySerializer;
-import com.gemstone.gemfire.internal.Sendable;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.admin.RegionNotFoundException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.ObjToByteArraySerializer;
+import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.pdx.PdxInstance;
 
 /**
  * Provides static helper methods for reading and writing
@@ -301,8 +301,8 @@ public abstract class DataSerializer {
    * @return the name of the class in this implementation
    */
   private static String swizzleClassNameForRead(String name) {
-    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
-    String newPackage = "com.gemstone.gemfire.distributed.internal.tcpserver";
+    String oldPackage = "org.apache.org.jgroups.stack.tcpserver";
+    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
     String result = name;
     if (name.startsWith(oldPackage)) {
       result = newPackage + name.substring(oldPackage.length());
@@ -319,8 +319,8 @@ public abstract class DataSerializer {
    * @return the name of the class in this implementation
    */
   private static String swizzleClassNameForWrite(String name) {
-    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
-    String newPackage = "com.gemstone.gemfire.distributed.internal.tcpserver";
+    String oldPackage = "org.apache.org.jgroups.stack.tcpserver";
+    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
     String result = name;
     if (name.startsWith(newPackage)) {
       result = oldPackage + name.substring(newPackage.length());
@@ -369,7 +369,7 @@ public abstract class DataSerializer {
    *
    * @param in the input stream
    * @return the Region instance
-   * @throws com.gemstone.gemfire.cache.CacheClosedException if a cache has not been created or the only
+   * @throws org.apache.geode.cache.CacheClosedException if a cache has not been created or the only
    * created one is closed.
    * @throws RegionNotFoundException if there is no region by this name
    * in the Cache

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.messages;
+package org.apache.geode.management.internal.configuration.messages;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,9 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.lang.StringUtils;
 
 /***
  * Request sent by a member to the locator requesting the shared configuration

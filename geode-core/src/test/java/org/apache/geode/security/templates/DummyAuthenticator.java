@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.templates;
+package org.apache.geode.security.templates;
 
 import java.security.Principal;
 import java.util.Properties;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
+import org.apache.geode.LogWriter;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.Authenticator;
 
 /**
  * A dummy implementation of the {@link Authenticator} interface that expects a

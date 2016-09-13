@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 
-//import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.distributed.internal.DM;
+//import org.apache.geode.cache.*;
+//import org.apache.geode.distributed.internal.DM;
 
 /**
  * Implementation class of RegionEntry interface.

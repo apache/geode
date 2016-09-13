@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 /**
  * Represents the results of a CQ query that is executed using 
- * {@linkplain com.gemstone.gemfire.cache.query.CqQuery#executeWithInitialResults()}
+ * {@linkplain org.apache.geode.cache.query.CqQuery#executeWithInitialResults()}
  * The result will contain the instances of {@link Struct} having key and value 
  * of the region entry that satisfy the CQ query condition.
  * <pre>
@@ -41,8 +41,8 @@ package com.gemstone.gemfire.cache.query;
  *
  * </pre>
  * 
- * @see com.gemstone.gemfire.cache.query.Query#execute()
- * @see com.gemstone.gemfire.cache.query.CqQuery#executeWithInitialResults()
+ * @see org.apache.geode.cache.query.Query#execute()
+ * @see org.apache.geode.cache.query.CqQuery#executeWithInitialResults()
  * 
  * @since GemFire 6.5
  */

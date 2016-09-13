@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.execute;
+package org.apache.geode.cache.execute;
 
 /**
  * Application developers can extend this class instead of implementing the

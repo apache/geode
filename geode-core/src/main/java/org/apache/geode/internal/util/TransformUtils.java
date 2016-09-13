@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import java.io.File;
 import java.util.Collection;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
 /**
  * Contains common data tranformation utility methods and transformers.

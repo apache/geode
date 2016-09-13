@@ -20,7 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializable;
+import org.apache.geode.DataSerializable;
 
 public class MyObjectDataSerializable extends MyObject implements DataSerializable {
   public MyObjectDataSerializable() {

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
-import static com.gemstone.gemfire.internal.util.BlobHelper.*;
+import static org.apache.geode.internal.util.BlobHelper.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.EOFException;
@@ -30,12 +30,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit Tests for {@link BlobHelper}.

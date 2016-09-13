@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.directory;
+package org.apache.geode.cache.lucene.internal.directory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,10 +33,10 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.OutputStreamIndexOutput;
 import org.apache.lucene.store.SingleInstanceLockFactory;
 
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystem;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
+import org.apache.geode.cache.lucene.internal.filesystem.File;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystem;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 
 /**
  * An implementation of Directory that stores data in geode regions.

@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.admin.internal.CacheServerConfigImpl;
-import com.gemstone.gemfire.admin.internal.DistributionLocatorImpl;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.admin.remote.UpdateAlertDefinitionMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.*;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.admin.internal.CacheServerConfigImpl;
+import org.apache.geode.admin.internal.DistributionLocatorImpl;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.logging.log4j.Logger;
 
 import javax.management.*;
@@ -98,7 +98,7 @@ public class AdminDistributedSystemJmxImpl
    *          configuration defining the JMX agent.
    */
   public AdminDistributedSystemJmxImpl(AgentConfigImpl config)
-      throws com.gemstone.gemfire.admin.AdminException {
+      throws org.apache.geode.admin.AdminException {
     super(config);
     this.mbeanName = "GemFire:type=AdminDistributedSystem,id="
         + MBeanUtil.makeCompliantMBeanNameProperty(getId());
@@ -147,7 +147,7 @@ public class AdminDistributedSystemJmxImpl
   /**
    * Registers the MBeans for monitoring the health of GemFire 
    *
-   * @see com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl#getGemFireHealth
+   * @see org.apache.geode.admin.internal.AdminDistributedSystemImpl#getGemFireHealth
    */
   public ObjectName monitorGemFireHealth() throws MalformedObjectNameException {
     GemFireHealthJmxImpl health = (GemFireHealthJmxImpl) getGemFireHealth();
@@ -234,7 +234,7 @@ public class AdminDistributedSystemJmxImpl
   /** Override createSystemMember by instantiating SystemMemberJmxImpl */
   @Override
   protected SystemMember createSystemMember(ApplicationVM app)
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     return new SystemMemberJmxImpl(this, app);
   }
 
@@ -246,13 +246,13 @@ public class AdminDistributedSystemJmxImpl
    *          InternalDistributedMember instance for which a SystemMember
    *          instance is to be constructed.
    * @return constructed SystemMember instance
-   * @throws com.gemstone.gemfire.admin.AdminException
+   * @throws org.apache.geode.admin.AdminException
    *           if construction of SystemMember instance fails
    *
    * @since GemFire 6.5
    */
   protected SystemMember createSystemMember(InternalDistributedMember member)
-      throws com.gemstone.gemfire.admin.AdminException {
+      throws org.apache.geode.admin.AdminException {
     return new SystemMemberJmxImpl(this, member);
   }
   
@@ -274,7 +274,7 @@ public class AdminDistributedSystemJmxImpl
   /** Override createGemFireHealth by instantiating GemFireHealthJmxImpl */
   @Override
   protected GemFireHealth createGemFireHealth(GfManagerAgent system) 
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     if (system == null) {
       throw new IllegalStateException(LocalizedStrings.AdminDistributedSystemJmxImpl_GFMANAGERAGENT_MUST_NOT_BE_NULL.toLocalizedString());
     }
@@ -316,7 +316,7 @@ public class AdminDistributedSystemJmxImpl
   private static final String EML_SUBJ_PRFX_GFE_NOTFY = "[GemFire Notification] ";
   private static final String EML_SUBJ_ITEM_GFE_DS = "Distributed System: ";
 
-  // --------- com.gemstone.gemfire.internal.admin.JoinLeaveListener ---------
+  // --------- org.apache.geode.internal.admin.JoinLeaveListener ---------
   /** 
    * Listener callback for when a member has joined this DistributedSystem.
    * <p>
@@ -325,7 +325,7 @@ public class AdminDistributedSystemJmxImpl
    *
    * @param source  the distributed system that fired nodeJoined
    * @param joined  the VM that joined
-   * @see com.gemstone.gemfire.internal.admin.JoinLeaveListener#nodeJoined
+   * @see org.apache.geode.internal.admin.JoinLeaveListener#nodeJoined
    */
   @Override
   public void nodeJoined(GfManagerAgent source, GemFireVM joined) {
@@ -397,7 +397,7 @@ public class AdminDistributedSystemJmxImpl
    *
    * @param source  the distributed system that fired nodeLeft
    * @param left    the VM that left
-   * @see com.gemstone.gemfire.internal.admin.JoinLeaveListener#nodeLeft
+   * @see org.apache.geode.internal.admin.JoinLeaveListener#nodeLeft
    */
   @Override
   public void nodeLeft(GfManagerAgent source, GemFireVM left) {
@@ -459,7 +459,7 @@ public class AdminDistributedSystemJmxImpl
    *
    * @param source  the distributed system that fired nodeCrashed
    * @param crashed the VM that crashed
-   * @see com.gemstone.gemfire.internal.admin.JoinLeaveListener#nodeCrashed
+   * @see org.apache.geode.internal.admin.JoinLeaveListener#nodeCrashed
    */
   @Override
   public void nodeCrashed(GfManagerAgent source, GemFireVM crashed) {
@@ -516,7 +516,7 @@ public class AdminDistributedSystemJmxImpl
     }
   }
 
-  // ----------- com.gemstone.gemfire.internal.admin.AlertListener -----------
+  // ----------- org.apache.geode.internal.admin.AlertListener -----------
   /** 
    * Listener callback for when a SystemMember of this DistributedSystem has 
    * crashed.
@@ -524,7 +524,7 @@ public class AdminDistributedSystemJmxImpl
    * Fires a Notification with the information from the alert.
    *
    * @param alert the gemfire alert to broadcast as a notification
-   * @see com.gemstone.gemfire.internal.admin.AlertListener#alert
+   * @see org.apache.geode.internal.admin.AlertListener#alert
    */
   @Override
   public void alert(Alert alert) {

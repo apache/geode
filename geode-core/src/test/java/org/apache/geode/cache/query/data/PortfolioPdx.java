@@ -20,11 +20,11 @@
  * THE ENCODING MUST BE SPECIFIED AS UTF-8 WHEN COMPILED
  *******/
 
-package com.gemstone.gemfire.cache.query.data;
+package org.apache.geode.cache.query.data;
 
 import java.io.*;
 
-import com.gemstone.gemfire.*; // for DataSerializable
+import org.apache.geode.*; // for DataSerializable
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,11 +34,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxWriter;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 
 
 public class PortfolioPdx implements Serializable, PdxSerializable  {

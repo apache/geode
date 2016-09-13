@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.LocalRegion;
 
 /**
  * A region version vector for regions without persistent data. This region
@@ -82,7 +82,7 @@ public class VMRegionVersionVector extends RegionVersionVector<InternalDistribut
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.RegionVersionVector#memberDeparted(com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember, boolean)
+   * @see org.apache.geode.internal.cache.versions.RegionVersionVector#memberDeparted(org.apache.geode.distributed.internal.membership.InternalDistributedMember, boolean)
    */
   @Override
   public void memberDeparted(final InternalDistributedMember id, boolean crashed) {

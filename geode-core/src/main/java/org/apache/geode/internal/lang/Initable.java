@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 /**
  * The Initable interface defines a contract for implementing classes who's Object instances can be initialized after

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.shell;
+package org.apache.geode.management.internal.web.shell;
 
 import static org.junit.Assert.*;
 
@@ -33,25 +33,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
-import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.CommandRequest;
+import org.apache.geode.management.internal.web.AbstractWebTestCase;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.http.ClientHttpRequest;
+import org.apache.geode.management.internal.web.http.HttpMethod;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The RestHttpOperationInvokerJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * RestHttpOperationInvoker class.
  * <p/>
  * @see java.net.URI
- * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
- * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
- * @see com.gemstone.gemfire.management.internal.web.domain.Link
- * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
- * @see com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker
+ * @see org.apache.geode.management.internal.cli.CommandRequest
+ * @see org.apache.geode.management.internal.web.http.HttpMethod
+ * @see org.apache.geode.management.internal.web.domain.Link
+ * @see org.apache.geode.management.internal.web.domain.LinkIndex
+ * @see org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 8.0

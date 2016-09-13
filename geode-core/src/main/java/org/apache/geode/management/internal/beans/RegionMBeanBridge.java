@@ -14,35 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.DirectoryHolder;
-import com.gemstone.gemfire.internal.cache.DiskRegionStats;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.management.EvictionAttributesData;
-import com.gemstone.gemfire.management.FixedPartitionAttributesData;
-import com.gemstone.gemfire.management.MembershipAttributesData;
-import com.gemstone.gemfire.management.PartitionAttributesData;
-import com.gemstone.gemfire.management.RegionAttributesData;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.ManagementStrings;
-import com.gemstone.gemfire.management.internal.beans.stats.MBeanStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.StatType;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsAverageLatency;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DirectoryHolder;
+import org.apache.geode.internal.cache.DiskRegionStats;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.management.EvictionAttributesData;
+import org.apache.geode.management.FixedPartitionAttributesData;
+import org.apache.geode.management.MembershipAttributesData;
+import org.apache.geode.management.PartitionAttributesData;
+import org.apache.geode.management.RegionAttributesData;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.StatType;
+import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
+import org.apache.geode.management.internal.beans.stats.StatsKey;
+import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 /**
  * This class acts as a bridge between a Region and RegionMBean This also

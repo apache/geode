@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -101,7 +101,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
   
   public String addClassTypeToJson(String json) throws JSONException {
     JSONObject jsonObj = new JSONObject(json);
-    jsonObj.put("@type", "com.gemstone.gemfire.pdx.TestObjectForJSONFormatter");
+    jsonObj.put("@type", "org.apache.geode.pdx.TestObjectForJSONFormatter");
     return jsonObj.toString();
   }
   
@@ -868,7 +868,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     out.writeObject("day", day);
 
     out.writeObject("employee", this.employee);
-    //out.writeString("@type", "com.gemstone.gemfire.pdx.TestObjectForJSONFormatter");
+    //out.writeString("@type", "org.apache.geode.pdx.TestObjectForJSONFormatter");
   }
 
   @Override

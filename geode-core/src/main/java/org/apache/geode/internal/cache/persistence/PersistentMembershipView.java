@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,9 +24,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 
 public class PersistentMembershipView implements DataSerializable {
   private Set<PersistentMemberID> offlineMembers;
@@ -56,7 +56,7 @@ public class PersistentMembershipView implements DataSerializable {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.DataSerializable#fromData(java.io.DataInput)
+   * @see org.apache.geode.DataSerializable#fromData(java.io.DataInput)
    */
   public void fromData(DataInput in) throws IOException,
       ClassNotFoundException {

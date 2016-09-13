@@ -14,7 +14,7 @@
  * See the license for the specific language governing permissions and
  * limitations under the license.
  */
-package com.gemstone.gemfire.internal.logging.log4j.message;
+package org.apache.geode.internal.logging.log4j.message;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.message.Message;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.EntriesSet;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.EntriesSet;
 
 /**
  * Handles messages that consist of a format string containing '{}' to represent each replaceable token, and

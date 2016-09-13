@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-import com.gemstone.gemfire.internal.cache.wan.GatewayReceiverStats;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.beans.stats.StatType;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.beans.stats.StatType;
+import org.apache.geode.management.internal.beans.stats.StatsKey;
+import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 /**
  * 

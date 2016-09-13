@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRecoverGrantorProcessor;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRemoteToken;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.TXCommitMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.locks.DLockRecoverGrantorProcessor;
+import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Provides processing of DLockRecoverGrantorProcessor. Reply will not be

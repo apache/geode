@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,8 +27,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * Reusable Input/Output operation utility methods.
@@ -193,7 +193,7 @@ public abstract class IOUtils {
    * @param pathname a String indicating the name of the path.
    * @return a boolean indicating whether the path represented by name (pathname) actually exists in the file system
    * of the localhost (system).
-   * @see com.gemstone.gemfire.internal.lang.StringUtils#isBlank(String)
+   * @see org.apache.geode.internal.lang.StringUtils#isBlank(String)
    * @see java.io.File#exists()
    */
   public static boolean isExistingPathname(final String pathname) {

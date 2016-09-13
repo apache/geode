@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
 import static org.junit.Assert.*;
 
@@ -34,26 +34,26 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
-import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.PartitionAttributesImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
+import org.apache.geode.rest.internal.web.RestFunctionTemplate;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Dunit Test to validate OnRegion function execution with REST APIs
@@ -87,7 +87,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(policy);
     Region region = CacheFactory.getAnyInstance().createRegion(REPLICATE_REGION_NAME, factory.create());
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Region Created :" + region);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Region Created :" + region);
     assertNotNull(region);
   }
 
@@ -100,7 +100,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     raf.setPartitionAttributes(pa);
 
     Region region = CacheFactory.getAnyInstance().createRegion(PR_REGION_NAME, raf.create());
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Region Created :" + region);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Region Created :" + region);
     assertNotNull(region);
     return Boolean.TRUE;
   }
@@ -223,7 +223,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
     vm3.invoke("populatePRRegion", () -> populatePRRegion());
 
-    String jsonBody = "[" + "{\"@type\": \"double\",\"@value\": 210}" + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\"," + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\"," + "\"quantity\":\"2\"," + "\"unitprice\":\"5\"," + "\"totalprice\":\"10.00\"}" + "]";
+    String jsonBody = "[" + "{\"@type\": \"double\",\"@value\": 210}" + ",{\"@type\":\"org.apache.geode.rest.internal.web.controllers.Item\"," + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\"," + "\"quantity\":\"2\"," + "\"unitprice\":\"5\"," + "\"totalprice\":\"10.00\"}" + "]";
 
     CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, jsonBody, null, null);
     assertEquals(200, response.getStatusLine().getStatusCode());
@@ -232,7 +232,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     // Assert that only 1 node has executed the function.
     assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
 
-    jsonBody = "[" + "{\"@type\": \"double\",\"@value\": 220}" + ",{\"@type\":\"com.gemstone.gemfire.rest.internal.web.controllers.Item\"," + "\"itemNo\":\"609\",\"description\":\"Part X Free on Bumper Offer\"," + "\"quantity\":\"3\"," + "\"unitprice\":\"9\"," + "\"totalprice\":\"12.00\"}" + "]";
+    jsonBody = "[" + "{\"@type\": \"double\",\"@value\": 220}" + ",{\"@type\":\"org.apache.geode.rest.internal.web.controllers.Item\"," + "\"itemNo\":\"609\",\"description\":\"Part X Free on Bumper Offer\"," + "\"quantity\":\"3\"," + "\"unitprice\":\"9\"," + "\"totalprice\":\"12.00\"}" + "]";
 
     resetInvocationCounts(vm0, vm1, vm2, vm3);
 

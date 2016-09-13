@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
+import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -245,7 +245,7 @@ public class ShutdownAllRequest extends AdminRequest {
      * If response arrives, we will save into results and keep wait for member's 
      * departure. If the member is departed before sent response, no wait
      * for its response
-     * @see com.gemstone.gemfire.distributed.internal.ReplyProcessor21#process(com.gemstone.gemfire.distributed.internal.DistributionMessage)
+     * @see org.apache.geode.distributed.internal.ReplyProcessor21#process(org.apache.geode.distributed.internal.DistributionMessage)
      */
     @Override
     public void process(DistributionMessage msg) {

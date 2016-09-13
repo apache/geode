@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.List;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
+import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
 
 /**
  * This is helper class used by CacheFactory to pass the cache configuration

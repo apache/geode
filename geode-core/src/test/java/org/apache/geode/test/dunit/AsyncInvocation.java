@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.gemstone.gemfire.SystemFailure;
+import org.apache.geode.SystemFailure;
 
 /**
  * An {@code AsyncInvocation} represents the invocation of a remote invocation

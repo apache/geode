@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.io.*;
 
 /**
-  * Implementation of {@link com.gemstone.gemfire.i18n.LogWriterI18n} that will write
+  * Implementation of {@link org.apache.geode.i18n.LogWriterI18n} that will write
   * to a local stream.
   * <P>
   * Note this class is no longer needed. It can be replaced by PureLogWriter.

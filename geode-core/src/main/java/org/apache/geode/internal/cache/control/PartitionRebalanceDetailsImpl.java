@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.control;
+package org.apache.geode.internal.cache.control;
 
 import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
-import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.cache.partition.PartitionRebalanceInfo;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Holds the rebalancing details for a single partitioned

@@ -15,9 +15,9 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-import com.gemstone.gemfire.internal.admin.remote.*;
+import org.apache.geode.internal.admin.remote.*;
 
 /**
  * A factory for GfManagerAgent instances.  This is the main entry

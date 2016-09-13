@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.disttx;
+package org.apache.geode.disttx;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.offheap.TxReleasesOffHeapOnCloseJUnitTest;
-import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.offheap.TxReleasesOffHeapOnCloseJUnitTest;
+import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 
 /**

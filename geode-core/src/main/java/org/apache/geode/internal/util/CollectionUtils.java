@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,13 +29,13 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.lang.Filter;
+import org.apache.geode.internal.lang.Filter;
 
 /**
  * The CollectionUtils class is a utility class for working with the Java Collections framework of classes, data
  * structures and algorithms.
  * <p/>
- * @see com.gemstone.gemfire.internal.lang.Filter
+ * @see org.apache.geode.internal.lang.Filter
  * @see java.util.Arrays
  * @see java.util.Collection
  * @see java.util.Collections
@@ -172,7 +172,7 @@ public abstract class CollectionUtils {
    * @return the Map with entries filtered by the specified Filter.
    * @see java.util.Map
    * @see java.util.Map.Entry
-   * @see com.gemstone.gemfire.internal.lang.Filter
+   * @see org.apache.geode.internal.lang.Filter
    */
   public static <K, V> Map<K, V> removeKeys(final Map<K, V> map, final Filter<Map.Entry<K, V>> filter) {
     for (final Iterator<Map.Entry<K, V>> mapEntries = map.entrySet().iterator(); mapEntries.hasNext(); ) {

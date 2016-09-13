@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
    * Used to represent a recovered disk region. Once the region actually exists

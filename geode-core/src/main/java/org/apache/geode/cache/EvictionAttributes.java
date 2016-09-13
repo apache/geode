@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.cache.EvictionAttributesImpl;
 
 /**
  * <p>Attributes that describe how a <code>Region</code>'s size is managed through an eviction controller. Eviction
- * controllers are defined by an {@link com.gemstone.gemfire.cache.EvictionAlgorithm} and a {@link
- * com.gemstone.gemfire.cache.EvictionAction}. Once a <code>Region</code> is created with an eviction controller, it can
- * not be removed, however it can be changed through an {@link com.gemstone.gemfire.cache.EvictionAttributesMutator}.
+ * controllers are defined by an {@link org.apache.geode.cache.EvictionAlgorithm} and a {@link
+ * org.apache.geode.cache.EvictionAction}. Once a <code>Region</code> is created with an eviction controller, it can
+ * not be removed, however it can be changed through an {@link org.apache.geode.cache.EvictionAttributesMutator}.
  *
- * @see com.gemstone.gemfire.cache.AttributesFactory#setEvictionAttributes(EvictionAttributes)
- * @see com.gemstone.gemfire.cache.AttributesMutator
+ * @see org.apache.geode.cache.AttributesFactory#setEvictionAttributes(EvictionAttributes)
+ * @see org.apache.geode.cache.AttributesMutator
  * @since GemFire 5.0
  */
 @SuppressWarnings("serial")

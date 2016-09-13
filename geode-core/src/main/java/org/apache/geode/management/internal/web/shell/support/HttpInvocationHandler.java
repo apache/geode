@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.shell.support;
+package org.apache.geode.management.internal.web.shell.support;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
+import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 
 /**
  * The HttpInvocationHandler class is an implementation of InvocationHandler serving as a proxy that uses HTTP remoting
@@ -30,7 +30,7 @@ import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
  * <p/>
  * @see java.lang.reflect.InvocationHandler
  * @see javax.management.ObjectName
- * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

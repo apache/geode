@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.ConfigurationParameter;
+import org.apache.geode.admin.ConfigurationParameter;
 
 /**
  * Listens to value changes of a 
- * {@link com.gemstone.gemfire.admin.ConfigurationParameter}.  This is for 
+ * {@link org.apache.geode.admin.ConfigurationParameter}.  This is for 
  * internal use only to allow a {@link SystemMemberImpl} to keep track of 
  * configuration changes made through 
  * {@link ConfigurationParameterImpl#setValue}.

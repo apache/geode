@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
-import com.gemstone.gemfire.internal.cache.DataLocationException;
+import org.apache.geode.internal.cache.DataLocationException;
 
 /**
  * An exception indicating that a PartitionedRegion was found to be Locally

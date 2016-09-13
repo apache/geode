@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.bean.stats;
+package org.apache.geode.management.bean.stats;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -23,10 +23,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.cache.DiskStoreStats;
-import com.gemstone.gemfire.management.internal.beans.DiskStoreMBeanBridge;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.DiskStoreStats;
+import org.apache.geode.management.internal.beans.DiskStoreMBeanBridge;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  */

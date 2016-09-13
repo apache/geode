@@ -18,7 +18,7 @@
  * This test verifies that stats are collected properly for the SingleNode and Single PartitionedRegion
  *
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -34,18 +34,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.PartitionedRegionStorageException;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.Statistics;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionedRegionStorageException;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *  

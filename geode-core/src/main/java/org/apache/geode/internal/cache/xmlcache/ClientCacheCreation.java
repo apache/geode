@@ -14,33 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.GatewayException;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.internal.TypeRegistry;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.GatewayException;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -101,10 +101,10 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
     GemFireCacheImpl.initializeClientRegionShortcuts(this);
   }
 
-  public com.gemstone.gemfire.cache.query.QueryService getQueryService(String poolName) {
+  public org.apache.geode.cache.query.QueryService getQueryService(String poolName) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
-  public com.gemstone.gemfire.cache.query.QueryService getLocalQueryService() {
+  public org.apache.geode.cache.query.QueryService getLocalQueryService() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
   /**
@@ -286,7 +286,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.CacheCreation#getPdxReadSerialized()
+   * @see org.apache.geode.cache.client.CacheCreation#getPdxReadSerialized()
    */
   @Override
   public boolean getPdxReadSerialized() {
@@ -295,7 +295,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.ClientCache#getCurrentServers()
+   * @see org.apache.geode.cache.client.ClientCache#getCurrentServers()
    */
   public Set<InetSocketAddress> getCurrentServers() {
     return Collections.EMPTY_SET;

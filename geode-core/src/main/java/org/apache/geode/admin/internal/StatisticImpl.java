@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.internal.admin.Stat;
+import org.apache.geode.internal.admin.Stat;
 
 /**
  * Implementation of a single statistic in a <code>StatisticResource</code>
@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.admin.Stat;
  *
  */
 public class StatisticImpl
-implements com.gemstone.gemfire.admin.Statistic {
+implements org.apache.geode.admin.Statistic {
 
   private static final long serialVersionUID = 3899296873901634399L;
   

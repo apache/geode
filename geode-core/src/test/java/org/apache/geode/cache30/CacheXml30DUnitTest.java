@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
@@ -28,36 +28,36 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.SAXException;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.MirrorType;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.cache.DiskWriteAttributesImpl;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParser;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.DiskWriteAttributesFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.MirrorType;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests the functionality of loading a declarative caching file when
@@ -619,15 +619,15 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
 
     } else {
 
-      File example = new File(TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/cache/doc-files/example-cache.xml"));
+      File example = new File(TestUtil.getResourcePath(getClass(), "/org/apache/geode/cache/doc-files/example-cache.xml"));
       FileInputStream fis = new FileInputStream(example);
       CacheXmlParser.parse(fis);
 
-      File example2 = new File(TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/cache/doc-files/example2-cache.xml"));
+      File example2 = new File(TestUtil.getResourcePath(getClass(), "/org/apache/geode/cache/doc-files/example2-cache.xml"));
       fis = new FileInputStream(example2);
       CacheXmlParser.parse(fis);    
 
-      File example3 = new File(TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/cache/doc-files/example3-cache.xml"));
+      File example3 = new File(TestUtil.getResourcePath(getClass(), "/org/apache/geode/cache/doc-files/example3-cache.xml"));
       fis = new FileInputStream(example3);
       CacheXmlParser.parse(fis);    
     }

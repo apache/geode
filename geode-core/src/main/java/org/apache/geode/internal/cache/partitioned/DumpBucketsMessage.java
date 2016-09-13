@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,13 +23,13 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * A message used for debugging purposes.  For example if a test
@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * which sends this message to all VMs that have that 
  * PartitionedRegion defined.
  * 
- * @see com.gemstone.gemfire.internal.cache.PartitionedRegion#dumpAllBuckets(boolean)
+ * @see org.apache.geode.internal.cache.PartitionedRegion#dumpAllBuckets(boolean)
  */
 public final class DumpBucketsMessage extends PartitionMessage
 {

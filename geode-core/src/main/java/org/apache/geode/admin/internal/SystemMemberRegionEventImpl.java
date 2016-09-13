@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.cache.Operation;
+import org.apache.geode.admin.*;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.cache.Operation;
 
 /**
  * An event that describes an operation on a region.

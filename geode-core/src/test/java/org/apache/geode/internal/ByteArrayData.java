@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -22,7 +22,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 /**
  * Provides byte stream for testing. Use {@link #getDataInput()} and

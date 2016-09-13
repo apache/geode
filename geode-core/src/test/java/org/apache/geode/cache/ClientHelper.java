@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.DynamicRegionFactory.Config;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.client.internal.ServerProxy;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import org.apache.geode.cache.DynamicRegionFactory.Config;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.ServerProxy;
+import org.apache.geode.internal.cache.LocalRegion;
 
 /**
  * Provides methods for getting at the 

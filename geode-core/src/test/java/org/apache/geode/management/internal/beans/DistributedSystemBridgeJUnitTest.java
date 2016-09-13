@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -28,16 +28,16 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
-import com.gemstone.gemfire.admin.internal.BackupDataStoreHelper;
-import com.gemstone.gemfire.admin.internal.FinishBackupRequest;
-import com.gemstone.gemfire.admin.internal.PrepareBackupRequest;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberManager;
-import com.gemstone.gemfire.test.fake.Fakes;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.admin.internal.BackupDataStoreHelper;
+import org.apache.geode.admin.internal.FinishBackupRequest;
+import org.apache.geode.admin.internal.PrepareBackupRequest;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
+import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DistributedSystemBridgeJUnitTest {

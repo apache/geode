@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.locks.ElderState;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.locks.ElderState;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -88,7 +88,7 @@ public class LonerDistributionManager implements DM {
     try {
       host = InetAddress.getLocalHost().getCanonicalHostName();
       MemberAttributes.setDefaults(65535,
-              com.gemstone.gemfire.internal.OSProcess.getId(),
+              org.apache.geode.internal.OSProcess.getId(),
               DistributionManager.LONER_DM_TYPE,
               MemberAttributes.parseRoles(system.getConfig().getRoles()));
       id = new InternalDistributedMember(host, 65535); // noise value for port number
@@ -895,7 +895,7 @@ public class LonerDistributionManager implements DM {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DM#getMembershipManager()
+   * @see org.apache.geode.distributed.internal.DM#getMembershipManager()
    */
   public MembershipManager getMembershipManager() {
     // no membership manager
@@ -903,20 +903,20 @@ public class LonerDistributionManager implements DM {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DM#getRootCause()
+   * @see org.apache.geode.distributed.internal.DM#getRootCause()
    */
   public Throwable getRootCause() {
     return null;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DM#setRootCause(java.lang.Throwable)
+   * @see org.apache.geode.distributed.internal.DM#setRootCause(java.lang.Throwable)
    */
   public void setRootCause(Throwable t) {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DM#getMembersOnThisHost()
+   * @see org.apache.geode.distributed.internal.DM#getMembersOnThisHost()
    * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {

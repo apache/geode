@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import static com.gemstone.gemfire.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.*;
+import static org.apache.geode.internal.statistics.StatArchiveWithConsecutiveResourceInstGenerator.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.File;
@@ -35,10 +35,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.internal.SystemAdmin.StatSpec;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.ResourceInst;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.StatValue;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.SystemAdmin.StatSpec;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Confirms existence of GEODE-1782 and its fix.

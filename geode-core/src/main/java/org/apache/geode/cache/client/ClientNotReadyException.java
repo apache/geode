@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
-import com.gemstone.gemfire.cache.OperationAbortedException;
+import org.apache.geode.cache.OperationAbortedException;
 
 /**
  * A <code>ClientNotReadyException</code> indicates a client attempted to invoke
- * the {@link com.gemstone.gemfire.cache.Cache#readyForEvents}
+ * the {@link org.apache.geode.cache.Cache#readyForEvents}
  * method, but failed.
  * <p>This exception was moved from the <code>util</code> package in 5.7.
  * 

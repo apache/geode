@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.parallel;
+package org.apache.geode.internal.cache.wan.parallel;
 
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.internal.cache.EventID;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.internal.cache.EventID;
 
 /**
  * ShadowPartitionedRegion for replicated region uses this PartitionResolver. In

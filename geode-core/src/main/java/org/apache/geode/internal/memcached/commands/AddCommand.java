@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached.commands;
+package org.apache.geode.internal.memcached.commands;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.memcached.Reply;
-import com.gemstone.gemfire.internal.memcached.RequestReader;
-import com.gemstone.gemfire.internal.memcached.ResponseStatus;
-import com.gemstone.gemfire.internal.memcached.ValueWrapper;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.memcached.Reply;
+import org.apache.geode.internal.memcached.RequestReader;
+import org.apache.geode.internal.memcached.ResponseStatus;
+import org.apache.geode.internal.memcached.ValueWrapper;
 
 
 /**

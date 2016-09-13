@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import org.apache.geode.internal.DataSerializableFixedID;
 
 /**
  * The member that originated an update that is stored in the version

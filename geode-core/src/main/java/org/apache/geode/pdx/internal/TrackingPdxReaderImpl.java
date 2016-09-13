@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxUnreadFields;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.PdxFieldWrapper;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxUnreadFields;
+import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.pdx.internal.AutoSerializableManager.PdxFieldWrapper;
 
 /**
  * Used to track what fields are actually read by the user's code.

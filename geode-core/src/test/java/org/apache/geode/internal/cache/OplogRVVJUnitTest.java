@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.net.UnknownHostException;
@@ -33,15 +33,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.versions.DiskRegionVersionVector;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class OplogRVVJUnitTest {

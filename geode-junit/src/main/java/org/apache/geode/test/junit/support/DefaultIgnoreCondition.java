@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.support;
+package org.apache.geode.test.junit.support;
 
 import org.junit.runner.Description;
-import com.gemstone.gemfire.test.junit.IgnoreCondition;
+import org.apache.geode.test.junit.IgnoreCondition;
 
 /**
  * The DefaultIgnoreCondition class...
  *
  * @see org.junit.runner.Description
- * @see com.gemstone.gemfire.test.junit.ConditionalIgnore
- * @see com.gemstone.gemfire.test.junit.IgnoreCondition
+ * @see org.apache.geode.test.junit.ConditionalIgnore
+ * @see org.apache.geode.test.junit.IgnoreCondition
  */
 @SuppressWarnings("unused")
 public class DefaultIgnoreCondition implements IgnoreCondition {

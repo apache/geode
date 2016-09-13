@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 /** FlowControlParams are used to represent mcast-flow-control parameters for a
     DistributedSystem.  Instances of this class are used in DistributionConfig to

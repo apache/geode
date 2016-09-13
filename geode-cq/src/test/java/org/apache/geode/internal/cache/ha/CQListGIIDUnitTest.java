@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.ha;
+package org.apache.geode.internal.cache.ha;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,43 +32,43 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributesFactory;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqQuery;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.cq.dunit.CqQueryTestListener;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache30.CertifiableTestCacheListener;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * @since GemFire 5.7
@@ -123,10 +123,10 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       // 4
       "SELECT ALL * FROM /root/" + regions[0],
       // 5
-      "import com.gemstone.gemfire.cache.\"query\".data.Portfolio; "
+      "import org.apache.geode.cache.\"query\".data.Portfolio; "
           + "SELECT ALL * FROM /root/" + regions[0] + " TYPE Portfolio",
       // 6
-      "import com.gemstone.gemfire.cache.\"query\".data.Portfolio; "
+      "import org.apache.geode.cache.\"query\".data.Portfolio; "
           + "SELECT ALL * FROM /root/" + regions[0] + " p TYPE Portfolio",
       // 7
       "SELECT ALL * FROM /root/" + regions[1]
@@ -350,7 +350,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   /* Register CQs */
   public static void createCQ(String cqName, String queryStr) {
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
     // Get CQ Service.
     QueryService cqService = null;
     try {
@@ -361,7 +361,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     }
     // Create CQ Attributes.
     CqAttributesFactory cqf = new CqAttributesFactory();
-    CqListener[] cqListeners = { new CqQueryTestListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()) };
+    CqListener[] cqListeners = { new CqQueryTestListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()) };
     ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
 
     cqf.initCqListeners(cqListeners);
@@ -378,7 +378,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void executeCQ(String cqName, Boolean initialResults) {
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("### DEBUG EXECUTE CQ START ####");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### DEBUG EXECUTE CQ START ####");
     // Get CQ Service.
     QueryService cqService = null;
     CqQuery cq1 = null;
@@ -388,13 +388,13 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       cq1 = cqService.getCq(cqName);
       if (cq1 == null) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
             "Failed to get CqQuery object for CQ name: " + cqName);
         Assert.fail("Failed to get CQ " + cqName, new Exception("Failed to get CQ "
             + cqName));
       }
       else {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
         assertTrue("newCq() state mismatch", cq1.getState().isStopped());
       }
     }
@@ -411,7 +411,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       catch (Exception ex) {
         fail("Failed to execute  CQ " + cqName, ex);
       }
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
       assertTrue("executeWithInitialResults() state mismatch", cq1.getState()
           .isRunning());
     }
@@ -433,7 +433,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       region = cache.getRegion("root").getSubregion(regionName);
       region.getAttributesMutator().setCacheListener(
-          new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()));
+          new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
     }
     catch (Exception e) {
       fail("Failed to get Region.", e);
@@ -537,7 +537,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       for (int i = 0; i < num.longValue(); i++) {
         r.put(KEY + i, new Portfolio(i + 1));
       }
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
           "### Number of Entries in Region " + rName + ": " + r.keys().size());
     }
     catch (Exception ex) {

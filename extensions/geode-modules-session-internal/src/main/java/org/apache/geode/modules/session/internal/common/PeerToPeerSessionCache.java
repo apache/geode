@@ -15,20 +15,20 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.common;
+package org.apache.geode.modules.session.internal.common;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.modules.session.catalina.callback.LocalSessionCacheLoader;
-import com.gemstone.gemfire.modules.session.catalina.callback.LocalSessionCacheWriter;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
-import com.gemstone.gemfire.modules.util.RegionHelper;
-import com.gemstone.gemfire.modules.util.TouchPartitionedRegionEntriesFunction;
-import com.gemstone.gemfire.modules.util.TouchReplicatedRegionEntriesFunction;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheLoader;
+import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheWriter;
+import org.apache.geode.modules.util.RegionConfiguration;
+import org.apache.geode.modules.util.RegionHelper;
+import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
+import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
 import java.util.Map;
 import javax.servlet.http.HttpSession;

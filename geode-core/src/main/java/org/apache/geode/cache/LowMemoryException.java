@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Indicates a low memory condition either on the local or a remote {@link Cache}.

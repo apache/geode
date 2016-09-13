@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -29,13 +29,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.gemfire.management.internal.cli.result.CliJsonSerializable;
-import com.gemstone.gemfire.management.internal.cli.result.CliJsonSerializableFactory;
-import com.gemstone.gemfire.management.internal.cli.result.ResultDataException;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.CliJsonSerializable;
+import org.apache.geode.management.internal.cli.result.CliJsonSerializableFactory;
+import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -541,7 +541,7 @@ public class JsonUtil {
     System.out.println(capitalize("key"));
     System.out.println(capitalize("Key"));
     
-    String str = "{\"com.gemstone.gemfire.management.internal.cli.JsonUtil$Employee\":{\"id\":1234,\"name\":\"Foo BAR\",\"department\":{\"id\":456,\"name\":\"support\"}}}";
+    String str = "{\"org.apache.geode.management.internal.cli.JsonUtil$Employee\":{\"id\":1234,\"name\":\"Foo BAR\",\"department\":{\"id\":456,\"name\":\"support\"}}}";
     Object jsonToObject = jsonToObject(str);
     System.out.println(jsonToObject);
     

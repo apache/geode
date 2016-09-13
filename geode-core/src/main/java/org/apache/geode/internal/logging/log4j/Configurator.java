@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.filter.AbstractFilterable;
 
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Utility methods to programmatically alter the configuration of Log4J2. Used 

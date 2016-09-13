@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
 /**
  * Various constant values used through the app
@@ -25,6 +25,6 @@ public class Constants {
   public static String GEMFIRE_SESSION_REQUEST = "_gemfire_session_request_";
 
   public static String SESSION_STATISTICS_MBEAN_NAME =
-      "com.gemstone:type=SessionStatistics,name=sessionStatistics";
+      "org.apache:type=SessionStatistics,name=sessionStatistics";
 
 }

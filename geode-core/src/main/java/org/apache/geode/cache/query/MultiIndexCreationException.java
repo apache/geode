@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.DefaultQueryService;
 
 /**
  * Consists a map of index names and Exceptions thrown during index creation

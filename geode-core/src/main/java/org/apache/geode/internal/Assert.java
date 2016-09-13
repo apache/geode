@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Support for correctness assertions.
@@ -93,8 +93,8 @@ public class Assert {
       } else {
         ex = new InternalGemFireError();
       }
-//       com.gemstone.gemfire.internal.cache.GemFireCache gfc
-//         = com.gemstone.gemfire.internal.cache.GemFireCache.getInstance();
+//       org.apache.geode.internal.cache.GemFireCache gfc
+//         = org.apache.geode.internal.cache.GemFireCache.getInstance();
 //       if (gfc != null) {
 //         gfc.getLogger().info("DEBUG", ex);
 //       }

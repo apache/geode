@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.admin.remote.AlertLevelChangeMessage;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.remote.AlertLevelChangeMessage;
+import org.apache.geode.internal.logging.LogWriterImpl;
 
 /**
  * This class will act as a messenger from manager to members for various

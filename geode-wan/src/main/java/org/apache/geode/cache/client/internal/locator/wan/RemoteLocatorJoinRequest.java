@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal.locator.wan;
+package org.apache.geode.cache.client.internal.locator.wan;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
 /**
  * Requests remote locators of a remote WAN site

@@ -17,20 +17,20 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.xml;
+package org.apache.geode.cache.lucene.internal.xml;
 
-import static com.gemstone.gemfire.cache.lucene.internal.xml.LuceneXmlConstants.*;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.*;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGeneratorUtils;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
 
 public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
   private final LuceneIndex index;

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.shell;
+package org.apache.geode.management.internal.cli.shell;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
+import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
 
 /**
  * 

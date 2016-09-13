@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.security.SecurityTestUtils.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.*;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -27,17 +27,17 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.execute.PRClientServerTestBase;
-import com.gemstone.gemfire.internal.cache.functions.TestFunction;
-import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
-import com.gemstone.gemfire.security.generator.CredentialGenerator;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.PRClientServerTestBase;
+import org.apache.geode.internal.cache.functions.TestFunction;
+import org.apache.geode.security.generator.AuthzCredentialGenerator;
+import org.apache.geode.security.generator.CredentialGenerator;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {

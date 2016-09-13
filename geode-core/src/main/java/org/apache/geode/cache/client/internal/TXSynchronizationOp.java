@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.SynchronizationCommitConflictException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.internal.cache.TXCommitMessage;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * TXSynchronizationOp sends JTA beforeCompletion and afterCompletion
@@ -101,7 +101,7 @@ public class TXSynchronizationOp {
 
     
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.client.internal.AbstractOp#processResponse(com.gemstone.gemfire.internal.cache.tier.sockets.Message)
+     * @see org.apache.geode.cache.client.internal.AbstractOp#processResponse(org.apache.geode.internal.cache.tier.sockets.Message)
      */
     @Override
     protected Object processResponse(Message msg) throws Exception {
@@ -122,7 +122,7 @@ public class TXSynchronizationOp {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.client.internal.AbstractOp#isErrorResponse(int)
+     * @see org.apache.geode.cache.client.internal.AbstractOp#isErrorResponse(int)
      */
     @Override
     protected boolean isErrorResponse(int msgType) {

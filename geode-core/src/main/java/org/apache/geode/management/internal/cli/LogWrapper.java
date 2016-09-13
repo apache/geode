@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,10 +30,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
-import com.gemstone.gemfire.management.internal.cli.shell.GfshConfig;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.shell.GfshConfig;
 
 /**
  * NOTE: Should be used only in

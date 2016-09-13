@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.NoSuchElementException;
 
-import com.gemstone.gemfire.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
 
 public class RVVExceptionB extends RVVException {
 

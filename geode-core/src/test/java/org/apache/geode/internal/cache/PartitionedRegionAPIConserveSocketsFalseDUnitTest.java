@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test all the PartitionedRegion api calls when ConserveSockets is set to false
  *
  * @since GemFire 5.0
- * @see com.gemstone.gemfire.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)
+ * @see org.apache.geode.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)
  */
 @Category(DistributedTest.class)
 public class PartitionedRegionAPIConserveSocketsFalseDUnitTest extends PartitionedRegionAPIDUnitTest {

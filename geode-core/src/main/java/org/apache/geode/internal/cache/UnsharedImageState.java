@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -24,15 +24,15 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableNonReentrantLock;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.concurrent.StoppableNonReentrantLock;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 
 /**
  * Used on distributed replicated regions to track GII and various state.

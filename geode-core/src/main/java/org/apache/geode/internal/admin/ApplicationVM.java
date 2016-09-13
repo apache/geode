@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-//import com.gemstone.gemfire.cache.Region;
+//import org.apache.geode.cache.Region;
 //import java.util.Set;
 
 /**
@@ -30,7 +30,7 @@ public interface ApplicationVM extends GemFireVM {
    * Returns whether or not this "application" VM is a dedicated cache
    * server.
    *
-   * @see com.gemstone.gemfire.internal.cache.CacheServerLauncher
+   * @see org.apache.geode.internal.cache.CacheServerLauncher
    */
   public boolean isDedicatedCacheServer();
 }

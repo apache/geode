@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration;
+package org.apache.geode.management.internal.configuration;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.ClassBuilder;
-import com.gemstone.gemfire.internal.JarDeployer;
-import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
-import com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.HeadlessGfsh;
+import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,19 +48,19 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.cache.RegionShortcut.PARTITION;
-import static com.gemstone.gemfire.cache.RegionShortcut.REPLICATE;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static com.gemstone.gemfire.internal.FileUtil.delete;
-import static com.gemstone.gemfire.internal.FileUtil.deleteMatching;
-import static com.gemstone.gemfire.internal.lang.StringUtils.isBlank;
-import static com.gemstone.gemfire.management.internal.cli.CliUtil.getAllNormalMembers;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.Host.getHost;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.FileUtil.delete;
+import static org.apache.geode.internal.FileUtil.deleteMatching;
+import static org.apache.geode.internal.lang.StringUtils.isBlank;
+import static org.apache.geode.management.internal.cli.CliUtil.getAllNormalMembers;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 @Category(DistributedTest.class)
 public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
@@ -205,8 +205,8 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
       byte[] jarBytes = classBuilder.createJarFromClassContent("com/qcdunit/QueueCommandsDUnitTestListener",
           "package com.qcdunit;" +
               "import java.util.List; import java.util.Properties;" +
-              "import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2; import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;" +
-              "import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;" +
+              "import org.apache.geode.internal.cache.xmlcache.Declarable2; import org.apache.geode.cache.asyncqueue.AsyncEvent;" +
+              "import org.apache.geode.cache.asyncqueue.AsyncEventListener;" +
               "public class QueueCommandsDUnitTestListener implements Declarable2, AsyncEventListener {" +
               "Properties props;" +
               "public boolean processEvents(List<AsyncEvent> events) { return true; }" +

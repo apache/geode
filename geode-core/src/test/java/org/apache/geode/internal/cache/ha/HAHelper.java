@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.ha;
+package org.apache.geode.internal.cache.ha;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.cache.HARegion;
+import org.apache.geode.internal.cache.HARegion;
 
 /**
  * Helper class to access the required functions of this package from

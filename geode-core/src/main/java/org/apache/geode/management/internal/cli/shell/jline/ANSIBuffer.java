@@ -4,7 +4,7 @@
  * This software is distributable under the BSD license. See the terms of the
  * BSD license in the documentation provided with this software.
  */
-package com.gemstone.gemfire.management.internal.cli.shell.jline;
+package org.apache.geode.management.internal.cli.shell.jline;
 
 import org.springframework.shell.support.util.OsUtils;
 

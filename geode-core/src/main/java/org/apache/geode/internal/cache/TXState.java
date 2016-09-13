@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,38 +33,38 @@ import javax.transaction.Status;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.SynchronizationCommitConflictException;
-import com.gemstone.gemfire.cache.TransactionDataRebalancedException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.TransactionWriterException;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.TXManagerCancelledException;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
-import com.gemstone.gemfire.internal.cache.partitioned.PutAllPRMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
+import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.TransactionWriterException;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.TXManagerCancelledException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.control.MemoryThresholds;
+import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
+import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.offheap.annotations.Retained;
 
 /** TXState is the entity that tracks the transaction state on a per
  * thread basis, noting changes to Region entries on a per operation
@@ -199,7 +199,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getTransactionId()
+   * @see org.apache.geode.internal.cache.TXStateInterface#getTransactionId()
    */
   public TransactionId getTransactionId() {
     return this.proxy.getTxId();
@@ -231,7 +231,7 @@ public class TXState implements TXStateInterface {
   
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#readRegion(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.TXStateInterface#readRegion(org.apache.geode.internal.cache.LocalRegion)
    */
   public TXRegionState readRegion(LocalRegion r) {
     return this.regions.get(r);
@@ -243,7 +243,7 @@ public class TXState implements TXStateInterface {
     }
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#writeRegion(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.TXStateInterface#writeRegion(org.apache.geode.internal.cache.LocalRegion)
    */
   public TXRegionState writeRegion(LocalRegion r) {
     TXRegionState result = readRegion(r);
@@ -262,13 +262,13 @@ public class TXState implements TXStateInterface {
     return result;
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getBeginTime()
+   * @see org.apache.geode.internal.cache.TXStateInterface#getBeginTime()
    */
   public long getBeginTime() {
     return this.beginTime;
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getChanges()
+   * @see org.apache.geode.internal.cache.TXStateInterface#getChanges()
    */
   public int getChanges() {
     int changes = 0;
@@ -280,21 +280,21 @@ public class TXState implements TXStateInterface {
     return changes;
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#isInProgress()
+   * @see org.apache.geode.internal.cache.TXStateInterface#isInProgress()
    */
   public boolean isInProgress() {
     return !this.closed;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#nextModSerialNum()
+   * @see org.apache.geode.internal.cache.TXStateInterface#nextModSerialNum()
    */
   public int nextModSerialNum() {
     this.modSerialNum += 1;
     return this.modSerialNum;
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#needsLargeModCount()
+   * @see org.apache.geode.internal.cache.TXStateInterface#needsLargeModCount()
    */
   public boolean needsLargeModCount() {
     return this.modSerialNum > Byte.MAX_VALUE;
@@ -341,7 +341,7 @@ public class TXState implements TXStateInterface {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#commit()
+   * @see org.apache.geode.internal.cache.TXStateInterface#commit()
    */
   public void commit() throws CommitConflictException {    
     if (this.closed) {
@@ -520,7 +520,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#rollback()
+   * @see org.apache.geode.internal.cache.TXStateInterface#rollback()
    */
   public void rollback() {
     if (this.closed) {
@@ -835,7 +835,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getEvents()
+   * @see org.apache.geode.internal.cache.TXStateInterface#getEvents()
    */
   public List getEvents() {
     ArrayList events = new ArrayList();
@@ -909,7 +909,7 @@ public class TXState implements TXStateInterface {
   //           JTA Synchronization implementation                 //
   //////////////////////////////////////////////////////////////////
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#beforeCompletion()
+   * @see org.apache.geode.internal.cache.TXStateInterface#beforeCompletion()
    */
   public void beforeCompletion() throws SynchronizationCommitConflictException {
     if (this.closed) {
@@ -967,7 +967,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#afterCompletion(int)
+   * @see org.apache.geode.internal.cache.TXStateInterface#afterCompletion(int)
    */
   public void afterCompletion(int status) {
     // System.err.println("start afterCompletion");
@@ -1091,14 +1091,14 @@ public class TXState implements TXStateInterface {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getCache()
+   * @see org.apache.geode.internal.cache.TXStateInterface#getCache()
    */
   public Cache getCache() {
     return this.proxy.getTxMgr().getCache();
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getRegions()
+   * @see org.apache.geode.internal.cache.TXStateInterface#getRegions()
    */
   public Collection<LocalRegion> getRegions() {
     return this.regions.keySet();
@@ -1218,7 +1218,7 @@ public class TXState implements TXStateInterface {
   
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#containsValueForKey(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.TXStateInterface#containsValueForKey(java.lang.Object, org.apache.geode.internal.cache.LocalRegion)
    */
   public boolean containsValueForKey(KeyInfo keyInfo, LocalRegion region) {
     TXEntryState tx = txReadEntry(keyInfo, region, true, true/*create txEntry is absent*/);
@@ -1236,7 +1236,7 @@ public class TXState implements TXStateInterface {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#destroyExistingEntry(com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean, java.lang.Object)
+   * @see org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry(org.apache.geode.internal.cache.EntryEventImpl, boolean, java.lang.Object)
    */
   public void destroyExistingEntry(final EntryEventImpl event, final boolean cacheWrite, Object expectedOldValue) {
     if(bridgeContext==null) {
@@ -1255,7 +1255,7 @@ public class TXState implements TXStateInterface {
     }
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#invalidateExistingEntry(com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean, boolean)
+   * @see org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry(org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
   public void invalidateExistingEntry(final EntryEventImpl event, boolean invokeCallbacks, boolean forceNewEntry) {
     if(bridgeContext==null) {
@@ -1311,7 +1311,7 @@ public class TXState implements TXStateInterface {
     return tx;
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getEntry(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.TXStateInterface#getEntry(java.lang.Object, org.apache.geode.internal.cache.LocalRegion)
    */
   public Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones) {
     TXEntryState tx = txReadEntry(keyInfo, region, true, true/*create txEntry is absent*/);
@@ -1401,7 +1401,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion, boolean)
+   * @see org.apache.geode.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object, org.apache.geode.internal.cache.LocalRegion, boolean)
    */
   public Object getDeserializedValue(KeyInfo keyInfo,
                                      LocalRegion localRegion,
@@ -1426,7 +1426,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#getSerializedValue(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object)
+   * @see org.apache.geode.internal.cache.InternalDataView#getSerializedValue(org.apache.geode.internal.cache.LocalRegion, java.lang.Object, java.lang.Object)
    */
   @Retained
   public Object getSerializedValue(LocalRegion localRegion,
@@ -1454,7 +1454,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#entryCount(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.InternalDataView#entryCount(org.apache.geode.internal.cache.LocalRegion)
    */
   public int entryCount(LocalRegion localRegion) {
     int result = localRegion.getRegionSize();
@@ -1472,7 +1472,7 @@ public class TXState implements TXStateInterface {
     }
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#containsKey(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.TXStateInterface#containsKey(java.lang.Object, org.apache.geode.internal.cache.LocalRegion)
    */
   public boolean containsKey(KeyInfo keyInfo, LocalRegion localRegion) {
     TXEntryState tx = txReadEntry(keyInfo, localRegion, true,true/*create txEntry is absent*/);
@@ -1483,7 +1483,7 @@ public class TXState implements TXStateInterface {
     }
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getValueInVM(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion, boolean)
+   * @see org.apache.geode.internal.cache.TXStateInterface#getValueInVM(java.lang.Object, org.apache.geode.internal.cache.LocalRegion, boolean)
    */
   @Retained
   public Object getValueInVM(KeyInfo keyInfo, LocalRegion localRegion,
@@ -1496,7 +1496,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#putEntry(com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
+   * @see org.apache.geode.internal.cache.TXStateInterface#putEntry(org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
    */
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
@@ -1519,13 +1519,13 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#isStatsDeferred()
+   * @see org.apache.geode.internal.cache.InternalDataView#isStatsDeferred()
    */
   public boolean isDeferredStats() {
     return true;
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#findObject(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
+   * @see org.apache.geode.internal.cache.TXStateInterface#findObject(org.apache.geode.internal.cache.LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
    */
   public Object findObject(KeyInfo key,
                            LocalRegion r,
@@ -1554,7 +1554,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getEntryForIterator(com.gemstone.gemfire.internal.cache.LocalRegion, java.lang.Object, boolean)
+   * @see org.apache.geode.internal.cache.TXStateInterface#getEntryForIterator(org.apache.geode.internal.cache.LocalRegion, java.lang.Object, boolean)
    */
   public Object getEntryForIterator(KeyInfo curr, LocalRegion currRgn,
       boolean rememberReads, boolean allowTombstones) {
@@ -1582,7 +1582,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#getKeyForIterator(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion, boolean)
+   * @see org.apache.geode.internal.cache.InternalDataView#getKeyForIterator(java.lang.Object, org.apache.geode.internal.cache.LocalRegion, boolean)
    */
   public Object getKeyForIterator(KeyInfo curr, LocalRegion currRgn,
       boolean rememberReads, boolean allowTombstones) {
@@ -1594,7 +1594,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#getAdditionalKeysForIterator(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.InternalDataView#getAdditionalKeysForIterator(org.apache.geode.internal.cache.LocalRegion)
    */
   public Set getAdditionalKeysForIterator(LocalRegion currRgn) {
     if (currRgn instanceof PartitionedRegion) {
@@ -1622,7 +1622,7 @@ public class TXState implements TXStateInterface {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#isInProgressAndSameAs(com.gemstone.gemfire.internal.cache.TXStateInterface)
+   * @see org.apache.geode.internal.cache.TXStateInterface#isInProgressAndSameAs(org.apache.geode.internal.cache.TXStateInterface)
    */
   public boolean isInProgressAndSameAs(TXStateInterface otherState) {
     return isInProgress() && otherState == this;
@@ -1630,7 +1630,7 @@ public class TXState implements TXStateInterface {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#putEntryOnRemote(com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
+   * @see org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
    */
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew,
       boolean ifOld, Object expectedOldValue, boolean requireOldValue,
@@ -1682,7 +1682,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#getBucketKeys(com.gemstone.gemfire.internal.cache.LocalRegion, int)
+   * @see org.apache.geode.internal.cache.InternalDataView#getBucketKeys(org.apache.geode.internal.cache.LocalRegion, int)
    */
   public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
     PartitionedRegion pr = (PartitionedRegion)localRegion;
@@ -1690,7 +1690,7 @@ public class TXState implements TXStateInterface {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#getEntryOnRemote(java.lang.Object, com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.InternalDataView#getEntryOnRemote(java.lang.Object, org.apache.geode.internal.cache.LocalRegion)
    */
   public Entry getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
       throws DataLocationException {
@@ -1707,14 +1707,14 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#getSemaphore()
+   * @see org.apache.geode.internal.cache.TXStateInterface#getSemaphore()
    */
   public ReentrantLock getLock() {
     return proxy.getLock();
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#getRegionKeysForIteration(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.InternalDataView#getRegionKeysForIteration(org.apache.geode.internal.cache.LocalRegion)
    */
   public Set getRegionKeysForIteration(LocalRegion currRegion) {
     return currRegion.getRegionKeysForIteration();
@@ -1748,7 +1748,7 @@ public class TXState implements TXStateInterface {
   /*
    * For TX this needs to be a PR passed in as region
    *
-   * @see com.gemstone.gemfire.internal.cache.InternalDataView#postPutAll(com.gemstone.gemfire.internal.cache.DistributedPutAllOperation, java.util.Map, com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.InternalDataView#postPutAll(org.apache.geode.internal.cache.DistributedPutAllOperation, java.util.Map, org.apache.geode.internal.cache.LocalRegion)
    */
   public void postPutAll(final DistributedPutAllOperation putallOp, final VersionedObjectList successfulPuts,LocalRegion reg) {
 	  

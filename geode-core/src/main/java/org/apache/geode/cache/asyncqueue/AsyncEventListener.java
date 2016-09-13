@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.asyncqueue;
+package org.apache.geode.cache.asyncqueue;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.CacheCallback;
+import org.apache.geode.cache.CacheCallback;
 
 /**
  * A callback for events passing through the <code>AsyncEventQueue</code> to which this

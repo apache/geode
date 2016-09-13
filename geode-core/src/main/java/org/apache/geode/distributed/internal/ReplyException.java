@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.GemFireException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.SerializationException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Exception thrown when a DistributionMessage is processed to be propagated

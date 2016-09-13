@@ -19,7 +19,7 @@
  *
  * Created on March 16, 2005, 6:20 PM
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,34 +27,34 @@ import java.util.Collections;
 import java.util.List;
 
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.AmbiguousNameException;
-import com.gemstone.gemfire.cache.query.IndexInvalidException;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.CompiledBindArgument;
-import com.gemstone.gemfire.cache.query.internal.CompiledComparison;
-import com.gemstone.gemfire.cache.query.internal.CompiledFunction;
-import com.gemstone.gemfire.cache.query.internal.CompiledID;
-import com.gemstone.gemfire.cache.query.internal.CompiledIndexOperation;
-import com.gemstone.gemfire.cache.query.internal.CompiledIteratorDef;
-import com.gemstone.gemfire.cache.query.internal.CompiledLiteral;
-import com.gemstone.gemfire.cache.query.internal.CompiledNegation;
-import com.gemstone.gemfire.cache.query.internal.CompiledOperation;
-import com.gemstone.gemfire.cache.query.internal.CompiledPath;
-import com.gemstone.gemfire.cache.query.internal.CompiledRegion;
-import com.gemstone.gemfire.cache.query.internal.CompiledUndefined;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.MapIndexable;
-import com.gemstone.gemfire.cache.query.internal.QRegion;
-import com.gemstone.gemfire.cache.query.internal.RuntimeIterator;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.IndexInvalidException;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.CompiledBindArgument;
+import org.apache.geode.cache.query.internal.CompiledComparison;
+import org.apache.geode.cache.query.internal.CompiledFunction;
+import org.apache.geode.cache.query.internal.CompiledID;
+import org.apache.geode.cache.query.internal.CompiledIndexOperation;
+import org.apache.geode.cache.query.internal.CompiledIteratorDef;
+import org.apache.geode.cache.query.internal.CompiledLiteral;
+import org.apache.geode.cache.query.internal.CompiledNegation;
+import org.apache.geode.cache.query.internal.CompiledOperation;
+import org.apache.geode.cache.query.internal.CompiledPath;
+import org.apache.geode.cache.query.internal.CompiledRegion;
+import org.apache.geode.cache.query.internal.CompiledUndefined;
+import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.MapIndexable;
+import org.apache.geode.cache.query.internal.QRegion;
+import org.apache.geode.cache.query.internal.RuntimeIterator;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  *

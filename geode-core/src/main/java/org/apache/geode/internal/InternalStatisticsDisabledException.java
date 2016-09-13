@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.GemFireCheckedException;
+import org.apache.geode.GemFireCheckedException;
 
 /**
  * Thrown if statistics are requested when statistics are disabled on the
@@ -25,10 +25,10 @@ import com.gemstone.gemfire.GemFireCheckedException;
  *
  *
  *
- * @see com.gemstone.gemfire.cache.AttributesFactory#setStatisticsEnabled(boolean)
- * @see com.gemstone.gemfire.cache.RegionAttributes#getStatisticsEnabled
- * @see com.gemstone.gemfire.cache.Region#getStatistics
- * @see com.gemstone.gemfire.cache.Region.Entry#getStatistics
+ * @see org.apache.geode.cache.AttributesFactory#setStatisticsEnabled(boolean)
+ * @see org.apache.geode.cache.RegionAttributes#getStatisticsEnabled
+ * @see org.apache.geode.cache.Region#getStatistics
+ * @see org.apache.geode.cache.Region.Entry#getStatistics
  * @since GemFire 3.0
  */
 public class InternalStatisticsDisabledException extends GemFireCheckedException {

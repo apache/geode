@@ -20,7 +20,7 @@
  *
  * Created on March 24, 2005, 5:54 PM
  */
-package com.gemstone.gemfire.cache.query.functional;
+package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -34,21 +34,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Utils;
-import com.gemstone.gemfire.cache.query.data.Address;
-import com.gemstone.gemfire.cache.query.data.Employee;
-import com.gemstone.gemfire.cache.query.data.Manager;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.internal.StructSet;
-import com.gemstone.gemfire.cache.query.types.CollectionType;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Utils;
+import org.apache.geode.cache.query.data.Address;
+import org.apache.geode.cache.query.data.Employee;
+import org.apache.geode.cache.query.data.Manager;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.StructSet;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  */

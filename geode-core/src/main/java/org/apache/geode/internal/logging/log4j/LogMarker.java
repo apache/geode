@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import java.io.DataOutput;
 
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-import com.gemstone.gemfire.DataSerializable;
+import org.apache.geode.DataSerializable;
 
 public interface LogMarker {
   /**
@@ -56,7 +56,7 @@ public interface LogMarker {
   public static final Marker SERIALIZER = MarkerManager.getMarker("SERIALIZER").addParents(GEMFIRE_VERBOSE); // DataSerializer.DEBUG
   /** If the <code>"DataSerializer.DUMP_SERIALIZED"</code> system
    * property is set, the class names of the objects that are
-   * serialized by {@link com.gemstone.gemfire.DataSerializer#writeObject(Object, DataOutput)} using standard Java
+   * serialized by {@link org.apache.geode.DataSerializer#writeObject(Object, DataOutput)} using standard Java
    * serialization are logged to {@linkplain System#out standard out}.
    * This aids in determining which classes should implement {@link
    * DataSerializable} (or should be special cased by a custom

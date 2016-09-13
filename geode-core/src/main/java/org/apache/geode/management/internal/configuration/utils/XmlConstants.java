@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.configuration.utils;
+package org.apache.geode.management.internal.configuration.utils;
 
 import javax.xml.XMLConstants;
 

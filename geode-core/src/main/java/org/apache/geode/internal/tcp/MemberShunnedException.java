@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.GemFireException;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * MemberShunnedException may be thrown to prevent ack-ing a message

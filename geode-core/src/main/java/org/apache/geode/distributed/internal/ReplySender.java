@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.cache.DirectReplyMessage;
 
 /**
  * This interface is used by direct ack messages to send a reply

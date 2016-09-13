@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.lru;
+package org.apache.geode.internal.cache.lru;
 
-import com.gemstone.gemfire.*;
-//import com.gemstone.gemfire.internal.*;
+import org.apache.geode.*;
+//import org.apache.geode.internal.*;
 
 /**
  * Statistics for the HeapLRUCapacityController, which treats the
  * counter statistic differently than other flavors of
  * <code>LRUAlgorithms</code>
  *
- * @see com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController
- * @see com.gemstone.gemfire.internal.cache.lru.LRUCapacityController
+ * @see org.apache.geode.internal.cache.lru.MemLRUCapacityController
+ * @see org.apache.geode.internal.cache.lru.LRUCapacityController
  * @since GemFire 4.0
  */
 public class HeapLRUStatistics extends LRUStatistics {
@@ -46,7 +46,7 @@ public class HeapLRUStatistics extends LRUStatistics {
    *  about <code>Region</code> changes, it only considers heap
    *  changes and uses <code>Runtime</code> to determine how much to
    *  evict.
-   * @see com.gemstone.gemfire.internal.cache.lru.HeapLRUCapacityController#createLRUHelper
+   * @see org.apache.geode.internal.cache.lru.HeapLRUCapacityController#createLRUHelper
    * @see EnableLRU#mustEvict
    */
   @Override

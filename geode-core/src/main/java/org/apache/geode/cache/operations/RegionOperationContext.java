@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 
 /**
  * Encapsulates a region-level operation in both the pre-operation and
  * post-operation cases. The operations this class encapsulates are
- * {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_CLEAR} 
- * and {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.
+ * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_CLEAR} 
+ * and {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.
  * 
  * @since GemFire 5.5
  */
@@ -50,8 +50,8 @@ public abstract class RegionOperationContext extends OperationContext {
    * object.
    * 
    * @return The <code>OperationCode</code> of this operation. This is one of
-   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_CLEAR} or
-   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.
+   *         {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_CLEAR} or
+   *         {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.
    */
   @Override
   public abstract OperationCode getOperationCode();

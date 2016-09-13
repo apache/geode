@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.exception;
+package org.apache.geode.rest.internal.web.exception;
 
-import com.gemstone.gemfire.pdx.JSONFormatterException;
+import org.apache.geode.pdx.JSONFormatterException;
 
 /**
  * Indicates that incorrect JSON document encountered while processing it.

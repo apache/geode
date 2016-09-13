@@ -15,9 +15,9 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 import java.io.*;
 

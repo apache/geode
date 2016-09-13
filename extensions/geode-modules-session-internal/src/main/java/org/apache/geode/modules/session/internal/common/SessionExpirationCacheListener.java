@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.common;
+package org.apache.geode.modules.session.internal.common;
 
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 
 import java.util.Properties;
 import javax.servlet.http.HttpSession;

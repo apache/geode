@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.i18n.StringId;
 
 /**
  * All Management Localization strings are to be

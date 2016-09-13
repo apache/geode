@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -34,16 +34,16 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
-import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
-import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
-import com.gemstone.gemfire.internal.util.VersionedArrayList;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
+import org.apache.geode.internal.util.VersionedArrayList;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This class is an integration test for <code>PartitionedRegionQueryEvaluator</code> class.

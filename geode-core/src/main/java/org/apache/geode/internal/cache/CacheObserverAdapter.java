@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.cache.RegionEvent;
+import org.apache.geode.cache.RegionEvent;
 
 /**
  * This class provides 'do-nothing' implementations of all of the methods of
  * interface CacheObserver. See the documentation for class CacheObserverHolder
  * for details. Also the callback is issed only if the boolean
  * ISSUE_CALLBACKS_TO_CACHE_OBSERVER present in
- * com.gemstone.gemfire.internal.cache.LocalRegion is made true
+ * org.apache.geode.internal.cache.LocalRegion is made true
  * 
  */
 public class CacheObserverAdapter implements CacheObserver {
@@ -71,7 +71,7 @@ public class CacheObserverAdapter implements CacheObserver {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.CacheObserver#afterConflation(java.nio.ByteBuffer,
+   * @see org.apache.geode.internal.cache.CacheObserver#afterConflation(java.nio.ByteBuffer,
    *      java.nio.ByteBuffer)
    */
   public void afterConflation(ByteBuffer origBB, ByteBuffer conflatedBB)
@@ -80,7 +80,7 @@ public class CacheObserverAdapter implements CacheObserver {
   }
   /*
    *  (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.CacheObserver#afterSettingOplogOffSet()
+   * @see org.apache.geode.internal.cache.CacheObserver#afterSettingOplogOffSet()
    */
   public void afterSettingOplogOffSet(long offset) {
     // TODO Auto-generated method stub
@@ -99,7 +99,7 @@ public class CacheObserverAdapter implements CacheObserver {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.CacheObserver#beforeStoppingCompacter()
+   * @see org.apache.geode.internal.cache.CacheObserver#beforeStoppingCompacter()
    */
   public void beforeStoppingCompactor()
   {
@@ -125,7 +125,7 @@ public class CacheObserverAdapter implements CacheObserver {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.CacheObserver#afterSwitchingWriteAndFlushMaps()
+   * @see org.apache.geode.internal.cache.CacheObserver#afterSwitchingWriteAndFlushMaps()
    */
   public void afterSwitchingWriteAndFlushMaps()
   {

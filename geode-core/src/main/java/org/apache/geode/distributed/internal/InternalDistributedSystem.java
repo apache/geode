@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,73 +42,73 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AlertLevel;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.internal.FunctionServiceManager;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.distributed.internal.locks.GrantorRequestProcessor;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.SystemTimer;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.cache.CacheConfig;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.execute.FunctionServiceStats;
-import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
-import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterFactory;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
-import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
-import com.gemstone.gemfire.internal.statistics.DummyStatisticsImpl;
-import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
-import com.gemstone.gemfire.internal.statistics.platform.LinuxProcFsStatistics;
-import com.gemstone.gemfire.internal.statistics.LocalStatisticsImpl;
-import com.gemstone.gemfire.internal.statistics.platform.OsStatisticsFactory;
-import com.gemstone.gemfire.internal.statistics.StatisticsImpl;
-import com.gemstone.gemfire.internal.statistics.StatisticsManager;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AlertLevel;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.internal.FunctionServiceManager;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.FunctionServiceStats;
+import org.apache.geode.internal.cache.execute.FunctionStats;
+import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.offheap.MemoryAllocator;
+import org.apache.geode.internal.offheap.OffHeapStorage;
+import org.apache.geode.internal.statistics.DummyStatisticsImpl;
+import org.apache.geode.internal.statistics.GemFireStatSampler;
+import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
+import org.apache.geode.internal.statistics.LocalStatisticsImpl;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
+import org.apache.geode.internal.statistics.StatisticsImpl;
+import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.concurrent.StoppableCondition;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that
@@ -479,7 +479,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     //    if (DistributionConfigImpl.forceDisableTcp) {
     //      this.logger.warning("Use of UDP has been forced");
     //    }
-    //    if (com.gemstone.gemfire.distributed.internal.membership.jgroup.JGroupMembershipManager.multicastTest) {
+    //    if (org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager.multicastTest) {
     //      this.logger.warning("Use of multicast for all distributed cache operations has been forced");
     //    }
 
@@ -1509,7 +1509,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
    * Returns the id of this connection to the distributed system.
    * This is actually the port of the distribution manager's
    * distribution channel.
-   * @see com.gemstone.gemfire.distributed.internal.DistributionChannel#getId
+   * @see org.apache.geode.distributed.internal.DistributionChannel#getId
    */
   @Override
   public long getId() {
@@ -2860,7 +2860,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * see {@link com.gemstone.gemfire.admin.AdminDistributedSystemFactory}
+   * see {@link org.apache.geode.admin.AdminDistributedSystemFactory}
    * @since GemFire 5.7
    */
   public static void setEnableAdministrationOnly(boolean adminOnly) {

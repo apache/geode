@@ -15,11 +15,11 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.util.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class provides a way for a {@link CancellationMessage} to find its prey.

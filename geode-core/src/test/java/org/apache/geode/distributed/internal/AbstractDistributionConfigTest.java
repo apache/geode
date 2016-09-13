@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Answers.*;
@@ -25,9 +25,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.gemstone.gemfire.GemFireConfigException;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.security.SecurableComponents;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(MockitoJUnitRunner.class)

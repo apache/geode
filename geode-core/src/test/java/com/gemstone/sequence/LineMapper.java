@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.sequence;
+package org.apache.sequence;
 
 /**
  * An interface for mapping a lifeline name to a shorter version of the same

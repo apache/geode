@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
 /**
  * Enumeration of all possible event types which can be listened for.

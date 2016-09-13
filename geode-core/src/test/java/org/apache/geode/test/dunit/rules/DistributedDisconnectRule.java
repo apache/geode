@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.rules;
+package org.apache.geode.test.dunit.rules;
 
-// TODO:uncomment: import static com.gemstone.gemfire.test.dunit.DistributedTestRule.*;
+// TODO:uncomment: import static org.apache.geode.test.dunit.DistributedTestRule.*;
 
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnable;
 
 /**
  * Disconnects all remote DUnit JVMs including the Locator JVM.

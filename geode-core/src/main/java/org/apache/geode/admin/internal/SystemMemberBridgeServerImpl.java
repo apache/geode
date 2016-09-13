@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import java.io.Serializable;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.SystemMemberBridgeServer;
-import com.gemstone.gemfire.admin.SystemMemberCacheServer;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.SystemMemberBridgeServer;
+import org.apache.geode.admin.SystemMemberCacheServer;
+import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of an object used for managing cache servers.

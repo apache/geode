@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.management;
+package org.apache.geode.cache.lucene.internal.management;
 
 public class StatsKey {
 

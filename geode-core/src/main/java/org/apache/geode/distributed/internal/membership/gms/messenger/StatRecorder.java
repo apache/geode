@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
+package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Event;
@@ -28,9 +28,9 @@ import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.protocols.pbcast.NakAckHeader2;
 import org.jgroups.stack.Protocol;
 
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 
 import java.util.concurrent.RejectedExecutionException;
 

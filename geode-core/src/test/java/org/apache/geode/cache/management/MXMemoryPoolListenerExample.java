@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.management;
+package org.apache.geode.cache.management;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.DistributedSystem;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
 
 import javax.management.Notification;
 import javax.management.NotificationEmitter;
@@ -33,14 +33,14 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * An test class for exploring the various notification listener behaviors
  * 
  * Run it like this:
  * 
- * java -cp geode-dependencies.jar:. -Dgemfire.log-file=system.log -Dgemfire.statistic-archive-file=statsArchive.gfs com.gemstone.gemfire.cache.control.MXMemoryPoolListenerExample  
+ * java -cp geode-dependencies.jar:. -Dgemfire.log-file=system.log -Dgemfire.statistic-archive-file=statsArchive.gfs org.apache.geode.cache.control.MXMemoryPoolListenerExample  
  * 
  * @since GemFire 6.0
  */

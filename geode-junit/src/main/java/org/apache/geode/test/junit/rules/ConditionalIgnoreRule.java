@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules;
+package org.apache.geode.test.junit.rules;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -26,9 +26,9 @@ import org.junit.AssumptionViolatedException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import com.gemstone.gemfire.test.junit.ConditionalIgnore;
-import com.gemstone.gemfire.test.junit.IgnoreCondition;
-import com.gemstone.gemfire.test.junit.support.IgnoreConditionEvaluationException;
+import org.apache.geode.test.junit.ConditionalIgnore;
+import org.apache.geode.test.junit.IgnoreCondition;
+import org.apache.geode.test.junit.support.IgnoreConditionEvaluationException;
 
 /**
  * The ConditionalIgnoreRule class...
@@ -36,8 +36,8 @@ import com.gemstone.gemfire.test.junit.support.IgnoreConditionEvaluationExceptio
  * @see org.junit.rules.TestRule
  * @see org.junit.runner.Description
  * @see org.junit.runners.model.Statement
- * @see com.gemstone.gemfire.test.junit.ConditionalIgnore
- * @see com.gemstone.gemfire.test.junit.IgnoreCondition
+ * @see org.apache.geode.test.junit.ConditionalIgnore
+ * @see org.apache.geode.test.junit.IgnoreCondition
  */
 @SuppressWarnings({ "serial", "unused" })
 public class ConditionalIgnoreRule implements TestRule, Serializable {

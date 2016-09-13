@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,18 +28,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.management.DistributedRegionMXBean;
-import com.gemstone.gemfire.management.EvictionAttributesData;
-import com.gemstone.gemfire.management.FixedPartitionAttributesData;
-import com.gemstone.gemfire.management.MembershipAttributesData;
-import com.gemstone.gemfire.management.PartitionAttributesData;
-import com.gemstone.gemfire.management.RegionAttributesData;
-import com.gemstone.gemfire.management.RegionMXBean;
-import com.gemstone.gemfire.management.internal.FederationComponent;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.beans.stats.RegionClusterStatsMonitor;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.EvictionAttributesData;
+import org.apache.geode.management.FixedPartitionAttributesData;
+import org.apache.geode.management.MembershipAttributesData;
+import org.apache.geode.management.PartitionAttributesData;
+import org.apache.geode.management.RegionAttributesData;
+import org.apache.geode.management.RegionMXBean;
+import org.apache.geode.management.internal.FederationComponent;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.beans.stats.RegionClusterStatsMonitor;
 
 /**
  * Bridge to collect data from all the proxies from a named region.

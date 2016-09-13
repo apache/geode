@@ -25,7 +25,7 @@
     <eis-type>GFE JCA</eis-type>
     <version>1.5</version>
     <resourceadapter>
-        <managedconnectionfactory-class>com.gemstone.gemfire.internal.ra.spi.JCAManagedConnectionFactory</managedconnectionfactory-class>
+        <managedconnectionfactory-class>org.apache.geode.internal.ra.spi.JCAManagedConnectionFactory</managedconnectionfactory-class>
                 <config-property>
                     <config-property-name>ProductName</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
@@ -42,10 +42,10 @@
                     <config-property-value>8.0</config-property-value>
                 </config-property>
         
-        <connectionfactory-interface>com.gemstone.gemfire.ra.GFConnectionFactory</connectionfactory-interface>
-        <connectionfactory-impl-class>com.gemstone.gemfire.internal.ra.GFConnectionFactoryImpl</connectionfactory-impl-class>
-        <connection-interface>com.gemstone.gemfire.ra.GFConnection</connection-interface>
-        <connection-impl-class>com.gemstone.gemfire.internal.ra.GFConnectionImpl</connection-impl-class>
+        <connectionfactory-interface>org.apache.geode.ra.GFConnectionFactory</connectionfactory-interface>
+        <connectionfactory-impl-class>org.apache.geode.internal.ra.GFConnectionFactoryImpl</connectionfactory-impl-class>
+        <connection-interface>org.apache.geode.ra.GFConnection</connection-interface>
+        <connection-impl-class>org.apache.geode.internal.ra.GFConnectionImpl</connection-impl-class>
         <transaction-support>LocalTransaction</transaction-support>
         <reauthentication-support>false</reauthentication-support> 
     </resourceadapter>

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.Token;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.Token;
 
 /**
  * The StringUtils is an abstract utility class for working with and invoking operations on String literals.

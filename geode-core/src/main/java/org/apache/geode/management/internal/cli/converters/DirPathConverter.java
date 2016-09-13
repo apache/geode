@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.converters;
+package org.apache.geode.management.internal.cli.converters;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -25,7 +25,7 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import com.gemstone.gemfire.management.cli.ConverterHint;
+import org.apache.geode.management.cli.ConverterHint;
 
 /**
  * 

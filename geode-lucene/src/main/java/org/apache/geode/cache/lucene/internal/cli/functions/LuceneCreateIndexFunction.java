@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.cli.functions;
+package org.apache.geode.cache.lucene.internal.cli.functions;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneCliStrings;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexDetails;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexInfo;
-import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -46,7 +46,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
  * The LuceneCreateIndexFunction class is a function used to create Lucene indexes.
  * </p>
  * @see Cache
- * @see com.gemstone.gemfire.cache.execute.Function
+ * @see org.apache.geode.cache.execute.Function
  * @see FunctionAdapter
  * @see FunctionContext
  * @see InternalEntity

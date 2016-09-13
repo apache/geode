@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
+import org.apache.geode.cache.operations.OperationContext;
+import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
 
 /**
- * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUTALL} operation for both the
+ * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUTALL} operation for both the
  * pre-operation and post-operation cases.
  * 
  * @since GemFire 5.7

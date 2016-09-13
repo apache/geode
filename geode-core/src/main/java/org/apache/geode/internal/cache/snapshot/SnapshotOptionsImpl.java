@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
+import org.apache.geode.cache.snapshot.SnapshotFilter;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
 
 /**
  * Implements the snapshot options.

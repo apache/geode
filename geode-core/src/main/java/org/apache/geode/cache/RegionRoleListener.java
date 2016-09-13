@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * A listener that can be implemented to handle region reliability membership 
@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache;
  * required roles as defined by the region's {@link MembershipAttributes}.
  * <p>
  * Instead of implementing this interface it is recommended that you extend
- * the {@link com.gemstone.gemfire.cache.util.RegionRoleListenerAdapter} 
+ * the {@link org.apache.geode.cache.util.RegionRoleListenerAdapter} 
  * class.
  * 
  * 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import static org.junit.Assert.*;
 
@@ -25,9 +25,9 @@ import java.util.HashSet;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.management.internal.cli.dto.Car;
-import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.cli.dto.Car;
+import org.apache.geode.management.internal.cli.util.JsonUtil;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DataCommandJsonJUnitTest {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.size;
+package org.apache.geode.internal.size;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
 /**
  * An implementation of {@link ObjectSizer} that calculates an accurate, in

@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.Arrays;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ChunkedMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ObjectPartList;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.types.CollectionType;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.internal.QueryUtils;
-import com.gemstone.gemfire.cache.query.internal.StructImpl;
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.internal.QueryUtils;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.SerializationException;
+import org.apache.geode.cache.client.ServerOperationException;
 
 /**
  * Does a region query on a server
@@ -68,7 +68,7 @@ public class QueryOp {
    */
   protected static class QueryOpImpl extends AbstractOp {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public QueryOpImpl(String queryPredicate) {
       super(MessageType.QUERY, 1);
@@ -76,7 +76,7 @@ public class QueryOp {
     }
 
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public QueryOpImpl(String queryPredicate, Object[] queryParams) {
       super(MessageType.QUERY_WITH_PARAMETERS, 2 + queryParams.length);
@@ -89,7 +89,7 @@ public class QueryOp {
 
     /**
      * This constructor is used by our subclass CreateCQWithIROpImpl
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     protected QueryOpImpl(int msgType, int numParts) {
       super(msgType, numParts);

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.net.URL;
 import java.util.Date;
@@ -42,14 +42,14 @@ import org.apache.commons.modeler.Registry;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.RuntimeAdminException;
-import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.LogWriter;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Common support for MBeans and {@link ManagedResource}s.  Static loading of
@@ -165,7 +165,7 @@ public class MBeanUtil {
         }
         registry.setMBeanServer(mbeanServer);
   
-        String mbeansResource = getOSPath("/com/gemstone/gemfire/admin/jmx/mbeans-descriptors.xml");
+        String mbeansResource = getOSPath("/org/apache/geode/admin/jmx/mbeans-descriptors.xml");
         //System.out.println(LocalizedStrings.MBeanUtil_LOADING_RESOURCE_0.toLocalizedString(mbeansResource));
         
         URL url = ClassPathLoader.getLatest().getResource(MBeanUtil.class, mbeansResource);
@@ -294,7 +294,7 @@ public class MBeanUtil {
     
     // customize the defn...
     managed.setClassName(
-        "com.gemstone.gemfire.admin.jmx.internal.MX4JModelMBean");
+        "org.apache.geode.admin.jmx.internal.MX4JModelMBean");
 
     return managed;
   }

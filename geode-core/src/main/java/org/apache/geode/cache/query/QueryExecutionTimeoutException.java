@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import com.gemstone.gemfire.cache.CacheRuntimeException;
+import org.apache.geode.cache.CacheRuntimeException;
 /**
  * Thrown when the query execution takes more than the specified max time.
  * The Max query execution time is set using the system  variable 

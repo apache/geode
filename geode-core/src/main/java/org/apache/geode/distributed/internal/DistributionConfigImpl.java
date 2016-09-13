@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,18 +40,18 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.security.SecurableComponents;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.process.ProcessLauncherContext;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurableComponent;
+import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -132,7 +132,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   /**
    * The level at which log messages are logged
-   * @see com.gemstone.gemfire.internal.logging.LogWriterImpl#levelNameToCode(String)
+   * @see org.apache.geode.internal.logging.LogWriterImpl#levelNameToCode(String)
    */
   protected int logLevel = DEFAULT_LOG_LEVEL;
 
@@ -332,7 +332,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   /**
    * The level at which security related log messages are logged
-   * @see com.gemstone.gemfire.internal.logging.LogWriterImpl#levelNameToCode(String)
+   * @see org.apache.geode.internal.logging.LogWriterImpl#levelNameToCode(String)
    */
   protected int securityLogLevel = DEFAULT_LOG_LEVEL;
 
@@ -815,7 +815,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   /**
    * Creates a new <code>DistributionConfigImpl</code> with the given
    * non-default configuration properties.  See {@link
-   * com.gemstone.gemfire.distributed.DistributedSystem#connect} for a
+   * org.apache.geode.distributed.DistributedSystem#connect} for a
    * list of exceptions that may be thrown.
    * @param nonDefault The configuration properties specified by the caller
    */
@@ -826,7 +826,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   /**
    * Creates a new <code>DistributionConfigImpl</code> with the given
    * non-default configuration properties. See
-   * {@link com.gemstone.gemfire.distributed.DistributedSystem#connect} for a
+   * {@link org.apache.geode.distributed.DistributedSystem#connect} for a
    * list of exceptions that may be thrown.
    * @param nonDefault The configuration properties specified by the caller
    * @param ignoreGemFirePropsFile whether to skip loading distributed system properties from
@@ -842,7 +842,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   /**
    * Creates a new <code>DistributionConfigImpl</code> with the given
    * non-default configuration properties. See
-   * {@link com.gemstone.gemfire.distributed.DistributedSystem#connect} for a
+   * {@link org.apache.geode.distributed.DistributedSystem#connect} for a
    * list of exceptions that may be thrown.
    * @param nonDefault The configuration properties specified by the caller
    * @param ignoreGemFirePropsFile whether to skip loading distributed system properties from
@@ -3095,14 +3095,14 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DistributionConfig#getMembershipPortRange()
+   * @see org.apache.geode.distributed.internal.DistributionConfig#getMembershipPortRange()
    */
   public int[] getMembershipPortRange() {
     return membershipPortRange;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DistributionConfig#setMembershipPortRange(int[])
+   * @see org.apache.geode.distributed.internal.DistributionConfig#setMembershipPortRange(int[])
    */
   public void setMembershipPortRange(int[] range) {
     membershipPortRange = (int[]) range;

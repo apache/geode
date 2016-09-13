@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -23,11 +23,11 @@ import java.util.Enumeration;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 
 /**

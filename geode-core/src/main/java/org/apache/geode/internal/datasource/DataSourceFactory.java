@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
 /**
  * This class models a datasource factory.The datasource factory has funtions to
@@ -48,11 +48,11 @@ import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.util.PasswordUtil;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.util.PasswordUtil;
 
 public class DataSourceFactory  {
 
@@ -124,7 +124,7 @@ public class DataSourceFactory  {
     // and generate a connection pool.
     Object cm = null;
     if (configs.getMCFClass().equals(
-        "com.gemstone.persistence.connection.internal.ConnFactory")) {
+        "org.apache.persistence.connection.internal.ConnFactory")) {
       cm = new FacetsJCAConnectionManagerImpl(mcf, configs);
     }
     else {

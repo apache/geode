@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.File;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.distributed.LeaseExpiredException;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.distributed.LeaseExpiredException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * <code>RegionFactory</code> is used to create {@link Region regions}

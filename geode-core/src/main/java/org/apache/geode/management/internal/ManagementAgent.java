@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -48,28 +48,28 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.net.SSLConfigurationFactory;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
-import com.gemstone.gemfire.internal.tcp.TCPConduit;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.ManagerMXBean;
-import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
-import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessController;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
+import org.apache.geode.internal.tcp.TCPConduit;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.internal.security.AccessControlMBean;
+import org.apache.geode.management.internal.security.MBeanServerWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.unsafe.ReadOpFileAccessController;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients

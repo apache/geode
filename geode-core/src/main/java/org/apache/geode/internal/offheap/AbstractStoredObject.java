@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.lang.StringUtils;
 
 public abstract class AbstractStoredObject implements StoredObject {
   @Override

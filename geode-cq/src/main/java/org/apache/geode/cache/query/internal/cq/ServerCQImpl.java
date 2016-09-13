@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,40 +27,40 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.client.internal.UserAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributesMutator;
-import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.CqExistsException;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqResults;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.gemstone.gemfire.cache.query.internal.CompiledBindArgument;
-import com.gemstone.gemfire.cache.query.internal.CompiledIteratorDef;
-import com.gemstone.gemfire.cache.query.internal.CompiledRegion;
-import com.gemstone.gemfire.cache.query.internal.CompiledSelect;
-import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesMutator;
+import org.apache.geode.cache.query.CqClosedException;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqExistsException;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqResults;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.internal.CompiledBindArgument;
+import org.apache.geode.cache.query.internal.CompiledIteratorDef;
+import org.apache.geode.cache.query.internal.CompiledRegion;
+import org.apache.geode.cache.query.internal.CompiledSelect;
+import org.apache.geode.cache.query.internal.CqStateImpl;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.i18n.StringId;
 
 public class ServerCQImpl extends CqQueryImpl implements DataSerializable, ServerCQ {
   private static final Logger logger = LogService.getLogger();
@@ -114,7 +114,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#getFilterID()
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#getFilterID()
    */
   @Override
   public Long getFilterID() {
@@ -122,7 +122,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#setFilterID(java.lang.Long)
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#setFilterID(java.lang.Long)
    */
   @Override
   public void setFilterID(Long filterID) {
@@ -352,7 +352,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
     
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#addToCqResultKeys(java.lang.Object)
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#addToCqResultKeys(java.lang.Object)
    */
   @Override
   public void addToCqResultKeys(Object key) {
@@ -380,7 +380,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#removeFromCqResultKeys(java.lang.Object, boolean)
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#removeFromCqResultKeys(java.lang.Object, boolean)
    */
   @Override
   public void removeFromCqResultKeys(Object key, boolean isTokenMode) {
@@ -433,7 +433,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#setCqResultsCacheInitialized()
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#setCqResultsCacheInitialized()
    */
   @Override
   public void setCqResultsCacheInitialized() {
@@ -456,7 +456,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#isOldValueRequiredForQueryProcessing(java.lang.Object)
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#isOldValueRequiredForQueryProcessing(java.lang.Object)
    */
   @Override
   public boolean isOldValueRequiredForQueryProcessing(Object key){
@@ -477,7 +477,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#close(boolean)
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#close(boolean)
    */
   @Override
   public void close(boolean sendRequestToServer) throws CqClosedException, CqException {
@@ -627,7 +627,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#isPR()
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#isPR()
    */
   @Override
   public boolean isPR() {

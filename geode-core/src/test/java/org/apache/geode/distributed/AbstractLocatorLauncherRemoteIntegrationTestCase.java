@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.process.ProcessStreamReader;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.process.ProcessStreamReader;
 import org.junit.After;
 import org.junit.Before;
 

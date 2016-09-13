@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the functionality of a {@link Scope#LOCAL locally scoped}
@@ -149,7 +149,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
 
     } catch (CacheLoaderException ex) {
       String expected =
-        com.gemstone.gemfire.internal.cache.LoaderHelperImpl.NET_SEARCH_LOCAL.toLocalizedString();
+        org.apache.geode.internal.cache.LoaderHelperImpl.NET_SEARCH_LOCAL.toLocalizedString();
       String message = ex.getMessage();
       assertTrue("Unexpected message \"" + message + "\"",
                  message.indexOf(expected) != -1);

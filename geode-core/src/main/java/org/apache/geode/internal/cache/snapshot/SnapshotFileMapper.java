@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
 import java.io.File;
 import java.io.Serializable;
 
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.snapshot.CacheSnapshotService;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
+import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Defines a mapping between the snapshot path and the file(s) to be imported or
@@ -53,9 +53,9 @@ public interface SnapshotFileMapper extends Serializable {
    *          the member performing the export
    * @param snapshot
    *          the path specified in the invocation of
-   *          {@link RegionSnapshotService#save(File, com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat)
+   *          {@link RegionSnapshotService#save(File, org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat)
    *          RegionSnapshotService.load()} or
-   *          {@link CacheSnapshotService#save(File, com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat)
+   *          {@link CacheSnapshotService#save(File, org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat)
    *          CacheSnapshotService.load()}
    * @return the mapped filename, or null to use the existing file
    */
@@ -82,9 +82,9 @@ public interface SnapshotFileMapper extends Serializable {
    *          the member performing the import
    * @param snapshot
    *          the path specified in the invocation of
-   *          {@link RegionSnapshotService#load(File, com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat)
+   *          {@link RegionSnapshotService#load(File, org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat)
    *          RegionSnapshotService.load()} or
-   *          {@link CacheSnapshotService#load(File, com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat)
+   *          {@link CacheSnapshotService#load(File, org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat)
    *          CacheSnapshotService.load()}
    * @return the list of files to import
    */

@@ -21,15 +21,15 @@ Classes in this package implement distribution in GemFire.
 Every virtual machine working with distributed data (client
 VMs, the GemFire console) has an
 instance of {@link
-com.gemstone.gemfire.distributed.internal.DistributionManager}
+org.apache.geode.distributed.internal.DistributionManager}
 that is responsible for sending and receiving {@link
-com.gemstone.gemfire.distributed.internal.DistributionMessage}s.
+org.apache.geode.distributed.internal.DistributionMessage}s.
 A <code>DistributionManager</code> has a unique {@link
-com.gemstone.gemfire.distributed.internal.DistributionManager#getId
+org.apache.geode.distributed.internal.DistributionManager#getId
 id} and uses a JavaGroups com.gemstone.org.javagroups.Channel
 channel to discover the other members of the distributed system.  It
 also uses JavaGroups to detect when a member has left the group.  Note
-that GemStone has com.gemstone.gemfire.distributed.internal.direct.DirectChannel#patchUpAddress
+that GemStone has org.apache.geode.distributed.internal.direct.DirectChannel#patchUpAddress
 modified the implementation of the JavaGroups com.gemstone.org.jgroups.stack.IpAddress to hold the port on which
 the distribution manager's direct channel runs.  This optimization
 allows us to start a distribution manager without having to send out a
@@ -38,10 +38,10 @@ less XML parsing.  This greatly improves the performace of creating a
 JavaGroups channel.)  While some messages may be broadcast to all
 members of the group, the vast majority of messages are only intended
 for a subset of the group are sent point-to-point over a {@link
-com.gemstone.gemfire.distributed.internal.direct.DirectChannel}.
+org.apache.geode.distributed.internal.direct.DirectChannel}.
 The JGroups channel and <code>DirectChannel</code> are combined
 into a {@link
-com.gemstone.gemfire.distributed.internal.DistributionChannel}
+org.apache.geode.distributed.internal.DistributionChannel}
 that is used by the <code>DistributionManager</code>.
 
 <P>

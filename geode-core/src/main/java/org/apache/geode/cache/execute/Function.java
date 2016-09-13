@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.execute;
+package org.apache.geode.cache.execute;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.lang.Identifiable;
+import org.apache.geode.cache.Region;
+import org.apache.geode.lang.Identifiable;
 
 /**
  * Defines the interface a user defined function implements.
@@ -84,15 +84,15 @@ public interface Function extends Identifiable<String> {
 
   /**
    * <p>Return true to indicate to GemFire the method
-   * requires optimization for writing the targeted {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)} and any
+   * requires optimization for writing the targeted {@link FunctionService#onRegion(org.apache.geode.cache.Region)} and any
    * associated {@linkplain Execution#withFilter(java.util.Set) routing objects}.</p>
    *
    * <p>Returning false will optimize for read behavior on the targeted
-   * {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)} and any
+   * {@link FunctionService#onRegion(org.apache.geode.cache.Region)} and any
    * associated {@linkplain Execution#withFilter(java.util.Set) routing objects}.</p>
    *
    * <p>This method is only consulted when Region passed to 
-   * FunctionService#onRegion(com.gemstone.gemfire.cache.Region) is a partitioned region
+   * FunctionService#onRegion(org.apache.geode.cache.Region) is a partitioned region
    * </p>
    *
    * @return false if the function is read only, otherwise returns true

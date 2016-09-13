@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.RebalanceOperation;
 
 /**
  * Thrown when a {@link RebalanceOperation} occurs concurrently with a transaction.

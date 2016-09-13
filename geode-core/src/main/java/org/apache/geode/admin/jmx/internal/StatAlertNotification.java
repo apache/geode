@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Serializable;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.admin.StatAlert;
-import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.admin.StatAlert;
+import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
  * Notification to be sent to clients (e.g GFMon2.0 ). It incorporates

@@ -16,14 +16,14 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.io.*;
-//import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.*;
+//import org.apache.geode.internal.admin.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.cache.*;
+//import org.apache.geode.internal.cache.*;
+import org.apache.geode.*;
 //import java.util.*;
 
 public final class AppCacheSnapshotMessage extends RegionAdminMessage {

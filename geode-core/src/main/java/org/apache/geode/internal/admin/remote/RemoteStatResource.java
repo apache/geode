@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.admin.*;
+import org.apache.geode.*;
+import org.apache.geode.internal.admin.*;
 import java.io.*;
 
 public class RemoteStatResource implements StatResource, DataSerializable {

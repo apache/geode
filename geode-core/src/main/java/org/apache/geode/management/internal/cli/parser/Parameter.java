@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.parser;
+package org.apache.geode.management.internal.cli.parser;
 
 import org.springframework.shell.core.Converter;
 
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
+import org.apache.geode.management.internal.cli.parser.preprocessor.PreprocessorUtils;
 
 /**
  * Parameter of a Command

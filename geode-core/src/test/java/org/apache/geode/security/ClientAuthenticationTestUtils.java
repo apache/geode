@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.security.SecurityTestUtils.*;
 import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 
 /**
  * Extracted from ClientAuthenticationDUnitTest

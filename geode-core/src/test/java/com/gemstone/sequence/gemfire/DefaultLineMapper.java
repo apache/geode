@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.sequence.gemfire;
+package org.apache.sequence.gemfire;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.gemstone.sequence.LineMapper;
+import org.apache.sequence.LineMapper;
 
 /**
  * A lifeline mapper that just returns a shortened version of 

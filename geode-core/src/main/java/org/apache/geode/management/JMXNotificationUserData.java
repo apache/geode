@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
 /**
  * This interface acts as UserData section of JMX notifications of type "system.alert".
@@ -31,7 +31,7 @@ public interface JMXNotificationUserData {
   /**
    * The member of the distributed system that issued the alert, or
    * null if the issuer is no longer a member of the distributed system.
-   * This constant is defined in com.gemstone.gemfire.management.UserData
+   * This constant is defined in org.apache.geode.management.UserData
    */
   
   public static final String MEMBER = "Member"; 

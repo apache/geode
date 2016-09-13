@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,18 +29,18 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.query.CqResults;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.internal.ObjectIntHashMap.Entry;
-import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
-import com.gemstone.gemfire.cache.query.types.CollectionType;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.CqResults;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.ObjectIntHashMap.Entry;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo probably should assert element type when elements added
 // @todo support generics when no longer support Java 1.4

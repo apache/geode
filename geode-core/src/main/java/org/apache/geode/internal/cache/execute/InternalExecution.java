@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 
 /**
  * Internal interface that adds some internal methods to the Execution interface.
@@ -47,7 +47,7 @@ public interface InternalExecution extends Execution {
    * @return an Execution with the filter
    * @throws UnsupportedOperationException
    *           if not called after
-   *           {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)}
+   *           {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since Geode 1.0
    */
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs);

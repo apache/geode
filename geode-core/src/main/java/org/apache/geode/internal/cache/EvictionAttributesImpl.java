@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.EvictionAttributesMutator;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.lru.HeapLRUCapacityController;
-import com.gemstone.gemfire.internal.cache.lru.LRUAlgorithm;
-import com.gemstone.gemfire.internal.cache.lru.LRUCapacityController;
-import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.EvictionAttributesMutator;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.lru.HeapLRUCapacityController;
+import org.apache.geode.internal.cache.lru.LRUAlgorithm;
+import org.apache.geode.internal.cache.lru.LRUCapacityController;
+import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
 
 /**
  * Defines the attributes for configuring the eviction controller associated
@@ -39,14 +39,14 @@ import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
  * previoulsy deprecated CapacityController interface. Eviction, as defined
  * here, is the process of removing an Entry from the Region and potentially
  * placing it elsewhere, as defined by the
- * {@link com.gemstone.gemfire.cache.EvictionAction}. The algorithms used to
+ * {@link org.apache.geode.cache.EvictionAction}. The algorithms used to
  * determine when to perform the <code>EvictionAction</code> are enumerated in
- * the {@link com.gemstone.gemfire.cache.EvictionAlgorithm} class.
+ * the {@link org.apache.geode.cache.EvictionAlgorithm} class.
  * 
- * @see com.gemstone.gemfire.cache.EvictionAlgorithm
- * @see com.gemstone.gemfire.cache.AttributesFactory
- * @see com.gemstone.gemfire.cache.RegionAttributes
- * @see com.gemstone.gemfire.cache.AttributesMutator
+ * @see org.apache.geode.cache.EvictionAlgorithm
+ * @see org.apache.geode.cache.AttributesFactory
+ * @see org.apache.geode.cache.RegionAttributes
+ * @see org.apache.geode.cache.AttributesMutator
  * 
  * @since GemFire 5.0
  */
@@ -98,7 +98,7 @@ public final class EvictionAttributesImpl extends EvictionAttributes
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.EvictionAttributes#getObjectSizer()
+   * @see org.apache.geode.cache.EvictionAttributes#getObjectSizer()
    */
   @Override
   public ObjectSizer getObjectSizer()
@@ -107,7 +107,7 @@ public final class EvictionAttributesImpl extends EvictionAttributes
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.EvictionAttributes#getAlgorithm()
+   * @see org.apache.geode.cache.EvictionAttributes#getAlgorithm()
    */
   @Override
   public EvictionAlgorithm getAlgorithm()
@@ -135,7 +135,7 @@ public final class EvictionAttributesImpl extends EvictionAttributes
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.EvictionAttributes#getMaximum()
+   * @see org.apache.geode.cache.EvictionAttributes#getMaximum()
    */
   @Override
   public int getMaximum()
@@ -166,7 +166,7 @@ public final class EvictionAttributesImpl extends EvictionAttributes
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.EvictionAttributes#getAction()
+   * @see org.apache.geode.cache.EvictionAttributes#getAction()
    */
   @Override
   public EvictionAction getAction()

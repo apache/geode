@@ -14,13 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionStatistics;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
-import com.gemstone.gemfire.modules.util.SessionCustomExpiry;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
+import org.apache.geode.modules.util.RegionConfiguration;
+import org.apache.geode.modules.util.SessionCustomExpiry;
 import org.apache.catalina.Session;
 
 import javax.servlet.http.HttpSession;

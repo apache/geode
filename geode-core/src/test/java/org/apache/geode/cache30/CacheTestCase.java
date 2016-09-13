@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
  * The abstract superclass of tests that require the creation of a

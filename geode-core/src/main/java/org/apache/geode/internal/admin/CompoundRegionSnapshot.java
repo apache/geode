@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 import java.util.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Presents an amalgam snapshot of all the {@linkplain
- * com.gemstone.gemfire.cache.Region regions} in a distributed
+ * org.apache.geode.cache.Region regions} in a distributed
  * system. 
  */
 public class CompoundRegionSnapshot implements RegionSnapshot {
@@ -227,21 +227,21 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
   }
 
   /**
-   * Returns an  {@link java.util.Iterator} of {@link com.gemstone.gemfire.cache.DataPolicy}
+   * Returns an  {@link java.util.Iterator} of {@link org.apache.geode.cache.DataPolicy}
    */
   public Iterator getAllDataPolicies() {
     return allDataPolicies.iterator();
   }
 
   /**
-   * Returns an {@link java.util.Iterator} of {@link com.gemstone.gemfire.cache.ExpirationAttributes}
+   * Returns an {@link java.util.Iterator} of {@link org.apache.geode.cache.ExpirationAttributes}
    */
   public Iterator getAllRegionTtl() {
     return allRegionTtl.iterator();
   }
   
   /**
-   * Returns an {@link java.util.Iterator} of {@link com.gemstone.gemfire.cache.ExpirationAttributes}
+   * Returns an {@link java.util.Iterator} of {@link org.apache.geode.cache.ExpirationAttributes}
    */
   public Iterator getAllEntryTtl() {
     return allEntryTtl.iterator();
@@ -257,7 +257,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
   }
   
   /**
-   * Returns an {@link java.util.Iterator} of {@link com.gemstone.gemfire.cache.ExpirationAttributes}
+   * Returns an {@link java.util.Iterator} of {@link org.apache.geode.cache.ExpirationAttributes}
    */
   public Iterator getAllRegionIdleTimeout() {
     return allRegionIdleTimeout.iterator();
@@ -265,7 +265,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
 
   
   /**
-   * Returns an {@link java.util.Iterator} of {@link com.gemstone.gemfire.cache.ExpirationAttributes}
+   * Returns an {@link java.util.Iterator} of {@link org.apache.geode.cache.ExpirationAttributes}
    */
   public Iterator getAllEntryIdleTimeout() {
     return allEntryIdleTimeout.iterator();
@@ -280,7 +280,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
     return allCustomIdle.iterator();
   }
   /**
-   * Returns an {@link java.util.Iterator} of {@link com.gemstone.gemfire.cache.Scope}
+   * Returns an {@link java.util.Iterator} of {@link org.apache.geode.cache.Scope}
    */
   public Iterator getAllScopes() {
     return allScopes.iterator();

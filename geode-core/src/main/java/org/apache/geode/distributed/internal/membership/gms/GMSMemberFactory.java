@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionException;
-import com.gemstone.gemfire.distributed.internal.LocatorStats;
-import com.gemstone.gemfire.distributed.internal.membership.*;
-import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.tcp.ConnectionException;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionException;
+import org.apache.geode.distributed.internal.LocatorStats;
+import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.tcp.ConnectionException;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.AuthenticationRequiredException;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -39,7 +39,7 @@ import java.net.UnknownHostException;
 /**
  * Create a new Member based on the given inputs.
  * 
- * @see com.gemstone.gemfire.distributed.internal.membership.NetMember
+ * @see org.apache.geode.distributed.internal.membership.NetMember
  */
 public class GMSMemberFactory implements MemberServices {
 

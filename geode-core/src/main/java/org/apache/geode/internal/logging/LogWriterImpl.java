@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,11 +28,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.process.StartupStatusListener;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.process.StartupStatusListener;
+import org.apache.geode.i18n.StringId;
 
 /**
   * Abstract implementation of {@link InternalLogWriter}.
@@ -1026,15 +1026,15 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   private final DateFormat timeFormatter;
 
   /*
-   * @see com.gemstone.gemfire.LogWriter
+   * @see org.apache.geode.LogWriter
    * @since GemFire 6.0
    */
-  public com.gemstone.gemfire.LogWriter convertToLogWriter() {
+  public org.apache.geode.LogWriter convertToLogWriter() {
     return this;
   }
   
   /*
-   * @see com.gemstone.gemfire.LogWriterI18n
+   * @see org.apache.geode.LogWriterI18n
    * @since GemFire 6.0
    */
   public LogWriterI18n convertToLogWriterI18n() {

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.standalone;
+package org.apache.geode.test.dunit.standalone;
 
 import java.rmi.Naming;
 
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher.MasterRemote;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher.MasterRemote;
 
 import org.apache.logging.log4j.Logger;
 

@@ -14,29 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.ResultSenderSink;
-import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ResultSenderSink;
+import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 
 /**
  * Gathers snapshot data from the server using a proxy function.  If PRSingleHop
@@ -152,7 +152,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
 
     @Override
     public String getId() {
-      return "com.gemstone.gemfire.cache.snapshot.ClientExport";
+      return "org.apache.geode.cache.snapshot.ClientExport";
     }
 
     @Override

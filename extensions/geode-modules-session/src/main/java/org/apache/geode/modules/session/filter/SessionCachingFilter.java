@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.filter;
+package org.apache.geode.modules.session.filter;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.modules.session.internal.filter.GemfireHttpSession;
-import com.gemstone.gemfire.modules.session.internal.filter.GemfireSessionManager;
-import com.gemstone.gemfire.modules.session.internal.filter.SessionManager;
-import com.gemstone.gemfire.modules.session.internal.filter.util.ThreadLocalSession;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
+import org.apache.geode.modules.session.internal.filter.GemfireSessionManager;
+import org.apache.geode.modules.session.internal.filter.SessionManager;
+import org.apache.geode.modules.session.internal.filter.util.ThreadLocalSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

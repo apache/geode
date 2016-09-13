@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Cache;
+import org.apache.geode.cache.Cache;
 
 public class MockServerLauncherCacheProvider implements ServerLauncherCacheProvider {
 

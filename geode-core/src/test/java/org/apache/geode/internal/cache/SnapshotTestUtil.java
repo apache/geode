@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.util.HashMap;
@@ -23,8 +23,8 @@ import java.util.Map.Entry;
 
 import static org.junit.Assert.*;
 import com.examples.snapshot.MyObject;
-import com.gemstone.gemfire.cache.snapshot.SnapshotIterator;
-import com.gemstone.gemfire.cache.snapshot.SnapshotReader;
+import org.apache.geode.cache.snapshot.SnapshotIterator;
+import org.apache.geode.cache.snapshot.SnapshotReader;
 
 public class SnapshotTestUtil {
 

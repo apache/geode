@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.unsafe.RegisterSignalHandlerSupport;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.ClassUtils;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.process.PidUnavailableException;
-import com.gemstone.gemfire.internal.process.ProcessUtils;
-import com.gemstone.gemfire.internal.util.SunAPINotFoundException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.util.SunAPINotFoundException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 import java.io.*;
 import java.net.BindException;
@@ -46,7 +46,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and run different GemFire
@@ -54,7 +54,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  * 
  * @see java.lang.Comparable
  * @see java.lang.Runnable
- * @see com.gemstone.gemfire.lang.Identifiable
+ * @see org.apache.geode.lang.Identifiable
  * @since GemFire 7.0
  */
 public abstract class AbstractLauncher<T extends Comparable<T>> implements Runnable {
@@ -120,7 +120,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @param port an integer indicating the network port to listen for client network requests.
    * @throws BindException if the network address and port are not available.  Address defaults to localhost (or all
    * network interfaces on the local system) if null.
-   * @see com.gemstone.gemfire.internal.AvailablePort
+   * @see org.apache.geode.internal.AvailablePort
    */
   protected static void assertPortAvailable(final InetAddress bindAddress, final int port) throws BindException {
     if (!AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, bindAddress)) {
@@ -714,7 +714,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * Gets the state of the GemFire service.
      * 
      * @return a Status enumerated type representing the state of the GemFire service.
-     * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status
+     * @see org.apache.geode.distributed.AbstractLauncher.Status
      */
     public Status getStatus() {
       return status;

@@ -16,7 +16,7 @@
  */
 package io.pivotal.geode.spark.connector.internal;
 
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocation;
 
 import java.util.HashMap;
 import java.util.HashSet;

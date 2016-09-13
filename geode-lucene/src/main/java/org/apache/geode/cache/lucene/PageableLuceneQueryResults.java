@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
 import java.util.Iterator;
 import java.util.List;
 
-import com.gemstone.gemfire.annotations.Experimental;
+import org.apache.geode.annotations.Experimental;
 
 /**
  * <p>

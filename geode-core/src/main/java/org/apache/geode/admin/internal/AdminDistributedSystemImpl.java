@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.admin.Alert;
-import com.gemstone.gemfire.admin.AlertListener;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.FutureCancelledException;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.Banner;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.admin.remote.*;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterFactory;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
-import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.*;
+import org.apache.geode.admin.Alert;
+import org.apache.geode.admin.AlertListener;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.FutureCancelledException;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.Banner;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.admin.remote.*;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
+import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
@@ -49,7 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Represents a GemFire distributed system for remote administration/management.
@@ -57,10 +57,10 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  * @since GemFire     3.5
  */
 public class AdminDistributedSystemImpl
-implements com.gemstone.gemfire.admin.AdminDistributedSystem,
-           com.gemstone.gemfire.internal.admin.JoinLeaveListener,
-           com.gemstone.gemfire.internal.admin.AlertListener,
-           com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener {
+implements org.apache.geode.admin.AdminDistributedSystem,
+           org.apache.geode.internal.admin.JoinLeaveListener,
+           org.apache.geode.internal.admin.AlertListener,
+           org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -200,7 +200,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
   
   /**
    * Creates DistributionLocator instances for every locator entry in the
-   * {@link com.gemstone.gemfire.admin.DistributedSystemConfig}
+   * {@link org.apache.geode.admin.DistributedSystemConfig}
    */
   private void initializeDistributionLocators() {
     DistributionLocatorConfig[] configs =
@@ -224,7 +224,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
   /**
    * Creates <code>CacheServer</code> instances for every cache server
    * entry in the {@link
-   * com.gemstone.gemfire.admin.DistributedSystemConfig}
+   * org.apache.geode.admin.DistributedSystemConfig}
    */
   private void initializeCacheServers() {
     CacheServerConfig[] cacheServerConfigs =
@@ -616,7 +616,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * @return array of system members for each non-manager member
    */
   public SystemMember[] getSystemMemberApplications()
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     synchronized(this.applicationSet) {
       Collection coll = new ArrayList(this.applicationSet.size());
       APPS: for (Iterator iter = this.applicationSet.iterator();
@@ -682,7 +682,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * <p>
    *
    * See {@link
-   * com.gemstone.gemfire.distributed.DistributedSystem#connect} for a
+   * org.apache.geode.distributed.DistributedSystem#connect} for a
    * list of exceptions that may be thrown.
    *
    * @param logWriter the InternalLogWriter to use for any logging
@@ -864,7 +864,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
   /** 
    * Closes all connections and resources to the connected distributed system.
    *
-   * @see com.gemstone.gemfire.distributed.DistributedSystem#disconnect()
+   * @see org.apache.geode.distributed.DistributedSystem#disconnect()
    */
   public void disconnect() {
     synchronized (CONNECTION_SYNC) {
@@ -1035,7 +1035,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
   /** sync to prevent bug 33341 Admin API can double-represent system members */
   private final Object membershipListenerLock = new Object();
   
-  // --------- com.gemstone.gemfire.internal.admin.JoinLeaveListener ---------
+  // --------- org.apache.geode.internal.admin.JoinLeaveListener ---------
   /** 
    * Listener callback for when a member has joined this DistributedSystem.
    * <p>
@@ -1046,7 +1046,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    *
    * @param source  the distributed system that fired nodeJoined
    * @param vm  the VM that joined
-   * @see com.gemstone.gemfire.internal.admin.JoinLeaveListener#nodeJoined
+   * @see org.apache.geode.internal.admin.JoinLeaveListener#nodeJoined
    */
   public void nodeJoined(GfManagerAgent source, final GemFireVM vm) {
     // sync to prevent bug 33341 Admin API can double-represent system members
@@ -1151,7 +1151,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    *
    * @param source  the distributed system that fired nodeCrashed
    * @param vm    the VM that left
-   * @see com.gemstone.gemfire.internal.admin.JoinLeaveListener#nodeLeft
+   * @see org.apache.geode.internal.admin.JoinLeaveListener#nodeLeft
    */
   public void nodeLeft(GfManagerAgent source, GemFireVM vm) {
     // sync to prevent bug 33341 Admin API can double-represent system members
@@ -1182,7 +1182,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    *
    * @param source  the distributed system that fired nodeCrashed
    * @param vm the VM that crashed
-   * @see com.gemstone.gemfire.internal.admin.JoinLeaveListener#nodeCrashed
+   * @see org.apache.geode.internal.admin.JoinLeaveListener#nodeCrashed
    */
   public void nodeCrashed(GfManagerAgent source, GemFireVM vm) {
     // sync to prevent bug 33341 Admin API can double-represent system members
@@ -1207,15 +1207,15 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
     }
   }
 
-  // ----------- com.gemstone.gemfire.internal.admin.AlertListener -----------
+  // ----------- org.apache.geode.internal.admin.AlertListener -----------
   /** 
    * Listener callback for when a SystemMember of this DistributedSystem has 
    * crashed. 
    *
    * @param alert   the latest alert from the system
-   * @see com.gemstone.gemfire.internal.admin.AlertListener#alert
+   * @see org.apache.geode.internal.admin.AlertListener#alert
    */
-  public void alert(com.gemstone.gemfire.internal.admin.Alert alert) {
+  public void alert(org.apache.geode.internal.admin.Alert alert) {
     if (AlertLevel.forSeverity(alert.getLevel()).ordinal < alertLevel.ordinal) {
       return;
     }
@@ -1255,7 +1255,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    *  @throws AdminException TODO-javadocs
    */
   protected SystemMember createSystemMember(ApplicationVM app)
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     return new SystemMemberImpl(this, app);
   }
 
@@ -1267,12 +1267,12 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    *          InternalDistributedMember instance for which a SystemMember
    *          instance is to be constructed.
    * @return constructed SystemMember instance
-   * @throws com.gemstone.gemfire.admin.AdminException
+   * @throws org.apache.geode.admin.AdminException
    *           if construction of SystemMember instance fails
    * @since GemFire 6.5
    */
   protected SystemMember createSystemMember(InternalDistributedMember member)
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     return new SystemMemberImpl(this, member);
   }
 
@@ -2099,7 +2099,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    */
   public class AlertImpl implements Alert {
     /** The Alert to which most behavior is delegated */
-    private final com.gemstone.gemfire.internal.admin.Alert alert;
+    private final org.apache.geode.internal.admin.Alert alert;
     private SystemMember systemMember;
 
     ///////////////////////  Constructors  ///////////////////////
@@ -2108,7 +2108,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
      * Creates a new <code>Alert</code> that delegates to the given
      * object. 
      */
-    AlertImpl(com.gemstone.gemfire.internal.admin.Alert alert) {
+    AlertImpl(org.apache.geode.internal.admin.Alert alert) {
       this.alert   = alert;
       GemFireVM vm = alert.getGemFireVM();
 

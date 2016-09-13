@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,14 +22,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheCallback;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributesMutator;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesMutator;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 import org.apache.logging.log4j.Logger;
 

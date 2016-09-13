@@ -2,6 +2,6 @@
 <cache
     xmlns="http://geode.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:test="urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest"
+    xmlns:test="urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest"
     version="1.0">
 </cache>

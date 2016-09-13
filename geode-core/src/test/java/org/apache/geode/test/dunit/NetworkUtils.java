@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.net.SocketCreator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.net.SocketCreator;
 
 import java.net.UnknownHostException;
 
@@ -29,7 +29,7 @@ import java.net.UnknownHostException;
  * however, they are intended to be referenced through static import:
  *
  * <pre>
- * import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
+ * import static org.apache.geode.test.dunit.NetworkUtils.*;
  *    ...
  *    String hostName = getIPLiteral();
  * </pre>

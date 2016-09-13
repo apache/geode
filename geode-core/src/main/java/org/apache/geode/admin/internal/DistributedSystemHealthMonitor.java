@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,37 +23,37 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.admin.GemFireMemberStatus;
-import com.gemstone.gemfire.admin.RegionSubRegionSnapshot;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.Config;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
-import com.gemstone.gemfire.internal.admin.CacheInfo;
-import com.gemstone.gemfire.internal.admin.DLockInfo;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.admin.HealthListener;
-import com.gemstone.gemfire.internal.admin.Stat;
-import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
-import com.gemstone.gemfire.internal.admin.StatListener;
-import com.gemstone.gemfire.internal.admin.StatResource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.admin.GemFireMemberStatus;
+import org.apache.geode.admin.RegionSubRegionSnapshot;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.admin.AdminBridgeServer;
+import org.apache.geode.internal.admin.CacheInfo;
+import org.apache.geode.internal.admin.DLockInfo;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.admin.HealthListener;
+import org.apache.geode.internal.admin.Stat;
+import org.apache.geode.internal.admin.StatAlertDefinition;
+import org.apache.geode.internal.admin.StatListener;
+import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A thread that monitors the health of the distributed system.  It is
  * kind of like a {@link
- * com.gemstone.gemfire.distributed.internal.HealthMonitorImpl}.  In
+ * org.apache.geode.distributed.internal.HealthMonitorImpl}.  In
  * order to get it to place nice with the rest of the health
  * monitoring APIs, this class pretends that it is a
  * <code>GemFireVM</code>.  Kind of hokey, but it beats a bunch of
@@ -218,7 +218,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
       return SocketCreator.getLocalHost();
 
     } catch (Exception ex) {
-      throw new com.gemstone.gemfire.InternalGemFireException(LocalizedStrings.DistributedSystemHealthMonitor_COULD_NOT_GET_LOCALHOST.toLocalizedString());
+      throw new org.apache.geode.InternalGemFireException(LocalizedStrings.DistributedSystemHealthMonitor_COULD_NOT_GET_LOCALHOST.toLocalizedString());
     }
   }
   

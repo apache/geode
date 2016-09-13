@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -23,14 +23,14 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class GatewayReceiverCreation implements GatewayReceiver {
   private static final Logger logger = LogService.getLogger();
@@ -165,14 +165,14 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.wan.GatewayReceiver#getStartPort()
+   * @see org.apache.geode.cache.wan.GatewayReceiver#getStartPort()
    */
   public int getStartPort() {
     return this.startPort;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.wan.GatewayReceiver#getEndPort()
+   * @see org.apache.geode.cache.wan.GatewayReceiver#getEndPort()
    */
   public int getEndPort() {
     return this.endPort;

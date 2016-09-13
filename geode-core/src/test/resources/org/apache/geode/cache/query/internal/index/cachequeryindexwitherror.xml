@@ -43,7 +43,7 @@
     
     <region name="portfolios">
          <region-attributes index-update-type="asynchronous" scope="distributed-no-ack">
-           <value-constraint>com.gemstone.gemfire.cache.query.data.Portfolio</value-constraint>
+           <value-constraint>org.apache.geode.cache.query.data.Portfolio</value-constraint>
           </region-attributes>
           <index name="funct1">
 	     <functional from-clause="/root/portfolios" expression="status" />                        
@@ -97,7 +97,7 @@
     <!-- Index creation tests for new DTD changes for Index tag for 6.6.1 with no function/primary-key tag --> 
     <region name="portfolios2">
          <region-attributes index-update-type="asynchronous" scope="distributed-no-ack">
-           <value-constraint>com.gemstone.gemfire.cache.query.data.Portfolio</value-constraint>
+           <value-constraint>org.apache.geode.cache.query.data.Portfolio</value-constraint>
           </region-attributes>
           <index name="funct1" from-clause="/root/portfolios2" expression="status"/>
           <index name="pk1"  from-clause="/root/portfolios2" expression="ID" key-index="true"/>
@@ -123,7 +123,7 @@
     </region> 
     <region name="portfolios3">
          <region-attributes index-update-type="asynchronous" scope="distributed-no-ack">
-           <value-constraint>com.gemstone.gemfire.cache.query.data.Portfolio</value-constraint>
+           <value-constraint>org.apache.geode.cache.query.data.Portfolio</value-constraint>
           </region-attributes>
           <index name="funct1" />
           <index name="pk1" key-index="true"/>

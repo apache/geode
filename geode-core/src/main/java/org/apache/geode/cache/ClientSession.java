@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * Class <code>ClientSession</code> represents a client connection on the
@@ -36,9 +36,9 @@ package com.gemstone.gemfire.cache;
  * </pre>
  * 
  * @since GemFire 6.0
- * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSession(String)
+ * @see org.apache.geode.cache.server.CacheServer#getClientSession(String)
  *      getClientSession
- * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSession(com.gemstone.gemfire.distributed.DistributedMember)
+ * @see org.apache.geode.cache.server.CacheServer#getClientSession(org.apache.geode.distributed.DistributedMember)
  *      getClientSession
  *
  */
@@ -52,7 +52,7 @@ public interface ClientSession {
    * @param keyOfInterest
    *          The key on which to register interest
    * @param policy
-   *          The {@link com.gemstone.gemfire.cache.InterestResultPolicy}. Note:
+   *          The {@link org.apache.geode.cache.InterestResultPolicy}. Note:
    *          For the special token 'ALL_KEYS' and lists of keys, values are not
    *          pushed to the client.
    * @param isDurable
@@ -71,7 +71,7 @@ public interface ClientSession {
    * @param keyOfInterest
    *          The key to on which to register interest
    * @param policy
-   *          The {@link com.gemstone.gemfire.cache.InterestResultPolicy}. Note:
+   *          The {@link org.apache.geode.cache.InterestResultPolicy}. Note:
    *          For the special token 'ALL_KEYS' and lists of keys, values are not
    *          pushed to the client.
    * @param isDurable

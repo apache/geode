@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import static org.junit.Assert.*;
 
@@ -24,10 +24,10 @@ import java.util.Arrays;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link AttributesFactory} class.

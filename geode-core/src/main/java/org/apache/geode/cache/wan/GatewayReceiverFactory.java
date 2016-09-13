@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.wan;
+package org.apache.geode.cache.wan;
 
 /**
  * 

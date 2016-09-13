@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.shell.unsafe;
+package org.apache.geode.management.internal.cli.shell.unsafe;
 
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.process.signal.AbstractSignalNotificationHandler;
-import com.gemstone.gemfire.internal.process.signal.Signal;
-import com.gemstone.gemfire.internal.process.signal.SignalEvent;
+import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
+import org.apache.geode.internal.process.signal.Signal;
+import org.apache.geode.internal.process.signal.SignalEvent;
 
 import sun.misc.SignalHandler;
 
@@ -30,8 +30,8 @@ import sun.misc.SignalHandler;
  * This class externalizes signal handling in order to make the GemFire build process a bit cleaner - for example
  * we have to have exceptions for sun.misc classes when building javadocs.
  * </p>
- * @see com.gemstone.gemfire.internal.process.signal.AbstractSignalNotificationHandler
- * @see com.gemstone.gemfire.internal.process.signal.Signal
+ * @see org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler
+ * @see org.apache.geode.internal.process.signal.Signal
  * @see sun.misc.Signal
  * @see sun.misc.SignalHandler
  */

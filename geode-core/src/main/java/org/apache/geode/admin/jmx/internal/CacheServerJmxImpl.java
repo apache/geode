@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,25 +34,25 @@ import javax.naming.OperationNotSupportedException;
 import org.apache.commons.modeler.ManagedBean;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.CacheServerConfig;
-import com.gemstone.gemfire.admin.CacheVmConfig;
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.StatisticResource;
-import com.gemstone.gemfire.admin.SystemMemberCache;
-import com.gemstone.gemfire.admin.SystemMemberCacheEvent;
-import com.gemstone.gemfire.admin.SystemMemberRegionEvent;
-import com.gemstone.gemfire.admin.internal.CacheServerImpl;
-import com.gemstone.gemfire.admin.internal.ConfigurationParameterImpl;
-import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.StatResource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.CacheVmConfig;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.StatisticResource;
+import org.apache.geode.admin.SystemMemberCache;
+import org.apache.geode.admin.SystemMemberCacheEvent;
+import org.apache.geode.admin.SystemMemberRegionEvent;
+import org.apache.geode.admin.internal.CacheServerImpl;
+import org.apache.geode.admin.internal.ConfigurationParameterImpl;
+import org.apache.geode.internal.admin.ClientMembershipMessage;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * MBean representation of a {@link
- * com.gemstone.gemfire.admin.CacheVm}. 
+ * org.apache.geode.admin.CacheVm}. 
  *
  * @since GemFire 4.0
  */
@@ -303,7 +303,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
   // -------------------------------------------------------------------------
 
   public void refreshConfig()
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     // 1st call to refreshConfig would trigger 
     // the auto-refresh if an interval is set
     if (this.refreshInterval>0) {
@@ -430,7 +430,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    */
   @Override
   protected StatisticResource createStatisticResource(StatResource stat)
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     StatisticResourceJmxImpl managedStatisticResource = null;
     
     synchronized (this.managedStatisticsResourcesMap) {
@@ -462,7 +462,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    */
   @Override
   protected SystemMemberCache createSystemMemberCache(GemFireVM vm)
-    throws com.gemstone.gemfire.admin.AdminException {
+    throws org.apache.geode.admin.AdminException {
     if (managedSystemMemberCache == null) {
       managedSystemMemberCache = new SystemMemberCacheJmxImpl(vm);
     }
@@ -481,7 +481,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *         with the new attributes added
    */
   public ManagedBean addDynamicAttributes(ManagedBean managed) 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     return Helper.addDynamicAttributes(this, managed);
   }
 

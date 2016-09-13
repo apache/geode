@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * Interface to represent a single statistic of a <code>StatisticResource</code>
  *
  * @since GemFire     3.5
  *
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface Statistic extends java.io.Serializable {
     

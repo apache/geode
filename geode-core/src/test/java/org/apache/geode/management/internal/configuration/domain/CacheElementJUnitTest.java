@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.domain;
+package org.apache.geode.management.internal.configuration.domain;
 
 import static org.junit.Assert.*;
 
@@ -32,12 +32,12 @@ import org.w3c.dom.Node;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParser;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlVersion;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlVersion;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test cases for {@link CacheElement}.

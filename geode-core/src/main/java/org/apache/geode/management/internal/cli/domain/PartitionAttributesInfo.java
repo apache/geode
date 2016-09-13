@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.domain;
+package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,12 +26,12 @@ import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
-import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesDefault;
-import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.internal.cache.PartitionAttributesImpl;
+import org.apache.geode.management.internal.cli.util.RegionAttributesDefault;
+import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 
 /***
  * Data class containing the PartitionAttributes for a region on a certain member

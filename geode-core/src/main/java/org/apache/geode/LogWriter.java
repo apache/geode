@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 import java.util.logging.Handler;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
 
 /**
   * Defines methods available to clients that want to write a log message

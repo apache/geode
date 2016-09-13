@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository;
+package org.apache.geode.cache.lucene.internal.repository;
 
-import com.gemstone.gemfire.annotations.Experimental;
+import org.apache.geode.annotations.Experimental;
 
 /**
  * Interface for collection results of a query on

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query.mock;
+package org.apache.geode.internal.cache.persistence.query.mock;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-import com.gemstone.gemfire.internal.cache.persistence.query.IdentityExtractor;
-import com.gemstone.gemfire.internal.cache.persistence.query.ResultSet;
-import com.gemstone.gemfire.internal.cache.persistence.query.SortKeyExtractor;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.internal.cache.persistence.query.IdentityExtractor;
+import org.apache.geode.internal.cache.persistence.query.ResultSet;
+import org.apache.geode.internal.cache.persistence.query.SortKeyExtractor;
 
 public class SortedResultSetImpl implements ResultSet {
   private final SortedResultMapImpl map;

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /** Thrown when attempting to create a <code>Region.Entry</code> that already
  * exists in the <code>Region</code>.
  *
- * @see com.gemstone.gemfire.cache.Region#create(Object, Object)
+ * @see org.apache.geode.cache.Region#create(Object, Object)
  * @see Region.Entry
  * @since GemFire 3.0
  */

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.installer;
+package org.apache.geode.modules.session.installer;
 
 import java.io.Closeable;
 import java.io.File;

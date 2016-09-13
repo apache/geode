@@ -16,11 +16,11 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public final class CacheDisplay {
   public static Object getCachedObjectDisplay(Object obj, int inspectionType) {

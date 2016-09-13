@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -36,20 +36,20 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreFilter;
-import com.gemstone.gemfire.internal.cache.persistence.OplogType;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.persistence.DiskStoreFilter;
+import org.apache.geode.internal.cache.persistence.OplogType;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.sequencelog.EntryLogger;
 
 public class PersistentOplogSet implements OplogSet {
   private static final Logger logger = LogService.getLogger();

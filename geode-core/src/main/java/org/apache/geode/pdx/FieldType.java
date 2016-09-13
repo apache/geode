@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.pdx.internal.DataSize;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.pdx.internal.DataSize;
 
 /**
  * Every field of a pdx must have one of these types.

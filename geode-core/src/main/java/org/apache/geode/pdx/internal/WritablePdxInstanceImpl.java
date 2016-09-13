@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.PdxFieldDoesNotExistException;
-import com.gemstone.gemfire.pdx.PdxFieldTypeMismatchException;
-import com.gemstone.gemfire.pdx.WritablePdxInstance;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.PdxFieldDoesNotExistException;
+import org.apache.geode.pdx.PdxFieldTypeMismatchException;
+import org.apache.geode.pdx.WritablePdxInstance;
 
 public class WritablePdxInstanceImpl extends PdxInstanceImpl implements
     WritablePdxInstance {

@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ClassNotFoundException;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * Implementation of a region event
@@ -126,7 +126,7 @@ public class RegionEventImpl
   /**
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.cache.CacheEvent#getRegion()
+   * @see org.apache.geode.cache.CacheEvent#getRegion()
    */
   public Region getRegion()
   {
@@ -152,7 +152,7 @@ public class RegionEventImpl
   }
 
   /**
-   * @see com.gemstone.gemfire.cache.CacheEvent#getCallbackArgument()
+   * @see org.apache.geode.cache.CacheEvent#getCallbackArgument()
    */
   public Object getCallbackArgument()
   {
@@ -181,7 +181,7 @@ public class RegionEventImpl
   }
 
   /**
-   * @see com.gemstone.gemfire.cache.CacheEvent#isOriginRemote()
+   * @see org.apache.geode.cache.CacheEvent#isOriginRemote()
    */
   public boolean isOriginRemote()
   {
@@ -199,7 +199,7 @@ public class RegionEventImpl
   }
 
   /**
-   * @see com.gemstone.gemfire.cache.CacheEvent#isExpiration()
+   * @see org.apache.geode.cache.CacheEvent#isExpiration()
    */
   public boolean isExpiration()
   {
@@ -207,7 +207,7 @@ public class RegionEventImpl
   }
 
   /**
-   * @see com.gemstone.gemfire.cache.CacheEvent#isDistributed()
+   * @see org.apache.geode.cache.CacheEvent#isDistributed()
    */
   public boolean isDistributed()
   {

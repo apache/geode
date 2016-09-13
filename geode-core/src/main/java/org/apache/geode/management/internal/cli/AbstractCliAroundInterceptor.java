@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * Semi-complete implementation of {@link CliAroundInterceptor} for convenience for implementors.

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.cache.UnsupportedVersionException;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CommandInitializer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for client / server and p2p version.

@@ -21,12 +21,12 @@
  * Created on May 18, 2005, 3:46 PM
  */
 
-package com.gemstone.gemfire.cache.query.data;
+package org.apache.geode.cache.query.data;
 
 import java.io.*;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 /**
  *

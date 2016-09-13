@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -30,14 +30,14 @@ import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 @
   Category(IntegrationTest.class)
 public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingBase {

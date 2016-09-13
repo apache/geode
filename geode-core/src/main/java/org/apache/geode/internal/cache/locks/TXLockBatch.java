@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-//import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.TXRegionLockRequestImpl;
-import com.gemstone.gemfire.internal.cache.IdentityArrayList;
-import com.gemstone.gemfire.distributed.internal.locks.DLockBatch;
-import com.gemstone.gemfire.distributed.internal.locks.DLockBatchId;
-import com.gemstone.gemfire.distributed.internal.locks.LockGrantorId;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+//import org.apache.geode.cache.Region;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
+import org.apache.geode.internal.cache.IdentityArrayList;
+import org.apache.geode.distributed.internal.locks.DLockBatch;
+import org.apache.geode.distributed.internal.locks.DLockBatchId;
+import org.apache.geode.distributed.internal.locks.LockGrantorId;
 
 import java.io.*;
 import java.util.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /** 
  * Adapts multiple TXRegionLockRequests to one DLockBatch for DLock to use.

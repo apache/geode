@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached.commands;
+package org.apache.geode.internal.memcached.commands;
 
 /**
  * thrown when there is some sort of error in input line

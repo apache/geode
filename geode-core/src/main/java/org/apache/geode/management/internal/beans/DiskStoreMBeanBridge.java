@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.io.File;
 
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.internal.cache.DirectoryHolder;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.DiskStoreStats;
-import com.gemstone.gemfire.management.internal.ManagementStrings;
-import com.gemstone.gemfire.management.internal.beans.stats.MBeanStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.StatType;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsAverageLatency;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsRate;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.internal.cache.DirectoryHolder;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.DiskStoreStats;
+import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.StatType;
+import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
+import org.apache.geode.management.internal.beans.stats.StatsKey;
+import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 /**
  * Bridge class to act as an interface between JMX layer and GemFire DiskStores

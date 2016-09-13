@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -22,15 +22,15 @@ import javax.management.modelmbean.ModelMBean;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.DistributedSystemHealthConfig;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.admin.RuntimeAdminException;
-import com.gemstone.gemfire.admin.internal.GemFireHealthImpl;
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.DistributedSystemHealthConfig;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.admin.internal.GemFireHealthImpl;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 //import org.apache.commons.modeler.ManagedBean;
 
 /**

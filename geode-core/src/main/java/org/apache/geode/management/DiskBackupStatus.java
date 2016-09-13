@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.persistence.PersistentID;
+import org.apache.geode.cache.persistence.PersistentID;
 
 /**
  * Composite data type used to distribute the status of disk backup

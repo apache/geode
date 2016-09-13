@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
-import com.gemstone.gemfire.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
+import org.apache.geode.internal.cache.wan.spi.WANFactory;
 
 public class WANServiceProvider {
   private static final WANFactory factory;

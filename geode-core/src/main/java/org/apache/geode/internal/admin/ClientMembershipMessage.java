@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * A PooledDistributionMessage for notifying admin members about changes in 
@@ -68,7 +68,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
 
   /** 
    * 
-   * @see com.gemstone.gemfire.distributed.internal.DistributionMessage#process(com.gemstone.gemfire.distributed.internal.DistributionManager)
+   * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.internal.DistributionManager)
    */
   @Override
   protected void process(DistributionManager dm) {
@@ -94,7 +94,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
 
   /**
    *  
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return CLIENT_MEMBERSHIP_MESSAGE;

@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.security.SecurityTestUtils.*;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,15 +32,15 @@ import java.util.Random;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DeltaTestImpl;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest;
-import com.gemstone.gemfire.security.generator.AuthzCredentialGenerator;
-import com.gemstone.gemfire.security.generator.CredentialGenerator;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.DeltaTestImpl;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest;
+import org.apache.geode.security.generator.AuthzCredentialGenerator;
+import org.apache.geode.security.generator.CredentialGenerator;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * @since GemFire 6.1

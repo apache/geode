@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.util.Date;
 
@@ -254,8 +254,8 @@ public interface PdxReader {
   /**
    * This method returns an object that represents all the unread fields which must be
    * passed to {@link PdxWriter#writeUnreadFields(PdxUnreadFields) writeUnreadFields} in the toData code.
-   * <P>Note that if {@link com.gemstone.gemfire.cache.CacheFactory#setPdxIgnoreUnreadFields(boolean) setPdxIgnoreUnreadFields}
-   * or {@link com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxIgnoreUnreadFields(boolean) client setPdxIgnoreUnreadFields}
+   * <P>Note that if {@link org.apache.geode.cache.CacheFactory#setPdxIgnoreUnreadFields(boolean) setPdxIgnoreUnreadFields}
+   * or {@link org.apache.geode.cache.client.ClientCacheFactory#setPdxIgnoreUnreadFields(boolean) client setPdxIgnoreUnreadFields}
    * are set to <code>true</code> then this method will always return an object that has no unread fields.
    *
    * @return an object that represents the unread fields.

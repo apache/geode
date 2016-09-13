@@ -17,7 +17,7 @@ limitations under the License.
 -->
 <html>
 <head>
- <title>com.gemstone.gemfire.cache.snapshot</title>
+ <title>org.apache.geode.cache.snapshot</title>
 </head>
 <body>
 
@@ -25,18 +25,18 @@ limitations under the License.
 Each snapshot file contains the cache entries (key/value pairs) for a given 
 region.</p>
 
-<p>The {@link com.gemstone.gemfire.cache.snapshot.RegionSnapshotService} can be 
+<p>The {@link org.apache.geode.cache.snapshot.RegionSnapshotService} can be 
 obtained for an individual region using 
-{@link com.gemstone.gemfire.cache.Region#getSnapshotService}. To obtain a 
-{@link com.gemstone.gemfire.cache.snapshot.CacheSnapshotService} (across all 
-regions), invoke {@link com.gemstone.gemfire.cache.Cache#getSnapshotService}.</p>
+{@link org.apache.geode.cache.Region#getSnapshotService}. To obtain a 
+{@link org.apache.geode.cache.snapshot.CacheSnapshotService} (across all 
+regions), invoke {@link org.apache.geode.cache.Cache#getSnapshotService}.</p>
 
-<p>The {@link com.gemstone.gemfire.cache.snapshot.SnapshotOptions} can be used to
+<p>The {@link org.apache.geode.cache.snapshot.SnapshotOptions} can be used to
 configure the behavior of import and export operations.</p>
 
-<p>The {@link com.gemstone.gemfire.cache.snapshot.SnapshotReader} can be used to
+<p>The {@link org.apache.geode.cache.snapshot.SnapshotReader} can be used to
 programmatically read a snapshot created using the GEMFIRE
-{@link com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat} 
+{@link org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat} 
 format.</p>
 
 Example usage:

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.runners;
+package org.apache.geode.test.junit.runners;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;

@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 import java.io.File;
 
 /**
  * Administrative interface that represent's the {@link
  * SystemMember}'s view of one of its cache's {@link
- * com.gemstone.gemfire.cache.Region}s.  If the region in the remote
+ * org.apache.geode.cache.Region}s.  If the region in the remote
  * system member is closed or destroyed, the methods of
  * <code>SystemMemberRegion</code> will throw {@link
  * RegionNotFoundException}.
  *
  * @since GemFire 3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberRegion {
   // attributes
   /**
    * Returns the name that identifies this region in its cache.
    *
-   * @see com.gemstone.gemfire.cache.Region#getName
+   * @see org.apache.geode.cache.Region#getName
    */
   public String getName();
   
@@ -43,7 +43,7 @@ public interface SystemMemberRegion {
    * Returns the full path name that identifies this region in its
    * cache.
    *
-   * @see com.gemstone.gemfire.cache.Region#getFullPath
+   * @see org.apache.geode.cache.Region#getFullPath
    */
   public String getFullPath();
 

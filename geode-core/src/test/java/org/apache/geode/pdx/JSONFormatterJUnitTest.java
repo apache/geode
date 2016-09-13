@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
@@ -31,16 +31,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class JSONFormatterJUnitTest {
@@ -122,7 +122,7 @@ public class JSONFormatterJUnitTest {
         //3. Get PdxInstance from the Json String and Validate pi.getObject() API.
         PdxInstance actualPI = JSONFormatter.fromJSON(jsonWithClassType);
         //Note: expectedPI will contains those fields that are part of toData()
-        //      expectedPI.className = "com.gemstone.gemfire.pdx.TestObjectForJSONFormatter"
+        //      expectedPI.className = "org.apache.geode.pdx.TestObjectForJSONFormatter"
         //      actualPI will contains all the fields that are member of the class.
         //      actualPI..className = __GEMFIRE_JSON
         //      and hence actualPI.equals(expectedPI) will returns false.

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.internal.net.SocketCreator;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Implementation of the public PersistentID. It holds the region,

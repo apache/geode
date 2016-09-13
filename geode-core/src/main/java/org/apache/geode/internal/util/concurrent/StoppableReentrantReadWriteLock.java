@@ -20,15 +20,15 @@
  * http://creativecommons.org/licenses/publicdomain
  */
 
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.internal.Assert;
 
 /**
  * Instances of {@link java.util.concurrent.locks.ReentrantReadWriteLock}

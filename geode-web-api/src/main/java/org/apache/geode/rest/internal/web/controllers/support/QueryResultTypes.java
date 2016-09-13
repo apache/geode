@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.controllers.support;
+package org.apache.geode.rest.internal.web.controllers.support;
 
 /**
  * The QueryResultTypes type describes possible query result types 

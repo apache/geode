@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.cli;
+package org.apache.geode.cache.lucene.internal.cli;
 
 public class LuceneCliStrings {
   //Common parameters/options

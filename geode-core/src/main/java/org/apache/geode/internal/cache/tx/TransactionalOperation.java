@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tx;
+package org.apache.geode.internal.cache.tx;
 
 import java.util.Collection;
 import java.util.HashSet;

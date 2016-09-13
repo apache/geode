@@ -16,16 +16,16 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 
 /**
  * A message that is sent to a particular distribution manager to
- * get its current {@link com.gemstone.gemfire.internal.Config}.
+ * get its current {@link org.apache.geode.internal.Config}.
  */
 public final class FetchSysCfgRequest extends AdminRequest {
   /**

@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 
 /**
  * Encapsulates a region operation that requires only a key object for the
  * pre-operation case. The operations this class encapsulates are
- * {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#DESTROY} 
- * and {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}.
+ * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#DESTROY} 
+ * and {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}.
  * 
  * @since GemFire 5.5
  */
@@ -68,11 +68,11 @@ public abstract class KeyOperationContext extends OperationContext {
    * object.
    * 
    * @return The <code>OperationCode</code> of this operation. This is one of
-   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#DESTROY} 
-   *         or {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}
+   *         {@link org.apache.geode.cache.operations.OperationContext.OperationCode#DESTROY} 
+   *         or {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}
    *         for <code>KeyOperationContext</code>, and one of
-   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#GET} or 
-   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUT} for
+   *         {@link org.apache.geode.cache.operations.OperationContext.OperationCode#GET} or 
+   *         {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUT} for
    *         <code>KeyValueOperationContext</code>.
    */
   @Override

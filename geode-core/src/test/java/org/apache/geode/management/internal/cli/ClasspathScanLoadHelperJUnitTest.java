@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import static org.junit.Assert.*;
 
@@ -23,20 +23,20 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.util.Versionable;
-import com.gemstone.gemfire.management.internal.cli.domain.AbstractImpl;
-import com.gemstone.gemfire.management.internal.cli.domain.Impl1;
-import com.gemstone.gemfire.management.internal.cli.domain.Impl12;
-import com.gemstone.gemfire.management.internal.cli.domain.Interface1;
-import com.gemstone.gemfire.management.internal.cli.domain.Interface2;
-import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.util.Versionable;
+import org.apache.geode.management.internal.cli.domain.AbstractImpl;
+import org.apache.geode.management.internal.cli.domain.Impl1;
+import org.apache.geode.management.internal.cli.domain.Impl12;
+import org.apache.geode.management.internal.cli.domain.Interface1;
+import org.apache.geode.management.internal.cli.domain.Interface2;
+import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ClasspathScanLoadHelperJUnitTest {
   
-  private final String PACKAGE_NAME = "com.gemstone.gemfire.management.internal.cli.domain";
-  private final String WRONG_PACKAGE_NAME = "com.gemstone.gemfire.management.internal.cli.domain1";
+  private final String PACKAGE_NAME = "org.apache.geode.management.internal.cli.domain";
+  private final String WRONG_PACKAGE_NAME = "org.apache.geode.management.internal.cli.domain1";
   private final Class<?> INTERFACE1 = Interface1.class;
   private final Class<?> NO_IMPL_INTERFACE = Versionable.class;
   private final Class<?> INTERFACE2 = Interface2.class;

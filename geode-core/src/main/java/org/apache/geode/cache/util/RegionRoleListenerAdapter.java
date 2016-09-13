@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
-import com.gemstone.gemfire.cache.RegionRoleListener;
-import com.gemstone.gemfire.cache.RoleEvent;
+import org.apache.geode.cache.RegionRoleListener;
+import org.apache.geode.cache.RoleEvent;
 
 /**
  * Utility class that implements all methods in 

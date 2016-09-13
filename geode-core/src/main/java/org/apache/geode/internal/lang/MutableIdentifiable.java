@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
-import com.gemstone.gemfire.lang.Identifiable;
+import org.apache.geode.lang.Identifiable;
 
 /**
  * The MutableIdentifiable interface defines a contract for classes whose mutable Object instances can

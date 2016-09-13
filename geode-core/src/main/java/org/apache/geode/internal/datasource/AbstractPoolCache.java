@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -30,11 +30,11 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 /**
  * AbstractPoolCache implements the ConnectionPoolCache interface. This is base
@@ -209,7 +209,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache,
   }
 
   /**
-   * @see com.gemstone.gemfire.internal.datasource.ConnectionPoolCache#expirePooledConnection(Object)
+   * @see org.apache.geode.internal.datasource.ConnectionPoolCache#expirePooledConnection(Object)
    * @param connectionObject Asif: This function will set the timestamp
    *          associated with the Connection object such that it will get timed
    *          out by the cleaner thread. Normally when this function is called,

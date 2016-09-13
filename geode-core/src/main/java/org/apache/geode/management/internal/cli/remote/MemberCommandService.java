@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.remote;
+package org.apache.geode.management.internal.cli.remote;
 
 import java.io.IOException;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.management.cli.CommandService;
-import com.gemstone.gemfire.management.cli.CommandServiceException;
-import com.gemstone.gemfire.management.cli.CommandStatement;
-import com.gemstone.gemfire.management.cli.Result;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.management.cli.CommandService;
+import org.apache.geode.management.cli.CommandServiceException;
+import org.apache.geode.management.cli.CommandStatement;
+import org.apache.geode.management.cli.Result;
 
 /**
  */

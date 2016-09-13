@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter.util;
+package org.apache.geode.modules.session.internal.filter.util;
 
-import com.gemstone.gemfire.modules.session.internal.common.CacheProperty;
+import org.apache.geode.modules.session.internal.common.CacheProperty;
 
 import java.util.HashMap;
 

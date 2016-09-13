@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.UnsupportedVersionException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.ProfileId;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.net.SocketCreator;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
 
 import java.io.*;
 import java.net.Inet4Address;
@@ -98,7 +98,7 @@ public class InternalDistributedMember
 
   /**
    * The name of this member's distributed system connection.
-   * @see com.gemstone.gemfire.distributed.DistributedSystem#getName
+   * @see org.apache.geode.distributed.DistributedSystem#getName
    */
   private String name = null;
 
@@ -329,7 +329,7 @@ public class InternalDistributedMember
   public InternalDistributedMember(String host, int p, String n, String u,
       int vmKind, String[] groups, DurableClientAttributes attr) throws UnknownHostException {
     MemberAttributes mattr = new MemberAttributes(p,
-        com.gemstone.gemfire.internal.OSProcess.getId(),
+        org.apache.geode.internal.OSProcess.getId(),
         vmKind, -1,
         n,
         groups, attr);
@@ -432,8 +432,8 @@ public class InternalDistributedMember
    * [GemStone] Returns the kind of VM that hosts the distribution manager with
    * this address.
    *
-   * @see com.gemstone.gemfire.distributed.internal.DistributionManager#getDMType()
-   * @see com.gemstone.gemfire.distributed.internal.DistributionManager#NORMAL_DM_TYPE
+   * @see org.apache.geode.distributed.internal.DistributionManager#getDMType()
+   * @see org.apache.geode.distributed.internal.DistributionManager#NORMAL_DM_TYPE
    */
   public int getVmKind()
   {
@@ -538,7 +538,7 @@ public class InternalDistributedMember
   /**
    * Returns the name of this member's distributed system connection or null
    * if no name was specified.
-   * @see com.gemstone.gemfire.distributed.DistributedSystem#getName
+   * @see org.apache.geode.distributed.DistributedSystem#getName
    */
   public String getName() {
     String result = this.name;

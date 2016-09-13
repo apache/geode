@@ -17,7 +17,7 @@ limitations under the License.
 --><web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
   <filter>
         <filter-name>gemfire-session-filter</filter-name>
-        <filter-class>com.gemstone.gemfire.modules.session.filter.SessionCachingFilter</filter-class>
+        <filter-class>org.apache.geode.modules.session.filter.SessionCachingFilter</filter-class>
         <init-param>
             <param-name>cache-type</param-name>
             <param-value>peer-to-peer</param-value>
@@ -37,7 +37,7 @@ limitations under the License.
     <url-pattern>/*</url-pattern>
   </filter-mapping>
     <listener>
-        <listener-class>com.gemstone.gemfire.modules.session.filter.SessionListener</listener-class>
+        <listener-class>org.apache.geode.modules.session.filter.SessionListener</listener-class>
     </listener>
 
   <servlet>

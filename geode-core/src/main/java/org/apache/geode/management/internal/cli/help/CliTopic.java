@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.help;
+package org.apache.geode.management.internal.cli.help;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.parser.CommandTarget;
 
 /**
  * 

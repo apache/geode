@@ -17,12 +17,12 @@
 /**
  * File comment
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
+import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 
 /**
  * This interface extends {@link TXStateInterface} providing for a proxy for the

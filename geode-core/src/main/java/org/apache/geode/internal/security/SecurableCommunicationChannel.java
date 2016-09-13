@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.security;
+package org.apache.geode.internal.security;
 
 import org.apache.geode.security.SecurableCommunicationChannels;
 
-import com.gemstone.gemfire.GemFireConfigException;
+import org.apache.geode.GemFireConfigException;
 
 public enum SecurableCommunicationChannel {
   ALL(SecurableCommunicationChannels.ALL),

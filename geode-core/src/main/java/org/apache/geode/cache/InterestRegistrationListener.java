@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * Interface <code>InterestRegisterationListener</code> provides the ability for
  * applications to be notified of interest registration and unregistration
  * events. Instances must be implemented by applications and registered in
  * <code>CacheServer</code> VMs using the
- * {@link com.gemstone.gemfire.cache.server.CacheServer#registerInterestRegistrationListener
+ * {@link org.apache.geode.cache.server.CacheServer#registerInterestRegistrationListener
  * registerInterestRegistrationListener} API. The methods on an
  * <code>InterestRegisterationListener</code> are invoked synchronously with the
  * interest event in any <code>CacheServer</code> VM hosting the requesting
@@ -31,8 +31,8 @@ package com.gemstone.gemfire.cache;
  * <p>Shown below is an example implementation.
  *
  * <pre>
- *import com.gemstone.gemfire.cache.InterestRegistrationEvent;
- *import com.gemstone.gemfire.cache.InterestRegistrationListener;
+ *import org.apache.geode.cache.InterestRegistrationEvent;
+ *import org.apache.geode.cache.InterestRegistrationListener;
  *
  *public class TestInterestRegistrationListener implements InterestRegistrationListener {
  *
@@ -62,8 +62,8 @@ package com.gemstone.gemfire.cache;
  *
  * @since GemFire 6.0
  * 
- * @see com.gemstone.gemfire.cache.server.CacheServer#registerInterestRegistrationListener registerInterestRegistrationListener
- * @see com.gemstone.gemfire.cache.server.CacheServer#unregisterInterestRegistrationListener unregisterInterestRegistrationListener
+ * @see org.apache.geode.cache.server.CacheServer#registerInterestRegistrationListener registerInterestRegistrationListener
+ * @see org.apache.geode.cache.server.CacheServer#unregisterInterestRegistrationListener unregisterInterestRegistrationListener
  */
 public interface InterestRegistrationListener extends CacheCallback {
 

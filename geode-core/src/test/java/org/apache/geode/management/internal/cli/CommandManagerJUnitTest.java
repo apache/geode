@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import static org.junit.Assert.*;
 
@@ -24,18 +24,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
-import com.gemstone.gemfire.management.internal.cli.parser.AvailabilityTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.annotation.CliArgument;
+import org.apache.geode.management.internal.cli.parser.Argument;
+import org.apache.geode.management.internal.cli.parser.AvailabilityTarget;
+import org.apache.geode.management.internal.cli.parser.CommandTarget;
+import org.apache.geode.management.internal.cli.parser.Option;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.After;
 import org.junit.Test;

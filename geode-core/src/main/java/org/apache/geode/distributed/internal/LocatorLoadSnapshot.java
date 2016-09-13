@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,9 +35,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
  * A data structure used to hold load information for a locator

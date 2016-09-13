@@ -15,15 +15,15 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Delta;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.modules.session.internal.filter.attributes.AbstractSessionAttributes;
-import com.gemstone.gemfire.modules.session.internal.filter.attributes.SessionAttributes;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.Instantiator;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
+import org.apache.geode.modules.session.internal.filter.attributes.SessionAttributes;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,7 +39,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
-import com.gemstone.gemfire.modules.util.ClassLoaderObjectInputStream;
+import org.apache.geode.modules.util.ClassLoaderObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

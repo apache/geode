@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
 
-import com.gemstone.gemfire.internal.lang.SystemUtils;
+import org.apache.geode.internal.lang.SystemUtils;
 
 public class HostName {
 

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.generator;
+package org.apache.geode.security.generator;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 public class SSLCredentialGenerator extends CredentialGenerator {
 

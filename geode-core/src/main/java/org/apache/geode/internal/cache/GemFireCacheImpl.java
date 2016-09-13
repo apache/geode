@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -76,161 +76,161 @@ import com.sun.jna.Platform;
 import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireCacheException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.internal.SystemMemberCacheEventProcessor;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheExistsException;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.GatewayException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
-import com.gemstone.gemfire.cache.client.internal.ClientRegionFactoryImpl;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.CqServiceProvider;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.CacheTime;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisee;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.PooledExecutorWithDMStats;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.ResourceEvent;
-import com.gemstone.gemfire.distributed.internal.ResourceEventsListener;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.JarDeployer;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.SystemTimer;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
-import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor;
-import com.gemstone.gemfire.internal.cache.execute.util.FindRestEnabledServersFunction;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
-import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
-import com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPoint;
-import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.internal.cache.locks.TXLockService;
-import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
-import com.gemstone.gemfire.internal.cache.lru.OffHeapEvictor;
-import com.gemstone.gemfire.internal.cache.partitioned.RedundancyAlreadyMetException;
-import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberManager;
-import com.gemstone.gemfire.internal.cache.persistence.query.TemporaryResultSetFactory;
-import com.gemstone.gemfire.internal.cache.snapshot.CacheSnapshotServiceImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientHealthMonitor;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAdvisor;
-import com.gemstone.gemfire.internal.cache.wan.WANServiceProvider;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlParser;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlPropertyResolver;
-import com.gemstone.gemfire.internal.cache.xmlcache.PropertyResolver;
-import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
-import com.gemstone.gemfire.internal.jta.TransactionManagerImpl;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
-import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
-import com.gemstone.gemfire.internal.sequencelog.SequenceLoggerImpl;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
-import com.gemstone.gemfire.lang.Identifiable;
-import com.gemstone.gemfire.management.internal.JmxManagerAdvisee;
-import com.gemstone.gemfire.management.internal.JmxManagerAdvisor;
-import com.gemstone.gemfire.management.internal.RestAgent;
-import com.gemstone.gemfire.management.internal.beans.ManagementListener;
-import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationResponse;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxInstanceFactory;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
-import com.gemstone.gemfire.pdx.internal.TypeRegistry;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireCacheException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.LogWriter;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.GatewayException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ClientMetadataService;
+import org.apache.geode.cache.client.internal.ClientRegionFactoryImpl;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.snapshot.CacheSnapshotService;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.CacheTime;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.distributed.internal.ResourceEventsListener;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
+import org.apache.geode.internal.cache.control.ResourceAdvisor;
+import org.apache.geode.internal.cache.execute.util.FindRestEnabledServersFunction;
+import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
+import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.locks.TXLockService;
+import org.apache.geode.internal.cache.lru.HeapEvictor;
+import org.apache.geode.internal.cache.lru.OffHeapEvictor;
+import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
+import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
+import org.apache.geode.internal.cache.persistence.query.TemporaryResultSetFactory;
+import org.apache.geode.internal.cache.snapshot.CacheSnapshotServiceImpl;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
+import org.apache.geode.internal.cache.wan.WANServiceProvider;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
+import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.jta.TransactionManagerImpl;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.offheap.MemoryAllocator;
+import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
+import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.concurrent.FutureResult;
+import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.internal.JmxManagerAdvisee;
+import org.apache.geode.management.internal.JmxManagerAdvisor;
+import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.management.internal.beans.ManagementListener;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.geode.memcached.GemFireMemcachedServer;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 // @todo somebody Come up with more reasonable values for {@link #DEFAULT_LOCK_TIMEOUT}, etc.
 /**
- * GemFire's implementation of a distributed {@link com.gemstone.gemfire.cache.Cache}.
+ * GemFire's implementation of a distributed {@link org.apache.geode.cache.Cache}.
  *
  */
 @SuppressWarnings("deprecation")
@@ -628,7 +628,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
   
   /**
-   * This is for debugging cache-open issues (esp. {@link com.gemstone.gemfire.cache.CacheExistsException})
+   * This is for debugging cache-open issues (esp. {@link org.apache.geode.cache.CacheExistsException})
    */
   @Override
   public String toString() {
@@ -1275,7 +1275,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    * @throws CacheXmlException
    *           If something goes wrong while parsing the declarative caching XML file.
    * @throws TimeoutException
-   *           If a {@link com.gemstone.gemfire.cache.Region#put(Object, Object)}times out while initializing the cache.
+   *           If a {@link org.apache.geode.cache.Region#put(Object, Object)}times out while initializing the cache.
    * @throws CacheWriterException
    *           If a <code>CacheWriterException</code> is thrown while initializing the cache.
    * @throws RegionExistsException
@@ -1400,7 +1400,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     /*
      * (non-Javadoc)
      *
-     * @see com.gemstone.gemfire.CancelCriterion#cancelInProgress()
+     * @see org.apache.geode.CancelCriterion#cancelInProgress()
      */
     @Override
     public String cancelInProgress() {
@@ -1420,7 +1420,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     /*
      * (non-Javadoc)
      *
-     * @see com.gemstone.gemfire.CancelCriterion#generateCancelledException(java.lang.Throwable)
+     * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
      */
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
@@ -2701,7 +2701,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /*
    * (non-Javadoc)
    *
-   * @see com.gemstone.gemfire.cache.Cache#getMembers()
+   * @see org.apache.geode.cache.Cache#getMembers()
    */
   public Set<DistributedMember> getMembers() {
     return Collections.unmodifiableSet(this.dm.getOtherNormalDistributionManagerIds());
@@ -2710,7 +2710,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /*
    * (non-Javadoc)
    *
-   * @see com.gemstone.gemfire.cache.Cache#getAdminMembers()
+   * @see org.apache.geode.cache.Cache#getAdminMembers()
    */
   public Set<DistributedMember> getAdminMembers() {
     return this.dm.getAdminMemberSet();
@@ -2719,7 +2719,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /*
    * (non-Javadoc)
    *
-   * @see com.gemstone.gemfire.cache.Cache#getMembers(com.gemstone.gemfire.cache.Region)
+   * @see org.apache.geode.cache.Cache#getMembers(org.apache.geode.cache.Region)
    */
   public Set<DistributedMember> getMembers(Region r) {
     if (r instanceof DistributedRegion) {
@@ -2736,7 +2736,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /*
    * (non-Javadoc)
    *
-   * @see com.gemstone.gemfire.cache.client.ClientCache#getCurrentServers()
+   * @see org.apache.geode.cache.client.ClientCache#getCurrentServers()
    */
   public Set<InetSocketAddress> getCurrentServers() {
     Map<String, Pool> pools = PoolManager.getAll();
@@ -3617,7 +3617,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * Implementation of {@link com.gemstone.gemfire.cache.Cache#setCopyOnRead}
+   * Implementation of {@link org.apache.geode.cache.Cache#setCopyOnRead}
    *
    * @since GemFire 4.0
    */
@@ -3626,7 +3626,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * Implementation of {@link com.gemstone.gemfire.cache.Cache#getCopyOnRead}
+   * Implementation of {@link org.apache.geode.cache.Cache#getCopyOnRead}
    *
    * @since GemFire 4.0
    */
@@ -4525,7 +4525,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    */
   public QueryMonitor getQueryMonitor() {
     //Check to see if monitor is required if ResourceManager critical heap percentage is set
-    //@see com.gemstone.gemfire.cache.control.ResourceManager#setCriticalHeapPercentage(int)
+    //@see org.apache.geode.cache.control.ResourceManager#setCriticalHeapPercentage(int)
     //or whether we override it with the system variable;
     boolean monitorRequired = !QUERY_MONITOR_DISABLED_FOR_LOW_MEM && QUERY_MONITOR_REQUIRED_FOR_RESOURCE_MANAGER;
     // Added for DUnit test purpose, which turns-on and off the this.TEST_MAX_QUERY_EXECUTION_TIME.

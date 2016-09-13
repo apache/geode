@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,27 +24,27 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.TransactionDataRebalancedException;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.TransactionWriterException;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.TXEntryState.DistTxThinEntryState;
-import com.gemstone.gemfire.internal.cache.partitioned.PutAllPRMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.cache.tx.DistTxKeyInfo;
-import com.gemstone.gemfire.internal.cache.tx.DistTxEntryEvent;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionWriter;
+import org.apache.geode.cache.TransactionWriterException;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
+import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
+import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
+import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
  * TxState on a datanode VM
@@ -154,7 +154,7 @@ public class DistTXState extends TXState {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#commit()
+   * @see org.apache.geode.internal.cache.TXStateInterface#commit()
    * 
    * Take Locks Does conflict check on primary ([DISTTX] TODO on primary only)
    * Invoke TxWriter
@@ -248,7 +248,7 @@ public class DistTXState extends TXState {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#commit()
+   * @see org.apache.geode.internal.cache.TXStateInterface#commit()
    * 
    * Apply changes release locks
    */
@@ -362,7 +362,7 @@ public class DistTXState extends TXState {
       /*
        * Handle Put Operations meant for secondary.
        * 
-       * @see com.gemstone.gemfire.internal.cache.partitioned.PutMessage.
+       * @see org.apache.geode.internal.cache.partitioned.PutMessage.
        * operateOnPartitionedRegion(DistributionManager, PartitionedRegion,
        * long)
        * 
@@ -539,9 +539,9 @@ public class DistTXState extends TXState {
    * 
    * 
    * @see
-   * com.gemstone.gemfire.internal.cache.InternalDataView#postPutAll(com.gemstone
+   * org.apache.geode.internal.cache.InternalDataView#postPutAll(org.apache
    * .gemfire.internal.cache.DistributedPutAllOperation, java.util.Map,
-   * com.gemstone.gemfire.internal.cache.LocalRegion)
+   * org.apache.geode.internal.cache.LocalRegion)
    */
   public void postPutAll(final DistributedPutAllOperation putallOp,
       final VersionedObjectList successfulPuts, LocalRegion reg) {

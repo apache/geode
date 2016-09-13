@@ -17,10 +17,10 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
 
 import java.io.DataInput;
 import java.io.DataOutput;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.membership;
+package org.apache.geode.management.membership;
 
 /**
  * Utility class that implements all methods in

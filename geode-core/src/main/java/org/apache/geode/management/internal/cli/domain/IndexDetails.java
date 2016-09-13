@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.domain;
+package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * The IndexDetails class encapsulates information for an Index on a Region in the GemFire Cache.
  * </p>
- * @see com.gemstone.gemfire.cache.query.Index
- * @see com.gemstone.gemfire.cache.query.IndexStatistics
- * @see com.gemstone.gemfire.cache.query.IndexType
- * @see com.gemstone.gemfire.distributed.DistributedMember
+ * @see org.apache.geode.cache.query.Index
+ * @see org.apache.geode.cache.query.IndexStatistics
+ * @see org.apache.geode.cache.query.IndexType
+ * @see org.apache.geode.distributed.DistributedMember
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
@@ -133,7 +133,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     this.indexType = indexType;
   }
 
-  public void setIndexType(final com.gemstone.gemfire.cache.query.IndexType indexType) {
+  public void setIndexType(final org.apache.geode.cache.query.IndexType indexType) {
     setIndexType(IndexType.valueOf(indexType));
   }
 
@@ -290,7 +290,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
 
     private final String description;
 
-    public static IndexType valueOf(final com.gemstone.gemfire.cache.query.IndexType indexType) {
+    public static IndexType valueOf(final org.apache.geode.cache.query.IndexType indexType) {
       for (final IndexType type : values()) {
         if (type.name().equalsIgnoreCase(ObjectUtils.toString(indexType))) {
           return type;
@@ -308,15 +308,15 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
       return this.description;
     }
 
-    public com.gemstone.gemfire.cache.query.IndexType getType() {
+    public org.apache.geode.cache.query.IndexType getType() {
       switch (this) {
         case HASH:
           return null;
         case PRIMARY_KEY:
-          return com.gemstone.gemfire.cache.query.IndexType.PRIMARY_KEY;
+          return org.apache.geode.cache.query.IndexType.PRIMARY_KEY;
         case FUNCTIONAL:
         default:
-          return com.gemstone.gemfire.cache.query.IndexType.FUNCTIONAL;
+          return org.apache.geode.cache.query.IndexType.FUNCTIONAL;
       }
     }
 

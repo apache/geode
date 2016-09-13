@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -51,89 +51,89 @@ import java.util.stream.Collectors;
 import com.jayway.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.LocatorDiscoveryCallbackAdapter;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-import com.gemstone.gemfire.cache.persistence.PartitionOfflineException;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.CacheConfig;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.CustomerIDPartitionResolver;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.RegionQueue;
-import com.gemstone.gemfire.internal.cache.execute.data.CustId;
-import com.gemstone.gemfire.internal.cache.execute.data.Customer;
-import com.gemstone.gemfire.internal.cache.execute.data.Order;
-import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
-import com.gemstone.gemfire.internal.cache.execute.data.Shipment;
-import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
-import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import com.gemstone.gemfire.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
-import com.gemstone.gemfire.internal.cache.wan.serial.SerialGatewaySenderQueue;
-import com.gemstone.gemfire.pdx.SimpleClass;
-import com.gemstone.gemfire.pdx.SimpleClass1;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.LocatorDiscoveryCallbackAdapter;
+import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
+import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.cache.execute.data.Customer;
+import org.apache.geode.internal.cache.execute.data.Order;
+import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.execute.data.Shipment;
+import org.apache.geode.internal.cache.execute.data.ShipmentId;
+import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
+import org.apache.geode.pdx.SimpleClass;
+import org.apache.geode.pdx.SimpleClass1;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 public class WANTestBase extends JUnit4DistributedTestCase {
@@ -400,7 +400,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     }
     catch (IOException e) {
       e.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start GatewayReceiver on port " + port, e);
+      org.apache.geode.test.dunit.Assert.fail("Failed to start GatewayReceiver on port " + port, e);
     }
     return port;
   }
@@ -968,10 +968,10 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(GATEWAY_SSL_KEYSTORE,
-        TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/client.keystore"));
+        TestUtil.getResourcePath(WANTestBase.class, "/org/apache/geode/cache/client/internal/client.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE,
-        TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/client.truststore"));
+        TestUtil.getResourcePath(WANTestBase.class, "/org/apache/geode/cache/client/internal/client.truststore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -1031,7 +1031,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       server1.start();
     }
     catch (IOException e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start the Server", e);
+      org.apache.geode.test.dunit.Assert.fail("Failed to start the Server", e);
     }
     assertTrue(server1.isRunning());
 
@@ -2053,10 +2053,10 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(GATEWAY_SSL_KEYSTORE,
-        TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/cacheserver.keystore"));
+        TestUtil.getResourcePath(WANTestBase.class, "/org/apache/geode/cache/client/internal/cacheserver.keystore"));
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE,
-        TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/cacheserver.truststore"));
+        TestUtil.getResourcePath(WANTestBase.class, "/org/apache/geode/cache/client/internal/cacheserver.truststore"));
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -2113,7 +2113,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     try {
       server.start();
     } catch (IOException e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start server ", e);
+      org.apache.geode.test.dunit.Assert.fail("Failed to start server ", e);
     }
   }
 
@@ -2133,7 +2133,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     try {
       server.start();
     } catch (IOException e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start server ", e);
+      org.apache.geode.test.dunit.Assert.fail("Failed to start server ", e);
     }
     return port;
   }
@@ -2365,7 +2365,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         custKeyValues.put(custid, customer);
       }
       catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "putCustomerPartitionedRegion : failed while doing put operation in CustomerPartitionedRegion ",
             e);
       }
@@ -2391,7 +2391,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
       }
       catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "putOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
             e);
       }
@@ -2414,7 +2414,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         assertEquals(order, orderRegion.get(custid));
 
       } catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "putOrderPartitionedRegionUsingCustId : failed while doing put operation in OrderPartitionedRegion ",
             e);
       }
@@ -2440,7 +2440,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
       }
       catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
           "updateOrderPartitionedRegion : failed while doing put operation in OrderPartitionedRegion ",
           e);
       }
@@ -2462,7 +2462,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         assertEquals(order, orderRegion.get(custid));
         orderKeyValues.put(custid, order);
       } catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "updateOrderPartitionedRegionUsingCustId : failed while doing put operation in OrderPartitionedRegion ",
             e);
       }
@@ -2489,7 +2489,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         shipmentKeyValue.put(shipmentId, shipment);
       }
       catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
           "putShipmentPartitionedRegion : failed while doing put operation in ShipmentPartitionedRegion ",
           e);
       }
@@ -2532,7 +2532,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         assertEquals(shipment, shipmentRegion.get(custid));
         shipmentKeyValue.put(custid, shipment);
       } catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "putShipmentPartitionedRegionUsingCustId : failed while doing put operation in ShipmentPartitionedRegion ",
             e);
       }
@@ -2559,7 +2559,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         shipmentKeyValue.put(shipmentId, shipment);
       }
       catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
           "updateShipmentPartitionedRegion : failed while doing put operation in ShipmentPartitionedRegion ",
           e);
       }
@@ -2582,7 +2582,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         assertEquals(shipment, shipmentRegion.get(custid));
         shipmentKeyValue.put(custid, shipment);
       } catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.Assert.fail(
+        org.apache.geode.test.dunit.Assert.fail(
             "updateShipmentPartitionedRegionUsingCustId : failed while doing put operation in ShipmentPartitionedRegion ",
             e);
       }

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.controllers.support;
+package org.apache.geode.rest.internal.web.controllers.support;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.util.StringUtils;
 
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 
 public class RestServersResultCollector<String, Object> implements ResultCollector<String, Object> {
 

@@ -20,7 +20,7 @@
  * TODO To change the template for this generated file go to Window -
  * Preferences - Java - Code Style - Code Templates
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -32,9 +32,9 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Testing methods for SimpleDiskRegion.java api's
@@ -55,7 +55,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /*
    * Test method for
-   * 'com.gemstone.gemfire.internal.cache.SimpleDiskRegion.basicClose()'
+   * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicClose()'
    */
   @Test
   public void testBasicClose()
@@ -153,7 +153,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /*
    * Test method for
-   * 'com.gemstone.gemfire.internal.cache.SimpleDiskRegion.basicDestroy()'
+   * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicDestroy()'
    */
   @Test
   public void testBasicDestroy()
@@ -217,7 +217,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
 //   /*
 //    * Test method for
-//    * 'com.gemstone.gemfire.internal.cache.SimpleDiskRegion.basicInitializeOwner()'
+//    * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicInitializeOwner()'
 //    */
 //   @Test
 //  public void testBasicInitializeOwner()
@@ -256,7 +256,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /*
    * Test method for
-   * 'com.gemstone.gemfire.internal.cache.SimpleDiskRegion.getChild()'
+   * 'org.apache.geode.internal.cache.SimpleDiskRegion.getChild()'
    */
   @Test
   public void testGetChild()
@@ -282,7 +282,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /*
    * Test method for
-   * 'com.gemstone.gemfire.internal.cache.SimpleDiskRegion.getNextDir()'
+   * 'org.apache.geode.internal.cache.SimpleDiskRegion.getNextDir()'
    */
   @Test
   public void testGetNextDir()
@@ -330,7 +330,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /*
    * Test method for
-   * 'com.gemstone.gemfire.internal.cache.SimpleDiskRegion.newDiskId()'
+   * 'org.apache.geode.internal.cache.SimpleDiskRegion.newDiskId()'
    */
   @Test
   public void testNewDiskId()

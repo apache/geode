@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository;
+package org.apache.geode.cache.lucene.internal.repository;
 
 import java.util.Collection;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.internal.cache.BucketNotFoundException;
 
 /**
  * {@link RepositoryManager} instances will be used to get {@link IndexRepository} instances hosting index data for

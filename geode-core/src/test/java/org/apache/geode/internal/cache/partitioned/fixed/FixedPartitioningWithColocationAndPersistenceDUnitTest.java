@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.fixed;
+package org.apache.geode.internal.cache.partitioned.fixed;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Wait;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Wait;
 
 @Category(DistributedTest.class)
 public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
@@ -92,9 +92,9 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest extends
    * 
    * Put happens for all 3 regions. Colocation of the data is achieved by using
    * a partition-resolver
-   * {@link CustomerFixedPartitionResolver#getRoutingObject(com.gemstone.gemfire.cache.EntryOperation)}
+   * {@link CustomerFixedPartitionResolver#getRoutingObject(org.apache.geode.cache.EntryOperation)}
    * Also the Fixed Partitioning is achieved using same partition-resolver
-   * {@link CustomerFixedPartitionResolver#getPartitionName(com.gemstone.gemfire.cache.EntryOperation, java.util.Set)}
+   * {@link CustomerFixedPartitionResolver#getPartitionName(org.apache.geode.cache.EntryOperation, java.util.Set)}
    * 
    * Validation are done for the same number of the buckets Validation are done
    * for the same buckets on particular member for all 3 regions.

@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.Banner;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.Banner;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 /**
  * Creates LogWriterLogger instances.
@@ -57,7 +57,7 @@ public class LogWriterFactory {
                                                         final LogConfig config,
                                                         final boolean logConfig) {
 
-    // if isSecurity then use "com.gemstone.gemfire.security" else use "com.gemstone.gemfire"
+    // if isSecurity then use "org.apache.geode.security" else use "org.apache.geode"
     String name = null;
     if (isSecure){
       name = LogService.SECURITY_LOGGER_NAME;

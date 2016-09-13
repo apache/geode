@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.locks.DLockBatch;
-import com.gemstone.gemfire.distributed.internal.locks.DLockGrantor;
-import com.gemstone.gemfire.distributed.internal.locks.DLockLessorDepartureHandler;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.locks.DLockBatch;
+import org.apache.geode.distributed.internal.locks.DLockGrantor;
+import org.apache.geode.distributed.internal.locks.DLockLessorDepartureHandler;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Handles departure of lessor (lease holder) by sending a message asking

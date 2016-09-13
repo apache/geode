@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.springframework.shell.event.ParseResult;
 
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.internal.cli.shell.GfshExecutionStrategy;
-import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
 /**
  * Immutable representation of the outcome of parsing a given shell line. *

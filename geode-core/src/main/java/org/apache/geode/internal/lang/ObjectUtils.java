@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

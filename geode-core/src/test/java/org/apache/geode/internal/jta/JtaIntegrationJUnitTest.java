@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
@@ -28,11 +28,11 @@ import org.junit.experimental.categories.Category;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**
- * Moved some non-DUnit tests over from com/gemstone/gemfire/internal/jta/dunit/JTADUnitTest
+ * Moved some non-DUnit tests over from org/apache/geode/internal/jta/dunit/JTADUnitTest
  * 
  */
 @Category(IntegrationTest.class)

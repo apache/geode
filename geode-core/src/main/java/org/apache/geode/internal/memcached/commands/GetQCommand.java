@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached.commands;
+package org.apache.geode.internal.memcached.commands;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.memcached.Command;
-import com.gemstone.gemfire.internal.memcached.RequestReader;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.memcached.Command;
+import org.apache.geode.internal.memcached.RequestReader;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * Does not send a response on a cache miss.

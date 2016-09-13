@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis;
+package org.apache.geode.codeAnalysis;
 
 import static org.junit.Assert.fail;
 
@@ -24,8 +24,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * 

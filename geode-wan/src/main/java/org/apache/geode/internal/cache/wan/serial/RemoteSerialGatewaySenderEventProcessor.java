@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.serial;
+package org.apache.geode.internal.cache.wan.serial;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.logging.LogService;
 
 public class RemoteSerialGatewaySenderEventProcessor extends
     SerialGatewaySenderEventProcessor {

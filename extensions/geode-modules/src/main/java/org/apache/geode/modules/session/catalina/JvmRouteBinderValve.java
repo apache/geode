@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
@@ -27,7 +27,7 @@ import java.io.IOException;
 
 public class JvmRouteBinderValve extends ValveBase {
 
-  protected static final String info = "com.gemstone.gemfire.modules.session.JvmRouteBinderValve/1.0";
+  protected static final String info = "org.apache.geode.modules.session.JvmRouteBinderValve/1.0";
 
   @Override
   public void invoke(Request request, Response response) throws IOException, ServletException {

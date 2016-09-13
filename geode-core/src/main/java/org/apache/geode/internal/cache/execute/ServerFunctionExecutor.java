@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.execute;
+package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.cache.client.internal.ExecuteFunctionNoAckOp;
-import com.gemstone.gemfire.cache.client.internal.ExecuteFunctionOp;
-import com.gemstone.gemfire.cache.client.internal.GetFunctionAttributeOp;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.client.internal.ProxyCache;
-import com.gemstone.gemfire.cache.client.internal.UserAttributes;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.internal.ExecuteFunctionNoAckOp;
+import org.apache.geode.cache.client.internal.ExecuteFunctionOp;
+import org.apache.geode.cache.client.internal.GetFunctionAttributeOp;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.ProxyCache;
+import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * 
  *
@@ -295,7 +295,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.execute.AbstractExecution#validateExecution(com.gemstone.gemfire.cache.execute.Function, java.util.Set)
+   * @see org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.cache.execute.Function, java.util.Set)
    */
   @Override
   public void validateExecution(Function function, Set targetMembers) {

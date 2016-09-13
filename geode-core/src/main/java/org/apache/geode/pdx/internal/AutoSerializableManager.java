@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
-import com.gemstone.gemfire.pdx.*;
-import com.gemstone.gemfire.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import org.apache.geode.pdx.*;
+import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 import org.apache.logging.log4j.Logger;
 
 import java.io.Externalizable;

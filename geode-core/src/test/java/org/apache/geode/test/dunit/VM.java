@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -26,10 +26,10 @@ import java.util.concurrent.Callable;
 import com.jayway.awaitility.Awaitility;
 import hydra.MethExecutorResult;
 
-import com.gemstone.gemfire.internal.process.ProcessUtils;
-import com.gemstone.gemfire.test.dunit.standalone.BounceResult;
-import com.gemstone.gemfire.test.dunit.standalone.RemoteDUnitVMIF;
-import com.gemstone.gemfire.test.dunit.standalone.StandAloneDUnitEnv;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.test.dunit.standalone.BounceResult;
+import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
 
 /**
  * This class represents a Java Virtual Machine that runs on a host.

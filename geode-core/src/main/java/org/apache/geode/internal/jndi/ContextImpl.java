@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jndi;
+package org.apache.geode.internal.jndi;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.HashMap;
@@ -39,8 +39,8 @@ import javax.naming.NoPermissionException;
 import javax.naming.NotContextException;
 import javax.naming.NameAlreadyBoundException;
 import javax.transaction.SystemException;
-import com.gemstone.gemfire.internal.jta.TransactionUtils;
-import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
+import org.apache.geode.internal.jta.TransactionUtils;
+import org.apache.geode.internal.jta.UserTransactionImpl;
 
 /**
  * Provides implementation of javax.naming.Context interface. A name in the

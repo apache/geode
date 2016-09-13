@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.domain;
+package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -25,18 +25,18 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.internal.lang.MutableIdentifiable;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.internal.lang.MutableIdentifiable;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * The DiskStoreDetails class captures information about a particular disk store for a GemFire distributed system
  * member.  Each disk store for a member should be captured in separate instance of this class.
  * </p>
- * @see com.gemstone.gemfire.cache.DiskStore
- * @see com.gemstone.gemfire.cache.DiskStoreFactory
- * @see com.gemstone.gemfire.lang.Identifiable
+ * @see org.apache.geode.cache.DiskStore
+ * @see org.apache.geode.cache.DiskStoreFactory
+ * @see org.apache.geode.lang.Identifiable
  * @see java.io.Serializable
  * @see java.lang.Comparable
  * @see java.lang.Iterable

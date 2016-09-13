@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 /**
  * A marker interface to identify internal objects that are stored in the Cache at the same place that user objects

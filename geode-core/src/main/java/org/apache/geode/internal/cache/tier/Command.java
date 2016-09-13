@@ -17,9 +17,9 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.tier;
+package org.apache.geode.internal.cache.tier;
 
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.*;
 
 /**
  * 

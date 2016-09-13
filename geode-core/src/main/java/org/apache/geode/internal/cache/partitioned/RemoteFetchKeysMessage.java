@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -31,32 +31,32 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.RemoteOperationException;
-import com.gemstone.gemfire.internal.cache.RemoteOperationMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RemoteOperationException;
+import org.apache.geode.internal.cache.RemoteOperationMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.ObjectIntProcedure;
 
 /**
  * TODO this class should be moved to a different package
@@ -73,7 +73,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RemoteOperationMessage#operateOnRegion(com.gemstone.gemfire.distributed.internal.DistributionManager, com.gemstone.gemfire.internal.cache.LocalRegion, long)
+   * @see org.apache.geode.internal.cache.RemoteOperationMessage#operateOnRegion(org.apache.geode.distributed.internal.DistributionManager, org.apache.geode.internal.cache.LocalRegion, long)
    */
   @Override
   protected boolean operateOnRegion(DistributionManager dm, LocalRegion r,
@@ -93,7 +93,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return R_FETCH_KEYS_MESSAGE;
@@ -114,14 +114,14 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RemoteOperationMessage#toData(java.io.DataOutput)
+   * @see org.apache.geode.internal.cache.RemoteOperationMessage#toData(java.io.DataOutput)
    */
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RemoteOperationMessage#fromData(java.io.DataInput)
+   * @see org.apache.geode.internal.cache.RemoteOperationMessage#fromData(java.io.DataInput)
    */
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {

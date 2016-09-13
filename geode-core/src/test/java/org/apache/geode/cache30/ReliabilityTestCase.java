@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RequiredRoles;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RequiredRoles;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
  * Provides functionality helpful to testing Reliability and RequiredRoles.

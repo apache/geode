@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -22,11 +22,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.i18n.StringId;
 
 /**
-  * Implementation of {@link com.gemstone.gemfire.i18n.LogWriterI18n}
+  * Implementation of {@link org.apache.geode.i18n.LogWriterI18n}
   * that will write to a local stream and only use pure java features.
   */
 public class PureLogWriter extends LogWriterImpl {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,12 +26,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.snapshot.SnapshotIterator;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotExporter;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
-import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+import org.apache.geode.cache.snapshot.SnapshotIterator;
+import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotExporter;
+import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
+import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
+import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.test.junit.categories.PerformanceTest;
 
 @Category(PerformanceTest.class)
 @Ignore("Test has no assertions and will always pass")

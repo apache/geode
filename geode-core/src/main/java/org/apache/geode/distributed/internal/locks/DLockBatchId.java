@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.locks;
+package org.apache.geode.distributed.internal.locks;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.distributed.internal.locks.LockGrantorId;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.distributed.internal.locks.LockGrantorId;
 
 /** 
  * Identifies a {@link DLockBatch}.

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.SystemMember;
-import com.gemstone.gemfire.admin.Statistic;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.admin.Stat;
-import com.gemstone.gemfire.internal.admin.StatResource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-//import com.gemstone.gemfire.internal.admin.SystemMember;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.SystemMember;
+import org.apache.geode.admin.Statistic;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.admin.Stat;
+import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+//import org.apache.geode.internal.admin.SystemMember;
 
 import java.util.ArrayList;
 //import java.util.Date;
@@ -35,7 +35,7 @@ import java.util.List;
  * @since GemFire     3.5
  */
 public class StatisticResourceImpl 
-implements com.gemstone.gemfire.admin.StatisticResource {
+implements org.apache.geode.admin.StatisticResource {
 
   /** The underlying remote StatResource which this object delegates to */
   protected StatResource statResource;
@@ -59,12 +59,12 @@ implements com.gemstone.gemfire.admin.StatisticResource {
    *
    * @param statResource  the admin StatResource to manage/monitor
    * @param member        the SystemMember owning this resource
-   * @exception com.gemstone.gemfire.admin.AdminException 
+   * @exception org.apache.geode.admin.AdminException 
    *            if unable to create this StatisticResource for administration
    */
   public StatisticResourceImpl(StatResource statResource,
                                SystemMember member)
-                        throws com.gemstone.gemfire.admin.AdminException {
+                        throws org.apache.geode.admin.AdminException {
     this.statResource = statResource;
     this.member = member;
     this.name = this.statResource.getName();
@@ -112,7 +112,7 @@ implements com.gemstone.gemfire.admin.StatisticResource {
   //   Operations
   // -------------------------------------------------------------------------
 
-  public void refresh() throws com.gemstone.gemfire.admin.AdminException {
+  public void refresh() throws org.apache.geode.admin.AdminException {
     Stat[] stats = null;
     if (this.statResource != null) {
       stats = this.statResource.getStats();
@@ -143,7 +143,7 @@ implements com.gemstone.gemfire.admin.StatisticResource {
   
   /**
    * Updates the value of the {@link Statistic} corresponding to the internal 
-   * {@link com.gemstone.gemfire.internal.admin.Stat}
+   * {@link org.apache.geode.internal.admin.Stat}
    *
    * @param stat  the internal stat to use in updating the matching statistic
    */
@@ -159,7 +159,7 @@ implements com.gemstone.gemfire.admin.StatisticResource {
   
   /**
    * Creates a new {@link StatisticImpl} to represent the internal {@link 
-   * com.gemstone.gemfire.internal.admin.Stat}
+   * org.apache.geode.internal.admin.Stat}
    *
    * @param stat  the internal stat to wrap in a new statistic
    */

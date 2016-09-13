@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-//import com.gemstone.gemfire.admin.AdminException;
-//import com.gemstone.gemfire.admin.DistributionLocator;
-import com.gemstone.gemfire.admin.DistributionLocatorConfig;
-import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-//import com.gemstone.gemfire.internal.Assert;
+//import org.apache.geode.admin.AdminException;
+//import org.apache.geode.admin.DistributionLocator;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+//import org.apache.geode.internal.Assert;
 
 //import org.apache.commons.modeler.ManagedBean;
 //import org.apache.commons.modeler.AttributeInfo;
@@ -47,8 +47,8 @@ import javax.management.modelmbean.ModelMBean;
  *
  */
 public class DistributionLocatorJmxImpl 
-extends com.gemstone.gemfire.admin.internal.DistributionLocatorImpl
-implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource,
+extends org.apache.geode.admin.internal.DistributionLocatorImpl
+implements org.apache.geode.admin.jmx.internal.ManagedResource,
            DistributionLocatorConfig {
 
   /** The JMX object name of this managed resource */

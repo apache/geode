@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.gatewaydelta;
+package org.apache.geode.modules.gatewaydelta;
 
 public interface GatewayDelta {
 

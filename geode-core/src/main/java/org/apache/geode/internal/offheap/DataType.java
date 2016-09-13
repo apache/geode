@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
-import com.gemstone.gemfire.pdx.internal.PdxType;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.PdxType;
 
 /**
  * Determines the data type of the bytes in an off-heap MemoryBlock. This is
@@ -52,21 +52,21 @@ public class DataType implements DSCODE {
       switch (header) {
       case DS_FIXED_ID_BYTE:
       {
-        return "com.gemstone.gemfire.internal.DataSerializableFixedID:" 
+        return "org.apache.geode.internal.DataSerializableFixedID:" 
           + DSFIDFactory.create(in.readByte(), in).getClass().getName();
       }
       case DS_FIXED_ID_SHORT:
       {
-        return "com.gemstone.gemfire.internal.DataSerializableFixedID:" 
+        return "org.apache.geode.internal.DataSerializableFixedID:" 
             + DSFIDFactory.create(in.readShort(), in).getClass().getName();
       }
       case DS_FIXED_ID_INT:
       {
-        return "com.gemstone.gemfire.internal.DataSerializableFixedID:" 
+        return "org.apache.geode.internal.DataSerializableFixedID:" 
             + DSFIDFactory.create(in.readInt(), in).getClass().getName();
       }
       case DS_NO_FIXED_ID:
-        return "com.gemstone.gemfire.internal.DataSerializableFixedID:" + DataSerializer.readClass(in).getName();
+        return "org.apache.geode.internal.DataSerializableFixedID:" + DataSerializer.readClass(in).getName();
       case NULL:
         return "null";
       case NULL_STRING:
@@ -180,20 +180,20 @@ public class DataType implements DSCODE {
       case USER_DATA_SERIALIZABLE:
       {
         Instantiator instantiator = InternalInstantiator.getInstantiator(in.readByte());
-        return "com.gemstone.gemfire.Instantiator:" + instantiator.getInstantiatedClass().getName();
+        return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
       }
       case USER_DATA_SERIALIZABLE_2:
       {
         Instantiator instantiator = InternalInstantiator.getInstantiator(in.readShort());
-        return "com.gemstone.gemfire.Instantiator:" + instantiator.getInstantiatedClass().getName();
+        return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
       }
       case USER_DATA_SERIALIZABLE_4:
       {
         Instantiator instantiator = InternalInstantiator.getInstantiator(in.readInt());
-        return "com.gemstone.gemfire.Instantiator:" + instantiator.getInstantiatedClass().getName();
+        return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
       }
       case DATA_SERIALIZABLE:
-        return "com.gemstone.gemfire.DataSerializable:" + DataSerializer.readClass(in).getName();
+        return "org.apache.geode.DataSerializable:" + DataSerializer.readClass(in).getName();
       case SERIALIZABLE:
       {
         String name = null;
@@ -212,11 +212,11 @@ public class DataType implements DSCODE {
           GemFireCacheImpl gfc = GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.");
           PdxType pdxType = gfc.getPdxRegistry().getType(typeId);
           if (pdxType == null) { // fix 52164
-            return "com.gemstone.gemfire.pdx.PdxInstance: unknown id=" + typeId; 
+            return "org.apache.geode.pdx.PdxInstance: unknown id=" + typeId; 
           }
-          return "com.gemstone.gemfire.pdx.PdxInstance:" + pdxType.getClassName();
+          return "org.apache.geode.pdx.PdxInstance:" + pdxType.getClassName();
         } catch(CacheClosedException e) {
-          return "com.gemstone.gemfire.pdx.PdxInstance:PdxRegistryClosed";
+          return "org.apache.geode.pdx.PdxInstance:PdxRegistryClosed";
         }
       }
       case PDX_ENUM:

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheClosedException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheClosedException;
 
 /**
  * Basic implementation of MemoryBlock for test validation only.

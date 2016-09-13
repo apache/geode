@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -34,13 +34,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ThreadUtilsJUnitTest class is a test suite of test cases for testing the contract and functionality of the ThreadUtils
  * class.
  * <p/>
- * @see com.gemstone.gemfire.internal.lang.ThreadUtils
+ * @see org.apache.geode.internal.lang.ThreadUtils
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
  * @see org.junit.Assert

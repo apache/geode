@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.bean.stats;
+package org.apache.geode.management.bean.stats;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -22,13 +22,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.DiskRegionStats;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionStats;
-import com.gemstone.gemfire.management.internal.beans.DiskRegionBridge;
-import com.gemstone.gemfire.management.internal.beans.PartitionedRegionBridge;
-import com.gemstone.gemfire.management.internal.beans.RegionMBeanBridge;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DiskRegionStats;
+import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.management.internal.beans.DiskRegionBridge;
+import org.apache.geode.management.internal.beans.PartitionedRegionBridge;
+import org.apache.geode.management.internal.beans.RegionMBeanBridge;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Implementing RegionMXBean to ensure test coverage

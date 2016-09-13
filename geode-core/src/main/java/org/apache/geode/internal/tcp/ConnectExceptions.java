@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 //import java.io.*;
 import java.util.*;
 
-import com.gemstone.gemfire.GemFireCheckedException;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.GemFireCheckedException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This exception is thrown as a result of one or more failed attempts

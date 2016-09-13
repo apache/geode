@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.VersionedDataStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataStream;
 
 /**
  * An extension to {@link ByteBufferInputStream} that implements

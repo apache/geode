@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.shell;
+package org.apache.geode.management.internal.cli.shell;
 
 import java.util.Set;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.internal.cli.CommandRequest;
 
 /**
  * The OperationInvoker interface defines a contract for invoking operations on MBeans, accessing an MBean's attributes
@@ -74,7 +74,7 @@ public interface OperationInvoker {
    * system, or the GemFire cluster.
    * <p/>
    * @return a proxy instance of the GemFire Manager's DistributedSystem MXBean.
-   * @see com.gemstone.gemfire.management.DistributedSystemMXBean
+   * @see org.apache.geode.management.DistributedSystemMXBean
    */
   public DistributedSystemMXBean getDistributedSystemMXBean();
 
@@ -121,7 +121,7 @@ public interface OperationInvoker {
    * <p/>
    * @param command the Command entered and invoked by the user to be processed.
    * @return the result of the command execution.
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.cli.CommandRequest
    */
   public Object processCommand(CommandRequest command);
 

@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.web.shell;
+package org.apache.geode.management.internal.web.shell;
 
 import java.net.URI;
 import java.util.Map;
 
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
+import org.apache.geode.management.internal.cli.CommandRequest;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.http.ClientHttpRequest;
+import org.apache.geode.management.internal.web.http.HttpMethod;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
@@ -36,11 +36,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  * commands and return responses.
  * 
  * @see java.net.URI
- * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
- * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.AbstractHttpOperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker
+ * @see org.apache.geode.management.internal.cli.shell.Gfsh
+ * @see org.apache.geode.management.internal.cli.shell.OperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.AbstractHttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
@@ -63,8 +63,8 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * using HTTP processing.
    * 
    * @param gfsh a reference to the instance of the GemFire shell using this OperationInvoker to process commands.
-   * @see #SimpleHttpOperationInvoker(com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String, Map)
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see #SimpleHttpOperationInvoker(org.apache.geode.management.internal.cli.shell.Gfsh, String, Map)
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
   public SimpleHttpOperationInvoker(final Gfsh gfsh, Map<String,String> securityProperties) {
     this(gfsh, REST_API_URL, securityProperties);
@@ -78,7 +78,7 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * 
    * @param gfsh a reference to the instance of the GemFire shell using this OperationInvoker to process commands.
    * @param baseUrl the base URL to the GemFire Manager's HTTP service.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
   public SimpleHttpOperationInvoker(final Gfsh gfsh, final String baseUrl, Map<String,String> securityProperties) {
     super(gfsh, baseUrl, securityProperties);
@@ -92,10 +92,10 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * @param command a CommandRequest object encapsulating the details of the command invocation.
    * @return a client HTTP request detailing the operation to be performed on the remote resource targeted by the
    * command invocation.
-   * @see #createLink(com.gemstone.gemfire.management.internal.cli.CommandRequest)
-   * @see AbstractHttpOperationInvoker#createHttpRequest(com.gemstone.gemfire.management.internal.web.domain.Link)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
-   * @see com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest
+   * @see #createLink(org.apache.geode.management.internal.cli.CommandRequest)
+   * @see AbstractHttpOperationInvoker#createHttpRequest(org.apache.geode.management.internal.web.domain.Link)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.web.http.ClientHttpRequest
    */
   protected ClientHttpRequest createHttpRequest(final CommandRequest command) {
     return createHttpRequest(createLink(command));
@@ -107,9 +107,9 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * 
    * @param command a CommandRequest object encapsulating the details of the command invocation.
    * @return a Link identifying the resource and the operation on the resource.
-   * @see AbstractHttpOperationInvoker#createLink(String, java.net.URI, com.gemstone.gemfire.management.internal.web.http.HttpMethod)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see AbstractHttpOperationInvoker#createLink(String, java.net.URI, org.apache.geode.management.internal.web.http.HttpMethod)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.web.domain.Link
    */
   protected Link createLink(final CommandRequest command) {
     return createLink(LINK_RELATION, getHttpRequestUrl(command), HttpMethod.POST);
@@ -120,9 +120,9 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * 
    * @param command a CommandRequest object encapsulating the details of the command invocation.
    * @return a URI identifying the resource, it's location as well as details of the HTTP request.
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.cli.CommandRequest
    * @see java.net.URI
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.cli.CommandRequest
    * @see org.springframework.web.util.UriComponentsBuilder
    */
   protected URI getHttpRequestUrl(final CommandRequest command) {
@@ -138,10 +138,10 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * @param command the command requested/entered by the user to be processed.
    * @return the result of the command execution.
    * @see #isConnected()
-   * @see #createHttpRequest(com.gemstone.gemfire.management.internal.cli.CommandRequest)
+   * @see #createHttpRequest(org.apache.geode.management.internal.cli.CommandRequest)
    * @see AbstractHttpOperationInvoker#handleResourceAccessException(org.springframework.web.client.ResourceAccessException)
-   * @see AbstractHttpOperationInvoker#send(com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest, Class)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
+   * @see AbstractHttpOperationInvoker#send(org.apache.geode.management.internal.web.http.ClientHttpRequest, Class)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
    * @see org.springframework.http.ResponseEntity
    */
   @Override

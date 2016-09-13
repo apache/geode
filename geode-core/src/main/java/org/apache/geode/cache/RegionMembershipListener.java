@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * A listener that can be implemented to handle region membership events.
  * 
  * <p>
  * Instead of implementing this interface it is recommended that you extend
- * the {@link com.gemstone.gemfire.cache.util.RegionMembershipListenerAdapter} class.
+ * the {@link org.apache.geode.cache.util.RegionMembershipListenerAdapter} class.
  * 
  * 
  * 

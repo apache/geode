@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets.command;
+package org.apache.geode.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommandQuery;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
 
 public abstract class BaseCQCommand extends BaseCommandQuery {
 

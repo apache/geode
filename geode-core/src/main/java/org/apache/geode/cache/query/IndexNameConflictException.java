@@ -20,7 +20,7 @@
  * Created on February 15, 2005, 10:20 AM
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 /**
  * Thrown while creating the new index if there exists an Index with

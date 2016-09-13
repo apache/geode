@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.shell;
+package org.apache.geode.management.internal.web.shell;
 
 /**
  * The MBeanAccessException class is a RuntimeException indicating that an attempt to access an MBean attribute or

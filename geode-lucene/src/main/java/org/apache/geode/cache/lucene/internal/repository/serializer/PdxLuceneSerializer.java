@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
+package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.PdxInstance;
 
 /**
  * LuceneSerializer which can handle any PdxInstance

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import static org.junit.Assert.*;
 
@@ -34,11 +34,11 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.logging.LoggingPerformanceTestCase;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.PerformanceTest;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")
@@ -92,7 +92,7 @@ public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
     assertTrue(this.configDirectory.isDirectory() && this.configDirectory.canWrite());
 
     // copy the log4j2-test.xml to the configDirectory
-    //final URL srcURL = getClass().getResource("/com/gemstone/gemfire/internal/logging/log4j/log4j2-test.xml");
+    //final URL srcURL = getClass().getResource("/org/apache/geode/internal/logging/log4j/log4j2-test.xml");
     final URL srcURL = getClass().getResource("log4j2-test.xml");
     final File src = new File(srcURL.getFile());
     FileUtils.copyFileToDirectory(src, this.configDirectory);

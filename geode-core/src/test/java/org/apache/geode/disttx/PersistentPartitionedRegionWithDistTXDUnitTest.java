@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.disttx;
+package org.apache.geode.disttx;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.partitioned.PersistentPartitionedRegionWithTransactionDUnitTest;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.internal.cache.partitioned.PersistentPartitionedRegionWithTransactionDUnitTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Same tests as that of

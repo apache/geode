@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
+package org.apache.geode.cache.lucene.internal.repository.serializer;
 
-import com.gemstone.gemfire.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneService;
 
 import org.apache.lucene.document.Document;
 

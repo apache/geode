@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.templates;
+package org.apache.geode.security.templates;
 
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.operations.OperationContext;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.security.AccessControl;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * A dummy implementation of the {@code AccessControl} interface that

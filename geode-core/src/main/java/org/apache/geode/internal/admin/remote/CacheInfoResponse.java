@@ -16,18 +16,18 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-//import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.*;
+//import org.apache.geode.internal.admin.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+//import org.apache.geode.internal.*;
+import org.apache.geode.internal.cache.*;
 import java.io.*;
 //import java.net.*;
 //import java.util.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * A message that is sent in response to a {@link CacheInfoRequest}.

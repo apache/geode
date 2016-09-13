@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 import static org.junit.Assert.*;
 
@@ -25,16 +25,16 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The StringUtilsJUnitTest is a test suite containing test cases for testing the contract and functionality of
  * the StringUtils class.
  * <p/>
- * @see com.gemstone.gemfire.internal.lang.StringUtils
+ * @see org.apache.geode.internal.lang.StringUtils
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0

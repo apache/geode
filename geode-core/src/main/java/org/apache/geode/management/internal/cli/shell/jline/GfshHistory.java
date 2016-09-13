@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.shell.jline;
+package org.apache.geode.management.internal.cli.shell.jline;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
+import org.apache.geode.management.internal.cli.parser.preprocessor.PreprocessorUtils;
 
 import jline.console.history.MemoryHistory;
 

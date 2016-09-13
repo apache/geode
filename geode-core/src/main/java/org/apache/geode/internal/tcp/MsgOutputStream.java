@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import java.io.*;
 import java.nio.*;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /** MsgOutputStream should no longer be used except in Connection
  * to do the handshake. Otherwise MsgStreamer should always be used.

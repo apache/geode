@@ -17,27 +17,27 @@ limitations under the License.
 -->
 <HTML>
   <HEAD>
-    <TITLE>com.gemstone.gemfire.cache.client package</TITLE>
+    <TITLE>org.apache.geode.cache.client package</TITLE>
   </HEAD>
   <BODY>
-  The <code>com.gemstone.gemfire.cache.client</code> package provides APIs used
+  The <code>org.apache.geode.cache.client</code> package provides APIs used
   for client connectivity and caching.
 <p>
 Most clients will only need to create a 
-{@link com.gemstone.gemfire.cache.client.ClientCache}
+{@link org.apache.geode.cache.client.ClientCache}
 using a
-{@link com.gemstone.gemfire.cache.client.ClientCacheFactory}.
+{@link org.apache.geode.cache.client.ClientCacheFactory}.
 <p>
 A client configures the servers it will connect to by creating one or more
-{@link com.gemstone.gemfire.cache.client.Pool pools}.
+{@link org.apache.geode.cache.client.Pool pools}.
 For most use cases one pool per client is all you need and the easiest
 way to get a single pool is to use
-{@link com.gemstone.gemfire.cache.client.ClientCacheFactory}.
+{@link org.apache.geode.cache.client.ClientCacheFactory}.
 If you do need more than one pool use a
-{@link com.gemstone.gemfire.cache.client.PoolFactory pool factory} obtained from the
-{@link com.gemstone.gemfire.cache.client.PoolManager pool manager} before you
+{@link org.apache.geode.cache.client.PoolFactory pool factory} obtained from the
+{@link org.apache.geode.cache.client.PoolManager pool manager} before you
 create the cache using 
-{@link com.gemstone.gemfire.cache.client.ClientCacheFactory}.
+{@link org.apache.geode.cache.client.ClientCacheFactory}.
 <p>
 An alternative to these APIs is to use the <code>pool</code> XML element
 as described in the <code>cache6_5.dtd</code>.
@@ -46,7 +46,7 @@ If you create more than one pool then for regions that will use a pool you
 need to configure the pool name on the regions.
 This can be done by setting the
 pool name on the region using the
-{@link com.gemstone.gemfire.cache.client.ClientRegionFactory#setPoolName API}
+{@link org.apache.geode.cache.client.ClientRegionFactory#setPoolName API}
 or using the <code>pool-name</code> attribute on the <code>region-attributes</code>
 as described in the <code>cache6_5.dtd</code>.
 

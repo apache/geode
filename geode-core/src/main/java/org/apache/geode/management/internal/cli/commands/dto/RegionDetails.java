@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands.dto;
+package org.apache.geode.management.internal.cli.commands.dto;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.gemfire.management.internal.cli.result.CliJsonSerializable;
-import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.CliJsonSerializable;
+import org.apache.geode.management.internal.cli.util.JsonUtil;
 
 public class RegionDetails implements CliJsonSerializable {
   private static Map<String, String> nameToDisplayName = new HashMap<String, String>();

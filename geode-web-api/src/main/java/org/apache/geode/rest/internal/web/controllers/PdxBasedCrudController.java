@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +33,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.rest.internal.web.controllers.support.JSONTypes;
-import com.gemstone.gemfire.rest.internal.web.controllers.support.RegionData;
-import com.gemstone.gemfire.rest.internal.web.controllers.support.RegionEntryData;
-import com.gemstone.gemfire.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.RegionData;
+import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;

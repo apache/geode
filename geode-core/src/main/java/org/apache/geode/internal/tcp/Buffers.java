@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
@@ -22,8 +22,8 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.internal.Assert;
 
 /**
  *

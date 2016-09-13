@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -59,14 +59,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.CanonicalInstantiator;
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.statistics.StatArchiveWriter;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.CanonicalInstantiator;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.statistics.StatArchiveWriter;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link DataSerializable} class.
@@ -1214,7 +1214,7 @@ public class DataSerializableJUnitTest implements Serializable {
   }
 
   /**
-   * Tests writing a {@link com.gemstone.gemfire.DataSerializable.Replaceable} object
+   * Tests writing a {@link org.apache.geode.DataSerializable.Replaceable} object
    */
   @Test
   public void testReplaceable() throws Exception {

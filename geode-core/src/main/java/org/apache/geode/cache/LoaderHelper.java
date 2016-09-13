@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /** Provides a set of APIs to help the
  * implementation of the <code>CacheLoader</code> load method. An instance of <code>LoaderHelper</code>
@@ -50,7 +50,7 @@ public interface LoaderHelper<K,V>
    *         getting a response from another cache
    * @throws CacheLoaderException
    *         If <code>netSearch</code> is attempted on a {@linkplain
-   *         com.gemstone.gemfire.cache.Scope#LOCAL local} region. 
+   *         org.apache.geode.cache.Scope#LOCAL local} region. 
    */
   public V netSearch(boolean doNetLoad)
     throws CacheLoaderException, TimeoutException;

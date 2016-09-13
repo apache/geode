@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
-//import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.statistics.StatArchiveFormat;
+//import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.statistics.StatArchiveFormat;
 import java.io.IOException;
 import java.io.Reader;
 

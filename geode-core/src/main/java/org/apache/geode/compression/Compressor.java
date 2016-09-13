@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.compression;
+package org.apache.geode.compression;
 
 /**
  * Interface for a compression codec.

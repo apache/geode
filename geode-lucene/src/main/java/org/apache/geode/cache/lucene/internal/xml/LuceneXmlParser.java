@@ -17,21 +17,21 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.xml;
+package org.apache.geode.cache.lucene.internal.xml;
 
-import static com.gemstone.gemfire.cache.lucene.internal.xml.LuceneXmlConstants.*;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.*;
 
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.internal.cache.xmlcache.AbstractXmlParser;
-import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public class LuceneXmlParser extends AbstractXmlParser {
 

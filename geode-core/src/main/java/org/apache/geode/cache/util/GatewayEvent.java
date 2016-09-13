@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
 
 /**
  * Interface <code>GatewayEvent</code> represents <code>Cache</code> events
@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.Region;
  *
  * @since GemFire 5.1
  * 
- * @deprecated as of GemFire 8.0. Use {@link com.gemstone.gemfire.cache.wan.GatewayQueueEvent} instead
+ * @deprecated as of GemFire 8.0. Use {@link org.apache.geode.cache.wan.GatewayQueueEvent} instead
  * 
  */
 @Deprecated

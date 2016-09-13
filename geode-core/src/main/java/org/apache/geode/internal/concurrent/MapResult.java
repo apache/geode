@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.concurrent;
+package org.apache.geode.internal.concurrent;
 
 /**
  * Any additional result state needed to be passed to {@link MapCallback} which

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.distributed.internal.ServerLocation;
 
 public class UserAttributes {
 

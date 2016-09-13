@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.pdx.internal.EnumInfo;
 
 /**
  * Push a PDX Enum id to other servers.
@@ -44,7 +44,7 @@ public class AddPDXEnumOp {
   
   private static class AddPdxEnumOpImpl extends AbstractOp {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public AddPdxEnumOpImpl(int id, EnumInfo ei) {
       super(MessageType.ADD_PDX_ENUM, 2);

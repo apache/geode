@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.direct;
+package org.apache.geode.distributed.internal.direct;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.tcp.*;
-import com.gemstone.gemfire.internal.util.Breadcrumbs;
-import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
+import org.apache.geode.*;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.tcp.*;
+import org.apache.geode.internal.util.Breadcrumbs;
+import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ import java.util.concurrent.Semaphore;
 /**
  * DirectChannel is used to interact directly with other Direct servers to
  * distribute GemFire messages to other nodes.  It is held by a
- * com.gemstone.gemfire.internal.cache.distribution.DistributionChannel,
+ * org.apache.geode.internal.cache.distribution.DistributionChannel,
  * which is used by the DistributionManager to send and receive asynchronous
  * messages.
  */
@@ -176,7 +176,7 @@ public class DirectChannel {
   }
   private void acquireGroupSendPermission(boolean ordered) {
     if (this.disconnected) {
-      throw new com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException(LocalizedStrings.DirectChannel_DIRECT_CHANNEL_HAS_BEEN_STOPPED.toLocalizedString());
+      throw new org.apache.geode.distributed.DistributedSystemDisconnectedException(LocalizedStrings.DirectChannel_DIRECT_CHANNEL_HAS_BEEN_STOPPED.toLocalizedString());
     }
     // @todo darrel: add some stats
     final Semaphore s = getGroupSem(ordered);

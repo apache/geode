@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
+package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * A lucene serializer that handles a single class and can

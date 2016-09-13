@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.internal.types.*;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.pdx.internal.PdxString;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * This is used to carry the state of a query or index update operation. A state
@@ -94,7 +94,7 @@ public class ExecutionContext {
    * current iteration element. Used to implement the "this" var in the query
    * shortcut methods
    * 
-   * @see com.gemstone.gemfire.cache.Region#query
+   * @see org.apache.geode.cache.Region#query
    */
   public ExecutionContext(Object[] bindArguments, Cache cache) {
     this.bindArguments = bindArguments;

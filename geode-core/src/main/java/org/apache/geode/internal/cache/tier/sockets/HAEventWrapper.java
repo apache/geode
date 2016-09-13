@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,20 +25,20 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.Conflatable;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.lru.Sizeable;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl.ClientCqConcurrentMap;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpHashMap;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.ClientCqConcurrentMap;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpHashMap;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * This new class acts as a wrapper for the existing
@@ -151,7 +151,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.Conflatable#getEventId()
+   * @see org.apache.geode.internal.cache.Conflatable#getEventId()
    */
   public EventID getEventId() {
     return this.eventIdentifier;
@@ -160,7 +160,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.Conflatable#getKeyToConflate()
+   * @see org.apache.geode.internal.cache.Conflatable#getKeyToConflate()
    */
   public Object getKeyToConflate() {
     return this.keyOfInterest;
@@ -169,7 +169,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.Conflatable#getRegionToConflate()
+   * @see org.apache.geode.internal.cache.Conflatable#getRegionToConflate()
    */
   public String getRegionToConflate() {
     return this.regionName;
@@ -178,7 +178,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.Conflatable#getValueToConflate()
+   * @see org.apache.geode.internal.cache.Conflatable#getValueToConflate()
    */
   public Object getValueToConflate() {
     return null;
@@ -187,7 +187,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.Conflatable#setLatestValue(java.lang.Object)
+   * @see org.apache.geode.internal.cache.Conflatable#setLatestValue(java.lang.Object)
    */
   public void setLatestValue(Object value) {
     // this.value = (byte[])value;
@@ -196,7 +196,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.Conflatable#shouldBeConflated()
+   * @see org.apache.geode.internal.cache.Conflatable#shouldBeConflated()
    */
   public boolean shouldBeConflated() {
     return this.shouldConflate;

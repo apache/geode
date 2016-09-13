@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.message.Message;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.LogWriter;
+import org.apache.geode.i18n.LogWriterI18n;
 
 /**
  * Extends Logger interface with convenience methods for the FINEST, FINER,

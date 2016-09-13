@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.logging.LogService;
 
 import org.apache.logging.log4j.Logger;
 

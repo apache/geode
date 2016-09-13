@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.types;
+package org.apache.geode.cache.query.types;
 
-import com.gemstone.gemfire.DataSerializable;
+import org.apache.geode.DataSerializable;
 
 /**
  * An ObjectType represents the type of an object in a query.

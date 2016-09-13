@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import static org.junit.Assert.*;
 
@@ -28,11 +28,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.client.internal.ServerBlackList.BlackListListenerAdapter;
-import com.gemstone.gemfire.cache.client.internal.ServerBlackList.FailureTracker;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.client.internal.ServerBlackList.BlackListListenerAdapter;
+import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ServerBlackListJUnitTest {

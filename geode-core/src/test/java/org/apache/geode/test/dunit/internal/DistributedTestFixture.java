@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.test.dunit.internal;
+package org.apache.geode.test.dunit.internal;
 
 import java.util.Properties;
 

@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.locks;
+package org.apache.geode.distributed.internal.locks;
 
-import com.gemstone.gemfire.distributed.internal.*;
+import org.apache.geode.distributed.internal.*;
 
 /**
  * Defines the interface used to access and modify distributed lock statistics.

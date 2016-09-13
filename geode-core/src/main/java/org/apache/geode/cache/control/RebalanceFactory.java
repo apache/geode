@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.control;
+package org.apache.geode.cache.control;
 
 import java.util.Set;
 

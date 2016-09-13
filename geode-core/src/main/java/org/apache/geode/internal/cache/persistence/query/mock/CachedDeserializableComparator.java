@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query.mock;
+package org.apache.geode.internal.cache.persistence.query.mock;
 
 import java.util.Comparator;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializable;
 
 /**
  * Compare two cached deserializable objects by unwrapping

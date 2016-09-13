@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.compression;
+package org.apache.geode.internal.compression;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the Snappy {@link Compressor}.

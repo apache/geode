@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached;
+package org.apache.geode.internal.memcached;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -26,9 +26,9 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
-import com.gemstone.gemfire.internal.memcached.commands.AbstractCommand;
-import com.gemstone.gemfire.internal.memcached.commands.ClientError;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.internal.memcached.commands.AbstractCommand;
+import org.apache.geode.internal.memcached.commands.ClientError;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * Reads the first line from the request and interprets the {@link Command}

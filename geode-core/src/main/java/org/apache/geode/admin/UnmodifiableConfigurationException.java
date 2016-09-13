@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * An <code>UnmodifiableConfigurationException</code> is thrown when an attempt
@@ -24,7 +24,7 @@ package com.gemstone.gemfire.admin;
  *
  * @since GemFire     3.5
  *
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public class UnmodifiableConfigurationException extends AdminException {
 private static final long serialVersionUID = -7653547392992060646L;

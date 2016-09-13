@@ -21,10 +21,10 @@ limitations under the License.
 
 Distributed GemFire moves information between physical machines in a
 number of different ways.  The JCache implementation uses {@link
-com.gemstone.gemfire.distributed.internal.DistributionMessage}s
+org.apache.geode.distributed.internal.DistributionMessage}s
 to send information back and forth between VMs.  The distributed
 collections use the remote method invocation built on top of a {@link
-com.gemstone.gemfire.tcp.TCPConuit} to access elements in remote
+org.apache.geode.tcp.TCPConuit} to access elements in remote
 collections.  GemFire distirbution uses underlying technologies such
 as JavaGroups, and sockets to implement data transfer.
 
@@ -35,7 +35,7 @@ exposed to concepts such as the "distribution manager" and the fact
 that multicast networking or "locators" are used to discover the other
 members of the distributed group.  The user-level configuration is
 grouped together in the {@link
-com.gemstone.gemfire.distributed.DistributedSystem} class which
+org.apache.geode.distributed.DistributedSystem} class which
 provides a "connection" or entry point to the distributed system.
 
 </BODY>

@@ -15,41 +15,41 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
-import com.gemstone.gemfire.internal.cache.ha.HAContainerWrapper;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
-import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.versions.*;
-import com.gemstone.gemfire.internal.cache.vmotion.VMotionObserverHolder;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
-import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
-import com.gemstone.gemfire.internal.util.ObjectIntProcedure;
+import org.apache.geode.*;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.query.internal.CqStateImpl;
+import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.ServerCQ;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
+import org.apache.geode.internal.cache.ha.HAContainerWrapper;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
+import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.*;
+import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.sequencelog.RegionLogger;
+import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
@@ -200,14 +200,14 @@ public class InitialImageOperation  {
    * @param advice
    * @param recoveredRVV recovered rvv
    * @return true if succeeded to get image
-   * @throws com.gemstone.gemfire.cache.TimeoutException
+   * @throws org.apache.geode.cache.TimeoutException
    */
   GIIStatus getFromOne(
       Set recipientSet,
       boolean targetReinitialized,
       CacheDistributionAdvisor.InitialImageAdvice advice,
       boolean recoveredFromDisk, RegionVersionVector recoveredRVV)
-      throws com.gemstone.gemfire.cache.TimeoutException
+      throws org.apache.geode.cache.TimeoutException
   {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
@@ -485,8 +485,8 @@ public class InitialImageOperation  {
           continue;
         } catch (InternalGemFireException ex) {
           Throwable cause = ex.getCause();
-          if (cause instanceof com.gemstone.gemfire.cache.TimeoutException) {
-            throw (com.gemstone.gemfire.cache.TimeoutException)cause;
+          if (cause instanceof org.apache.geode.cache.TimeoutException) {
+            throw (org.apache.geode.cache.TimeoutException)cause;
           }
           throw ex;
         } catch (ReplyException e) {
@@ -597,8 +597,8 @@ public class InitialImageOperation  {
         }
       } catch (InternalGemFireException ex) {
         Throwable cause = ex.getCause();
-        if (cause instanceof com.gemstone.gemfire.cache.TimeoutException) {
-          throw (com.gemstone.gemfire.cache.TimeoutException)cause;
+        if (cause instanceof org.apache.geode.cache.TimeoutException) {
+          throw (org.apache.geode.cache.TimeoutException)cause;
         }
         throw ex;
       } catch (ReplyException e) {
@@ -720,8 +720,8 @@ public class InitialImageOperation  {
       return processor.filtersReceived;
     } catch (InternalGemFireException ex) {
       Throwable cause = ex.getCause();
-      if (cause instanceof com.gemstone.gemfire.cache.TimeoutException) {
-        throw (com.gemstone.gemfire.cache.TimeoutException)cause;
+      if (cause instanceof org.apache.geode.cache.TimeoutException) {
+        throw (org.apache.geode.cache.TimeoutException)cause;
       }
       throw ex;
     } catch (ReplyException e) {
@@ -966,8 +966,8 @@ public class InitialImageOperation  {
       received_rvv = rvv_processor.received_rvv;
     } catch (InternalGemFireException ex) {
       Throwable cause = ex.getCause();
-      if (cause instanceof com.gemstone.gemfire.cache.TimeoutException) {
-        throw (com.gemstone.gemfire.cache.TimeoutException)cause;
+      if (cause instanceof org.apache.geode.cache.TimeoutException) {
+        throw (org.apache.geode.cache.TimeoutException)cause;
       }
       throw ex;
     } catch (ReplyException e) {
@@ -1189,7 +1189,7 @@ public class InitialImageOperation  {
     
     /*
      * (non-Javadoc)
-     * @see com.gemstone.gemfire.distributed.internal.ReplyProcessor21#process(com.gemstone.gemfire.distributed.internal.DistributionMessage)
+     * @see org.apache.geode.distributed.internal.ReplyProcessor21#process(org.apache.geode.distributed.internal.DistributionMessage)
      */
     @Override  
     public void process(DistributionMessage msg) {
@@ -2358,7 +2358,7 @@ public class InitialImageOperation  {
     } 
      
     /* (non-Javadoc) 
-     * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID() 
+     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID() 
      */ 
     @Override   
     public int getDSFID() { 
@@ -3350,7 +3350,7 @@ public class InitialImageOperation  {
     } 
      
     /* (non-Javadoc) 
-     * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID() 
+     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID() 
      */ 
     @Override   
     public int getDSFID() { 
@@ -3858,7 +3858,7 @@ public class InitialImageOperation  {
     } 
           
     /* (non-Javadoc) 
-     * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID() 
+     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID() 
      */ 
     @Override   
     public int getDSFID() { 

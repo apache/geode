@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.persistence.ConflictingPersistentDataException;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 
 /**
  *

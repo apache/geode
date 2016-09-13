@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.admin.BackupStatus;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Holds the result of a backup operation.

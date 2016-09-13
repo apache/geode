@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * <p>
@@ -23,7 +23,7 @@ package com.gemstone.gemfire.cache;
  * 
  * <p>
  * Instead of implementing this interface it is recommended that you extend the
- * {@link com.gemstone.gemfire.cache.util.CacheListenerAdapter} class.
+ * {@link org.apache.geode.cache.util.CacheListenerAdapter} class.
  * </p>
  * 
  * <h4>Avoiding the risk of deadlock</h4>

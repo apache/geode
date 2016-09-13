@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
 /**
  * A QuorumChecker is created after a forced-disconnect in order

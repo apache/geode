@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import org.apache.geode.OutOfOffHeapMemoryException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -40,8 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**
@@ -143,7 +143,7 @@ public abstract class OffHeapRegionBase {
           return "Waiting for disconnect to complete";
         }
       };
-      com.gemstone.gemfire.test.dunit.Wait.waitForCriterion(waitForDisconnect, 10*1000, 100, true);
+      org.apache.geode.test.dunit.Wait.waitForCriterion(waitForDisconnect, 10*1000, 100, true);
 
       assertTrue(gfc.isClosed());
     } finally {

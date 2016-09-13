@@ -16,10 +16,10 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * Represents an application VM (member of the distributed system).

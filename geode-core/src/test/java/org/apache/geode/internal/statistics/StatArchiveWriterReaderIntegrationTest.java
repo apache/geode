@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import static com.gemstone.gemfire.internal.statistics.StatArchiveFormat.NANOS_PER_MILLI;
-import static com.gemstone.gemfire.internal.statistics.TestStatArchiveWriter.*;
+import static org.apache.geode.internal.statistics.StatArchiveFormat.NANOS_PER_MILLI;
+import static org.apache.geode.internal.statistics.TestStatArchiveWriter.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -44,13 +44,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.StatValue;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * Integration tests for {@link StatArchiveWriter} and {@link StatArchiveReader}.

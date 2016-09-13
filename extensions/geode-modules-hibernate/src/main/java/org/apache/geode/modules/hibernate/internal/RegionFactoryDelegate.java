@@ -14,24 +14,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate.internal;
+package org.apache.geode.modules.hibernate.internal;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.modules.hibernate.GemFireCacheProvider;
-import com.gemstone.gemfire.modules.util.BootstrappingFunction;
-import com.gemstone.gemfire.modules.util.CreateRegionFunction;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.modules.hibernate.GemFireCacheProvider;
+import org.apache.geode.modules.util.BootstrappingFunction;
+import org.apache.geode.modules.util.CreateRegionFunction;
+import org.apache.geode.modules.util.RegionConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 public class RegionFactoryDelegate  {
 
@@ -94,7 +94,7 @@ public class RegionFactoryDelegate  {
     regionConfig.setRegionName(regionName);
     regionConfig.setRegionAttributesId(regionType);
     regionConfig.setCacheWriterName(EntityRegionWriter.class.getCanonicalName());
-    com.gemstone.gemfire.cache.RegionFactory<Object, EntityWrapper> rFactory = this.cache
+    org.apache.geode.cache.RegionFactory<Object, EntityWrapper> rFactory = this.cache
         .createRegionFactory(RegionShortcut.valueOf(regionType));
     rFactory.setCacheWriter(new EntityRegionWriter());
     if (isLocalRegion) {

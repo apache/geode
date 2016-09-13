@@ -17,16 +17,16 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets.command;
+package org.apache.geode.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.cache.client.internal.PutOp;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import org.apache.geode.cache.client.internal.PutOp;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.versions.VersionTag;
 
 import java.io.IOException;
 

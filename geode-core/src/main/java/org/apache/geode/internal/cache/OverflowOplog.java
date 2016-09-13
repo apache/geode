@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,20 +31,20 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.distributed.OplogCancelledException;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogCompactor;
-import com.gemstone.gemfire.internal.cache.Oplog.OplogDiskEntry;
-import com.gemstone.gemfire.internal.cache.persistence.BytesAndBits;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.distributed.OplogCancelledException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.DiskEntry.Helper.Flushable;
+import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
+import org.apache.geode.internal.cache.Oplog.OplogDiskEntry;
+import org.apache.geode.internal.cache.persistence.BytesAndBits;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * An oplog used for overflow-only regions.
@@ -901,7 +901,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
           myRAF.readFully(valueBytes);
 //           if (EntryBits.isSerialized(userBits)) {
 //             try {
-//               com.gemstone.gemfire.internal.util.BlobHelper.deserializeBlob(valueBytes);
+//               org.apache.geode.internal.util.BlobHelper.deserializeBlob(valueBytes);
 //             } catch (IOException ex) {
 //               throw new RuntimeException("DEBUG readPos=" + readPosition + " len=" + valueLength +  "doneApp=" + doneAppending + " userBits=" + userBits, ex);
 //             } catch (ClassNotFoundException ex2) {

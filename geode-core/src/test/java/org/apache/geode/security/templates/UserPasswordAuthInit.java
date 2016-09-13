@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.templates;
+package org.apache.geode.security.templates;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.security.AuthInitialize;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.security.AuthInitialize;
+import org.apache.geode.security.AuthenticationFailedException;
 
 /**
  * An {@link AuthInitialize} implementation that obtains the user name and
@@ -29,7 +29,7 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
  * 
  * To use this class the {@code security-client-auth-init} property should be
  * set to the fully qualified name the static {@code create} method
- * viz. {@code com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create}
+ * viz. {@code org.apache.geode.security.templates.UserPasswordAuthInit.create}
  * 
  * @since GemFire 5.5
  */

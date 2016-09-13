@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.cache.client.internal.AbstractOp;
-import com.gemstone.gemfire.cache.client.internal.ConnectionStats;
-import com.gemstone.gemfire.cache.client.internal.ExecutablePool;
-import com.gemstone.gemfire.cache.client.internal.CreateCQOp.CreateCQOpImpl;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import org.apache.geode.cache.client.internal.AbstractOp;
+import org.apache.geode.cache.client.internal.ConnectionStats;
+import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.cache.client.internal.CreateCQOp.CreateCQOpImpl;
+import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
  * Does a region query on a server
@@ -45,7 +45,7 @@ public class StopCQOp {
   
   private static class StopCQOpImpl extends CreateCQOpImpl {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public StopCQOpImpl(String cqName) {
       super(MessageType.STOPCQ_MSG_TYPE, 1);

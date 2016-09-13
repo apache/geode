@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import static com.gemstone.gemfire.internal.Assert.assertTrue;
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /** 
 * CacheServerLauncher Tester. 

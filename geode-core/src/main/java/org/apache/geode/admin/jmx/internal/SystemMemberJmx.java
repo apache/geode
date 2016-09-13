@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.*;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.admin.ClientMembershipMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.commons.modeler.ManagedBean;
 import org.apache.logging.log4j.Logger;
 
@@ -356,7 +356,7 @@ public interface SystemMemberJmx
         try {
           member.refreshConfig();
 
-        } catch (com.gemstone.gemfire.admin.AdminException e) {
+        } catch (org.apache.geode.admin.AdminException e) {
           logger.warn(e.getMessage(), e);
         } catch (OperationCancelledException e) {
           // underlying resource is no longer reachable by remote admin

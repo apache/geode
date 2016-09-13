@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import static org.junit.Assert.*;
 
@@ -33,20 +33,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
-import com.gemstone.gemfire.management.internal.cli.functions.DescribeDiskStoreFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.ListDiskStoresFunction;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.util.DiskStoreNotFoundException;
-import com.gemstone.gemfire.management.internal.cli.util.MemberNotFoundException;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
+import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
+import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
+import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 
 /**
@@ -54,10 +54,10 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * DiskStoreCommands class implementing commands in the GemFire shell (gfsh) that access and modify disk stores in
  * GemFire.
  * </p>
- * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
- * @see com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails
- * @see com.gemstone.gemfire.management.internal.cli.functions.DescribeDiskStoreFunction
- * @see com.gemstone.gemfire.management.internal.cli.functions.ListDiskStoresFunction
+ * @see org.apache.geode.management.internal.cli.commands.DiskStoreCommands
+ * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
+ * @see org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction
+ * @see org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
  * @see org.jmock.lib.legacy.ClassImposteriser

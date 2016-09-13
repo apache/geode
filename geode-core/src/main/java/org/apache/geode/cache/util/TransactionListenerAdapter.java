@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionListener;
+import org.apache.geode.cache.TransactionEvent;
 
 /**
  * Utility class that implements all methods in <code>TransactionListener</code>

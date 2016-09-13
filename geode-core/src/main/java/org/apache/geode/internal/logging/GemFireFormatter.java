@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.io.PrintWriter;
 import java.text.DateFormat;
@@ -22,8 +22,8 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.LogWriter;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of the standard JDK formatter that formats a message

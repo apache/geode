@@ -15,12 +15,12 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.*;
 import java.util.*;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A ProcessOutputReader will read both stdout and stderr

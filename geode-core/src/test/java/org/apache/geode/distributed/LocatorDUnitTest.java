@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -29,46 +29,46 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeaveTestHelper;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.*;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeaveTestHelper;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.*;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop
@@ -161,8 +161,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MCAST_PORT, "0");
     properties.put(START_LOCATOR, locators);
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    properties.put(SECURITY_PEER_AUTH_INIT, "com.gemstone.gemfire.distributed.AuthInitializer.create");
-    properties.put(SECURITY_PEER_AUTHENTICATOR, "com.gemstone.gemfire.distributed.MyAuthenticator.create");
+    properties.put(SECURITY_PEER_AUTH_INIT, "org.apache.geode.distributed.AuthInitializer.create");
+    properties.put(SECURITY_PEER_AUTHENTICATOR, "org.apache.geode.distributed.MyAuthenticator.create");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.put(USE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
@@ -236,7 +236,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       assertEquals("should be the coordinator", system.getDistributedMember(), MembershipManagerHelper.getCoordinator(system));
       NetView view = MembershipManagerHelper.getMembershipManager(system).getView();
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("view after becoming coordinator is " + view);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("view after becoming coordinator is " + view);
       assertNotSame("should not be the first member in the view (" + view + ")", system.getDistributedMember(), view.get(0));
 
       service = DistributedLockService.create("test service", system);
@@ -333,11 +333,11 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
 
   private String getMultiKeyKeystore() {
-    return TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKey.jks");
+    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks");
   }
 
   private String getMultiKeyTruststore() {
-    return TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKeyTrust.jks");
+    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks");
   }
 
   @Test
@@ -780,7 +780,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           try {
             Locator.startLocatorAndDS(port2, lf, properties);
           } catch (IOException ios) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("Unable to start locator2", ios);
+            org.apache.geode.test.dunit.Assert.fail("Unable to start locator2", ios);
           }
         }
       });
@@ -826,7 +826,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
        * failure and eject the lost members from the view.
        */
 
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting for my distributed system to disconnect due to partition detection");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("waiting for my distributed system to disconnect due to partition detection");
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
           return !sys.isConnected();
@@ -850,7 +850,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       LogWriter bLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
       bLogger.info("<ExpectedException action=remove>service failure</ExpectedException>");
       bLogger.info("<ExpectedException action=remove>java.net.ConnectException</ExpectedException>");
-      bLogger.info("<ExpectedException action=remove>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+      bLogger.info("<ExpectedException action=remove>org.apache.geode.ForcedDisconnectException</ExpectedException>");
       disconnectAllFromDS();
     }
   }
@@ -908,7 +908,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
             Locator.startLocatorAndDS(port2, lf, properties);
             MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
           } catch (IOException ios) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("Unable to start locator2", ios);
+            org.apache.geode.test.dunit.Assert.fail("Unable to start locator2", ios);
           }
         }
       });
@@ -919,8 +919,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         public void run() {
           DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
           msys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
-          msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
-          msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+          msys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
+          msys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
           MembershipManagerHelper.crashDistributedSystem(msys);
         }
       };
@@ -952,7 +952,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       if (!Locator.getLocators().isEmpty()) {
         // log this for debugging purposes before throwing assertion error
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().warning("found locator " + Locator.getLocators().iterator().next());
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning("found locator " + Locator.getLocators().iterator().next());
       }
       assertTrue("locator is not stopped", Locator.getLocators().isEmpty());
 
@@ -985,7 +985,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       try {
         locvm.invoke(stopLocator);
       } catch (Exception e) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().severe("failed to stop locator in vm 3", e);
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().severe("failed to stop locator in vm 3", e);
       }
     }
   }
@@ -1045,7 +1045,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           try {
             Locator.startLocatorAndDS(port2, lf, properties);
           } catch (IOException ios) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("Unable to start locator2", ios);
+            org.apache.geode.test.dunit.Assert.fail("Unable to start locator2", ios);
           }
         }
       });
@@ -1056,8 +1056,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         public void run() {
           DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
           msys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
-          msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
-          msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+          msys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
+          msys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
           msys.getLogWriter().info("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
           hook = new TestHook();
           MembershipManagerHelper.getMembershipManager(msys).registerTestHook(hook);
@@ -1183,7 +1183,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           try {
             Locator.startLocatorAndDS(port2, lf, properties);
           } catch (IOException ios) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("Unable to start locator1", ios);
+            org.apache.geode.test.dunit.Assert.fail("Unable to start locator1", ios);
           }
         }
       });
@@ -1191,7 +1191,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       File logFile = new File("");
       locator = Locator.startLocatorAndDS(port1, logFile, properties);
       DistributedSystem sys = locator.getDistributedSystem();
-      sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+      sys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
       Object[] connectArgs = new Object[] { properties };
 
       SerializableRunnable crashLocator = new SerializableRunnable("Crash locator") {
@@ -1199,8 +1199,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           Locator loc = Locator.getLocators().iterator().next();
           DistributedSystem msys = loc.getDistributedSystem();
           msys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
-          msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
-          msys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
+          msys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
+          msys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
           MembershipManagerHelper.crashDistributedSystem(msys);
           loc.stop();
         }
@@ -1287,7 +1287,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     } catch (Exception ex) {
       // if you see this fail, determine if unexpected exception is expected
       // if expected then add in a catch block for it above this catch
-      com.gemstone.gemfire.test.dunit.Assert.fail("Failed with unexpected exception", ex);
+      org.apache.geode.test.dunit.Assert.fail("Failed with unexpected exception", ex);
     } finally {
       if (oldValue == null) {
         System.getProperties().remove("p2p.joinTimeout");
@@ -1335,7 +1335,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           addDSProps(locProps);
           Locator.startLocatorAndDS(port, logFile, locProps);
         } catch (IOException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port, ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port, ex);
         }
       }
     });
@@ -1365,7 +1365,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       system = (InternalDistributedSystem) DistributedSystem.connect(props);
 
       final DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("coordinator before termination of locator is " + coord);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("coordinator before termination of locator is " + coord);
 
       vm0.invoke(getStopLocatorRunnable());
 
@@ -1381,7 +1381,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       };
       Wait.waitForCriterion(ev, 15 * 1000, 200, false);
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("coordinator after shutdown of locator was " + newCoord);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("coordinator after shutdown of locator was " + newCoord);
       if (coord.equals(newCoord)) {
         fail("another member should have become coordinator after the locator was stopped");
       }
@@ -1442,7 +1442,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       system = (InternalDistributedSystem) getSystem(props);
 
       final DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("coordinator before termination of locator is " + coord);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("coordinator before termination of locator is " + coord);
 
       vm0.invoke(getStopLocatorRunnable());
 
@@ -1458,7 +1458,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       };
       Wait.waitForCriterion(ev, 15000, 200, true);
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("coordinator after shutdown of locator was " + newCoord);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("coordinator after shutdown of locator was " + newCoord);
       if (newCoord == null || coord.equals(newCoord)) {
         fail("another member should have become coordinator after the locator was stopped: " + newCoord);
       }
@@ -1686,7 +1686,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
               return system.getDM().getViewMembers().size() == 6;
             } catch (Exception e) {
               e.printStackTrace();
-              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
+              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
             }
             return false; // NOTREACHED
           }
@@ -1710,7 +1710,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
               return system.getDM().getMembershipManager().getView().size() <= 3;
             } catch (Exception e) {
               e.printStackTrace();
-              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
+              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
             }
             return false; // NOTREACHED
           }
@@ -1744,7 +1744,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
               return system.getDM().getAllHostedLocators().size() == 2;
             } catch (Exception e) {
               e.printStackTrace();
-              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
+              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
             }
             return false; // NOTREACHED
           }
@@ -1795,7 +1795,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
               return c.getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
             } catch (Exception e) {
               e.printStackTrace();
-              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
+              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
             }
             return false; // NOTREACHED
           }
@@ -1817,7 +1817,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         try {
           Locator.startLocatorAndDS((int) args[0], logFile, (Properties) args[1]);
         } catch (IOException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
         }
       }
     });
@@ -1830,7 +1830,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         try {
           Locator.startLocatorAndDS((int) args[0], logFile, (Properties) args[1]);
         } catch (IOException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting process on port " + args[0], ex);
         }
       }
     });
@@ -1876,7 +1876,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           addDSProps(props);
           Locator.startLocatorAndDS(port1, logFile, null, props);
         } catch (IOException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port1, ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port1, ex);
         }
       }
     });
@@ -1894,7 +1894,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           addDSProps(props);
           Locator.startLocatorAndDS(port2, logFile, null, props);
         } catch (IOException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port2, ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port2, ex);
         }
       }
     });
@@ -1929,7 +1929,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           try {
             return system.getDM().getViewMembers().size() == 5;
           } catch (Exception e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
+            org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
           }
           return false; // NOTREACHED
         }
@@ -2056,7 +2056,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       stateFile.delete();
     }
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Starting locator");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Starting locator");
     Locator locator = Locator.startLocatorAndDS(port1, logFile, p);
     try {
 
@@ -2067,10 +2067,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       };
       vm0.invoke(connect);
 
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Stopping locator");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Stopping locator");
       locator.stop();
 
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Starting locator");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Starting locator");
       locator = Locator.startLocatorAndDS(port1, logFile, p);
 
       vm0.invoke(new SerializableRunnable("disconnect") {
@@ -2092,8 +2092,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     props.put("name", "vm_" + VM.getCurrentVMNum());
     DistributedSystem sys = DistributedSystem.connect(props);
     sys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
-    sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
-    sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+    sys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
+    sys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
     return DistributedSystem.connect(props).getDistributedMember();
   }
 
@@ -2138,7 +2138,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           addDSProps(locProps);
           Locator.startLocatorAndDS(port, logFile, locProps);
         } catch (IOException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting locator on port " + port, ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port, ex);
         } finally {
           System.getProperties().remove(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS);
           System.getProperties().remove("p2p.joinTimeout");
@@ -2149,15 +2149,15 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   protected void nukeJChannel(DistributedSystem sys) {
     sys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
-    sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ConnectException</ExpectedException>");
-    sys.getLogWriter().info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+    sys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
+    sys.getLogWriter().info("<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
     try {
       MembershipManagerHelper.crashDistributedSystem(sys);
     } catch (DistributedSystemDisconnectedException se) {
       // it's okay for the system to already be shut down
     }
     sys.getLogWriter().info("<ExpectedException action=remove>service failure</ExpectedException>");
-    sys.getLogWriter().info("<ExpectedException action=remove>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+    sys.getLogWriter().info("<ExpectedException action=remove>org.apache.geode.ForcedDisconnectException</ExpectedException>");
   }
 
   //New test hook which blocks before closing channel.
@@ -2205,7 +2205,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
     public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
       quorumLostInvoked = true;
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("quorumLost invoked in test code");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("quorumLost invoked in test code");
     }
   }
 }

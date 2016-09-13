@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,12 +26,12 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
-import com.gemstone.gemfire.internal.statistics.platform.ProcessStats;
-import com.gemstone.gemfire.internal.PureJavaMode;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.internal.statistics.GemFireStatSampler;
+import org.apache.geode.internal.statistics.platform.ProcessStats;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Contains simple tests for the {@link MemberHealthEvaluator}.

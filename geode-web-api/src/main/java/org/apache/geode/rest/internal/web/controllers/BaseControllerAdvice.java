@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,12 +28,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.rest.internal.web.exception.DataTypeNotSupportedException;
-import com.gemstone.gemfire.rest.internal.web.exception.GemfireRestException;
-import com.gemstone.gemfire.rest.internal.web.exception.MalformedJsonException;
-import com.gemstone.gemfire.rest.internal.web.exception.RegionNotFoundException;
-import com.gemstone.gemfire.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
+import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
 
 /**
  * The CrudControllerAdvice class handles exception thrown while serving the REST request

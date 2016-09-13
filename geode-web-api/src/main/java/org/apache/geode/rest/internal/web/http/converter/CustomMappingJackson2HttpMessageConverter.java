@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.http.converter;
+package org.apache.geode.rest.internal.web.http.converter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

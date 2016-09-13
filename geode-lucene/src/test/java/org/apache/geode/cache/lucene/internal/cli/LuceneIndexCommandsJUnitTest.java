@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.cli;
+package org.apache.geode.cache.lucene.internal.cli;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
@@ -36,24 +36,24 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
-import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
-import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
-import com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.execute.AbstractExecution;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The LuceneIndexCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of the
@@ -61,7 +61,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * </p>
  * @see LuceneIndexCommands
  * @see LuceneIndexDetails
- * @see com.gemstone.gemfire.cache.lucene.internal.cli.functions.LuceneListIndexFunction
+ * @see org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
  * @see org.jmock.lib.legacy.ClassImposteriser

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis;
+package org.apache.geode.codeAnalysis;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledField;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
+import org.apache.geode.codeAnalysis.decode.CompiledField;
 
 
 /**

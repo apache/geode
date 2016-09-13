@@ -15,9 +15,9 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealth;
 
 /**
  * Represents a thread that monitor the health of the vm it lives in.

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.*;
 
@@ -24,9 +24,9 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ObjectPartListJUnitTest {

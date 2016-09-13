@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.multistep;
+package org.apache.geode.management.internal.cli.multistep;
 
-import com.gemstone.gemfire.management.cli.Result;
+import org.apache.geode.management.cli.Result;
 
 public class CLIStepExecption extends RuntimeException {
   

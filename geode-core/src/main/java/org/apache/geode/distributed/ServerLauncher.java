@@ -15,33 +15,33 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.internal.DefaultServerLauncherCacheProvider;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.process.*;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.lang.AttachAPINotFoundException;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.gemfire.pdx.PdxSerializer;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.*;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.lang.AttachAPINotFoundException;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.pdx.PdxSerializer;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -60,14 +60,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying a GemFire Cache
  * Server process).
  * 
- * @see com.gemstone.gemfire.distributed.AbstractLauncher
- * @see com.gemstone.gemfire.distributed.LocatorLauncher
+ * @see org.apache.geode.distributed.AbstractLauncher
+ * @see org.apache.geode.distributed.LocatorLauncher
  * @since GemFire 7.0
  */
 @SuppressWarnings({ "unused" })
@@ -219,7 +219,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * 
    * @param builder an instance of ServerLauncher.Builder for configuring and constructing an instance of the
    * ServerLauncher.
-   * @see com.gemstone.gemfire.distributed.ServerLauncher.Builder
+   * @see org.apache.geode.distributed.ServerLauncher.Builder
    */
   private ServerLauncher(final Builder builder) {
     this.cache = builder.getCache(); // testing
@@ -276,7 +276,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Gets a reference to the Cache that was created when the GemFire Server was started.
    * 
    * @return a reference to the Cache created by the GemFire Server start operation.
-   * @see com.gemstone.gemfire.cache.Cache
+   * @see org.apache.geode.cache.Cache
    */
   final Cache getCache() {
     if (this.cache != null) {
@@ -325,7 +325,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Get the Server launcher command used to invoke the Server.
    * 
    * @return the Server launcher command used to invoke the Server.
-   * @see com.gemstone.gemfire.distributed.ServerLauncher.Command
+   * @see org.apache.geode.distributed.ServerLauncher.Command
    */
   public Command getCommand() {
     return this.command;
@@ -365,7 +365,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * if the user entered the "--help" option (switch) on the command-line.
    * 
    * @return a boolean value indicating if this launcher is used for displaying help information.
-   * @see com.gemstone.gemfire.distributed.ServerLauncher.Command
+   * @see org.apache.geode.distributed.ServerLauncher.Command
    */
   public boolean isHelping() {
     return this.help;
@@ -513,7 +513,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * the GemFire Server on start.
    * <p>
    * @return a String indicating the location of the Spring XML configuration file.
-   * @see com.gemstone.gemfire.distributed.ServerLauncher.Builder#getSpringXmlLocation()
+   * @see org.apache.geode.distributed.ServerLauncher.Builder#getSpringXmlLocation()
    */
   public String getSpringXmlLocation() {
     return this.springXmlLocation;
@@ -606,7 +606,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Displays usage information on the proper invocation of the ServerLauncher from the command-line to standard err.
    * 
-   * @see #help(com.gemstone.gemfire.distributed.ServerLauncher.Command)
+   * @see #help(org.apache.geode.distributed.ServerLauncher.Command)
    */
   public void usage() {
     info(StringUtils.wrap(helpMap.get("launcher"), 80, "\t"));
@@ -920,7 +920,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Causes a rebalance operation to occur on the given Cache.
    * 
    * @param cache the reference to the Cache to rebalance.
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#createRebalanceFactory()
+   * @see org.apache.geode.cache.control.ResourceManager#createRebalanceFactory()
    */
   private void rebalance(final Cache cache) {
     if (isRebalancing()) {
@@ -944,7 +944,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Assigns buckets to individual Partitioned Regions of the Cache.
    * 
    * @param cache the Cache who's Partitioned Regions are accessed to assign buckets to.
-   * @see PartitionRegionHelper#assignBucketsToPartitions(com.gemstone.gemfire.cache.Region)
+   * @see PartitionRegionHelper#assignBucketsToPartitions(org.apache.geode.cache.Region)
    */
   final void assignBuckets(final Cache cache) {
     if (isAssignBucketsAllowed(cache)) {
@@ -1569,7 +1569,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Iterates the list of arguments in search of the target Server launcher command.
      * 
      * @param args an array of arguments from which to search for the Server launcher command.
-     * @see com.gemstone.gemfire.distributed.ServerLauncher.Command#valueOfName(String)
+     * @see org.apache.geode.distributed.ServerLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
      */
     protected void parseCommand(final String... args) {
@@ -1590,7 +1590,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * for the Server in GemFire.
      * 
      * @param args the array of arguments from which to search for the Server's member name in GemFire.
-     * @see com.gemstone.gemfire.distributed.ServerLauncher.Command#isCommand(String)
+     * @see org.apache.geode.distributed.ServerLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
     protected void parseMemberName(final String... args) {
@@ -1617,8 +1617,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Gets the Server launcher command used during the invocation of the ServerLauncher.
      * 
      * @return the Server launcher command used to invoke (run) the ServerLauncher class.
-     * @see #setCommand(com.gemstone.gemfire.distributed.ServerLauncher.Command)
-     * @see com.gemstone.gemfire.distributed.ServerLauncher.Command
+     * @see #setCommand(org.apache.geode.distributed.ServerLauncher.Command)
+     * @see org.apache.geode.distributed.ServerLauncher.Command
      */
     public Command getCommand() {
       return ObjectUtils.defaultIfNull(this.command, DEFAULT_COMMAND);
@@ -1630,7 +1630,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @param command the targeted Server launcher command used during the invocation (run) of ServerLauncher.
      * @return this Builder instance.
      * @see #getCommand()
-     * @see com.gemstone.gemfire.distributed.ServerLauncher.Command
+     * @see org.apache.geode.distributed.ServerLauncher.Command
      */
     public Builder setCommand(final Command command) {
       this.command = command;
@@ -1728,7 +1728,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Gets the boolean value used by the Server to determine if it should overwrite the PID file if it already exists.
      * 
      * @return the boolean value specifying whether or not to overwrite the PID file if it already exists.
-     * @see com.gemstone.gemfire.internal.process.LocalProcessLauncher
+     * @see org.apache.geode.internal.process.LocalProcessLauncher
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
@@ -1740,7 +1740,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * 
      * @param force a boolean value indicating whether to overwrite the PID file when it already exists.
      * @return this Builder instance.
-     * @see com.gemstone.gemfire.internal.process.LocalProcessLauncher
+     * @see org.apache.geode.internal.process.LocalProcessLauncher
      * @see #getForce()
      */
     public Builder setForce(final Boolean force) {
@@ -2259,7 +2259,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'start' command has been issued.
      * 
-     * @see com.gemstone.gemfire.distributed.ServerLauncher.Command#START
+     * @see org.apache.geode.distributed.ServerLauncher.Command#START
      */
     protected void validateOnStart() {
       if (Command.START.equals(getCommand())) {
@@ -2282,7 +2282,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'status' command has been issued.
      * 
-     * @see com.gemstone.gemfire.distributed.ServerLauncher.Command#STATUS
+     * @see org.apache.geode.distributed.ServerLauncher.Command#STATUS
      */
     protected void validateOnStatus() {
       if (Command.STATUS.equals(getCommand())) {
@@ -2293,7 +2293,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'stop' command has been issued.
      * 
-     * @see com.gemstone.gemfire.distributed.ServerLauncher.Command#STOP
+     * @see org.apache.geode.distributed.ServerLauncher.Command#STOP
      */
     protected void validateOnStop() {
       if (Command.STOP.equals(getCommand())) {
@@ -2307,7 +2307,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * 
      * @return a newly constructed instance of the ServerLauncher configured with this Builder.
      * @see #validate()
-     * @see com.gemstone.gemfire.distributed.ServerLauncher
+     * @see org.apache.geode.distributed.ServerLauncher
      */
     public ServerLauncher build() {
       validate();
@@ -2429,7 +2429,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * The ServerState is an immutable type representing the state of the specified Locator at any given moment in time.
    * The state of the Locator is assessed at the exact moment an instance of this class is constructed.
    * 
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState
+   * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
    */
   public static final class ServerState extends ServiceState<String> {
 

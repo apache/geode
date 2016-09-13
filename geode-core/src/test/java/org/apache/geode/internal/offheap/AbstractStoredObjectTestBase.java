@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -24,7 +24,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import org.apache.geode.internal.DataSerializableFixedID;
 
 public abstract class AbstractStoredObjectTestBase {
 

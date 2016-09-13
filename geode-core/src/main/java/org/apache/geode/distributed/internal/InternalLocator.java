@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,55 +36,55 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientReplacementRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorListRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ConnectListener;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
-import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
-import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.locator.PeerLocatorRequest;
-import com.gemstone.gemfire.distributed.internal.tcpserver.LocatorCancelException;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpHandler;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.wan.WANServiceProvider;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterFactory;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.management.internal.JmxManagerLocator;
-import com.gemstone.gemfire.management.internal.JmxManagerLocatorRequest;
-import com.gemstone.gemfire.management.internal.JmxManagerLocatorResponse;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfigurationStatus;
-import com.gemstone.gemfire.management.internal.configuration.handlers.ConfigurationRequestHandler;
-import com.gemstone.gemfire.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
-import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
-import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
-import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
+import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
+import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
+import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
+import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
+import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.LockServiceDestroyedException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
+import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
+import org.apache.geode.distributed.internal.membership.MemberFactory;
+import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
+import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.wan.WANServiceProvider;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.management.internal.JmxManagerLocator;
+import org.apache.geode.management.internal.JmxManagerLocatorRequest;
+import org.apache.geode.management.internal.JmxManagerLocatorResponse;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
+import org.apache.geode.management.internal.configuration.handlers.ConfigurationRequestHandler;
+import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
 /**
  * Provides the implementation of a distribution <code>Locator</code>

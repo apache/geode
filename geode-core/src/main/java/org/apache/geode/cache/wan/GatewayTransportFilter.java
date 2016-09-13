@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.wan;
+package org.apache.geode.cache.wan;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.gemstone.gemfire.cache.CacheCallback;
+import org.apache.geode.cache.CacheCallback;
 
 public interface GatewayTransportFilter extends CacheCallback {
   public InputStream  getInputStream(InputStream stream);

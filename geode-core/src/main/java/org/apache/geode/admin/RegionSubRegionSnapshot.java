@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,11 +23,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Region;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Class <code>RegionSubRegionSnapshot</code> provides information about
@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * 
  * 
  * @since GemFire 5.7
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public class RegionSubRegionSnapshot implements DataSerializable {
   private static final long serialVersionUID = -8052137675270041871L;

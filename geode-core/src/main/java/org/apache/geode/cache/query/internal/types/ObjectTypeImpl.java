@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.types;
+package org.apache.geode.cache.query.internal.types;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 
 /**
  * Implementation of ObjectType

@@ -24,7 +24,7 @@
  *
  * Created on March 8, 2005, 4:54 PM
  */
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import static org.junit.Assert.*;
 import static org.junit.runners.MethodSorters.*;
@@ -43,15 +43,15 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *

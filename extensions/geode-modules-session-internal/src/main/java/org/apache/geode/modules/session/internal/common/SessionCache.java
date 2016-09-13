@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.common;
+package org.apache.geode.modules.session.internal.common;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 
 import javax.servlet.http.HttpSession;
 

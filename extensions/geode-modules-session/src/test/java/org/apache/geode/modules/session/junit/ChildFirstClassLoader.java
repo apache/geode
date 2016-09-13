@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.junit;
+package org.apache.geode.modules.session.junit;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -53,7 +53,7 @@ public class ChildFirstClassLoader extends URLClassLoader {
       throws ClassNotFoundException {
     Class c = null;
 
-    if (name.startsWith("com.gemstone")) {
+    if (name.startsWith("org.apache")) {
       // First, check if the class has already been loaded
       c = findLoadedClass(name);
 

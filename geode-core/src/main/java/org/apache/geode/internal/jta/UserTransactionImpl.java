@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta;
+package org.apache.geode.internal.jta;
 
 /**
  * <p>
@@ -29,9 +29,9 @@ package com.gemstone.gemfire.internal.jta;
 import java.io.Serializable;
 import javax.transaction.*;
 
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class UserTransactionImpl implements UserTransaction, Serializable {
   private static final long serialVersionUID = 2994652455204901910L;

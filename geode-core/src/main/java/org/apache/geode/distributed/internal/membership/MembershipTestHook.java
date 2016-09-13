@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
 /**
  * Test hook for hydra test development

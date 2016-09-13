@@ -18,25 +18,25 @@
 /*
  * Created on Dec 1, 2005
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.*;
 import java.io.*;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.ExternalizableDSFID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.partition.PartitionListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.util.Versionable;
-import com.gemstone.gemfire.internal.util.VersionedArrayList;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.ExternalizableDSFID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.internal.cache.PartitionAttributesImpl;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.util.Versionable;
+import org.apache.geode.internal.util.VersionedArrayList;
 
 /**
  * Maintains configuration information for a PartitionedRegion. Instances are

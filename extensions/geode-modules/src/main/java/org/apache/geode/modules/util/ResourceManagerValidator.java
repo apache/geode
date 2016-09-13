@@ -14,10 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.util;
+package org.apache.geode.modules.util;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.control.ResourceManager;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.control.ResourceManager;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;

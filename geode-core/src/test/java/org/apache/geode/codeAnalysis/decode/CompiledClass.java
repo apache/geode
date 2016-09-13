@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis.decode;
+package org.apache.geode.codeAnalysis.decode;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,14 +24,14 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.codeAnalysis.decode.cp.Cp;
-import com.gemstone.gemfire.codeAnalysis.decode.cp.CpClass;
-import com.gemstone.gemfire.codeAnalysis.decode.cp.CpDouble;
-import com.gemstone.gemfire.codeAnalysis.decode.cp.CpLong;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.logging.PureLogWriter;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.LogWriter;
+import org.apache.geode.codeAnalysis.decode.cp.Cp;
+import org.apache.geode.codeAnalysis.decode.cp.CpClass;
+import org.apache.geode.codeAnalysis.decode.cp.CpDouble;
+import org.apache.geode.codeAnalysis.decode.cp.CpLong;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.logging.PureLogWriter;
 
 
 /**
@@ -176,8 +176,8 @@ public class CompiledClass implements Comparable {
       // these classes throw exceptions or log ugly messages when you try to load them
       // in junit
       String name = fullyQualifiedName().replace('/', '.');
-      if (name.startsWith("com.gemstone.gemfire.internal.shared.NativeCallsJNAImpl")
-          || name.startsWith("com.gemstone.gemfire.internal.statistics.HostStatHelper")) {
+      if (name.startsWith("org.apache.geode.internal.shared.NativeCallsJNAImpl")
+          || name.startsWith("org.apache.geode.internal.statistics.HostStatHelper")) {
         return false;
       }
       try {

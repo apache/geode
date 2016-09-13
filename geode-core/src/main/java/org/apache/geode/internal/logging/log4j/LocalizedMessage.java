@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import org.apache.logging.log4j.message.Message;
 
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.i18n.StringId;
 
 
 /**

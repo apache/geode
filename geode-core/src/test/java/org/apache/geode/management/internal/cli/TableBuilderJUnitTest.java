@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilder.Row;
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilder.RowGroup;
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilder.Table;
-import com.gemstone.gemfire.management.internal.cli.result.TableBuilderHelper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.management.internal.cli.result.TableBuilder;
+import org.apache.geode.management.internal.cli.result.TableBuilder.Row;
+import org.apache.geode.management.internal.cli.result.TableBuilder.RowGroup;
+import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
+import org.apache.geode.management.internal.cli.result.TableBuilderHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

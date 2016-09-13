@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.awt.Desktop;
 import java.io.BufferedReader;
@@ -57,74 +57,74 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.AbstractLauncher;
-import com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState;
-import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
-import com.gemstone.gemfire.distributed.LocatorLauncher;
-import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
-import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.ServerLauncher.ServerState;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.internal.DistributionLocator;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.net.*;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.ClassUtils;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
-import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
-import com.gemstone.gemfire.internal.process.ProcessStreamReader;
-import com.gemstone.gemfire.internal.process.ProcessStreamReader.InputListener;
-import com.gemstone.gemfire.internal.process.ProcessStreamReader.ReadingMode;
-import com.gemstone.gemfire.internal.process.ProcessType;
-import com.gemstone.gemfire.internal.process.ProcessUtils;
-import com.gemstone.gemfire.internal.process.signal.SignalEvent;
-import com.gemstone.gemfire.internal.process.signal.SignalListener;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.lang.AttachAPINotFoundException;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.management.internal.cli.converters.ConnectionEndpointConverter;
-import com.gemstone.gemfire.management.internal.cli.domain.ConnectToLocatorResult;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.shell.JmxOperationInvoker;
-import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
-import com.gemstone.gemfire.management.internal.cli.util.CauseFinder;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
-import com.gemstone.gemfire.management.internal.cli.util.JConsoleNotFoundException;
-import com.gemstone.gemfire.management.internal.cli.util.VisualVmNotFoundException;
-import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfigurationStatus;
-import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
-import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.AbstractLauncher;
+import org.apache.geode.distributed.AbstractLauncher.ServiceState;
+import org.apache.geode.distributed.AbstractLauncher.Status;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.LocatorLauncher.LocatorState;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.ServerLauncher.ServerState;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.DistributionLocator;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.net.*;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.process.ProcessLauncherContext;
+import org.apache.geode.internal.process.ProcessStreamReader;
+import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
+import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.process.signal.SignalEvent;
+import org.apache.geode.internal.process.signal.SignalListener;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.lang.AttachAPINotFoundException;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
+import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
+import org.apache.geode.management.internal.cli.util.CauseFinder;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
+import org.apache.geode.management.internal.cli.util.JConsoleNotFoundException;
+import org.apache.geode.management.internal.cli.util.VisualVmNotFoundException;
+import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.security.AuthenticationFailedException;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
  * GemFire Monitor (GFMon) and Visual Statistics Display (VSD)) as well external tools (like jconsole).
  * <p>
- * @see com.gemstone.gemfire.distributed.LocatorLauncher
- * @see com.gemstone.gemfire.distributed.ServerLauncher
- * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
- * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+ * @see org.apache.geode.distributed.LocatorLauncher
+ * @see org.apache.geode.distributed.ServerLauncher
+ * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
+ * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")

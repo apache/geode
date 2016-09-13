@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Extends the CountDownLatch with the ability to also countUp.

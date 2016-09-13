@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.modules.session.internal.jmx;
+package org.apache.geode.modules.session.internal.jmx;
 
 /**
  * MXBean interface to retrieve Session statistics

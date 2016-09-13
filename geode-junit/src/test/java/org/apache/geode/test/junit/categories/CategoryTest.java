@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.categories;
+package org.apache.geode.test.junit.categories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +27,7 @@ import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import com.gemstone.gemfire.test.junit.rules.TestRunner;
+import org.apache.geode.test.junit.rules.TestRunner;
 
 @Category(UnitTest.class)
 public class CategoryTest {

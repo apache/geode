@@ -14,34 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.ha;
+package org.apache.geode.internal.cache.ha;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.query.internal.CqQueryVsdStats;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.query.internal.CqQueryVsdStats;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.concurrent.StoppableCondition;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -3621,7 +3621,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.DataSerializableFixedID#fromData(java.io.DataInput)
+     * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
      */
     public void fromData(DataInput in) throws IOException,
         ClassNotFoundException {
@@ -3632,14 +3632,14 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
      */
     public int getDSFID() {
       return DISPATCHED_AND_CURRENT_EVENTS;
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.DataSerializableFixedID#toData(java.io.DataOutput)
+     * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
      */
     public void toData(DataOutput out) throws IOException {
       synchronized (this) { // fix for bug #41621

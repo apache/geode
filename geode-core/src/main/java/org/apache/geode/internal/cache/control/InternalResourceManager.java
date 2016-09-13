@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.control;
+package org.apache.geode.internal.cache.control;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.control.RebalanceFactory;
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
-import com.gemstone.gemfire.distributed.internal.SerialQueuedExecutorWithDMStats;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
-import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
-import com.gemstone.gemfire.internal.cache.partitioned.SizedBasedLoadProbe;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.control.RebalanceFactory;
+import org.apache.geode.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
+import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
+import org.apache.geode.internal.cache.partitioned.LoadProbe;
+import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
@@ -505,7 +505,7 @@ public class InternalResourceManager implements ResourceManager {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DistributionAdvisee#getCancelCriterion()
+   * @see org.apache.geode.distributed.internal.DistributionAdvisee#getCancelCriterion()
    */
   public CancelCriterion getCancelCriterion() {
     return this.cache.getCancelCriterion();
@@ -529,7 +529,7 @@ public class InternalResourceManager implements ResourceManager {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#setEvictionHeapPercentage(int)
+   * @see org.apache.geode.cache.control.ResourceManager#setEvictionHeapPercentage(int)
    */
   @Override
   public void setCriticalOffHeapPercentage(float offHeapPercentage) {

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.functions;
+package org.apache.geode.management.internal.cli.functions;
 
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ExecutionException;

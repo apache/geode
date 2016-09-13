@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -22,11 +22,11 @@ import java.io.IOException;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
-import com.gemstone.gemfire.internal.cache.RemotePutMessage.PutReplyMessage;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
+import org.apache.geode.internal.cache.RemotePutMessage.PutReplyMessage;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class RemotePutReplyMessageJUnitTest extends OldValueImporterTestBase {

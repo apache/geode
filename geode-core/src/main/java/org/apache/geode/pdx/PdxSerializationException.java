@@ -17,9 +17,9 @@
 /**
  * 
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import com.gemstone.gemfire.SerializationException;
+import org.apache.geode.SerializationException;
 
 /**
  * Thrown if a problem occurred during serialization

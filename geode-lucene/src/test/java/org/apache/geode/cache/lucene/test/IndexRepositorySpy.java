@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.test;
+package org.apache.geode.cache.lucene.test;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -24,16 +24,16 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import com.gemstone.gemfire.cache.lucene.internal.IndexRepositoryFactory;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
-import com.gemstone.gemfire.cache.lucene.internal.PartitionedRepositoryManager;
-import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import org.apache.geode.cache.lucene.internal.IndexRepositoryFactory;
+import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
+import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.mockito.Mockito;

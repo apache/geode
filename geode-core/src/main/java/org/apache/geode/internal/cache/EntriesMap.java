@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
-import com.gemstone.gemfire.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DM;
 
 /**
  * Interface for accessing extended features of a ConcurrentMap used for

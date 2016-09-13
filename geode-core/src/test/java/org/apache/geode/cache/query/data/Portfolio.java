@@ -20,7 +20,7 @@
  * THE ENCODING MUST BE SPECIFIED AS UTF-8 WHEN COMPILED
  *******/
 
-package com.gemstone.gemfire.cache.query.data;
+package org.apache.geode.cache.query.data;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -35,9 +35,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.Assert;
 
 
 public class Portfolio implements Serializable, DataSerializable {

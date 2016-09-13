@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics.platform;
+package org.apache.geode.internal.statistics.platform;
 
-import com.gemstone.gemfire.Statistics;
+import org.apache.geode.Statistics;
 
 /**
  * Abstracts the process statistics that are common on all platforms.

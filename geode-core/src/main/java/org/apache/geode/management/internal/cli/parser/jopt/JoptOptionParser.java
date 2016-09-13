@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.parser.jopt;
+package org.apache.geode.management.internal.cli.parser.jopt;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,18 +28,18 @@ import joptsimple.OptionSpecBuilder;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gemstone.gemfire.management.internal.cli.MultipleValueConverter;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.ExceptionGenerator;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
-import com.gemstone.gemfire.management.internal.cli.parser.GfshOptionParser;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
-import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preprocessor;
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedInput;
-import com.gemstone.gemfire.management.internal.cli.util.HyphenFormatter;
+import org.apache.geode.management.internal.cli.MultipleValueConverter;
+import org.apache.geode.management.internal.cli.exceptions.CliCommandOptionException;
+import org.apache.geode.management.internal.cli.exceptions.ExceptionGenerator;
+import org.apache.geode.management.internal.cli.parser.Argument;
+import org.apache.geode.management.internal.cli.parser.GfshOptionParser;
+import org.apache.geode.management.internal.cli.parser.Option;
+import org.apache.geode.management.internal.cli.parser.OptionSet;
+import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
+import org.apache.geode.management.internal.cli.parser.preprocessor.Preprocessor;
+import org.apache.geode.management.internal.cli.parser.preprocessor.PreprocessorUtils;
+import org.apache.geode.management.internal.cli.parser.preprocessor.TrimmedInput;
+import org.apache.geode.management.internal.cli.util.HyphenFormatter;
 
 /**
  * Implementation of {@link GfshOptionParser} which internally makes use of

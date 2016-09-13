@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.types;
+package org.apache.geode.cache.query.internal.types;
 
 import java.io.*;
-import com.gemstone.gemfire.cache.query.types.*;
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.cache.query.types.*;
+import org.apache.geode.DataSerializer;
 
 
 /**

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.stats50.VMStats50;
+import org.apache.geode.*;
+import org.apache.geode.internal.stats50.VMStats50;
 
 /**
  * Factory used to produce an instance of VMStatsContract.

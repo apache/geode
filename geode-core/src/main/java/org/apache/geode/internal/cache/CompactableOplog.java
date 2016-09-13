@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogCompactor;
-import com.gemstone.gemfire.internal.cache.persistence.BytesAndBits;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
+import org.apache.geode.internal.cache.persistence.BytesAndBits;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 /**
  * Contract that must be implemented by oplogs so that
  * they can be compacted.

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -32,51 +32,51 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.cache.CacheService;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.cache.CacheService;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.ClassLoadUtil;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.AsyncEventQueueMXBean;
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.management.DiskStoreMXBean;
-import com.gemstone.gemfire.management.GatewayReceiverMXBean;
-import com.gemstone.gemfire.management.GatewaySenderMXBean;
-import com.gemstone.gemfire.management.JMXNotificationType;
-import com.gemstone.gemfire.management.JMXNotificationUserData;
-import com.gemstone.gemfire.management.LocatorMXBean;
-import com.gemstone.gemfire.management.LockServiceMXBean;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.ManagerMXBean;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.RegionMXBean;
-import com.gemstone.gemfire.management.internal.AlertDetails;
-import com.gemstone.gemfire.management.internal.FederationComponent;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.management.membership.ClientMembership;
-import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
-import com.gemstone.gemfire.management.membership.ClientMembershipListener;
-import com.gemstone.gemfire.management.membership.ClientMembershipListenerAdapter;
-import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.AsyncEventQueueMXBean;
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.DiskStoreMXBean;
+import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.JMXNotificationType;
+import org.apache.geode.management.JMXNotificationUserData;
+import org.apache.geode.management.LocatorMXBean;
+import org.apache.geode.management.LockServiceMXBean;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.RegionMXBean;
+import org.apache.geode.management.internal.AlertDetails;
+import org.apache.geode.management.internal.FederationComponent;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.membership.ClientMembership;
+import org.apache.geode.management.membership.ClientMembershipEvent;
+import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
  * Acts as an intermediate between MBean layer and Federation Layer. Handles all

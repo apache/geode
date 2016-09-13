@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -56,7 +56,7 @@ import org.apache.logging.log4j.Logger;
  * 
  * See also <a href="package-summary.html#messages">package description </a>.
  * 
- * @see com.gemstone.gemfire.internal.cache.tier.MessageType
+ * @see org.apache.geode.internal.cache.tier.MessageType
  * 
  * 
  * @since GemFire 4.2

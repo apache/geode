@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * A reply processor optimized for direct ack responses (It skips synchronization,

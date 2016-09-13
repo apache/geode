@@ -20,7 +20,7 @@
  *
  * Created on March 8, 2005, 4:53 PM
  */
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -33,9 +33,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *

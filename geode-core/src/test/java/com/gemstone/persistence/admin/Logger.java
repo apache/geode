@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.persistence.admin;
+package org.apache.persistence.admin;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -35,7 +35,7 @@ public class Logger
     private static final SimpleDateFormat timeFormatter;
     static {
 	final String defaultFormatPattern = "MM/dd/yy HH:mm:ss.SSS z";
-	final String resourceName = "com.gemstone.persistence.admin.LoggerResources";
+	final String resourceName = "org.apache.persistence.admin.LoggerResources";
 	final String keyName = "logger.timeStampFormat";
 	String formatPattern = defaultFormatPattern;
 	SimpleDateFormat sdf;

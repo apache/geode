@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.util.IOUtils;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
  * The AbstractMultiPartCommandsController class is a abstract base class encapsulating all common functionality for
  * handling multi-part (file upload) HTTP requests.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
+ * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

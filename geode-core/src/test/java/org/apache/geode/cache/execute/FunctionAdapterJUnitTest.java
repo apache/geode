@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.execute;
+package org.apache.geode.cache.execute;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Before;
 import org.junit.Test;

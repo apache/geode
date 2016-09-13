@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.shared;
+package org.apache.geode.internal.shared;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.SystemFailure;
+import org.apache.geode.SystemFailure;
 
 /**
  * Encapsulates native C/C++ calls via JNA. To obtain an instance of
@@ -58,7 +58,7 @@ public abstract class NativeCalls {
       // we do it via reflection since some clients
       // may not have it
       final Class<?> c = Class
-          .forName("com.gemstone.gemfire.internal.shared.NativeCallsJNAImpl");
+          .forName("org.apache.geode.internal.shared.NativeCallsJNAImpl");
       inst = (NativeCalls)c.getMethod("getInstance").invoke(null);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);

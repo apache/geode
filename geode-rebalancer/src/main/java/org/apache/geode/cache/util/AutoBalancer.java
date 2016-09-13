@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -32,20 +32,20 @@ import org.apache.logging.log4j.Logger;
 import org.quartz.CronExpression;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
-import com.gemstone.gemfire.cache.control.RebalanceResults;
-import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.partitioned.InternalPRInfo;
-import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
+import org.apache.geode.internal.cache.partitioned.LoadProbe;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Re-balancing operation relocates data from heavily loaded members to lightly

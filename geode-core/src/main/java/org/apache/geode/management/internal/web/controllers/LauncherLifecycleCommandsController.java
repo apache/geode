@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * The LauncherLifecycleCommandsController class implements REST API calls for the Gfsh Launcher Lifecycle commands.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.cli.commands.LauncherLifecycleCommands
- * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
+ * @see org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands
+ * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable
  * @see org.springframework.web.bind.annotation.RequestMapping

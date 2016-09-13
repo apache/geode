@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 
 /**
  * [DISTTX] For Distributed Transaction

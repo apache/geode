@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.types;
+package org.apache.geode.cache.query.internal.types;
 
 import java.util.*;
 
-import com.gemstone.gemfire.cache.query.internal.NullToken;
-import com.gemstone.gemfire.cache.query.internal.Undefined;
+import org.apache.geode.cache.query.internal.NullToken;
+import org.apache.geode.cache.query.internal.Undefined;
 
 /**
  * A general comparator that will let us compare different numeric types for equality

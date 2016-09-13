@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.sequencelog;
+package org.apache.geode.internal.sequencelog;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -14,13 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina.internal;
+package org.apache.geode.modules.session.catalina.internal;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSession;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSessionInterface;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.modules.session.catalina.DeltaSession;
+import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 import java.io.DataInput;
 import java.io.DataOutput;

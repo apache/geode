@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.sequencelog.io;
+package org.apache.geode.internal.sequencelog.io;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.sequencelog.GraphType;
-import com.gemstone.gemfire.internal.sequencelog.model.GraphSet;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.sequencelog.GraphType;
+import org.apache.geode.internal.sequencelog.model.GraphSet;
 
 /**
  *

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.internal.util.StopWatch;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.StopWatch;
 
 /**
  * File wrapper that adds support for reading process id (pid) from a pid file

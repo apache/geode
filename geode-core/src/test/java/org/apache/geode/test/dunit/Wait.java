@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
-import static com.gemstone.gemfire.test.dunit.Jitter.*;
+import static org.apache.geode.test.dunit.Jitter.*;
 import static org.junit.Assert.*;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * <code>Wait</code> provides static utility methods to wait for some
@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * however, they are intended to be referenced through static import:
  *
  * <pre>
- * import static com.gemstone.gemfire.test.dunit.Wait.*;
+ * import static org.apache.geode.test.dunit.Wait.*;
  *    ...
  *    waitForCriterion(...);
  * </pre>

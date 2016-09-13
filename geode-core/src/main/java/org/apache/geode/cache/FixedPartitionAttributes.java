@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 
 /**
  * Composite date type used to distribute the attributes for a fixed partition.
  * </p>
  * 
- * {@link com.gemstone.gemfire.cache.PartitionAttributes#getFixedPartitionAttributes()}
+ * {@link org.apache.geode.cache.PartitionAttributes#getFixedPartitionAttributes()}
  * returns all fixed partitions in Partitioned Region attributes. </p>
- * {@link com.gemstone.gemfire.cache.PartitionAttributesFactory#addFixedPartitionAttributes(FixedPartitionAttributes)}
+ * {@link org.apache.geode.cache.PartitionAttributesFactory#addFixedPartitionAttributes(FixedPartitionAttributes)}
  * configures <code>FixedPartitionAttributes</Code> in
  * <code>PartitionedRegionAttributes</code> </p>
  * 
- * @see com.gemstone.gemfire.cache.PartitionAttributes
- * @see com.gemstone.gemfire.cache.PartitionAttributesFactory
+ * @see org.apache.geode.cache.PartitionAttributes
+ * @see org.apache.geode.cache.PartitionAttributesFactory
  * 
  * @since GemFire 6.6
  */

@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.cache.CacheException;
+import org.apache.geode.cache.CacheException;
 
 public abstract class DiskDistributedNoAckRegionTestCase extends DistributedNoAckRegionDUnitTest {
 

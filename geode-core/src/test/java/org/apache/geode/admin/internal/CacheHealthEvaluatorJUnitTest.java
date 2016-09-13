@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.admin.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import java.util.*;
 

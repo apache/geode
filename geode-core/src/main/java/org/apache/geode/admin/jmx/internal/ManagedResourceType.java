@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -31,47 +31,47 @@ public class ManagedResourceType implements java.io.Serializable {
   
   /** Agent managed resource type */
   public static final ManagedResourceType AGENT = 
-      new ManagedResourceType("Agent", com.gemstone.gemfire.admin.jmx.Agent.class);
+      new ManagedResourceType("Agent", org.apache.geode.admin.jmx.Agent.class);
 
   /** DistributedSystem managed resource type */
   public static final ManagedResourceType DISTRIBUTED_SYSTEM = 
-      new ManagedResourceType("AdminDistributedSystem", com.gemstone.gemfire.admin.AdminDistributedSystem.class);
+      new ManagedResourceType("AdminDistributedSystem", org.apache.geode.admin.AdminDistributedSystem.class);
 
   /** SystemMember managed resource type */
   public static final ManagedResourceType SYSTEM_MEMBER = 
-      new ManagedResourceType("SystemMember", com.gemstone.gemfire.admin.SystemMember.class);
+      new ManagedResourceType("SystemMember", org.apache.geode.admin.SystemMember.class);
 
   /** SystemMemberCache managed resource type */
   public static final ManagedResourceType SYSTEM_MEMBER_CACHE = 
-      new ManagedResourceType("SystemMemberCache", com.gemstone.gemfire.admin.SystemMemberCache.class);
+      new ManagedResourceType("SystemMemberCache", org.apache.geode.admin.SystemMemberCache.class);
 
   /** SystemMemberCache managed resource type */
   public static final ManagedResourceType SYSTEM_MEMBER_REGION = 
-      new ManagedResourceType("SystemMemberRegion", com.gemstone.gemfire.admin.SystemMemberRegion.class);
+      new ManagedResourceType("SystemMemberRegion", org.apache.geode.admin.SystemMemberRegion.class);
 
   /** SystemMemberCacheServer managed resource type */
   public static final ManagedResourceType SYSTEM_MEMBER_CACHE_SERVER = 
-      new ManagedResourceType("SystemMemberCacheServer", com.gemstone.gemfire.admin.SystemMemberCacheServer.class);
+      new ManagedResourceType("SystemMemberCacheServer", org.apache.geode.admin.SystemMemberCacheServer.class);
 
   /** CacheVm managed resource type */
   public static final ManagedResourceType CACHE_VM = 
-      new ManagedResourceType("CacheVm", com.gemstone.gemfire.admin.CacheVm.class);
+      new ManagedResourceType("CacheVm", org.apache.geode.admin.CacheVm.class);
 
   /** StatisticResource managed resource type */
   public static final ManagedResourceType STATISTIC_RESOURCE = 
-      new ManagedResourceType("StatisticResource", com.gemstone.gemfire.admin.StatisticResource.class);
+      new ManagedResourceType("StatisticResource", org.apache.geode.admin.StatisticResource.class);
 
   public static final ManagedResourceType GEMFIRE_HEALTH = 
-      new ManagedResourceType("GemFireHealth", com.gemstone.gemfire.admin.GemFireHealth.class);
+      new ManagedResourceType("GemFireHealth", org.apache.geode.admin.GemFireHealth.class);
 
   public static final ManagedResourceType DISTRIBUTED_SYSTEM_HEALTH_CONFIG = 
-      new ManagedResourceType("DistributedSystemHealthConfig", com.gemstone.gemfire.admin.DistributedSystemHealthConfig.class);
+      new ManagedResourceType("DistributedSystemHealthConfig", org.apache.geode.admin.DistributedSystemHealthConfig.class);
 
   public static final ManagedResourceType GEMFIRE_HEALTH_CONFIG = 
-      new ManagedResourceType("GemFireHealthConfig", com.gemstone.gemfire.admin.GemFireHealthConfig.class);
+      new ManagedResourceType("GemFireHealthConfig", org.apache.geode.admin.GemFireHealthConfig.class);
 
   public static final ManagedResourceType DISTRIBUTION_LOCATOR = 
-      new ManagedResourceType("DistributionLocator", com.gemstone.gemfire.admin.DistributionLocator.class);
+      new ManagedResourceType("DistributionLocator", org.apache.geode.admin.DistributionLocator.class);
 
   ////////////////////  Instance Fields  ////////////////////
 

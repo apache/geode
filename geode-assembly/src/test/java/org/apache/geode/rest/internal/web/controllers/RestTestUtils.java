@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
 import java.net.URI;
 import java.text.SimpleDateFormat;
@@ -89,8 +89,8 @@ public class RestTestUtils  {
   protected static HttpMessageConverter<Object> createMarshallingHttpMessageConverter() {
     final Jaxb2Marshaller jaxbMarshaller = new Jaxb2Marshaller();
 
-    jaxbMarshaller.setContextPaths("com.gemstone.gemfire.web.rest.domain",
-        "com.gemstone.gemfire.web.controllers.support");
+    jaxbMarshaller.setContextPaths("org.apache.geode.web.rest.domain",
+        "org.apache.geode.web.controllers.support");
     jaxbMarshaller.setMarshallerProperties(Collections.singletonMap(
         "jaxb.formatted.output", Boolean.TRUE));
 

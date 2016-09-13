@@ -17,20 +17,20 @@
 /**
  * 
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.internal.ByteBufferWriter;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.internal.ByteBufferWriter;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 
 /**
  * Used by PdxWriterImpl to manage the raw data of a PDX.

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.Map;
  * however, they are intended to be referenced through static import:
  *
  * <pre>
- * import static com.gemstone.gemfire.test.dunit.Invoke.*;
+ * import static org.apache.geode.test.dunit.Invoke.*;
  *    ...
  *    invokeInEveryVM(...);
  * </pre>

@@ -1,2 +1,2 @@
 # e.g.,
-#com/gemstone/gemfire/cache/query/CqAttributesFactory
+#org/apache/geode/cache/query/CqAttributesFactory

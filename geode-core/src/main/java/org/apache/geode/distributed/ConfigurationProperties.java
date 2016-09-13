@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.security.SecurableComponents;
@@ -141,7 +141,7 @@ public interface ConfigurationProperties {
    * <a name="cache-xml-file"/a></p>
    * <U>Description</U>: Specifies the name of the XML file or resource
    * to initialize the cache with when it is
-   * {@linkplain com.gemstone.gemfire.cache.CacheFactory#create created}.
+   * {@linkplain org.apache.geode.cache.CacheFactory#create created}.
    * Create will first look for a file that matches the value of this property.
    * If a file is not found then it will be searched for using
    * {@link java.lang.ClassLoader#getResource}.  If the value of this
@@ -311,7 +311,7 @@ public interface ConfigurationProperties {
    * <dt>delta-propagation</dt>
    * </a>
    * <U>Description</U>: "true" indicates that server propagates delta
-   * generated from {@link com.gemstone.gemfire.Delta} type of objects. If "false"
+   * generated from {@link org.apache.geode.Delta} type of objects. If "false"
    * then server propagates full object but not delta. </p>
    * <U>Default</U>: "true"</p>
    * <U>Allowed values</U>: true|false
@@ -1177,16 +1177,16 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"memcached-bind-address"</i> property
    * <a name="memcached-bind-address"/a></p>
-   * <U>Description</U>: Specifies the bind address used by {@link com.gemstone.gemfire.memcached.GemFireMemcachedServer}</p>
+   * <U>Description</U>: Specifies the bind address used by {@link org.apache.geode.memcached.GemFireMemcachedServer}</p>
    * <U>Default</U>: ""
    */
   String MEMCACHED_BIND_ADDRESS = "memcached-bind-address";
   /**
    * The static String definition of the <i>"memcached-port"</i> property
    * <a name="memcached-port"/a></p>
-   * <U>Description</U>: Specifies the port used by {@link com.gemstone.gemfire.memcached.GemFireMemcachedServer}
+   * <U>Description</U>: Specifies the port used by {@link org.apache.geode.memcached.GemFireMemcachedServer}
    * which enables memcached clients to connect and store data in GemFire distributed system.
-   * see {@link com.gemstone.gemfire.memcached.GemFireMemcachedServer} for other configuration options.</p>
+   * see {@link org.apache.geode.memcached.GemFireMemcachedServer} for other configuration options.</p>
    * <U>Default</U>: "0" disables GemFireMemcachedServer</p>
    * <U>Allowed values</U>: 0..65535
    */
@@ -1194,7 +1194,7 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"memcached-protocol"</i> property
    * <a name="memcached-protocol"/a></p>
-   * <U>Description</U>: Specifies the protocol used by {@link com.gemstone.gemfire.memcached.GemFireMemcachedServer}</p>
+   * <U>Description</U>: Specifies the protocol used by {@link org.apache.geode.memcached.GemFireMemcachedServer}</p>
    * <U>Default</U>: "ASCII"</p>
    * <U>Allowed values</U>: "ASCII" "BINARY"
    */

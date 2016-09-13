@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.disttx;
+package org.apache.geode.disttx;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
@@ -24,9 +24,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache30.TXOrderDUnitTest;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache30.TXOrderDUnitTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Same tests as that of {@link TXOrderDUnitTest} after setting

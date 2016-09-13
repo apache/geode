@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.statalerts;
+package org.apache.geode.internal.admin.statalerts;
 
 import java.io.DataOutput;
 import java.io.DataInput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.internal.admin.StatAlert;
-import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.internal.admin.StatAlert;
+import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
  * Implementation of {@link StatAlertDefinition} This provides the definition
@@ -132,7 +132,7 @@ public final class SingleAttrDefinitionImpl implements StatAlertDefinition {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.admin.StatAlertDefinition#getStatisticInfo()
+   * @see org.apache.geode.internal.admin.StatAlertDefinition#getStatisticInfo()
    */
   public StatisticInfo[] getStatisticInfo() {
     return new StatisticInfo[] { statisticInfo };
@@ -141,7 +141,7 @@ public final class SingleAttrDefinitionImpl implements StatAlertDefinition {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.admin.StatAlertDefinition#setStatisticInfo(com.gemstone.gemfire.internal.admin.StatisticInfo[])
+   * @see org.apache.geode.internal.admin.StatAlertDefinition#setStatisticInfo(org.apache.geode.internal.admin.StatisticInfo[])
    */
   public void setStatisticInfo(StatisticInfo[] info) {
     if (info == null || info.length != 1)
@@ -165,7 +165,7 @@ public final class SingleAttrDefinitionImpl implements StatAlertDefinition {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.admin.StatAlertDefinition#evaluate(java.lang.Number[])
+   * @see org.apache.geode.internal.admin.StatAlertDefinition#evaluate(java.lang.Number[])
    */
   public boolean evaluate(Number[] params) {
     return evaluate() && params != null && params.length == 1;

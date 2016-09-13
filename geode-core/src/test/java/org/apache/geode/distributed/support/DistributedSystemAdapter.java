@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.support;
+package org.apache.geode.distributed.support;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -23,19 +23,19 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.LogWriter;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * The DistributedSystemAdapter class is an adapter extending DistributedSystem to provide default behavior for the
  * abstract methods when testing.
  * <p/>
- * @see com.gemstone.gemfire.distributed.DistributedSystem
+ * @see org.apache.geode.distributed.DistributedSystem
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.process;
+package org.apache.geode.test.process;
 
 import static org.junit.Assert.*;
 
@@ -22,7 +22,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for ProcessWrapper.
@@ -65,7 +65,7 @@ public class ProcessWrapperJUnitTest {
 
   public static void main(String... args) throws Exception {
     Class.forName(org.apache.logging.log4j.LogManager.class.getName());
-    Class.forName(com.gemstone.gemfire.internal.logging.LogService.class.getName());
+    Class.forName(org.apache.geode.internal.logging.LogService.class.getName());
     System.out.println(OUTPUT_OF_MAIN);
   }
 }

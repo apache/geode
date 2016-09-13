@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.util.Collections;
@@ -28,14 +28,14 @@ import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.cache.TestUtils;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.persistence.PRPersistentConfig;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.TestUtils;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests DiskRegion's IF file.
@@ -728,7 +728,7 @@ public class DiskIFJUnitTest extends DiskRegionTestingBase
     try {
       lr = (LocalRegion)DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       fail("expected DiskAccessException");
-    } catch (com.gemstone.gemfire.cache.DiskAccessException expected) {
+    } catch (org.apache.geode.cache.DiskAccessException expected) {
       if (!expected.getMessage().contains("two different directories")) {
         fail("did not expect: " + expected + ". It should have contained: \"two different directories\"");
       }
@@ -740,7 +740,7 @@ public class DiskIFJUnitTest extends DiskRegionTestingBase
     try {
       lr = (LocalRegion)DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       fail("expected DiskAccessException");
-    } catch (com.gemstone.gemfire.cache.DiskAccessException expected) {
+    } catch (org.apache.geode.cache.DiskAccessException expected) {
       if (!expected.getMessage().contains("does not belong")) {
         fail("did not expect: " + expected + ". It should have contained: \"does not belong\"");
       }

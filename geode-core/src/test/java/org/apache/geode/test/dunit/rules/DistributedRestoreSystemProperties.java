@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.rules;
+package org.apache.geode.test.dunit.rules;
 
 import static java.lang.System.*;
 
@@ -22,8 +22,8 @@ import java.util.Properties;
 
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTestRule;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
 /**
  * Distributed version of RestoreSystemProperties which affects all DUnit 

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.distributed.DistributedSystem; // for javadocs
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.distributed.DistributedSystem; // for javadocs
 
 /**
  * Manages creation and access to {@link Pool connection pools} for clients.

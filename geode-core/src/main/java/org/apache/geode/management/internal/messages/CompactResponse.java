@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.messages;
+package org.apache.geode.management.internal.messages;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.admin.remote.AdminResponse;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.remote.AdminResponse;
 
 /**
  * 
  * 
  * @since GemFire 7.0
  */
-//NOTE: This is copied from com/gemstone/gemfire/internal/admin/remote/CompactResponse.java
+//NOTE: This is copied from org/apache/geode/internal/admin/remote/CompactResponse.java
 //and modified as per requirements. (original-author Dan Smith)
 public class CompactResponse extends AdminResponse {
   private PersistentID persistentId;

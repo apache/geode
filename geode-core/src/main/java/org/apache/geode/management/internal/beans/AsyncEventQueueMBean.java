@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import javax.management.NotificationBroadcasterSupport;
 
-import com.gemstone.gemfire.management.AsyncEventQueueMXBean;
-import com.gemstone.gemfire.management.internal.beans.stats.StatsKey;
+import org.apache.geode.management.AsyncEventQueueMXBean;
+import org.apache.geode.management.internal.beans.stats.StatsKey;
 
 /**
  * Concrete implementation of AsyncEventQueueMXBean

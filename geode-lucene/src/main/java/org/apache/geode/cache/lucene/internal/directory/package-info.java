@@ -18,6 +18,6 @@
  */
 /**
  * An implementation of Lucene's {@link org.apache.lucene.store.Directory} interface that uses the filesystem
- * API in {@link com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystem}
+ * API in {@link org.apache.geode.cache.lucene.internal.filesystem.FileSystem}
  */
-package com.gemstone.gemfire.cache.lucene.internal.directory;
+package org.apache.geode.cache.lucene.internal.directory;

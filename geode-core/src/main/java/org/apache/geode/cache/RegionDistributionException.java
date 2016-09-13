@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.*;
 import java.util.*;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.membership.InternalRole;
 
 /**
  * Indicates that an attempt to send a distributed cache event to one or more
  * {@link MembershipAttributes#getRequiredRoles required roles} may have
  * failed.  Failure may be caused by departure of one or more required roles
  * while sending the message to them.  If the region scope is {@linkplain 
- * com.gemstone.gemfire.cache.Scope#DISTRIBUTED_NO_ACK DISTRIBUTED_NO_ACK} or
- * {@linkplain com.gemstone.gemfire.cache.Scope#GLOBAL GLOBAL} then failure
+ * org.apache.geode.cache.Scope#DISTRIBUTED_NO_ACK DISTRIBUTED_NO_ACK} or
+ * {@linkplain org.apache.geode.cache.Scope#GLOBAL GLOBAL} then failure
  * may be caused by one or more required roles not acknowledging receipt of
  * the message.
  *

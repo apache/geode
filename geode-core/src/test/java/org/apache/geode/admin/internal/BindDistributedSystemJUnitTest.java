@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.BIND_ADDRESS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests {@link com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl}.
+ * Tests {@link org.apache.geode.admin.internal.AdminDistributedSystemImpl}.
  *
  * @created   August 30, 2004
  * @since GemFire     3.5
@@ -72,7 +72,7 @@ public class BindDistributedSystemJUnitTest {
     props.setProperty(BIND_ADDRESS, bindTo);
     props.setProperty(START_LOCATOR,
         "localhost["+AvailablePortHelper.getRandomAvailableTCPPort()+"]");
-    this.system = com.gemstone.gemfire.distributed.DistributedSystem.connect(
+    this.system = org.apache.geode.distributed.DistributedSystem.connect(
         props);
         
     assertEquals(true, this.system.isConnected());

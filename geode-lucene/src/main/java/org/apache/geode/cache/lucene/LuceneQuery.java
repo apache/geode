@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
 import java.util.Collection;
 import java.util.List;
 
-import com.gemstone.gemfire.annotations.Experimental;
+import org.apache.geode.annotations.Experimental;
 
 /**
  * Provides wrapper object of Lucene's Query object and execute the search. 

@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.client.internal.locator;
+package org.apache.geode.cache.client.internal.locator;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import org.apache.geode.internal.DataSerializableFixedID;
 
 /**
  * The LocatorStatusRequest class...
  * </p>
- * @see com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest
- * @see com.gemstone.gemfire.internal.DataSerializableFixedID
+ * @see org.apache.geode.cache.client.internal.locator.ServerLocationRequest
+ * @see org.apache.geode.internal.DataSerializableFixedID
  * @since GemFire 7.0
  */
 public class LocatorStatusRequest extends ServerLocationRequest {

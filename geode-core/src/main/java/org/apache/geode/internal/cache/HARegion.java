@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,29 +25,29 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.HAEventWrapper;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
  * This region is being implemented to suppress distribution of puts and to
@@ -335,7 +335,7 @@ public final class HARegion extends DistributedRegion
    * This method is overriden so as to make isOriginRemote true always so that
    * the operation is never propagated to other nodes
    * 
-   * @see com.gemstone.gemfire.internal.cache.AbstractRegion#destroyRegion()
+   * @see org.apache.geode.internal.cache.AbstractRegion#destroyRegion()
    */
   @Override
   public void destroyRegion(Object aCallbackArgument)
@@ -481,7 +481,7 @@ public final class HARegion extends DistributedRegion
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.LocalRegion#getEventState()
+   * @see org.apache.geode.internal.cache.LocalRegion#getEventState()
    */
   @Override
   public Map<? extends DataSerializable, ? extends DataSerializable> getEventState() {
@@ -537,7 +537,7 @@ public final class HARegion extends DistributedRegion
     }
     
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor#adviseInitialImage(com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.InitialImageAdvice)
+     * @see org.apache.geode.internal.cache.CacheDistributionAdvisor#adviseInitialImage(org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice)
      */
     @Override
     public InitialImageAdvice adviseInitialImage(
@@ -582,7 +582,7 @@ public final class HARegion extends DistributedRegion
       }
 
       /* (non-Javadoc)
-       * @see com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile#fromData(java.io.DataInput)
+       * @see org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile#fromData(java.io.DataInput)
        */
       @Override
       public void fromData(DataInput in) throws IOException,
@@ -594,7 +594,7 @@ public final class HARegion extends DistributedRegion
       }
       
       /* (non-Javadoc)
-       * @see com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile#toData(java.io.DataOutput)
+       * @see org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile#toData(java.io.DataOutput)
        */
       @Override
       public void toData(DataOutput out) throws IOException {

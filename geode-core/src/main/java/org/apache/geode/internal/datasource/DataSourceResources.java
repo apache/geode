@@ -19,7 +19,7 @@
  *
  * Created on February 24, 2005, 12:42 PM
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
 /**
  */

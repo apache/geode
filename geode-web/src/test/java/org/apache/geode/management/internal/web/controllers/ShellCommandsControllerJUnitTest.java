@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.controllers;
+package org.apache.geode.management.internal.web.controllers;
 
 import static org.junit.Assert.*;
 
@@ -39,12 +39,12 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.util.UriUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.util.UriUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ShellCommandsControllerJUnitTest class is a test suite of test cases testing the contract and functionality of the
@@ -52,7 +52,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Management REST API call and web service endpoint in the GemFire Management REST Interface.
  * <p/>
  * @see org.junit.Test
- * @see com.gemstone.gemfire.management.internal.web.controllers.ShellCommandsController
+ * @see org.apache.geode.management.internal.web.controllers.ShellCommandsController
  * @since GemFire 8.0
  */
 @Category(UnitTest.class)
@@ -76,7 +76,7 @@ public class ShellCommandsControllerJUnitTest {
   private List<String> getCliCommands() {
     try {
       Set<Class<?>> commandClasses = ClasspathScanLoadHelper.loadAndGet(
-        "com.gemstone.gemfire.management.internal.cli.commands", CommandMarker.class, true);
+        "org.apache.geode.management.internal.cli.commands", CommandMarker.class, true);
 
       List<String> commands = new ArrayList<>(commandClasses.size());
 
@@ -107,7 +107,7 @@ public class ShellCommandsControllerJUnitTest {
 
     try {
       Set<Class<?>> controllerClasses = ClasspathScanLoadHelper.loadAndGet(
-        "com.gemstone.gemfire.management.internal.web.controllers", AbstractCommandsController.class, true);
+        "org.apache.geode.management.internal.web.controllers", AbstractCommandsController.class, true);
 
       List<String> controllerWebServiceEndpoints = new ArrayList<>(controllerClasses.size());
 
@@ -124,7 +124,7 @@ public class ShellCommandsControllerJUnitTest {
 
               if (requestParameters.length > 0) {
                 webServiceEndpoint += "?".concat(
-                  com.gemstone.gemfire.internal.lang.StringUtils.concat(requestParameters, "&amp;"));
+                  org.apache.geode.internal.lang.StringUtils.concat(requestParameters, "&amp;"));
               }
 
               controllerWebServiceEndpoints.add(webServiceEndpoint);

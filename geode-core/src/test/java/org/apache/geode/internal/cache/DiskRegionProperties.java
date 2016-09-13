@@ -20,9 +20,9 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskStoreFactory;
 
 import java.io.File;
 import java.util.Arrays;

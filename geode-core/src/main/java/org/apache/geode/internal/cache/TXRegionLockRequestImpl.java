@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,11 +25,11 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /** TXRegionLockRequest represents all the locks that need to be made
  * for a single region.
@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * 
  */
 public class TXRegionLockRequestImpl
-  implements com.gemstone.gemfire.internal.cache.locks.TXRegionLockRequest
+  implements org.apache.geode.internal.cache.locks.TXRegionLockRequest
 {
   private static final long serialVersionUID = 5840033961584078082L;
   private static final Logger logger = LogService.getLogger();

@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import java.net.InetAddress;
 import java.security.Principal;
 import java.util.Properties;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
+import org.apache.geode.LogWriter;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.Authenticator;
 
 /** A security class used by LocatorTest */
 public class MyAuthenticator implements Authenticator {

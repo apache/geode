@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.ClassBuilder;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.CommandManager;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -34,7 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
 
 /**
  * Unit tests for configuring user commands.
@@ -90,10 +90,10 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
     stringBuffer.append("import org.springframework.shell.core.annotation.CliAvailabilityIndicator;");
     stringBuffer.append("import org.springframework.shell.core.annotation.CliCommand;");
     stringBuffer.append("import org.springframework.shell.core.annotation.CliOption;");
-    stringBuffer.append("import com.gemstone.gemfire.management.cli.Result;");
-    stringBuffer.append("import com.gemstone.gemfire.management.internal.cli.CliUtil;");
-    stringBuffer.append("import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;");
-    stringBuffer.append("import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;");
+    stringBuffer.append("import org.apache.geode.management.cli.Result;");
+    stringBuffer.append("import org.apache.geode.management.internal.cli.CliUtil;");
+    stringBuffer.append("import org.apache.geode.management.internal.cli.result.ResultBuilder;");
+    stringBuffer.append("import org.apache.geode.management.internal.cli.shell.Gfsh;");
 
     stringBuffer.append("public final class UCDunitClass implements CommandMarker { public UCDunitClass() {}");
     stringBuffer.append("@CliCommand(value = { \"ucdunitcmd\" }, help = \"ucdunitcmd help\")");

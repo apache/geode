@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.serializable;
+package org.apache.geode.test.junit.rules.serializable;
 
-import static com.gemstone.gemfire.test.junit.rules.serializable.FieldsOfTestName.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTestName.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jta.functional;
+package org.apache.geode.internal.jta.functional;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 import javax.sql.DataSource;
 import javax.naming.*;
 
 import java.sql.*;
-import com.gemstone.gemfire.internal.jta.CacheUtils;
+import org.apache.geode.internal.jta.CacheUtils;
 
 import javax.transaction.*;
 /**
@@ -93,7 +93,7 @@ public class TestXACacheLoader implements CacheLoader{
   }
 
 /* (non-Javadoc)
- * @see com.gemstone.gemfire.cache.CacheCallback#close()
+ * @see org.apache.geode.cache.CacheCallback#close()
  */
 public void close() {
 	// TODO Auto-generated method stub

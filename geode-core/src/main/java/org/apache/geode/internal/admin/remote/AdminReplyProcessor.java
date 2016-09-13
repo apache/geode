@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * A <code>ReplyProcessor</code> that is used by an {@link
  * AdminRequest} to wait for an {@link AdminResponse}.  If 
- * {@link com.gemstone.gemfire.distributed.internal.ReplyProcessor21#waitForReplies()} 
+ * {@link org.apache.geode.distributed.internal.ReplyProcessor21#waitForReplies()} 
  * returns saying that we didn't time out and there
  * is no response, it means that the member for which we were awaiting
  * a response has left the distributed system.  This helps us fix bug

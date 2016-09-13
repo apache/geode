@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -39,17 +39,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperator.Completion;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.CompositeDirector;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.RebalanceDirector;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Completion;
+import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
+import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
+import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class PartitionedRegionLoadModelJUnitTest {

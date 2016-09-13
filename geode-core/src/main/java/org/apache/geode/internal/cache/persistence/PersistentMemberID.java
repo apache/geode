@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.cache.versions.VersionSource;
 
 /**
  *

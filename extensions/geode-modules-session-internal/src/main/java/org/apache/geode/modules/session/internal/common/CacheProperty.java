@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.common;
+package org.apache.geode.modules.session.internal.common;
 
 /**
  * Used to define cache properties

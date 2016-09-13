@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 /**
  * Marker interface for an object that GemFire creates and returns
@@ -29,8 +29,8 @@ package com.gemstone.gemfire.pdx;
  * <p>Unread fields are those that are not explicitly read with a {@link PdxReader} readXXX method.
  * This should only happen when a domain class has changed by adding or removing one or more fields.
  * Unread fields will be preserved automatically (unless you turn this feature off using
- * {@link com.gemstone.gemfire.cache.CacheFactory#setPdxIgnoreUnreadFields(boolean) setPdxIgnoreUnreadFields}
- * or {@link com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxIgnoreUnreadFields(boolean) client setPdxIgnoreUnreadFields})
+ * {@link org.apache.geode.cache.CacheFactory#setPdxIgnoreUnreadFields(boolean) setPdxIgnoreUnreadFields}
+ * or {@link org.apache.geode.cache.client.ClientCacheFactory#setPdxIgnoreUnreadFields(boolean) client setPdxIgnoreUnreadFields})
  * but to reduce the performance and memory overhead of automatic preservation it is recommended
  * that use {@link PdxReader#readUnreadFields() readUnreadFields} if possible.
  * 

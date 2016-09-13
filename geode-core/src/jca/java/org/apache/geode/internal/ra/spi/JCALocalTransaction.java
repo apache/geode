@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.ra.spi;
+package org.apache.geode.internal.ra.spi;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.LocalTransaction;
@@ -22,14 +22,14 @@ import javax.resource.spi.LocalTransactionException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * 

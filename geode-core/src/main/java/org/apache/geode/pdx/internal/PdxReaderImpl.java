@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,23 +22,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
-import com.gemstone.gemfire.pdx.FieldType;
-import com.gemstone.gemfire.pdx.PdxFieldTypeMismatchException;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxUnreadFields;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.PdxFieldWrapper;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.PdxFieldTypeMismatchException;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.PdxUnreadFields;
+import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.pdx.internal.AutoSerializableManager.PdxFieldWrapper;
 
 /**
  * A new instance of this class is created each time we deserialize a pdx.

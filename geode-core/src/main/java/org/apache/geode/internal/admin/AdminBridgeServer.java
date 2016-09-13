@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
+import org.apache.geode.cache.server.CacheServer;
 
 /**
  * A representation of <code>CacheServer</code> that is used for

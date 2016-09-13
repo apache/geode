@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.annotations;
+package org.apache.geode.management.internal.cli.annotations;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.cli.annotation.CliArgument;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Includes tests for checking assignment of {@link CliArgument}

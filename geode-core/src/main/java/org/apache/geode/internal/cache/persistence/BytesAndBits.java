@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.internal.Version;
 
 /**
  * Used to fetch a record's raw bytes and user bits.

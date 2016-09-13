@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.domain;
+package org.apache.geode.management.internal.web.domain;
 
 import static org.junit.Assert.*;
 
@@ -23,10 +23,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.web.AbstractWebTestCase;
+import org.apache.geode.management.internal.web.http.HttpMethod;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,8 +35,8 @@ import org.junit.experimental.categories.Category;
  * The LinkJUnitTest class is a test suite of test cases testing the contract and functionality of the Link class.
  * <p/>
  * @see java.net.URI
- * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
- * @see com.gemstone.gemfire.management.internal.web.domain.Link
+ * @see org.apache.geode.management.internal.web.AbstractWebTestCase
+ * @see org.apache.geode.management.internal.web.domain.Link
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 8.0

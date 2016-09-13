@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.query.internal.cq.CqAttributesImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.internal.cq.CqAttributesImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * The factory class for the CqAttributes instance. This provides the CqListener 

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.query.QueryService;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.query.QueryService;
 
 
 /**

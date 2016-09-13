@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.isA;
@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
-import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class CompiledInJUnitTest {

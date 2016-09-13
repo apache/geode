@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session;
+package org.apache.geode.modules.session;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;

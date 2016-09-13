@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,13 +27,13 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The AbstractLauncherTest class is a test suite of unit tests testing the contract and functionality
  * of the AbstractLauncher class.
  * <p/>
- * @see com.gemstone.gemfire.distributed.AbstractLauncher
+ * @see org.apache.geode.distributed.AbstractLauncher
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0

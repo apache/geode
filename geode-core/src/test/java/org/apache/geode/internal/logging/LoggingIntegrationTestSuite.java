@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import com.gemstone.gemfire.internal.logging.log4j.FastLoggerIntegrationJUnitTest;
-import com.gemstone.gemfire.internal.logging.log4j.FastLoggerWithDefaultConfigJUnitTest;
+import org.apache.geode.internal.logging.log4j.FastLoggerIntegrationJUnitTest;
+import org.apache.geode.internal.logging.log4j.FastLoggerWithDefaultConfigJUnitTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

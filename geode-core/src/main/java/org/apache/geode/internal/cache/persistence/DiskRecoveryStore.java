@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.internal.cache.DiskEntry;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.RegionMap;
-import com.gemstone.gemfire.internal.cache.DiskEntry.RecoveredEntry;
-import com.gemstone.gemfire.internal.cache.LocalRegion.RegionEntryCallback;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.internal.cache.DiskEntry;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionMap;
+import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
+import org.apache.geode.internal.cache.LocalRegion.RegionEntryCallback;
+import org.apache.geode.internal.cache.versions.RegionVersionHolder;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionTag;
 
 /**
  * Used by the disk code to store recovered data into the cache.

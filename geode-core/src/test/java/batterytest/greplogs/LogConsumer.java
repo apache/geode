@@ -183,7 +183,7 @@ public class LogConsumer {
       // unique condition for when bridge server see log exception and      
       // logging level is set to fine. Message looks like this:
       //[fine 2005/10/25 17:53:13.586 PDT gemfire2 Server connection from hobbes.gemstone.com:34466-0xf4 nid=0x23e40f1] Server connection from hobbes.gemstone.com:34466: Wrote exception:
-      //com.gemstone.gemfire.cache.EntryNotFoundException: remote-destroy-key
+      //org.apache.geode.cache.EntryNotFoundException: remote-destroy-key
       // also now handles a JMX WARNING
       } else if(wroteExceptionPattern.matcher(line).find() 
                 || rmiWarnPattern.matcher(line).find()) {

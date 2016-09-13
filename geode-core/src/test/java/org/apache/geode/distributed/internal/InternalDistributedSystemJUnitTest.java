@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -40,15 +40,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.Config;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the functionality of the {@link InternalDistributedSystem}
@@ -68,7 +68,7 @@ public class InternalDistributedSystemJUnitTest {
    * configuration properties.
    */
   protected InternalDistributedSystem createSystem(Properties props) {
-    assertFalse(com.gemstone.gemfire.distributed.internal.DistributionManager.isDedicatedAdminVM);
+    assertFalse(org.apache.geode.distributed.internal.DistributionManager.isDedicatedAdminVM);
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     return this.system;
   }
@@ -694,7 +694,7 @@ public class InternalDistributedSystemJUnitTest {
     Properties props1 = config1.toProperties();
     // For the deprecated ssl-* properties a decision was made
     // to not include them in the result of "toProperties".
-    // The cause of this is: com.gemstone.gemfire.internal.AbstractConfig.isDeprecated(String)
+    // The cause of this is: org.apache.geode.internal.AbstractConfig.isDeprecated(String)
     // and its use in toProperties.
     // The other thing that is done is the ssl-* props are copied to cluster-ssl-*.
     // The following two assertions demonstrate this.

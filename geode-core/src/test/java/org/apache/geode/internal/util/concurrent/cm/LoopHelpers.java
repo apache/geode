@@ -23,7 +23,7 @@
  * Misc utilities in JSR166 performance tests
  */
 
-package com.gemstone.gemfire.internal.util.concurrent.cm;
+package org.apache.geode.internal.util.concurrent.cm;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;

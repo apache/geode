@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.BackupStatus;
-import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.tcpserver.*;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.ResourceInst;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.StatValue;
-import com.gemstone.gemfire.internal.admin.remote.TailLogResponse;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.DateFormatter;
-import com.gemstone.gemfire.internal.logging.MergeLogFiles;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
-import com.gemstone.gemfire.internal.util.PasswordUtil;
-import com.gemstone.gemfire.internal.util.PluckStacks;
-import com.gemstone.gemfire.internal.util.PluckStacks.ThreadStack;
+import org.apache.geode.*;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.tcpserver.*;
+import org.apache.geode.internal.statistics.StatArchiveReader;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.internal.admin.remote.TailLogResponse;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.DateFormatter;
+import org.apache.geode.internal.logging.MergeLogFiles;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.util.JavaCommandBuilder;
+import org.apache.geode.internal.util.PasswordUtil;
+import org.apache.geode.internal.util.PluckStacks;
+import org.apache.geode.internal.util.PluckStacks.ThreadStack;
 
 import java.io.*;
 import java.net.*;
@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -188,7 +188,7 @@ public class SystemAdmin {
   
   /** get the path to the distribution locator class */
   protected String getDistributionLocatorPath() {
-    return "com.gemstone.gemfire.internal.DistributionLocator";
+    return "org.apache.geode.internal.DistributionLocator";
   }
 
   /** enumerates all available local network addresses to find a match with

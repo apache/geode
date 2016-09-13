@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.admin.internal.InetAddressUtil;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 
 /**
@@ -37,7 +37,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  *
  * Detailed descriptions of many of these configuration attributes can
  * be found in the {@link
- * com.gemstone.gemfire.distributed.DistributedSystem
+ * org.apache.geode.distributed.DistributedSystem
  * DistributedSystem} class.  Note that the default values of these
  * configuration attributes can be specified using Java system
  * properties.
@@ -57,7 +57,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  * the {@link #clone} method.
  *
  * @since GemFire 3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
 */
 public interface DistributedSystemConfig extends Cloneable {
 
@@ -267,7 +267,7 @@ public interface DistributedSystemConfig extends Cloneable {
 
   /**
    * Returns the name of the XML file that specifies the configuration
-   * of the {@linkplain com.gemstone.gemfire.admin.ManagedEntity
+   * of the {@linkplain org.apache.geode.admin.ManagedEntity
    * managed entities} administered by the
    * <code>DistributedSystem</code>.  The XML file must conform to a
    * <a href="doc-files/ds5_0.dtd">dtd</a>.
@@ -483,7 +483,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * Returns the name of the log file to which informational messages
    * are written.
    *
-   * @see com.gemstone.gemfire.i18n.LogWriterI18n
+   * @see org.apache.geode.i18n.LogWriterI18n
    */
   public String getLogFile();
 
@@ -491,7 +491,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * Sets the name of the log file to which informational messages
    * are written.
    *
-   * @see com.gemstone.gemfire.i18n.LogWriterI18n
+   * @see org.apache.geode.i18n.LogWriterI18n
    */
   public void setLogFile(String logFile);
 

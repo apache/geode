@@ -14,33 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.bean.stats;
+package org.apache.geode.management.bean.stats;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.Set;
 
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.DiskStoreStats;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.ManagementTestBase;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.management.internal.beans.MemberMBean;
-import com.gemstone.gemfire.management.internal.beans.MemberMBeanBridge;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.DiskStoreStats;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementTestBase;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.beans.MemberMBean;
+import org.apache.geode.management.internal.beans.MemberMBeanBridge;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
 
 /**
  */

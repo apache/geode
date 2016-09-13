@@ -21,7 +21,7 @@
  * Created on March 22, 2005, 2:01 PM
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import static org.junit.Assert.fail;
 
@@ -30,12 +30,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *
@@ -68,7 +68,7 @@ public class TypedIteratorJUnitTest {
   @Test
   public void testTyped() throws QueryException {
     Query q = this.qs.newQuery( // must quote "query" because it is a reserved word
-      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;\n" +       
+      "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" +       
       "SELECT DISTINCT *\n" +
       "FROM /pos TYPE Portfolio\n" +
       "WHERE ID = 3  ");
@@ -77,7 +77,7 @@ public class TypedIteratorJUnitTest {
 
     
     q = this.qs.newQuery( // must quote "query" because it is a reserved word
-      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;\n" +       
+      "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" +       
       "SELECT DISTINCT *\n" +
       "FROM /pos ptfo TYPE Portfolio\n" +
       "WHERE ID = 3  ");
@@ -89,20 +89,20 @@ public class TypedIteratorJUnitTest {
   @Test
   public void testTypeCasted() throws QueryException {
     Query q = this.qs.newQuery( // must quote "query" because it is a reserved word
-      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Portfolio;\n" +       
+      "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" +       
       "SELECT DISTINCT *\n" +
       "FROM (collection<Portfolio>)/pos\n" +
       "WHERE ID = 3  ");
-//    com.gemstone.gemfire.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
+//    org.apache.geode.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
     Object r = q.execute();
     CacheUtils.getLogger().fine(Utils.printResult(r));
     
     q = this.qs.newQuery( // must quote "query" because it is a reserved word
-      "IMPORT com.gemstone.gemfire.cache.\"query\".data.Position;\n" +       
+      "IMPORT org.apache.geode.cache.\"query\".data.Position;\n" +       
       "SELECT DISTINCT *\n" +
       "FROM /pos p, (collection<Position>)p.positions.values\n" +
       "WHERE secId = 'IBM'");
-//    com.gemstone.gemfire.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
+//    org.apache.geode.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
     r = q.execute();
     CacheUtils.getLogger().fine(Utils.printResult(r));
   }

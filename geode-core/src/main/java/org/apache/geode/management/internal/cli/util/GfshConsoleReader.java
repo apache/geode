@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.internal.GfeConsoleReaderFactory.GfeConsoleReader;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * {@link GfeConsoleReader} implementation which uses JLine's Console Reader.
@@ -69,9 +69,9 @@ public class GfshConsoleReader extends GfeConsoleReader {
   }
 }
 
-//package com.gemstone.gemfire.management.internal.cli.util;
+//package org.apache.geode.management.internal.cli.util;
 //
-//import com.gemstone.gemfire.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+//import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
 //
 //public class GfshConsoleReader extends GfeConsoleReader {
 //

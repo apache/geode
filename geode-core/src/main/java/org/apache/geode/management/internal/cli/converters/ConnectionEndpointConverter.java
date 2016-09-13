@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.management.internal.cli.converters;
+package org.apache.geode.management.internal.cli.converters;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import com.gemstone.gemfire.management.internal.cli.util.ConnectionEndpoint;
+import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 
 /**
  *

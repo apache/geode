@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.RMIException;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.CancelException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   @Test
   public void testNullFailure() {
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("TODO: this test needs to use VM#bounce.");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("TODO: this test needs to use VM#bounce.");
     try {
       SystemFailure.initiateFailure(null);
       fail("Null failure set allowed");
@@ -324,7 +324,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   
   static private final Runnable listener1 = new Runnable() {
     public void run() {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
       listenerCount.addAndGet(1);
     }
   };
@@ -392,7 +392,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   
   protected Boolean verifyConnected() {
     if (SystemFailure.getFailure() != null) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("System failure present!", SystemFailure.getFailure());
+      org.apache.geode.test.dunit.Assert.fail("System failure present!", SystemFailure.getFailure());
       return Boolean.FALSE;
     }
     GemFireCacheImpl gfc = (GemFireCacheImpl)cache;
@@ -489,7 +489,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   protected static void message(String s) {
     System.out.println(s);
     System.err.println(s);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(s);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(s);
     cache.getLogger().info(s);
   }
   
@@ -539,7 +539,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       }
     }
     public void afterCreate(EntryEvent event) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceOutOfMemory();
     }
@@ -584,7 +584,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
         }
       }
       public void afterCreate(EntryEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                             event.getKey());
         forceOutOfMemory();
       }
@@ -654,7 +654,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
 
     public void afterCreate(EntryEvent event) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceLowMemory();
     }
@@ -670,7 +670,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
     
     public void afterCreate(EntryEvent event) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceInternalError();
     }
@@ -686,7 +686,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
     
     public void afterCreate(EntryEvent event) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceInternalError();
     }
@@ -698,7 +698,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
     
     public void afterCreate(EntryEvent event) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Invoking afterCreate on listener; name=" +
                           event.getKey());
       forceError();
     }
@@ -750,7 +750,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   }
   
   protected void doCreateEntry(String name) {
-    LogWriter log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
+    LogWriter log = org.apache.geode.test.dunit.LogWriterUtils.getLogWriter();
     log.info(
         "<ExpectedException action=add>" +
         "dunit.RMIException"

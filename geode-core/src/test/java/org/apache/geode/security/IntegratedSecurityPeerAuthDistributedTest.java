@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Invoke.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = createProperties(locators);
-      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
+      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "locator1");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
       properties.setProperty(START_LOCATOR, locators);
@@ -76,7 +76,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
       spySecurityManager = new SpySecurityManager();
 
       final Properties properties = createProperties(locators);
-      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
+      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "server1");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
 
@@ -88,7 +88,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
       spySecurityManager = new SpySecurityManager();
 
       final Properties properties = createProperties(locators);
-      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
+      properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "server2");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
 
@@ -102,7 +102,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     spySecurityManager = new SpySecurityManager();
 
     final Properties properties = createProperties(locators);
-    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "com/gemstone/gemfire/security/peerAuth.json");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/peerAuth.json");
     properties.setProperty(UserPasswordAuthInit.USER_NAME, "stranger");
     properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
 

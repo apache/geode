@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter.attributes;
+package org.apache.geode.modules.session.internal.filter.attributes;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.modules.session.internal.filter.GemfireHttpSession;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

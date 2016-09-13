@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.rest.internal.web;
+package org.apache.geode.rest.internal.web;
 
 import static org.junit.Assert.*;
 
@@ -34,10 +34,10 @@ import org.json.JSONException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.security.AbstractSecureServerDUnitTest;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.AbstractSecureServerDUnitTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class})
 public class RestSecurityDUnitTest extends AbstractSecureServerDUnitTest {

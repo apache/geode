@@ -15,15 +15,15 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-import com.gemstone.gemfire.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealth;
 
 /**
  * Interface for those who want to be alerted of a change in a GemFireVM's
  * health.
  *
- * @see com.gemstone.gemfire.admin.GemFireHealthConfig
+ * @see org.apache.geode.admin.GemFireHealthConfig
  *
  * @since GemFire 3.5
  */

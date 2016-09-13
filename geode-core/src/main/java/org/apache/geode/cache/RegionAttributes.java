@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.File;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.compression.Compressor;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.compression.Compressor;
 
 /** Defines attributes for configuring a region.
  * These are <code>EvictionAttributes</code>,
@@ -39,7 +39,7 @@ import com.gemstone.gemfire.compression.Compressor;
  * @see AttributesFactory
  * @see AttributesMutator
  * @see Region#getAttributes
- * @see com.gemstone.gemfire.cache.EvictionAttributes
+ * @see org.apache.geode.cache.EvictionAttributes
  * @since GemFire 2.0
  */
 public interface RegionAttributes<K,V> {

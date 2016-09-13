@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate.internal;
+package org.apache.geode.modules.hibernate.internal;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,17 +32,17 @@ import org.hibernate.cache.Timestamper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.modules.hibernate.GemFireRegionFactory;
-import com.gemstone.gemfire.modules.util.ModuleStatistics;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.modules.hibernate.GemFireRegionFactory;
+import org.apache.geode.modules.util.ModuleStatistics;
 
 public class GemFireBaseRegion implements Region {
 
   /**
    * the backing region
    */
-  protected final com.gemstone.gemfire.cache.Region<Object, EntityWrapper> region;
+  protected final org.apache.geode.cache.Region<Object, EntityWrapper> region;
 
   /**
    * to determine if the operation should be forwarded to server
@@ -57,7 +57,7 @@ public class GemFireBaseRegion implements Region {
   
   protected final ModuleStatistics stats;
   
-  public GemFireBaseRegion(com.gemstone.gemfire.cache.Region<Object, EntityWrapper> region,
+  public GemFireBaseRegion(org.apache.geode.cache.Region<Object, EntityWrapper> region,
       boolean isClient, CacheDataDescription metadata, GemFireRegionFactory regionFactory) {
     this.region = region;
     this.isClientRegion = isClient;
@@ -68,7 +68,7 @@ public class GemFireBaseRegion implements Region {
 
   }
 
-  public com.gemstone.gemfire.cache.Region<Object, EntityWrapper> getGemFireRegion() {
+  public org.apache.geode.cache.Region<Object, EntityWrapper> getGemFireRegion() {
     return this.region;
   }
 

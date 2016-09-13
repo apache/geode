@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.internal.cache.lru.*;
-//import com.gemstone.gemfire.internal.util.Sizeof;
+import org.apache.geode.internal.cache.lru.*;
+//import org.apache.geode.internal.util.Sizeof;
 
 /**
  * Internal implementation of {@link RegionMap} for regions stored

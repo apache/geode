@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.serial;
+package org.apache.geode.internal.cache.wan.serial;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Wait;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Wait;
 
 //The tests here are to validate changes introduced because a distributed deadlock
 //was found that caused issues for a production customer. 
@@ -328,7 +328,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
         FunctionService.registerFunction(new TestFunction());
         Execution exe = FunctionService.onRegion(region);
         for (int x = 0; x < num; x++) {
-            exe.withArgs(useThreadOwnedSocket).execute("com.gemstone.gemfire.internal.cache.wan.serial.TestFunction");
+            exe.withArgs(useThreadOwnedSocket).execute("org.apache.geode.internal.cache.wan.serial.TestFunction");
         }
     }
 
@@ -341,9 +341,9 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
                 mgr.begin();
                 r.put(temp, temp);
                 mgr.commit();
-            } catch (com.gemstone.gemfire.cache.TransactionDataNotColocatedException txe) {
+            } catch (org.apache.geode.cache.TransactionDataNotColocatedException txe) {
                 //ignore colocation issues or primary bucket issues 
-            } catch (com.gemstone.gemfire.cache.CommitConflictException cce) {
+            } catch (org.apache.geode.cache.CommitConflictException cce) {
                 //ignore - conflicts are ok and expected
             }
         }
@@ -357,7 +357,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
                 if (r.containsValueForKey(temp)) {
                     r.invalidate(temp);
                 }
-            } catch (com.gemstone.gemfire.cache.EntryNotFoundException entryNotFoundException) {
+            } catch (org.apache.geode.cache.EntryNotFoundException entryNotFoundException) {
                 //ignore as an entry may not exist
             }
         }

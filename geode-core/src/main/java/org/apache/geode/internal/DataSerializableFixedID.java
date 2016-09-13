@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 import java.io.*;
 
@@ -531,10 +531,10 @@ public interface DataSerializableFixedID extends SerializationVersions {
   // Token.EndOfStream
   public static final byte END_OF_STREAM_TOKEN = 124;
 
-  /** {@link com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage} */
+  /** {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage} */
   public static final byte PR_GET_REPLY_MESSAGE = 125;
 
-  /** {@link com.gemstone.gemfire.internal.cache.Node} */
+  /** {@link org.apache.geode.internal.cache.Node} */
   public static final byte PR_NODE = 126;
 
   /** A header byte meaning that the next element in the stream is a

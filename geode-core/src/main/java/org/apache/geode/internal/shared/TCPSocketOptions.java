@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.shared;
+package org.apache.geode.internal.shared;
 
 import java.net.Socket;
 

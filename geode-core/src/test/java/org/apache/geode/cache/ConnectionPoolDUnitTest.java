@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.*;
 import static org.junit.runners.MethodSorters.*;
 
 import java.io.IOException;
@@ -34,45 +34,45 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.client.NoAvailableServersException;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.Endpoint;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.cache30.TestCacheLoader;
-import com.gemstone.gemfire.cache30.TestCacheWriter;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PoolStats;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifierStats;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.net.SocketCreatorFactory;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.CancelException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.cache30.CertifiableTestCacheListener;
+import org.apache.geode.cache30.ClientServerTestCase;
+import org.apache.geode.cache30.TestCacheLoader;
+import org.apache.geode.cache30.TestCacheWriter;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.EntryExpiryTask;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifierStats;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the client connection pool in GemFire.
@@ -126,7 +126,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Map pools = PoolManager.getAll();
         if (!pools.isEmpty()) {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().warning("found pools remaining after teardown: " + pools);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning("found pools remaining after teardown: " + pools);
           assertEquals(0, pools.size());
         }
       }
@@ -336,7 +336,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Create a fake EntryEvent that returns the provided region for {@link CacheEvent#getRegion()}
-   * and returns {@link com.gemstone.gemfire.cache.Operation#LOCAL_LOAD_CREATE} for {@link CacheEvent#getOperation()}
+   * and returns {@link org.apache.geode.cache.Operation#LOCAL_LOAD_CREATE} for {@link CacheEvent#getOperation()}
    * @param r
    * @return fake entry event
    */
@@ -493,7 +493,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -592,7 +592,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -687,7 +687,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -747,10 +747,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     ThreadUtils.join(inv3, 30 * 1000);
     
     if (inv2.exceptionOccurred()) { 
-      com.gemstone.gemfire.test.dunit.Assert.fail("Error occured in vm2", inv2.getException());
+      org.apache.geode.test.dunit.Assert.fail("Error occured in vm2", inv2.getException());
     }
     if(inv3.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("Error occured in vm3", inv3.getException());
+      org.apache.geode.test.dunit.Assert.fail("Error occured in vm3", inv3.getException());
     }
   }
 
@@ -782,7 +782,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -896,7 +896,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -1011,7 +1011,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
         }
 
         }
@@ -1132,7 +1132,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         }
         catch(Exception e) {
           getSystem().getLogWriter().fine(new Exception(e));
-          com.gemstone.gemfire.test.dunit.Assert.fail("Failed to start CacheServer", e);
+          org.apache.geode.test.dunit.Assert.fail("Failed to start CacheServer", e);
         }
       }
     });
@@ -1157,7 +1157,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     // Run awhile
     vm2.invoke(verify1Server);
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("FIXME: this thread does not terminate"); // FIXME
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("FIXME: this thread does not terminate"); // FIXME
 //    // Verify that no exception has occurred in the putter thread
 //    join(putAI, 5 * 60 * 1000, getLogWriter());
 //    //assertTrue("Exception occurred while invoking " + putAI, !putAI.exceptionOccurred());
@@ -1225,7 +1225,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               startBridgeServer(0);
 
             } catch (Exception ex) {
-              com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+              org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
             }
 
           }
@@ -1421,7 +1421,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           // Verify that no exception has occurred in the putter thread
           ThreadUtils.join(putAI, 30 * 1000);
           if (putAI.exceptionOccurred()) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While putting entries: ", putAI.getException());
+            org.apache.geode.test.dunit.Assert.fail("While putting entries: ", putAI.getException());
           }
         }
         
@@ -1483,7 +1483,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -1567,7 +1567,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -1687,7 +1687,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -1809,7 +1809,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -1828,7 +1828,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             factory.setScope(Scope.LOCAL);
             factory.setConcurrencyChecksEnabled(false);
             ClientServerTestCase.configureConnectionPool(factory,host0,port,-1,true,-1,-1, null);
-            CertifiableTestCacheListener l = new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter());
+            CertifiableTestCacheListener l = new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
             factory.setCacheListener(l);
             Region rgn = createRegion(name, factory.create());
             rgn.registerInterestRegex(".*", false, false);
@@ -1944,7 +1944,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           Region region = getRootRegion().getSubregion(name);
           CertifiableTestCacheListener ctl = (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
           List l = ctl.getEventHistory();
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("history (should be empty): " + l);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("history (should be empty): " + l);
           assertEquals(0, l.size());
           // now see if we can get it from the server
           for (int i = 0; i < 10; i++) {
@@ -1956,7 +1956,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           for (int i = 0; i < 10; i++) {
             Object key = new Integer(i);
             EntryEvent ee = (EntryEvent)l.get(i);
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("processing " + ee);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("processing " + ee);
             assertEquals(key, ee.getKey());
             assertEquals(null, ee.getOldValue());
             assertEquals("create"+i, ee.getNewValue());
@@ -2008,7 +2008,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -2026,7 +2026,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             factory.setScope(Scope.LOCAL);
             factory.setConcurrencyChecksEnabled(false);
             ClientServerTestCase.configureConnectionPool(factory,host0,port,-1,true,-1,-1, null);
-            CertifiableTestCacheListener l = new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter());
+            CertifiableTestCacheListener l = new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
             factory.setCacheListener(l);
             factory.setDataPolicy(DataPolicy.EMPTY);
             factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
@@ -2043,7 +2043,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             factory.setScope(Scope.LOCAL);
             factory.setConcurrencyChecksEnabled(false);
             ClientServerTestCase.configureConnectionPool(factory,host0,port,-1,true,-1,-1, null);
-            CertifiableTestCacheListener l = new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter());
+            CertifiableTestCacheListener l = new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
             factory.setCacheListener(l);
             Region rgn = createRegion(name, factory.create());
             rgn.registerInterestRegex(".*", false, false);
@@ -2237,7 +2237,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -2255,7 +2255,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             factory.setScope(Scope.LOCAL);
             factory.setConcurrencyChecksEnabled(false);
             ClientServerTestCase.configureConnectionPool(factory,host0,port,-1,true,-1,-1, null);
-            CertifiableTestCacheListener l = new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter());
+            CertifiableTestCacheListener l = new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
             factory.setCacheListener(l);
             factory.setDataPolicy(DataPolicy.EMPTY);
             factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT));
@@ -2272,7 +2272,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             factory.setScope(Scope.LOCAL);
             factory.setConcurrencyChecksEnabled(false);
             ClientServerTestCase.configureConnectionPool(factory,host0,port,-1,true,-1,-1, null);
-            CertifiableTestCacheListener l = new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter());
+            CertifiableTestCacheListener l = new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
             factory.setCacheListener(l);
             Region rgn = createRegion(name, factory.create());
             rgn.registerInterestRegex(".*", false, false);
@@ -2414,7 +2414,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         try {
           startBridgeServer(0);
         } catch (Exception ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
         }
       }
     });
@@ -2437,7 +2437,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             factory.setConcurrencyChecksEnabled(false);
             // create bridge writer
             ClientServerTestCase.configureConnectionPool(factory,host0,port,-1,true,-1,-1, null);
-            CertifiableTestCacheListener l = new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter());
+            CertifiableTestCacheListener l = new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
             factory.setCacheListener(l);
 
             Region r = createRegion(name, factory.create());
@@ -2486,7 +2486,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         int destroyCallbacks = 0;
         List<CacheEvent> l = ctl.getEventHistory();
         for (CacheEvent ce : l) {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("--->>> " + ce);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("--->>> " + ce);
           if (ce.getOperation() == Operation.DESTROY &&
               ce.getCallbackArgument() instanceof String) {
             destroyCallbacks++;
@@ -2585,7 +2585,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
         }
 
         }
@@ -2732,7 +2732,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -2769,7 +2769,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             region.registerInterest("key-1");
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -2782,7 +2782,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             region.registerInterest("key-2");
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -2842,7 +2842,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             region.unregisterInterest("key-1");
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -2853,7 +2853,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             region.unregisterInterest("key-2");
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -2912,7 +2912,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             region.unregisterInterest("key-1");
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -2923,7 +2923,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             region.unregisterInterest("key-2");
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -2976,7 +2976,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -3019,7 +3019,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             list.add("key-5");
             region.registerInterest(list);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -3215,7 +3215,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     // note that clients use non-persistent dr factories.
     
     DynamicRegionFactory.get().open(new DynamicRegionFactory.Config(null,connectionPoolName,false,true));
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("CREATED IT");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("CREATED IT");
     Cache z = getCache();
     return z;
   }
@@ -3330,7 +3330,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           startBridgeServer(0);
 
         } catch (Exception ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
         }
 
       }
@@ -3362,9 +3362,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         AttributesFactory regionFactory = new AttributesFactory();
         regionFactory.setScope(Scope.LOCAL);
         regionFactory.setConcurrencyChecksEnabled(false);
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("ZZZZZ host0:"+host0+" port:"+port);
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("ZZZZZ host0:"+host0+" port:"+port);
         ClientServerTestCase.configureConnectionPool(regionFactory,host0,port,-1,false,-1,-1, null);
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("ZZZZZDone host0:"+host0+" port:"+port);
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("ZZZZZDone host0:"+host0+" port:"+port);
         createRegion(regionName1, regionFactory.create());
       }
     };
@@ -3409,7 +3409,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           startBridgeServer(0);
 
         } catch (Exception ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+          org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
         }
 
       }
@@ -3435,7 +3435,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         ClientServerTestCase.configureConnectionPool(regionFactory,host0,port,-1,true,-1,-1, null);
 
         region1 = createRegion(regionName1, regionFactory.create());
-        region1.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()));
+        region1.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
       }
     };
 
@@ -3530,7 +3530,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -3628,7 +3628,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -3751,7 +3751,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -3915,7 +3915,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -4027,7 +4027,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -4078,7 +4078,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             // This call will cause no value to be put into the region
             region.registerInterest("key-1", InterestResultPolicy.NONE);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -4202,7 +4202,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -4252,7 +4252,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             // This call will cause no value to be put into the region
             region.registerInterest("key-1", InterestResultPolicy.NONE);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -4408,7 +4408,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           assertTrue(DynamicRegionFactory.get().isOpen());
           factory.setScope(Scope.LOCAL);
           factory.setConcurrencyChecksEnabled(false);
-          factory.setCacheListener(new CertifiableTestCacheListener(com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter()));
+          factory.setCacheListener(new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
           Region region = createRootRegion(name, factory.create());
 
           
@@ -4678,7 +4678,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -4781,7 +4781,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -4816,7 +4816,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             // This call will cause no value to be put into the region
             region.registerInterest("key-1", InterestResultPolicy.NONE);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While registering interest: ", ex);
+            org.apache.geode.test.dunit.Assert.fail("While registering interest: ", ex);
           }
         }
       });
@@ -4931,7 +4931,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -5093,7 +5093,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             startBridgeServer(0);
 
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -5217,7 +5217,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
 
         }
@@ -5276,15 +5276,15 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         CacheListener listener = new CacheListenerAdapter() {
           public void afterCreate(EntryEvent e) {
             numberOfAfterCreates++;
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2 numberOfAfterCreates: " + numberOfAfterCreates);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm2 numberOfAfterCreates: " + numberOfAfterCreates);
           }
           public void afterUpdate(EntryEvent e) {
             numberOfAfterUpdates++;
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2 numberOfAfterUpdates: " + numberOfAfterUpdates);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm2 numberOfAfterUpdates: " + numberOfAfterUpdates);
           }
           public void afterInvalidate(EntryEvent e) {
             numberOfAfterInvalidates++;
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2 numberOfAfterInvalidates: " + numberOfAfterInvalidates);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm2 numberOfAfterInvalidates: " + numberOfAfterInvalidates);
           }
         };
         region.getAttributesMutator().setCacheListener(listener);
@@ -5338,12 +5338,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     long vm3AfterCreates = vm3.invoke(() -> ConnectionPoolDUnitTest.getNumberOfAfterCreates());
     long vm3AfterUpdates = vm3.invoke(() -> ConnectionPoolDUnitTest.getNumberOfAfterUpdates());
     long vm3AfterInvalidates = vm3.invoke(() -> ConnectionPoolDUnitTest.getNumberOfAfterInvalidates());
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2AfterCreates: " + vm2AfterCreates);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2AfterUpdates: " + vm2AfterUpdates);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2AfterInvalidates: " + vm2AfterInvalidates);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm3AfterCreates: " + vm3AfterCreates);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm3AfterUpdates: " + vm3AfterUpdates);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm3AfterInvalidates: " + vm3AfterInvalidates);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm2AfterCreates: " + vm2AfterCreates);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm2AfterUpdates: " + vm2AfterUpdates);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm2AfterInvalidates: " + vm2AfterInvalidates);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm3AfterCreates: " + vm3AfterCreates);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm3AfterUpdates: " + vm3AfterUpdates);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm3AfterInvalidates: " + vm3AfterInvalidates);
 
     assertTrue("VM2 should not have received any afterCreate messages", vm2AfterCreates==0);
     assertTrue("VM2 should not have received any afterInvalidate messages", vm2AfterInvalidates==0);
@@ -5669,7 +5669,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
         }
       };
@@ -5772,7 +5772,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           try {
             startBridgeServer(0);
           } catch (Exception ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While starting CacheServer", ex);
+            org.apache.geode.test.dunit.Assert.fail("While starting CacheServer", ex);
           }
         }
       };

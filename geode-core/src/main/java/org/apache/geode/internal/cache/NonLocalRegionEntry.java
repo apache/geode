@@ -17,30 +17,30 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.StatisticsDisabledException;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteArrayDataInput;
-import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.StatisticsDisabledException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   private long lastModified;
@@ -306,14 +306,14 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.RegionEntry#getValueOnDiskOrBuffer(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.RegionEntry#getValueOnDiskOrBuffer(org.apache.geode.internal.cache.LocalRegion)
    */
   public Object getValueOnDiskOrBuffer(LocalRegion r)
       throws EntryNotFoundException {
     throw new UnsupportedOperationException(LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY.toLocalizedString());
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RegionEntry#getSerializedValueOnDisk(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.internal.cache.RegionEntry#getSerializedValueOnDisk(org.apache.geode.internal.cache.LocalRegion)
    */
   public Object getSerializedValueOnDisk(LocalRegion localRegion) {
     throw new UnsupportedOperationException(LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY.toLocalizedString());
@@ -339,7 +339,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   // VersionStamp methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RegionEntry#generateVersionTag(com.gemstone.gemfire.distributed.DistributedMember, boolean)
+   * @see org.apache.geode.internal.cache.RegionEntry#generateVersionTag(org.apache.geode.distributed.DistributedMember, boolean)
    */
   public VersionTag generateVersionTag(VersionSource member,
       boolean withDelta, LocalRegion region, EntryEventImpl event) {
@@ -348,7 +348,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.RegionEntry#concurrencyCheck(com.gemstone.gemfire.internal.cache.LocalRegion, com.gemstone.gemfire.internal.cache.versions.VersionTag, com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember, com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember)
+   * @see org.apache.geode.internal.cache.RegionEntry#concurrencyCheck(org.apache.geode.internal.cache.LocalRegion, org.apache.geode.internal.cache.versions.VersionTag, org.apache.geode.distributed.internal.membership.InternalDistributedMember, org.apache.geode.distributed.internal.membership.InternalDistributedMember)
    */
   public void processVersionTag(LocalRegion r, VersionTag tag,
       InternalDistributedMember thisVM, InternalDistributedMember sender) {
@@ -357,7 +357,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#getEntryVersion()
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#getEntryVersion()
    */
   public int getEntryVersion() {
     if (this.versionTag != null) {
@@ -374,7 +374,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#getMemberID()
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#getMemberID()
    */
   public VersionSource getMemberID() {
     if (this.versionTag != null) {
@@ -392,7 +392,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#setEntryVersion(int)
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#setEntryVersion(int)
    */
   public void setVersions(VersionTag tag) {
     throw new UnsupportedOperationException();
@@ -400,7 +400,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#setMemberID(com.gemstone.gemfire.distributed.DistributedMember)
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#setMemberID(org.apache.geode.distributed.DistributedMember)
    */
   public void setMemberID(VersionSource memberID) {
     throw new UnsupportedOperationException();
@@ -408,7 +408,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#setPreviousMemberID(com.gemstone.gemfire.distributed.DistributedMember)
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#setPreviousMemberID(org.apache.geode.distributed.DistributedMember)
    */
   public void setPreviousMemberID(DistributedMember previousMemberID) {
     throw new UnsupportedOperationException();
@@ -416,7 +416,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#asVersionTag()
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#asVersionTag()
    */
   public VersionTag asVersionTag() {
     return this.versionTag;
@@ -424,7 +424,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#processVersionTag(com.gemstone.gemfire.internal.cache.LocalRegion, com.gemstone.gemfire.internal.cache.versions.VersionTag, boolean, com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember, com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember)
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#processVersionTag(org.apache.geode.internal.cache.LocalRegion, org.apache.geode.internal.cache.versions.VersionTag, boolean, org.apache.geode.distributed.internal.membership.InternalDistributedMember, org.apache.geode.distributed.internal.membership.InternalDistributedMember)
    */
   public void processVersionTag(LocalRegion r, VersionTag tag,
       boolean isTombstoneFromGII, boolean hasDelta,
@@ -433,7 +433,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.versions.VersionStamp#getVersionTimeStamp()
+   * @see org.apache.geode.internal.cache.versions.VersionStamp#getVersionTimeStamp()
    */
   @Override
   public long getVersionTimeStamp() {

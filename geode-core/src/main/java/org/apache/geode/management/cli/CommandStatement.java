@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.cli;
+package org.apache.geode.management.cli;
 
 import java.util.Map;
 

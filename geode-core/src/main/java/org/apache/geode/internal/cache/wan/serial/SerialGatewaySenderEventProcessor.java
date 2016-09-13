@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.serial;
+package org.apache.geode.internal.cache.wan.serial;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -32,32 +32,32 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventCallbackArgument;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderStats;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender.EventWrapper;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender.EventWrapper;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
  * @since GemFire 7.0
@@ -530,12 +530,12 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * 
    * If the primary processes the event first, the map will already contain an
    * entry for the event (through
-   * {@link com.gemstone.gemfire.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterDestroy}
+   * {@link org.apache.geode.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterDestroy}
    * ). When the secondary processes the event, it will remove it from the map.
    * 
    * If the secondary processes the event first, it will add it to the map. When
    * the primary processes the event (through
-   * {@link com.gemstone.gemfire.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterDestroy}
+   * {@link org.apache.geode.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterDestroy}
    * ), it will then be removed from the map.
    * 
    * @param senderEvent
@@ -548,7 +548,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   /**
    * Update an unprocessed event in the unprocessed events map. This method is
    * called by a primary <code>Gateway</code> (through
-   * {@link com.gemstone.gemfire.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterCreate}
+   * {@link org.apache.geode.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterCreate}
    * ) to notify the secondary <code>Gateway</code> that an event has been added
    * to the queue. Once an event has been added to the queue, the secondary no
    * longer needs to keep track of it in the unprocessed events map. The

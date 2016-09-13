@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 

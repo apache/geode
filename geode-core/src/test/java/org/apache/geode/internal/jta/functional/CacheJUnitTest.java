@@ -20,7 +20,7 @@
  *
  * Created on March 28, 2005, 10:59 AM
  */
-package com.gemstone.gemfire.internal.jta.functional;
+package org.apache.geode.internal.jta.functional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,24 +44,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheExistsException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.jta.CacheUtils;
-import com.gemstone.gemfire.internal.jta.JTAUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.jta.CacheUtils;
+import org.apache.geode.internal.jta.JTAUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This JUnit version is created from class
- * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests functional
+ * org.apache.geode.internal.jta.functional.CacheTest1. Tests functional
  * behavior. Assumes that CacheUtils.java always creates table(s) and inserts
  * data in the form: 1 => name1, 2 => name2, 3 => name3...as the values of ID
  * and name fields respectively. Test # 15 & 16 has the dependency to run on
@@ -106,7 +106,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario1 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests a simple
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a simple
    * User Transaction with Cache lookup.
    */
   @Test
@@ -157,7 +157,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario2 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests a simple
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a simple
    * User Transaction with Cache lookup but closing the Connection object before
    * committing the Transaction.
    */
@@ -222,7 +222,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario3 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests whether a
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests whether a
    * user transaction with cache lookup and with XAPooledDataSOurce supports
    * Cache put and get operations accordingly. Put and get are done within the
    * transaction block and also db updates are done. After committing we check
@@ -318,7 +318,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario4 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests whether a
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests whether a
    * user transaction with cache lookup and with XAPooledDataSOurce supports
    * Cache put and get operations accordingly along with JTA behavior. Put and
    * get are done within the transaction block and also db updates are done.
@@ -410,7 +410,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario5 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests whether a
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests whether a
    * user transaction with cache lookup and with XAPooledDataSOurce supports
    * Cache put and get operations accordingly along with JTA behavior. Put and
    * get are done within the transaction block and also db updates are done. We
@@ -534,7 +534,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario7 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests a user
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a user
    * transaction with cache lookup and with XAPooledDataSource lookup. It does
    * get and put operations on the cache within the transaction block and checks
    * whether these operations are committed once the transaction is committed.
@@ -617,7 +617,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario9 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests a user
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a user
    * transaction with cache lookup and with XAPooledDataSource lookup performing
    * a db update within the transaction block and committing the transaction.
    * Then agin we perform another db update with the same DataSource and finally
@@ -696,7 +696,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario10 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Test a user
+   * org.apache.geode.internal.jta.functional.CacheTest1. Test a user
    * transaction with cache lookup and with XAPooledDataSource for multiple JDBC
    * Connections. This should not be allowed for Facets datasource. For other
    * relational DB the behaviour will be DB specific. For Oracle DB, n
@@ -794,7 +794,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario11 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests Simple
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests Simple
    * DataSource lookup within a transaction. Things should not participate in
    * the transaction.
    */
@@ -880,7 +880,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario14 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests a local
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a local
    * Cache Loader with XADataSource lookup to get the connection. The Connection
    * should not participate in the transaction and commit/rollback should take
    * affect accordingly along with cache.
@@ -916,7 +916,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario15 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests performing
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests performing
    * DDL operations by looking up a XAPooledDataSource and without transaction.
    */
   @Test
@@ -998,7 +998,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario16 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Tests DDL
+   * org.apache.geode.internal.jta.functional.CacheTest1. Tests DDL
    * operations on XAPooledDataSOurce lookup, without transaction but making
    * auto commit false just before performing DDL queries and making it true
    * before closing the Connection. The operations should be committed.
@@ -1076,7 +1076,7 @@ public class CacheJUnitTest {
 
   /**
    * Test of testScenario18 method, of class
-   * com.gemstone.gemfire.internal.jta.functional.CacheTest1. Get a connection
+   * org.apache.geode.internal.jta.functional.CacheTest1. Get a connection
    * (conn1) outside a transaction with pooled datasource lookup and another
    * connection (conn2) within the same transaction with XAPooled datasource
    * lookup. After making updates we do a rollback on the transaction and close

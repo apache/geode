@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.membership;
+package org.apache.geode.management.membership;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.management.ManagementService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.management.ManagementService;
 
 /**
  * <p>
  * The <code>UniversalMembershipListenerAdapter</code> is a wrapper for
- * {@link com.gemstone.gemfire.management.membership.MembershipListener} and
+ * {@link org.apache.geode.management.membership.MembershipListener} and
  * {@link ClientMembershipListener}, providing a facade that makes both appear
  * as a single <code>MembershipListener</code> . This includes adapting
  * <code>ClientMembershipListener</code> events to appear as events for the
@@ -45,7 +45,7 @@ import com.gemstone.gemfire.management.ManagementService;
  * <p>
  * An internal implementation of <code>ClientMembershipListener</code> is
  * registered when this class is instantiated. This implementation creates a
- * {@link com.gemstone.gemfire.management.membership.MembershipEvent} and calls
+ * {@link org.apache.geode.management.membership.MembershipEvent} and calls
  * the corresponding <code>MembershipListener</code> public methods on
  * <code>UniversalMembershipListenerAdapter</code>.The
  * <code>ClientMembershipEvent</code>s are wrapped to appear as
@@ -63,7 +63,7 @@ import com.gemstone.gemfire.management.ManagementService;
  * Any cache client using the <code>UniversalMembershipListenerAdapter</code>
  * would receive notifications of cache server connection changes. If that cache
  * client also creates a connection to the GemFire
- * {@link com.gemstone.gemfire.distributed.DistributedSystem}, then it will also
+ * {@link org.apache.geode.distributed.DistributedSystem}, then it will also
  * register the adapter for membership events. But it wont be an automatic
  * process. User needs to register the UniversalMembershipListenerAdapter with
  * ManagementService to receive membership events. How to register
@@ -73,7 +73,7 @@ import com.gemstone.gemfire.management.ManagementService;
  * <p>
  * Subclasses of <code>UniversalMembershipListenerAdapter</code> may be
  * registered as a <code>MembershipListener</code> using
- * {@link com.gemstone.gemfire.management.ManagementService#addMembershipListener}
+ * {@link org.apache.geode.management.ManagementService#addMembershipListener}
  * .It is best, however, to register the listener using
  * {@link #registerMembershipListener} since this allows the adapter to prevent
  * duplicate events for members that are both a peer member and a client.
@@ -140,7 +140,7 @@ import com.gemstone.gemfire.management.ManagementService;
  * <code>ManagementService</code> using {@link #registerMembershipListener}, as
  * this will prevent duplicate events for members that are both clients and peer
  * members.If duplicate events are acceptable, you may register subclasses using
- * {@link com.gemstone.gemfire.management.ManagementService#addMembershipListener
+ * {@link org.apache.geode.management.ManagementService#addMembershipListener
  * ManagementService#addMembershipListener}.
  * </p>
  *
@@ -190,7 +190,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * in this way allows the adapter to ensure that callback will not be invoked
    * twice for members that have a client connection and a peer connection. If
    * you register with
-   * {@link com.gemstone.gemfire.management.ManagementService#addMembershipListener}
+   * {@link org.apache.geode.management.ManagementService#addMembershipListener}
    * then duplicate events may occur for members that are both client and peer.
    */
   public void registerMembershipListener(ManagementService service) {

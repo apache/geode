@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
-//import com.gemstone.gemfire.InternalGemFireException;
-//import com.gemstone.gemfire.internal.util.Callable;
-//import com.gemstone.gemfire.util.concurrent.locks.Lock;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
+//import org.apache.geode.InternalGemFireException;
+//import org.apache.geode.internal.util.Callable;
+//import org.apache.geode.util.concurrent.locks.Lock;
 
 /**
  *

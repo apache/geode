@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
+import org.apache.geode.cache.server.ServerLoadProbe;
 
 /**
  * Administrative interface that represents a CacheServer that
@@ -84,7 +84,7 @@ public interface SystemMemberBridgeServer {
    * <p>Setting a specific bind address will cause the bridge server to always
    * use this address and ignore any address specified by "server-bind-address"
    * or "bind-address" in the <code>gemfire.properties</code> file
-   * (see {@link com.gemstone.gemfire.distributed.DistributedSystem}
+   * (see {@link org.apache.geode.distributed.DistributedSystem}
    * for a description of these properties).
    * <p> A <code>null</code> value will be treated the same as the default "".
    * <p> The default value does not override the gemfire.properties. If you wish to

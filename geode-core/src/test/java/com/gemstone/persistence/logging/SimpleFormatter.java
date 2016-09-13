@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.persistence.logging;
+package org.apache.persistence.logging;
 
 import java.io.*;
 //import java.text.*;
@@ -28,7 +28,7 @@ public class SimpleFormatter extends Formatter {
   public String format(LogRecord record) {
     StringBuffer sb = new StringBuffer();
     sb.append('[');
-    sb.append(com.gemstone.persistence.admin.Logger.formatDate(new Date(record.getMillis())));
+    sb.append(org.apache.persistence.admin.Logger.formatDate(new Date(record.getMillis())));
     sb.append(' ');
     sb.append(Thread.currentThread().getName());
     sb.append("] ");

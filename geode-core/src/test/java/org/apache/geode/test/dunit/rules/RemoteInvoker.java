@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.rules;
+package org.apache.geode.test.dunit.rules;
 
-import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static org.apache.geode.test.dunit.Invoke.*;
 
 import java.io.Serializable;
 
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnable;
 
 /**
  * Provides remote invocation support to a {@code TestRule}. These methods

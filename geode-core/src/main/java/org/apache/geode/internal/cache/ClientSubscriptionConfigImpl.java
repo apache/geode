@@ -17,10 +17,10 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * 
  * Configuration parameters for client subscription

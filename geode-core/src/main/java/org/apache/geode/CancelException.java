@@ -17,9 +17,9 @@
 /**
  * 
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
-import com.gemstone.gemfire.cache.CacheRuntimeException;
+import org.apache.geode.cache.CacheRuntimeException;
 
 /**
  * Abstract root class of all GemFire exceptions representing system

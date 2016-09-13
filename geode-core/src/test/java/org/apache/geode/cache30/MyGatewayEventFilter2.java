@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
-import com.gemstone.gemfire.cache.util.GatewayEvent;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.util.GatewayEvent;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 public class MyGatewayEventFilter2 implements GatewayEventFilter, Declarable2{
 
@@ -42,7 +42,7 @@ public class MyGatewayEventFilter2 implements GatewayEventFilter, Declarable2{
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.wan.GatewayEventFilter#afterAcknowledgement(com.gemstone.gemfire.cache.util.GatewayEvent)
+   * @see org.apache.geode.cache.wan.GatewayEventFilter#afterAcknowledgement(org.apache.geode.cache.util.GatewayEvent)
    */
   public void afterAcknowledgement(GatewayEvent event) {
     // TODO Auto-generated method stub

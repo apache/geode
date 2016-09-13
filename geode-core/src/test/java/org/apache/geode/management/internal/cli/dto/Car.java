@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.dto;
+package org.apache.geode.management.internal.cli.dto;
 
 import java.io.Serializable;
 import java.util.List;

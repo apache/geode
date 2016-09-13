@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 /**
  * The Ordered interface defines a contract for implementing classes who's instances must participate in some type

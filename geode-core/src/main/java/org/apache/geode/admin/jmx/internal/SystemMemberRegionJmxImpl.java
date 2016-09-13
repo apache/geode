@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import com.gemstone.gemfire.admin.internal.SystemMemberCacheImpl;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
+import org.apache.geode.admin.internal.SystemMemberCacheImpl;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.admin.GemFireVM;
 
 import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBean;
 
 /**
  * MBean representation of {@link 
- * com.gemstone.gemfire.admin.SystemMemberRegion}.
+ * org.apache.geode.admin.SystemMemberRegion}.
  *
  * @since GemFire     3.5
  */
 public class SystemMemberRegionJmxImpl 
-extends com.gemstone.gemfire.admin.internal.SystemMemberRegionImpl
-implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
+extends org.apache.geode.admin.internal.SystemMemberRegionImpl
+implements org.apache.geode.admin.jmx.internal.ManagedResource {
 
   /** The object name of this managed resource */
   private ObjectName objectName;
@@ -48,14 +48,14 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
    */
   public SystemMemberRegionJmxImpl(SystemMemberCacheImpl cache, 
                                    Region region)
-                            throws com.gemstone.gemfire.admin.AdminException {
+                            throws org.apache.geode.admin.AdminException {
     super(cache, region);
     initializeMBean(cache);
   }
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean(SystemMemberCacheImpl cache)
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     
     GemFireVM vm = cache.getVM();
     this.mbeanName = new StringBuffer("GemFire.Cache:")

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging.log4j;
+package org.apache.geode.internal.logging.log4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -27,8 +27,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for FastLogger when using the default log4j2 config for GemFire.
@@ -51,7 +51,7 @@ public class FastLoggerWithDefaultConfigJUnitTest {
   }
   
   /**
-   * System property "log4j.configurationFile" should be "/com/gemstone/gemfire/internal/logging/log4j/log4j2-default.xml"
+   * System property "log4j.configurationFile" should be "/org/apache/geode/internal/logging/log4j/log4j2-default.xml"
    */
   @Test
   public void configurationFilePropertyIsDefaultConfig() {

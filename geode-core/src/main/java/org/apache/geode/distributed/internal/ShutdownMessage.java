@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.*;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * A message that is sent to all other distribution manager when

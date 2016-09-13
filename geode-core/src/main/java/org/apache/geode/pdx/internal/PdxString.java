@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.Sendable;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 /**
  * A class that references the String offset in PdxInstance

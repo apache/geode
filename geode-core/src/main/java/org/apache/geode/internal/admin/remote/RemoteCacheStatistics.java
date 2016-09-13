@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.*;
 import java.io.*;
 
 /**
- * This class represents a snapshot of a {@link com.gemstone.gemfire.cache.CacheStatistics}
+ * This class represents a snapshot of a {@link org.apache.geode.cache.CacheStatistics}
  * from a remote vm
  */
 public class RemoteCacheStatistics implements CacheStatistics, DataSerializable {

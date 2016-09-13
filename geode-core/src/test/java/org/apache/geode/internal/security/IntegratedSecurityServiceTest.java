@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.security;
+package org.apache.geode.internal.security;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Java6Assertions.*;
 import static org.junit.Assert.*;
 
@@ -28,8 +28,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.SecurableComponents;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class IntegratedSecurityServiceTest {

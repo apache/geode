@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.security.generator.CredentialGenerator;
-import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
-import com.gemstone.gemfire.security.generator.LdapUserCredentialGenerator;
-import com.gemstone.gemfire.security.generator.UserPasswordWithExtraPropsAuthInit;
-import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.security.generator.CredentialGenerator;
+import org.apache.geode.security.generator.DummyCredentialGenerator;
+import org.apache.geode.security.generator.LdapUserCredentialGenerator;
+import org.apache.geode.security.generator.UserPasswordWithExtraPropsAuthInit;
+import org.apache.geode.security.templates.LdapUserAuthenticator;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,15 +43,15 @@ import org.junit.experimental.categories.Category;
 import javax.net.ssl.SSLHandshakeException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
-import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
-import static com.gemstone.gemfire.security.SecurityTestUtils.startLocator;
-import static com.gemstone.gemfire.security.SecurityTestUtils.stopLocator;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
-import static com.gemstone.gemfire.test.dunit.NetworkUtils.getIPLiteral;
-import static com.gemstone.gemfire.test.dunit.Wait.pause;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.security.SecurityTestUtils.startLocator;
+import static org.apache.geode.security.SecurityTestUtils.stopLocator;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
+import static org.apache.geode.test.dunit.Wait.pause;
 
 /**
  * Tests peer to peer authentication in Gemfire

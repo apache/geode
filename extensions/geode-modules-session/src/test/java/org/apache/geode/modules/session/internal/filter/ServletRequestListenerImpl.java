@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;

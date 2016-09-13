@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import com.gemstone.gemfire.cache.client.internal.locator.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.tcpserver.*;
-import com.gemstone.gemfire.internal.DistributionLocator;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.process.*;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.lang.AttachAPINotFoundException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.cache.client.internal.locator.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.tcpserver.*;
+import org.apache.geode.internal.DistributionLocator;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.*;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.lang.AttachAPINotFoundException;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -60,8 +60,8 @@ import java.util.logging.Level;
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
  * 
- * @see com.gemstone.gemfire.distributed.AbstractLauncher
- * @see com.gemstone.gemfire.distributed.ServerLauncher
+ * @see org.apache.geode.distributed.AbstractLauncher
+ * @see org.apache.geode.distributed.ServerLauncher
  * @since GemFire 7.0
  */
 @SuppressWarnings({ "unused" })
@@ -208,7 +208,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * 
    * @param builder an instance of LocatorLauncher.Builder for configuring and constructing an instance of the
    * LocatorLauncher.
-   * @see com.gemstone.gemfire.distributed.LocatorLauncher.Builder
+   * @see org.apache.geode.distributed.LocatorLauncher.Builder
    */
   private LocatorLauncher(final Builder builder) {
     this.command = builder.getCommand();
@@ -283,7 +283,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * Get the Locator launcher command used to invoke the Locator.
    * 
    * @return the Locator launcher command used to invoke the Locator.
-   * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command
+   * @see org.apache.geode.distributed.LocatorLauncher.Command
    */
   public Command getCommand() {
     return this.command;
@@ -305,7 +305,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * if the user entered the "--help" option (switch) on the command-line.
    * 
    * @return a boolean value indicating if this launcher is used for displaying help information.
-   * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command
+   * @see org.apache.geode.distributed.LocatorLauncher.Command
    */
   public boolean isHelping() {
     return this.help;
@@ -484,7 +484,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Displays usage information on the proper invocation of the LocatorLauncher from the command-line to standard err.
    * 
-   * @see #help(com.gemstone.gemfire.distributed.LocatorLauncher.Command)
+   * @see #help(org.apache.geode.distributed.LocatorLauncher.Command)
    */
   public void usage() {
     info(StringUtils.wrap(helpMap.get("launcher"), 80, "\t"));
@@ -508,7 +508,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @see LocatorLauncher#status()
    * @see LocatorLauncher#stop()
    * @see LocatorLauncher#version()
-   * @see LocatorLauncher#help(com.gemstone.gemfire.distributed.LocatorLauncher.Command)
+   * @see LocatorLauncher#help(org.apache.geode.distributed.LocatorLauncher.Command)
    * @see LocatorLauncher#usage()
    */
   public void run() {
@@ -585,10 +585,10 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @see #stop()
    * @see #waitOnLocator()
    * @see #waitOnStatusResponse(long, long, java.util.concurrent.TimeUnit)
-   * @see com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status#NOT_RESPONDING
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status#ONLINE
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status#STARTING
+   * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
+   * @see org.apache.geode.distributed.AbstractLauncher.Status#NOT_RESPONDING
+   * @see org.apache.geode.distributed.AbstractLauncher.Status#ONLINE
+   * @see org.apache.geode.distributed.AbstractLauncher.Status#STARTING
    */
   @SuppressWarnings("deprecation")
   public LocatorState start() {
@@ -700,8 +700,8 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @throws AssertionError if the Locator has not been started and the reference is null (assertions must be enabled
    * for the error to be thrown).
    * @see #failOnStart(Throwable)
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status
-   * @see com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState
+   * @see org.apache.geode.distributed.AbstractLauncher.Status
+   * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
    */
   public LocatorState waitOnLocator() {
     Throwable t = null;
@@ -804,8 +804,8 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @return the Locator's state.
    * @see #start()
    * @see #stop()
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status
-   * @see com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState
+   * @see org.apache.geode.distributed.AbstractLauncher.Status
+   * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
    */
   public LocatorState status() {
     final LocatorLauncher launcher = getInstance();
@@ -970,9 +970,9 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @return a LocatorState indicating the state of the Locator after stop has been requested.
    * @see #start()
    * @see #status()
-   * @see com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status#NOT_RESPONDING
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.Status#STOPPED
+   * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
+   * @see org.apache.geode.distributed.AbstractLauncher.Status#NOT_RESPONDING
+   * @see org.apache.geode.distributed.AbstractLauncher.Status#STOPPED
    */
   public LocatorState stop() {
     final LocatorLauncher launcher = getInstance();
@@ -1303,7 +1303,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
      * Iterates the list of arguments in search of the target Locator launcher command.
      * 
      * @param args an array of arguments from which to search for the Locator launcher command.
-     * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command#valueOfName(String)
+     * @see org.apache.geode.distributed.LocatorLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
      */
     protected void parseCommand(final String... args) {
@@ -1324,7 +1324,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
      * for the Locator in GemFire.
      * 
      * @param args the array of arguments from which to search for the Locator's member name in GemFire.
-     * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command#isCommand(String)
+     * @see org.apache.geode.distributed.LocatorLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
     protected void parseMemberName(final String[] args) {
@@ -1340,7 +1340,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
      * Gets the Locator launcher command used during the invocation of the LocatorLauncher.
      * 
      * @return the Locator launcher command used to invoke (run) the LocatorLauncher class.
-     * @see #setCommand(com.gemstone.gemfire.distributed.LocatorLauncher.Command)
+     * @see #setCommand(org.apache.geode.distributed.LocatorLauncher.Command)
      * @see LocatorLauncher.Command
      */
     public Command getCommand() {
@@ -1396,7 +1396,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
      * Gets the boolean value used by the Locator to determine if it should overwrite the PID file if it already exists.
      * 
      * @return the boolean value specifying whether or not to overwrite the PID file if it already exists.
-     * @see com.gemstone.gemfire.internal.process.LocalProcessLauncher
+     * @see org.apache.geode.internal.process.LocalProcessLauncher
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
@@ -1408,7 +1408,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
      * 
      * @param force a boolean value indicating whether to overwrite the PID file when it already exists.
      * @return this Builder instance.
-     * @see com.gemstone.gemfire.internal.process.LocalProcessLauncher
+     * @see org.apache.geode.internal.process.LocalProcessLauncher
      * @see #getForce()
      */
     public Builder setForce(final Boolean force) {
@@ -1725,7 +1725,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'start' command has been issued.
      * 
-     * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command#START
+     * @see org.apache.geode.distributed.LocatorLauncher.Command#START
      */
     protected void validateOnStart() {
       if (Command.START.equals(getCommand())) {
@@ -1748,7 +1748,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'status' command has been issued.
      * 
-     * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command#STATUS
+     * @see org.apache.geode.distributed.LocatorLauncher.Command#STATUS
      */
     protected void validateOnStatus() {
       if (Command.STATUS.equals(getCommand())) {
@@ -1758,7 +1758,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Validates the arguments passed to the Builder when the 'stop' command has been issued.
      * 
-     * @see com.gemstone.gemfire.distributed.LocatorLauncher.Command#STOP
+     * @see org.apache.geode.distributed.LocatorLauncher.Command#STOP
      */
     protected void validateOnStop() {
       if (Command.STOP.equals(getCommand())) {
@@ -1771,7 +1771,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
      * 
      * @return a newly constructed instance of LocatorLauncher configured with this Builder.
      * @see #validate()
-     * @see com.gemstone.gemfire.distributed.LocatorLauncher
+     * @see org.apache.geode.distributed.LocatorLauncher
      */
     public LocatorLauncher build() {
       validate();
@@ -1893,7 +1893,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * The LocatorState is an immutable type representing the state of the specified Locator at any given moment in time.
    * The state of the Locator is assessed at the exact moment an instance of this class is constructed.
    * 
-   * @see com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState
+   * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
    */
   public static final class LocatorState extends ServiceState<String> {
 

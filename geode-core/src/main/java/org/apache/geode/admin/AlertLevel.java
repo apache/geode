@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * Type-safe enumeration for {@link com.gemstone.gemfire.admin.Alert
+ * Type-safe enumeration for {@link org.apache.geode.admin.Alert
  * Alert} level.
  *
  * @since GemFire     3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public class AlertLevel implements java.io.Serializable {
   private static final long serialVersionUID = -4752438966587392126L;

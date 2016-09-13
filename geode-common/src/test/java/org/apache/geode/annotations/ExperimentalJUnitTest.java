@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.annotations;
+package org.apache.geode.annotations;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -23,9 +23,9 @@ import java.lang.reflect.AnnotatedElement;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.annotations.experimentalpackage.ClassInExperimentalPackage;
-import com.gemstone.gemfire.experimental.nonexperimentalpackage.ClassInNonExperimentalPackage;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.annotations.experimentalpackage.ClassInExperimentalPackage;
+import org.apache.geode.experimental.nonexperimentalpackage.ClassInNonExperimentalPackage;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for the <tt>Experimental</tt> annotation. Verifies that the

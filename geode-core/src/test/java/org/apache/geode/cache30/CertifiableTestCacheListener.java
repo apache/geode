@@ -19,15 +19,15 @@
  * Test class used to certify that a particular key has arrived in the cache
  * This class is a great way to reduce the liklihood of a race condition 
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import java.util.*;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
 
 public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
   final public Set destroys = Collections.synchronizedSet(new HashSet());

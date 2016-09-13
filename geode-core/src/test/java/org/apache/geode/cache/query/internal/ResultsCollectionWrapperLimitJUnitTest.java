@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import static org.junit.Assert.*;
 
@@ -33,8 +33,8 @@ import java.util.TreeSet;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ResultsCollectionWrapperLimitJUnitTest {

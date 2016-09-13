@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.PdxSerializerObject;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
-import com.gemstone.gemfire.pdx.internal.PdxField;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.SerializationException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.PdxSerializerObject;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +43,7 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**
@@ -58,7 +58,7 @@ public class AutoSerializableJUnitTest {
 
   private ReflectionBasedAutoSerializer serializer;
 
-  private String[] stdSerializableClasses = new String[] {"com.gemstone.gemfire.pdx.DomainObject.*"};
+  private String[] stdSerializableClasses = new String[] {"org.apache.geode.pdx.DomainObject.*"};
 
   public AutoSerializableJUnitTest() {
     super();
@@ -98,7 +98,7 @@ public class AutoSerializableJUnitTest {
    */
   @Test
   public void testSanity() throws Exception {
-    setupSerializer("com.gemstone.gemfire.pdx.DomainObjectPdxAuto");
+    setupSerializer("org.apache.geode.pdx.DomainObjectPdxAuto");
     DomainObject objOut = new DomainObjectPdxAuto(4);
     objOut.set("string_0", "test string value");
     objOut.set("long_0", 99L);
@@ -126,7 +126,7 @@ public class AutoSerializableJUnitTest {
       assertEquals(true, epi.isEnum());
       assertEquals(true, epi.hasField("name"));
       assertEquals(true, epi.hasField("ordinal"));
-      assertEquals("com.gemstone.gemfire.pdx.DomainObjectPdxAuto$Day", epi.getClassName());
+      assertEquals("org.apache.geode.pdx.DomainObjectPdxAuto$Day", epi.getClassName());
       assertEquals("FRIDAY", epi.getField("name"));
       assertEquals(DomainObjectPdxAuto.Day.FRIDAY.ordinal(), epi.getField("ordinal"));
       assertEquals(DomainObjectPdxAuto.Day.FRIDAY, epi.getObject());
@@ -174,7 +174,7 @@ public class AutoSerializableJUnitTest {
   
   @Test
   public void testMonth() throws Exception {
-    setupSerializer(false, false, "com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.MyMonth");
+    setupSerializer(false, false, "org.apache.geode.pdx.AutoSerializableJUnitTest.MyMonth");
     MyMonth m = new MyMonth(1);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(m, out);
@@ -255,7 +255,7 @@ public class AutoSerializableJUnitTest {
   
   @Test
   public void testExternalizable() throws Exception {
-    setupSerializer("com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.MyExternalizable");
+    setupSerializer("org.apache.geode.pdx.AutoSerializableJUnitTest.MyExternalizable");
     MyExternalizable o = new MyExternalizable(79);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(o, out);
@@ -280,7 +280,7 @@ public class AutoSerializableJUnitTest {
    */
   @Test
   public void testWriteReplace()  throws Exception {
-    setupSerializer("com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.MyWriteReplace");
+    setupSerializer("org.apache.geode.pdx.AutoSerializableJUnitTest.MyWriteReplace");
     MyWriteReplace o = new MyWriteReplace("79");
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(o, out);
@@ -303,7 +303,7 @@ public class AutoSerializableJUnitTest {
    */
   @Test
   public void testComparator()  throws Exception {
-    setupSerializer("com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.MyComparator");
+    setupSerializer("org.apache.geode.pdx.AutoSerializableJUnitTest.MyComparator");
     TreeSet o = new TreeSet(new MyComparator());
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(o, out);
@@ -471,7 +471,7 @@ public class AutoSerializableJUnitTest {
 
   @Test
   public void testCheckPortablity() throws Exception {
-    setupSerializer(true, "com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.BigHolder");
+    setupSerializer(true, "org.apache.geode.pdx.AutoSerializableJUnitTest.BigHolder");
 
     BigInteger bi = new BigInteger("12345678901234567890");
     BigDecimal bd = new BigDecimal("1234567890.1234567890");
@@ -520,7 +520,7 @@ public class AutoSerializableJUnitTest {
 
   @Test
   public void testIsIdentityField() throws IOException, ClassNotFoundException {
-    setupSerializer(new ExplicitIdentityAutoSerializer(false, "com.gemstone.gemfire.pdx.DomainObjectPdxAuto"), true);
+    setupSerializer(new ExplicitIdentityAutoSerializer(false, "org.apache.geode.pdx.DomainObjectPdxAuto"), true);
     DomainObject objOut = new DomainObjectPdxAuto(4);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(objOut, out);
@@ -550,7 +550,7 @@ public class AutoSerializableJUnitTest {
 
   @Test
   public void testIsFieldIncluded() throws IOException, ClassNotFoundException {
-    setupSerializer(new ExplicitIncludedAutoSerializer(false, "com.gemstone.gemfire.pdx.DomainObjectPdxAuto"), true);
+    setupSerializer(new ExplicitIncludedAutoSerializer(false, "org.apache.geode.pdx.DomainObjectPdxAuto"), true);
     DomainObject objOut = new DomainObjectPdxAuto(4);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(objOut, out);
@@ -577,7 +577,7 @@ public class AutoSerializableJUnitTest {
 
   @Test
   public void testGetFieldName() throws IOException, ClassNotFoundException {
-    setupSerializer(new ExplicitFieldNameAutoSerializer(false, "com.gemstone.gemfire.pdx.DomainObjectPdxAuto"), true);
+    setupSerializer(new ExplicitFieldNameAutoSerializer(false, "org.apache.geode.pdx.DomainObjectPdxAuto"), true);
     DomainObject objOut = new DomainObjectPdxAuto(4);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(objOut, out);
@@ -792,7 +792,7 @@ public class AutoSerializableJUnitTest {
   
   @Test
   public void testPrimitiveObjects() throws Exception {
-    setupSerializer(new PrimitiveObjectsAutoSerializer(true, "com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.PrimitiveObjectHolder"), true);
+    setupSerializer(new PrimitiveObjectsAutoSerializer(true, "org.apache.geode.pdx.AutoSerializableJUnitTest.PrimitiveObjectHolder"), true);
     PrimitiveObjectHolder nullHolder = new PrimitiveObjectHolder();
     PrimitiveObjectHolder defaultHolder = new PrimitiveObjectHolder();
     defaultHolder.bool = false;
@@ -823,13 +823,13 @@ public class AutoSerializableJUnitTest {
   
   @Test
   public void testExtensibility() throws Exception {
-    setupSerializer(new BigIntegerAutoSerializer(true, "com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.BigHolder"), false);
+    setupSerializer(new BigIntegerAutoSerializer(true, "org.apache.geode.pdx.AutoSerializableJUnitTest.BigHolder"), false);
 
     doExtensible("with autoSerializer handling Big*");
   }
   @Test
   public void testNoExtensibility() throws Exception {
-    setupSerializer(false, false, "com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.BigHolder");
+    setupSerializer(false, false, "org.apache.geode.pdx.AutoSerializableJUnitTest.BigHolder");
 
     doExtensible("using standard serialization of Big*");
   }
@@ -913,12 +913,12 @@ public class AutoSerializableJUnitTest {
   
   @Test
   public void testCHM() throws Exception {
-    setupSerializer(new ConcurrentHashMapAutoSerializer(false, "com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.*Holder"), false);
+    setupSerializer(new ConcurrentHashMapAutoSerializer(false, "org.apache.geode.pdx.AutoSerializableJUnitTest.*Holder"), false);
     doCHM("with autoSerializer handling ConcurrentHashMap");
   }
   @Test
   public void testNoCHM() throws Exception {
-    setupSerializer(false, false, "com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.*Holder");
+    setupSerializer(false, false, "org.apache.geode.pdx.AutoSerializableJUnitTest.*Holder");
     doCHM("without autoSerializer handling ConcurrentHashMap");
   }
   private void doCHM(String msg) throws IOException, ClassNotFoundException {
@@ -1037,7 +1037,7 @@ public class AutoSerializableJUnitTest {
   public void testBasicConfig() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObject");
+    props.put("classes", "org.apache.geode.pdx.DomainObject");
     serializer.init(props);
 
     assertEquals(4, manager.getFields(DomainObject.class).size());
@@ -1050,7 +1050,7 @@ public class AutoSerializableJUnitTest {
   public void testConfigWithExclude1() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObject#exclude=long.*");
+    props.put("classes", "org.apache.geode.pdx.DomainObject#exclude=long.*");
     serializer.init(props);
 
     assertEquals(3, manager.getFields(DomainObject.class).size());
@@ -1060,7 +1060,7 @@ public class AutoSerializableJUnitTest {
   public void testConfigWithExclude2() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObject#exclude=string.* ,");
+    props.put("classes", "org.apache.geode.pdx.DomainObject#exclude=string.* ,");
     serializer.init(props);
 
     assertEquals(1, manager.getFields(DomainObject.class).size());
@@ -1073,7 +1073,7 @@ public class AutoSerializableJUnitTest {
   public void testConfigWithIdentity1() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObjectPdxAuto#identity=long.*");
+    props.put("classes", "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*");
     serializer.init(props);
 
     DomainObject objOut = new DomainObjectPdxAuto(4);
@@ -1097,7 +1097,7 @@ public class AutoSerializableJUnitTest {
   public void testConfigWithIdentityAndExclude1() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*");
+    props.put("classes", "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*");
     serializer.init(props);
 
     assertEquals(27, manager.getFields(DomainObjectPdxAuto.class).size());
@@ -1124,7 +1124,7 @@ public class AutoSerializableJUnitTest {
   public void testConfigWithIdentityAndExclude2() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*#, com.another.class.Foo");
+    props.put("classes", "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*#, com.another.class.Foo");
     serializer.init(props);
 
     assertEquals(27, manager.getFields(DomainObjectPdxAuto.class).size());
@@ -1151,7 +1151,7 @@ public class AutoSerializableJUnitTest {
   public void testConfigWithIdentityAndExclude3() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*, com.another.class.Foo");
+    props.put("classes", "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*, com.another.class.Foo");
     serializer.init(props);
 
     assertEquals(27, manager.getFields(DomainObjectPdxAuto.class).size());
@@ -1178,8 +1178,8 @@ public class AutoSerializableJUnitTest {
   public void testConfigWithIdentityAndExclude4() throws Exception {
     setupSerializer();
     Properties props = new Properties();
-    props.put("classes", "com.gemstone.gemfire.pdx.DomainObjectPdxAuto#exclude=string.*, "
-        + "com.gemstone.gemfire.pdx.DomainObjectPdxAuto#exclude=long.*");
+    props.put("classes", "org.apache.geode.pdx.DomainObjectPdxAuto#exclude=string.*, "
+        + "org.apache.geode.pdx.DomainObjectPdxAuto#exclude=long.*");
     serializer.init(props);
 
     assertEquals(26, manager.getFields(DomainObjectPdxAuto.class).size());
@@ -1223,7 +1223,7 @@ public class AutoSerializableJUnitTest {
     // Need to exclude DomainObject as that is what the newly created objects
     // get cast to.
     cfcl.addExcludedClass(".*DomainObject");
-    Class clazz = cfcl.loadClass("com.gemstone.gemfire.pdx.DomainObjectClassLoadable");
+    Class clazz = cfcl.loadClass("org.apache.geode.pdx.DomainObjectClassLoadable");
 
     // Create our object with a special class loader
     DomainObject obj1 = (DomainObject) clazz.newInstance();

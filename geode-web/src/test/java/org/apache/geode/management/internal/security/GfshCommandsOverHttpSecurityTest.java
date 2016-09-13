@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.security;
+package org.apache.geode.management.internal.security;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.experimental.categories.Category;
 
 @Category({ IntegrationTest.class, SecurityTest.class })

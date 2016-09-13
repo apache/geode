@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.server;
+package org.apache.geode.cache.server;
 
 /**
  * Used to configure queuing on a cache server for client subscriptions.

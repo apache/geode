@@ -17,11 +17,11 @@
 /**
  * 
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
 
-import com.gemstone.gemfire.internal.concurrent.CompactConcurrentHashSet2;
+import org.apache.geode.internal.concurrent.CompactConcurrentHashSet2;
 
 /**
  * This class overrides the size method to make it non-blocking for our query

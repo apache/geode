@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.compression;
+package org.apache.geode.internal.cache.compression;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.internal.Version;
 
 /**
  * An implementation of {@link CompressedCachedDeserializable} that uses the

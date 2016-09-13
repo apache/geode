@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
 import java.util.ServiceLoader;
 import java.util.Stack;
 
 import org.xml.sax.ContentHandler;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.LogWriter;
+import org.apache.geode.i18n.LogWriterI18n;
 
 /**
  * Interface for configuration XML parsers. Used by {@link CacheXmlParser} to
@@ -31,7 +31,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * {@link #getNamspaceUri()} .
  * 
  * Loaded by {@link ServiceLoader} on {@link XmlParser} class. See file
- * <code>META-INF/services/com.gemstone.gemfire.internal.cache.xmlcache.XmlParser</code>
+ * <code>META-INF/services/org.apache.geode.internal.cache.xmlcache.XmlParser</code>
  * 
  *
  * @since GemFire 8.1

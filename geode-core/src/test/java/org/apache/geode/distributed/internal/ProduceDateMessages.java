@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-//import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.Assert;
+//import org.apache.geode.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Assert;
 import java.util.Date;
 import java.util.Properties;
 

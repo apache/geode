@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.region.entry;
+package org.apache.geode.internal.cache.region.entry;
 
-import com.gemstone.gemfire.internal.cache.*;
+import org.apache.geode.internal.cache.*;
 
 public class RegionEntryFactoryBuilder {
   public RegionEntryFactory getRegionEntryFactoryOrNull(boolean statsEnabled, boolean isLRU, boolean isDisk, boolean withVersioning, boolean offHeap) {

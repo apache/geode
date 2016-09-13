@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.examples;
+package org.apache.geode.test.junit.rules.examples;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.test.junit.rules.TestRunner;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.TestRunner;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

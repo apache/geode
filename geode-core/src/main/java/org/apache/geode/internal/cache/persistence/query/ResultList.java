@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence.query;
+package org.apache.geode.internal.cache.persistence.query;
 
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializable;
 
 /**
  * The contract for a list of temporary results for a query.

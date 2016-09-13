@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 public class ReconnectWithUDPSecurityDUnitTest extends ReconnectDUnitTest{
 
   public ReconnectWithUDPSecurityDUnitTest() {

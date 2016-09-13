@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-import com.gemstone.gemfire.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 
 /**
  * Holds a view of the persistent members for a region. This view may

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.cli.functions;
+package org.apache.geode.cache.lucene.internal.cli.functions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,28 +23,28 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.lucene.LuceneQuery;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
-import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexDetails;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexInfo;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneQueryInfo;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneSearchResults;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.gemstone.gemfire.internal.InternalEntity;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.lucene.LuceneQuery;
+import org.apache.geode.cache.lucene.LuceneQueryException;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
+import org.apache.geode.cache.lucene.internal.cli.LuceneSearchResults;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.internal.InternalEntity;
 
 /**
  * The LuceneSearchIndexFunction class is a function used to collect the information on a particular lucene index.
  * </p>
  * @see Cache
- * @see com.gemstone.gemfire.cache.execute.Function
+ * @see org.apache.geode.cache.execute.Function
  * @see FunctionAdapter
  * @see FunctionContext
  * @see InternalEntity

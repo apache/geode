@@ -26,7 +26,7 @@
   <vm-root-region name="root">
     <region-attributes>
       <cache-loader>
-        <class-name>com.gemstone.gemfire.cache30.CacheXml30DUnitTest$MyTestCacheWriter</class-name>
+        <class-name>org.apache.geode.cache30.CacheXml30DUnitTest$MyTestCacheWriter</class-name>
       </cache-loader>
     </region-attributes>
   </vm-root-region>

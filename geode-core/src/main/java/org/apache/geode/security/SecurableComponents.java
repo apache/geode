@@ -16,7 +16,7 @@
  */
 package org.apache.geode.security;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.ConfigurationProperties;
 
 /**
  * This class defines all the static definitions for the {@link ConfigurationProperties#SECURITY_ENABLED_COMPONENTS}

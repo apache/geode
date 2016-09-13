@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
-import static com.gemstone.gemfire.test.dunit.Jitter.*;
+import static org.apache.geode.test.dunit.Jitter.*;
 import static org.junit.Assert.*;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * <code>ThreadUtils</code> provides static utility methods to perform thread
@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * however, they are intended to be referenced through static import:
  *
  * <pre>
- * import static com.gemstone.gemfire.test.dunit.ThreadUtils.*;
+ * import static org.apache.geode.test.dunit.ThreadUtils.*;
  *    ...
  *    dumpAllStacks();
  * </pre>
@@ -80,7 +80,7 @@ public class ThreadUtils {
    */
   public static void dumpStack(final Host host) {
     for (int v=0; v < host.getVMCount(); v++) {
-      host.getVM(v).invoke(com.gemstone.gemfire.test.dunit.DistributedTestCase.class, "dumpStack");
+      host.getVM(v).invoke(org.apache.geode.test.dunit.DistributedTestCase.class, "dumpStack");
     }
   }
 
@@ -90,7 +90,7 @@ public class ThreadUtils {
    * @since GemFire 5.0
    */
   public static void dumpStack(final VM vm) {
-    vm.invoke(com.gemstone.gemfire.test.dunit.DistributedTestCase.class, "dumpStack");
+    vm.invoke(org.apache.geode.test.dunit.DistributedTestCase.class, "dumpStack");
   }
 
   public static void dumpStackTrace(final Thread thread, final StackTraceElement[] stackTrace) {

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.process.signal;
+package org.apache.geode.internal.process.signal;
 
 import java.util.EventListener;
 

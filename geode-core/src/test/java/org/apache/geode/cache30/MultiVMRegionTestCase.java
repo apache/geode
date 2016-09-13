@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
-import static com.gemstone.gemfire.internal.lang.ThrowableUtils.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.apache.geode.internal.lang.ThrowableUtils.*;
+import static org.apache.geode.test.dunit.Assert.*;
 import static org.junit.Assume.*;
 
 import java.io.ByteArrayInputStream;
@@ -48,81 +48,81 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.TransactionEvent;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.EntryExpiryTask;
-import com.gemstone.gemfire.internal.cache.ExpiryTask;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.cache.TombstoneService;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.TransactionListener;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EntryExpiryTask;
+import org.apache.geode.internal.cache.ExpiryTask;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.TombstoneService;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Abstract superclass of {@link Region} tests that involve more than
@@ -443,7 +443,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 Object value = e.getNewValue();
                 assertNotNull(value);
                 try {
-                  com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("++ Adding " + value);
+                  org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Adding " + value);
                   queue.put(value);
 
                 } catch (InterruptedException ex) {
@@ -464,9 +464,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               (LinkedBlockingQueue) region.getUserAttribute();
             for (int i = 0; i <= lastNumber; i++) {
               try {
-                com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("++ Waiting for " + i);
+                org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Waiting for " + i);
                 Integer value = (Integer) queue.take();
-                com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("++ Got " + value);
+                org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Got " + value);
                 assertEquals(i, value.intValue());
 
               } catch (InterruptedException ex) {
@@ -483,7 +483,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             Region region =
               getRootRegion().getSubregion(name);
             for (int i = 0; i <= lastNumber; i++) {
-//              com.gemstone.gemfire.internal.GemFireVersion.waitForJavaDebugger(getLogWriter());
+//              org.apache.geode.internal.GemFireVersion.waitForJavaDebugger(getLogWriter());
               region.put(key, new Integer(i));
             }
           }
@@ -998,7 +998,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               // changed from severe to fine because it is possible
               // for this to return non-null on d-no-ack
               // that is was invokeRepeatingIfNecessary is called
-              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().fine("invalidated entry has value of " + entry.getValue());
+              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().fine("invalidated entry has value of " + entry.getValue());
             }
             assertNull(entry.getValue());
           }
@@ -3295,7 +3295,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertTrue(index >= 0);
         assertEquals(expectedValues.remove(index), event.getNewValue());
         expectedKeys.remove(index);
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("afterCreate called in " +
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("afterCreate called in " +
          "MirroredDataFromNonMirroredListener for key:" + event.getKey());
       }
     }
@@ -3420,7 +3420,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           Region.Entry entry1 = region.getEntry(key1);
           if (!getRegionAttributes().getDataPolicy().withReplication()) {
             if (entry1 != null) {
-              com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("found entry " + entry1);
+              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("found entry " + entry1);
             }
             assertNull(entry1);
           }
@@ -4314,7 +4314,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             factory.setScope(Scope.DISTRIBUTED_ACK);
             factory.setDataPolicy(DataPolicy.NORMAL);
             factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("MJT DEBUG: attrs0 are " + factory.create());
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("MJT DEBUG: attrs0 are " + factory.create());
             createRootRegion(factory.create());
           }
           {
@@ -4324,12 +4324,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             if (getRegionAttributes().getDataPolicy() == DataPolicy.NORMAL) {
               factory.setDataPolicy(DataPolicy.PRELOADED);
             }
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("MJT DEBUG: attrs1 are " + factory.create());
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("MJT DEBUG: attrs1 are " + factory.create());
             Region region = createRegion(name, factory.create());
           }
           finishCacheXml(name);
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
         }
       };
 
@@ -4350,7 +4350,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             createRegion(name, factory.create());
           }
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
         }
       });
 
@@ -4373,8 +4373,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         Region region = getRootRegion().getSubregion(name);
 
         // wait for profile of getInitialImage cache to show up
-        final com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor adv =
-          ((com.gemstone.gemfire.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
+        final org.apache.geode.internal.cache.CacheDistributionAdvisor adv =
+          ((org.apache.geode.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
           @Override
@@ -4408,7 +4408,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         // before the get initial image is complete.
         for (int i = 1; i < NB1_NUM_ENTRIES; i += 2) {
           Object key = new Integer(i);
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Operation #"+i+" on key " + key);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Operation #"+i+" on key " + key);
           switch (i % 6) {
             case 1: // UPDATE
               // use the current timestamp so we know when it happened
@@ -4462,12 +4462,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             // if this is a no_ack test, then we need to slow down more because of the
             // pauses in the nonblocking operations
             int pause = 200;
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = pause;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = pause;
           }
         });
     }
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Before GetInitialImage, data policy is "+getRegionAttributes().getDataPolicy()+", scope is "+getRegionAttributes().getScope());
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Before GetInitialImage, data policy is "+getRegionAttributes().getDataPolicy()+", scope is "+getRegionAttributes().getScope());
     AsyncInvocation asyncGII = vm2.invokeAsync(create);
 
     if (!getRegionAttributes().getScope().isGlobal()) {
@@ -4476,16 +4476,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm2.invoke(new SerializableRunnable("Set fast image processing") {
           @Override
           public void run() {
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
         });
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
     }
 
     // wait for GII to complete
     ThreadUtils.join(asyncGII, 30 * 1000);
     final long iiComplete = System.currentTimeMillis();
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
 
     if (getRegionAttributes().getScope().isGlobal()) {
       // wait for nonblocking operations to complete
@@ -4508,7 +4508,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           region.localDestroyRegion();
         }
       });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("after localDestroyRegion");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("after localDestroyRegion");
 
       // invoke repeating so noack regions wait for all updates to get processed
     vm2.invokeRepeatingIfNecessary(new CacheSerializableRunnable("Verify entryCount") {
@@ -4532,12 +4532,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           if (entriesDumped) return;
           entriesDumped = true;
 
-          LogWriter logger = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
+          LogWriter logger = org.apache.geode.test.dunit.LogWriterUtils.getLogWriter();
           logger.info("DUMPING Entries with values in VM that should have been destroyed:");
           for (int i = 5; i < NB1_NUM_ENTRIES; i += 6) {
             try {
             logger.info(i + "-->" +
-              ((com.gemstone.gemfire.internal.cache.LocalRegion)region).getValueInVM(new Integer(i)));
+              ((org.apache.geode.internal.cache.LocalRegion)region).getValueInVM(new Integer(i)));
             } catch(EntryNotFoundException expected) {
               logger.info(i + "-->" +
                    "CORRECTLY DESTROYED");
@@ -4545,7 +4545,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
         }
     }, 5000);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("after verify entryCount");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("after verify entryCount");
 
 
     vm2.invoke(new CacheSerializableRunnable("Verify keys/values & Nonblocking") {
@@ -4600,7 +4600,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               }
             }
           }
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": " + numConcurrent + " entries out of " + entryCount +
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": " + numConcurrent + " entries out of " + entryCount +
                               " were updated concurrently with getInitialImage");
           // make sure at least some of them were concurrent
           if (region.getAttributes().getScope().isGlobal()) {
@@ -4616,7 +4616,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
         }
       });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("after verify key/values");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("after verify key/values");
   }
 
   /**
@@ -4667,7 +4667,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
           finishCacheXml(name);
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
         }
       };
 
@@ -4688,7 +4688,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             createRegion(name, factory.create());
           }
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
         }
       });
 
@@ -4711,8 +4711,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         Region region = getRootRegion().getSubregion(name);
 
         // wait for profile of getInitialImage cache to show up
-        final com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor adv =
-          ((com.gemstone.gemfire.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
+        final org.apache.geode.internal.cache.CacheDistributionAdvisor adv =
+          ((org.apache.geode.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
           @Override
@@ -4798,7 +4798,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             // if this is a no_ack test, then we need to slow down more because of the
             // pauses in the nonblocking operations
             int pause = 200;
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = pause;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = pause;
           }
         });
     }
@@ -4813,16 +4813,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm2.invoke(new SerializableRunnable("Set fast image processing") {
           @Override
           public void run() {
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
         });
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
     }
 
     // wait for GII to complete
     ThreadUtils.join(asyncGII, 30 * 1000);
     final long iiComplete = System.currentTimeMillis();
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
     if (getRegionAttributes().getScope().isGlobal()) {
       // wait for nonblocking operations to complete
       ThreadUtils.join(async, 30 * 1000);
@@ -4868,11 +4868,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           if (entriesDumped) return;
           entriesDumped = true;
 
-          LogWriter logger = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
+          LogWriter logger = org.apache.geode.test.dunit.LogWriterUtils.getLogWriter();
           logger.info("DUMPING Entries with values in VM that should have been destroyed:");
           for (int i = 5; i < NB1_NUM_ENTRIES; i += 6) {
             logger.info(i + "-->" +
-              ((com.gemstone.gemfire.internal.cache.LocalRegion)region).getValueInVM(new Integer(i)));
+              ((org.apache.geode.internal.cache.LocalRegion)region).getValueInVM(new Integer(i)));
           }
         }
     }, 5000);
@@ -4930,7 +4930,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               }
             }
           }
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": " + numConcurrent + " entries out of " + entryCount +
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": " + numConcurrent + " entries out of " + entryCount +
                               " were updated concurrently with getInitialImage");
           // make sure at least some of them were concurrent
           {
@@ -4986,7 +4986,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
           finishCacheXml(name);
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
         }
       };
 
@@ -5008,7 +5008,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             createRegion(name, factory.create());
           }
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
         }
       });
 
@@ -5036,8 +5036,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getRootRegion().getSubregion(name);
 
         // wait for profile of getInitialImage cache to show up
-        final com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor adv =
-          ((com.gemstone.gemfire.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
+        final org.apache.geode.internal.cache.CacheDistributionAdvisor adv =
+          ((org.apache.geode.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
           @Override
@@ -5121,7 +5121,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             // if this is a no_ack test, then we need to slow down more because of the
             // pauses in the nonblocking operations
             int pause = /*getRegionAttributes().getScope().isAck() ? */100/* : 300*/;
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = pause;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = pause;
           }
         });
     }
@@ -5137,17 +5137,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         vm2.invoke(new SerializableRunnable("Set fast image processing") {
           @Override
           public void run() {
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
         });
       }
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
     }
 
     // wait for GII to complete
     ThreadUtils.join(asyncGII, 30 * 1000);
     final long iiComplete = System.currentTimeMillis();
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
     if (getRegionAttributes().getScope().isGlobal()) {
       // wait for nonblocking operations to complete
       ThreadUtils.join(async, 30 * 1000);
@@ -5193,11 +5193,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           if (entriesDumped) return;
           entriesDumped = true;
 
-          LogWriter logger = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
+          LogWriter logger = org.apache.geode.test.dunit.LogWriterUtils.getLogWriter();
           logger.info("DUMPING Entries with values in VM that should have been destroyed:");
           for (int i = 5; i < NB1_NUM_ENTRIES; i += 6) {
             logger.info(i + "-->" +
-              ((com.gemstone.gemfire.internal.cache.LocalRegion)region).getValueInVM(new Integer(i)));
+              ((org.apache.geode.internal.cache.LocalRegion)region).getValueInVM(new Integer(i)));
           }
         }
     }, 3000);
@@ -5260,7 +5260,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               }
             }
           }
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": " + numConcurrent + " entries out of " + entryCount +
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": " + numConcurrent + " entries out of " + entryCount +
                               " were updated concurrently with getInitialImage");
 
           // [sumedh] Occasionally fails. Do these assertions really make sense?
@@ -5313,7 +5313,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             createRegion(name, factory.create());
           }
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
         }
       });
 
@@ -5342,8 +5342,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getRootRegion().getSubregion(name);
 
         // wait for profile of getInitialImage cache to show up
-        final com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor adv =
-          ((com.gemstone.gemfire.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
+        final org.apache.geode.internal.cache.CacheDistributionAdvisor adv =
+          ((org.apache.geode.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
 //        int numProfiles;
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
@@ -5363,7 +5363,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         // before falling into the update loop
         /*
         pause(50);
-        ((com.gemstone.gemfire.distributed.internal.InternalDistributedSystem)
+        ((org.apache.geode.distributed.internal.InternalDistributedSystem)
           region.getCache().getDistributedSystem()).flushUnicastMessages();
         */
 
@@ -5433,7 +5433,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         public void run2() throws CacheException {
           if (!getRegionAttributes().getScope().isGlobal()) {
             int pause = 200;
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = pause;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = pause;
           }
 
           beginCacheXml();
@@ -5457,7 +5457,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
           finishCacheXml(name);
           // reset slow
-          com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+          org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           // if global scope, the region doesn't get destroyed until after region creation
           try {Thread.sleep(3000);} catch (InterruptedException ie) {fail("interrupted");}
           assertTrue(getRootRegion().getSubregion(name) == null || getRegionAttributes().getScope().isGlobal());
@@ -5473,16 +5473,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm2.invoke(new SerializableRunnable("Set fast image processing") {
           @Override
           public void run() {
-            com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
+            org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
         });
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("after async nonblocking ops complete");
     }
 
     // wait for GII to complete
     //getLogWriter().info("starting wait for GetInitialImage Completion");
     ThreadUtils.join(asyncGII, 30 * 1000);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Complete GetInitialImage at: " + System.currentTimeMillis());
     if (getRegionAttributes().getScope().isGlobal()) {
       // wait for nonblocking operations to complete
       ThreadUtils.join(async, 30 * 1000);
@@ -5523,10 +5523,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": before creates");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": before creates");
     vm0.invoke(create);
     vm1.invoke(create);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after creates");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after creates");
 
     final Object key = "KEY";
     final Object key2 = "KEY2";
@@ -5540,7 +5540,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           disconnectFromDS();
         }
       });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 disconnect");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 disconnect");
 
     try {
     vm0.invoke(new CacheSerializableRunnable("Put int") {
@@ -5550,7 +5550,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           IntWrapper.IntWrapperSerializer serializer =
             (IntWrapper.IntWrapperSerializer)
             DataSerializer.register(c);
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Registered serializer id:" + serializer.getId()
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Registered serializer id:" + serializer.getId()
               + " class:" + c.getName());
 
           Region region = getRootRegion().getSubregion(name);
@@ -5560,7 +5560,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertTrue(serializer.wasInvoked);
         }
       });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm0 put");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm0 put");
 
     SerializableRunnable get = new CacheSerializableRunnable("Get int") {
         @Override
@@ -5600,7 +5600,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       };
     vm1.invoke(get);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm1 get");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm1 get");
 
     // Make sure that VMs that connect after registration can get the
     // serializer
@@ -5615,7 +5615,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm2.invoke(create);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 create");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 create");
     vm2.invoke(new CacheSerializableRunnable("Put long") {
         @Override
         public void run2() throws CacheException {
@@ -5630,9 +5630,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertTrue(serializer.wasInvoked);
         }
       });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 put");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 put");
     vm2.invoke(get);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 get");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 get");
 
     SerializableRunnable get2 = new CacheSerializableRunnable("Get long") {
         @Override
@@ -5645,9 +5645,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       };
     vm0.invoke(get2);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm0 get2");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm0 get2");
     vm1.invoke(get2);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm1 get2");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm1 get2");
 
     // wait a little while for other netsearch requests to return
     // before unregistering the serializers that will be needed to process these
@@ -5655,7 +5655,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     } finally {
     Wait.pause(1500);
     unregisterAllSerializers();
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after unregister");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after unregister");
     }
   }
 
@@ -8310,11 +8310,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       long start = System.currentTimeMillis();
       RegionVersionVector vm0vv = getVersionVector(vm0);
       long end = System.currentTimeMillis();
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("version vector transmission took " + (end-start) + " ms");
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm0 vector = " + vm0vv);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("version vector transmission took " + (end-start) + " ms");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm0 vector = " + vm0vv);
   
-      RegionVersionVector vm1vv = getVersionVector(vm1);    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm1 vector = " + vm1vv);
-      RegionVersionVector vm2vv = getVersionVector(vm2);    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm2 vector = " + vm2vv);
+      RegionVersionVector vm1vv = getVersionVector(vm1);    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm1 vector = " + vm1vv);
+      RegionVersionVector vm2vv = getVersionVector(vm2);    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm2 vector = " + vm2vv);
       
       Map<String, VersionTag> vm0Versions = (Map<String, VersionTag>)vm0.invoke(() -> this.getCCRegionVersions());
       Map<String, VersionTag> vm1Versions = (Map<String, VersionTag>)vm1.invoke(() -> this.getCCRegionVersions());
@@ -8640,7 +8640,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             Wait.waitForCriterion(waitForExpiration, TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT+(TombstoneService.MAX_SLEEP_TIME*9), 100, true);
           } catch (AssertionError e) {
             CCRegion.dumpBackingMap();
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("tombstone service state: " + CCRegion.getCache().getTombstoneService());
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("tombstone service state: " + CCRegion.getCache().getTombstoneService());
             throw e;
           }
         }
@@ -8684,7 +8684,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
           } catch (AssertionError e) {
             CCRegion.dumpBackingMap();
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("tombstone service state: " + CCRegion.getCache().getTombstoneService());
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("tombstone service state: " + CCRegion.getCache().getTombstoneService());
             throw e;
           } catch (CacheException e) {
             fail("while performing create/destroy operations", e);
@@ -9066,7 +9066,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
           @Override
           public Object load(LoaderHelper helper) throws CacheLoaderException {
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("The test CacheLoader has been invoked for key '" + helper.getKey() + "'");
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("The test CacheLoader has been invoked for key '" + helper.getKey() + "'");
             return "loadedValue";
           }
         });
@@ -9157,7 +9157,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         for (int i=0; i<100; i++) {
           RegionEntry entry = r.getRegionEntry("cckey"+i);
           int stamp = entry.getVersionStamp().getEntryVersion();
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("checking key cckey" + i + " having version " + stamp + " entry=" + entry);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("checking key cckey" + i + " having version " + stamp + " entry=" + entry);
           assertEquals(2, stamp);
           assertEquals(result.get("cckey"+i), i+1);
         }
@@ -9211,13 +9211,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public static byte[] getCCRegionVersionVector() throws Exception {
     Object id = getMemberId();
     int vm = VM.getCurrentVMNum();
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("vm" + vm + " with id " + id + " copying " + CCRegion.getVersionVector().fullToString());
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("vm" + vm + " with id " + id + " copying " + CCRegion.getVersionVector().fullToString());
     RegionVersionVector vector = CCRegion.getVersionVector().getCloneForTransmission();
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("clone is " + vector);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("clone is " + vector);
     HeapDataOutputStream dos = new HeapDataOutputStream(3000, Version.CURRENT);
     DataSerializer.writeObject(vector, dos);
     byte[] bytes = dos.toByteArray();
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("serialized size is " + bytes.length);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("serialized size is " + bytes.length);
     return bytes;
   }
 
@@ -9240,7 +9240,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void sendSerialMessageToAll() {
     if (getCache() instanceof GemFireCacheImpl) {
       try {
-        com.gemstone.gemfire.distributed.internal.SerialAckedMessage msg = new com.gemstone.gemfire.distributed.internal.SerialAckedMessage();
+        org.apache.geode.distributed.internal.SerialAckedMessage msg = new org.apache.geode.distributed.internal.SerialAckedMessage();
         msg.send(InternalDistributedSystem.getConnectedInstance().getDM().getNormalDistributionManagerIds(), false);
       }
       catch (Exception e) {
@@ -9250,7 +9250,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   }
 
   /** a class for testing handling of concurrent delta operations */
-  static class DeltaValue implements com.gemstone.gemfire.Delta, Serializable {
+  static class DeltaValue implements org.apache.geode.Delta, Serializable {
     
     private String value;
     

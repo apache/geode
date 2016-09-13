@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans.stats;
+package org.apache.geode.management.internal.beans.stats;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.management.internal.FederationComponent;
+import org.apache.geode.management.internal.FederationComponent;
 
 /**
  *

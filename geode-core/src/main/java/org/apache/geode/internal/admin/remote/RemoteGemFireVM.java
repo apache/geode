@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -26,31 +26,31 @@ import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-import com.gemstone.gemfire.admin.GemFireMemberStatus;
-import com.gemstone.gemfire.admin.OperationCancelledException;
-import com.gemstone.gemfire.admin.RegionSubRegionSnapshot;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Config;
-import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
-import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.admin.CacheInfo;
-import com.gemstone.gemfire.internal.admin.DLockInfo;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.admin.HealthListener;
-import com.gemstone.gemfire.internal.admin.ListenerIdMap;
-import com.gemstone.gemfire.internal.admin.Stat;
-import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
-import com.gemstone.gemfire.internal.admin.StatListener;
-import com.gemstone.gemfire.internal.admin.StatResource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.admin.GemFireMemberStatus;
+import org.apache.geode.admin.OperationCancelledException;
+import org.apache.geode.admin.RegionSubRegionSnapshot;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.admin.AdminBridgeServer;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.admin.CacheInfo;
+import org.apache.geode.internal.admin.DLockInfo;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.admin.HealthListener;
+import org.apache.geode.internal.admin.ListenerIdMap;
+import org.apache.geode.internal.admin.Stat;
+import org.apache.geode.internal.admin.StatAlertDefinition;
+import org.apache.geode.internal.admin.StatListener;
+import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides access to a remote gemfire VM for purposes of gathering statistics
@@ -443,7 +443,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   }
   
   /**
-   * Returns the runtime {@link com.gemstone.gemfire.admin.GemFireMemberStatus} from the vm
+   * Returns the runtime {@link org.apache.geode.admin.GemFireMemberStatus} from the vm
    * The idea is this snapshot is similar to stats that represent the current state of a 
    * running VM. However, this is a bit higher level than a stat 
    */
@@ -454,7 +454,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   }
 
   /**
-   * Returns the runtime {@link com.gemstone.gemfire.admin.RegionSubRegionSnapshot} from the vm
+   * Returns the runtime {@link org.apache.geode.admin.RegionSubRegionSnapshot} from the vm
    * The idea is this snapshot is quickly salvageable to present a cache's region's info 
    */
   public RegionSubRegionSnapshot getRegionSnapshot(){
@@ -837,10 +837,10 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
   /**
    * A daemon thread that reads  
-   * com.gemstone.gemfire.internal.admin.remote.RemoteGemFireVM.DispatchArgs 
+   * org.apache.geode.internal.admin.remote.RemoteGemFireVM.DispatchArgs 
    * off of a queue
    * and delivers callbacks to the appropriate {@link 
-   * com.gemstone.gemfire.internal.admin.StatListener}.
+   * org.apache.geode.internal.admin.StatListener}.
    */
   private class StatDispatcher extends Thread {
     private BlockingQueue queue = new LinkedBlockingQueue();

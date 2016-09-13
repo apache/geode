@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.operations;
+package org.apache.geode.internal.cache.operations;
 
-import com.gemstone.gemfire.cache.operations.KeyOperationContext;
+import org.apache.geode.cache.operations.KeyOperationContext;
 
 /**
- * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CONTAINS_KEY} region operation having the
+ * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CONTAINS_KEY} region operation having the
  * key object for the pre-operation case.
  * 
  * @since GemFire 5.5

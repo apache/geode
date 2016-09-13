@@ -18,9 +18,9 @@
 /**
  * 
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
@@ -32,42 +32,42 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.NetMember;
-import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionClearedException;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.TombstoneService;
-import com.gemstone.gemfire.internal.cache.UpdateOperation;
-import com.gemstone.gemfire.internal.cache.VersionTagHolder;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.versions.VMVersionTag;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.cache.vmotion.VMotionObserver;
-import com.gemstone.gemfire.internal.cache.vmotion.VMotionObserverHolder;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetMember;
+import org.apache.geode.internal.cache.DistributedCacheOperation;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionClearedException;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.TombstoneService;
+import org.apache.geode.internal.cache.UpdateOperation;
+import org.apache.geode.internal.cache.VersionTagHolder;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.VMVersionTag;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.cache.vmotion.VMotionObserver;
+import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitTest {
@@ -237,7 +237,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
               "fake_id", "fake_id_ustring", DistributionManager.NORMAL_DM_TYPE, null, null);
           tag.setMemberID(mbr);
         } catch (UnknownHostException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("could not create member id", e);
+          org.apache.geode.test.dunit.Assert.fail("could not create member id", e);
         }
         
         // generate an event to distribute that contains the fake version tag
@@ -254,7 +254,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     try {
       partialCreate.getResult();
     } catch (Throwable e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("async invocation in vm2 failed", e);
+      org.apache.geode.test.dunit.Assert.fail("async invocation in vm2 failed", e);
     }
   }  
 
@@ -314,7 +314,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
           CCRegion.put("cckey0", "ccvalue");
           CCRegion.put("cckey0", "ccvalue");  // version number will end up at 4
         } catch (CacheException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+          org.apache.geode.test.dunit.Assert.fail("While creating region", ex);
         }
       }
     };
@@ -334,7 +334,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         try {
           entry.makeTombstone(CCRegion, tag);
         } catch (RegionClearedException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("region was mysteriously cleared during unit testing", e);
+          org.apache.geode.test.dunit.Assert.fail("region was mysteriously cleared during unit testing", e);
         }
       }
     });
@@ -396,7 +396,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       long gcCount = CCRegion.getCachePerfStats().getTombstoneGCCount();
       assertTrue("expected a few GCs, but not " + (gcCount - initialCount), gcCount < (initialCount + 20));
     } catch (CacheException ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+      org.apache.geode.test.dunit.Assert.fail("While creating region", ex);
     } finally {
       TombstoneService.EXPIRED_TOMBSTONE_LIMIT = saveExpiredTombstoneLimit;
       TombstoneService.FORCE_GC_MEMORY_EVENTS = false;
@@ -443,7 +443,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
           }
           assertEquals("expected no conflated events", 0, CCRegion.getCachePerfStats().getConflatedEventsCount());
         } catch (CacheException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+          org.apache.geode.test.dunit.Assert.fail("While creating region", ex);
         }
       }
     };

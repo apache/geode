@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /** Thrown if a <code>netSearch</code> times out without getting a response back from a cache,
  * or when attempting to acquire a distributed lock.
@@ -23,15 +23,15 @@ package com.gemstone.gemfire.cache;
  *
  *
  * @see LoaderHelper#netSearch
- * @see com.gemstone.gemfire.cache.Region#invalidateRegion()
- * @see com.gemstone.gemfire.cache.Region#destroyRegion()
+ * @see org.apache.geode.cache.Region#invalidateRegion()
+ * @see org.apache.geode.cache.Region#destroyRegion()
  * @see Region#createSubregion
- * @see com.gemstone.gemfire.cache.Region#get(Object)
- * @see com.gemstone.gemfire.cache.Region#put(Object, Object)
- * @see com.gemstone.gemfire.cache.Region#create(Object, Object)
- * @see com.gemstone.gemfire.cache.Region#invalidate(Object)
- * @see com.gemstone.gemfire.cache.Region#destroy(Object)
- * @see com.gemstone.gemfire.distributed.DistributedLockService
+ * @see org.apache.geode.cache.Region#get(Object)
+ * @see org.apache.geode.cache.Region#put(Object, Object)
+ * @see org.apache.geode.cache.Region#create(Object, Object)
+ * @see org.apache.geode.cache.Region#invalidate(Object)
+ * @see org.apache.geode.cache.Region#destroy(Object)
+ * @see org.apache.geode.distributed.DistributedLockService
  * @since GemFire 3.0
  */
 public class TimeoutException extends OperationAbortedException {

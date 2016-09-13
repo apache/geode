@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.wan;
+package org.apache.geode.cache.wan;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 
 /**
  * Factory to create SerialGatewaySender

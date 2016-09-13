@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.sequencelog.io;
+package org.apache.geode.internal.sequencelog.io;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.internal.sequencelog.Transition;
+import org.apache.geode.internal.sequencelog.Transition;
 
 /**
  * Appends events logged using the SequenceLogger to a binary stream.

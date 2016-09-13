@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.extension;
+package org.apache.geode.internal.cache.extension;
 
 import static org.junit.Assert.*;
 
@@ -22,13 +22,13 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.test.fake.Fakes;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.test.fake.Fakes;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SimpleExtensionPoint}.

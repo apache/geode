@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
-import com.gemstone.gemfire.internal.cache.EntryBits;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.RegionEntryContext;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
+import org.apache.geode.internal.cache.EntryBits;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryContext;
 
 /**
  * Used to represent stored objects that can be stored

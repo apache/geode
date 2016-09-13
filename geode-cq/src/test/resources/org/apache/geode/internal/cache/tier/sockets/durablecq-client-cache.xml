@@ -31,7 +31,7 @@
 
     <region name="testReadyForEventsNotCalledImplicitlyWithCacheXML_region" >
     <region-attributes id="testReadyForEventsNotCalledImplicitlyWithCacheXML_region" statistics-enabled="true"  pool-name="client" refid="PROXY">
-        <cache-listener><class-name>com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil$ControlListener</class-name></cache-listener>
+        <cache-listener><class-name>org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil$ControlListener</class-name></cache-listener>
     </region-attributes>
     </region>
 </client-cache>

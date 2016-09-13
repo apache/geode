@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.management.internal.beans.QueryDataFunction;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.management.internal.beans.QueryDataFunction;
 
 import javax.management.ObjectName;
 import java.util.concurrent.TimeUnit;

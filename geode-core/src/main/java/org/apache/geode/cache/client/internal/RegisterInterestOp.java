@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ChunkedMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.distributed.internal.ServerLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,7 +128,7 @@ public class RegisterInterestOp {
   protected static class RegisterInterestOpImpl extends AbstractOp {
     protected String region;
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public RegisterInterestOpImpl(String region,
                                   Object key,
@@ -157,7 +157,7 @@ public class RegisterInterestOp {
     }
     /**
      * This constructor is used by our subclass CreateCQWithIROpImpl
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     protected RegisterInterestOpImpl(String region, int msgType, int numParts) {
       super(msgType, numParts);

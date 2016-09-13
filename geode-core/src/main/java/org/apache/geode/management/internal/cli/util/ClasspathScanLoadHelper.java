@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -31,8 +31,8 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.internal.cli.CliUtil;
 
 /**
  * Utility class to scan class-path & load classes.

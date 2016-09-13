@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +66,7 @@ import java.util.concurrent.TimeUnit;
  * 
  *  <p>To aid in creating copies, the "copy on read"
  *  <code>Cache</code> attribute and the {@link
- *  com.gemstone.gemfire.CopyHelper#copy} method are provided.
+ *  org.apache.geode.CopyHelper#copy} method are provided.
  *  The following is a Read Committed safe example using the
  *  <code>CopyHelper.copy</code> method.
  * 
@@ -87,7 +87,7 @@ import java.util.concurrent.TimeUnit;
  * (see {@link AttributesFactory} for Scope).  For both scopes, a
  * consistent configuration (per VM) is enforced.
  * 
- * <p>Global Regions, client Regions (see com.gemstone.gemfire.cache.client package)
+ * <p>Global Regions, client Regions (see org.apache.geode.cache.client package)
  * and persistent Regions (see {@link DiskWriteAttributes}) do not
  * support transactions.
  * 

@@ -71,13 +71,13 @@ subprojects {
   task checkMissedTests(type: Test) {
     include '**/*Test.class'
     useJUnit {
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.PerformanceTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.HydraTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.ContainerTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
+      excludeCategories 'org.apache.geode.test.junit.categories.UnitTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.PerformanceTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.HydraTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.ContainerTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.UITest'
     }
 
     //Skip launching any DUnit VMs during this run. This will prevent
@@ -92,8 +92,8 @@ subprojects {
 
   test {
     useJUnit {
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.UnitTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
+      includeCategories 'org.apache.geode.test.junit.categories.UnitTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     
     doFirst {
@@ -103,8 +103,8 @@ subprojects {
 
   task integrationTest(type:Test) {
     useJUnit {
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.IntegrationTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
+      includeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
     forkEvery 1
@@ -115,8 +115,8 @@ subprojects {
 
   task uiTest(type:Test) {
     useJUnit {
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
+      includeCategories 'org.apache.geode.test.junit.categories.UITest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
     doFirst {
@@ -126,15 +126,15 @@ subprojects {
   
   task distributedTest(type:Test) {
     useJUnit {
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.DistributedTest'
-      excludeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
+      includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     forkEvery 30
   }
   
   task flakyTest(type:Test) {
     useJUnit {
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.FlakyTest'
+      includeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     
     forkEvery 1
@@ -147,7 +147,7 @@ subprojects {
   }
   task securityTest(type:Test) {
     useJUnit {
-      includeCategories 'com.gemstone.gemfire.test.junit.categories.SecurityTest'
+      includeCategories 'org.apache.geode.test.junit.categories.SecurityTest'
     }
 
     forkEvery 1

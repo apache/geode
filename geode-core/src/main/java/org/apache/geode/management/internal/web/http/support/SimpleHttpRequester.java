@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.web.http.support;
+package org.apache.geode.management.internal.web.http.support;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

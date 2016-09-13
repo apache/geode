@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.PureJavaMode;
-import com.gemstone.gemfire.internal.admin.ListenerIdMap;
-import com.gemstone.gemfire.internal.admin.remote.StatListenerMessage;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.statistics.platform.OsStatisticsFactory;
-import com.gemstone.gemfire.internal.statistics.platform.ProcessStats;
+import org.apache.geode.Statistics;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.admin.ListenerIdMap;
+import org.apache.geode.internal.admin.remote.StatListenerMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
+import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 import java.io.File;
 import java.util.ArrayList;

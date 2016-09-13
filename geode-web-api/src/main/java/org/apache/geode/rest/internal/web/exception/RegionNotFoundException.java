@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.exception;
+package org.apache.geode.rest.internal.web.exception;
 
 /**
  * Indicates that Region does not found while trying to do some REST operation on that region.

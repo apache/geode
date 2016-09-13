@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.execute;
+package org.apache.geode.cache.execute;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.LowMemoryException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.LowMemoryException;
 
 /**
  * Provides methods to build the context for the execution of a {@link Function}
@@ -49,7 +49,7 @@ public interface Execution {
    *           if filter passed is null.
    * @throws UnsupportedOperationException
    *           if not called after
-   *           {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)}
+   *           {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since GemFire 6.0
    */
   public Execution withFilter(Set<?> filter);

@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.generator;
+package org.apache.geode.security.generator;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.tier.sockets.HandShake;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.security.templates.LdapUserAuthenticator;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.templates.LdapUserAuthenticator;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.util.test.TestUtil;
 import org.apache.logging.log4j.Logger;
 
 import java.security.Principal;
 import java.util.Properties;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 

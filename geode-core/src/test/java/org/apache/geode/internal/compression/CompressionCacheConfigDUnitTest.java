@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.compression;
+package org.apache.geode.internal.compression;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -27,18 +27,18 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests configured and badly configured cache.xml files with regards to compression.
@@ -54,7 +54,7 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
   /**
    * Sample cache.xml with a recognized compressor.
    */
-  private static final String GOOD_COMPRESSOR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE cache PUBLIC \"-//GemStone Systems, Inc.//GemFire Declarative Cache 8.0//EN\" \"http://www.gemstone.com/dtd/cache8_0.dtd\">\n<cache lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" is-server=\"true\" copy-on-read=\"false\">\n<region name=\"compressedRegion\">\n<region-attributes data-policy=\"replicate\" cloning-enabled=\"true\">\n<compressor>\n<class-name>com.gemstone.gemfire.compression.SnappyCompressor</class-name>\n</compressor>\n</region-attributes>\n</region>\n</cache>";
+  private static final String GOOD_COMPRESSOR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE cache PUBLIC \"-//GemStone Systems, Inc.//GemFire Declarative Cache 8.0//EN\" \"http://www.gemstone.com/dtd/cache8_0.dtd\">\n<cache lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" is-server=\"true\" copy-on-read=\"false\">\n<region name=\"compressedRegion\">\n<region-attributes data-policy=\"replicate\" cloning-enabled=\"true\">\n<compressor>\n<class-name>org.apache.geode.compression.SnappyCompressor</class-name>\n</compressor>\n</region-attributes>\n</region>\n</cache>";
 
   /**
    * Sample cache.xml with an unrecognized compressor.

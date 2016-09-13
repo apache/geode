@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.*;
 import static com.jayway.awaitility.Awaitility.*;
 
 import java.io.File;
@@ -41,35 +41,35 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.ClassBuilder;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
@@ -1059,31 +1059,31 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     this.filesToBeDeleted.add(jarFile5.getAbsolutePath());
 
     byte[] jarBytes = classBuilder.createJarFromClassContent("com/cadrdunit/RegionAlterCacheListenerA",
-        "package com.cadrdunit;" + "import com.gemstone.gemfire.cache.util.CacheListenerAdapter;" + "public class RegionAlterCacheListenerA extends CacheListenerAdapter {}");
+        "package com.cadrdunit;" + "import org.apache.geode.cache.util.CacheListenerAdapter;" + "public class RegionAlterCacheListenerA extends CacheListenerAdapter {}");
     writeJarBytesToFile(jarFile1, jarBytes);
     CommandResult cmdResult = executeCommand("deploy --jar=testAlterRegion1.jar");
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     jarBytes = classBuilder.createJarFromClassContent("com/cadrdunit/RegionAlterCacheListenerB",
-        "package com.cadrdunit;" + "import com.gemstone.gemfire.cache.util.CacheListenerAdapter;" + "public class RegionAlterCacheListenerB extends CacheListenerAdapter {}");
+        "package com.cadrdunit;" + "import org.apache.geode.cache.util.CacheListenerAdapter;" + "public class RegionAlterCacheListenerB extends CacheListenerAdapter {}");
     writeJarBytesToFile(jarFile2, jarBytes);
     cmdResult = executeCommand("deploy --jar=testAlterRegion2.jar");
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     jarBytes = classBuilder.createJarFromClassContent("com/cadrdunit/RegionAlterCacheListenerC",
-        "package com.cadrdunit;" + "import com.gemstone.gemfire.cache.util.CacheListenerAdapter;" + "public class RegionAlterCacheListenerC extends CacheListenerAdapter {}");
+        "package com.cadrdunit;" + "import org.apache.geode.cache.util.CacheListenerAdapter;" + "public class RegionAlterCacheListenerC extends CacheListenerAdapter {}");
     writeJarBytesToFile(jarFile3, jarBytes);
     cmdResult = executeCommand("deploy --jar=testAlterRegion3.jar");
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     jarBytes = classBuilder.createJarFromClassContent("com/cadrdunit/RegionAlterCacheLoader",
-        "package com.cadrdunit;" + "import com.gemstone.gemfire.cache.CacheLoader;" + "import com.gemstone.gemfire.cache.CacheLoaderException;" + "import com.gemstone.gemfire.cache.LoaderHelper;" + "public class RegionAlterCacheLoader implements CacheLoader {" + "public void close() {}" + "public Object load(LoaderHelper helper) throws CacheLoaderException {return null;}}");
+        "package com.cadrdunit;" + "import org.apache.geode.cache.CacheLoader;" + "import org.apache.geode.cache.CacheLoaderException;" + "import org.apache.geode.cache.LoaderHelper;" + "public class RegionAlterCacheLoader implements CacheLoader {" + "public void close() {}" + "public Object load(LoaderHelper helper) throws CacheLoaderException {return null;}}");
     writeJarBytesToFile(jarFile4, jarBytes);
     cmdResult = executeCommand("deploy --jar=testAlterRegion4.jar");
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     jarBytes = classBuilder.createJarFromClassContent("com/cadrdunit/RegionAlterCacheWriter",
-        "package com.cadrdunit;" + "import com.gemstone.gemfire.cache.util.CacheWriterAdapter;" + "public class RegionAlterCacheWriter extends CacheWriterAdapter {}");
+        "package com.cadrdunit;" + "import org.apache.geode.cache.util.CacheWriterAdapter;" + "public class RegionAlterCacheWriter extends CacheWriterAdapter {}");
     writeJarBytesToFile(jarFile5, jarBytes);
     cmdResult = executeCommand("deploy --jar=testAlterRegion5.jar");
     assertEquals(Result.Status.OK, cmdResult.getStatus());

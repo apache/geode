@@ -14,29 +14,29 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.modules.session.catalina.callback.SessionExpirationCacheListener;
-import com.gemstone.gemfire.modules.util.BootstrappingFunction;
-import com.gemstone.gemfire.modules.util.CreateRegionFunction;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
-import com.gemstone.gemfire.modules.util.RegionSizeFunction;
-import com.gemstone.gemfire.modules.util.RegionStatus;
-import com.gemstone.gemfire.modules.util.SessionCustomExpiry;
-import com.gemstone.gemfire.modules.util.TouchPartitionedRegionEntriesFunction;
-import com.gemstone.gemfire.modules.util.TouchReplicatedRegionEntriesFunction;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
+import org.apache.geode.modules.util.BootstrappingFunction;
+import org.apache.geode.modules.util.CreateRegionFunction;
+import org.apache.geode.modules.util.RegionConfiguration;
+import org.apache.geode.modules.util.RegionSizeFunction;
+import org.apache.geode.modules.util.RegionStatus;
+import org.apache.geode.modules.util.SessionCustomExpiry;
+import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
+import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashSet;

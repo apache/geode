@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.security;
+package org.apache.geode.internal.security;
 
 import java.security.Principal;
 import java.util.Collection;
@@ -23,23 +23,23 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.PutAllOperationContext;
-import com.gemstone.gemfire.cache.operations.PutOperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.operations.PutAllOperationContext;
+import org.apache.geode.cache.operations.PutOperationContext;
+import org.apache.geode.cache.operations.OperationContext;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.security.AccessControl;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * An authorization implementation for testing that changes a string value in

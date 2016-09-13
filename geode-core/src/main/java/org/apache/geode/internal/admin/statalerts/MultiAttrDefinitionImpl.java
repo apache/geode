@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.statalerts;
+package org.apache.geode.internal.admin.statalerts;
 
 import java.io.DataOutput;
 import java.io.DataInput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
 
-import com.gemstone.gemfire.internal.admin.StatAlert;
-import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
+import org.apache.geode.internal.admin.StatAlert;
+import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
  * Implementation of {@link StatAlertDefinition} This provides the definition

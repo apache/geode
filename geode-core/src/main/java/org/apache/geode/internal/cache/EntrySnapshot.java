@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,14 +22,14 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.cache.CacheStatistics;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.StatisticsDisabledException;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.StatisticsDisabledException;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
    * A Region.Entry implementation for remote entries and all PR entries
@@ -205,7 +205,7 @@ private static final long serialVersionUID = -2139749921655693280L;
 
     /*
      * (non-Javadoc)
-     * @see com.gemstone.gemfire.cache.Region.Entry#isLocal()
+     * @see org.apache.geode.cache.Region.Entry#isLocal()
      */
     public boolean isLocal() {
       // pr entries are always non-local to support the bucket being moved out

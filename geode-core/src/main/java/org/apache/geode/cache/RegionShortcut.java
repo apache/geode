@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * Each enum represents a predefined {@link RegionAttributes} in a {@link Cache}.

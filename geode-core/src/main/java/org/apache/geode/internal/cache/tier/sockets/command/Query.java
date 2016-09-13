@@ -17,22 +17,22 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets.command;
+package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.operations.QueryOperationContext;
-import com.gemstone.gemfire.cache.query.QueryExecutionLowMemoryException;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommandQuery;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import org.apache.geode.cache.operations.QueryOperationContext;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.AuthorizeRequest;
 
 public class Query extends BaseCommandQuery {
 
@@ -72,7 +72,7 @@ public class Query extends BaseCommandQuery {
       // Create query
       QueryService queryService = ((GemFireCacheImpl)servConn.getCachedRegionHelper().getCache())
           .getLocalQueryService();
-      com.gemstone.gemfire.cache.query.Query query = queryService
+      org.apache.geode.cache.query.Query query = queryService
           .newQuery(queryString);
       Set regionNames = ((DefaultQuery)query).getRegionsInQuery(null);
 

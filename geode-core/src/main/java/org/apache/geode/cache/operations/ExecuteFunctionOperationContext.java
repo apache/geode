@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 import java.io.Serializable;
 import java.util.Set;

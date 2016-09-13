@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.configuration;
+package org.apache.geode.cache.lucene.internal.configuration;
 
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.DEPLOY_WORKING_DIR;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.GROUPS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.JMX_MANAGER;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.DEPLOY_WORKING_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,22 +47,22 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneCliStrings;
-import com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexCommands;
-import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.CommandManager;
-import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
-import com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.rules.LocatorServerConfigurationRule;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommands;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.HeadlessGfsh;
+import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.LocatorServerConfigurationRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 
 @Category(DistributedTest.class)
@@ -335,9 +335,9 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   private void executeAndVerifyCommand(String commandString) {
     CommandResult cmdResult = executeCommand(commandString);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Command : " + commandString);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
         "Command Result : " + commandResultToString(cmdResult));
     assertEquals(Status.OK, cmdResult.getStatus());
   }

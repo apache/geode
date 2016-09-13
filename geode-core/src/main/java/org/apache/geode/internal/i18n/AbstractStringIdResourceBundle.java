@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.i18n;
+package org.apache.geode.internal.i18n;
 
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.ClassPathLoader;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.ClassPathLoader;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 

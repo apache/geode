@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.cache.Conflatable;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.cache.Conflatable;
 
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ public interface ClientMessage extends Conflatable, DataSerializableFixedID {
    * @return a <code>Message</code> generated from the fields of this
    *         <code>ClientUpdateMessage</code>
    * @throws IOException
-   * @see com.gemstone.gemfire.internal.cache.tier.sockets.Message
+   * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException;
 }

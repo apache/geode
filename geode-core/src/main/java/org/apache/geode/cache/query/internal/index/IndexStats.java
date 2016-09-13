@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
-import com.gemstone.gemfire.*;
-//import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
+import org.apache.geode.*;
+//import org.apache.geode.cache.query.*;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.cache.CachePerfStats;
 
 /**
  * IndexStats tracks statistics about query index use.
@@ -193,7 +193,7 @@ public class IndexStats {
   /**
    * Closes these stats so that they can not longer be used.  The
    * stats are closed when the {@linkplain
-   * com.gemstone.gemfire.internal.cache.GemFireCacheImpl#close cache} 
+   * org.apache.geode.internal.cache.GemFireCacheImpl#close cache} 
    * is closed.
    *
    * @since GemFire 3.5

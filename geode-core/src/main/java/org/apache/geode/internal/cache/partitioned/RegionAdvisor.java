@@ -15,32 +15,32 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.LowMemoryException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.ProfileListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor.ServerBucketProfile;
-import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider.DataStoreBuckets;
-import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
-import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor;
-import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentStateListener;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.cache.InterestPolicy;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.ProfileListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
+import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
+import org.apache.geode.internal.cache.PRHARedundancyProvider.DataStoreBuckets;
+import org.apache.geode.internal.cache.control.MemoryThresholds;
+import org.apache.geode.internal.cache.control.ResourceAdvisor;
+import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
+import org.apache.geode.internal.cache.persistence.PersistentStateListener;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -550,7 +550,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
     /**
      * Track the number of buckets this data store may have, implies isDataStore == true
      * This value is NOT sent directly but updated when 
-     * {@link com.gemstone.gemfire.internal.cache.BucketAdvisor}s recieve updates
+     * {@link org.apache.geode.internal.cache.BucketAdvisor}s recieve updates
      */
     public transient short numBuckets = 0;
     
@@ -1168,7 +1168,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
    * 
    * @param bucketId the bucket identifier
    * @return the bucket identified by bucketId
-   * @throws com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException if interrupted 
+   * @throws org.apache.geode.distributed.DistributedSystemDisconnectedException if interrupted 
    *         for shutdown cancellation
    */
   public Bucket getBucketPostInit(int bucketId) {

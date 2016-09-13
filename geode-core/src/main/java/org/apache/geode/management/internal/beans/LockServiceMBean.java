@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.Map;
 
 import javax.management.NotificationBroadcasterSupport;
 
-import com.gemstone.gemfire.management.LockServiceMXBean;
+import org.apache.geode.management.LockServiceMXBean;
 
 /**
  * Management API to manage a Lock Service MBean

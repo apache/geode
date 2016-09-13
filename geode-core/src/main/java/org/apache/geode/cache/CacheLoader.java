@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * Allows data from outside of the VM to be placed into a region.  
- * When {@link com.gemstone.gemfire.cache.Region#get(Object)} is called for a region
+ * When {@link org.apache.geode.cache.Region#get(Object)} is called for a region
  * entry that has a <code>null</code> value, the 
  * {@link CacheLoader#load load} method of the
  * region's cache loader is invoked.  The <code>load</code> method

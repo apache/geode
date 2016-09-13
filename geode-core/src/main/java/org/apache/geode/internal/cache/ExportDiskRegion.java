@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.DiskAccessException;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.DiskEntry.RecoveredEntry;
-import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 /**
  * An implementation if DiskRegion used for offline export. After each oplog

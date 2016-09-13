@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
-import com.gemstone.gemfire.distributed.ServerLauncher.Command;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.support.DistributedSystemAdapter;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ServerLauncher.Builder;
+import org.apache.geode.distributed.ServerLauncher.Command;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.support.DistributedSystemAdapter;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.junit.categories.UnitTest;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 import org.jmock.Expectations;
@@ -45,15 +45,15 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The ServerLauncherTest class is a test suite of unit tests testing the contract, functionality and invariants
  * of the ServerLauncher class.
  *
- * @see com.gemstone.gemfire.distributed.ServerLauncher
- * @see com.gemstone.gemfire.distributed.ServerLauncher.Builder
- * @see com.gemstone.gemfire.distributed.ServerLauncher.Command
+ * @see org.apache.geode.distributed.ServerLauncher
+ * @see org.apache.geode.distributed.ServerLauncher.Builder
+ * @see org.apache.geode.distributed.ServerLauncher.Command
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0

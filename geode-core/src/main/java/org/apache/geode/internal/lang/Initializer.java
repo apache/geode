@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.lang;
+package org.apache.geode.internal.lang;
 
 /**
  * The Initializer class is a utility class to identify Initable objects and initialize them by calling their
  * init method.
  * <p/>
- * @see com.gemstone.gemfire.internal.lang.Initable
+ * @see org.apache.geode.internal.lang.Initable
  * @since GemFire 8.0
  */
 public class Initializer {
@@ -31,7 +31,7 @@ public class Initializer {
    * <p/>
    * @param initableObj the Object targeted to be initialized.
    * @return true if the target Object was initialized using an init method; false otherwise.
-   * @see com.gemstone.gemfire.internal.lang.Initable#init()
+   * @see org.apache.geode.internal.lang.Initable#init()
    */
   public static boolean init(final Object initableObj) {
     if (initableObj instanceof Initable) {

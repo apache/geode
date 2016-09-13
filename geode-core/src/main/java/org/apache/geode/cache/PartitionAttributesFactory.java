@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.partition.PartitionListener;
-import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.internal.cache.PartitionAttributesImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * <p>
@@ -50,10 +50,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * {@link PartitionAttributes} can also be defined in a declarative fashion using a
  * <a href="package-summary.html#declarative">cache.xml</a> file. Here is an
  * example of how to configure a Partitioned Region named "pRoot" whose 
- * {@link com.gemstone.gemfire.cache.Scope} is Distributed Ack, which maintains
+ * {@link org.apache.geode.cache.Scope} is Distributed Ack, which maintains
  * a {@link #setRedundantCopies(int) redundant copy} of any given 
- * {@link com.gemstone.gemfire.cache.Region.Entry}, configures a 
- * {@link com.gemstone.gemfire.cache.CacheLoader} implementation, and sets 
+ * {@link org.apache.geode.cache.Region.Entry}, configures a 
+ * {@link org.apache.geode.cache.CacheLoader} implementation, and sets 
  * {@link #setGlobalProperties(Properties) global properties} as well as 
  * {@link #setLocalMaxMemory(int) local max memory to use}.
  * 
@@ -66,8 +66,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * </pre>
  * </p>
  * 
- * @see com.gemstone.gemfire.cache.PartitionAttributes
- * @see com.gemstone.gemfire.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)
+ * @see org.apache.geode.cache.PartitionAttributes
+ * @see org.apache.geode.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)
  * @since GemFire 5.0
  */
 public class PartitionAttributesFactory<K,V>
@@ -223,7 +223,7 @@ public class PartitionAttributesFactory<K,V>
    * <em>This setting must be the same in all processes using the Region.</em>
    * <p>
    * A bucket is the smallest unit of data management in a partitioned region.
-   * {@link com.gemstone.gemfire.cache.Region.Entry Entries} are stored in
+   * {@link org.apache.geode.cache.Region.Entry Entries} are stored in
    * buckets and buckets may move from one VM to another. Buckets may also have
    * copies, depending on {@link #setRedundantCopies(int) redundancy} to provide
    * high availability in the face of VM failure.

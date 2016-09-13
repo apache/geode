@@ -14,51 +14,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.partition.PartitionListener;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.AtomicLongWithTerminalState;
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
-import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
-import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
-import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
-import com.gemstone.gemfire.internal.cache.partitioned.DestroyMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.InvalidateMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.LockObject;
-import com.gemstone.gemfire.internal.cache.partitioned.PRTombstoneMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.PutAllPRMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.PutMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientTombstoneMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessage;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
-import com.gemstone.gemfire.internal.concurrent.AtomicLong5;
-import com.gemstone.gemfire.internal.concurrent.Atomics;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.AtomicLongWithTerminalState;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
+import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.control.MemoryEvent;
+import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.DestroyMessage;
+import org.apache.geode.internal.cache.partitioned.InvalidateMessage;
+import org.apache.geode.internal.cache.partitioned.LockObject;
+import org.apache.geode.internal.cache.partitioned.PRTombstoneMessage;
+import org.apache.geode.internal.cache.partitioned.PartitionMessage;
+import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
+import org.apache.geode.internal.cache.partitioned.PutMessage;
+import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.concurrent.AtomicLong5;
+import org.apache.geode.internal.concurrent.Atomics;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataOutput;
@@ -75,7 +75,7 @@ import java.util.concurrent.locks.Lock;
  * It does not support transactions
  * 
  * Primary election for a BucketRegion can be found in the 
- * {@link com.gemstone.gemfire.internal.cache.BucketAdvisor} class
+ * {@link org.apache.geode.internal.cache.BucketAdvisor} class
  * 
  * @since GemFire 5.1
  *
@@ -1617,7 +1617,7 @@ implements Bucket
   
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.LocalRegion#invokeDestroyCallbacks(com.gemstone.gemfire.internal.cache.EnumListenerEvent, com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean)
+   * @see org.apache.geode.internal.cache.LocalRegion#invokeDestroyCallbacks(org.apache.geode.internal.cache.EnumListenerEvent, org.apache.geode.internal.cache.EntryEventImpl, boolean)
    */
   @Override
   public void invokeDestroyCallbacks(
@@ -1644,7 +1644,7 @@ implements Bucket
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.LocalRegion#invokeInvalidateCallbacks(com.gemstone.gemfire.internal.cache.EnumListenerEvent, com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean)
+   * @see org.apache.geode.internal.cache.LocalRegion#invokeInvalidateCallbacks(org.apache.geode.internal.cache.EnumListenerEvent, org.apache.geode.internal.cache.EntryEventImpl, boolean)
    */
   @Override
   public void invokeInvalidateCallbacks(
@@ -1671,7 +1671,7 @@ implements Bucket
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.LocalRegion#invokePutCallbacks(com.gemstone.gemfire.internal.cache.EnumListenerEvent, com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean)
+   * @see org.apache.geode.internal.cache.LocalRegion#invokePutCallbacks(org.apache.geode.internal.cache.EnumListenerEvent, org.apache.geode.internal.cache.EntryEventImpl, boolean)
    */
   @Override
   public void invokePutCallbacks(
@@ -1776,12 +1776,12 @@ implements Bucket
         return;
       }
       Object instance = cd.getValue();
-      if (instance instanceof com.gemstone.gemfire.Delta
-          && ((com.gemstone.gemfire.Delta)instance).hasDelta()) {
+      if (instance instanceof org.apache.geode.Delta
+          && ((org.apache.geode.Delta)instance).hasDelta()) {
         try {
           HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
           long start = DistributionStats.getStatTime();
-          ((com.gemstone.gemfire.Delta)instance).toDelta(hdos);
+          ((org.apache.geode.Delta)instance).toDelta(hdos);
           event.setDeltaBytes(hdos.toByteArray());
           this.partitionedRegion.getCachePerfStats().endDeltaPrepared(start);
         }
@@ -2017,7 +2017,7 @@ implements Bucket
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.partitioned.Bucket#getBucketOwners()
+   * @see org.apache.geode.internal.cache.partitioned.Bucket#getBucketOwners()
    * @since GemFire 5.9
    */
   public Set getBucketOwners() {
@@ -2064,7 +2064,7 @@ implements Bucket
       return 0;
     }
     if (!(value instanceof byte[]) && !(value instanceof CachedDeserializable)
-        && !(value instanceof com.gemstone.gemfire.Delta)
+        && !(value instanceof org.apache.geode.Delta)
         && !(value instanceof GatewaySenderEventImpl)) {
     // ezoerner:20090401 it's possible this value is a Delta
       throw new InternalGemFireError("DEBUG: calcMemSize: weird value (class " 

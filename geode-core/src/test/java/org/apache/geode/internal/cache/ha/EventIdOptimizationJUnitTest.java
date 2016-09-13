@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.ha;
+package org.apache.geode.internal.cache.ha;
 
 import static org.junit.Assert.*;
 
@@ -23,8 +23,8 @@ import java.nio.ByteBuffer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client

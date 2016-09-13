@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.versions.RVVException.ReceivedVersionsIterator;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
 
 /**
  * This subclass of RVVException is the original class that

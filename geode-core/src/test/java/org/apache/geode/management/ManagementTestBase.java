@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -27,32 +27,32 @@ import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.statistics.SampleCollector;
-import com.gemstone.gemfire.management.internal.FederatingManager;
-import com.gemstone.gemfire.management.internal.LocalManager;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementStrings;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.statistics.SampleCollector;
+import org.apache.geode.management.internal.FederatingManager;
+import org.apache.geode.management.internal.LocalManager;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 @SuppressWarnings("serial")
 public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
@@ -554,7 +554,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
         RegionFactory rf = cache
             .createRegionFactory(RegionShortcut.LOCAL);
 
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Local Region");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Local Region");
         rf.create(localRegionName);
 
       }
@@ -576,7 +576,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
         SystemManagementService service = (SystemManagementService) getManagementService();
         Region region = cache.getRegion(parentRegionPath);
 
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Sub Region");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Sub Region");
         region.createSubregion(subregionName, region.getAttributes());
 
       }
@@ -619,7 +619,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
         SystemManagementService service = (SystemManagementService) getManagementService();
 
         RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Dist Region");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Dist Region");
         rf.create(regionName);
 
       }
@@ -641,7 +641,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
         SystemManagementService service = (SystemManagementService) getManagementService();
         RegionFactory rf = cache
             .createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Creating Par Region");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Par Region");
         rf.create(partitionRegionName);
 
       }
@@ -660,7 +660,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("Closing Dist Region");
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Closing Dist Region");
         Region region = cache.getRegion(regionPath);
         region.close();
 
@@ -683,7 +683,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
       public boolean done() {
         if (bean.listMemberObjectNames() != null) {
 
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
               "Member Length " + bean.listMemberObjectNames().length);
 
         }

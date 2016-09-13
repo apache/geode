@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.LogWriter;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.i18n.StringId;
 
 /**
  * Each logger has a level and it will only print messages whose

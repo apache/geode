@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.control;
+package org.apache.geode.internal.cache.control;
 
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 
 public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent>{
@@ -106,7 +106,7 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
           .append(" criticalDisabledCalls :"+this.criticalDisabledCalls).toString();
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceListener#onEvent(java.lang.Object)
+   * @see org.apache.geode.cache.control.ResourceListener#onEvent(java.lang.Object)
    */
   @Override
   public void onEvent(MemoryEvent event) {

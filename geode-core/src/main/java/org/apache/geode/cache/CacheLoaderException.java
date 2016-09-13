@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /** Thrown from the {@link CacheLoader#load} method indicating that an error
  * occurred when a CacheLoader was attempting to load a value. This
@@ -23,7 +23,7 @@ package com.gemstone.gemfire.cache;
  *
  *
  *
- * @see com.gemstone.gemfire.cache.Region#get(Object)
+ * @see org.apache.geode.cache.Region#get(Object)
  * @see CacheLoader#load
  * @since GemFire 3.0
  */

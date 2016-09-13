@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.io;
+package org.apache.geode.internal.io;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;

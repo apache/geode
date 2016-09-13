@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;

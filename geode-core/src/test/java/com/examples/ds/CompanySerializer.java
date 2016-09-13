@@ -16,7 +16,7 @@
  */
 package com.examples.ds;
 
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.DataSerializer;
 import java.io.*;
 
 public class CompanySerializer extends DataSerializer {

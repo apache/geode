@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-//import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.internal.Assert;
+//import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.internal.Assert;
 
 import javax.management.Descriptor;
 import javax.management.modelmbean.DescriptorSupport;
@@ -25,7 +25,7 @@ import javax.management.modelmbean.ModelMBeanAttributeInfo;
 
 /** 
  * Subclass of AttributeInfo with {@link 
- * com.gemstone.gemfire.admin.ConfigurationParameter} added for use as the 
+ * org.apache.geode.admin.ConfigurationParameter} added for use as the 
  * {@link javax.management.modelmbean.ModelMBeanAttributeInfo} descriptor's 
  * <i>targetObject</i> value.
  *

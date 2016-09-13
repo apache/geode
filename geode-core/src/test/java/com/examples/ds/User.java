@@ -16,8 +16,8 @@
  */
 package com.examples.ds;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 import java.io.*;
 
 public class User implements DataSerializable {

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.io.TeeOutputStream;
-import com.gemstone.gemfire.internal.io.TeePrintStream;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.io.TeeOutputStream;
+import org.apache.geode.internal.io.TeePrintStream;
 
 import java.io.*;
 import java.util.Properties;

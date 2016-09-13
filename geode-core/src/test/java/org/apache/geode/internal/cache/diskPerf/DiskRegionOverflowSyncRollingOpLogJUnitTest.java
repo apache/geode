@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.diskPerf;
+package org.apache.geode.internal.cache.diskPerf;
 
-import com.gemstone.gemfire.internal.cache.*;
+import org.apache.geode.internal.cache.*;
 
 import java.util.*;
 
@@ -27,12 +27,12 @@ import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * 1) Performance of Get Operation for Entry faulting in from current Op Log 2)

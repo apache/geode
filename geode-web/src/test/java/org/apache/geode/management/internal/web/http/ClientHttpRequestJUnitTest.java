@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.http;
+package org.apache.geode.management.internal.web.http;
 
 import static org.junit.Assert.*;
 
@@ -36,16 +36,16 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.web.AbstractWebTestCase;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ClientHttpRequestJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * ClientHttpRequest class.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
- * @see com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest
+ * @see org.apache.geode.management.internal.web.AbstractWebTestCase
+ * @see org.apache.geode.management.internal.web.http.ClientHttpRequest
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.ManagedEntityConfig;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.internal.admin.GemFireVM;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * A <code>SystemMember</code> that is also managed (or manageable) by

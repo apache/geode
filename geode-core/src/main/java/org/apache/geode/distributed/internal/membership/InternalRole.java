@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 
@@ -35,12 +35,12 @@ import org.apache.commons.lang.StringUtils;
  * Any serializable object which has instances of InternalRole should flag
  * those variables as transient. Objects that implement DataSerializable
  * should convert the roles to String names. For an example, please see
- * {@link com.gemstone.gemfire.cache.MembershipAttributes}.</p>
+ * {@link org.apache.geode.cache.MembershipAttributes}.</p>
  *
  * <p>Serializable classes which hold references to Roles should customize
  * serialization to transfer string names for Roles. See {@link 
- * com.gemstone.gemfire.cache.RegionAccessException RegionAccessException}
- * and {@link com.gemstone.gemfire.cache.RegionDistributionException 
+ * org.apache.geode.cache.RegionAccessException RegionAccessException}
+ * and {@link org.apache.geode.cache.RegionDistributionException 
  * RegionDistributionException} for examples on how to do this.</p>
  *
  * @deprecated this feature is scheduled to be removed

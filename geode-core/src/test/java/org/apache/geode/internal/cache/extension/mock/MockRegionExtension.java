@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension.mock;
+package org.apache.geode.internal.cache.extension.mock;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * Mock Extension for {@link Region}.

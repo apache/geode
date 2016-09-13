@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.locks;
+package org.apache.geode.distributed.internal.locks;
 
 import java.util.WeakHashMap;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.distributed.LeaseExpiredException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.distributed.LeaseExpiredException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * A DistributedLockService contains a collection of DLockToken
@@ -79,7 +79,7 @@ public class DLockToken {
    
   /** 
    * Tracks expired leases so that the leasing thread can report a
-   * {@link com.gemstone.gemfire.distributed.LeaseExpiredException}.
+   * {@link org.apache.geode.distributed.LeaseExpiredException}.
    * Keys are threads that have had their lease expire on this lock,
    * but may not yet have noticed.  Would use weak set if available.
    * Entry is removed upon throwing LeaseExpiredException. Protected by
@@ -131,7 +131,7 @@ public class DLockToken {
    * no current lease. Caller must synchronize on this lock token. 
    * <p>
    * Public because {@link 
-   * com.gemstone.gemfire.internal.admin.remote.RemoteDLockInfo} is a caller.
+   * org.apache.geode.internal.admin.remote.RemoteDLockInfo} is a caller.
    * 
    * @return the lock re-entry recursion of the current lease or -1 if none
    */
@@ -144,7 +144,7 @@ public class DLockToken {
    * if there is no lease. Caller must synchronize on this lock token. 
    * <p>
    * Public because {@link 
-   * com.gemstone.gemfire.internal.admin.remote.RemoteDLockInfo} is a caller.
+   * org.apache.geode.internal.admin.remote.RemoteDLockInfo} is a caller.
    * 
    * @return the name of the actual local thread leasing this lock or null
    */
@@ -165,7 +165,7 @@ public class DLockToken {
    * if there is no lease. Caller must synchronize on this lock token.
    * <p>
    * Public because {@link 
-   * com.gemstone.gemfire.internal.admin.remote.RemoteDLockInfo} is a caller.
+   * org.apache.geode.internal.admin.remote.RemoteDLockInfo} is a caller.
    * 
    * @return the absolute time at which the current lease will expire or -1
    */

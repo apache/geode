@@ -23,9 +23,9 @@
 */
 
 header {
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 import java.util.*;
-import com.gemstone.gemfire.cache.query.internal.types.*;
+import org.apache.geode.cache.query.internal.types.*;
 }
 
 options {
@@ -311,7 +311,7 @@ ML_COMMENT
 /***************************** OQL PARSER *************************************/
 
 class OQLParser
-extends Parser("com.gemstone.gemfire.cache.query.internal.parse.UtilParser");
+extends Parser("org.apache.geode.cache.query.internal.parse.UtilParser");
 
 options {
     buildAST = true;
@@ -356,14 +356,14 @@ queryProgram :
        	EOF!
         { #queryProgram =
           #([QUERY_PROGRAM, "queryProgram",
-            "com.gemstone.gemfire.cache.query.internal.parse.GemFireAST"],
+            "org.apache.geode.cache.query.internal.parse.GemFireAST"],
             #queryProgram); }
     ;
 
 traceCommand:
 		( 	
 			TOK_LT!
-			"trace"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTTrace>
+			"trace"^<AST=org.apache.geode.cache.query.internal.parse.ASTTrace>
 			TOK_GT!
 		)
 	;
@@ -377,7 +377,7 @@ loneFromClause :
         )* EOF!
     { #loneFromClause =
           #([LITERAL_from, "from",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTCombination"],
+            "org.apache.geode.cache.query.internal.parse.ASTCombination"],
             #loneFromClause); }
     ;
 
@@ -396,7 +396,7 @@ declaration :
 
 importQuery :
 
-        "import"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTImport>
+        "import"^<AST=org.apache.geode.cache.query.internal.parse.ASTImport>
         qualifiedName
         (
             "as" identifier
@@ -410,7 +410,7 @@ loneImports :
         EOF!
         // combine into a single node
         { #loneImports = #([IMPORTS, "imports",
-            "com.gemstone.gemfire.cache.query.internal.parse.GemFireAST"],
+            "org.apache.geode.cache.query.internal.parse.GemFireAST"],
                 #loneImports); }
     ;
 
@@ -469,7 +469,7 @@ query :
 
 selectExpr :
 		( hintCommand )?
-        "select"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTSelect>
+        "select"^<AST=org.apache.geode.cache.query.internal.parse.ASTSelect>
 
         (
             // ambig. betweed this distinct and a distinct conversion expr
@@ -479,8 +479,8 @@ selectExpr :
                 warnWhenFollowAmbig = false;
             } :
 
-            "distinct" <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
-            | "all" <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
+            "distinct" <AST=org.apache.geode.cache.query.internal.parse.ASTDummy>
+            | "all" <AST=org.apache.geode.cache.query.internal.parse.ASTDummy>
         )?
 
         
@@ -496,7 +496,7 @@ selectExpr :
 
 fromClause :
 
-        "from"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCombination>
+        "from"^<AST=org.apache.geode.cache.query.internal.parse.ASTCombination>
         iteratorDef
         (
             TOK_COMMA!
@@ -511,7 +511,7 @@ iteratorDef! :
             id1:identifier
             "in"!
             ex1:expr ( "type"! t1:type )?
-            { #iteratorDef = #([ITERATOR_DEF, "iterDef", "com.gemstone.gemfire.cache.query.internal.parse.ASTIteratorDef"], #ex1, #id1, #t1); }
+            { #iteratorDef = #([ITERATOR_DEF, "iterDef", "org.apache.geode.cache.query.internal.parse.ASTIteratorDef"], #ex1, #id1, #t1); }
 
         |   ex2:expr
             (
@@ -520,7 +520,7 @@ iteratorDef! :
             )?
             ( "type"! t2:type )?
 
-            { #iteratorDef = #([ITERATOR_DEF, "iterDef", "com.gemstone.gemfire.cache.query.internal.parse.ASTIteratorDef"], #ex2, #id2, #t2); }
+            { #iteratorDef = #([ITERATOR_DEF, "iterDef", "org.apache.geode.cache.query.internal.parse.ASTIteratorDef"], #ex2, #id2, #t2); }
     ;
 
 whereClause :
@@ -532,9 +532,9 @@ limitClause! :
 
         "limit" (TOK_DOLLAR NUM_INT
         { #limitClause = #([LIMIT, "limitParam",
-               "com.gemstone.gemfire.cache.query.internal.parse.ASTParameter"],
+               "org.apache.geode.cache.query.internal.parse.ASTParameter"],
                    #NUM_INT); }
-         | n:NUM_INT{ #limitClause =#[LIMIT,n.getText(),"com.gemstone.gemfire.cache.query.internal.parse.ASTLimit"] ; })
+         | n:NUM_INT{ #limitClause =#[LIMIT,n.getText(),"org.apache.geode.cache.query.internal.parse.ASTLimit"] ; })
     ;
 
 projectionAttributes :
@@ -546,10 +546,10 @@ projectionAttributes :
                 projection
             )*
             { #projectionAttributes = #([PROJECTION_ATTRS, "projectionAttrs",
-                "com.gemstone.gemfire.cache.query.internal.parse.ASTCombination"],
+                "org.apache.geode.cache.query.internal.parse.ASTCombination"],
                 #projectionAttributes); }
 
-        |   TOK_STAR <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
+        |   TOK_STAR <AST=org.apache.geode.cache.query.internal.parse.ASTDummy>
         )
     ;
 
@@ -557,7 +557,7 @@ projection!{ AST node  = null;}:
         
             lb1:identifier TOK_COLON!  ( tok1:aggregateExpr{node = #tok1;} | tok2:expr{node = #tok2;})
             { #projection = #([PROJECTION, "projection",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTProjection"],  node, #lb1); } 
+            "org.apache.geode.cache.query.internal.parse.ASTProjection"],  node, #lb1); } 
         |
             (tok3:aggregateExpr{node = #tok3;} | tok4:expr{node = #tok4;})
             (
@@ -565,7 +565,7 @@ projection!{ AST node  = null;}:
                 lb2: identifier
             )?
             { #projection = #([PROJECTION, "projection",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTProjection"], node, #lb2); }
+            "org.apache.geode.cache.query.internal.parse.ASTProjection"], node, #lb2); }
     ;
 
 
@@ -573,7 +573,7 @@ projection!{ AST node  = null;}:
 
 groupClause :
 
-        "group"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTGroupBy>
+        "group"^<AST=org.apache.geode.cache.query.internal.parse.ASTGroupBy>
         "by"!  groupByList
 
         (
@@ -585,7 +585,7 @@ groupClause :
 hintCommand :
 		 	
 			TOK_LT!
-			"hint"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTHint>
+			"hint"^<AST=org.apache.geode.cache.query.internal.parse.ASTHint>
 			hintIdentifier
 			(
 			  TOK_COMMA! hintIdentifier
@@ -596,12 +596,12 @@ hintCommand :
 
       
 hintIdentifier :
- 	n:StringLiteral{ #hintIdentifier =#[HINT,n.getText(),"com.gemstone.gemfire.cache.query.internal.parse.ASTHintIdentifier"] ; }       
+ 	n:StringLiteral{ #hintIdentifier =#[HINT,n.getText(),"org.apache.geode.cache.query.internal.parse.ASTHintIdentifier"] ; }       
 ;
 
 orderClause :
 
-        "order"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTOrderBy>
+        "order"^<AST=org.apache.geode.cache.query.internal.parse.ASTOrderBy>
         "by"!
         sortCriterion
         (
@@ -611,7 +611,7 @@ orderClause :
 
 sortCriterion :
 
-        tok:expr { #sortCriterion = #([SORT_CRITERION, "asc", "com.gemstone.gemfire.cache.query.internal.parse.ASTSortCriterion"],
+        tok:expr { #sortCriterion = #([SORT_CRITERION, "asc", "org.apache.geode.cache.query.internal.parse.ASTSortCriterion"],
             tok); }        
         (
             "asc"! {#sortCriterion.setText("asc");}
@@ -634,7 +634,7 @@ castExpr
         // follows, it's a typecast.  No semantic checking needed to parse.
         // if it _looks_ like a cast, it _is_ a cast; else it's a "(expr)"
     	(TOK_LPAREN type TOK_RPAREN castExpr)=>
-        lp:TOK_LPAREN^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTTypeCast>
+        lp:TOK_LPAREN^<AST=org.apache.geode.cache.query.internal.parse.ASTTypeCast>
                 {#lp.setType(TYPECAST); #lp.setText("typecast");}
             type TOK_RPAREN!
         castExpr
@@ -648,7 +648,7 @@ orExpr
             orelseExpr ( "or"! orelseExpr  { cmplx = true; } )*
        { if (cmplx) {
             #orExpr = #([LITERAL_or, "or",
-                    "com.gemstone.gemfire.cache.query.internal.parse.ASTOr"],
+                    "org.apache.geode.cache.query.internal.parse.ASTOr"],
                 #orExpr); } }
       ;
 
@@ -664,7 +664,7 @@ andExpr
            quantifierExpr ( "and"! quantifierExpr { cmplx = true; } )*
         { if (cmplx) {
             #andExpr = #([LITERAL_and, "and",
-                    "com.gemstone.gemfire.cache.query.internal.parse.ASTAnd"],
+                    "org.apache.geode.cache.query.internal.parse.ASTAnd"],
                     #andExpr); } }
     ;
 
@@ -704,8 +704,8 @@ equalityExpr :
 
             (   
                 (   (
-                        TOK_EQ^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp>
-                    |   TOK_NE^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp>
+                        TOK_EQ^<AST=org.apache.geode.cache.query.internal.parse.ASTCompareOp>
+                    |   TOK_NE^<AST=org.apache.geode.cache.query.internal.parse.ASTCompareOp>
                     )
                     (   "all"^
                     |   "any"^
@@ -713,7 +713,7 @@ equalityExpr :
                     )?
                 relationalExpr )+
     
-            |   (  "like"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLike>
+            |   (  "like"^<AST=org.apache.geode.cache.query.internal.parse.ASTLike>
                 relationalExpr )*
             )
     ;
@@ -723,10 +723,10 @@ relationalExpr :
         additiveExpr
         (
             (
-                TOK_LT^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp>
-            |   TOK_GT^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp>
-            |   TOK_LE^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp>
-            |   TOK_GE^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCompareOp>
+                TOK_LT^<AST=org.apache.geode.cache.query.internal.parse.ASTCompareOp>
+            |   TOK_GT^<AST=org.apache.geode.cache.query.internal.parse.ASTCompareOp>
+            |   TOK_LE^<AST=org.apache.geode.cache.query.internal.parse.ASTCompareOp>
+            |   TOK_GE^<AST=org.apache.geode.cache.query.internal.parse.ASTCompareOp>
             )
 
             (
@@ -777,7 +777,7 @@ inExpr :
 
         unaryExpr
         (
-            "in"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTIn> unaryExpr
+            "in"^<AST=org.apache.geode.cache.query.internal.parse.ASTIn> unaryExpr
         )?
     ;
 
@@ -786,9 +786,9 @@ unaryExpr :
         (
             (
                 TOK_PLUS!
-            |   TOK_MINUS^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTUnary>
+            |   TOK_MINUS^<AST=org.apache.geode.cache.query.internal.parse.ASTUnary>
             |   "abs"^
-            |   "not"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTUnary>
+            |   "not"^<AST=org.apache.geode.cache.query.internal.parse.ASTUnary>
             )
         )*
         postfixExpr
@@ -811,7 +811,7 @@ postfixExpr
             )*
             { if (cmplx) {
                 #postfixExpr = #([POSTFIX, "postfix",
-                   "com.gemstone.gemfire.cache.query.internal.parse.ASTPostfix"],
+                   "org.apache.geode.cache.query.internal.parse.ASTPostfix"],
                     #postfixExpr);
               }
             }
@@ -823,7 +823,7 @@ methodInvocation! [boolean implicitReceiver] :
             methodName:identifier args:argList  
             { #methodInvocation =
                 #([METHOD_INV, "methodInv",
-                    "com.gemstone.gemfire.cache.query.internal.parse.ASTMethodInvocation"],
+                    "org.apache.geode.cache.query.internal.parse.ASTMethodInvocation"],
                   #methodName, #args); 
               ((ASTMethodInvocation)#methodInvocation).setImplicitReceiver(implicitReceiver); }
         ;
@@ -852,14 +852,14 @@ index :
           | TOK_STAR
         )
         { #index = #([TOK_LBRACK, "index",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTCombination"],
+            "org.apache.geode.cache.query.internal.parse.ASTCombination"],
                 #index);
         }
     ;
 
 argList :
 
-        t:TOK_LPAREN^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTCombination>
+        t:TOK_LPAREN^<AST=org.apache.geode.cache.query.internal.parse.ASTCombination>
         (
             expr
             (
@@ -886,7 +886,7 @@ primaryExpr :
         |   queryParam
         |   literal
         |   TOK_LPAREN! query TOK_RPAREN!
-        |   RegionPath<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTRegionPath>
+        |   RegionPath<AST=org.apache.geode.cache.query.internal.parse.ASTRegionPath>
         )
     ;
 
@@ -896,7 +896,7 @@ conversionExpr :
 
 	    (
                   "listtoset"^
-              |   "element"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr>
+              |   "element"^<AST=org.apache.geode.cache.query.internal.parse.ASTConversionExpr>
             
               |   "distinct"^
               |   "flatten"^
@@ -905,7 +905,7 @@ conversionExpr :
         |
            (  
               (
-               "nvl"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr>
+               "nvl"^<AST=org.apache.geode.cache.query.internal.parse.ASTConversionExpr>
               )
               TOK_LPAREN!
               expr TOK_COMMA! expr
@@ -914,7 +914,7 @@ conversionExpr :
         |
            (  
               (
-               "to_date"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTConversionExpr>
+               "to_date"^<AST=org.apache.geode.cache.query.internal.parse.ASTConversionExpr>
               )
               TOK_LPAREN!
               stringLiteral TOK_COMMA! stringLiteral
@@ -942,7 +942,7 @@ aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
 
              !("sum" {aggFunc = SUM;} | "avg" {aggFunc = AVG;} )
               TOK_LPAREN ("distinct"! {distinctOnly = true;} ) ? tokExpr1:expr TOK_RPAREN 
-              { #aggregateExpr = #([AGG_FUNC, "aggregate", "com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc"],
+              { #aggregateExpr = #([AGG_FUNC, "aggregate", "org.apache.geode.cache.query.internal.parse.ASTAggregateFunc"],
               #tokExpr1); 
                 ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(aggFunc);
                 ((ASTAggregateFunc)#aggregateExpr).setDistinctOnly(distinctOnly);
@@ -951,14 +951,14 @@ aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
              |
              !("min" {aggFunc = MIN;} | "max" {aggFunc = MAX;} )
               TOK_LPAREN  tokExpr2:expr TOK_RPAREN 
-              { #aggregateExpr = #([AGG_FUNC, "aggregate", "com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc"],
+              { #aggregateExpr = #([AGG_FUNC, "aggregate", "org.apache.geode.cache.query.internal.parse.ASTAggregateFunc"],
               #tokExpr2); 
                 ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(aggFunc);               
                }
              
              |
-              "count"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc>
-              TOK_LPAREN!  ( TOK_STAR <AST=com.gemstone.gemfire.cache.query.internal.parse.ASTDummy>
+              "count"^<AST=org.apache.geode.cache.query.internal.parse.ASTAggregateFunc>
+              TOK_LPAREN!  ( TOK_STAR <AST=org.apache.geode.cache.query.internal.parse.ASTDummy>
               | ("distinct"! {distinctOnly = true;} ) ? expr ) TOK_RPAREN! 
               {  
                  ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(COUNT);
@@ -970,8 +970,8 @@ aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
 undefinedExpr :
 
         (
-            "is_undefined"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr>
-        |   "is_defined"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr>
+            "is_undefined"^<AST=org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr>
+        |   "is_defined"^<AST=org.apache.geode.cache.query.internal.parse.ASTUndefinedExpr>
         )
         TOK_LPAREN!
         query
@@ -1004,7 +1004,7 @@ groupByList :
             expr
         )*
         /*{ #groupByList = #([COMBO, "groupByList",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTCombination"],
+            "org.apache.geode.cache.query.internal.parse.ASTCombination"],
                 #groupByList); }*/
   ;
 
@@ -1018,7 +1018,7 @@ fieldList :
             TOK_COLON! expr
         )*
         { #fieldList = #([COMBO, "fieldList",
-            "com.gemstone.gemfire.cache.query.internal.parse.ASTCombination"],
+            "org.apache.geode.cache.query.internal.parse.ASTCombination"],
                 #fieldList); }
     ;
 
@@ -1026,7 +1026,7 @@ collectionConstruction :
         (
             (
                 "array"^
-            |   "set"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction>
+            |   "set"^<AST=org.apache.geode.cache.query.internal.parse.ASTConstruction>
             |   "bag"^
             )
             argList
@@ -1050,7 +1050,7 @@ queryParam! :
 
         TOK_DOLLAR NUM_INT
         { #queryParam = #([QUERY_PARAM, "queryParam",
-               "com.gemstone.gemfire.cache.query.internal.parse.ASTParameter"],
+               "org.apache.geode.cache.query.internal.parse.ASTParameter"],
                    #NUM_INT); }
         
     ;
@@ -1060,26 +1060,26 @@ type :
       (
 //            ( "unsigned" )? // ignored
 //            (
-                typ00:"short"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+                typ00:"short"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ00.setJavaType(TypeUtils.getObjectType(Short.class)); }
-            |   typ01:"long"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+            |   typ01:"long"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ01.setJavaType(TypeUtils.getObjectType(Long.class)); }
 //            )
-        |   typ02:"int"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ02:"int"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ02.setJavaType(TypeUtils.getObjectType(Integer.class)); }
-        |   typ03:"float"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ03:"float"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ03.setJavaType(TypeUtils.getObjectType(Float.class)); }
-        |   typ04:"double"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ04:"double"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ04.setJavaType(TypeUtils.getObjectType(Double.class)); }
-        |   typ05:"char"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ05:"char"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ05.setJavaType(TypeUtils.getObjectType(Character.class)); }
-        |   typ06:"string"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ06:"string"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ06.setJavaType(TypeUtils.getObjectType(String.class)); }
-        |   typ07:"boolean"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ07:"boolean"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ07.setJavaType(TypeUtils.getObjectType(Boolean.class)); }
-        |   typ08:"byte"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ08:"byte"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ08.setJavaType(TypeUtils.getObjectType(Byte.class)); } 
-        |   typ09:"octet"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ09:"octet"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ09.setJavaType(TypeUtils.getObjectType(Byte.class)); }
         |   "enum"^ // unsupported
             (
@@ -1087,32 +1087,32 @@ type :
                 TOK_DOT
             )?
             identifier
-        |   typ10:"date"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ10:"date"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ10.setJavaType(TypeUtils.getObjectType(java.sql.Date.class)); }
-        |   typ11:"time"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ11:"time"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ11.setJavaType(TypeUtils.getObjectType(java.sql.Time.class)); }
         |   "interval" // unsupported
-        |   typ12:"timestamp"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ12:"timestamp"<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ12.setJavaType(TypeUtils.getObjectType(java.sql.Timestamp.class)); }
-        |   typ13:"set"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ13:"set"^<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                 TOK_LT! type TOK_GT!
                     { #typ13.setJavaType(new CollectionTypeImpl(Set.class, TypeUtils.OBJECT_TYPE /*resolved later*/)); } 
-        |   typ14:"collection"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   typ14:"collection"^<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                 TOK_LT! type TOK_GT!
                     { #typ14.setJavaType(new CollectionTypeImpl(Collection.class, TypeUtils.OBJECT_TYPE /*resolved later*/)); } 
         |   "bag"^ TOK_LT! type TOK_GT! // not supported
-        |   typ15:"list"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType> TOK_LT! type TOK_GT!
+        |   typ15:"list"^<AST=org.apache.geode.cache.query.internal.parse.ASTType> TOK_LT! type TOK_GT!
                     { #typ15.setJavaType(new CollectionTypeImpl(List.class, TypeUtils.OBJECT_TYPE /*resolved later*/)); }
-        |   typ16:"array"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType> TOK_LT! type TOK_GT!
+        |   typ16:"array"^<AST=org.apache.geode.cache.query.internal.parse.ASTType> TOK_LT! type TOK_GT!
                     { #typ16.setJavaType(new CollectionTypeImpl(Object[].class, TypeUtils.OBJECT_TYPE /*resolved later*/)); }
-        |   (typ17:"dictionary"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+        |   (typ17:"dictionary"^<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ17.setJavaType(new MapTypeImpl(Map.class, TypeUtils.OBJECT_TYPE , TypeUtils.OBJECT_TYPE /*resolved later*/)); }
-                | typ18:"map"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTType>
+                | typ18:"map"^<AST=org.apache.geode.cache.query.internal.parse.ASTType>
                     { #typ18.setJavaType(new MapTypeImpl(Map.class, TypeUtils.OBJECT_TYPE , TypeUtils.OBJECT_TYPE /*resolved later*/)); }
             )
             TOK_LT! type TOK_COMMA! type TOK_GT!
         |!   id:identifier { String txt = #id.getText();
-                #type = #[Identifier, txt, "com.gemstone.gemfire.cache.query.internal.parse.ASTType"];
+                #type = #[Identifier, txt, "org.apache.geode.cache.query.internal.parse.ASTType"];
                  ((ASTType)#type).setTypeName(txt); }
       )
       
@@ -1133,25 +1133,25 @@ literal :
 
 objectLiteral :
 
-        "nil"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
-      | "null"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
-      | "undefined"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+        "nil"<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
+      | "null"<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
+      | "undefined"<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
     ;
 
 booleanLiteral :
 
         (
-            "true"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
-        |   "false"<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+            "true"<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
+        |   "false"<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
         )
     ;
 
 numericLiteral :
 
-        (   NUM_INT<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
-          | NUM_LONG<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
-          | NUM_FLOAT<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
-          | NUM_DOUBLE<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+        (   NUM_INT<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
+          | NUM_LONG<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
+          | NUM_FLOAT<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
+          | NUM_DOUBLE<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
         )
         
     ;
@@ -1159,37 +1159,37 @@ numericLiteral :
 
 charLiteral :
 
-        "char"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+        "char"^<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
             StringLiteral
     ;
 
 
 stringLiteral :
 
-        StringLiteral<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+        StringLiteral<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
     ;
 
 dateLiteral :
 
-        "date"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+        "date"^<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
             StringLiteral
     ;
 
 timeLiteral :
 
-        "time"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+        "time"^<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
             StringLiteral
     ;
 
 timestampLiteral :
 
-        "timestamp"^<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral>
+        "timestamp"^<AST=org.apache.geode.cache.query.internal.parse.ASTLiteral>
            StringLiteral
     ;
 
 identifier :
-        Identifier<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier>
-    |   q:QuotedIdentifier<AST=com.gemstone.gemfire.cache.query.internal.parse.ASTIdentifier> 
+        Identifier<AST=org.apache.geode.cache.query.internal.parse.ASTIdentifier>
+    |   q:QuotedIdentifier<AST=org.apache.geode.cache.query.internal.parse.ASTIdentifier> 
             { #q.setType(Identifier); }
     ;
 

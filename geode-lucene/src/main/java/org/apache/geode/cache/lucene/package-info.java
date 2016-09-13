@@ -20,8 +20,8 @@
  * This package provides an integration with Apache Lucene that allows Geode regions to be indexed in a distributed
  * Lucene index and queries using Lucene queries.
  * <p>
- * All indexing and query operations are performed through the {@link com.gemstone.gemfire.cache.lucene.LuceneService} class.
- * See {@link com.gemstone.gemfire.cache.lucene.LuceneService} for an example of how to add a lucene index to a geode region.
+ * All indexing and query operations are performed through the {@link org.apache.geode.cache.lucene.LuceneService} class.
+ * See {@link org.apache.geode.cache.lucene.LuceneService} for an example of how to add a lucene index to a geode region.
  * <p>
  *
  * The Lucene indexes created using this API are stored in geode and colocated with the indexed region, which means they
@@ -29,4 +29,4 @@
  * to the region may not be immediately visible in the lucene index.
  */
 
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;

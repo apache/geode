@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.util.*;
@@ -26,7 +26,7 @@ import java.util.*;
  * roles are lost. A role is lost when it is are offline and no longer
  * present in the system membership.
  * The <code>LossAction</code> is specified when configuring a region's
- * {@link com.gemstone.gemfire.cache.MembershipAttributes}.
+ * {@link org.apache.geode.cache.MembershipAttributes}.
  * 
  * @deprecated this feature is scheduled to be removed
  */

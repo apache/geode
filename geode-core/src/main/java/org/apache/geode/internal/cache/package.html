@@ -190,7 +190,7 @@ triggered.  Migration may also occur when a <code>Cache</code> exceeds
 its <code>maxParitionedData</code> threshold and when a new member
 that can host partitioned data joins the distributed system.  Each
 member is consulted to determine how much partitioned region data it
-is currently hosting and the com.gemstone.gemfire.cache.Cache#getMaxPartitionedData maximum amount of
+is currently hosting and the org.apache.geode.cache.Cache#getMaxPartitionedData maximum amount of
 partitioned region data it can host.  The largest bucket hosted by the
 VM is migrated to the member with the large percentage of space
 available for partitioned data.  This ensures that data is spread
@@ -199,13 +199,13 @@ available partitioned region data fills consistently.  Migration will
 continue until the amount of partitioned data hosted by the member
 initiating the migration falls below the average for all members.
 When a member that hosts partitions {@linkplain
-com.gemstone.gemfire.cache.Cache#close closes} its <code>Cache</code>,
+org.apache.geode.cache.Cache#close closes} its <code>Cache</code>,
 the partitions are migrated to other hosts.</P>
 
 <h3>High Availability</h3>
 
 The high availability (
-com.gemstone.gemfire.cache.PartitionAttributes#getRedundancy
+org.apache.geode.cache.PartitionAttributes#getRedundancy
 redundancy) feature of partitioned regions effects the implementation
 in a number of ways.  When a bucket is created, the implementation
 uses the migration algorithm to determine the location(s) of any

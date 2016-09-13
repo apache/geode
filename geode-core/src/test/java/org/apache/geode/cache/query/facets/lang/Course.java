@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.facets.lang;
+package org.apache.geode.cache.query.facets.lang;
 
-import com.gemstone.gemfire.cache.query.CacheUtils;
+import org.apache.geode.cache.query.CacheUtils;
 
 
 //import java.util.*;

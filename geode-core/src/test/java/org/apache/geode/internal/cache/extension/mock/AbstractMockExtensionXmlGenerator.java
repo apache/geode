@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension.mock;
+package org.apache.geode.internal.cache.extension.mock;
 
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * Base class for Mock Extension XML Generators.

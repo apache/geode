@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.security.shiro;
+package org.apache.geode.internal.security.shiro;
 
-import static com.gemstone.gemfire.management.internal.security.ResourceConstants.*;
+import static org.apache.geode.management.internal.security.ResourceConstants.*;
 
 import java.security.Principal;
 import java.util.Collections;
@@ -28,10 +28,10 @@ import javax.management.remote.JMXConnectionNotification;
 import javax.management.remote.JMXPrincipal;
 import javax.security.auth.Subject;
 
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationFailedException;
 
 /**
  * this will make JMX authentication to use Shiro for Authentication

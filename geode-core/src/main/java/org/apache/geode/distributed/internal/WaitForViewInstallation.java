@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,8 +25,8 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelException;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  *
@@ -85,7 +85,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return WAIT_FOR_VIEW_INSTALLATION;
@@ -106,7 +106,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.DistributionMessage#process(com.gemstone.gemfire.distributed.internal.DistributionManager)
+   * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.internal.DistributionManager)
    */
   @Override
   protected void process(DistributionManager dm) {

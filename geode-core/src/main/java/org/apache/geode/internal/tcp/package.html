@@ -23,12 +23,12 @@ Contains TCP/IP communications conduit
 <p>The tcp/ip conduit is designed to be used in one way:</p>
 
 </p>1) The conduit is used by the GemFire
-{@link com.gemstone.gemfire.distributed.internal.DistributionChannel}
+{@link org.apache.geode.distributed.internal.DistributionChannel}
 when true multicast messaging is not needed.  When used in this way, the
 conduit manages the serialization and transmission of
-{@link com.gemstone.gemfire.distributed.internal.DistributionMessage}
+{@link org.apache.geode.distributed.internal.DistributionMessage}
 objects from one system to another.  The
-{@link com.gemstone.gemfire.distributed.internal.DistributionManager}
+{@link org.apache.geode.distributed.internal.DistributionManager}
 maintains a
 Map of JavaGroups Addresses to the corresponding tcp/ip address for each
 system.  The <code>DistributionManager</code> also maintains a set of
@@ -53,9 +53,9 @@ restart on the same port.</p>
 
 <p>The design of the conduit is fairly simple.  <code>TCPConduit</code> owns the
 {@link java.net.ServerSocket} that accepts connections from other conduits.
-{@link com.gemstone.gemfire.internal.tcp.Connection "Connections"}
+{@link org.apache.geode.internal.tcp.Connection "Connections"}
 are kept in a
-{@link com.gemstone.gemfire.internal.tcp.ConnectionTable ConnectionTable}.
+{@link org.apache.geode.internal.tcp.ConnectionTable ConnectionTable}.
 </p>
 
 <p>The use of NIO can be turned off with the property <code>p2p.oldIO=true</code>.

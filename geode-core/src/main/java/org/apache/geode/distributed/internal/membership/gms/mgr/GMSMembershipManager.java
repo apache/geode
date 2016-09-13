@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.mgr;
+package org.apache.geode.distributed.internal.membership.gms.mgr;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -41,62 +41,62 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.AdminMessageType;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
-import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
-import com.gemstone.gemfire.distributed.internal.StartupMessage;
-import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
-import com.gemstone.gemfire.distributed.internal.direct.DirectChannelListener;
-import com.gemstone.gemfire.distributed.internal.direct.ShunnedMemberException;
-import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
-import com.gemstone.gemfire.distributed.internal.membership.gms.SuspectMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.SystemTimer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessageWithDirectReply;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheServerCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.shared.StringPrintWriter;
-import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
-import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
-import com.gemstone.gemfire.internal.util.Breadcrumbs;
+import org.apache.geode.CancelException;
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.ToDataException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
+import org.apache.geode.distributed.internal.SizeableRunnable;
+import org.apache.geode.distributed.internal.StartupMessage;
+import org.apache.geode.distributed.internal.direct.DirectChannel;
+import org.apache.geode.distributed.internal.direct.DirectChannelListener;
+import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
+import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
+import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
+import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.shared.StringPrintWriter;
+import org.apache.geode.internal.tcp.ConnectExceptions;
+import org.apache.geode.internal.tcp.MemberShunnedException;
+import org.apache.geode.internal.util.Breadcrumbs;
 
 public class GMSMembershipManager implements MembershipManager, Manager
 {
@@ -264,7 +264,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
   /**
    * This is the listener that accepts our membership events
    */
-  private final com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener listener;
+  private final org.apache.geode.distributed.internal.membership.DistributedMembershipListener listener;
 
   /**
    * Membership failure listeners - for testing
@@ -1752,7 +1752,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
 
   /*
    * (non-Javadoc)
-   * @see com.gemstone.gemfire.distributed.internal.membership.MembershipManager#isConnected()
+   * @see org.apache.geode.distributed.internal.membership.MembershipManager#isConnected()
    */
   public boolean isConnected() {
     return (this.hasJoined && !this.shutdownInProgress); 
@@ -2199,7 +2199,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * (non-Javadoc)
    * MembershipManager method: wait for the given member to be gone.  Throws TimeoutException if
    * the wait goes too long
-   * @see com.gemstone.gemfire.distributed.internal.membership.MembershipManager#waitForDeparture(com.gemstone.gemfire.distributed.DistributedMember)
+   * @see org.apache.geode.distributed.internal.membership.MembershipManager#waitForDeparture(org.apache.geode.distributed.DistributedMember)
    */
   public boolean waitForDeparture(DistributedMember mbr) throws TimeoutException, InterruptedException {
     if (Thread.interrupted()) throw new InterruptedException();

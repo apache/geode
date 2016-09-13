@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package org.apache.geode.management.internal.security;
 
 import static org.junit.Assert.*;
 
@@ -36,7 +36,7 @@ import javax.management.remote.JMXServiceURL;
 
 import org.junit.runner.Description;
 
-import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
+import org.apache.geode.test.junit.rules.DescribedExternalResource;
 
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}

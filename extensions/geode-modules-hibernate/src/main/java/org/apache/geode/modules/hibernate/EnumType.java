@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate;
+package org.apache.geode.modules.hibernate;
 
 import java.io.Serializable;
 
@@ -30,7 +30,7 @@ import org.hibernate.HibernateException;
  * e.g. a typical enum configuration should look like this:
  * <pre>
  * &lt;property name="myEnum"&gt;
- *   &lt;type name="<b>com.gemstone.gemfire.modules.hibernate.EnumType</b>"&gt;
+ *   &lt;type name="<b>org.apache.geode.modules.hibernate.EnumType</b>"&gt;
  *     &lt;param name="enumClass"&gt;com.mycompany.MyEntity$MyEnum&lt;/param&gt;
  *     &lt;param name="type"&gt;12&lt;/param&gt;
  *   &lt;/type&gt;

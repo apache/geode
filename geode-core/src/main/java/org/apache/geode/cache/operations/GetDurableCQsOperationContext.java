@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 import java.util.Set;
 
 
 /**
- * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#GET_DURABLE_CQS} operation for the pre-operation
+ * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#GET_DURABLE_CQS} operation for the pre-operation
  * case.
  * 
  * @since GemFire 7.0

@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate.internal;
+package org.apache.geode.modules.hibernate.internal;
 
 import org.hibernate.cache.CacheDataDescription;
 import org.hibernate.cache.CacheException;
@@ -24,8 +24,8 @@ import org.hibernate.cache.access.CollectionRegionAccessStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.modules.hibernate.GemFireRegionFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.modules.hibernate.GemFireRegionFactory;
 
 public class GemFireCollectionRegion extends GemFireBaseRegion implements CollectionRegion {
 

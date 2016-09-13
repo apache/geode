@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.functions;
+package org.apache.geode.management.internal.cli.functions;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.management.internal.cli.domain.IndexInfo;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.management.internal.cli.domain.IndexInfo;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class CreateDefinedIndexesFunction extends FunctionAdapter implements
     InternalEntity {

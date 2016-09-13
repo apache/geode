@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
 /**
  * TimestampedEntryEvent is an EntryEvent that has additional information provided
@@ -24,7 +24,7 @@ package com.gemstone.gemfire.cache.util;
  * previous change to the entry.
  * @since GemFire 7.0
  */
-public interface TimestampedEntryEvent extends com.gemstone.gemfire.cache.EntryEvent {
+public interface TimestampedEntryEvent extends org.apache.geode.cache.EntryEvent {
   // note that this interface inherits the following methods, among others:
   // getRegion(), getOperation(), getCallbackArgument()
   // getKey()

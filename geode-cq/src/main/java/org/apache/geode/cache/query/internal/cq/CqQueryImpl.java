@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
 import java.util.HashSet;
 import java.util.List;
@@ -22,30 +22,30 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.CqEvent;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.CqExistsException;
-import com.gemstone.gemfire.cache.query.CqState;
-import com.gemstone.gemfire.cache.query.CqStatistics;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.internal.CompiledIteratorDef;
-import com.gemstone.gemfire.cache.query.internal.CompiledRegion;
-import com.gemstone.gemfire.cache.query.internal.CompiledSelect;
-import com.gemstone.gemfire.cache.query.internal.CompiledValue;
-import com.gemstone.gemfire.cache.query.internal.CqQueryVsdStats;
-import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.internal.QueryExecutionContext;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.CqClosedException;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqExistsException;
+import org.apache.geode.cache.query.CqState;
+import org.apache.geode.cache.query.CqStatistics;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.internal.CompiledIteratorDef;
+import org.apache.geode.cache.query.internal.CompiledRegion;
+import org.apache.geode.cache.query.internal.CompiledSelect;
+import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.CqQueryVsdStats;
+import org.apache.geode.cache.query.internal.CqStateImpl;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.i18n.StringId;
 
 /**
  * Represents the CqQuery object. Implements CqQuery API and CqAttributeMutator.
@@ -243,14 +243,14 @@ public abstract class CqQueryImpl implements InternalCqQuery {
   
   
   /**
-   * @see com.gemstone.gemfire.cache.query.CqQuery#getStatistics()
+   * @see org.apache.geode.cache.query.CqQuery#getStatistics()
    */
   public CqStatistics getStatistics() {
     return cqStats;
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#getCqBaseRegion()
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#getCqBaseRegion()
    */
   @Override
   public LocalRegion getCqBaseRegion() {
@@ -279,7 +279,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
   }
 
  /* (non-Javadoc)
- * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#setCqState(int)
+ * @see org.apache.geode.cache.query.internal.InternalCqQuery2#setCqState(int)
  */
   @Override
   public void setCqState(int state) {

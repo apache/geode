@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import static org.junit.Assert.fail;
 
@@ -22,12 +22,12 @@ import java.nio.ByteBuffer;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.offheap.OffHeapStoredObject;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OffHeapByteBufferByteSourceJUnitTest extends OffHeapByteSourceJUnitTest {

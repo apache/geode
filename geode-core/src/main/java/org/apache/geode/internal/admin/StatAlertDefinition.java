@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.internal.admin.statalerts.StatisticInfo;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.internal.admin.statalerts.StatisticInfo;
 
 /**
  * Base interface that supports a StatAlertDefinition

@@ -14,13 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.util;
+package org.apache.geode.modules.util;
 
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;

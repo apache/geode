@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.TransactionDataRebalancedException;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.TransactionInDoubtException;
-import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.ReliableReplyException;
-import com.gemstone.gemfire.distributed.internal.ReliableReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.TXRemoteCommitMessage.RemoteCommitResponse;
-import com.gemstone.gemfire.internal.cache.tx.DistributedTXRegionStub;
-import com.gemstone.gemfire.internal.cache.tx.PartitionedTXRegionStub;
-import com.gemstone.gemfire.internal.cache.tx.TXRegionStub;
-import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.TransactionInDoubtException;
+import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ReliableReplyException;
+import org.apache.geode.distributed.internal.ReliableReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.TXRemoteCommitMessage.RemoteCommitResponse;
+import org.apache.geode.internal.cache.tx.DistributedTXRegionStub;
+import org.apache.geode.internal.cache.tx.PartitionedTXRegionStub;
+import org.apache.geode.internal.cache.tx.TXRegionStub;
+import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 public class PeerTXStateStub extends TXStateStub {
 
@@ -50,7 +50,7 @@ public class PeerTXStateStub extends TXStateStub {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#rollback()
+   * @see org.apache.geode.internal.cache.TXStateInterface#rollback()
    */
   @Override
   public void rollback() {

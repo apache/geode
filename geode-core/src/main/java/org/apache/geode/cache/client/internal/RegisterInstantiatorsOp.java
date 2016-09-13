@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.internal.InternalInstantiator.InstantiatorAttributesHolder;
-import com.gemstone.gemfire.internal.cache.ClientServerObserver;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.geode.Instantiator;
+import org.apache.geode.SerializationException;
+import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
+import org.apache.geode.internal.cache.ClientServerObserver;
+import org.apache.geode.internal.cache.ClientServerObserverHolder;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.util.BlobHelper;
 
 /**
  * Register a bunch of instantiators on a server
@@ -74,7 +74,7 @@ public class RegisterInstantiatorsOp {
   
   private static class RegisterInstantiatorsOpImpl extends AbstractOp {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public RegisterInstantiatorsOpImpl(Instantiator[] instantiators,
                                        EventID eventId) {
@@ -101,7 +101,7 @@ public class RegisterInstantiatorsOp {
     }
 
     /**
-     * @throws com.gemstone.gemfire.SerializationException
+     * @throws org.apache.geode.SerializationException
      *           if serialization fails
      */
     public RegisterInstantiatorsOpImpl(Object[] holders,

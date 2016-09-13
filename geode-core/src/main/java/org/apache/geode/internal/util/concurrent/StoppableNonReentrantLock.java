@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is a type of {@link StoppableReentrantLock} that does not allow

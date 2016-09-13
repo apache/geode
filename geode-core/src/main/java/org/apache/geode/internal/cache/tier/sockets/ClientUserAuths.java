@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -24,9 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.AuthorizeRequestPP;
 
 public class ClientUserAuths
 {

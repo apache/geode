@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 /**
  * This is utility class for hydra tests.
  * This class is used to set the values of parameters of internal classes which have local visibility. 

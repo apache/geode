@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.Set;
 
@@ -26,7 +26,7 @@ import java.util.Set;
  * which member the data is being managed. Say, for example, you want to
  * partition all Trades according to quarters. You can implement
  * FixedPartitionResolver to get the name of the quarter based on the date given
- * as part of {@link com.gemstone.gemfire.cache.EntryOperation}.
+ * as part of {@link org.apache.geode.cache.EntryOperation}.
  * </p>
  * 
  * public class QuarterPartitionResolver implements FixedPartitionResolver{<br>

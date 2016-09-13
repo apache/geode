@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.*;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client

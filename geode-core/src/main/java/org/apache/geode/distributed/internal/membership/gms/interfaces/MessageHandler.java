@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.interfaces;
+package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 
 /**
  * MessageHandler processes a message received by Messenger.

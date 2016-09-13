@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 import java.util.List;
 import java.util.Set;

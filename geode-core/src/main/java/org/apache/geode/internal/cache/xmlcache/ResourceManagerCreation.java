@@ -17,14 +17,14 @@
 /**
  * File comment
  */
-package com.gemstone.gemfire.internal.cache.xmlcache;
+package org.apache.geode.internal.cache.xmlcache;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.control.RebalanceFactory;
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
+import org.apache.geode.cache.control.RebalanceFactory;
+import org.apache.geode.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.internal.cache.control.MemoryThresholds;
 
 /**
  * @since GemFire 6.0
@@ -44,28 +44,28 @@ public class ResourceManagerCreation implements ResourceManager {
   private boolean evictionOffHeapSet = false;
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#createRebalanceFactory()
+   * @see org.apache.geode.cache.control.ResourceManager#createRebalanceFactory()
    */
   public RebalanceFactory createRebalanceFactory() {
     throw new IllegalArgumentException("Unused");
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#getRebalanceOperations()
+   * @see org.apache.geode.cache.control.ResourceManager#getRebalanceOperations()
    */
   public Set<RebalanceOperation> getRebalanceOperations() {
     throw new IllegalArgumentException("Unused");
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#getCriticalHeapPercentage()
+   * @see org.apache.geode.cache.control.ResourceManager#getCriticalHeapPercentage()
    */
   public float getCriticalHeapPercentage() {
     return this.criticalHeapPercentage;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#setCriticalHeapPercentage(int)
+   * @see org.apache.geode.cache.control.ResourceManager#setCriticalHeapPercentage(int)
    */
   public void setCriticalHeapPercentage(float heapPercentage) {
     this.criticalHeapSet = true;
@@ -85,7 +85,7 @@ public class ResourceManagerCreation implements ResourceManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#getCriticalOffHeapPercentage()
+   * @see org.apache.geode.cache.control.ResourceManager#getCriticalOffHeapPercentage()
    */
   @Override
   public float getCriticalOffHeapPercentage() {
@@ -93,7 +93,7 @@ public class ResourceManagerCreation implements ResourceManager {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#setCriticalOffHeapPercentage(int)
+   * @see org.apache.geode.cache.control.ResourceManager#setCriticalOffHeapPercentage(int)
    */
   @Override
   public void setCriticalOffHeapPercentage(final float offHeapPercentage) {
@@ -159,14 +159,14 @@ public class ResourceManagerCreation implements ResourceManager {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#getEvictionHeapPercentage()
+   * @see org.apache.geode.cache.control.ResourceManager#getEvictionHeapPercentage()
    */
   public float getEvictionHeapPercentage() {
     return this.evictionHeapPercentage;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#setEvictionHeapPercentage(int)
+   * @see org.apache.geode.cache.control.ResourceManager#setEvictionHeapPercentage(int)
    */
   public void setEvictionHeapPercentage(float heapPercentage) {
     this.evictionHeapSet = true;
@@ -186,14 +186,14 @@ public class ResourceManagerCreation implements ResourceManager {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#getEvictionOffHeapPercentage()
+   * @see org.apache.geode.cache.control.ResourceManager#getEvictionOffHeapPercentage()
    */
   public float getEvictionOffHeapPercentage() {
     return this.evictionOffHeapPercentage;
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.control.ResourceManager#setEvictionOffHeapPercentage(int)
+   * @see org.apache.geode.cache.control.ResourceManager#setEvictionOffHeapPercentage(int)
    */
   public void setEvictionOffHeapPercentage(final float offHeapPercentage) {
     this.evictionOffHeapSet = true;

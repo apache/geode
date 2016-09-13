@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 
-import com.gemstone.gemfire.cache.query.*;
+import org.apache.geode.cache.query.*;
 
 /**
  * This class provides 'do-nothing' implementations of all of the methods of
@@ -308,7 +308,7 @@ public class QueryObserverAdapter implements QueryObserver {
   }
 
   /**
-   * @see com.gemstone.gemfire.cache.query.internal.QueryObserver#beforeIndexLookup(com.gemstone.gemfire.cache.query.Index,
+   * @see org.apache.geode.cache.query.internal.QueryObserver#beforeIndexLookup(org.apache.geode.cache.query.Index,
    *      int, java.lang.Object, int, java.lang.Object, java.util.Set)
    */
   public void beforeIndexLookup(Index index, int lowerBoundOperator,

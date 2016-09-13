@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;

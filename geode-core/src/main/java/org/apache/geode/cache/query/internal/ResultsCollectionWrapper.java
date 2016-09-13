@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.types.*;
-import com.gemstone.gemfire.cache.query.internal.types.*;
-import com.gemstone.gemfire.internal.cache.EntriesSet;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.internal.cache.EntriesSet;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.*;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 
 /**
  * Implementation of SelectResults that wraps an existing java.util.Collection

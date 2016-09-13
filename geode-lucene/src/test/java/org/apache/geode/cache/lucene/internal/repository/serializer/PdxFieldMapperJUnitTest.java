@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
+package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -25,8 +25,8 @@ import org.apache.lucene.document.Document;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test of the PdxFieldMapperJUnitTest. Tests that 

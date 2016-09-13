@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -22,9 +22,9 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.process.ControlFileWatchdog.ControlRequestHandler;
+import org.apache.geode.distributed.AbstractLauncher.ServiceState;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
 
 /**
  * Exists inside a process launched by ServerLauncher or LocatorLauncher. 

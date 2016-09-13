@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.pdx.internal.PdxString;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * This ExecutionContext will be used ONLY for querying because this

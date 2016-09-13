@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.control;
+package org.apache.geode.cache.control;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Operation for rebalancing resources used by the {@link 
- * com.gemstone.gemfire.cache.Cache}.
+ * org.apache.geode.cache.Cache}.
  * 
  * @since GemFire 6.0
  */

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 
 /**
- * Encapsulates an {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUT} region operation having both key
+ * Encapsulates an {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUT} region operation having both key
  * and value objects for for both the pre-operation case and for post-operation
  * updates.
  * 

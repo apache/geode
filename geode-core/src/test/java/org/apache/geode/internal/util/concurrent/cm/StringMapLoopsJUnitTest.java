@@ -28,7 +28,7 @@
  * Expert Group and released to the public domain. Use, modify, and
  * redistribute this code in any way without acknowledgement.
  */
-package com.gemstone.gemfire.internal.util.concurrent.cm;
+package org.apache.geode.internal.util.concurrent.cm;
 
 import java.util.Map;
 import java.util.Random;
@@ -39,8 +39,8 @@ import java.util.concurrent.Executors;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.JSR166TestCase;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.JSR166TestCase;
 
 @Category(IntegrationTest.class)
 public class StringMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat

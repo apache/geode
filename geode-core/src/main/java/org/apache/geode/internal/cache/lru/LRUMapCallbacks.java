@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.lru;
+package org.apache.geode.internal.cache.lru;
 
-//import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-//import com.gemstone.gemfire.internal.cache.LocalRegion;
+//import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.RegionEntry;
+//import org.apache.geode.internal.cache.LocalRegion;
 
 /** The lru action on the map for evicting items must be called while the current thread is free of any map synchronizations.
  */

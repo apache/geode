@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.facets.lang;
+package org.apache.geode.cache.query.facets.lang;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.QueryService;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.QueryService;
 import java.util.*;
 
 
@@ -48,7 +48,7 @@ class Utils {
   
   static void installObserver()
   throws Exception {
-    //         Class holderClass = Class.forName("com.gemstone.persistence.query.internal.query.QueryObserverHolder");
+    //         Class holderClass = Class.forName("org.apache.persistence.query.internal.query.QueryObserverHolder");
     //         Method meth = holderClass.getMethod(null, "getInstance", null);
     
   }
@@ -109,8 +109,8 @@ class Utils {
     GsSession gsSession = SessionManagerImpl.getDefault().createSession();
     gsSession.begin();
     // load the QueryService interface
-    Class.forName("com.gemstone.persistence.query.QueryService");
-    com.gemstone.persistence.vm.VMFactory.getCurrentVM().commitReposCanonicalObjs(gsSession);
+    Class.forName("org.apache.persistence.query.QueryService");
+    org.apache.persistence.vm.VMFactory.getCurrentVM().commitReposCanonicalObjs(gsSession);
     try {
       gsSession.commit();
    

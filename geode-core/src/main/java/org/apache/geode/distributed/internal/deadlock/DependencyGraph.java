@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.deadlock;
+package org.apache.geode.distributed.internal.deadlock;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.distributed.internal.deadlock.MessageDependencyMonitor.MessageKey;
-import com.gemstone.gemfire.internal.util.PluckStacks;
+import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor.MessageKey;
+import org.apache.geode.internal.util.PluckStacks;
 
 /**
  * This class holds a graph of dependencies between objects

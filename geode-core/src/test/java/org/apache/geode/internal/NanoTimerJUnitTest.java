@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.NanoTimer.TimeService;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.NanoTimer.TimeService;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for NanoTimer.

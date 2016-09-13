@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.json;
+package org.apache.geode.management.internal.cli.json;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -32,10 +32,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.internal.StructImpl;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.pdx.PdxInstance;
 
 /**
  * A limited functionality JSON parser. Its a DSF based JSON parser. It does not

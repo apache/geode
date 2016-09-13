@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal.management;
+package org.apache.geode.cache.lucene.internal.management;
 
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
- * MBean that provides access to the {@link com.gemstone.gemfire.cache.lucene.LuceneService}.
+ * MBean that provides access to the {@link org.apache.geode.cache.lucene.LuceneService}.
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface LuceneServiceMXBean {
 
   /**
-   * Returns an array of {@link LuceneIndexMetrics} for the {@link com.gemstone.gemfire.cache.lucene.LuceneIndex}
+   * Returns an array of {@link LuceneIndexMetrics} for the {@link org.apache.geode.cache.lucene.LuceneIndex}
    * instances defined in this member
    *
    * @return an array of LuceneIndexMetrics for the LuceneIndexes defined in this member
@@ -35,7 +35,7 @@ public interface LuceneServiceMXBean {
   public LuceneIndexMetrics[] listIndexMetrics();
 
   /**
-   * Returns an array of {@link LuceneIndexMetrics} for the {@link com.gemstone.gemfire.cache.lucene.LuceneIndex}
+   * Returns an array of {@link LuceneIndexMetrics} for the {@link org.apache.geode.cache.lucene.LuceneIndex}
    * instances defined on the input region in this member
    *
    * @param regionPath The full path of the region to retrieve
@@ -46,7 +46,7 @@ public interface LuceneServiceMXBean {
   public LuceneIndexMetrics[] listIndexMetrics(String regionPath);
 
   /**
-   * Returns a {@link LuceneIndexMetrics} for the {@link com.gemstone.gemfire.cache.lucene.LuceneIndex}
+   * Returns a {@link LuceneIndexMetrics} for the {@link org.apache.geode.cache.lucene.LuceneIndex}
    * with the input index name defined on the input region in this member.
    *
    * @param regionPath The full path of the region to retrieve

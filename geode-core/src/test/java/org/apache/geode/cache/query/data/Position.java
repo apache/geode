@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.data;
+package org.apache.geode.cache.query.data;
 
 import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 
 public class Position implements Serializable, DataSerializable, Comparable {

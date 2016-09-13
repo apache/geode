@@ -15,98 +15,98 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.client.internal.*;
-import com.gemstone.gemfire.cache.execute.*;
-import com.gemstone.gemfire.cache.partition.PartitionListener;
-import com.gemstone.gemfire.cache.partition.PartitionNotAvailableException;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.cache.query.internal.index.*;
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
-import com.gemstone.gemfire.distributed.internal.locks.DLockRemoteToken;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.SetUtils;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor.ServerBucketProfile;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
-import com.gemstone.gemfire.internal.cache.DestroyPartitionedRegionMessage.DestroyPartitionedRegionResponse;
-import com.gemstone.gemfire.internal.cache.PutAllPartialResultException.PutAllPartialResult;
-import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
-import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
-import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
-import com.gemstone.gemfire.internal.cache.execute.*;
-import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
-import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
-import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.internal.cache.partitioned.*;
-import com.gemstone.gemfire.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.DestroyMessage.DestroyResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.DumpB2NRegion.DumpB2NResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.FetchBulkEntriesMessage.FetchBulkEntriesResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.FetchEntryMessage.FetchEntryResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.FetchKeysMessage.FetchKeysResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.IdentityRequestMessage.IdentityResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.IdentityUpdateMessage.IdentityUpdateResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.InterestEventMessage.InterestEventResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.InvalidateMessage.InvalidateResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.PRUpdateEntryVersionMessage.UpdateEntryVersionResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage.PartitionResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.PutMessage.PutResult;
-import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
-import com.gemstone.gemfire.internal.cache.partitioned.SizeMessage.SizeResponse;
-import com.gemstone.gemfire.internal.cache.persistence.PRPersistentConfig;
-import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.Get70;
-import com.gemstone.gemfire.internal.cache.versions.ConcurrentCacheModificationException;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
-import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySenderEventProcessor;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderConfigurationException;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
-import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
-import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
-import com.gemstone.gemfire.internal.util.TransformUtils;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.client.internal.*;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.cache.partition.PartitionNotAvailableException;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.internal.index.*;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.LockServiceDestroyedException;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
+import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.SetUtils;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
+import org.apache.geode.internal.cache.DestroyPartitionedRegionMessage.DestroyPartitionedRegionResponse;
+import org.apache.geode.internal.cache.PutAllPartialResultException.PutAllPartialResult;
+import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
+import org.apache.geode.internal.cache.control.MemoryEvent;
+import org.apache.geode.internal.cache.control.MemoryThresholds;
+import org.apache.geode.internal.cache.execute.*;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.lru.HeapEvictor;
+import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.partitioned.*;
+import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
+import org.apache.geode.internal.cache.partitioned.DestroyMessage.DestroyResponse;
+import org.apache.geode.internal.cache.partitioned.DumpB2NRegion.DumpB2NResponse;
+import org.apache.geode.internal.cache.partitioned.FetchBulkEntriesMessage.FetchBulkEntriesResponse;
+import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
+import org.apache.geode.internal.cache.partitioned.FetchEntryMessage.FetchEntryResponse;
+import org.apache.geode.internal.cache.partitioned.FetchKeysMessage.FetchKeysResponse;
+import org.apache.geode.internal.cache.partitioned.GetMessage.GetResponse;
+import org.apache.geode.internal.cache.partitioned.IdentityRequestMessage.IdentityResponse;
+import org.apache.geode.internal.cache.partitioned.IdentityUpdateMessage.IdentityUpdateResponse;
+import org.apache.geode.internal.cache.partitioned.InterestEventMessage.InterestEventResponse;
+import org.apache.geode.internal.cache.partitioned.InvalidateMessage.InvalidateResponse;
+import org.apache.geode.internal.cache.partitioned.PRUpdateEntryVersionMessage.UpdateEntryVersionResponse;
+import org.apache.geode.internal.cache.partitioned.PartitionMessage.PartitionResponse;
+import org.apache.geode.internal.cache.partitioned.PutMessage.PutResult;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
+import org.apache.geode.internal.cache.partitioned.SizeMessage.SizeResponse;
+import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
+import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tier.sockets.command.Get70;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
+import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.sequencelog.RegionLogger;
+import org.apache.geode.internal.util.TransformUtils;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -2051,7 +2051,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.LocalRegion#checkIfAboveThreshold(com.gemstone.gemfire.internal.cache.EntryEventImpl)
+   * @see org.apache.geode.internal.cache.LocalRegion#checkIfAboveThreshold(org.apache.geode.internal.cache.EntryEventImpl)
    */
   @Override
   public void checkIfAboveThreshold(EntryEventImpl evi)
@@ -5951,7 +5951,7 @@ public class PartitionedRegion extends LocalRegion implements
   /*
    * We yet don't have any stats for this operation.
    * (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.LocalRegion#basicUpdateEntryVersion(com.gemstone.gemfire.internal.cache.EntryEventImpl)
+   * @see org.apache.geode.internal.cache.LocalRegion#basicUpdateEntryVersion(org.apache.geode.internal.cache.EntryEventImpl)
    */
   @Override
   void basicUpdateEntryVersion(EntryEventImpl event)
@@ -8357,7 +8357,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.LocalRegion#dumpBackingMap()
+   * @see org.apache.geode.internal.cache.LocalRegion#dumpBackingMap()
    */
   @Override
   public void dumpBackingMap() {

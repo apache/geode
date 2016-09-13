@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.persistence;
+package org.apache.geode.internal.cache.persistence;
 
 import java.util.EnumSet;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.internal.cache.DiskId;
-import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.RegionEntryContext;
-import com.gemstone.gemfire.internal.cache.RegionMap;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.internal.cache.DiskId;
+import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.internal.cache.RegionMap;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
 
 /**
  * Contract DiskInitFile needs a DiskRegion to provide.

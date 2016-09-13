@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.security.shiro;
+package org.apache.geode.internal.security.shiro;
 
 import java.util.Properties;
 
 import org.apache.shiro.authc.UsernamePasswordToken;
 
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.security.ResourceConstants;
 
 public class GeodeAuthenticationToken extends UsernamePasswordToken {
 

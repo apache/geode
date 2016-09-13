@@ -19,20 +19,20 @@
  *
  * Created on February 15, 2005, 11:49 AM
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
@@ -948,7 +948,7 @@ public class IndexManager  {
    * @param action action to be taken (IndexManager.ADD_ENTRY,
    *          IndexManager.UPDATE_ENTRY, IndexManager.REMOVE_ENTRY)
    * @param opCode one of IndexProtocol.OTHER_OP, BEFORE_UPDATE_OP, AFTER_UPDATE_OP.
-   * @throws com.gemstone.gemfire.cache.query.IndexMaintenanceException
+   * @throws org.apache.geode.cache.query.IndexMaintenanceException
    */
   public void updateIndexes(RegionEntry entry, int action, int opCode, boolean isDiskRecoveryInProgress)
       throws QueryException {
@@ -1415,7 +1415,7 @@ public class IndexManager  {
     public void run() {
       // async writers main loop
       // logger.debug("DiskRegion writer started (writer=" + this + ")");
-      com.gemstone.gemfire.CancelCriterion stopper = ((LocalRegion)region).getCancelCriterion();
+      org.apache.geode.CancelCriterion stopper = ((LocalRegion)region).getCancelCriterion();
       try {
         while (!this.shutdownRequested) {
           // Termination checks

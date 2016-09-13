@@ -14,41 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.OplogCancelledException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.Flushable;
-import com.gemstone.gemfire.internal.cache.DiskEntry.Helper.ValueWrapper;
-import com.gemstone.gemfire.internal.cache.DiskInitFile.DiskRegionFlag;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogCompactor;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import com.gemstone.gemfire.internal.cache.DistributedRegion.DiskPosition;
-import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
-import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
-import com.gemstone.gemfire.internal.cache.persistence.*;
-import com.gemstone.gemfire.internal.cache.versions.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.offheap.ReferenceCountHelper;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
-import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
-import com.gemstone.gemfire.internal.shared.NativeCalls;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.internal.util.TransformUtils;
-import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.SerializationException;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.OplogCancelledException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.cache.DiskEntry.Helper.Flushable;
+import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
+import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
+import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.persistence.*;
+import org.apache.geode.internal.cache.versions.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.offheap.ReferenceCountHelper;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.shared.NativeCalls;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.TransformUtils;
+import org.apache.geode.pdx.internal.PdxWriterImpl;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -1006,9 +1006,9 @@ public final class Oplog implements CompactableOplog, Flushable {
         // at sun.nio.ch.IOUtil.writeFromNativeBuffer(IOUtil.java:104)
         // at sun.nio.ch.IOUtil.write(IOUtil.java:60)
         // at sun.nio.ch.FileChannelImpl.write(FileChannelImpl.java:206)
-        // at com.gemstone.gemfire.internal.cache.Oplog.flush(Oplog.java:3377)
+        // at org.apache.geode.internal.cache.Oplog.flush(Oplog.java:3377)
         // at
-        // com.gemstone.gemfire.internal.cache.Oplog.flushAll(Oplog.java:3419)
+        // org.apache.geode.internal.cache.Oplog.flushAll(Oplog.java:3419)
         /*
          * { String os = System.getProperty("os.name"); if (os != null) { if
          * (os.indexOf("Windows") != -1) { olf.raf.close(); olf.RAFClosed =
@@ -7100,7 +7100,7 @@ public final class Oplog implements CompactableOplog, Flushable {
     /*
      * (non-Javadoc)
      * 
-     * @see com.gemstone.gemfire.internal.cache.DiskEntry#getVersionStamp()
+     * @see org.apache.geode.internal.cache.DiskEntry#getVersionStamp()
      */
     @Override
     public VersionStamp getVersionStamp() {
@@ -7203,7 +7203,7 @@ public final class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public boolean fillInValue(LocalRegion r, com.gemstone.gemfire.internal.cache.InitialImageOperation.Entry entry,
+    public boolean fillInValue(LocalRegion r, org.apache.geode.internal.cache.InitialImageOperation.Entry entry,
         ByteArrayDataInput in, DM mgr) {
       // TODO Auto-generated method stub
       return false;

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
-import com.gemstone.gemfire.pdx.PdxFieldAlreadyExistsException;
-import com.gemstone.gemfire.pdx.PdxUnreadFields;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.pdx.PdxFieldAlreadyExistsException;
+import org.apache.geode.pdx.PdxUnreadFields;
 
 /**
  * 

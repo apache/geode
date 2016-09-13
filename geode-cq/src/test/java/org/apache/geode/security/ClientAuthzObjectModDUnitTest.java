@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.security.FilterPostAuthorization;
-import com.gemstone.gemfire.internal.security.FilterPreAuthorization;
-import com.gemstone.gemfire.internal.security.ObjectWithAuthz;
-import com.gemstone.gemfire.security.generator.CredentialGenerator;
-import com.gemstone.gemfire.security.generator.DummyAuthzCredentialGenerator;
-import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
-import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.security.FilterPostAuthorization;
+import org.apache.geode.internal.security.FilterPreAuthorization;
+import org.apache.geode.internal.security.ObjectWithAuthz;
+import org.apache.geode.security.generator.CredentialGenerator;
+import org.apache.geode.security.generator.DummyAuthzCredentialGenerator;
+import org.apache.geode.security.generator.DummyCredentialGenerator;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import static com.gemstone.gemfire.security.SecurityTestUtils.closeCache;
-import static com.gemstone.gemfire.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 
 /**
  * Tests for authorization callback that modify objects and callbacks from

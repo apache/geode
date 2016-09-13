@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.cache.AbstractRegion;
-import com.gemstone.gemfire.management.internal.cli.domain.EvictionAttributesInfo;
-import com.gemstone.gemfire.management.internal.cli.domain.PartitionAttributesInfo;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.management.internal.cli.domain.EvictionAttributesInfo;
+import org.apache.geode.management.internal.cli.domain.PartitionAttributesInfo;
 
 /***
  * Contains the default values for the region attributes

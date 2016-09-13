@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.*;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * This class maintains statistics for the locator

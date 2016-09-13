@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.distributed;
+package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -35,10 +35,10 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TopEntriesFunctionCollectorJUnitTest {

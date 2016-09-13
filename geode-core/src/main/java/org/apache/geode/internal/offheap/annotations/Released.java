@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap.annotations;
+package org.apache.geode.internal.offheap.annotations;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.*;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

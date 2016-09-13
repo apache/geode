@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,28 +23,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.AbstractCliAroundInterceptor;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.GfshParseResult;
-import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
-import com.gemstone.gemfire.management.internal.cli.functions.DeployFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.ListDeployedFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.UndeployFunction;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.FileResult;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.functions.DeployFunction;
+import org.apache.geode.management.internal.cli.functions.ListDeployedFunction;
+import org.apache.geode.management.internal.cli.functions.UndeployFunction;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
+import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -57,7 +57,7 @@ import org.springframework.shell.core.annotation.CliOption;
 /**
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
+ * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
  * @since GemFire 7.0
  */
 public final class DeployCommands extends AbstractCommandsSupport implements CommandMarker {
@@ -78,7 +78,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    * @return The result of the attempt to deploy
    */
   @CliCommand(value = { CliStrings.DEPLOY }, help = CliStrings.DEPLOY__HELP)
-  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.DeployCommands$Interceptor", relatedTopic={CliStrings.TOPIC_GEODE_CONFIG}, writesToSharedConfiguration=true)
+  @CliMetaData(interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor", relatedTopic={CliStrings.TOPIC_GEODE_CONFIG}, writesToSharedConfiguration=true)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public final Result deploy(
     @CliOption(key = { CliStrings.DEPLOY__GROUP }, help = CliStrings.DEPLOY__GROUP__HELP, optionContext=ConverterHint.MEMBERGROUP)

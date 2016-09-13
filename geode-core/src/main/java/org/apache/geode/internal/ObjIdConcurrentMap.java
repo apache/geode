@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 /*
  * Written by Doug Lea with assistance from members of JCP JSR-166

@@ -16,9 +16,9 @@
  */
 package io.pivotal.geode.spark.connector
 
-import com.gemstone.gemfire.cache.execute.ResultCollector
-import com.gemstone.gemfire.cache.query.Query
-import com.gemstone.gemfire.cache.Region
+import org.apache.geode.cache.execute.ResultCollector
+import org.apache.geode.cache.query.Query
+import org.apache.geode.cache.Region
 import io.pivotal.geode.spark.connector.internal.RegionMetadata
 import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartition
 

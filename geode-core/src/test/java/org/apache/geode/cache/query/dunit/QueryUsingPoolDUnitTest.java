@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.dunit;
+package org.apache.geode.cache.query.dunit;
 
 import static org.junit.Assert.*;
 
@@ -32,42 +32,42 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.QueryObserverAdapter;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * Tests remote (client/server) query execution.
@@ -197,7 +197,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         Assert.fail("Failed to get QueryService.", e);
       }
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName;
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName;
 
       try {
         Query query = qService.newQuery(queryString);
@@ -209,7 +209,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(numberOfEntries, results.size());
       assertTrue(!results.getCollectionType().allowsDuplicates());
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where ticker = 'ibm'";
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where ticker = 'ibm'";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -219,7 +219,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(numberOfEntries, results.size());
       assertTrue(!results.getCollectionType().allowsDuplicates());
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where ticker = 'IBM'";
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where ticker = 'IBM'";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -229,7 +229,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(0, results.size());
       assertTrue(!results.getCollectionType().allowsDuplicates());
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where price > 49";
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where price > 49";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -239,7 +239,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(numberOfEntries / 2, results.size());
       assertTrue(!results.getCollectionType().allowsDuplicates());
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where price = 50";
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName + " where price = 50";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -249,7 +249,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(1, results.size());
       assertTrue(!results.getCollectionType().allowsDuplicates());
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct * from " + regionName
           + " where ticker = 'ibm' and price = 50";
       try {
         Query query = qService.newQuery(queryString);
@@ -306,7 +306,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         Assert.fail("Failed to get QueryService.", e);
       }
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName;
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName;
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -317,7 +317,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
 
       queryString =
-          "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where ticker = 'ibm'";
+          "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where ticker = 'ibm'";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -328,7 +328,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
 
       queryString =
-          "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where ticker = 'IBM'";
+          "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where ticker = 'IBM'";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -339,7 +339,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
 
       queryString =
-          "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where price > 49";
+          "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where price > 49";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -350,7 +350,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
 
       queryString =
-          "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where price = 50";
+          "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName + " where price = 50";
       try {
         Query query = qService.newQuery(queryString);
         results = (SelectResults) query.execute();
@@ -360,7 +360,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(1, results.size());
       assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
 
-      queryString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName
+      queryString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject; select distinct ticker, price from " + regionName
           + " where ticker = 'ibm' and price = 50";
       try {
         Query query = qService.newQuery(queryString);
@@ -1599,7 +1599,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       }
 
       try {
-        String importString = "import com.gemstone.gemfire.admin.QueryUsingPoolDUnitTest.TestObject;";
+        String importString = "import org.apache.geode.admin.QueryUsingPoolDUnitTest.TestObject;";
         qService.createIndex("test", IndexType.FUNCTIONAL, "ticker", regionName1, importString);
       } catch (UnsupportedOperationException e) {
         // Expected behavior.

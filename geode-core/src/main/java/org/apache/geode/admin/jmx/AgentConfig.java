@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx;
+package org.apache.geode.admin.jmx;
 
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-//import com.gemstone.gemfire.admin.internal.InetAddressUtil;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.distributed.internal.DistributionConfig;
+//import org.apache.geode.admin.internal.InetAddressUtil;
 
 /**
  * A configuration object for a JMX administration {@linkplain Agent
@@ -274,7 +274,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
  * 
  *
  * @since GemFire 4.0
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface AgentConfig extends DistributedSystemConfig {
 

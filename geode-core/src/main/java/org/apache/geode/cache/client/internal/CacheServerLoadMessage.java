@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,15 +22,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.distributed.internal.ServerLocator;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SerialDistributionMessage;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocator;
+import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * A message from a server to a locator to update the locator

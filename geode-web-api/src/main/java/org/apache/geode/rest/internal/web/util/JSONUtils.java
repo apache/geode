@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.util;
+package org.apache.geode.rest.internal.web.util;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -28,9 +28,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.internal.StructImpl;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.internal.HeapDataOutputStream;
 import org.json.JSONException;
 
 import org.springframework.hateoas.Link;
@@ -63,7 +63,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForListFunctionsCall(Set<String> functionIds) {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
         .createGenerator(outputStream, JsonEncoding.UTF8));
@@ -81,7 +81,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForListCall(Map<String, Link> LinksByName, String keyName, String fieldName) {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -97,7 +97,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForListKeys(Object[] keys, String fieldName) {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -116,7 +116,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForListRegions(Set<Region<?, ?>> regions, String fieldName) {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -135,7 +135,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForGetOnKey(Object value) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -151,7 +151,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForGetOnMultipleKey(Collection<Object> collection, String regionName) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -170,7 +170,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForListQueriesCall(Region<String, String> queryRegion) {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
         .createGenerator(outputStream, JsonEncoding.UTF8));
@@ -185,7 +185,7 @@ public abstract class JSONUtils {
   }
 
   public static String formulateJsonForExistingQuery(String queryId, String oql) {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -201,7 +201,7 @@ public abstract class JSONUtils {
   }
 
   public static String convertCollectionToJson(Collection<Object> collection) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -217,7 +217,7 @@ public abstract class JSONUtils {
   }
 
   public static String convertMapToJson(Map<?, ?> map) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
@@ -233,7 +233,7 @@ public abstract class JSONUtils {
   }
 
   public static String convertStructToJson(StructImpl structSet) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(com.gemstone.gemfire.internal.Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()

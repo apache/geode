@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.util.*;
 
 /**
  * This program sorts the entries in a GemFire log file (one written using
- * a {@link com.gemstone.gemfire.i18n.LogWriterI18n}) by their timestamps.
+ * a {@link org.apache.geode.i18n.LogWriterI18n}) by their timestamps.
  * Note that in order to do so, we have to read the entire file into
  * memory.
  *

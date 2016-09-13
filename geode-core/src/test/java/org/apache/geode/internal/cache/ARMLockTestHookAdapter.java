@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
 
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.test.dunit.VM;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.test.dunit.VM;
 
 public class ARMLockTestHookAdapter implements AbstractRegionMap.ARMLockTestHook, Serializable {
 

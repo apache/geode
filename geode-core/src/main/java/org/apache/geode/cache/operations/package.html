@@ -18,89 +18,89 @@ limitations under the License.
 <BODY>
 
 
-<P>Contains the {@link com.gemstone.gemfire.cache.operations.OperationContext} interface that encapsulates an operation and the data associated with it for both the pre-operation and post-operation cases. 
-It also contains implementations of the {@link com.gemstone.gemfire.cache.operations.OperationContext} interface for  various kinds of cache operations.</P> 
+<P>Contains the {@link org.apache.geode.cache.operations.OperationContext} interface that encapsulates an operation and the data associated with it for both the pre-operation and post-operation cases. 
+It also contains implementations of the {@link org.apache.geode.cache.operations.OperationContext} interface for  various kinds of cache operations.</P> 
 
 These include: 
 	
 
-<P> {@link com.gemstone.gemfire.cache.operations.KeyOperationContext}: Implementation for operations that require a key for the operation. 
+<P> {@link org.apache.geode.cache.operations.KeyOperationContext}: Implementation for operations that require a key for the operation. 
 It provides a getKey method to obtain the key. Also provided are setCallbackArg and getCallbackArg methods that can be used to set/get an optional callback argument. 
-The operations returned as KeyOperationContext are {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#DESTROY} 
-and {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}. 
+The operations returned as KeyOperationContext are {@link org.apache.geode.cache.operations.OperationContext.OperationCode#DESTROY} 
+and {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}. 
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.KeyValueOperationContext}: Implementation for operations that require both key and value for the operation. 
-It extends the {@link com.gemstone.gemfire.cache.operations.KeyOperationContext} implementation providing getValue and setValue methods
+<P> {@link org.apache.geode.cache.operations.KeyValueOperationContext}: Implementation for operations that require both key and value for the operation. 
+It extends the {@link org.apache.geode.cache.operations.KeyOperationContext} implementation providing getValue and setValue methods
 in addition to those provided by the KeyOperationContext class. 
-The operations returned as KeyValueOperationContext are {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#GET} and {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUT}. 
+The operations returned as KeyValueOperationContext are {@link org.apache.geode.cache.operations.OperationContext.OperationCode#GET} and {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUT}. 
 For the GET operation this is used to both the pre and post operation cases. </P>
 
-<P>{@link com.gemstone.gemfire.cache.operations.InterestOperationContext}: Implementation for register and unregister of interest in a region. 
-It defines a sub-class {@link com.gemstone.gemfire.cache.operations.InterestType} that encapsulates different kinds of interest viz. 
+<P>{@link org.apache.geode.cache.operations.InterestOperationContext}: Implementation for register and unregister of interest in a region. 
+It defines a sub-class {@link org.apache.geode.cache.operations.InterestType} that encapsulates different kinds of interest viz. 
 KEY, LIST, REGULAR_EXPRESSION, FILTER_CLASS and OQL_QUERY. 
 It provides getInterestType method to get the interest type, 
-getInterestResultPolicy method to get the {@link com.gemstone.gemfire.cache.InterestResultPolicy} of the request, 
+getInterestResultPolicy method to get the {@link org.apache.geode.cache.InterestResultPolicy} of the request, 
 isUnregister method that returns true if this is an unregister operation, and getKey/setKey methods to get/set the key being registered. 
-The key may be a single key, a list of keys, a regular expression string or an OQL {@link com.gemstone.gemfire.cache.query.Query}. </P>
+The key may be a single key, a list of keys, a regular expression string or an OQL {@link org.apache.geode.cache.query.Query}. </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.QueryOperationContext}: Implementation for a cache query operation for both the pre and post operation cases. 
+<P> {@link org.apache.geode.cache.operations.QueryOperationContext}: Implementation for a cache query operation for both the pre and post operation cases. 
 It provides getQuery to get the query string as well as a modifyQuery method to be able to modify it. 
 A utility getRegionNames method is also provided to obtain the list of regions as referenced by the query string. 
 For the results in the post operation phase, getQueryResult allows getting the result and setQueryResult allows modification of the result.</P>
 	
 
-<P> {@link com.gemstone.gemfire.cache.operations.RegionOperationContext}: Implementation for the region level operation for the pre operation case. 
+<P> {@link org.apache.geode.cache.operations.RegionOperationContext}: Implementation for the region level operation for the pre operation case. 
 It provides getCallbackArg and setCallbackArg methods to get/set the optionally callback argument. 
-The operations returned as RegionOperationContext are {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_CLEAR} 
-and {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.</P> 
+The operations returned as RegionOperationContext are {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_CLEAR} 
+and {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.</P> 
 	
 
-<P> {@link com.gemstone.gemfire.cache.operations.DestroyOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#DESTROY} operation 
+<P> {@link org.apache.geode.cache.operations.DestroyOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#DESTROY} operation 
 having the key object for both the pre-operation and post-operation updates.
 </P>	
 
-<P> {@link com.gemstone.gemfire.cache.operations.CloseCQOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CLOSE_CQ} operation
+<P> {@link org.apache.geode.cache.operations.CloseCQOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CLOSE_CQ} operation
 for the pre-operation case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.ExecuteCQOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#EXECUTE_CQ} operation 
+<P> {@link org.apache.geode.cache.operations.ExecuteCQOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#EXECUTE_CQ} operation 
 for both the pre-operation and post-operation case.</P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.ExecuteFunctionOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#EXECUTE_FUNCTION} operation 
+<P> {@link org.apache.geode.cache.operations.ExecuteFunctionOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#EXECUTE_FUNCTION} operation 
 for the pre-operation  case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.GetOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#GET} operation 
+<P> {@link org.apache.geode.cache.operations.GetOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#GET} operation 
 having the key object for the pre-operation case and both key-value objects for the post-operation case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.InvalidateOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#INVALIDATE} region
+<P> {@link org.apache.geode.cache.operations.InvalidateOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#INVALIDATE} region
 operation having the key object for the pre-operation case and post-operation case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.PutOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUT} operation 
+<P> {@link org.apache.geode.cache.operations.PutOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUT} operation 
 having the key and value objects for the pre-operation case and post-operation case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.PutAllOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#KEY_SET} operation
+<P> {@link org.apache.geode.cache.operations.PutAllOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#KEY_SET} operation
 having the key and value objects for the pre-operation case and post-operation case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.RegionCreateOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_CREATE} 
+<P> {@link org.apache.geode.cache.operations.RegionCreateOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_CREATE} 
 operation for the pre-operation case and post-operation case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.StopCQOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#STOP_CQ} operation
+<P> {@link org.apache.geode.cache.operations.StopCQOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#STOP_CQ} operation
 for the pre-operation case.
 </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGISTER_INTEREST} operation
-for the pre-operation case, which derives from {@link com.gemstone.gemfire.cache.operations.InterestOperationContext}
+<P> {@link org.apache.geode.cache.operations.RegisterInterestOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGISTER_INTEREST} operation
+for the pre-operation case, which derives from {@link org.apache.geode.cache.operations.InterestOperationContext}
  </P>
 
-<P> {@link com.gemstone.gemfire.cache.operations.UnregisterInterestOperationContext}: Implementation for {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#UNREGISTER_INTEREST} operation 
-for the pre-operation case, which derives from {@link com.gemstone.gemfire.cache.operations.InterestOperationContext} </P>
+<P> {@link org.apache.geode.cache.operations.UnregisterInterestOperationContext}: Implementation for {@link org.apache.geode.cache.operations.OperationContext.OperationCode#UNREGISTER_INTEREST} operation 
+for the pre-operation case, which derives from {@link org.apache.geode.cache.operations.InterestOperationContext} </P>
 
 
 </BODY>

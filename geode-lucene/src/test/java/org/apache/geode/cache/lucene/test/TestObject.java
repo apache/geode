@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.test;
+package org.apache.geode.cache.lucene.test;
 
 import java.io.Serializable;
 

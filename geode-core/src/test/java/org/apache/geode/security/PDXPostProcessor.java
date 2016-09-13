@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 import static org.junit.Assert.*;
 
@@ -23,8 +23,8 @@ import java.util.Properties;
 
 import org.apache.geode.security.PostProcessor;
 
-import com.gemstone.gemfire.pdx.SimpleClass;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.SimpleClass;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class PDXPostProcessor implements PostProcessor{
   public static byte[] BYTES = {1,0};

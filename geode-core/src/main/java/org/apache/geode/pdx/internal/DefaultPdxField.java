@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 
 /**
  * Used by {@link PdxInstanceImpl#equals(Object)} to act as if it has

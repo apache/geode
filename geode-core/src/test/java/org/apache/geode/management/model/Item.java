@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.model;
+package org.apache.geode.management.model;
 
 import java.io.Serializable;
 

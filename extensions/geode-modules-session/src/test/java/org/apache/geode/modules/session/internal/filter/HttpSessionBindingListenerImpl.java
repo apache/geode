@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
 import java.io.Serializable;
 import javax.servlet.http.HttpSessionBindingEvent;

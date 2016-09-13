@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import static org.mockito.Mockito.*;
 
@@ -25,13 +25,13 @@ import java.net.Socket;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.internal.net.SocketCloser;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ConnectionJUnitTest {

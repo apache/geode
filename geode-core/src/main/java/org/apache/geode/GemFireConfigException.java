@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 /**
  * A <code>GemFireConfigException</code> is used for failures

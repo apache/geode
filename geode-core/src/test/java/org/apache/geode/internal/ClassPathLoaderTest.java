@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import static org.junit.Assert.*;
 
@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ClassPathLoader}.
@@ -91,7 +91,7 @@ public class ClassPathLoaderTest {
   public void testForName() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testForName");
 
-    String classToLoad = "com.gemstone.gemfire.internal.classpathloaderjunittest.DoesExist";
+    String classToLoad = "org.apache.geode.internal.classpathloaderjunittest.DoesExist";
     Class<?> clazz = ClassPathLoader.getLatest().forName(classToLoad);
     assertNotNull(clazz);
   }
@@ -103,7 +103,7 @@ public class ClassPathLoaderTest {
   public void testGetResource() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testGetResource");
 
-    String resourceToGet = "com/gemstone/gemfire/internal/classpathloaderjunittest/DoesExist.class";
+    String resourceToGet = "org/apache/geode/internal/classpathloaderjunittest/DoesExist.class";
     URL url = ClassPathLoader.getLatest().getResource(resourceToGet);
     assertNotNull(url);
 
@@ -132,7 +132,7 @@ public class ClassPathLoaderTest {
   public void testGetResources() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testGetResources");
 
-    String resourceToGet = "com/gemstone/gemfire/internal/classpathloaderjunittest/DoesExist.class";
+    String resourceToGet = "org/apache/geode/internal/classpathloaderjunittest/DoesExist.class";
     Enumeration<URL> urls = ClassPathLoader.getLatest().getResources(resourceToGet);
     assertNotNull(urls);
     assertTrue(urls.hasMoreElements());
@@ -163,7 +163,7 @@ public class ClassPathLoaderTest {
   public void testGetResourceAsStream() throws Exception {
     System.out.println("\nStarting ClassPathLoaderTest#testGetResourceAsStream");
 
-    String resourceToGet = "com/gemstone/gemfire/internal/classpathloaderjunittest/DoesExist.class";
+    String resourceToGet = "org/apache/geode/internal/classpathloaderjunittest/DoesExist.class";
     InputStream is = ClassPathLoader.getLatest().getResourceAsStream(resourceToGet);
     assertNotNull(is);
 

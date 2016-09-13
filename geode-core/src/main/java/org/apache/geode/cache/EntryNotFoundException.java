@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /** Thrown when an operation is invoked on <code>Region</code> for an entry that
  * doesn't exist in the <code>Region</code>. This exception is <i>not</i>
- * thrown by {@link com.gemstone.gemfire.cache.Region#get(Object)} or {@link Region#getEntry}.
+ * thrown by {@link org.apache.geode.cache.Region#get(Object)} or {@link Region#getEntry}.
  *
  *
  *
- * @see com.gemstone.gemfire.cache.Region#invalidate(Object)
- * @see com.gemstone.gemfire.cache.Region#destroy(Object)
+ * @see org.apache.geode.cache.Region#invalidate(Object)
+ * @see org.apache.geode.cache.Region#destroy(Object)
  * @see Region.Entry
  * @since GemFire 3.0
  */

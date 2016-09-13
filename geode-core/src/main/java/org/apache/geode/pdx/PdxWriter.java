@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
 import java.util.Date;
 
-import com.gemstone.gemfire.cache.CacheFactory;
+import org.apache.geode.cache.CacheFactory;
 
 /**
  * A PdxWriter will be passed to {@link PdxSerializable#toData(PdxWriter) toData} or 

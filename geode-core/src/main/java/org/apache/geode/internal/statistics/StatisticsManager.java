@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import java.util.List;
 
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
 
 /**
  * Defines the contract that a statistics factory must implement

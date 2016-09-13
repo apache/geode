@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.*;
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.DataSerializer;
 
 /** NullDataOutputStream is an OutputStream that also implements DataOutput
  * and does not store any data written to it.

@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Config;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.StatResource;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.*;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 import java.net.InetAddress;
@@ -41,8 +41,8 @@ import java.util.*;
  * @since GemFire     3.5
  */
 public class SystemMemberImpl 
-implements com.gemstone.gemfire.admin.SystemMember,
-           com.gemstone.gemfire.admin.internal.ConfigurationParameterListener {
+implements org.apache.geode.admin.SystemMember,
+           org.apache.geode.admin.internal.ConfigurationParameterListener {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -209,7 +209,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
   }
 
   public StatisticResource[] getStat(String statisticsTypeName) 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     StatisticResource[] res = new StatisticResource[0];
     if (this.vm != null) {
       res = getStatsImpl(this.vm.getStats(statisticsTypeName));
@@ -218,7 +218,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
   }
 
   public StatisticResource[] getStats() 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     StatisticResource[] statsImpl = new StatisticResource[0];
     if (this.vm != null) {
       statsImpl = getStatsImpl(this.vm.getStats(null));
@@ -237,7 +237,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
   }
 
   public final SystemMemberCache getCache()
-    throws com.gemstone.gemfire.admin.AdminException
+    throws org.apache.geode.admin.AdminException
   {
     GemFireVM vm = getGemFireVM(); // fix for bug 33505
     if (vm == null) return null;
@@ -253,7 +253,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
   }
   
   public void refreshConfig() 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     GemFireVM vm = getGemFireVM();
     if (vm == null) return;
     refreshConfig(vm.getConfig());
@@ -264,7 +264,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
    * configuration based on the given <code>Config</code> object.
    */
   public final void refreshConfig(Config config) 
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     if (config == null) {
       throw new AdminException(LocalizedStrings.SystemMemberImpl_FAILED_TO_REFRESH_CONFIGURATION_PARAMETERS_FOR_0.toLocalizedString(new Object[] {getId()}));
     }
@@ -327,11 +327,11 @@ implements com.gemstone.gemfire.admin.SystemMember,
   //   Listener callbacks
   // -------------------------------------------------------------------------
   
-  // -- com.gemstone.gemfire.admin.internal.ConfigurationParameterListener ---
+  // -- org.apache.geode.admin.internal.ConfigurationParameterListener ---
   public void configurationParameterValueChanged(ConfigurationParameter parm) {
     try {
       setConfiguration(new ConfigurationParameter[] { parm });
-    } catch (com.gemstone.gemfire.admin.AdminException e) {
+    } catch (org.apache.geode.admin.AdminException e) {
       // this shouldn't occur since this is a config listener method...
       logger.warn(e.getMessage(), e);
       throw new RuntimeAdminException(e);
@@ -442,7 +442,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
    * @return new impl instance of {@link StatisticResource}
    */
   protected StatisticResource createStatisticResource(StatResource stat)
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     return new StatisticResourceImpl(stat, this);
   }
   
@@ -472,14 +472,14 @@ implements com.gemstone.gemfire.admin.SystemMember,
    * @return new impl instance of {@link SystemMemberCache}
    */
   protected SystemMemberCache createSystemMemberCache(GemFireVM vm)
-    throws com.gemstone.gemfire.admin.AdminException
+    throws org.apache.geode.admin.AdminException
   {
     return new SystemMemberCacheImpl(vm);
   }
 
   /** Wrap the internal stats with impls of {@link StatisticResource} */
   protected StatisticResource[] getStatsImpl(StatResource[] stats)
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     List statList = new ArrayList();
     for (int i = 0; i < stats.length; i++) {
       statList.add(createStatisticResource(stats[i]));

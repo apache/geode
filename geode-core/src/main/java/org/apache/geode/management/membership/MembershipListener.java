@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.membership;
+package org.apache.geode.management.membership;
 
 /**
  * A listener whose callback methods are invoked when members join or leave the
  * GemFire distributed system.
  *
- * @see com.gemstone.gemfire.management.ManagementService#addMembershipListener
+ * @see org.apache.geode.management.ManagementService#addMembershipListener
  *
  * @since GemFire 8.0
  */

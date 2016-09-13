@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.persistence;
+package org.apache.geode.cache.persistence;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * Thrown when a paritioned region is configured for disk persistence,

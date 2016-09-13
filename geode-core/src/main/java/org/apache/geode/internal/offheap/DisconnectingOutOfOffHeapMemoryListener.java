@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.OutOfOffHeapMemoryException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
  * Used to asynchronously disconnect an InternalDistributedSystem

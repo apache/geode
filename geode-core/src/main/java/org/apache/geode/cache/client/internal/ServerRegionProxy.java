@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,37 +25,37 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.ContainsKeyOp.MODE;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.AbstractRegion;
-import com.gemstone.gemfire.internal.cache.ClientServerObserver;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.EventIDHolder;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.TXCommitMessage;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.cache.execute.ServerRegionFunctionExecutor;
-import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList.Iterator;
-import com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub;
-import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ContainsKeyOp.MODE;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.cache.ClientServerObserver;
+import org.apache.geode.internal.cache.ClientServerObserverHolder;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.EventIDHolder;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
+import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList.Iterator;
+import org.apache.geode.internal.cache.tx.ClientTXStateStub;
+import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Used to send region operations from a client to a server
@@ -105,7 +105,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     }
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess#get(java.lang.Object, java.lang.Object)
+   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#get(java.lang.Object, java.lang.Object)
    */
   public Object get(Object key, Object callbackArg, EntryEventImpl clientEvent) {
     recordTXOperation(ServerRegionOperation.GET, key, callbackArg);
@@ -198,7 +198,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess#destroy(java.lang.Object, java.lang.Object, com.gemstone.gemfire.cache.Operation, com.gemstone.gemfire.internal.cache.EventID, java.lang.Object)
+   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#destroy(java.lang.Object, java.lang.Object, org.apache.geode.cache.Operation, org.apache.geode.internal.cache.EventID, java.lang.Object)
    */
   public Object destroy(Object key,
                       Object expectedOldValue,
@@ -275,7 +275,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess#clear(com.gemstone.gemfire.internal.cache.EventID, java.lang.Object)
+   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#clear(org.apache.geode.internal.cache.EventID, java.lang.Object)
    */
   public void clear(EventID eventId,
                     Object callbackArg)
@@ -296,7 +296,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     ClearOp.execute(con, this.pool, this.regionName, eventId, callbackArg);
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
+   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
   public boolean containsKey(Object key) {
     recordTXOperation(ServerRegionOperation.CONTAINS_KEY, key);
@@ -304,7 +304,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
+   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
   public boolean containsValueForKey(Object key) {
     recordTXOperation(ServerRegionOperation.CONTAINS_VALUE_FOR_KEY, key);
@@ -312,7 +312,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
+   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
   public boolean containsValue(Object value) {
     recordTXOperation(ServerRegionOperation.CONTAINS_VALUE, null, value);
@@ -320,7 +320,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess#keySet()
+   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#keySet()
    */
   public Set keySet() {
     recordTXOperation(ServerRegionOperation.KEY_SET, null);
@@ -844,7 +844,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   
   /**
    * Transaction synchronization notification to the servers
-   * @see com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub#beforeCompletion()
+   * @see org.apache.geode.internal.cache.tx.ClientTXStateStub#beforeCompletion()
    */
   public void beforeCompletion(int txId) {
     TXSynchronizationOp.execute(pool, 0, txId, TXSynchronizationOp.CompletionType.BEFORE_COMPLETION);
@@ -854,7 +854,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * Transaction synchronization notification to the servers
    * @param status
    * @return the server's TXCommitMessage
-   * @see com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub#afterCompletion(int)
+   * @see org.apache.geode.internal.cache.tx.ClientTXStateStub#afterCompletion(int)
    */
   public TXCommitMessage afterCompletion(int status, int txId) {
     return TXSynchronizationOp.execute(pool, status, txId, TXSynchronizationOp.CompletionType.AFTER_COMPLETION);

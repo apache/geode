@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.util;
+package org.apache.geode.management.internal.web.util;
 
 import static org.junit.Assert.*;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.management.internal.web.AbstractWebTestCase;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.web.AbstractWebTestCase;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,8 +29,8 @@ import org.junit.experimental.categories.Category;
 /**
  * The UriUtilsJUnitTest class is a test suite of test cases testing the contract and functionality of the UriUtils class.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.web.AbstractWebTestCase
- * @see com.gemstone.gemfire.management.internal.web.util.UriUtils
+ * @see org.apache.geode.management.internal.web.AbstractWebTestCase
+ * @see org.apache.geode.management.internal.web.util.UriUtils
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 8.0

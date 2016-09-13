@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.Map;
 
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.management.DiskBackupStatus;
-import com.gemstone.gemfire.management.DiskMetrics;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.GemFireProperties;
-import com.gemstone.gemfire.management.JVMMetrics;
-import com.gemstone.gemfire.management.NetworkMetrics;
-import com.gemstone.gemfire.management.OSMetrics;
-import com.gemstone.gemfire.management.PersistentMemberDetails;
+import org.apache.geode.management.DiskBackupStatus;
+import org.apache.geode.management.DiskMetrics;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.GemFireProperties;
+import org.apache.geode.management.JVMMetrics;
+import org.apache.geode.management.NetworkMetrics;
+import org.apache.geode.management.OSMetrics;
+import org.apache.geode.management.PersistentMemberDetails;
 
 /**
  * Distributed System MBean

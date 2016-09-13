@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.i18n;
+package org.apache.geode.i18n;
 
-import com.gemstone.gemfire.internal.i18n.AbstractStringIdResourceBundle;
+import org.apache.geode.internal.i18n.AbstractStringIdResourceBundle;
 
 import java.text.MessageFormat;
 import java.util.Locale;
@@ -29,11 +29,11 @@ import java.util.Locale;
  */
 public class StringId {
   /** The root name of the ResourceBundle */
-  private static final String RESOURCE_CLASS = "com/gemstone/gemfire/internal/i18n/StringIdResourceBundle";
+  private static final String RESOURCE_CLASS = "org/apache/geode/internal/i18n/StringIdResourceBundle";
   
   /** A unique identifier that is written when this StringId is logged to 
    * allow for reverse translation.
-   * @see com.gemstone.gemfire.internal.logging.LogWriterImpl
+   * @see org.apache.geode.internal.logging.LogWriterImpl
    */
   public final int id;
   /** the English translation of text */
@@ -47,7 +47,7 @@ public class StringId {
   
   private static boolean includeMsgIDs;
   
-  /** A StringId to allow users to log a literal String using the {@link com.gemstone.gemfire.i18n.LogWriterI18n} */
+  /** A StringId to allow users to log a literal String using the {@link org.apache.geode.i18n.LogWriterI18n} */
   public static final StringId LITERAL = new StringId(1, "{0}"); 
   
   static {

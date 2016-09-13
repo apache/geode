@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.jndi;
+package org.apache.geode.internal.jndi;
 
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -63,7 +63,7 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    * be restored later on using revertSetAsInitial. This method can be called
    * from from setup. These properties can be set directly directly too or
    * through application resource file (jndi.properties).
-   * java.naming.factory.initial=com.gemstone.gemfire.internal.jndi.InitialContextFactoryImpl
+   * java.naming.factory.initial=org.apache.geode.internal.jndi.InitialContextFactoryImpl
    * 
    * @throws NamingException
    */
@@ -76,7 +76,7 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
     System.setProperty(Context.INITIAL_CONTEXT_FACTORY,
         InitialContextFactoryImpl.class.getName());
     System.setProperty(Context.URL_PKG_PREFIXES,
-        "com.gemstone.gemfire.internal.jndi");
+        "org.apache.geode.internal.jndi");
   }
 
   /**

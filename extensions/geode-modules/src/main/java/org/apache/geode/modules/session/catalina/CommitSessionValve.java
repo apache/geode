@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
 import org.apache.catalina.Manager;
 import org.apache.catalina.connector.Request;
@@ -30,7 +30,7 @@ public class CommitSessionValve extends ValveBase {
 
   private static final Log log = LogFactory.getLog(CommitSessionValve.class);
 
-  protected static final String info = "com.gemstone.gemfire.modules.session.catalina.CommitSessionValve/1.0";
+  protected static final String info = "org.apache.geode.modules.session.catalina.CommitSessionValve/1.0";
 
   public CommitSessionValve() {
     log.info("Initialized");

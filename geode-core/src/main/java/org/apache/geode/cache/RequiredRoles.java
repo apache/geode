@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 
@@ -29,7 +29,7 @@ import java.util.*;
  * required roles. Configuration of required roles is accomplished using the
  * <code>Region</code>'s {@link MembershipAttributes}. 
  *
- * A {@link com.gemstone.gemfire.distributed.Role Role} may be present in the
+ * A {@link org.apache.geode.distributed.Role Role} may be present in the
  * distributed system even if it the <code>Role</code> is not present in the
  * <code>Region</code> membership. This would occur if none of the members
  * filling that <code>Role</code> currently have a <code>Cache</code> or the
@@ -37,7 +37,7 @@ import java.util.*;
  * considered to be absent for that <code>Region</code>.
  *
  * @deprecated this feature is scheduled to be removed
- * @see com.gemstone.gemfire.distributed.Role
+ * @see org.apache.geode.distributed.Role
  */
 public class RequiredRoles {
   
@@ -93,7 +93,7 @@ public class RequiredRoles {
   }
   
   /**
-   * Returns true if the {@link com.gemstone.gemfire.distributed.Role Role}
+   * Returns true if the {@link org.apache.geode.distributed.Role Role}
    * is currently present in the {@link Region} membership. This returns true
    * only if one or more members filling this role actually have the region
    * currently created. The role may be present in the distributed system even

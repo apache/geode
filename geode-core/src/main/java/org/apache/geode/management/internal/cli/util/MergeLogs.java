@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
 import java.io.File;
 
@@ -25,8 +25,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 
-import com.gemstone.gemfire.internal.logging.MergeLogFiles;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.internal.logging.MergeLogFiles;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * 

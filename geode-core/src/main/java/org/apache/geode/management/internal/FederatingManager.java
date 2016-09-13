@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,23 +34,23 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.HasCachePerfStats;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.ManagementException;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.HasCachePerfStats;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.ManagementException;
 
 /**
  * Manager implementation which manages federated MBeans for the entire
@@ -465,7 +465,7 @@ public class FederatingManager extends Manager {
             proxyMonitoringRegionCreated = true;
    
 
-          } catch (com.gemstone.gemfire.cache.TimeoutException e) {
+          } catch (org.apache.geode.cache.TimeoutException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
             }
@@ -494,7 +494,7 @@ public class FederatingManager extends Manager {
             }
             proxyNotificationgRegion = cache.createVMRegion(ManagementConstants.NOTIFICATION_REGION + "_" + appender, notifRegionAttrs, internalArgs);
             proxyNotifRegionCreated = true;
-          } catch (com.gemstone.gemfire.cache.TimeoutException e) {
+          } catch (org.apache.geode.cache.TimeoutException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
             }
@@ -589,7 +589,7 @@ public class FederatingManager extends Manager {
 
   /**
    * Find a particular proxy instance for a {@link javax.management.ObjectName}
-   * , {@link com.gemstone.gemfire.distributed.DistributedMember} and interface
+   * , {@link org.apache.geode.distributed.DistributedMember} and interface
    * class If the proxy interface does not implement the given interface class a
    * {@link java.lang.ClassCastException}. will be thrown
    * 
@@ -605,10 +605,10 @@ public class FederatingManager extends Manager {
 
   /**
    * Find a set of proxies given a
-   * {@link com.gemstone.gemfire.distributed.DistributedMember}
+   * {@link org.apache.geode.distributed.DistributedMember}
    * 
    * @param member
-   *          {@link com.gemstone.gemfire.distributed.DistributedMember}
+   *          {@link org.apache.geode.distributed.DistributedMember}
    * @return a set of {@link javax.management.ObjectName}
    */
   public Set<ObjectName> findAllProxies(DistributedMember member) {

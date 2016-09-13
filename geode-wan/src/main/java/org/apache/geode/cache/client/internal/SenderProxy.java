@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Used to send operations from a sender to a receiver.

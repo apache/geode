@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit.standalone;
+package org.apache.geode.test.dunit.standalone;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -24,7 +24,7 @@ import hydra.MethExecutor;
 import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  *

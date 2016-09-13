@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.xml;
+package org.apache.geode.cache.lucene.internal.xml;
 
 import org.xml.sax.SAXException;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 public final class LuceneServiceXmlGenerator implements XmlGenerator<Cache> {
   @Override

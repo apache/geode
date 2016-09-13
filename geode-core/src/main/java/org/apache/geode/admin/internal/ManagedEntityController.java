@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.admin.ManagedEntity;
-import com.gemstone.gemfire.admin.ManagedEntityConfig;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.ManagedEntity;
+import org.apache.geode.admin.ManagedEntityConfig;
 
 /**
  * Defines the actual administration (starting, stopping, etc.) of

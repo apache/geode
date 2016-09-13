@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate.internal;
+package org.apache.geode.modules.hibernate.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,8 +23,8 @@ import java.io.Serializable;
 
 import org.hibernate.cache.CacheKey;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 /**
  * wraps {@link CacheKey}, and implements equals and

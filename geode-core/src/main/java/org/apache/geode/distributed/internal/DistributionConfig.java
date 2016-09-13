@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -30,15 +30,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.Config;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogConfig;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the
@@ -49,7 +49,7 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
  * <p>
  * <p>
  * Descriptions of these properties can be found {@link ConfigurationProperties}.
- * @see com.gemstone.gemfire.internal.Config
+ * @see org.apache.geode.internal.Config
  * @since GemFire 2.1
  */
 public interface DistributionConfig extends Config, LogConfig {
@@ -77,8 +77,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the member's name.
    * <p> The name can not be changed while the system is running.
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
+   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error
    * when writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = NAME)
@@ -300,8 +300,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * Multiple elements are allowed and must be seperated by a comma.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
+   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error
    * when writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = LOCATORS)
@@ -368,8 +368,8 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the system's deploy working directory.
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
+   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error
    * when writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = DEPLOY_WORKING_DIR)
@@ -396,8 +396,8 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the system's user command path.
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
+   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error
    * when writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = USER_COMMAND_PACKAGES)
@@ -427,8 +427,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Non-absolute log files are relative to the system directory.
    * <p> The system log file can not be changed while the system is running.
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
+   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error
    * when writing to the system's configuration file.
    */
 
@@ -450,14 +450,14 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * Returns the value of the {@link ConfigurationProperties#LOG_LEVEL} property
-   * @see com.gemstone.gemfire.internal.logging.LogWriterImpl
+   * @see org.apache.geode.internal.logging.LogWriterImpl
    */
   @ConfigAttributeGetter(name = LOG_LEVEL)
   int getLogLevel();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#LOG_LEVEL} property
-   * @see com.gemstone.gemfire.internal.logging.LogWriterImpl
+   * @see org.apache.geode.internal.logging.LogWriterImpl
    */
   @ConfigAttributeSetter(name = LOG_LEVEL)
   void setLogLevel(int value);
@@ -1078,7 +1078,7 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of an internal property that specifies a {@link
-   * com.gemstone.gemfire.i18n.LogWriterI18n} instance to log to.
+   * org.apache.geode.i18n.LogWriterI18n} instance to log to.
    * Set this property with put(), not with setProperty()
    * @since GemFire 4.0
    */
@@ -1111,7 +1111,7 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of an internal property that specifies a {@link
-   * com.gemstone.gemfire.LogWriter} instance to log security messages to. Set
+   * org.apache.geode.LogWriter} instance to log security messages to. Set
    * this property with put(), not with setProperty()
    * @since GemFire 5.5
    */
@@ -2229,8 +2229,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p>
    * The security log file can not be changed while the system is running.
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error when writing to
+   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when writing to
    * the system's configuration file.
    */
   @ConfigAttributeSetter(name = SECURITY_LOG_FILE)
@@ -2479,8 +2479,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the {@link ConfigurationProperties#GROUPS} property.
    * <p> The groups can not be changed while the system is running.
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
-   * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
+   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
+   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error
    * when writing to the system's configuration file.
    * @since GemFire 7.0
    */
@@ -2571,7 +2571,7 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -2642,8 +2642,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_JMX_MANAGER_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2676,8 +2676,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_JMX_MANAGER_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2710,8 +2710,8 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = true;
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -2745,8 +2745,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2780,8 +2780,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = JMX_MANAGER_SSL_KEYSTORE_TYPE;
@@ -2814,7 +2814,7 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} propery
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} propery
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
@@ -2849,8 +2849,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_TRUSTSTORE_NAME = JMX_MANAGER_SSL_TRUSTSTORE;
@@ -2883,8 +2883,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2933,7 +2933,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
    * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
    */
   @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT)
@@ -2942,7 +2942,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for jmx-manager.
    * <p>
-   * Set the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for jmx-manager.
+   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for jmx-manager.
    * @param value the port number for jmx-manager HTTP service
    *
    * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.
@@ -2953,7 +2953,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
    * <p>
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
    * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
    */
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
@@ -2981,7 +2981,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PORT} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#MEMCACHED_PORT} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PORT} property
    * @return the port on which GemFireMemcachedServer should be started
    *
    * @since GemFire 7.0
@@ -2999,7 +2999,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PROTOCOL} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#MEMCACHED_PROTOCOL} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PROTOCOL} property
    * @return the protocol for GemFireMemcachedServer
    *
    * @since GemFire 7.0
@@ -3017,7 +3017,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
    * @return the bind address for GemFireMemcachedServer
    *
    * @since GemFire 7.0
@@ -3051,7 +3051,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#REDIS_BIND_ADDRESS} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_BIND_ADDRESS} property
    * @return the bind address for GemFireRedisServer
    *
    * @since GemFire 8.0
@@ -3069,7 +3069,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#REDIS_PASSWORD} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_PASSWORD} property
    * @return the authentication password for GemFireRedisServer
    *
    * @since GemFire 8.0
@@ -3089,7 +3089,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} property
    * @return the HTTP service port
    *
    * @since GemFire 8.0
@@ -3100,7 +3100,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP service.
    * <p>
-   * Set the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP service.
+   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP service.
    * @param value the port number for HTTP service
    *
    * @since GemFire 8.0
@@ -3111,7 +3111,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
    * <p>
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} property
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} property
    * @since GemFire 8.0
    */
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
@@ -3127,7 +3127,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
    * @return the bind-address for HTTP service
    *
    * @since GemFire 8.0
@@ -3138,7 +3138,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} for HTTP service.
    * <p>
-   * Set the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} for HTTP service.
+   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} for HTTP service.
    * @param value the bind-address for HTTP service
    *
    * @since GemFire 8.0
@@ -3190,8 +3190,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3225,8 +3225,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3260,8 +3260,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3295,8 +3295,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3330,8 +3330,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3365,8 +3365,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3399,8 +3399,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3434,8 +3434,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3469,8 +3469,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3487,7 +3487,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#START_DEV_REST_API} property
    * <p>
-   * Returns the value of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#START_DEV_REST_API} property
+   * Returns the value of the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} property
    * @return the value of the property
    *
    * @since GemFire 8.0
@@ -3499,7 +3499,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#START_DEV_REST_API} for HTTP service.
    * <p>
-   * Set the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#START_DEV_REST_API} for HTTP service.
+   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} for HTTP service.
    * @param value for the property
    *
    * @since GemFire 8.0
@@ -3510,7 +3510,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#START_DEV_REST_API} property
    * <p>
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#START_DEV_REST_API} property
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} property
    * @since GemFire 8.0
    */
   @ConfigAttribute(type = Boolean.class)
@@ -3572,8 +3572,8 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_SERVER_SSL_ENABLED = false;
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_ENABLED} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_ENABLED}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3613,8 +3613,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_SERVER_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3647,8 +3647,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_SERVER_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_CIPHERS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_CIPHERS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3681,8 +3681,8 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION = true;
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3716,8 +3716,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3751,8 +3751,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3786,8 +3786,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3820,8 +3820,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3855,8 +3855,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3880,8 +3880,8 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_ENABLED} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_ENABLED} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3922,8 +3922,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3955,8 +3955,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3989,8 +3989,8 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION = true;
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -4024,8 +4024,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4059,8 +4059,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4094,8 +4094,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4129,8 +4129,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4164,8 +4164,8 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property
-   * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property
-   * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property
+   * @deprecated Geode 1.0 use {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4192,7 +4192,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Gets the value of {@link ConfigurationProperties#LOCK_MEMORY}
    * <p>
-   * Gets the value of {@link com.gemstone.gemfire.distributed.ConfigurationProperties#LOCK_MEMORY}
+   * Gets the value of {@link org.apache.geode.distributed.ConfigurationProperties#LOCK_MEMORY}
    * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = LOCK_MEMORY)

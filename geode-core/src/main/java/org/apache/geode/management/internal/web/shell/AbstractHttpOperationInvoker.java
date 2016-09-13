@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.web.shell;
+package org.apache.geode.management.internal.web.shell;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,24 +34,24 @@ import java.util.concurrent.TimeUnit;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
-import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
-import com.gemstone.gemfire.management.internal.web.http.HttpHeader;
-import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
-import com.gemstone.gemfire.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
-import com.gemstone.gemfire.management.internal.web.shell.support.HttpMBeanProxyFactory;
-import com.gemstone.gemfire.management.internal.web.util.UriUtils;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.QueryParameterSource;
+import org.apache.geode.management.internal.web.http.ClientHttpRequest;
+import org.apache.geode.management.internal.web.http.HttpHeader;
+import org.apache.geode.management.internal.web.http.HttpMethod;
+import org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
+import org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFactory;
+import org.apache.geode.management.internal.web.util.UriUtils;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -66,11 +66,11 @@ import org.springframework.web.client.RestTemplate;
 /**
  * The AbstractHttpOperationInvoker class is an abstract base class encapsulating common functionality for all
  * HTTP-based OperationInvoker implementations.
- * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
- * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.SimpleHttpOperationInvoker
+ * @see org.apache.geode.management.internal.cli.shell.Gfsh
+ * @see org.apache.geode.management.internal.cli.shell.OperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.SimpleHttpOperationInvoker
  * @see org.springframework.http.client.SimpleClientHttpRequestFactory
  * @see org.springframework.web.client.RestTemplate
  * @since GemFire 8.0
@@ -137,8 +137,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param gfsh a reference to the instance of the GemFire shell (Gfsh) using this HTTP-based OperationInvoker for
    * command processing.
    * @throws AssertionError if the reference to the Gfsh instance is null.
-   * @see #AbstractHttpOperationInvoker(com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String, Map)
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see #AbstractHttpOperationInvoker(org.apache.geode.management.internal.cli.shell.Gfsh, String, Map)
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
   public AbstractHttpOperationInvoker(final Gfsh gfsh, Map<String, String> securityProperties) {
     this(gfsh, REST_API_URL, securityProperties);
@@ -153,7 +153,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param baseUrl a String specifying the base URL to the GemFire Manager's embedded HTTP service hosting the REST
    * interface.
    * @throws AssertionError if the reference to the Gfsh instance is null.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
   public AbstractHttpOperationInvoker(final Gfsh gfsh, final String baseUrl, Map<String, String> securityProperties) {
     assertNotNull(gfsh, "The reference to the GemFire shell (Gfsh) cannot be null!");
@@ -309,7 +309,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Determines whether Gfsh is in debug mode (or whether the user enabled debugging in Gfsh).
    * @return a boolean value indicating if debugging has been turned on in Gfsh.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#getDebug()
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh#getDebug()
    */
   protected boolean isDebugEnabled() {
     return getGfsh().getDebug();
@@ -332,7 +332,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * to the GemFire Manager for remote execution and processing.
    * @return a reference to the instance of the GemFire shell (Gfsh) using this HTTP-based OperationInvoker to process
    * commands.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
   protected final Gfsh getGfsh() {
     return this.gfsh;
@@ -354,8 +354,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param link a Link with the URI targeting and identifying the resource as well as the method of operation on the
    * resource.
    * @return a client HTTP request with the details of the request.
-   * @see com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.http.ClientHttpRequest
+   * @see org.apache.geode.management.internal.web.domain.Link
    */
   protected ClientHttpRequest createHttpRequest(final Link link) {
     final ClientHttpRequest request = new ClientHttpRequest(link);
@@ -377,7 +377,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param relation a String indicating the link relation, or relative state transition, operation.
    * @param href the URI identifying the resource and it's location.
    * @return a Link with the providing relation and URI.
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.domain.Link
    * @see java.net.URI
    */
   protected Link createLink(final String relation, final URI href) {
@@ -390,8 +390,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param href the URI identifying the resource and it's location.
    * @param method the HTTP method for the operation of the request.
    * @return a Link with the providing relation and URI.
-   * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.http.HttpMethod
+   * @see org.apache.geode.management.internal.web.domain.Link
    * @see java.net.URI
    */
   protected Link createLink(final String relation, final URI href, final HttpMethod method) {
@@ -404,7 +404,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * the encodedValue.
    * @param encodedValue the encoded String value to decode.
    * @return the decoded value of the String or encodedValue if the UTF-8 encoding is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#decode(String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#decode(String)
    */
   protected String decode(final String encodedValue) {
     return UriUtils.decode(encodedValue);
@@ -417,7 +417,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param encodedValue a String value encoded in the encoding.
    * @param encoding a String value specifying the encoding.
    * @return the decoded value of the String or encodedValue if the specified encoding is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#decode(String, String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#decode(String, String)
    */
   protected String decode(final String encodedValue, String encoding) {
     return UriUtils.decode(encodedValue, encoding);
@@ -428,7 +428,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param value the String value to encode.
    * @return an encoded value of the String using the default encoding UTF-8 or value if the UTF-8 encoding
    * is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#encode(String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String)
    */
   protected String encode(final String value) {
     return UriUtils.encode(value);
@@ -440,7 +440,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param encoding a String value indicating the encoding.
    * @return an encoded value of the String using the specified encoding or value if the specified encoding
    * is unsupported.
-   * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#encode(String, String)
+   * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String, String)
    */
   protected String encode(final String value, final String encoding) {
     return UriUtils.encode(value, encoding);
@@ -450,7 +450,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * Finds a Link containing the HTTP request URI for the relational operation (state transition) on the resource.
    * @param relation a String describing the relational operation, or state transition on the resource.
    * @return an instance of Link containing the HTTP request URI used to perform the intended operation on the resource.
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.domain.Link
    */
   protected Link findLink(final String relation) {
     return null;
@@ -487,7 +487,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Displays the message inside GemFire shell at info level.
    * @param message the String containing the message to display inside Gfsh.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#printAsInfo(String)
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh#printAsInfo(String)
    */
   protected void printInfo(final String message, final Object... args) {
     getGfsh().printAsInfo(String.format(message, args));
@@ -496,7 +496,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Displays the message inside GemFire shell at warning level.
    * @param message the String containing the message to display inside Gfsh.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#printAsWarning(String)
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh#printAsWarning(String)
    */
   protected void printWarning(final String message, final Object... args) {
     getGfsh().printAsWarning(String.format(message, args));
@@ -505,7 +505,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Displays the message inside GemFire shell at severe level.
    * @param message the String containing the message to display inside Gfsh.
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#printAsSevere(String)
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh#printAsSevere(String)
    */
   protected void printSevere(final String message, final Object... args) {
     getGfsh().printAsSevere(String.format(message, args));
@@ -518,8 +518,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param request the client HTTP request to send.
    * @param responseType the expected Class type of the return value in the server's response.
    * @return a ResponseEntity encapsulating the details of the server's response to the client's HTTP request.
-   * @see #send(com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest, Class, java.util.Map)
-   * @see com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest
+   * @see #send(org.apache.geode.management.internal.web.http.ClientHttpRequest, Class, java.util.Map)
+   * @see org.apache.geode.management.internal.web.http.ClientHttpRequest
    * @see org.springframework.http.ResponseEntity
    */
   protected <T> ResponseEntity<T> send(final ClientHttpRequest request, final Class<T> responseType) {
@@ -534,7 +534,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param uriVariables a Mapping of URI template path variables to values.
    * @return a ResponseEntity encapsulating the details of the server's response to the client's HTTP request.
    * @see java.net.URI
-   * @see com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest
+   * @see org.apache.geode.management.internal.web.http.ClientHttpRequest
    * @see org.springframework.http.ResponseEntity
    * @see org.springframework.web.client.RestTemplate#exchange(java.net.URI, org.springframework.http.HttpMethod, org.springframework.http.HttpEntity, Class)
    */
@@ -595,9 +595,9 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @throws MBeanAccessException if an MBean access error occurs.
    * @throws RestApiCallForCommandNotFoundException if the REST API web service endpoint for accessing an attribute on
    * an MBean does not exists!
-   * @see #createHttpRequest(com.gemstone.gemfire.management.internal.web.domain.Link)
+   * @see #createHttpRequest(org.apache.geode.management.internal.web.domain.Link)
    * @see #findLink(String)
-   * @see #send(com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest, Class)
+   * @see #send(org.apache.geode.management.internal.web.http.ClientHttpRequest, Class)
    */
   @Override
   public Object getAttribute(final String resourceName, final String attributeName) {
@@ -659,8 +659,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * system, or the GemFire cluster.
    * @return a proxy instance of the GemFire Manager's DistributedSystem MXBean.
    * @see #getMBeanProxy(javax.management.ObjectName, Class)
-   * @see com.gemstone.gemfire.management.DistributedSystemMXBean
-   * @see com.gemstone.gemfire.management.internal.MBeanJMXAdapter#getDistributedSystemName()
+   * @see org.apache.geode.management.DistributedSystemMXBean
+   * @see org.apache.geode.management.internal.MBeanJMXAdapter#getDistributedSystemName()
    */
   public DistributedSystemMXBean getDistributedSystemMXBean() {
     return getMBeanProxy(MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
@@ -673,7 +673,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param mbeanInterface the interface of the remote MXBean to proxy for attribute/operation access.
    * @return a proxy using HTTP remoting to access the specified, remote MXBean.
    * @see javax.management.ObjectName
-   * @see com.gemstone.gemfire.management.internal.web.shell.support.HttpMBeanProxyFactory
+   * @see org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFactory
    */
   public <T> T getMBeanProxy(final ObjectName objectName, final Class<T> mbeanInterface) {
     return HttpMBeanProxyFactory.createMBeanProxy(this, objectName, mbeanInterface);
@@ -690,9 +690,9 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @throws MBeanAccessException if an MBean access error occurs.
    * @throws RestApiCallForCommandNotFoundException if the REST API web service endpoint for invoking an operation on
    * an MBean does not exists!
-   * @see #createHttpRequest(com.gemstone.gemfire.management.internal.web.domain.Link)
+   * @see #createHttpRequest(org.apache.geode.management.internal.web.domain.Link)
    * @see #findLink(String)
-   * @see #send(com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest, Class)
+   * @see #send(org.apache.geode.management.internal.web.http.ClientHttpRequest, Class)
    */
   // TODO research the use of Jolokia instead
   @Override
@@ -738,9 +738,9 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param queryExpression the JMX-based query expression used to filter matching MBeans.
    * @return a set of ObjectName's matching MBeans in the MBean server matching the ObjectName and Query expression
    * criteria.
-   * @see #createHttpRequest(com.gemstone.gemfire.management.internal.web.domain.Link)
+   * @see #createHttpRequest(org.apache.geode.management.internal.web.domain.Link)
    * @see #findLink(String)
-   * @see #send(com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest, Class)
+   * @see #send(org.apache.geode.management.internal.web.http.ClientHttpRequest, Class)
    * @see javax.management.ObjectName
    * @see javax.management.QueryExp
    */

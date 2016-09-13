@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
-import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 public class MyGatewayTransportFilter1 implements GatewayTransportFilter, Declarable2, Serializable{
 

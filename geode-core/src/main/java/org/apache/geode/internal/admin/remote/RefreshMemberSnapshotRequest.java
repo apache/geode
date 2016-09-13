@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.distributed.internal.*;
+import org.apache.geode.distributed.internal.*;
 import java.io.*;
 
 /**
  * A message that is sent to a particular distribution manager to get its
- * current {@link com.gemstone.gemfire.admin.GemFireMemberStatus}
+ * current {@link org.apache.geode.admin.GemFireMemberStatus}
  * 
  */
 public class RefreshMemberSnapshotRequest extends AdminRequest {

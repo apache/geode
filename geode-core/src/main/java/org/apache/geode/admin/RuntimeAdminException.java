@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
 /**
  * A <code>RuntimeAdminException</code> is thrown when a runtime errors occurs
@@ -23,10 +23,10 @@ package com.gemstone.gemfire.admin;
  *
  * @since GemFire     3.5
  *
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public class RuntimeAdminException 
-extends com.gemstone.gemfire.GemFireException {
+extends org.apache.geode.GemFireException {
 
   private static final long serialVersionUID = -7512771113818634005L;
 

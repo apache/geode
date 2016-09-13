@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package org.apache.geode.management.internal.security;
 
 public class ResourceConstants {
 
@@ -146,7 +146,7 @@ public class ResourceConstants {
   public static final String GETTER_DESCRIBE = "describe";
   public static final String GETTER_STATUS = "status";
 
-  public static final String MANAGEMENT_PACKAGE = "com.gemstone.gemfire.management";
+  public static final String MANAGEMENT_PACKAGE = "org.apache.geode.management";
 
 
 }

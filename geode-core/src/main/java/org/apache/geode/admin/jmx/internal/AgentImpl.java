@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,31 +48,31 @@ import mx4j.tools.adaptor.http.HttpAdaptor;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminDistributedSystem;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.jmx.Agent;
-import com.gemstone.gemfire.admin.jmx.AgentConfig;
-import com.gemstone.gemfire.admin.jmx.AgentFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.Banner;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.admin.remote.TailLogResponse;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterFactory;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
+import org.apache.geode.GemFireException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.jmx.Agent;
+import org.apache.geode.admin.jmx.AgentConfig;
+import org.apache.geode.admin.jmx.AgentFactory;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.Banner;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.admin.remote.TailLogResponse;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.AlertAppender;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.logging.log4j.LogWriterAppender;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 
 /**
  * The GemFire JMX Agent provides the ability to administrate one GemFire
@@ -81,8 +81,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
  * @since GemFire     3.5
  */
 public class AgentImpl
-implements com.gemstone.gemfire.admin.jmx.Agent,
-           com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
+implements org.apache.geode.admin.jmx.Agent,
+           org.apache.geode.admin.jmx.internal.ManagedResource {
 
   private static final Logger logger = LogService.getLogger();
   
@@ -185,7 +185,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
    * Constructs a new Agent using the specified configuration.
    *
    * @param agentConfig instance of configuration for Agent
-   * @throws com.gemstone.gemfire.admin.AdminException TODO-javadocs
+   * @throws org.apache.geode.admin.AdminException TODO-javadocs
    * @throws IllegalArgumentException if agentConfig is null
    */
   public AgentImpl(AgentConfigImpl agentConfig)
@@ -861,13 +861,13 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
    * Adds a ShutdownHook to the Agent for cleaning up any resources
    */
   private void addShutdownHook() {
-    if( ! Boolean.getBoolean( com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
+    if( ! Boolean.getBoolean( org.apache.geode.distributed.internal.InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
       Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
   }
 
   private void removeShutdownHook() {
-    if( ! Boolean.getBoolean( com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
+    if( ! Boolean.getBoolean( org.apache.geode.distributed.internal.InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
       Runtime.getRuntime().removeShutdownHook(shutdownHook);
     }
   }
@@ -876,7 +876,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
    * Creates a LogWriterI18n for this Agent to use in logging.
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification="Return value for file delete is not important here.") 
-  private void initLogWriter() throws com.gemstone.gemfire.admin.AdminException {
+  private void initLogWriter() throws org.apache.geode.admin.AdminException {
     final LogConfig logConfig = this.agentConfig.createLogConfig();
     
     // LOG: create logWriterAppender here
@@ -1031,7 +1031,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
    * @param config
    */
   private AdminDistributedSystem createDistributedSystem(AgentConfigImpl config)
-  throws com.gemstone.gemfire.admin.AdminException {
+  throws org.apache.geode.admin.AdminException {
     return new AdminDistributedSystemJmxImpl(config);
   }
 
@@ -1043,7 +1043,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
    * Command-line main for running the GemFire Management Agent.
    * <p>
    * Accepts command-line arguments matching the options in {@link AgentConfig}
-   * and {@link com.gemstone.gemfire.admin.DistributedSystemConfig}.
+   * and {@link org.apache.geode.admin.DistributedSystemConfig}.
    * <p>
    * <code>AgentConfig</code> will convert -Jarguments to System properties.
    */

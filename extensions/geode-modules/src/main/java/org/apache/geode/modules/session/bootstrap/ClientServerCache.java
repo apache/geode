@@ -14,10 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.bootstrap;
+package org.apache.geode.modules.session.bootstrap;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.ClientCacheFactory;
 
 /**
  * This is a singleton class which maintains configuration properties as well as starting a Client-Server cache.

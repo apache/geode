@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene;
+package org.apache.geode.cache.lucene;
 
-import com.gemstone.gemfire.annotations.Experimental;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
-import com.gemstone.gemfire.internal.cache.InternalCache;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.lucene.internal.InternalLuceneService;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * Class for retrieving or creating the currently running

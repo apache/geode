@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.sequence.gemfire;
+package org.apache.sequence.gemfire;
 
-import com.gemstone.gemfire.internal.sequencelog.GraphType;
-import com.gemstone.gemfire.internal.sequencelog.io.Filter;
-import com.gemstone.gemfire.internal.sequencelog.io.GraphReader;
-import com.gemstone.gemfire.internal.sequencelog.model.*;
-import com.gemstone.sequence.*;
+import org.apache.geode.internal.sequencelog.GraphType;
+import org.apache.geode.internal.sequencelog.io.Filter;
+import org.apache.geode.internal.sequencelog.io.GraphReader;
+import org.apache.geode.internal.sequencelog.model.*;
+import org.apache.sequence.*;
 
 import javax.swing.*;
 import java.awt.event.*;

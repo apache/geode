@@ -18,12 +18,12 @@ package io.pivotal.geode.spark.connector.internal.oql
 
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Output, Input}
-import com.gemstone.gemfire.cache.query.QueryService
-import com.gemstone.gemfire.cache.query.internal.Undefined
+import org.apache.geode.cache.query.QueryService
+import org.apache.geode.cache.query.internal.Undefined
 
 /**
  * This is the customized serializer to serialize QueryService.UNDEFINED,
- * i.e. com.gemstone.gemfire.cache.query.internal.Undefined, in order to
+ * i.e. org.apache.geode.cache.query.internal.Undefined, in order to
  * guarantee the singleton Undefined after its deserialization within Spark.
  */
 class UndefinedSerializer extends Serializer[Undefined] {

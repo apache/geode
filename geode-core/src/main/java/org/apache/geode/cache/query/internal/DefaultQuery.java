@@ -15,31 +15,31 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.internal.ProxyCache;
-import com.gemstone.gemfire.cache.client.internal.ServerProxy;
-import com.gemstone.gemfire.cache.client.internal.UserAttributes;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.internal.ProxyCache;
+import org.apache.geode.cache.client.internal.ServerProxy;
+import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
- * Thread-safe implementation of com.gemstone.persistence.query.Query
+ * Thread-safe implementation of org.apache.persistence.query.Query
  *
  */
 

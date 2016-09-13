@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.test.dunit.RepeatableRunnable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.test.dunit.RepeatableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnable;
 
 /**
  * A helper class that provides the {@link SerializableRunnable}

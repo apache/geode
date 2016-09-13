@@ -20,7 +20,7 @@
  * They are based from add(), contains() and other methods from ObjectOpenHashSet
  * We have used the traversing mechanism and the HashCommon.mix()
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import static it.unimi.dsi.fastutil.HashCommon.arraySize;
 import it.unimi.dsi.fastutil.HashCommon;
@@ -31,11 +31,11 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.cache.query.internal.types.TypeUtils;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.pdx.internal.PdxString;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * An implementation of the <tt>Set</tt> interface for the HashIndex

@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
  * Class <code>ClientPingMessageImpl</code> is a ping message that is

@@ -21,7 +21,7 @@
  * Other contributors include Andrew Wright, Jeffrey Hayes,
  * Pat Fisher, Mike Judd.
  */
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
 import static org.junit.Assert.*;
 
@@ -41,9 +41,9 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.util.concurrent.cm.ConcurrentHashMapJUnitTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.JSR166TestCase;
+import org.apache.geode.internal.util.concurrent.cm.ConcurrentHashMapJUnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.JSR166TestCase;
 
 /**
  * Adopted from the JSR166 test cases. {@link ConcurrentHashMapJUnitTest}

@@ -18,8 +18,8 @@
  */
 /**
  * Classes used for distributing lucene queries to geode nodes. Contains the lucene related functions
- * like {@link com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction} as well as objects that are
- * passed between nodes like {@link com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore}
+ * like {@link org.apache.geode.cache.lucene.internal.distributed.LuceneFunction} as well as objects that are
+ * passed between nodes like {@link org.apache.geode.cache.lucene.internal.distributed.EntryScore}
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.distributed;
+package org.apache.geode.cache.lucene.internal.distributed;

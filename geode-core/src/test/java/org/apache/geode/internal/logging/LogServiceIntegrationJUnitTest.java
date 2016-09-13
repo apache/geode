@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
-import static com.gemstone.gemfire.internal.logging.LogServiceIntegrationTestSupport.*;
+import static org.apache.geode.internal.logging.LogServiceIntegrationTestSupport.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.File;
@@ -37,8 +37,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.internal.logging.log4j.Configurator;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.internal.logging.log4j.Configurator;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for LogService and how it configures and uses log4j2

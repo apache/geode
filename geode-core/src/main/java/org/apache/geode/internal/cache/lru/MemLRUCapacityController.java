@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.lru;
+package org.apache.geode.internal.cache.lru;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.cache.AbstractLRURegionMap.CDValueWrapper;
-import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.cache.AbstractLRURegionMap.CDValueWrapper;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *  <pre>
  *  &lt;region-attributes&gt;
  *    &lt;capacity-controller&gt;
- *      &lt;classname&gt;com.gemstone.gemfire.cache.MemLRUCapacityController&lt;/classname&gt;
+ *      &lt;classname&gt;org.apache.geode.cache.MemLRUCapacityController&lt;/classname&gt;
  *         &lt;parameter name="maximum-megabytes"&gt;
  *           &lt;string&gt;50&lt;/string&gt;
  *         &lt;/parameter&gt;
@@ -168,11 +168,11 @@ public final class MemLRUCapacityController extends LRUAlgorithm
    *                megabytes.<br>
    *                <p>
    *                For a region with
-   *                {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}, it
+   *                {@link org.apache.geode.cache.DataPolicy#PARTITION}, it
    *                is overridden by
-   *                {@link  com.gemstone.gemfire.cache.PartitionAttributesFactory#setLocalMaxMemory(int)  " local max memory "}
+   *                {@link  org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)  " local max memory "}
    *                specified for the
-   *                {@link com.gemstone.gemfire.cache.PartitionAttributes}. It
+   *                {@link org.apache.geode.cache.PartitionAttributes}. It
    *                signifies the amount of memory allowed in the region,
    *                collectively for its primary buckets and redundant copies
    *                for this VM. It can be different for the same region in
@@ -191,11 +191,11 @@ public final class MemLRUCapacityController extends LRUAlgorithm
    *                megabytes.<br>
    *                <p>
    *                For a region with
-   *                {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}, it
+   *                {@link org.apache.geode.cache.DataPolicy#PARTITION}, it
    *                is overridden by
-   *                {@link  com.gemstone.gemfire.cache.PartitionAttributesFactory#setLocalMaxMemory(int)  " local max memory "}
+   *                {@link  org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)  " local max memory "}
    *                specified for the
-   *                {@link com.gemstone.gemfire.cache.PartitionAttributes}. It
+   *                {@link org.apache.geode.cache.PartitionAttributes}. It
    *                signifies the amount of memory allowed in the region,
    *                collectively for its primary buckets and redundant copies
    *                for this VM. It can be different for the same region in
@@ -216,11 +216,11 @@ public final class MemLRUCapacityController extends LRUAlgorithm
    *                megabytes.<br>
    *                <p>
    *                For a region with
-   *                {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}, it
+   *                {@link org.apache.geode.cache.DataPolicy#PARTITION}, it
    *                is overridden by
-   *                {@link  com.gemstone.gemfire.cache.PartitionAttributesFactory#setLocalMaxMemory(int)  " local max memory "}
+   *                {@link  org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)  " local max memory "}
    *                specified for the
-   *                {@link com.gemstone.gemfire.cache.PartitionAttributes}. It
+   *                {@link org.apache.geode.cache.PartitionAttributes}. It
    *                signifies the amount of memory allowed in the region,
    *                collectively for its primary buckets and redundant copies
    *                for this VM. It can be different for the same region in
@@ -413,7 +413,7 @@ public final class MemLRUCapacityController extends LRUAlgorithm
           keySize = sizeof(key);
         }
         int valueSize = sizeof(value);
-//         com.gemstone.gemfire.internal.cache.GemFireCacheImpl.getInstance().getLogger().info("DEBUG MemLRUCC: overhead=" + size
+//         org.apache.geode.internal.cache.GemFireCacheImpl.getInstance().getLogger().info("DEBUG MemLRUCC: overhead=" + size
 //                                                     + " keySize=" + keySize
 //                                                     + " valueSize=" + valueSize);
         size += keySize;

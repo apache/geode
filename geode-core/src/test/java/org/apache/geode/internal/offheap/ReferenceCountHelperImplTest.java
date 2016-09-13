@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import static org.junit.Assert.*;
 
@@ -37,8 +37,8 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.*;
 
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /*
  * PowerMock used in this test to verify static method MemoryAllocatorImpl.debugLog

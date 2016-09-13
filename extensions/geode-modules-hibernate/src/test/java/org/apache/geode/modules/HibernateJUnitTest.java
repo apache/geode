@@ -14,14 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules;
+package org.apache.geode.modules;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.modules.Owner.Status;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.modules.Owner.Status;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
@@ -87,7 +87,7 @@ public class HibernateJUnitTest {
     cfg.setProperty("hibernate.hbm2ddl.auto", "update");
 
     cfg.setProperty("hibernate.cache.region.factory_class",
-        "com.gemstone.gemfire.modules.hibernate.GemFireRegionFactory");
+        "org.apache.geode.modules.hibernate.GemFireRegionFactory");
     cfg.setProperty("hibernate.show_sql", "true");
     cfg.setProperty("hibernate.cache.use_query_cache", "true");
     //cfg.setProperty("gemfire.mcast-port", AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS)+"");
@@ -382,7 +382,7 @@ public class HibernateJUnitTest {
     cfg.setProperty("hibernate.hbm2ddl.auto", "update");
 
     cfg.setProperty("hibernate.cache.region.factory_class",
-        "com.gemstone.gemfire.modules.hibernate.GemFireRegionFactory");
+        "org.apache.geode.modules.hibernate.GemFireRegionFactory");
     cfg.setProperty("hibernate.show_sql", "true");
     cfg.setProperty("hibernate.cache.use_query_cache", "true");
     cfg.setProperty(DistributionConfig.GEMFIRE_PREFIX + STATISTIC_SAMPLING_ENABLED, "true");

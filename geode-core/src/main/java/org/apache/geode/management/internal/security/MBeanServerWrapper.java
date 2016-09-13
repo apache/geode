@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package org.apache.geode.management.internal.security;
 
 import java.io.ObjectInputStream;
 import java.util.Set;
@@ -44,10 +44,10 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 
-import com.gemstone.gemfire.internal.security.IntegratedSecurityService;
-import com.gemstone.gemfire.internal.security.SecurityService;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
 
 /**

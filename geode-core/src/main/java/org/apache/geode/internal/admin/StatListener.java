@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 /**
  * Interface for those who want to be alerted of a change in value of

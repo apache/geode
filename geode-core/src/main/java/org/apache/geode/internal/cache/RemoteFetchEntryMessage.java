@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,34 +25,34 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.admin.OperationCancelledException;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.ReplyException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.admin.OperationCancelledException;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * This message is used as the request for a
- * {@link com.gemstone.gemfire.cache.Region#getEntry(Object)}operation. The
+ * {@link org.apache.geode.cache.Region#getEntry(Object)}operation. The
  * reply is sent in a {@link 
- * com.gemstone.gemfire.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
+ * org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
  * 
  * @since GemFire 5.1
  */
@@ -76,7 +76,7 @@ public final class RemoteFetchEntryMessage extends RemoteOperationMessage
 
   /**
    * Sends a LocalRegion
-   * {@link com.gemstone.gemfire.cache.Region#getEntry(Object)} message   
+   * {@link org.apache.geode.cache.Region#getEntry(Object)} message   
    * 
    * @param recipient
    *          the member that the getEntry message is sent to
@@ -309,7 +309,7 @@ public final class RemoteFetchEntryMessage extends RemoteOperationMessage
 
   /**
    * A processor to capture the value returned by {@link 
-   * com.gemstone.gemfire.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}
+   * org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}
    * 
    */
   public static class FetchEntryResponse extends RemoteOperationResponse

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.control.ResourceManager;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.control.ResourceManager;
 /**
  * Thrown when the query is executing and the critical heap percentage is met.
  * @see ResourceManager#setCriticalHeapPercentage(float)

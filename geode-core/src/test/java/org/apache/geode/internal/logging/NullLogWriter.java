@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.util.logging.Handler;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
+import org.apache.geode.LogWriter;
+import org.apache.geode.i18n.LogWriterI18n;
 
 public class NullLogWriter implements LogWriter {
   @Override

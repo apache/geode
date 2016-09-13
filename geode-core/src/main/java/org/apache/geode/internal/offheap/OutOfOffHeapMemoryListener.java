@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
+import org.apache.geode.OutOfOffHeapMemoryException;
 
 /**
  * Listens to the MemoryAllocator for notification of OutOfOffHeapMemoryError.

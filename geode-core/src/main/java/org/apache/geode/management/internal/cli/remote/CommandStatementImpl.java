@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.remote;
+package org.apache.geode.management.internal.cli.remote;
 
 import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.shell.event.ParseResult;
 
-import com.gemstone.gemfire.management.cli.CommandStatement;
-import com.gemstone.gemfire.management.cli.Result;
+import org.apache.geode.management.cli.CommandStatement;
+import org.apache.geode.management.cli.Result;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class CommandStatementImpl implements CommandStatement {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.management.internal.cli.remote.CommandStatement#getCommandString()
+   * @see org.apache.geode.management.internal.cli.remote.CommandStatement#getCommandString()
    */
   @Override
   public String getCommandString() {
@@ -51,7 +51,7 @@ public class CommandStatementImpl implements CommandStatement {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.management.internal.cli.remote.CommandStatement#getEnv()
+   * @see org.apache.geode.management.internal.cli.remote.CommandStatement#getEnv()
    */
   @Override
   public Map<String, String> getEnv() {
@@ -59,7 +59,7 @@ public class CommandStatementImpl implements CommandStatement {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.management.internal.cli.remote.CommandStatement#process()
+   * @see org.apache.geode.management.internal.cli.remote.CommandStatement#process()
    */
   @Override
   public Result process() {
@@ -81,7 +81,7 @@ public class CommandStatementImpl implements CommandStatement {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.management.internal.cli.remote.CommandStatement#validate()
+   * @see org.apache.geode.management.internal.cli.remote.CommandStatement#validate()
    */
   @Override
   public boolean validate() {

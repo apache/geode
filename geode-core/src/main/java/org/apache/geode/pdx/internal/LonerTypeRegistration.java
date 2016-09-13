@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.internal.cache.CacheConfig;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
  * A type registration that is used for loners. In the 

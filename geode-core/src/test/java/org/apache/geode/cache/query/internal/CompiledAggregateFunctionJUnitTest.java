@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import static org.junit.Assert.*;
 
@@ -27,24 +27,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.query.Aggregator;
-import com.gemstone.gemfire.cache.query.internal.aggregate.Avg;
-import com.gemstone.gemfire.cache.query.internal.aggregate.AvgBucketNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.AvgDistinct;
-import com.gemstone.gemfire.cache.query.internal.aggregate.AvgDistinctPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.AvgPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.Count;
-import com.gemstone.gemfire.cache.query.internal.aggregate.CountDistinct;
-import com.gemstone.gemfire.cache.query.internal.aggregate.CountDistinctPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.CountPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.aggregate.DistinctAggregator;
-import com.gemstone.gemfire.cache.query.internal.aggregate.MaxMin;
-import com.gemstone.gemfire.cache.query.internal.aggregate.Sum;
-import com.gemstone.gemfire.cache.query.internal.aggregate.SumDistinct;
-import com.gemstone.gemfire.cache.query.internal.aggregate.SumDistinctPRQueryNode;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.Aggregator;
+import org.apache.geode.cache.query.internal.aggregate.Avg;
+import org.apache.geode.cache.query.internal.aggregate.AvgBucketNode;
+import org.apache.geode.cache.query.internal.aggregate.AvgDistinct;
+import org.apache.geode.cache.query.internal.aggregate.AvgDistinctPRQueryNode;
+import org.apache.geode.cache.query.internal.aggregate.AvgPRQueryNode;
+import org.apache.geode.cache.query.internal.aggregate.Count;
+import org.apache.geode.cache.query.internal.aggregate.CountDistinct;
+import org.apache.geode.cache.query.internal.aggregate.CountDistinctPRQueryNode;
+import org.apache.geode.cache.query.internal.aggregate.CountPRQueryNode;
+import org.apache.geode.cache.query.internal.aggregate.DistinctAggregator;
+import org.apache.geode.cache.query.internal.aggregate.MaxMin;
+import org.apache.geode.cache.query.internal.aggregate.Sum;
+import org.apache.geode.cache.query.internal.aggregate.SumDistinct;
+import org.apache.geode.cache.query.internal.aggregate.SumDistinctPRQueryNode;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class CompiledAggregateFunctionJUnitTest {

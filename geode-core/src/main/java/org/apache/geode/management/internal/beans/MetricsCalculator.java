@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 
 import java.util.concurrent.TimeUnit;
 
-import com.gemstone.gemfire.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.ManagementConstants;
 
 /**
  * This is a utility class to calculate various type of Metrics out of raw stats

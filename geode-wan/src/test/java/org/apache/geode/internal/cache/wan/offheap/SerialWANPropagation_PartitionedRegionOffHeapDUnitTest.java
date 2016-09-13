@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.offheap;
+package org.apache.geode.internal.cache.wan.offheap;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import com.gemstone.gemfire.internal.cache.wan.serial.SerialWANPropagation_PartitionedRegionDUnitTest;
+import org.apache.geode.internal.cache.wan.serial.SerialWANPropagation_PartitionedRegionDUnitTest;
 
 @SuppressWarnings("serial")
 @Category(DistributedTest.class)

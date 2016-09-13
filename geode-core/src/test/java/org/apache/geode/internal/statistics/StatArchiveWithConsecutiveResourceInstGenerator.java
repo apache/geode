@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import static com.gemstone.gemfire.internal.statistics.StatArchiveFormat.NANOS_PER_MILLI;
-import static com.gemstone.gemfire.internal.statistics.StatUtils.*;
-import static com.gemstone.gemfire.internal.statistics.TestStatArchiveWriter.*;
+import static org.apache.geode.internal.statistics.StatArchiveFormat.NANOS_PER_MILLI;
+import static org.apache.geode.internal.statistics.StatUtils.*;
+import static org.apache.geode.internal.statistics.TestStatArchiveWriter.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -36,11 +36,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.ResourceInst;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 
 /**
  * Generates the stat archive file that is committed under src/test/resources

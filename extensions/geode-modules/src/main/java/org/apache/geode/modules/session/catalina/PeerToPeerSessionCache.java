@@ -14,24 +14,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.modules.session.catalina.callback.LocalSessionCacheLoader;
-import com.gemstone.gemfire.modules.session.catalina.callback.LocalSessionCacheWriter;
-import com.gemstone.gemfire.modules.session.catalina.callback.SessionExpirationCacheListener;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
-import com.gemstone.gemfire.modules.util.RegionHelper;
-import com.gemstone.gemfire.modules.util.SessionCustomExpiry;
-import com.gemstone.gemfire.modules.util.TouchPartitionedRegionEntriesFunction;
-import com.gemstone.gemfire.modules.util.TouchReplicatedRegionEntriesFunction;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheLoader;
+import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheWriter;
+import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
+import org.apache.geode.modules.util.RegionConfiguration;
+import org.apache.geode.modules.util.RegionHelper;
+import org.apache.geode.modules.util.SessionCustomExpiry;
+import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
+import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
 import javax.servlet.http.HttpSession;
 import java.util.Set;

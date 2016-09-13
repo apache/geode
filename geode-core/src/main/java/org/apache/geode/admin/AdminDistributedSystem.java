@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -30,14 +30,14 @@ import java.util.UUID;
 /**
  * Administrative interface for managing an entire GemFire distributed
  * system.  This interface should not be confused with {@link
- * com.gemstone.gemfire.distributed.DistributedSystem
+ * org.apache.geode.distributed.DistributedSystem
  * DistributedSystem} that represents a connection to a GemFire
  * distributed system.
  *
  * @see AdminDistributedSystemFactory
  *
  * @since GemFire     3.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface AdminDistributedSystem {
 	
@@ -50,7 +50,7 @@ public interface AdminDistributedSystem {
    * Retrieves display friendly name for this system.  If this administrative
    * VM defined an optional name for its connection to the distributed system,
    * that name will be returned.  Otherwise the returned value will be {@link
-   * com.gemstone.gemfire.admin.AdminDistributedSystem#getId}.
+   * org.apache.geode.admin.AdminDistributedSystem#getId}.
    */
   public String getName();
   
@@ -201,7 +201,7 @@ public interface AdminDistributedSystem {
    * {@linkplain #getCacheVms cache server vms}.
    */
   public SystemMember[] getSystemMemberApplications() 
-  throws com.gemstone.gemfire.admin.AdminException;
+  throws org.apache.geode.admin.AdminException;
 
   /**
    * Display in readable format the latest Alert in this distributed system.
@@ -345,7 +345,7 @@ public interface AdminDistributedSystem {
 
   /**
    * Returns the administrative SystemMember specified by the {@link
-   * com.gemstone.gemfire.distributed.DistributedMember}.
+   * org.apache.geode.distributed.DistributedMember}.
    *
    * @param distributedMember the distributed member to lookup
    * @return administrative SystemMember for that distributed member

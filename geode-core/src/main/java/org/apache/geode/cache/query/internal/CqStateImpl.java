@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
-import com.gemstone.gemfire.cache.query.CqState;
+import org.apache.geode.cache.query.CqState;
 
 /**
  * Offers methods to get CQ state.

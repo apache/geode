@@ -14,14 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina.callback;
+package org.apache.geode.modules.session.catalina.callback;
 
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.modules.session.catalina.DeltaSessionInterface;
-import com.gemstone.gemfire.modules.util.ContextMapper;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
+import org.apache.geode.modules.util.ContextMapper;
 
 import javax.servlet.http.HttpSession;
 import java.util.Properties;

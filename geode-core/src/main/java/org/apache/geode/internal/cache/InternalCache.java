@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Collection;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.extension.Extensible;
 
 /**
  * The InternalCache interface is contract for implementing classes for defining internal cache operations that should
  * not be part of the "public" API of the implementing class.
  * </p>
- * @see com.gemstone.gemfire.cache.Cache
+ * @see org.apache.geode.cache.Cache
  * @since GemFire 7.0
  */
 public interface InternalCache extends Cache, Extensible<Cache> {

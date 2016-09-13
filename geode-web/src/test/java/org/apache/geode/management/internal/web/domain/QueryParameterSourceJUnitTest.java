@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.domain;
+package org.apache.geode.management.internal.web.domain;
 
 import static org.junit.Assert.*;
 
@@ -25,8 +25,8 @@ import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
 
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,7 +35,7 @@ import org.junit.experimental.categories.Category;
  * The QueryParameterSourceJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * QueryParameterSource class.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource
+ * @see org.apache.geode.management.internal.web.domain.QueryParameterSource
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 8.0

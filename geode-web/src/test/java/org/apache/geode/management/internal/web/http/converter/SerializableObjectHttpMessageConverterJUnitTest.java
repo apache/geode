@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.http.converter;
+package org.apache.geode.management.internal.web.http.converter;
 
 import static org.junit.Assert.*;
 
@@ -36,14 +36,14 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The SerializableObjectHttpMessageConverterJUnitTest class is a test suite of test cases testing the contract
  * and functionality of the SerializableObjectHttpMessageConverter class.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.web.http.converter.SerializableObjectHttpMessageConverter
+ * @see org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test

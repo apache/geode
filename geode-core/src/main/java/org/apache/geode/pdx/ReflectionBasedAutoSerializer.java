@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.RegionService;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -27,7 +27,7 @@ import java.util.Properties;
 
 /**
  * This class uses Java reflection in conjunction with
- * {@link com.gemstone.gemfire.pdx.PdxSerializer PdxSerialzer} to perform
+ * {@link org.apache.geode.pdx.PdxSerializer PdxSerialzer} to perform
  * automatic serialization of domain objects. The implication is that the domain
  * classes do not need to implement the <code>PdxSerializable</code> interface.
  * <p>
@@ -50,7 +50,7 @@ import java.util.Properties;
  * &lt;pdx&gt;
  *   &lt;pdx-serializer&gt;
  *     &lt;class-name&gt;
- *       com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer
+ *       org.apache.geode.pdx.ReflectionBasedAutoSerializer
  *     &lt;/class-name&gt;
  *     &lt;parameter name="classes"&gt;
  *       &lt;string&gt; com.company.domain.DomainObject &lt;/string&gt;
@@ -370,7 +370,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * The default implementation:
    * <ul>
    * <li>only serializes classes whose name matches one of the patterns
-   * <li>excludes classes whose package begins with "com.gemstone.", "java.", or "javax."
+   * <li>excludes classes whose package begins with "org.apache.", "java.", or "javax."
    * unless the system property "gemfire.auto.serialization.no.hardcoded.excludes"
    * is set to "true".
    * <li>excludes classes that do not have a public no-arg constructor

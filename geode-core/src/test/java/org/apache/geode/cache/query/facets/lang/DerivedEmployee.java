@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.facets.lang;
+package org.apache.geode.cache.query.facets.lang;
 
 class DerivedEmployee extends Employee
 {

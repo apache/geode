@@ -18,7 +18,7 @@
 //  IndexTrackingQueryObserver.java
 //  gemfire
 //
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.internal.index.CompactMapRangeIndex;
-import com.gemstone.gemfire.cache.query.internal.index.MapRangeIndex;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionQueryEvaluator.TestHook;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.internal.index.CompactMapRangeIndex;
+import org.apache.geode.cache.query.internal.index.MapRangeIndex;
+import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.TestHook;
 
 /**
  * Verbose Index information

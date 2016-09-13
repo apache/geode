@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
 
 /**
  * Identifies a specific instance of a stat as defined by a StatisticDescriptor.

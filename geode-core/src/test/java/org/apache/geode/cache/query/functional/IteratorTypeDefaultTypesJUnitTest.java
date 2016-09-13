@@ -23,7 +23,7 @@
 /**
  *
  */
-package com.gemstone.gemfire.cache.query.functional;
+package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;
 
@@ -35,12 +35,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Utils;
-import com.gemstone.gemfire.cache.query.data.Student;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Utils;
+import org.apache.geode.cache.query.data.Student;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class IteratorTypeDefaultTypesJUnitTest {
@@ -357,14 +357,14 @@ public class IteratorTypeDefaultTypesJUnitTest {
 
     String queries[] = {
 
-        "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;" +
-            "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;" +
+        "IMPORT org.apache.geode.cache.\"query\".data.Student;" +
+            "IMPORT org.apache.geode.cache.\"query\".data.Student$Subject;" +
             "Select distinct * from  $1 as it1 ,  it1.subjects x  type Student$Subject  where x.subject='Hindi' " ,
-            "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;" +
-                "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;" +
+            "IMPORT org.apache.geode.cache.\"query\".data.Student;" +
+                "IMPORT org.apache.geode.cache.\"query\".data.Student$Subject;" +
                 "Select distinct * from  $1 as it1 ,  it1.subjects  type Student$Subject  where subject='Hindi' " ,
-                "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;" +
-                    "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Subject;" +      
+                "IMPORT org.apache.geode.cache.\"query\".data.Student;" +
+                    "IMPORT org.apache.geode.cache.\"query\".data.Student$Subject;" +      
                     "Select distinct * from  $1 as it1 , (list<Student$Subject>) it1.subjects   where subject='Hindi' "
     };
     for(int i=0;i<queries.length;i++){
@@ -396,14 +396,14 @@ public class IteratorTypeDefaultTypesJUnitTest {
 
     String queries[] = {
 
-        "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;" +
-            "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;" +
+        "IMPORT org.apache.geode.cache.\"query\".data.Student;" +
+            "IMPORT org.apache.geode.cache.\"query\".data.Student$Teacher;" +
             "Select distinct * from  $1 as it1 ,  it1.teachers x  type Student$Teacher  where x.teacher='Y' " ,
-            "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;" +
-                "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;" +
+            "IMPORT org.apache.geode.cache.\"query\".data.Student;" +
+                "IMPORT org.apache.geode.cache.\"query\".data.Student$Teacher;" +
                 "Select distinct * from  $1 as it1 ,  it1.teachers  type Student$Teacher  where teacher='Y' " ,
-                "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student;" +
-                    "IMPORT com.gemstone.gemfire.cache.\"query\".data.Student$Teacher;" +      
+                "IMPORT org.apache.geode.cache.\"query\".data.Student;" +
+                    "IMPORT org.apache.geode.cache.\"query\".data.Student$Teacher;" +      
                     "Select distinct * from  $1 as it1 , (list<Student$Teacher>) it1.teachers  where teacher='Y' "
     };
     for(int i=0;i<queries.length;i++){

@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.execute;
+package org.apache.geode.cache.execute;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.GemFireException;
+import org.apache.geode.internal.Assert;
 
 /**
  * Thrown to indicate an error or exceptional condition during the execution of 

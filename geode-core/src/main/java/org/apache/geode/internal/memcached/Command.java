@@ -14,43 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached;
+package org.apache.geode.internal.memcached;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.memcached.commands.AddCommand;
-import com.gemstone.gemfire.internal.memcached.commands.AddQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.AppendCommand;
-import com.gemstone.gemfire.internal.memcached.commands.AppendQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.CASCommand;
-import com.gemstone.gemfire.internal.memcached.commands.DecrementCommand;
-import com.gemstone.gemfire.internal.memcached.commands.DecrementQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.DeleteCommand;
-import com.gemstone.gemfire.internal.memcached.commands.DeleteQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.FlushAllCommand;
-import com.gemstone.gemfire.internal.memcached.commands.FlushAllQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.GATCommand;
-import com.gemstone.gemfire.internal.memcached.commands.GATQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.GetCommand;
-import com.gemstone.gemfire.internal.memcached.commands.GetKCommand;
-import com.gemstone.gemfire.internal.memcached.commands.GetKQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.GetQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.IncrementCommand;
-import com.gemstone.gemfire.internal.memcached.commands.IncrementQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.NoOpCommand;
-import com.gemstone.gemfire.internal.memcached.commands.NotSupportedCommand;
-import com.gemstone.gemfire.internal.memcached.commands.PrependCommand;
-import com.gemstone.gemfire.internal.memcached.commands.PrependQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.QuitCommand;
-import com.gemstone.gemfire.internal.memcached.commands.QuitQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.ReplaceCommand;
-import com.gemstone.gemfire.internal.memcached.commands.ReplaceQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.SetCommand;
-import com.gemstone.gemfire.internal.memcached.commands.SetQCommand;
-import com.gemstone.gemfire.internal.memcached.commands.StatsCommand;
-import com.gemstone.gemfire.internal.memcached.commands.TouchCommand;
-import com.gemstone.gemfire.internal.memcached.commands.VerbosityCommand;
-import com.gemstone.gemfire.internal.memcached.commands.VersionCommand;
+import org.apache.geode.internal.memcached.commands.AddCommand;
+import org.apache.geode.internal.memcached.commands.AddQCommand;
+import org.apache.geode.internal.memcached.commands.AppendCommand;
+import org.apache.geode.internal.memcached.commands.AppendQCommand;
+import org.apache.geode.internal.memcached.commands.CASCommand;
+import org.apache.geode.internal.memcached.commands.DecrementCommand;
+import org.apache.geode.internal.memcached.commands.DecrementQCommand;
+import org.apache.geode.internal.memcached.commands.DeleteCommand;
+import org.apache.geode.internal.memcached.commands.DeleteQCommand;
+import org.apache.geode.internal.memcached.commands.FlushAllCommand;
+import org.apache.geode.internal.memcached.commands.FlushAllQCommand;
+import org.apache.geode.internal.memcached.commands.GATCommand;
+import org.apache.geode.internal.memcached.commands.GATQCommand;
+import org.apache.geode.internal.memcached.commands.GetCommand;
+import org.apache.geode.internal.memcached.commands.GetKCommand;
+import org.apache.geode.internal.memcached.commands.GetKQCommand;
+import org.apache.geode.internal.memcached.commands.GetQCommand;
+import org.apache.geode.internal.memcached.commands.IncrementCommand;
+import org.apache.geode.internal.memcached.commands.IncrementQCommand;
+import org.apache.geode.internal.memcached.commands.NoOpCommand;
+import org.apache.geode.internal.memcached.commands.NotSupportedCommand;
+import org.apache.geode.internal.memcached.commands.PrependCommand;
+import org.apache.geode.internal.memcached.commands.PrependQCommand;
+import org.apache.geode.internal.memcached.commands.QuitCommand;
+import org.apache.geode.internal.memcached.commands.QuitQCommand;
+import org.apache.geode.internal.memcached.commands.ReplaceCommand;
+import org.apache.geode.internal.memcached.commands.ReplaceQCommand;
+import org.apache.geode.internal.memcached.commands.SetCommand;
+import org.apache.geode.internal.memcached.commands.SetQCommand;
+import org.apache.geode.internal.memcached.commands.StatsCommand;
+import org.apache.geode.internal.memcached.commands.TouchCommand;
+import org.apache.geode.internal.memcached.commands.VerbosityCommand;
+import org.apache.geode.internal.memcached.commands.VersionCommand;
 
 /**
  * Represents all commands a memcached client

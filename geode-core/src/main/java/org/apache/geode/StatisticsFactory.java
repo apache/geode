@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
-//import com.gemstone.gemfire.distributed.DistributedSystem;
-//import com.gemstone.gemfire.internal.statistics.StatArchiveFormat;
+//import org.apache.geode.distributed.DistributedSystem;
+//import org.apache.geode.internal.statistics.StatArchiveFormat;
 //import java.io.IOException;
 //import java.io.Reader;
 
@@ -27,7 +27,7 @@ package com.gemstone.gemfire;
  * It can also be used to create instances of {@link StatisticDescriptor}
  * and {@link StatisticsType} because it implements {@link StatisticsTypeFactory}.
  * {@link
- * com.gemstone.gemfire.distributed.DistributedSystem} is the only
+ * org.apache.geode.distributed.DistributedSystem} is the only
  * instance of this interface.
  *
  * <P>

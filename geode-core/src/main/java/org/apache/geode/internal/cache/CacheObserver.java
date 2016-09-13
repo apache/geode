@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.cache.RegionEvent;
+import org.apache.geode.cache.RegionEvent;
 
 /**
  * This interface is used by testing/debugging code to be notified of query
  * events. See the documentation for class CacheObserverHolder for details. Also
  * the callback is issed only if the boolean ISSUE_CALLBACKS_TO_CACHE_OBSERVER
- * present in com.gemstone.gemfire.internal.cache.LocalRegion is made true
+ * present in org.apache.geode.internal.cache.LocalRegion is made true
  * 
  */
 public interface CacheObserver

@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.internal.SystemMemberBridgeServerImpl;
-import com.gemstone.gemfire.admin.internal.SystemMemberCacheImpl;
-import com.gemstone.gemfire.internal.admin.AdminBridgeServer;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.internal.SystemMemberBridgeServerImpl;
+import org.apache.geode.admin.internal.SystemMemberCacheImpl;
+import org.apache.geode.internal.admin.AdminBridgeServer;
+import org.apache.geode.internal.admin.GemFireVM;
 
 import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBean;
 
 /**
  * MBean representation of a {@link
- * com.gemstone.gemfire.admin.SystemMemberBridgeServer}. 
+ * org.apache.geode.admin.SystemMemberBridgeServer}. 
  *
  * @since GemFire 4.0
  */

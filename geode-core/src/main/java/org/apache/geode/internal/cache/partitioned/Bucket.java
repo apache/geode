@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.cache.BucketAdvisor;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisee;
-import com.gemstone.gemfire.internal.cache.DiskRegion;
-import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.BucketAdvisor;
+import org.apache.geode.internal.cache.CacheDistributionAdvisee;
+import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Represents a storage or meta-data container for a 
@@ -50,7 +50,7 @@ public interface Bucket extends CacheDistributionAdvisee {
   
   /**
    * Returns true if this bucket is currently backed by a {@link 
-   * com.gemstone.gemfire.internal.cache.BucketRegion}.
+   * org.apache.geode.internal.cache.BucketRegion}.
    */
   public boolean isHosting();
   

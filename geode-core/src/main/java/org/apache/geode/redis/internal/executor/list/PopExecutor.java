@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.executor.list;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;

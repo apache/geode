@@ -17,22 +17,22 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
-import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.SystemTimer.SystemTimerTask;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -57,7 +57,7 @@ public class EventTracker
    * a mapping of originator to the last event applied to this cache 
    *
    * Keys are instances of {@link ThreadIdentifier}, values are instances
-   * of {@link com.gemstone.gemfire.internal.cache.EventTracker.EventSeqnoHolder}.
+   * of {@link org.apache.geode.internal.cache.EventTracker.EventSeqnoHolder}.
    */
   protected final ConcurrentMap<ThreadIdentifier, EventSeqnoHolder> recordedEvents 
       = new ConcurrentHashMap<ThreadIdentifier, EventSeqnoHolder>(100);

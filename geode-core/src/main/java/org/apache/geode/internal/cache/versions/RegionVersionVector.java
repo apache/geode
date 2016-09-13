@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -1126,7 +1126,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#toData(java.io.DataOutput)
+   * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
    */
   public void toData(DataOutput out) throws IOException {
     if (this.isLiveVector) {
@@ -1154,7 +1154,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.DataSerializableFixedID#fromData(java.io.DataInput)
+   * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.myId = readMember(in);
@@ -1371,7 +1371,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>> implements
   /* 
    * (non-Javadoc)
    * this ensures that the version generation lock is released
-   * @see com.gemstone.gemfire.distributed.internal.MembershipListener#memberDeparted(com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember, boolean)
+   * @see org.apache.geode.distributed.internal.MembershipListener#memberDeparted(org.apache.geode.distributed.internal.membership.InternalDistributedMember, boolean)
    */
   public void memberDeparted(final InternalDistributedMember id, boolean crashed) {
     // since unlockForClear uses synchronization we need to try to execute it in another

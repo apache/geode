@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
 
-import com.gemstone.gemfire.internal.cache.RegionEntry;
-import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 
 /**
  * 

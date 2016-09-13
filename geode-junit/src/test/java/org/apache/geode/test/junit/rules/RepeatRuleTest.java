@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -27,8 +27,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import com.gemstone.gemfire.test.junit.Repeat;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.Repeat;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link RepeatRule}.

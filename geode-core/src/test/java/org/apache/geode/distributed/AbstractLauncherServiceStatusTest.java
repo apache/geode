@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
 import static org.junit.Assert.*;
 
@@ -30,12 +30,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.process.ProcessUtils;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
-import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests marshaling of ServiceStatus to and from JSON.

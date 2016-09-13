@@ -15,9 +15,9 @@
  * limitations under the License.
  */
    
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * Used to determine if product should use pure java mode.

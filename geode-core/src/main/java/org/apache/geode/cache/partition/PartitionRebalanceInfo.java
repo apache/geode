@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.partition;
+package org.apache.geode.cache.partition;
 
 import java.util.Set;
 
@@ -27,7 +27,7 @@ import java.util.Set;
 public interface PartitionRebalanceInfo {
   
   /**
-   * Returns the {@link com.gemstone.gemfire.cache.Region#getFullPath() 
+   * Returns the {@link org.apache.geode.cache.Region#getFullPath() 
    * full path} of the partitioned region that these details describe.
    * 
    * @return the full name of partioned region that these details describe.

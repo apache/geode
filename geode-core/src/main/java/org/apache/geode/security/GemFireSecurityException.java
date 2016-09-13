@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security;
+package org.apache.geode.security;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import javax.naming.NamingException;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
- * The base class for all com.gemstone.gemfire.security package related
+ * The base class for all org.apache.geode.security package related
  * exceptions.
  * 
  * @since GemFire 5.5

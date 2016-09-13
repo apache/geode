@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
+import org.apache.geode.Statistics;
+import org.apache.geode.distributed.internal.PoolStatHelper;
 
 /**
  * @since GemFire 5.7

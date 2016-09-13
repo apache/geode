@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,12 +27,12 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.ManagementException;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.ManagementException;
 
 /**
  * Central component for federation It consists of an Object State as well as

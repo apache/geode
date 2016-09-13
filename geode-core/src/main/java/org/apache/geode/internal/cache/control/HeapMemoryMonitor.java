@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.control;
+package org.apache.geode.internal.cache.control;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
-import com.gemstone.gemfire.internal.statistics.LocalStatListener;
-import com.gemstone.gemfire.internal.SetUtils;
-import com.gemstone.gemfire.internal.statistics.StatisticsImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
-import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
-import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.statistics.GemFireStatSampler;
+import org.apache.geode.internal.statistics.LocalStatListener;
+import org.apache.geode.internal.SetUtils;
+import org.apache.geode.internal.statistics.StatisticsImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
+import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
+import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.logging.log4j.Logger;
 
 import javax.management.ListenerNotFoundException;
@@ -759,7 +759,7 @@ public void stopMonitoring() {
   
   class LocalHeapStatListener implements LocalStatListener {
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.statistics.LocalStatListener#statValueChanged(double)
+     * @see org.apache.geode.internal.statistics.LocalStatListener#statValueChanged(double)
      */
     @Override
     @SuppressWarnings("synthetic-access")

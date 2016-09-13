@@ -26,7 +26,7 @@
  * Expert Group and released to the public domain, as explained at
  * http://creativecommons.org/licenses/publicdomain
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;

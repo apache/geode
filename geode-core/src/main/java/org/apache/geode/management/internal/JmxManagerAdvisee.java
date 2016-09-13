@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProfile;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 
 import java.net.UnknownHostException;
 

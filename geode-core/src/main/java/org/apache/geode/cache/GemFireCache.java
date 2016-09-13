@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -23,13 +23,13 @@ import java.util.Properties;
 
 import javax.naming.Context;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.control.ResourceManager;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.pdx.PdxSerializer;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.pdx.PdxSerializer;
 
 /**
  * GemFireCache represents the singleton cache that must be created
@@ -185,8 +185,8 @@ public interface GemFireCache extends RegionService {
   
   /**
    * Returns whether { @link PdxInstance} is preferred for PDX types instead of Java object.
-   * @see com.gemstone.gemfire.cache.CacheFactory#setPdxReadSerialized(boolean)
-   * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxReadSerialized(boolean)
+   * @see org.apache.geode.cache.CacheFactory#setPdxReadSerialized(boolean)
+   * @see org.apache.geode.cache.client.ClientCacheFactory#setPdxReadSerialized(boolean)
    * 
    * @since GemFire 6.6
    */

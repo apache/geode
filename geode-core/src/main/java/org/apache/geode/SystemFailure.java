@@ -17,13 +17,13 @@
 /**
  * 
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.SystemFailureTestHook;
-import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.SystemFailureTestHook;
+import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Catches and responds to JVM failure
@@ -135,7 +135,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * returns a non-null result).  
  * <p>
  * A job processing loop is a good candidate, for
- * instance, in com.gemstone.org.jgroups.protocols.UDP#run(), 
+ * instance, in org.apache.org.jgroups.protocols.UDP#run(), 
  * which implements {@link Thread#run}:
  * <p>
  * <pre>

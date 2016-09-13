@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.functions;
+package org.apache.geode.management.internal.configuration.functions;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.configuration.domain.ConfigurationChangeResult;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.configuration.domain.ConfigurationChangeResult;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class ModifyPropertiesFunction extends FunctionAdapter implements
     InternalEntity {

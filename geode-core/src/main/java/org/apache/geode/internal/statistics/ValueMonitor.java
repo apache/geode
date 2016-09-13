@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 
 /**
  * Adds coarser-grained monitoring of entire Statistics instances.
@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
     }
  * 
  * @since GemFire 7.0
- * @see com.gemstone.gemfire.Statistics
+ * @see org.apache.geode.Statistics
  */
 public final class ValueMonitor extends StatisticsMonitor {
   

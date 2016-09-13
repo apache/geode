@@ -17,18 +17,18 @@
 /**
  * 
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.pdx.PdxSerializationException;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
-import com.gemstone.gemfire.internal.tcp.ImmutableByteBufferInputStream;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.internal.tcp.ImmutableByteBufferInputStream;
 
 /**
  * Used by PdxReaderImpl to manage the raw bytes of a PDX.

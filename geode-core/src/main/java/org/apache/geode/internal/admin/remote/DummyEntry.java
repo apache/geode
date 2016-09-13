@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 /**
- * This implementation of {@link com.gemstone.gemfire.cache.Region.Entry}
- * does nothing but provide an instance of {@link com.gemstone.gemfire.cache.CacheStatistics}
+ * This implementation of {@link org.apache.geode.cache.Region.Entry}
+ * does nothing but provide an instance of {@link org.apache.geode.cache.CacheStatistics}
  */
 public class DummyEntry implements Region.Entry {
   

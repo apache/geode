@@ -20,9 +20,9 @@
  * Created on March 8, 2005, 6:11 PM
  */
 
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
-import com.gemstone.gemfire.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryException;
 
 /**
  *

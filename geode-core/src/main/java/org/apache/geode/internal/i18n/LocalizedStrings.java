@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.i18n;
+package org.apache.geode.internal.i18n;
 
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.i18n.StringId;
 
 
 /**
@@ -2237,9 +2237,9 @@ public class LocalizedStrings {
   public static final StringId Connection_CLASSNOTFOUND_DESERIALIZING_MESSAGE = new StringId(3670, "ClassNotFound deserializing message");
   public static final StringId Connection_FAILED_SENDING_HANDSHAKE_REPLY = new StringId(3671, "Failed sending handshake reply");
   public static final StringId GroupMembershipService_THE_MEMBER_WITH_ID_0_IS_NO_LONGER_IN_MY_OWN_VIEW_1 = new StringId(3679, "The Member with id {0}, is no longer in my own view, {1}");
-  public static final StringId GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0 = new StringId(3701, "<Could not find resource com/gemstone/gemfire/internal/{0}>");
-  public static final StringId GemFireVersion_COULD_NOT_READ_PROPERTIES_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0_BECAUSE_1 = new StringId(3702, "<Could not read properties from resource com/gemstone/gemfire/internal/{0} because: {1}>");
-  public static final StringId GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1 = new StringId(3703, "<Missing property {0} from resource com/gemstone/gemfire/internal/{1}>");
+  public static final StringId GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0 = new StringId(3701, "<Could not find resource org/apache/geode/internal/{0}>");
+  public static final StringId GemFireVersion_COULD_NOT_READ_PROPERTIES_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0_BECAUSE_1 = new StringId(3702, "<Could not read properties from resource org/apache/geode/internal/{0} because: {1}>");
+  public static final StringId GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1 = new StringId(3703, "<Missing property {0} from resource org/apache/geode/internal/{1}>");
   public static final StringId GemFireVersion_RUNNING_ON_0 = new StringId(3704, "Running on: {0}");
   public static final StringId GemFireVersion_WARNING_EXPECTED_JAVA_VERSION_0 = new StringId(3705, "Warning expected java version: {0}");
   public static final StringId GemFireVersion_WARNING_FAILED_TO_READ_0_BECAUSE_1 = new StringId(3707, "Warning failed to read \"{0}\" because {1}.");

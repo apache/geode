@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit;
+package org.apache.geode.test.junit;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.gemstone.gemfire.test.junit.support.DefaultIgnoreCondition;
+import org.apache.geode.test.junit.support.DefaultIgnoreCondition;
 
 /**
  * The IgnoreUntil class is a Java Annotation used to annotated a test suite class test case method in order to
@@ -30,8 +30,8 @@ import com.gemstone.gemfire.test.junit.support.DefaultIgnoreCondition;
  * the IgnoreCondition interface.
  *
  * @see java.lang.annotation.Annotation
- * @see com.gemstone.gemfire.test.junit.IgnoreCondition
- * @see com.gemstone.gemfire.test.junit.support.DefaultIgnoreCondition
+ * @see org.apache.geode.test.junit.IgnoreCondition
+ * @see org.apache.geode.test.junit.support.DefaultIgnoreCondition
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

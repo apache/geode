@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
+package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,7 +29,7 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Responses;
 
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 
 /**
  * JGroups will not send messages that have IpAddress destination addresses.

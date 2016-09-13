@@ -21,7 +21,7 @@
   <cache-transaction-manager/>
   <region name="PartionedPortfolios">
     <region-attributes early-ack="false" multicast-enabled="false" publisher="false" enable-async-conflation="false" enable-bridge-conflation="false" enable-gateway="false" data-policy="partition" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="false" ignore-jta="false" is-lock-grantor="false">
-      <value-constraint>com.gemstone.gemfire.cache.query.data.PortfolioData</value-constraint>
+      <value-constraint>org.apache.geode.cache.query.data.PortfolioData</value-constraint>
       <region-time-to-live>
         <expiration-attributes timeout="0" action="invalidate"/>
       </region-time-to-live>

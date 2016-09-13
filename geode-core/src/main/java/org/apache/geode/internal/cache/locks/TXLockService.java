@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.distributed.internal.locks.*;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.distributed.internal.locks.*;
 
 import java.util.*;
 

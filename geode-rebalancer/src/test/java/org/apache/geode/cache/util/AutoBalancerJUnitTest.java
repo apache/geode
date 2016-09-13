@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,24 +41,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.control.RebalanceFactory;
-import com.gemstone.gemfire.cache.control.RebalanceOperation;
-import com.gemstone.gemfire.cache.control.RebalanceResults;
-import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
-import com.gemstone.gemfire.cache.util.AutoBalancer.AuditScheduler;
-import com.gemstone.gemfire.cache.util.AutoBalancer.CacheOperationFacade;
-import com.gemstone.gemfire.cache.util.AutoBalancer.GeodeCacheFacade;
-import com.gemstone.gemfire.cache.util.AutoBalancer.OOBAuditor;
-import com.gemstone.gemfire.cache.util.AutoBalancer.SizeBasedOOBAuditor;
-import com.gemstone.gemfire.cache.util.AutoBalancer.TimeProvider;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
-import com.gemstone.gemfire.internal.cache.partitioned.InternalPRInfo;
-import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.control.RebalanceFactory;
+import org.apache.geode.cache.control.RebalanceOperation;
+import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.cache.util.AutoBalancer.AuditScheduler;
+import org.apache.geode.cache.util.AutoBalancer.CacheOperationFacade;
+import org.apache.geode.cache.util.AutoBalancer.GeodeCacheFacade;
+import org.apache.geode.cache.util.AutoBalancer.OOBAuditor;
+import org.apache.geode.cache.util.AutoBalancer.SizeBasedOOBAuditor;
+import org.apache.geode.cache.util.AutoBalancer.TimeProvider;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PRHARedundancyProvider;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
+import org.apache.geode.internal.cache.partitioned.LoadProbe;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * UnitTests for AutoBalancer. All collaborators should be mocked.

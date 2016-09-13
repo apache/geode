@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.partitioned.rebalance;
+package org.apache.geode.internal.cache.partitioned.rebalance;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.BucketRollup;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.BucketRollup;
+import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * A director to create redundant copies for buckets that are low in redundancy

@@ -19,7 +19,7 @@
  *
  * 
  */
-package com.gemstone.gemfire.cache.query.internal;
+package org.apache.geode.cache.query.internal;
 
 /**
  * Helper class object which gets created during organization of operands in a

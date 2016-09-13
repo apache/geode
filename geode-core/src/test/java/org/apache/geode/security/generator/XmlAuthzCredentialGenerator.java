@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.generator;
+package org.apache.geode.security.generator;
 
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.security.templates.UsernamePrincipal;
-import com.gemstone.gemfire.security.templates.XmlAuthorization;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.security.templates.UsernamePrincipal;
+import org.apache.geode.security.templates.XmlAuthorization;
+import org.apache.geode.util.test.TestUtil;
 
 public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
@@ -90,7 +90,7 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   @Override
   protected Properties init() throws IllegalArgumentException {
     final Properties sysProps = new Properties();
-    final String dirName = "/com/gemstone/gemfire/security/generator/";
+    final String dirName = "/org/apache/geode/security/generator/";
 
     if (this.generator.classCode().isDummy()) {
       final String xmlFilename = TestUtil.getResourcePath(XmlAuthzCredentialGenerator.class, dirName + dummyXml);

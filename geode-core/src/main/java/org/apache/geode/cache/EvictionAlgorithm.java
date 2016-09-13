@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import javax.print.attribute.EnumSyntax;
 
-/** The algorithm used to determine when to perform an {@link com.gemstone.gemfire.cache.EvictionAction}
+/** The algorithm used to determine when to perform an {@link org.apache.geode.cache.EvictionAction}
  * 
  * @since GemFire 5.0
- * @see com.gemstone.gemfire.cache.EvictionAction
- * @see com.gemstone.gemfire.internal.cache.EvictionAttributesImpl
+ * @see org.apache.geode.cache.EvictionAction
+ * @see org.apache.geode.internal.cache.EvictionAttributesImpl
  */
 public final class EvictionAlgorithm extends EnumSyntax
 {

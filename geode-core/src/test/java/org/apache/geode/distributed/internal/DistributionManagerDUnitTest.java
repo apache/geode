@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -29,39 +29,39 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.admin.AdminDistributedSystem;
-import com.gemstone.gemfire.admin.AdminDistributedSystemFactory;
-import com.gemstone.gemfire.admin.Alert;
-import com.gemstone.gemfire.admin.AlertLevel;
-import com.gemstone.gemfire.admin.AlertListener;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminDistributedSystemFactory;
+import org.apache.geode.admin.Alert;
+import org.apache.geode.admin.AlertLevel;
+import org.apache.geode.admin.AlertListener;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
+import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of the {@link
@@ -156,7 +156,7 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
       mgr = MembershipManagerHelper.getMembershipManager(sys);
       sys.disconnect();
       InternalDistributedMember idm2 = mgr.getLocalMember();
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("original ID=" + idm +
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("original ID=" + idm +
           " and after connecting=" + idm2);
       assertTrue("should not have used a different udp port",
           idm.getPort() == idm2.getPort());
@@ -192,8 +192,8 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
 
       int oldViewId = mbr.getVmViewId();
       mbr.setVmViewId((int)mgr.getView().getViewId()-1);
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("current membership view is " + mgr.getView());
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("created ID " + mbr + " with view ID " + mbr.getVmViewId());
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("current membership view is " + mgr.getView());
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("created ID " + mbr + " with view ID " + mbr.getVmViewId());
       sys.getLogWriter().info("<ExpectedException action=add>attempt to add old member</ExpectedException>");
       sys.getLogWriter().info("<ExpectedException action=add>Removing shunned GemFire node</ExpectedException>");
       try {
@@ -366,7 +366,7 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
         LogWriter logger = myCache.getLogger();
         logger.info("afterRegionDestroyed invoked in sleeping listener");
         logger.info("<ExpectedException action=remove>service failure</ExpectedException>");
-        logger.info("<ExpectedException action=remove>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+        logger.info("<ExpectedException action=remove>org.apache.geode.ForcedDisconnectException</ExpectedException>");
         regionDestroyedInvoked = true;
         }
     };
@@ -437,7 +437,7 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
           getSystem(props);
           LogWriter log = basicGetSystem().getLogWriter();
           log.info("<ExpectedException action=add>service failure</ExpectedException>");
-          log.info("<ExpectedException action=add>com.gemstone.gemfire.ForcedDisconnectException</ExpectedException>");
+          log.info("<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
           RegionFactory rf = new RegionFactory();
           Region r = rf.setScope(Scope.DISTRIBUTED_ACK)
             .setDataPolicy(DataPolicy.REPLICATE)
@@ -531,14 +531,14 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
     try {
       getSystem(props);
     } catch (IllegalArgumentException e) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("caught expected exception (1)", e);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("caught expected exception (1)", e);
     }
     // use an invalid address
     props.setProperty(BIND_ADDRESS, "bruce.schuchardt");
     try {
       getSystem(props);
     } catch (IllegalArgumentException e) {
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("caught expected exception (2_", e);
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("caught expected exception (2_", e);
     }
     // use a valid bind address
     props.setProperty(BIND_ADDRESS, InetAddress.getLocalHost().getCanonicalHostName());

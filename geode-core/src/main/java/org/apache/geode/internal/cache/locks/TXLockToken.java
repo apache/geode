@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-//import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+//import org.apache.geode.cache.Region;
 import java.io.*;
 
 import org.apache.commons.lang.StringUtils;

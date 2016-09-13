@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.sequencelog.io;
+package org.apache.geode.internal.sequencelog.io;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -31,9 +31,9 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.gemstone.gemfire.internal.logging.DateFormatter;
-import com.gemstone.gemfire.internal.sequencelog.GraphType;
-import com.gemstone.gemfire.internal.sequencelog.Transition;
+import org.apache.geode.internal.logging.DateFormatter;
+import org.apache.geode.internal.sequencelog.GraphType;
+import org.apache.geode.internal.sequencelog.Transition;
 
 /**
  * A utility to convert existing gemfire logs
@@ -219,7 +219,7 @@ public class GemfireLogConverter {
   }
 
   private static void usage() {
-    System.err.println("Usage java com.gemstone.sequence.logconversion.ConvertGemfireLogs outputfile [log_file]+");
+    System.err.println("Usage java org.apache.sequence.logconversion.ConvertGemfireLogs outputfile [log_file]+");
     
   }
   

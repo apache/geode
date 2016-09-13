@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,15 +43,15 @@ public interface Config {
    * specify the attribute name and value and get them safely into
    * a Config instance.
    * @throws IllegalArgumentException if the specified name or value are illegal
-   * @throws com.gemstone.gemfire.UnmodifiableException if the attribute can not be modified.
+   * @throws org.apache.geode.UnmodifiableException if the attribute can not be modified.
    */
   void setAttribute(String attName, String attValue, ConfigSource source);
   /**
    * Given the attribute's name set its value to the specified Object.
    * @throws IllegalArgumentException if the specified name is unknown
-   * @throws com.gemstone.gemfire.InvalidValueException if the specified value is not compatible
+   * @throws org.apache.geode.InvalidValueException if the specified value is not compatible
    *                               with the attributes type
-   * @throws com.gemstone.gemfire.UnmodifiableException if the attribute can not be modified.
+   * @throws org.apache.geode.UnmodifiableException if the attribute can not be modified.
    */
   void setAttributeObject(String attName, Object attValue, ConfigSource source);
   /**

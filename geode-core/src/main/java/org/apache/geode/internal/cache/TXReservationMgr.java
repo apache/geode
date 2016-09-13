@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-//import com.gemstone.gemfire.internal.cache.locks.*;
+package org.apache.geode.internal.cache;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+//import org.apache.geode.internal.cache.locks.*;
 //import java.io.*;
 import java.util.*;
 

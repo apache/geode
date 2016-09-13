@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 //import java.text.*;
@@ -512,7 +512,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
   
   public static void main(String args[]) throws IOException {
     if (args.length != 1) {
-      System.err.println(LocalizedStrings.ArchiveSplitter_USAGE.toLocalizedString() + ": com.gemstone.gemfire.internal.statistics.ArchiveSplitter <archive.gfs>");
+      System.err.println(LocalizedStrings.ArchiveSplitter_USAGE.toLocalizedString() + ": org.apache.geode.internal.statistics.ArchiveSplitter <archive.gfs>");
       System.exit(1);
     }
     ArchiveSplitter as = new ArchiveSplitter(new File(args[0]));

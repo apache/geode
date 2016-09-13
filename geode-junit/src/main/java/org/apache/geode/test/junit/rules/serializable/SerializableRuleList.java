@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.serializable;
+package org.apache.geode.test.junit.rules.serializable;
 
-import com.gemstone.gemfire.test.junit.rules.RuleList;
+import org.apache.geode.test.junit.rules.RuleList;
 import org.junit.rules.TestRule;
 
 import java.io.InvalidObjectException;

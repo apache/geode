@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Invokes a ControlRequestHandler when a control file has been created.

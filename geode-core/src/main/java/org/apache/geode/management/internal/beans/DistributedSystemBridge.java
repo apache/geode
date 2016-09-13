@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -44,52 +44,52 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.admin.internal.BackupDataStoreHelper;
-import com.gemstone.gemfire.admin.internal.BackupDataStoreResult;
-import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.admin.remote.MissingPersistentIDsRequest;
-import com.gemstone.gemfire.internal.admin.remote.PrepareRevokePersistentIDRequest;
-import com.gemstone.gemfire.internal.admin.remote.RevokePersistentIDRequest;
-import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.management.DiskBackupStatus;
-import com.gemstone.gemfire.management.DiskMetrics;
-import com.gemstone.gemfire.management.DiskStoreMXBean;
-import com.gemstone.gemfire.management.DistributedLockServiceMXBean;
-import com.gemstone.gemfire.management.DistributedRegionMXBean;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.GatewayReceiverMXBean;
-import com.gemstone.gemfire.management.GatewaySenderMXBean;
-import com.gemstone.gemfire.management.GemFireProperties;
-import com.gemstone.gemfire.management.JMXNotificationType;
-import com.gemstone.gemfire.management.JVMMetrics;
-import com.gemstone.gemfire.management.LockServiceMXBean;
-import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.NetworkMetrics;
-import com.gemstone.gemfire.management.OSMetrics;
-import com.gemstone.gemfire.management.PersistentMemberDetails;
-import com.gemstone.gemfire.management.RegionMXBean;
-import com.gemstone.gemfire.management.internal.FederationComponent;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.ManagementStrings;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.management.internal.beans.stats.GatewayReceiverClusterStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.GatewaySenderClusterStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.MemberClusterStatsMonitor;
-import com.gemstone.gemfire.management.internal.beans.stats.ServerClusterStatsMonitor;
-import com.gemstone.gemfire.management.internal.cli.json.TypedJson;
+import org.apache.geode.admin.internal.BackupDataStoreHelper;
+import org.apache.geode.admin.internal.BackupDataStoreResult;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.remote.MissingPersistentIDsRequest;
+import org.apache.geode.internal.admin.remote.PrepareRevokePersistentIDRequest;
+import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
+import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.DiskBackupStatus;
+import org.apache.geode.management.DiskMetrics;
+import org.apache.geode.management.DiskStoreMXBean;
+import org.apache.geode.management.DistributedLockServiceMXBean;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.GemFireProperties;
+import org.apache.geode.management.JMXNotificationType;
+import org.apache.geode.management.JVMMetrics;
+import org.apache.geode.management.LockServiceMXBean;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.NetworkMetrics;
+import org.apache.geode.management.OSMetrics;
+import org.apache.geode.management.PersistentMemberDetails;
+import org.apache.geode.management.RegionMXBean;
+import org.apache.geode.management.internal.FederationComponent;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.beans.stats.GatewayReceiverClusterStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.GatewaySenderClusterStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.MemberClusterStatsMonitor;
+import org.apache.geode.management.internal.beans.stats.ServerClusterStatsMonitor;
+import org.apache.geode.management.internal.cli.json.TypedJson;
 
 /**
  * This is the gateway to distributed system as a whole. Aggregated metrics and

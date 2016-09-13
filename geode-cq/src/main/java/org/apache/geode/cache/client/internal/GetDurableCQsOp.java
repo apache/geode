@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.cache.client.internal.AbstractOp;
-import com.gemstone.gemfire.cache.client.internal.ConnectionStats;
-import com.gemstone.gemfire.cache.client.internal.ExecutablePool;
-import com.gemstone.gemfire.cache.client.internal.CreateCQOp.CreateCQOpImpl;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ChunkedMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.client.internal.AbstractOp;
+import org.apache.geode.cache.client.internal.ConnectionStats;
+import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.cache.client.internal.CreateCQOp.CreateCQOpImpl;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * Retrieves all durable cqs for a client from a server
@@ -53,7 +53,7 @@ public class GetDurableCQsOp {
   
   private static class GetDurableCQsOpImpl extends CreateCQOpImpl {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public GetDurableCQsOpImpl() {
       super(MessageType.GETDURABLECQS_MSG_TYPE, 1 /*numparts*/);

@@ -15,35 +15,35 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.functions;
+package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.domain.DurableCqNamesResult;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.domain.DurableCqNamesResult;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * The ListDurableCqs class is a GemFire function used to collect all the durable client names
  * on the server
  * </p>
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.execute.Function
- * @see com.gemstone.gemfire.cache.execute.FunctionAdapter
- * @see com.gemstone.gemfire.cache.execute.FunctionContext
- * @see com.gemstone.gemfire.internal.InternalEntity
- * @see com.gemstone.gemfire.management.internal.cli.domain.IndexDetails
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.execute.Function
+ * @see org.apache.geode.cache.execute.FunctionAdapter
+ * @see org.apache.geode.cache.execute.FunctionContext
+ * @see org.apache.geode.internal.InternalEntity
+ * @see org.apache.geode.management.internal.cli.domain.IndexDetails
  * @since GemFire 7.0.1
  */
 @SuppressWarnings("unused")

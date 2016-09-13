@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
@@ -23,18 +23,18 @@ import org.junit.experimental.categories.Category;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.extension.Extensible;
-import com.gemstone.gemfire.internal.cache.extension.mock.MockCacheExtension;
-import com.gemstone.gemfire.internal.cache.extension.mock.MockRegionExtension;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.extension.Extensible;
+import org.apache.geode.internal.cache.extension.mock.MockCacheExtension;
+import org.apache.geode.internal.cache.extension.mock.MockRegionExtension;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
+import org.apache.geode.internal.cache.xmlcache.XmlParser;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases

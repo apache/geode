@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -37,12 +37,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.UnmodifiableException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.UnmodifiableException;
 import org.apache.geode.security.SecurableComponents;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DistributionConfigJUnitTest {

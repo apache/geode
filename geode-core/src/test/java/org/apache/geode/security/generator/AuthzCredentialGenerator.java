@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.generator;
+package org.apache.geode.security.generator;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -26,11 +26,11 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.templates.DummyAuthorization;
-import com.gemstone.gemfire.security.templates.XmlAuthorization;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.AccessControl;
+import org.apache.geode.security.templates.DummyAuthorization;
+import org.apache.geode.security.templates.XmlAuthorization;
 
 /**
  * Encapsulates obtaining authorized and unauthorized credentials for a given

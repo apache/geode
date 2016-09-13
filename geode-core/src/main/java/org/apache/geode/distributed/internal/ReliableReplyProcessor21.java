@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
 import java.util.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is a reply processor which tracks departed members in order for

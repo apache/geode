@@ -1,1 +1,1 @@
-com.gemstone.gemfire.internal.cache.MockCacheServiceImpl
+org.apache.geode.internal.cache.MockCacheServiceImpl

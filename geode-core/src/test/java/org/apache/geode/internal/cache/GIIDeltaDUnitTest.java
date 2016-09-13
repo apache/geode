@@ -17,40 +17,40 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.DestroyOperation.DestroyMessage;
-import com.gemstone.gemfire.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIITestHook;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIITestHookType;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
-import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
-import com.gemstone.gemfire.internal.cache.UpdateOperation.UpdateMessage;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.DestroyOperation.DestroyMessage;
+import org.apache.geode.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
+import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
+import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
+import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
+import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
+import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;

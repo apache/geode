@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 /**
  * Marker interface for object used in PdxSerializer Tests that are in the
- * com.gemstone package. If an object implements this interface, it will be
- * passed to a PdxSerializer even if it is in the com.gemstone package.
+ * org.apache package. If an object implements this interface, it will be
+ * passed to a PdxSerializer even if it is in the org.apache package.
  * 
- * This is necessary because we exclude all other objects from the com.gemstone
+ * This is necessary because we exclude all other objects from the org.apache
  * package.
- * See {@link InternalDataSerializer#writePdx(java.io.DataOutput, com.gemstone.gemfire.internal.cache.GemFireCacheImpl, Object, com.gemstone.gemfire.pdx.PdxSerializer)} 
+ * See {@link InternalDataSerializer#writePdx(java.io.DataOutput, org.apache.geode.internal.cache.GemFireCacheImpl, Object, org.apache.geode.pdx.PdxSerializer)} 
  * 
  * 
  */

@@ -17,9 +17,9 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -28,50 +28,50 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.DeltaTestImpl;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.compression.Compressor;
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
-import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
-import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.DeltaTestImpl;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache30.ClientServerTestCase;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
+import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * @since GemFire 6.1
@@ -630,7 +630,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       primary = (((PoolImpl)pool).getPrimaryPort() == PORT1) ? VM0
           : ((((PoolImpl)pool).getPrimaryPort() == PORT2) ? VM1 : VM2);
   
-      com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("waiting for client to receive last_key");
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("waiting for client to receive last_key");
       waitForLastKey();
   
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations()
@@ -801,7 +801,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       }
     }
     catch (Exception e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in doLocalOp()", e);
+      org.apache.geode.test.dunit.Assert.fail("failed in doLocalOp()", e);
     }
   }
 
@@ -844,7 +844,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
           + expected, expected.equals(value));
     }
     catch (Exception e) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in assertValue()", e);
+      org.apache.geode.test.dunit.Assert.fail("failed in assertValue()", e);
     }
   }
 
@@ -981,7 +981,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       r.put(LAST_KEY, "");
     }
     catch (Exception ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createDelta()", ex);
+      org.apache.geode.test.dunit.Assert.fail("failed in createDelta()", ex);
     }
   }
 
@@ -998,7 +998,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       r.create(DELTA_KEY, deltaPut[0]);
     }
     catch (Exception ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createDelta()", ex);
+      org.apache.geode.test.dunit.Assert.fail("failed in createDelta()", ex);
     }
   }
 
@@ -1020,7 +1020,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       r.put(LAST_KEY, "");
     }
     catch (Exception ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in updateDelta()", ex);
+      org.apache.geode.test.dunit.Assert.fail("failed in updateDelta()", ex);
     }
   }
 
@@ -1035,7 +1035,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       r.create(LAST_KEY, "");
     }
     catch (Exception ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createDeltas()", ex);
+      org.apache.geode.test.dunit.Assert.fail("failed in createDeltas()", ex);
     }
   }
 
@@ -1047,7 +1047,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       r.create("KEY-A", "I push the delta out to disk :)");
     }
     catch (Exception ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in createAnEntry()", ex);
+      org.apache.geode.test.dunit.Assert.fail("failed in createAnEntry()", ex);
     }
   }
 
@@ -1059,7 +1059,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       r.invalidate(DELTA_KEY);
     }
     catch (Exception ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in invalidateDelta()", ex);
+      org.apache.geode.test.dunit.Assert.fail("failed in invalidateDelta()", ex);
     }
   }
 
@@ -1442,7 +1442,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       r.registerInterest("ALL_KEYS");
     }
     catch (Exception ex) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed in registerInterestListAll", ex);
+      org.apache.geode.test.dunit.Assert.fail("failed in registerInterestListAll", ex);
     }
   }
 

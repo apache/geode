@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.DynamicRegionFactory;
 
 /** This class provides non-published methods that allow the cache
     to initialize and close the factory.

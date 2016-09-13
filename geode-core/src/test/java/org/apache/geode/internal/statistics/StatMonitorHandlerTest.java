@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
@@ -26,10 +26,10 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.statistics.StatMonitorHandler.StatMonitorNotifier;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.statistics.StatMonitorHandler.StatMonitorNotifier;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link StatMonitorHandler}.

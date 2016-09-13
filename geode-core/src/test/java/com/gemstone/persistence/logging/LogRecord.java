@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.persistence.logging;
+package org.apache.persistence.logging;
 
 /**
  * A <code>LogRecord</code> encapsulate an entry in a log.

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.*;
-//import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.*;
+//import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * GemFire statistics about a {@link DiskStoreImpl}.

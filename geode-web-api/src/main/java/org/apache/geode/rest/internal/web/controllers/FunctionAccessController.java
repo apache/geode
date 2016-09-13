@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.controllers;
+package org.apache.geode.rest.internal.web.controllers;
 
-import com.gemstone.gemfire.cache.LowMemoryException;
-import com.gemstone.gemfire.cache.execute.*;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.rest.internal.web.exception.GemfireRestException;
-import com.gemstone.gemfire.rest.internal.web.util.ArrayUtils;
-import com.gemstone.gemfire.rest.internal.web.util.JSONUtils;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
+import org.apache.geode.rest.internal.web.util.JSONUtils;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;

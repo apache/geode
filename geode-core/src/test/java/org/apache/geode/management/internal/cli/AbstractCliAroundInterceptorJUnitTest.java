@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
-import static com.gemstone.gemfire.internal.Assert.assertTrue;
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * AbstractCliAroundInterceptor Tester.

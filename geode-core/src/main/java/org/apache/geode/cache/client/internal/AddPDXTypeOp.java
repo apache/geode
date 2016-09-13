@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-import com.gemstone.gemfire.pdx.internal.PdxType;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.pdx.internal.PdxType;
 
 /**
  * Add a PdxType to a server.
@@ -44,7 +44,7 @@ public class AddPDXTypeOp {
   
   private static class AddPDXTypeOpImpl extends AbstractOp {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public AddPDXTypeOpImpl(int id, PdxType type) {
       super(MessageType.ADD_PDX_TYPE, 2);

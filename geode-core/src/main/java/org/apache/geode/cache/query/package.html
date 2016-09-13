@@ -18,7 +18,7 @@ limitations under the License.
 <HTML>
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
-	<TITLE>com.gemstone.gemfire.cache.query</TITLE>
+	<TITLE>org.apache.geode.cache.query</TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.4  (Solaris Sparc)">
 	<META NAME="CREATED" CONTENT="20050524;10003600">
 	<META NAME="CHANGEDBY" CONTENT="Eric Zoerner">
@@ -37,15 +37,15 @@ of a high-level query language. The query language allows you to
 access the data based on multiple attributes and to tranform the
 results. The service also allows you to create indexes in order to
 optimize the performance of data retrieval<B>. <BR></B><BR>The
-{@linkplain com.gemstone.gemfire.cache.query.QueryService
+{@linkplain org.apache.geode.cache.query.QueryService
 QueryService} interface provides the public entry point to query
 execution, query compilation, and index creation. A <TT>QueryService
 </TT>instance is obtained from {@linkplain
-com.gemstone.gemfire.cache.Cache#getQueryService}. Queries can also
+org.apache.geode.cache.Cache#getQueryService}. Queries can also
 be performed by using the shortcut methods {@linkplain
-com.gemstone.gemfire.cache.Region#query}, {@linkplain
-com.gemstone.gemfire.cache.Region#selectValue}, and {@linkplain
-com.gemstone.gemfire.cache.Region#existsValue}. 
+org.apache.geode.cache.Region#query}, {@linkplain
+org.apache.geode.cache.Region#selectValue}, and {@linkplain
+org.apache.geode.cache.Region#existsValue}. 
 </P>
 <P>This package description contains the following sections: 
 </P>
@@ -116,7 +116,7 @@ com.gemstone.gemfire.cache.Region#existsValue}.
 	generate structs whose elements can be referred to as an attribute
 	in the query language. Structures that are returned to Java are
 	immutable and implement the {@linkplain
-	com.gemstone.gemfire.cache.query.Struct Struct} interface. 
+	org.apache.geode.cache.query.Struct Struct} interface. 
 	</DD></DL>
 <H1>
 <A NAME="Query_Language"></A>Query Language</H1>
@@ -183,7 +183,7 @@ the keys or entries of the region. To facilitate this, when a region
 path evaluates to a Region in the context of a query, the type of
 object it refers to has the following interface: 
 </P>
-<PRE STYLE="margin-bottom: 0.2in"> interface QRegion extends com.gemstone.gemfire.cache.Region, java.util.Collection { }</PRE><P>
+<PRE STYLE="margin-bottom: 0.2in"> interface QRegion extends org.apache.geode.cache.Region, java.util.Collection { }</PRE><P>
 Thus, the interface inherits all the attributes and methods from both
 Region and Collection. When used as a Collection, the elements are
 the values of the region. This enables a query to use a Region as
@@ -225,7 +225,7 @@ is bound to a collection, or a nested SELECT statement. &nbsp;
 <H3><A NAME="SelectResults"></A><A NAME="Result of a Select Statement|outline"></A>
 Result of a Select Statement</H3>
 <P>The result of a SELECT statement is a collection that implements
-the {@linkplain com.gemstone.gemfire.cache.query.SelectResults
+the {@linkplain org.apache.geode.cache.query.SelectResults
 SelectResults} interface.</P>
 <P>The SelectResults is a simple collection of unstructured objects
 in two cases:</P>
@@ -563,7 +563,7 @@ same path found in a WHERE clause when used to compare against a
 constant expression (i.e. an expression that does not depend on the
 iterator context) using the relational operators. The exact use and
 specification of the indexedExpression varies depending on the index
-type. See {@linkplain com.gemstone.gemfire.cache.query.IndexType}. No
+type. See {@linkplain org.apache.geode.cache.query.IndexType}. No
 query parameters or region paths are permitted.</P>
 <P>The <I>imports</I> provides packages and classes used in variable
 typing and typecasts.</P>

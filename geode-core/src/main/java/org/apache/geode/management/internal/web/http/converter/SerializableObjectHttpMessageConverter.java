@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.http.converter;
+package org.apache.geode.management.internal.web.http.converter;
 
 import java.io.IOException;
 import java.io.Serializable;
 
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.util.IOUtils;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.util.IOUtils;
 
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMessage;

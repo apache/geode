@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.i18n;
+package org.apache.geode.internal.i18n;
 
 /**
  * This class forms the basis of the i18n strategy. Its primary function is to

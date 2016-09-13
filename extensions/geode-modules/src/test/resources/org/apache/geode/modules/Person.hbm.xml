@@ -3,7 +3,7 @@
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
-<hibernate-mapping package="com.gemstone.gemfire.modules">
+<hibernate-mapping package="org.apache.geode.modules">
     <class name="Person" table="PERSON">
         <cache usage="read-write"/>
         <id name="id" column="PERSON_ID">

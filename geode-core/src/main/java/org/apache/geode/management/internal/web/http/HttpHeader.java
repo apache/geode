@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.http;
+package org.apache.geode.management.internal.web.http;
 
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * The HttpHeader enum is an enumeration of all HTTP request/response header names.

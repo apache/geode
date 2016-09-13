@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.extension.mock;
+package org.apache.geode.internal.cache.extension.mock;
 
-import static com.gemstone.gemfire.internal.cache.extension.mock.MockExtensionXmlParser.*;
-import static com.gemstone.gemfire.internal.cache.xmlcache.XmlGeneratorUtils.*;
+import static org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser.*;
+import static org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils.*;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
-import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * {@link MockRegionExtension} {@link XmlGenerator}.

@@ -19,9 +19,9 @@
  *
  * Created on February 18, 2005, 3:34 PM
  */
-package com.gemstone.gemfire.internal.datasource;
+package org.apache.geode.internal.datasource;
 
-import com.gemstone.gemfire.GemFireCheckedException;
+import org.apache.geode.GemFireCheckedException;
 
 /**
  * Exception thrown from the connection provider.

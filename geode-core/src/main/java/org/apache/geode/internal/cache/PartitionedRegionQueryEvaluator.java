@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.*;
-import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
-import com.gemstone.gemfire.cache.query.internal.utils.PDXUtils;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.partitioned.QueryMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.StreamingPartitionOperation;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
+import org.apache.geode.cache.query.internal.utils.PDXUtils;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.partitioned.QueryMessage;
+import org.apache.geode.internal.cache.partitioned.StreamingPartitionOperation;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
@@ -346,7 +346,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (isDebugEnabled) {
           logger.debug("Following remote members failed {} and retry flag is set to: {}", failedMembers, requiresRetry);
         }
-      } catch (com.gemstone.gemfire.cache.TimeoutException e) {  //Shobhit: Swallow remote exception if
+      } catch (org.apache.geode.cache.TimeoutException e) {  //Shobhit: Swallow remote exception if
                                                                  //         local exception is there.
         if (localFault == null) {
           throw new QueryException(e);

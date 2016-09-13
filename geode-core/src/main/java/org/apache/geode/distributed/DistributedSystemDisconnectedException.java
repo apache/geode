@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed;
+package org.apache.geode.distributed;
 
-import com.gemstone.gemfire.CancelException;
+import org.apache.geode.CancelException;
 
 /**
  * Thrown when a GemFire distributed system has been terminated.

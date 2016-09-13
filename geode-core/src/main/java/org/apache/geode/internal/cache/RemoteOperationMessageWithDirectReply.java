@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Used for partitioned region messages which support direct ack responses.
@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * or responses which are small.
  * 
  * Messages that extend this class *must* reply using the ReplySender returned
- * by {@link DistributionMessage#getReplySender(com.gemstone.gemfire.distributed.internal.DM)}
+ * by {@link DistributionMessage#getReplySender(org.apache.geode.distributed.internal.DM)}
  * 
  * Additionally, if the ReplyProcessor used for this message extends PartitionResponse, it should
  * pass false for the register parameter of the PartitionResponse.

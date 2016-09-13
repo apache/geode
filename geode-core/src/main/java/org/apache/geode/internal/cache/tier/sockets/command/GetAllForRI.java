@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets.command;
+package org.apache.geode.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ObjectPartList651;
-import com.gemstone.gemfire.internal.cache.tier.sockets.SerializedObjectPartList;
+import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.sockets.ObjectPartList651;
+import org.apache.geode.internal.cache.tier.sockets.SerializedObjectPartList;
 
 /**
  * A version of GetAll which in which the response contains the objects in

@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
 import java.util.Set;
 
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.management.internal.BaseManagementService;
-import com.gemstone.gemfire.management.membership.MembershipListener;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.internal.BaseManagementService;
+import org.apache.geode.management.membership.MembershipListener;
 
 
 

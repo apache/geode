@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.util.concurrent;
+package org.apache.geode.internal.util.concurrent;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a Future without a background thread. Instead of a Runnable

@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.xml.sax.*;
 
 import java.io.InputStream;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link
- * com.gemstone.gemfire.admin.DistributedSystemConfig} and vice versa.
+ * org.apache.geode.admin.DistributedSystemConfig} and vice versa.
  * It provides helper methods and constants.
  *
  * @since GemFire 4.0
@@ -34,7 +34,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
 
   /** The location of the DTD file */
   protected static final String DTD_LOCATION =
-    "/com/gemstone/gemfire/admin/doc-files/ds5_0.dtd";
+    "/org/apache/geode/admin/doc-files/ds5_0.dtd";
 
   /** The URL for the DTD */
   protected static final String SYSTEM_ID =
@@ -150,7 +150,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   }
 
   /**
-   * Throws a {@link com.gemstone.gemfire.cache.CacheXmlException}
+   * Throws a {@link org.apache.geode.cache.CacheXmlException}
    */
   public void error(SAXParseException ex) throws SAXException {
     IllegalArgumentException ex2 = new IllegalArgumentException(LocalizedStrings.ManagedEntityConfigXml_ERROR_WHILE_PARSING_XML.toLocalizedString());
@@ -159,7 +159,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   }
   
   /**
-   * Throws a {@link com.gemstone.gemfire.cache.CacheXmlException}
+   * Throws a {@link org.apache.geode.cache.CacheXmlException}
    */
   public void fatalError(SAXParseException ex) throws SAXException {
     IllegalArgumentException ex2 = new IllegalArgumentException(LocalizedStrings.ManagedEntityConfigXml_FATAL_ERROR_WHILE_PARSING_XML.toLocalizedString());

@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.wan;
+package org.apache.geode.internal.cache.wan;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.WrappedCallbackArgument;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.WrappedCallbackArgument;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -40,7 +40,7 @@ import java.util.Set;
  * one and replaced in the event sent to CacheListener, CacheWriter and
  * CacheLoader.
  * <p>
- * This class used to be in package <code>com.gemstone.gemfire.util</code>.
+ * This class used to be in package <code>org.apache.geode.util</code>.
  * 
  * @since GemFire 7.0
  */

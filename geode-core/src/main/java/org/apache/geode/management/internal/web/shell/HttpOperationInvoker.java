@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.shell;
+package org.apache.geode.management.internal.web.shell;
 
-import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
 /**
  * The HttpOperationInvoker interface is a marker interface for HTTP-based OperationInvokers.
  * <p/>
- * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker
+ * @see org.apache.geode.management.internal.cli.shell.OperationInvoker
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

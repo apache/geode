@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.persistence.logging;
+package org.apache.persistence.logging;
 
 import java.util.*;
 
@@ -560,7 +560,7 @@ public class Logger {
    * toString() method of objects that might cause NPEs.
    */
   public static String format(String format, Object[] objs) {
-    return com.gemstone.persistence.admin.Logger.format( format, objs );
+    return org.apache.persistence.admin.Logger.format( format, objs );
   }
 
 }

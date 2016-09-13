@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.security.generator;
+package org.apache.geode.security.generator;
 
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.security.templates.DummyAuthorization;
-import com.gemstone.gemfire.security.templates.UsernamePrincipal;
+import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.security.templates.DummyAuthorization;
+import org.apache.geode.security.templates.UsernamePrincipal;
 
 public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
 

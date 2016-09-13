@@ -15,11 +15,11 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter;
+package org.apache.geode.modules.session.internal.filter;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.modules.session.filter.SessionCachingFilter;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import com.mockrunner.mock.web.MockFilterConfig;
 import com.mockrunner.mock.web.WebMockObjectFactory;
 import org.junit.Before;

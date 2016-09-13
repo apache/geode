@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.parser.preprocessor;
+package org.apache.geode.management.internal.cli.parser.preprocessor;
 
 
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
 
 /**
  * The methods in this class will be used by the {@link Preprocessor} class to

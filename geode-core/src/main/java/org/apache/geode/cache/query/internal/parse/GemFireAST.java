@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
 //import antlr.collections.*;
-//import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.QCompiler;
+//import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.QCompiler;
 
 /**
  *

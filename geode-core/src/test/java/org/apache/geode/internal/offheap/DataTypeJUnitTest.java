@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -56,23 +56,23 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.distributed.internal.ReplyMessage;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.DataSerializableJUnitTest.DataSerializableImpl;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.admin.remote.ShutdownAllResponse;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.execute.data.CustId;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
-import com.gemstone.gemfire.pdx.internal.PdxType;
-import com.gemstone.gemfire.pdx.internal.TypeRegistry;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.DataSerializableJUnitTest.DataSerializableImpl;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the DataType support for off-heap MemoryInspector.
@@ -91,7 +91,7 @@ public class DataTypeJUnitTest {
     InternalDataSerializer.writeDSFID(value, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
-    assertEquals("com.gemstone.gemfire.internal.DataSerializableFixedID:" + ReplyMessage.class.getName(), type);
+    assertEquals("org.apache.geode.internal.DataSerializableFixedID:" + ReplyMessage.class.getName(), type);
   }
 
   @Test
@@ -102,7 +102,7 @@ public class DataTypeJUnitTest {
     InternalDataSerializer.writeDSFID(value, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
-    assertEquals("com.gemstone.gemfire.internal.DataSerializableFixedID:" + ShutdownAllResponse.class.getName(), type);
+    assertEquals("org.apache.geode.internal.DataSerializableFixedID:" + ShutdownAllResponse.class.getName(), type);
   }
 
   @Test
@@ -119,7 +119,7 @@ public class DataTypeJUnitTest {
     DataSerializer.writeInteger(someDSFIDInt, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
-    assertEquals("com.gemstone.gemfire.internal.DataSerializableFixedID:" + Integer.class.getName(), type);
+    assertEquals("org.apache.geode.internal.DataSerializableFixedID:" + Integer.class.getName(), type);
   }
 
   @Test
@@ -130,7 +130,7 @@ public class DataTypeJUnitTest {
     DataSerializer.writeClass(Integer.class, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
-    assertEquals("com.gemstone.gemfire.internal.DataSerializableFixedID:" + Integer.class.getName(), type);
+    assertEquals("org.apache.geode.internal.DataSerializableFixedID:" + Integer.class.getName(), type);
   }
 
   @Test
@@ -729,7 +729,7 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("com.gemstone.gemfire.Instantiator:com.gemstone.gemfire.internal.cache.execute.data.CustId");
+    assertThat(type).isEqualTo("org.apache.geode.Instantiator:org.apache.geode.internal.cache.execute.data.CustId");
   }
 
   @Test
@@ -752,7 +752,7 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("com.gemstone.gemfire.Instantiator:com.gemstone.gemfire.internal.cache.execute.data.CustId");
+    assertThat(type).isEqualTo("org.apache.geode.Instantiator:org.apache.geode.internal.cache.execute.data.CustId");
   }
 
   @Test
@@ -775,7 +775,7 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("com.gemstone.gemfire.Instantiator:com.gemstone.gemfire.internal.cache.execute.data.CustId");
+    assertThat(type).isEqualTo("org.apache.geode.Instantiator:org.apache.geode.internal.cache.execute.data.CustId");
   }
 
   @Test
@@ -786,7 +786,7 @@ public class DataTypeJUnitTest {
     DataSerializer.writeObject(value, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
-    assertEquals("com.gemstone.gemfire.DataSerializable:" + DataSerializableImpl.class.getName(), type);
+    assertEquals("org.apache.geode.DataSerializable:" + DataSerializableImpl.class.getName(), type);
   }
 
   @Test
@@ -826,7 +826,7 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("com.gemstone.gemfire.pdx.PdxInstance:PDXType");
+    assertThat(type).isEqualTo("org.apache.geode.pdx.PdxInstance:PDXType");
   }
 
   @Test
@@ -850,7 +850,7 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("com.gemstone.gemfire.pdx.PdxInstance: unknown id=" + somePdxTypeInt);
+    assertThat(type).isEqualTo("org.apache.geode.pdx.PdxInstance: unknown id=" + somePdxTypeInt);
   }
 
   @Test
@@ -867,7 +867,7 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("com.gemstone.gemfire.pdx.PdxInstance:PdxRegistryClosed");
+    assertThat(type).isEqualTo("org.apache.geode.pdx.PdxInstance:PdxRegistryClosed");
   }
 
   @Test

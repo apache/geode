@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.IncompatibleSystemException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.OperationCancelledException;
-import com.gemstone.gemfire.admin.RuntimeAdminException;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.DisconnectListener;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ReconnectListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LogWriterFactory;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.CancelException;
+import org.apache.geode.IncompatibleSystemException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.OperationCancelledException;
+import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
+import org.apache.geode.distributed.internal.InternalDistributedSystem.ReconnectListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
@@ -88,7 +88,7 @@ public
   
   /** 
    * Optional display name used for {@link 
-   * com.gemstone.gemfire.distributed.DistributedSystem#getName()}.
+   * org.apache.geode.distributed.DistributedSystem#getName()}.
    */
   private final String displayName;
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.functions;
+package org.apache.geode.management.internal.cli.functions;
 
 import static org.junit.Assert.*;
 
@@ -35,23 +35,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ListDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of the
  * ListDiskStoresFunction.
  * </p>
- * @see com.gemstone.gemfire.internal.cache.DiskStoreImpl
- * @see com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails
- * @see com.gemstone.gemfire.management.internal.cli.functions.ListDiskStoresFunction
+ * @see org.apache.geode.internal.cache.DiskStoreImpl
+ * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
+ * @see org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
  * @see org.junit.Assert

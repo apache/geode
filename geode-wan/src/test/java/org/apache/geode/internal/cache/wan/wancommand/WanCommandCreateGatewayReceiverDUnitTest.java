@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.wan.wancommand;
+package org.apache.geode.internal.cache.wan.wancommand;
 
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,10 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * DUnit tests for 'create gateway-receiver' command.
@@ -193,7 +193,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
         + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000"
         + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000"
         + " --" + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000"
-        + " --" + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER + "=com.gemstone.gemfire.cache30.MyGatewayTransportFilter1";
+        + " --" + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -216,7 +216,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
     }
 
     List<String> transportFilters = new ArrayList<String>();
-    transportFilters.add("com.gemstone.gemfire.cache30.MyGatewayTransportFilter1");
+    transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
     
     vm3.invoke(() -> verifyReceiverCreationWithAttributes( true, 10000,
             11000, "localhost", 100000, 512000, transportFilters ));
@@ -255,7 +255,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
         + " --" + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE
         + "=512000" + " --"
         + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER
-        + "=com.gemstone.gemfire.cache30.MyGatewayTransportFilter1,com.gemstone.gemfire.cache30.MyGatewayTransportFilter2";
+        + "=org.apache.geode.cache30.MyGatewayTransportFilter1,org.apache.geode.cache30.MyGatewayTransportFilter2";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -278,8 +278,8 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
     }
 
     List<String> transportFilters = new ArrayList<String>();
-    transportFilters.add("com.gemstone.gemfire.cache30.MyGatewayTransportFilter1");
-    transportFilters.add("com.gemstone.gemfire.cache30.MyGatewayTransportFilter2");
+    transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
+    transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
     
     vm3.invoke(() -> verifyReceiverCreationWithAttributes( !GatewayReceiver.DEFAULT_MANUAL_START, 10000,
             11000, "localhost", 100000, 512000, transportFilters ));

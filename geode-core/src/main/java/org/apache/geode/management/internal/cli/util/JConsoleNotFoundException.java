@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.util;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * The JConsoleNotFoundException class is a RuntimeException class that indicates that the JDK JConsole tool could
  * not be located in the file system.
  * </p>
- * @see com.gemstone.gemfire.GemFireException
+ * @see org.apache.geode.GemFireException
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.util.Collections;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.pdx.PdxInitializationException;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.pdx.PdxInitializationException;
 
 /**
  * A type registration that does nothing. Used if the user

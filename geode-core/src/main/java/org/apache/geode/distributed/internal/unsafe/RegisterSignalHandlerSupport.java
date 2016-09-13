@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.unsafe;
+package org.apache.geode.distributed.internal.unsafe;
 
 /**
  * The RegisterSignalHandlerSupport class is an ugly hack!

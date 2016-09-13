@@ -20,4 +20,4 @@
  * Utility classes for testing the lucene functionality.
  */
 
-package com.gemstone.gemfire.cache.lucene.test;
+package org.apache.geode.cache.lucene.test;

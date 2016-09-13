@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.membership;
+package org.apache.geode.management.membership;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * An event delivered to a {@link ClientMembershipListener} when this process
@@ -29,14 +29,14 @@ public interface ClientMembershipEvent {
   /**
    * Returns the the member that connected or disconnected.
    *
-   * @see com.gemstone.gemfire.distributed.DistributedSystem#getDistributedMember
+   * @see org.apache.geode.distributed.DistributedSystem#getDistributedMember
    */
   public DistributedMember getMember();
 
   /**
    * Returns the id of the member that connected or disconnected.
    *
-   * @see com.gemstone.gemfire.distributed.DistributedMember#getId
+   * @see org.apache.geode.distributed.DistributedMember#getId
    */
   public String getMemberId();
 

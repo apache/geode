@@ -16,19 +16,19 @@
  */
 
 
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-//import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.admin.RuntimeAdminException;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-//import com.gemstone.gemfire.internal.*;
-//import com.gemstone.gemfire.internal.admin.*;
-//import com.gemstone.gemfire.distributed.internal.*;
-//import com.gemstone.gemfire.util.*;
+//import org.apache.geode.*;
+import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+//import org.apache.geode.internal.*;
+//import org.apache.geode.internal.admin.*;
+//import org.apache.geode.distributed.internal.*;
+//import org.apache.geode.util.*;
 
 
 import java.io.*;

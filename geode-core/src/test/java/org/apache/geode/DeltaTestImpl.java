@@ -17,15 +17,15 @@
 /**
  * 
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
 
 /**
  * Sample test class which implements Delta.
@@ -257,7 +257,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.Delta#fromDelta(java.io.DataInput)
+   * @see org.apache.geode.Delta#fromDelta(java.io.DataInput)
    */
   public void fromDelta(DataInput in) throws IOException {
     try {
@@ -325,7 +325,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.Delta#hasDelta()
+   * @see org.apache.geode.Delta#hasDelta()
    */
   public boolean hasDelta() {
     return this.hasDelta;
@@ -334,7 +334,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.Delta#toDelta(java.io.DataOutput)
+   * @see org.apache.geode.Delta#toDelta(java.io.DataOutput)
    */
   public void toDelta(DataOutput out) throws IOException {
     try {

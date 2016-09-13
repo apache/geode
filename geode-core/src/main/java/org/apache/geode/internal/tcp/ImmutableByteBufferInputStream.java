@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.internal.offheap.StoredObject;
+import org.apache.geode.internal.offheap.StoredObject;
 
 /**
  * You should only create an instance of this class if the bytes this buffer reads

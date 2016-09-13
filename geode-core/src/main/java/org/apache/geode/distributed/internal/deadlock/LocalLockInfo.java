@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.deadlock;
+package org.apache.geode.distributed.internal.deadlock;
 
 import java.io.Serializable;
 import java.lang.management.LockInfo;
 import java.lang.management.MonitorInfo;
 
-import com.gemstone.gemfire.internal.concurrent.LI;
+import org.apache.geode.internal.concurrent.LI;
 
 /**
  * This class is serializable version of the java 1.6 lock info

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.DataSerializer;
 
 /**
  * An interface that contains a bunch of static final values used for the

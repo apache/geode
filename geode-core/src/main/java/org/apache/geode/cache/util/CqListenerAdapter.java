@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
 /**
  * Abstract class for CqListener. 
@@ -26,8 +26,8 @@ package com.gemstone.gemfire.cache.util;
  * @since GemFire 5.1
  */
 
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqEvent;
 
 public abstract class CqListenerAdapter implements CqListener {
   
@@ -58,7 +58,7 @@ public abstract class CqListenerAdapter implements CqListener {
   * <p>It is possible for this method to be called multiple times on a single
   * callback instance, so implementations must be tolerant of this.
   *
-  * @see com.gemstone.gemfire.cache.CacheCallback#close
+  * @see org.apache.geode.cache.CacheCallback#close
   */
   public void close() {
   }

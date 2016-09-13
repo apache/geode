@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisee;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 
 /**
  * Distributed cache object (typically a <code>Region</code>) which uses

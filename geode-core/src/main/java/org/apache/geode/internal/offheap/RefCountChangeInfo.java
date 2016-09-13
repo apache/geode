@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.offheap;
+package org.apache.geode.internal.offheap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import com.gemstone.gemfire.internal.shared.StringPrintWriter;
+import org.apache.geode.internal.shared.StringPrintWriter;
 
 @SuppressWarnings("serial")
 /**
@@ -116,7 +116,7 @@ public class RefCountChangeInfo extends Throwable {
     // skip the initial elements from the offheap package
     int skip=0;
     for (int i=0; i < trace.length; i++) {
-      if(!(trace[i].toString().contains("com.gemstone.gemfire.internal.offheap"))) {
+      if(!(trace[i].toString().contains("org.apache.geode.internal.offheap"))) {
         skip = i;
         break;
       }

@@ -16,11 +16,11 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.distributed.internal.*;
-//import com.gemstone.gemfire.*;
-//import com.gemstone.gemfire.internal.*;
+import org.apache.geode.distributed.internal.*;
+//import org.apache.geode.*;
+//import org.apache.geode.internal.*;
 import java.io.*;
 
 

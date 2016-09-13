@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership;
 
 import java.io.NotSerializableException;
 import java.util.Map;
@@ -22,11 +22,11 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReadWriteLock;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
  * A MembershipManager is responsible for reporting a MemberView, as well as

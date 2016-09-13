@@ -16,16 +16,16 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-//import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.admin.GemFireHealthConfig;
-//import com.gemstone.gemfire.internal.*;
-//import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.distributed.internal.*;
+//import org.apache.geode.*;
+import org.apache.geode.admin.GemFireHealthConfig;
+//import org.apache.geode.internal.*;
+//import org.apache.geode.internal.admin.*;
+import org.apache.geode.distributed.internal.*;
 import java.io.*;
 //import java.util.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * The response to adding a health listener.

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin;
+package org.apache.geode.internal.admin;
 
 /**
  * Describes a cache from a GemFireVM's point of view.
@@ -51,7 +51,7 @@ public interface CacheInfo {
   
   /**
    * Gets the number of seconds a cache
-   * {@link com.gemstone.gemfire.cache.Region#get(Object) get} operation
+   * {@link org.apache.geode.cache.Region#get(Object) get} operation
    * can spend searching for a value before it times out.
    * The search includes any time spent loading the object.
    * When the search times out it causes the get to fail by throwing

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.operations;
+package org.apache.geode.cache.operations;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.operations.OperationContext;
+import org.apache.geode.cache.operations.OperationContext;
 
 /**
  * Encapsulates a cache query operation for both the pre-operation and

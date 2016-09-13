@@ -21,7 +21,7 @@
  * without acknowledgement. Other contributors include Andrew Wright,
  * Jeffrey Hayes, Pat Fischer, Mike Judd.
  */
-package com.gemstone.gemfire.util;
+package org.apache.geode.util;
 
 import static org.junit.Assert.*;
 
@@ -117,7 +117,7 @@ public class JSR166TestCase { // TODO: reformat
     public static long MEDIUM_DELAY_MS;
     public static long LONG_DELAY_MS;
 
-    public static Class<?> MAP_CLASS = com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.class;
+    public static Class<?> MAP_CLASS = org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.class;
 
     /**
      * Return the shortest timed delay. This could

@@ -6,7 +6,7 @@
 # full class name.  The package components can be delimited with a period
 # or a comma.  Don't include ".class" or ".java" at the end of the name.
 
-# example:  50174,com/gemstone/gemfire/distributed/internal/StartupResponseWithVersionMessage
+# example:  50174,org/apache/geode/distributed/internal/StartupResponseWithVersionMessage
 # example:  50175,com.gemstone.org.jgroups.Message$Header
 
 

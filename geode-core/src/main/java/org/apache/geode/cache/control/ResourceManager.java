@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.control;
+package org.apache.geode.cache.control;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.LowMemoryException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.query.QueryService;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.query.QueryService;
 
 /**
  * Provides support for managing resources used by the local
- * {@link com.gemstone.gemfire.cache.Cache}.
+ * {@link org.apache.geode.cache.Cache}.
  * <p>
  * Re-balancing the GemFire Cache resources can be accomplished using a {@link
  * RebalanceOperation}:
@@ -95,7 +95,7 @@ public interface ResourceManager {
    * <li>{@link Region#create(Object, Object)}
    * <li>{@link Region#create(Object, Object, Object)}
    * <li>{@link Region#putAll(java.util.Map)}
-   * <li>{@linkplain QueryService#createIndex(String, com.gemstone.gemfire.cache.query.IndexType, String, String) index creation}
+   * <li>{@linkplain QueryService#createIndex(String, org.apache.geode.cache.query.IndexType, String, String) index creation}
    * <li>Execution of {@link Function}s whose {@link Function#optimizeForWrite()} returns true.
    * </ul>
    *
@@ -158,7 +158,7 @@ public interface ResourceManager {
    * <li>{@link Region#create(Object, Object)}
    * <li>{@link Region#create(Object, Object, Object)}
    * <li>{@link Region#putAll(java.util.Map)}
-   * <li>{@linkplain QueryService#createIndex(String, com.gemstone.gemfire.cache.query.IndexType, String, String) index creation}
+   * <li>{@linkplain QueryService#createIndex(String, org.apache.geode.cache.query.IndexType, String, String) index creation}
    * <li>Execution of {@link Function}s whose {@link Function#optimizeForWrite()} returns true.
    * </ul>
    *

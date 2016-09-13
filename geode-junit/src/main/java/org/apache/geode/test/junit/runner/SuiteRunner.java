@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.test.junit.runner;
+package org.apache.geode.test.junit.runner;
 
 import java.util.ArrayList;
 import java.util.List;

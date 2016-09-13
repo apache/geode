@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.apache.geode.CancelException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
  * Indicates that the caching system has 

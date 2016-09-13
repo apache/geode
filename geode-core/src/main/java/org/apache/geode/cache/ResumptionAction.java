@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.util.*;
@@ -25,7 +25,7 @@ import java.util.*;
  * Specifies how the region is affected by resumption of reliability when
  * one or more missing required roles return to the distributed membership.  
  * The <code>ResumptionAction</code> is specified when configuring a region's 
- * {@link com.gemstone.gemfire.cache.MembershipAttributes}.
+ * {@link org.apache.geode.cache.MembershipAttributes}.
  * 
  * @deprecated this API is scheduled to be removed
  */

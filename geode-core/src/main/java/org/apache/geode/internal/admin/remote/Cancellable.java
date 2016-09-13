@@ -16,7 +16,7 @@
  */
    
    
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
 /**
  * This interface is implemented by AdminMessages that want

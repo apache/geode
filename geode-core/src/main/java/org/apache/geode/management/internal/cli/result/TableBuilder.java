@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.result;
+package org.apache.geode.management.internal.cli.result;
 
 /**
  * Helper class to build rows of columnized strings & build a table from those 
@@ -62,8 +62,8 @@ package com.gemstone.gemfire.management.internal.cli.result;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class TableBuilder {
 

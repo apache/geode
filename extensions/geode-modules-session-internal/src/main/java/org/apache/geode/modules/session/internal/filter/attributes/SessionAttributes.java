@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-package com.gemstone.gemfire.modules.session.internal.filter.attributes;
+package org.apache.geode.modules.session.internal.filter.attributes;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.modules.session.internal.filter.GemfireHttpSession;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 
 import java.util.Set;
 

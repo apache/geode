@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin;
+package org.apache.geode.admin;
 
-import com.gemstone.gemfire.cache.Operation;
+import org.apache.geode.cache.Operation;
 /**
  * An event that describes an operation on a cache.
  * Instances of this are delivered to a {@link SystemMemberCacheListener} when a
  * a cache is created or closed.
  *
  * @since GemFire 5.0
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberCacheEvent extends SystemMembershipEvent {
   /**

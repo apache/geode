@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.web.http;
+package org.apache.geode.management.internal.web.http;
 
 import java.net.URI;
 import java.util.Collections;
@@ -22,12 +22,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.internal.lang.Filter;
-import com.gemstone.gemfire.internal.lang.ObjectUtils;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.util.UriUtils;
+import org.apache.geode.internal.lang.Filter;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.util.UriUtils;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -53,9 +53,9 @@ import org.springframework.web.util.UriTemplate;
  * HTTP client technology, like the Java HttpURLConnection or Apache's HTTP components, and so on.
  * <p/>
  * @see java.net.URI
- * @see com.gemstone.gemfire.management.internal.web.http.HttpHeader
- * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
- * @see com.gemstone.gemfire.management.internal.web.domain.Link
+ * @see org.apache.geode.management.internal.web.http.HttpHeader
+ * @see org.apache.geode.management.internal.web.http.HttpMethod
+ * @see org.apache.geode.management.internal.web.domain.Link
  * @see org.springframework.http.HttpEntity
  * @see org.springframework.http.HttpHeaders
  * @see org.springframework.http.HttpMethod
@@ -86,7 +86,7 @@ public class ClientHttpRequest implements HttpRequest {
    * and method for the client's HTTP request.
    * <p/>
    * @param link the Link encapsulating the URI and method for the client's HTTP request.
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.domain.Link
    */
   public ClientHttpRequest(final Link link) {
     assert link != null : "The Link containing the URI and method for the client's HTTP request cannot be null!";
@@ -109,7 +109,7 @@ public class ClientHttpRequest implements HttpRequest {
    * Gets the Link containing the URI and method used to send the client's HTTP request.
    * <p/>
    * @return the Link encapsulating the URI and method for the client's HTTP request.
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.domain.Link
    */
   public final Link getLink() {
     return link;
@@ -122,8 +122,8 @@ public class ClientHttpRequest implements HttpRequest {
    * <p/>
    * @return a Spring HttpMethod enumerated value indicating the operation to perform on the resource identified in the
    * client's HTTP request.
-   * @see com.gemstone.gemfire.management.internal.web.http.HttpMethod
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link#getMethod()
+   * @see org.apache.geode.management.internal.web.http.HttpMethod
+   * @see org.apache.geode.management.internal.web.domain.Link#getMethod()
    * @see org.springframework.http.HttpMethod
    * @see org.springframework.http.HttpRequest#getMethod()
    */

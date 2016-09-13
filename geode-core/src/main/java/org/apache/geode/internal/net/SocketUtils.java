@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.net;
+package org.apache.geode.internal.net;
 
 import java.io.IOException;
 import java.net.ServerSocket;

@@ -16,10 +16,10 @@
  */
 
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
-import com.gemstone.gemfire.cache.query.internal.QCompiler;
+import org.apache.geode.cache.query.internal.QCompiler;
 
 public class ASTCompareOp extends GemFireAST {
   private static final long serialVersionUID = 2764710765423856496L;

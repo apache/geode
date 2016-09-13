@@ -19,13 +19,13 @@
  *
  * Created on February 11, 2005, 4:25 PM
  */
-package com.gemstone.gemfire.cache.query.internal.index;
+package org.apache.geode.cache.query.internal.index;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.internal.cache.RegionEntry;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.RegionEntry;
 
 /**
  * 

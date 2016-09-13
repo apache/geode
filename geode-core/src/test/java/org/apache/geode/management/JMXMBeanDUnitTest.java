@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management;
+package org.apache.geode.management;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
@@ -38,19 +38,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.LocatorLauncher;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.rules.DistributedRestoreSystemProperties;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTemporaryFolder;
-import com.gemstone.gemfire.util.test.TestUtil;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurableComponent;
+import org.apache.geode.test.dunit.DistributedTestCase;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.util.test.TestUtil;
 
 public class JMXMBeanDUnitTest extends DistributedTestCase {
 
@@ -255,11 +255,11 @@ public class JMXMBeanDUnitTest extends DistributedTestCase {
   }
 
   private String getMultiKeyKeystore() {
-    return TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKey.jks");
+    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks");
   }
 
   private String getMultiKeyTruststore() {
-    return TestUtil.getResourcePath(getClass(), "/com/gemstone/gemfire/internal/net/multiKeyTrust.jks");
+    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks");
   }
 
   private Properties configureLocatorProperties(final Properties properties,

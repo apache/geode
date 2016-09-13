@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
-import com.gemstone.gemfire.cache.query.CqAttributesMutator;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.CqAttributesMutator;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Supports modification of certain cq attributes after the cq has been
@@ -43,7 +43,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
   /**
    * Removes a cq listener from the list of cq listeners on this CqQuery.
    * Does nothing if the specified listener has not been added.
-   * If the specified listener has been added then {@link com.gemstone.gemfire.cache.CacheCallback#close} will
+   * If the specified listener has been added then {@link org.apache.geode.cache.CacheCallback#close} will
    * be called on it; otherwise does nothing.
    * @param aListener the cq listener to remove from the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null

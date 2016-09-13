@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.memcached;
+package org.apache.geode.internal.memcached;
 
 import java.nio.ByteBuffer;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * All memcached commands specified by {@link Command}

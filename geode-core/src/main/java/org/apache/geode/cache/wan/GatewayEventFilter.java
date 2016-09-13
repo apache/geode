@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.wan;
+package org.apache.geode.cache.wan;
 
-import com.gemstone.gemfire.cache.CacheCallback;
+import org.apache.geode.cache.CacheCallback;
 
 /**
  * Callback for users to filter out events before dispatching to remote

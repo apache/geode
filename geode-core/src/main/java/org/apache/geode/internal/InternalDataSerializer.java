@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
-import com.gemstone.gemfire.pdx.NonPortableClassException;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.internal.*;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
+import org.apache.geode.pdx.NonPortableClassException;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.internal.*;
+import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
@@ -1566,7 +1566,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    */
   private static boolean isGemfireObject(Object o) {
     return ((o instanceof Function) // fixes 43691
-            || o.getClass().getName().startsWith("com.gemstone.")
+            || o.getClass().getName().startsWith("org.apache.")
              || o.getClass().getName().startsWith("org.apache.geode"))
       && !(o instanceof PdxSerializerObject);
   }

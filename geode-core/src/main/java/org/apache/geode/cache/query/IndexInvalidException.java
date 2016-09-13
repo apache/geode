@@ -20,9 +20,9 @@
  * Created on March 16, 2005, 7:40 PM
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * Thrown if the index definition is not valid.

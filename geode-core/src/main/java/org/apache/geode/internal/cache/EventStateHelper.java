@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
-import com.gemstone.gemfire.internal.cache.EventTracker.EventSeqnoHolder;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.RegionStateMessage;
-import com.gemstone.gemfire.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
-import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
+import org.apache.geode.internal.cache.EventTracker.EventSeqnoHolder;
+import org.apache.geode.internal.cache.InitialImageOperation.RegionStateMessage;
+import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 
 import java.io.DataInput;
 import java.io.DataOutput;

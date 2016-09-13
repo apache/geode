@@ -17,26 +17,26 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.TXJUnitTest;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.TXJUnitTest;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *
@@ -45,7 +45,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 public class PRTXJUnitTest extends TXJUnitTest {
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.TXTest#createRegion()
+   * @see org.apache.geode.TXTest#createRegion()
    */
   @Override
   protected void createRegion() throws Exception {
@@ -63,14 +63,14 @@ public class PRTXJUnitTest extends TXJUnitTest {
     this.cache.setRegionByPath(this.region.getFullPath(), (LocalRegion)this.region);
   }
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.TXTest#checkUserAttributeConflict(com.gemstone.gemfire.internal.cache.TXManagerImpl)
+   * @see org.apache.geode.TXTest#checkUserAttributeConflict(org.apache.geode.internal.cache.TXManagerImpl)
    */
   @Override
   protected void checkUserAttributeConflict(CacheTransactionManager txMgrImpl) {
   }
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.TXTest#checkSubRegionCollecection(com.gemstone.gemfire.internal.cache.LocalRegion)
+   * @see org.apache.geode.TXTest#checkSubRegionCollecection(org.apache.geode.internal.cache.LocalRegion)
    */
   @Override
   protected void checkSubRegionCollecection(Region reg1) {
@@ -123,7 +123,7 @@ public class PRTXJUnitTest extends TXJUnitTest {
     }
 
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.cache.PartitionedRegion#localDestroy(java.lang.Object, java.lang.Object)
+     * @see org.apache.geode.internal.cache.PartitionedRegion#localDestroy(java.lang.Object, java.lang.Object)
      */
     @Override
     public void localDestroy(Object key, Object callbackArgument)
@@ -131,7 +131,7 @@ public class PRTXJUnitTest extends TXJUnitTest {
       super.destroy(key, callbackArgument);
     }
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.cache.PartitionedRegion#localInvalidate(java.lang.Object, java.lang.Object)
+     * @see org.apache.geode.internal.cache.PartitionedRegion#localInvalidate(java.lang.Object, java.lang.Object)
      */
     @Override
     public void localInvalidate(Object key, Object callbackArgument)
@@ -139,7 +139,7 @@ public class PRTXJUnitTest extends TXJUnitTest {
       super.invalidate(key, callbackArgument);
     }
     /* (non-Javadoc)
-     * @see com.gemstone.gemfire.internal.cache.PartitionedRegion#localInvalidateRegion(java.lang.Object)
+     * @see org.apache.geode.internal.cache.PartitionedRegion#localInvalidateRegion(java.lang.Object)
      */
     @Override
     public void localInvalidateRegion(Object callbackArgument) {

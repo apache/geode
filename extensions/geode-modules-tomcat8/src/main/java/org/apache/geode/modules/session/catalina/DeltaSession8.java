@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.session.catalina;
+package org.apache.geode.modules.session.catalina;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -41,19 +41,19 @@ import org.apache.catalina.session.StandardSession;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Delta;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.lru.Sizeable;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.modules.gatewaydelta.GatewayDelta;
-import com.gemstone.gemfire.modules.gatewaydelta.GatewayDeltaEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
-import com.gemstone.gemfire.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.modules.gatewaydelta.GatewayDelta;
+import org.apache.geode.modules.gatewaydelta.GatewayDeltaEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
 
 
 @SuppressWarnings("serial")

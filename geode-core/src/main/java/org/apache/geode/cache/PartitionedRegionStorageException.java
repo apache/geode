@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * 
@@ -65,7 +65,7 @@ package com.gemstone.gemfire.cache;
  * </p>
  * 
  * 
- * @see com.gemstone.gemfire.cache.PartitionAttributesFactory
+ * @see org.apache.geode.cache.PartitionAttributesFactory
  * @since GemFire 5.0
  */
 public class PartitionedRegionStorageException extends CacheRuntimeException  {

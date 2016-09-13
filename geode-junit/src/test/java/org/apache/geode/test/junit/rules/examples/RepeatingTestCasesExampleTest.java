@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.junit.rules.examples;
+package org.apache.geode.test.junit.rules.examples;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -27,17 +27,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.Repeat;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.gemstone.gemfire.test.junit.rules.RepeatRule;
+import org.apache.geode.test.junit.Repeat;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.RepeatRule;
 
 /**
  * The RepeatingTestCasesExampleTest class is a test suite of test cases testing the contract and functionality
  * of the JUnit {@literal @}Repeat annotation on a test suite class test case methods.
  *
  * @see org.junit.Test
- * @see com.gemstone.gemfire.test.junit.Repeat
- * @see com.gemstone.gemfire.test.junit.rules.RepeatRule
+ * @see org.apache.geode.test.junit.Repeat
+ * @see org.apache.geode.test.junit.rules.RepeatRule
  */
 @Category(UnitTest.class)
 public class RepeatingTestCasesExampleTest {

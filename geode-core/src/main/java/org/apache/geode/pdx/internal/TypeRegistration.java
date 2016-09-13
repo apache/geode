@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx.internal;
+package org.apache.geode.pdx.internal;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender;
 
 /**
  * Interface for the part of the type registry

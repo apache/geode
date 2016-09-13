@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -38,30 +38,30 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;
 
-import com.gemstone.gemfire.management.cli.CommandProcessingException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandMultiModeOptionException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliCommandOptionException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.CliException;
-import com.gemstone.gemfire.management.internal.cli.exceptions.ExceptionHandler;
-import com.gemstone.gemfire.management.internal.cli.help.format.NewHelp;
-import com.gemstone.gemfire.management.internal.cli.help.utils.HelpUtils;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.modes.CommandModes;
-import com.gemstone.gemfire.management.internal.cli.modes.CommandModes.CommandMode;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
-import com.gemstone.gemfire.management.internal.cli.parser.AvailabilityTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.GfshMethodTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.MethodParameter;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
-import com.gemstone.gemfire.management.internal.cli.parser.Parameter;
-import com.gemstone.gemfire.management.internal.cli.parser.ParserUtils;
-import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedInput;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.util.CLIConsoleBufferUtil;
+import org.apache.geode.management.cli.CommandProcessingException;
+import org.apache.geode.management.internal.cli.exceptions.CliCommandMultiModeOptionException;
+import org.apache.geode.management.internal.cli.exceptions.CliCommandOptionException;
+import org.apache.geode.management.internal.cli.exceptions.CliException;
+import org.apache.geode.management.internal.cli.exceptions.ExceptionHandler;
+import org.apache.geode.management.internal.cli.help.format.NewHelp;
+import org.apache.geode.management.internal.cli.help.utils.HelpUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.modes.CommandModes;
+import org.apache.geode.management.internal.cli.modes.CommandModes.CommandMode;
+import org.apache.geode.management.internal.cli.parser.Argument;
+import org.apache.geode.management.internal.cli.parser.AvailabilityTarget;
+import org.apache.geode.management.internal.cli.parser.CommandTarget;
+import org.apache.geode.management.internal.cli.parser.GfshMethodTarget;
+import org.apache.geode.management.internal.cli.parser.MethodParameter;
+import org.apache.geode.management.internal.cli.parser.Option;
+import org.apache.geode.management.internal.cli.parser.OptionSet;
+import org.apache.geode.management.internal.cli.parser.Parameter;
+import org.apache.geode.management.internal.cli.parser.ParserUtils;
+import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
+import org.apache.geode.management.internal.cli.parser.preprocessor.PreprocessorUtils;
+import org.apache.geode.management.internal.cli.parser.preprocessor.TrimmedInput;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.util.CLIConsoleBufferUtil;
 
 /**
  * Implementation of the {@link Parser} interface for GemFire SHell (gfsh)
@@ -91,7 +91,7 @@ public class GfshParser implements Parser {
 
   public GfshParser(CommandManager commandManager) {
     // cliStringBundle = new
-    // CliStringResourceBundle("com/gemstone/gemfire/management/internal/cli/i18n/CliStringResourceBundle");
+    // CliStringResourceBundle("org/apache/geode/management/internal/cli/i18n/CliStringResourceBundle");
     this.commandManager = commandManager;
     if (CliUtil.isGfshVM()) {
       consoleLogger = Logger.getLogger(this.getClass().getCanonicalName());

@@ -16,7 +16,7 @@
   limitations under the License.
 -->
 <!--
-  Used by com/gemstone/gemfire/management/internal/configuration/SharedConfigurationUsingDirDUnitTest.java
+  Used by org/apache/geode/management/internal/configuration/SharedConfigurationUsingDirDUnitTest.java
 -->
 <cache xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

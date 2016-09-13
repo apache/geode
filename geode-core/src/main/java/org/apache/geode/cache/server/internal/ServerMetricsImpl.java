@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.server.internal;
+package org.apache.geode.cache.server.internal;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.cache.server.ServerMetrics;
+import org.apache.geode.cache.server.ServerMetrics;
 
 /**
  * Metrics describing the load on a  bridge server.

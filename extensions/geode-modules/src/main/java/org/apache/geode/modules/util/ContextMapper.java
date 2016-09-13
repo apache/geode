@@ -14,9 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.util;
+package org.apache.geode.modules.util;
 
-import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
+import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 
 import java.util.HashMap;
 import java.util.Map;

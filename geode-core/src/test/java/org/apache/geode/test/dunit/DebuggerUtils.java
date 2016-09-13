@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.test.dunit;
+package org.apache.geode.test.dunit;
 
-import com.gemstone.gemfire.internal.util.DebuggerSupport;
+import org.apache.geode.internal.util.DebuggerSupport;
 
 /**
  * <code>DebuggerUtils</code> provides static utility methods that facilitate
@@ -26,14 +26,14 @@ import com.gemstone.gemfire.internal.util.DebuggerSupport;
  * however, they are intended to be referenced through static import:
  *
  * <pre>
- * import static com.gemstone.gemfire.test.dunit.DebuggerUtils.*;
+ * import static org.apache.geode.test.dunit.DebuggerUtils.*;
  *    ...
  *    attachDebugger(...);
  * </pre>
  *
  * Extracted from DistributedTestCase.
  * 
- * @see com.gemstone.gemfire.internal.util.DebuggerSupport
+ * @see org.apache.geode.internal.util.DebuggerSupport
  */
 public class DebuggerUtils {
 

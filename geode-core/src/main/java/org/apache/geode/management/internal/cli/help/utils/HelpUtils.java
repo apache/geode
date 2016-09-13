@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.help.utils;
+package org.apache.geode.management.internal.cli.help.utils;
 
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.internal.cli.help.format.*;
-import com.gemstone.gemfire.management.internal.cli.modes.CommandModes;
-import com.gemstone.gemfire.management.internal.cli.modes.CommandModes.CommandMode;
-import com.gemstone.gemfire.management.internal.cli.parser.Argument;
-import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
-import com.gemstone.gemfire.management.internal.cli.parser.Option;
-import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.help.format.*;
+import org.apache.geode.management.internal.cli.modes.CommandModes;
+import org.apache.geode.management.internal.cli.modes.CommandModes.CommandMode;
+import org.apache.geode.management.internal.cli.parser.Argument;
+import org.apache.geode.management.internal.cli.parser.CommandTarget;
+import org.apache.geode.management.internal.cli.parser.Option;
+import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +33,7 @@ import java.util.List;
  * @since GemFire 7.0
  */
 public class HelpUtils {
-  public static final String EXE_PREFIX_FOR_EXTERNAL_HELP = com.gemstone.gemfire.management.internal.cli.shell.Gfsh.GFSH_APP_NAME + " ";
+  public static final String EXE_PREFIX_FOR_EXTERNAL_HELP = org.apache.geode.management.internal.cli.shell.Gfsh.GFSH_APP_NAME + " ";
   public static final String HELP__COMMAND_AVAILABLE      = "Available";
   public static final String HELP__COMMAND_NOTAVAILABLE   = "Not Available";
 

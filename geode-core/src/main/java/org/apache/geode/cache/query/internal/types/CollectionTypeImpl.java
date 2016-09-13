@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.query.internal.types;
+package org.apache.geode.cache.query.internal.types;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.internal.NWayMergeResults;
-import com.gemstone.gemfire.cache.query.internal.Ordered;
-import com.gemstone.gemfire.cache.query.internal.ResultsSet;
-import com.gemstone.gemfire.cache.query.internal.SortedResultSet;
-import com.gemstone.gemfire.cache.query.internal.SortedStructSet;
-import com.gemstone.gemfire.cache.query.internal.StructSet;
-import com.gemstone.gemfire.cache.query.types.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.internal.NWayMergeResults;
+import org.apache.geode.cache.query.internal.Ordered;
+import org.apache.geode.cache.query.internal.ResultsSet;
+import org.apache.geode.cache.query.internal.SortedResultSet;
+import org.apache.geode.cache.query.internal.SortedStructSet;
+import org.apache.geode.cache.query.internal.StructSet;
+import org.apache.geode.cache.query.types.*;
 
 /**
  * Implementation of CollectionType

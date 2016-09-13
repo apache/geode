@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.management.internal.FederationComponent;
+import org.apache.geode.management.internal.FederationComponent;
 
 /**
  * Internal aggregate handlers could(they can be independent of this interface

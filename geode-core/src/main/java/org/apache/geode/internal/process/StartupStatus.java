@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.i18n.StringId;
 
 /**
  * Extracted from LogWriterImpl and changed to static.

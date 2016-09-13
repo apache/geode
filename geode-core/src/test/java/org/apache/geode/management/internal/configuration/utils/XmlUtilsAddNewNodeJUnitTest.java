@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.utils;
+package org.apache.geode.management.internal.configuration.utils;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.cache.extension.Extension;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.internal.cache.extension.Extension;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -42,7 +42,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -58,7 +58,7 @@ import static org.junit.Assert.assertEquals;
 public class XmlUtilsAddNewNodeJUnitTest {
 
   private static final String TEST_PREFIX = "test";
-  private static final String TEST_NAMESPACE = "urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsAddNewNodeJUnitTest";
+  private static final String TEST_NAMESPACE = "urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsAddNewNodeJUnitTest";
   private static final XPathContext xPathContext = new XPathContext();
 
   private static Cache cache;

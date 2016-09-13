@@ -19,7 +19,7 @@
  *
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 /**
  * This class is intended to hold a single 'observer' which will receive
@@ -35,7 +35,7 @@ package com.gemstone.gemfire.internal.cache;
  * of interest ... }
  * 
  * CacheObserver old = CacheObserverHolder.setInstance(new MyCacheObserver());
- * com.gemstone.gemfire.internal.cache.LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER=true;
+ * org.apache.geode.internal.cache.LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER=true;
  * 
  * try { Call region methods here } finally { // reset to the original
  * CacheObserver. CacheObserverHolder.setInstance(old); }

@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.tx;
+package org.apache.geode.internal.cache.tx;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.cache.DistTXCommitMessage;
-import com.gemstone.gemfire.internal.cache.DistTXPrecommitMessage;
-import com.gemstone.gemfire.internal.cache.DistTXCoordinatorInterface;
-import com.gemstone.gemfire.internal.cache.DistTXRollbackMessage;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.cache.DistTXCommitMessage;
+import org.apache.geode.internal.cache.DistTXPrecommitMessage;
+import org.apache.geode.internal.cache.DistTXCoordinatorInterface;
+import org.apache.geode.internal.cache.DistTXRollbackMessage;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * 

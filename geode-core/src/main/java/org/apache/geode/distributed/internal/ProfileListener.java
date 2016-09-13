@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal;
+package org.apache.geode.distributed.internal;
 
-import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 
 /**
  * Callback for changes to profiles in a DistributionAdvisor. A ProfileListener

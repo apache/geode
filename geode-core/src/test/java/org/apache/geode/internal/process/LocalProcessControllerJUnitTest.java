@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import static org.junit.Assert.*;
 
@@ -37,8 +37,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.internal.process.mbean.Process;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.process.mbean.Process;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for LocalProcessController.

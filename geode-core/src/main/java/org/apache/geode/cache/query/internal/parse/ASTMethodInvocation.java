@@ -16,14 +16,14 @@
  */
 
 
-package com.gemstone.gemfire.cache.query.internal.parse;
+package org.apache.geode.cache.query.internal.parse;
 
 import org.apache.logging.log4j.Logger;
 
 import antlr.*;
 
-import com.gemstone.gemfire.cache.query.internal.QCompiler;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.cache.query.internal.QCompiler;
+import org.apache.geode.internal.logging.LogService;
 
 public class ASTMethodInvocation extends GemFireAST {
   private static final Logger logger = LogService.getLogger();

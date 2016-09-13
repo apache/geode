@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.distributed.internal.locks;
+package org.apache.geode.distributed.internal.locks;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * This class maintains statistics in GemFire about the distributed lock 

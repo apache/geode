@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.Assert;
 
 /**
  * Indicates that the current non-partitioned region operation failed fatally.
  * 
- * @see com.gemstone.gemfire.internal.cache.RemoteOperationMessage
+ * @see org.apache.geode.internal.cache.RemoteOperationMessage
  * @since GemFire 6.5
  */
 public class RemoteOperationException extends

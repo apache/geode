@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.cache.CacheConfig;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxSerializer;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializer;
 
 
 /**
- * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire singleton {@link DistributedSystem distributed system}. If the application wants to connect to GemFire as a client it should use {@link com.gemstone.gemfire.cache.client.ClientCacheFactory} instead.
+ * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire singleton {@link DistributedSystem distributed system}. If the application wants to connect to GemFire as a client it should use {@link org.apache.geode.cache.client.ClientCacheFactory} instead.
 <p> Once the factory has been configured using its {@link #set(String, String)} method you produce a {@link Cache} by calling the {@link #create()} method.
  * <p>
  * To get the existing unclosed singleton cache instance call {@link #getAnyInstance}.
@@ -323,7 +323,7 @@ public class CacheFactory {
    *  @param readSerialized true to prefer PdxInstance
    *  @return this CacheFactory 
    *  @since GemFire 6.6
-   *  @see com.gemstone.gemfire.pdx.PdxInstance 
+   *  @see org.apache.geode.pdx.PdxInstance 
    */
   public  CacheFactory setPdxReadSerialized(boolean readSerialized) {
     this.cacheConfig.setPdxReadSerialized(readSerialized);

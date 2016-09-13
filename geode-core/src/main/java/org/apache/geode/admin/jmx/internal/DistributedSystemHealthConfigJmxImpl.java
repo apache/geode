@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.admin.internal.*;
-//import com.gemstone.gemfire.internal.admin.*;
+import org.apache.geode.admin.*;
+import org.apache.geode.admin.internal.*;
+//import org.apache.geode.internal.admin.*;
 import javax.management.*;
 import javax.management.modelmbean.*;
 //import org.apache.commons.modeler.ManagedBean;

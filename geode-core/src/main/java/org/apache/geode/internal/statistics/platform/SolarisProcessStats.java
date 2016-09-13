@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.statistics.platform;
+package org.apache.geode.internal.statistics.platform;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.statistics.HostStatHelper;
-import com.gemstone.gemfire.internal.statistics.LocalStatisticsImpl;
-import com.gemstone.gemfire.internal.statistics.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.statistics.platform.ProcessStats;
+import org.apache.geode.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.statistics.HostStatHelper;
+import org.apache.geode.internal.statistics.LocalStatisticsImpl;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 /**
  * <P>This class provides the interface for statistics about a

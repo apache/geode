@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.util.test;
+package org.apache.geode.util.test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import com.gemstone.gemfire.internal.FileUtil;
+import org.apache.geode.internal.FileUtil;
 
 public class TestUtil {
   

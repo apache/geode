@@ -18,9 +18,9 @@
  * Used by <tt>ExperimentalJUnitTest</tt>. This is an <tt>Experimental</tt> 
  * package.
  * 
- * @see com.gemstone.gemfire.annotations.ExperimentalJUnitTest
+ * @see org.apache.geode.annotations.ExperimentalJUnitTest
  */
 @Experimental("This is an experimental package")
-package com.gemstone.gemfire.annotations.experimentalpackage;
+package org.apache.geode.annotations.experimentalpackage;
 
-import com.gemstone.gemfire.annotations.Experimental;
+import org.apache.geode.annotations.Experimental;

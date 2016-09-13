@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli;
+package org.apache.geode.management.internal.cli;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -25,7 +25,7 @@ import java.io.StringWriter;
  * such commands, the result.response can be written in the
  * CommandResponseWriter. Each command execution will have a ThreadLocal copy of
  * this writer which will be accessible through
- * {@link com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext#WRITER_WRAPPER}. 
+ * {@link org.apache.geode.management.internal.cli.remote.CommandExecutionContext#WRITER_WRAPPER}. 
  * NOTE: Not thread safe 
  * 
  * 

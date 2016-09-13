@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.MockitoAnnotations.*;
@@ -26,10 +26,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.ResourceInst;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.ResourceType;
-import com.gemstone.gemfire.internal.statistics.StatArchiveReader.StatArchiveFile;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceType;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatArchiveFile;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ResourceInst}.

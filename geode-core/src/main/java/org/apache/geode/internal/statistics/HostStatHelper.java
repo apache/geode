@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.statistics;
+package org.apache.geode.internal.statistics;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.PureJavaMode;
-import com.gemstone.gemfire.internal.net.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.*;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import com.gemstone.gemfire.internal.statistics.platform.LinuxProcFsStatistics;
-import com.gemstone.gemfire.internal.statistics.platform.LinuxProcessStats;
-import com.gemstone.gemfire.internal.statistics.platform.LinuxSystemStats;
-import com.gemstone.gemfire.internal.statistics.platform.OSXProcessStats;
-import com.gemstone.gemfire.internal.statistics.platform.OSXSystemStats;
-import com.gemstone.gemfire.internal.statistics.platform.OsStatisticsFactory;
-import com.gemstone.gemfire.internal.statistics.platform.ProcessStats;
-import com.gemstone.gemfire.internal.statistics.platform.SolarisProcessStats;
-import com.gemstone.gemfire.internal.statistics.platform.SolarisSystemStats;
-import com.gemstone.gemfire.internal.statistics.platform.WindowsProcessStats;
-import com.gemstone.gemfire.internal.statistics.platform.WindowsSystemStats;
+import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
+import org.apache.geode.internal.statistics.platform.LinuxProcessStats;
+import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
+import org.apache.geode.internal.statistics.platform.OSXProcessStats;
+import org.apache.geode.internal.statistics.platform.OSXSystemStats;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
+import org.apache.geode.internal.statistics.platform.ProcessStats;
+import org.apache.geode.internal.statistics.platform.SolarisProcessStats;
+import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
+import org.apache.geode.internal.statistics.platform.WindowsProcessStats;
+import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

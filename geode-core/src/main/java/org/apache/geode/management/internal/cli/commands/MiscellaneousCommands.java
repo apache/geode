@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -52,66 +52,66 @@ import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.deadlock.DeadlockDetector;
-import com.gemstone.gemfire.distributed.internal.deadlock.Dependency;
-import com.gemstone.gemfire.distributed.internal.deadlock.DependencyGraph;
-import com.gemstone.gemfire.distributed.internal.deadlock.GemFireDeadlockDetector;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogWriterImpl;
-import com.gemstone.gemfire.management.CacheServerMXBean;
-import com.gemstone.gemfire.management.DistributedRegionMXBean;
-import com.gemstone.gemfire.management.DistributedSystemMXBean;
-import com.gemstone.gemfire.management.JVMMetrics;
-import com.gemstone.gemfire.management.ManagementService;
-import com.gemstone.gemfire.management.MemberMXBean;
-import com.gemstone.gemfire.management.RegionMXBean;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.cli.ConverterHint;
-import com.gemstone.gemfire.management.cli.Result;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.management.internal.cli.AbstractCliAroundInterceptor;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
-import com.gemstone.gemfire.management.internal.cli.CliUtil.DeflaterInflaterData;
-import com.gemstone.gemfire.management.internal.cli.GfshParseResult;
-import com.gemstone.gemfire.management.internal.cli.GfshParser;
-import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.management.internal.cli.domain.StackTracesPerMember;
-import com.gemstone.gemfire.management.internal.cli.functions.ChangeLogLevelFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.GarbageCollectionFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.GetStackTracesFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.LogFileFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.NetstatFunction;
-import com.gemstone.gemfire.management.internal.cli.functions.NetstatFunction.NetstatFunctionArgument;
-import com.gemstone.gemfire.management.internal.cli.functions.NetstatFunction.NetstatFunctionResult;
-import com.gemstone.gemfire.management.internal.cli.functions.ShutDownFunction;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
-import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.ResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultDataException;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.util.MergeLogs;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.deadlock.DeadlockDetector;
+import org.apache.geode.distributed.internal.deadlock.Dependency;
+import org.apache.geode.distributed.internal.deadlock.DependencyGraph;
+import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.JVMMetrics;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.RegionMXBean;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
+import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
+import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
+import org.apache.geode.management.internal.cli.functions.GarbageCollectionFunction;
+import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
+import org.apache.geode.management.internal.cli.functions.LogFileFunction;
+import org.apache.geode.management.internal.cli.functions.NetstatFunction;
+import org.apache.geode.management.internal.cli.functions.NetstatFunction.NetstatFunctionArgument;
+import org.apache.geode.management.internal.cli.functions.NetstatFunction.NetstatFunctionResult;
+import org.apache.geode.management.internal.cli.functions.ShutDownFunction;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
+import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
+import org.apache.geode.management.internal.cli.result.ErrorResultData;
+import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.ResultData;
+import org.apache.geode.management.internal.cli.result.ResultDataException;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.util.MergeLogs;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -184,7 +184,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.SHUTDOWN, help = CliStrings.SHUTDOWN__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_LIFECYCLE },
-      interceptor = "com.gemstone.gemfire.management.internal.cli.commands.MiscellaneousCommands$Interceptor")
+      interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$Interceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result shutdown(
       @CliOption(key = CliStrings.SHUTDOWN__TIMEOUT, unspecifiedDefaultValue = DEFAULT_TIME_OUT,
@@ -1110,7 +1110,7 @@ public class MiscellaneousCommands implements CommandMarker {
       }
       if (regionName != null && !regionName.isEmpty()) {
 
-        if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
+        if (!org.apache.geode.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
           return ResultBuilder.createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
 
@@ -1153,7 +1153,7 @@ public class MiscellaneousCommands implements CommandMarker {
         }
       } else {
 
-        if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
+        if (!org.apache.geode.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
           return ResultBuilder.createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
 

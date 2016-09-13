@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.server;
+package org.apache.geode.cache.server;
 
-import com.gemstone.gemfire.cache.CacheCallback;
+import org.apache.geode.cache.CacheCallback;
 
 
 /**

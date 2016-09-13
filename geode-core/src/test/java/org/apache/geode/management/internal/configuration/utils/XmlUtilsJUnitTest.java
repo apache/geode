@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.utils;
+package org.apache.geode.management.internal.configuration.utils;
 
-import static com.gemstone.gemfire.management.internal.configuration.utils.XmlConstants.*;
+import static org.apache.geode.management.internal.configuration.utils.XmlConstants.*;
 import static javax.xml.XMLConstants.*;
 import static org.junit.Assert.*;
 
@@ -38,9 +38,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link XmlUtils}. See Also {@link XmlUtilsAddNewNodeJUnitTest}
@@ -70,10 +70,10 @@ public class XmlUtilsJUnitTest {
     assertEquals(1, locations1.size());
     assertEquals("http://geode.apache.org/schema/cache/cache-1.0.xsd", locations1.get(0));
 
-    final List<String> locations2 = schemaLocationMap.get("urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest");
+    final List<String> locations2 = schemaLocationMap.get("urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest");
     assertNotNull(locations2);
     assertEquals(2, locations2.size());
-    assertEquals("classpath:/com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest.xsd", locations2.get(0));
+    assertEquals("classpath:/org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest.xsd", locations2.get(0));
     assertEquals("XmlUtilsJUnitTest.xsd", locations2.get(1));
 
     final List<String> locations3 = schemaLocationMap.get("urn:__does_not_exist__");
@@ -108,16 +108,16 @@ public class XmlUtilsJUnitTest {
     assertEquals("http://geode.apache.org/schema/cache/cache-1.0.xsd", locations1.get(0));
     assertEquals("cache-1.0.xsd", locations1.get(1));
 
-    final List<String> locations2 = schemaLocationMap.get("urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest");
+    final List<String> locations2 = schemaLocationMap.get("urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest");
     assertNotNull(locations2);
     assertEquals(2, locations2.size());
-    assertEquals("classpath:/com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest.xsd", locations2.get(0));
+    assertEquals("classpath:/org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest.xsd", locations2.get(0));
     assertEquals("XmlUtilsJUnitTest.xsd", locations2.get(1));
 
     final List<String> locations3 = schemaLocationMap.get("urn:__does_not_exist__");
     assertNull(locations3);
 
-    final List<String> locations4 = schemaLocationMap.get("urn:java:com/gemstone/gemfire/management/internal/configuration/utils/XmlUtilsJUnitTest2");
+    final List<String> locations4 = schemaLocationMap.get("urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest2");
     assertNotNull(locations4);
     assertEquals(1, locations4.size());
     assertEquals("XmlUtilsJUnitTest2.xsd", locations4.get(0));

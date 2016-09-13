@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.statistics.StatisticDescriptorImpl;
+import org.apache.geode.*;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.statistics.StatisticDescriptorImpl;
 //import java.util.*;
 import java.io.*;
 

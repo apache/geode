@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -30,12 +30,12 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.logging.log4j.status.StatusLogger;
-import com.gemstone.gemfire.internal.logging.log4j.AppenderContext;
-import com.gemstone.gemfire.internal.logging.log4j.ConfigLocator;
-import com.gemstone.gemfire.internal.logging.log4j.Configurator;
-import com.gemstone.gemfire.internal.logging.log4j.FastLogger;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
-import com.gemstone.gemfire.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import org.apache.geode.internal.logging.log4j.AppenderContext;
+import org.apache.geode.internal.logging.log4j.ConfigLocator;
+import org.apache.geode.internal.logging.log4j.Configurator;
+import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
  * Centralizes log configuration and initialization.
@@ -45,9 +45,9 @@ import com.gemstone.gemfire.internal.logging.log4j.message.GemFireParameterizedM
 public class LogService extends LogManager {
   // This is highest point in the hierarchy for all GemFire logging
   public static final String ROOT_LOGGER_NAME = "";
-  public static final String BASE_LOGGER_NAME = "com.gemstone";
-  public static final String MAIN_LOGGER_NAME = "com.gemstone.gemfire";
-  public static final String SECURITY_LOGGER_NAME = "com.gemstone.gemfire.security";
+  public static final String BASE_LOGGER_NAME = "org.apache";
+  public static final String MAIN_LOGGER_NAME = "org.apache.geode";
+  public static final String SECURITY_LOGGER_NAME = "org.apache.geode.security";
   
   public static final String GEMFIRE_VERBOSE_FILTER = "{GEMFIRE_VERBOSE}";
   

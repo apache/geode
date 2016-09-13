@@ -46,16 +46,16 @@ the programmer's guide for performance guidelines.</p>
 Top</a>
 
 <p>Function execution facilitates movement of behavior in the form of
-{@linkplain com.gemstone.gemfire.cache.execute.Function}s executed using the
-{@linkplain com.gemstone.gemfire.cache.execute.FunctionService
+{@linkplain org.apache.geode.cache.execute.Function}s executed using the
+{@linkplain org.apache.geode.cache.execute.FunctionService
 Function Execution Service}.  A Function may generate results from
-parallel execution on many {@linkplain com.gemstone.gemfire.cache.execute.FunctionService#onMembers(String...) members}
-, or several {@linkplain com.gemstone.gemfire.cache.execute.FunctionService#onServers(Pool)
+parallel execution on many {@linkplain org.apache.geode.cache.execute.FunctionService#onMembers(String...) members}
+, or several {@linkplain org.apache.geode.cache.execute.FunctionService#onServers(Pool)
 Cache Servers}, or perhaps evaluating {@link
-com.gemstone.gemfire.cache.execute.FunctionService#onRegion(Region) Region} data.  A {@linkplain
-com.gemstone.gemfire.cache.execute.ResultCollector} collects and
+org.apache.geode.cache.execute.FunctionService#onRegion(Region) Region} data.  A {@linkplain
+org.apache.geode.cache.execute.ResultCollector} collects and
 possibly processes those results for consumption.  For more information look to the
-<a href="{@docRoot}/com/gemstone/gemfire/cache/execute/package-summary.html#package_description">com.gemstone.gemfire.cache.execute</a> package.
+<a href="{@docRoot}/org/apache/geode/cache/execute/package-summary.html#package_description">org.apache.geode.cache.execute</a> package.
 </p>
 
 <a name="distcache"><h2>Distributed Caching</h2><a href="#top">Back to Top</a>
@@ -68,41 +68,41 @@ efficiently shared among multiple threads in a VM, multiple VMs
 running on the same physical machine, and multiple VMs running on
 multiple machines.  Cached data resides in "regions" whose
 contents are stored in a VM's heap.</p>
-<p>The {@link com.gemstone.gemfire.cache.CacheFactory} class provides
+<p>The {@link org.apache.geode.cache.CacheFactory} class provides
 the entry point to the caching API.  A <code>CacheFactory</code> is
-configured to create a {@linkplain com.gemstone.gemfire.cache.Cache
+configured to create a {@linkplain org.apache.geode.cache.Cache
 "cache instance"} that resides in the VM.  The cache factory also allows
-the {@link com.gemstone.gemfire.distributed.DistributedSystem} to be configured.</p>
+the {@link org.apache.geode.distributed.DistributedSystem} to be configured.</p>
 
 <a name="regions"><h2>Cache Regions</h2></a><a href="#top">Back to Top</a>
 
 <p>Application data is cached in a {@linkplain
-com.gemstone.gemfire.cache.Region "region"}.  The {@link
-com.gemstone.gemfire.cache.RegionFactory} class provides the simpliest
-entry point into the {@linkplain com.gemstone.gemfire.cache.Region}
-API. A {@link com.gemstone.gemfire.cache.Region} implements {@link java.util.Map},
+org.apache.geode.cache.Region "region"}.  The {@link
+org.apache.geode.cache.RegionFactory} class provides the simpliest
+entry point into the {@linkplain org.apache.geode.cache.Region}
+API. A {@link org.apache.geode.cache.Region} implements {@link java.util.Map},
 however, it also provides caching behavior such as data loading,
 eviction control, and distribution.  Every region has a name and
 regions may be nested to provide a cache-naming hierarchy ("parent
 regions" with "subregions").  The root regions of the naming hierarchy
 (that is, the regions with no parent) are obtained with the {@link
-com.gemstone.gemfire.cache.Cache#rootRegions} method.
+org.apache.geode.cache.Cache#rootRegions} method.
 Any region may be obtained with the {@link
-com.gemstone.gemfire.cache.Cache#getRegion} method.</p>
+org.apache.geode.cache.Cache#getRegion} method.</p>
 
 <p>Region properties such as the region's cache loader, data policy, and
 storage model are specified by an instance of {@link
-com.gemstone.gemfire.cache.RegionAttributes}.  A region
+org.apache.geode.cache.RegionAttributes}.  A region
 <code>RegionAttributes</code> object can be specified when {@linkplain
-com.gemstone.gemfire.cache.Region#createSubregion creating} a
+org.apache.geode.cache.Region#createSubregion creating} a
 region.</p>
 
 <a name="partition"><h2>Partitioned Regions</h2><a href="#top">Back to Top</a>
 
 <p>Region data can be partitioned across many distributed system members to create one large logical heap.
-The data policy must be set to {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}
-or {@link com.gemstone.gemfire.cache.DataPolicy#PERSISTENT_PARTITION}.
-{@link com.gemstone.gemfire.cache.PartitionAttributes} are used to configure
+The data policy must be set to {@link org.apache.geode.cache.DataPolicy#PARTITION}
+or {@link org.apache.geode.cache.DataPolicy#PERSISTENT_PARTITION}.
+{@link org.apache.geode.cache.PartitionAttributes} are used to configure
 a partitioned region.  A partitioned region can be configured to be
 highly available, surviving the loss of one or more system members, by
 maintaining copies of data.  These extra copies also benefit read operations by
@@ -115,13 +115,13 @@ the entire Region in the face of a full garbage collection cycle.</p>
 </p>
 
 <p>Partitioned Regions support custom partitioning with the use of a
-{@link com.gemstone.gemfire.cache.PartitionResolver} and can be
+{@link org.apache.geode.cache.PartitionResolver} and can be
 associated together or
-{@linkplain com.gemstone.gemfire.cache.PartitionAttributesFactory#setColocatedWith(String)
+{@linkplain org.apache.geode.cache.PartitionAttributesFactory#setColocatedWith(String)
 colocated} to allow for efficient data usage.
 </p>
 
-<p>A {@link com.gemstone.gemfire.cache.partition.PartitionRegionHelper}
+<p>A {@link org.apache.geode.cache.partition.PartitionRegionHelper}
 class provides methods to facilitate usage of Partitioned
 Regions with other features, for example when used in conjunction with <a
 href="#functions">function execution</a>.
@@ -132,13 +132,13 @@ href="#functions">function execution</a>.
 <!-- Life cycle, constrained keys -->
 
 <p>A region contains key/value pairs of objects known as the region's
-{@linkplain com.gemstone.gemfire.cache.Region.Entry "entries"}.  The
+{@linkplain org.apache.geode.cache.Region.Entry "entries"}.  The
 <code>Region</code> class provides a number of methods for
 manipulating the region's entries such as {@link
-com.gemstone.gemfire.cache.Region#create create}, {@link
-com.gemstone.gemfire.cache.Region#put put}, {@link
-com.gemstone.gemfire.cache.Region#invalidate invalidate}, and {@link
-com.gemstone.gemfire.cache.Region#destroy destroy} .  The following
+org.apache.geode.cache.Region#create create}, {@link
+org.apache.geode.cache.Region#put put}, {@link
+org.apache.geode.cache.Region#invalidate invalidate}, and {@link
+org.apache.geode.cache.Region#destroy destroy} .  The following
 diagram describes the life cycle of a region entry.</p>
 
 <CENTER>
@@ -149,9 +149,9 @@ diagram describes the life cycle of a region entry.</p>
 <a name="consistency"><h2>Distribution and Consistency Models</h2><a href="#top">Back to Top</a>
 
 <p>A region's {@linkplain
-com.gemstone.gemfire.cache.RegionAttributes#getScope scope} attribute
+org.apache.geode.cache.RegionAttributes#getScope scope} attribute
 determines how the region's entries will be distributed to other
-caches.  A region with {@linkplain com.gemstone.gemfire.cache.Scope#LOCAL local} scope
+caches.  A region with {@linkplain org.apache.geode.cache.Scope#LOCAL local} scope
 will not distribute any of its changes to any other members of the
 distributed system, nor will it receive changes when another cache
 instance is updated.</p>
@@ -162,25 +162,25 @@ that change is distributed to the other members of the distributed
 system that have created that region in their cache instance.  There
 are three kinds of distributed scope, each of which guarantees a
 different level of consistency for distributed data.  {@linkplain
-com.gemstone.gemfire.cache.Scope#GLOBAL "Global"
+org.apache.geode.cache.Scope#GLOBAL "Global"
 scope} provides the highest level of data consistency by obtaining a
-{@linkplain com.gemstone.gemfire.distributed.DistributedLockService
+{@linkplain org.apache.geode.distributed.DistributedLockService
 distributed lock} on a region entry before propagating a change to other
 members of the distributed system.  With globally-scoped regions, only
 one thread in the entire distributed system may modify the region entry at a
 time.</p>
 
-<p>{@linkplain com.gemstone.gemfire.cache.Scope#DISTRIBUTED_ACK
+<p>{@linkplain org.apache.geode.cache.Scope#DISTRIBUTED_ACK
 "Distributed ACK" scope} provides slightly weaker data consistency
 than global scope.  With distributed ACK scope, the method that
 modifies the region (such as a call to {@link
-com.gemstone.gemfire.cache.Region#destroy}) will not return until an
+org.apache.geode.cache.Region#destroy}) will not return until an
 acknowledgment of the change has been received from every member of
 the distributed system.  Multiple threads may modify the region
 concurrently, but the modifying thread may proceed knowing that its
 change to the region has been seen by all other members.</p>
 
-<p>{@linkplain com.gemstone.gemfire.cache.Scope#DISTRIBUTED_NO_ACK
+<p>{@linkplain org.apache.geode.cache.Scope#DISTRIBUTED_NO_ACK
 "Distributed NO ACK" scope} provides the weakest data consistency of
 all the scopes, but also provides the best performance.  A method invocation that
 modifies a region with distributed NO ACK scope will return
@@ -196,32 +196,32 @@ may be stored in either the JVM's heap or on a disk drive.
 
 <a name="dataPolicy"><h3>Data Policy</h3></a><a href="#top">Back to Top</a>
 
-<p>A region's {@linkplain com.gemstone.gemfire.cache.DataPolicy
+<p>A region's {@linkplain org.apache.geode.cache.DataPolicy
 "data policy" attribute} determines if data is stored in the local cache.
-The {@linkplain com.gemstone.gemfire.cache.DataPolicy#NORMAL normal policy}
+The {@linkplain org.apache.geode.cache.DataPolicy#NORMAL normal policy}
 will store region data in the local cache.
-The {@linkplain com.gemstone.gemfire.cache.DataPolicy#EMPTY empty policy}
+The {@linkplain org.apache.geode.cache.DataPolicy#EMPTY empty policy}
 will never store region data in the local cache. They act as proxy regions that
 distribute write operations to others and receive events from others.
-The {@linkplain com.gemstone.gemfire.cache.DataPolicy#withReplication replication policies}
+The {@linkplain org.apache.geode.cache.DataPolicy#withReplication replication policies}
 may reduce the number of net searches that a caching application has to be perform,
 and can provide a backup mechanism. The replicated region initializes itself when
 it is created with the keys and value of the region as found in other caches.
-The {@linkplain com.gemstone.gemfire.cache.DataPolicy#REPLICATE replicate policy} simply stores the relicate data in memory and
-the {@linkplain com.gemstone.gemfire.cache.DataPolicy#PERSISTENT_REPLICATE persistent replicate policy} stores the data in memory and disk.
-The {@linkplain com.gemstone.gemfire.cache.DataPolicy#withPartitioning partition policies} are used for <a href="#partition">partitioned</a> regions.
-The {@linkplain com.gemstone.gemfire.cache.DataPolicy#PARTITION partition policy} simply stores the <a href="#partition">partitioned</a> data in memory and
-the {@linkplain com.gemstone.gemfire.cache.DataPolicy#PERSISTENT_PARTITION persistent partition policy} stores the <a href="#partition">partitioned</a> data in memory and disk.
+The {@linkplain org.apache.geode.cache.DataPolicy#REPLICATE replicate policy} simply stores the relicate data in memory and
+the {@linkplain org.apache.geode.cache.DataPolicy#PERSISTENT_REPLICATE persistent replicate policy} stores the data in memory and disk.
+The {@linkplain org.apache.geode.cache.DataPolicy#withPartitioning partition policies} are used for <a href="#partition">partitioned</a> regions.
+The {@linkplain org.apache.geode.cache.DataPolicy#PARTITION partition policy} simply stores the <a href="#partition">partitioned</a> data in memory and
+the {@linkplain org.apache.geode.cache.DataPolicy#PERSISTENT_PARTITION persistent partition policy} stores the <a href="#partition">partitioned</a> data in memory and disk.
 </p>
 
 <a name="storageOnDisk"><h3>Disk Storage</h3></a>
 
 <p>GemFire supports several modes of region persistence as determined by
-the {@linkplain com.gemstone.gemfire.cache.DataPolicy#withPersistence
+the {@linkplain org.apache.geode.cache.DataPolicy#withPersistence
 persistent data policies} and the {@link
-com.gemstone.gemfire.cache.RegionAttributes#getEvictionAttributes}'s {@linkplain
-com.gemstone.gemfire.cache.EvictionAction eviction action}
-of {@linkplain com.gemstone.gemfire.cache.EvictionAction#OVERFLOW_TO_DISK overflow-to-disk}.
+org.apache.geode.cache.RegionAttributes#getEvictionAttributes}'s {@linkplain
+org.apache.geode.cache.EvictionAction eviction action}
+of {@linkplain org.apache.geode.cache.EvictionAction#OVERFLOW_TO_DISK overflow-to-disk}.
 The following table summarizes the different modes and their configuration.</p>
 
 <table border="1">
@@ -254,7 +254,7 @@ The following table summarizes the different modes and their configuration.</p>
  <td>false</td>
  <td>Disk for persistence</td>
  <td>All data in the region is {@linkplain
-     com.gemstone.gemfire.cache.DiskStore scheduled to be
+     org.apache.geode.cache.DiskStore scheduled to be
      written} to disk as soon as it is placed in the region.  Thus,
      the data on disk contains a complete backup of the region.  No
      information about recently used data is maintained and,
@@ -269,7 +269,7 @@ The following table summarizes the different modes and their configuration.</p>
  <td>true</td>
  <td>Disk for overflow and persistence</td>
  <td>All data in the region is {@linkplain
-     com.gemstone.gemfire.cache.DiskStore scheduled to be
+     org.apache.geode.cache.DiskStore scheduled to be
      written} to disk as soon as it is placed in the region.  But
      unlike "disk for persistence" mode, the least recently used data will
      be removed from the VM once the eviction controller's
@@ -284,15 +284,15 @@ that store data on disk.</p>
 <UL>
 
 <LI>Operations (such as {@link
-com.gemstone.gemfire.cache.Region#invalidate invalidate} and {@link
-com.gemstone.gemfire.cache.Region#destroy}) that remove data from the
+org.apache.geode.cache.Region#invalidate invalidate} and {@link
+org.apache.geode.cache.Region#destroy}) that remove data from the
 cache also remove data from disk.  In order for data to be removed
 from the VM and not from disk, {@linkplain
-com.gemstone.gemfire.cache.EvictionAction#OVERFLOW_TO_DISK}
+org.apache.geode.cache.EvictionAction#OVERFLOW_TO_DISK}
 overflow} must be used.</LI>
 
 <LI>When disk overflow is enabled, only the {@linkplain
-com.gemstone.gemfire.cache.Region.Entry#getValue value} of the least
+org.apache.geode.cache.Region.Entry#getValue value} of the least
 recently used entry is removed from the VM.  That is, the entry's key
 and the entry itself remain in the VM.</LI>
 
@@ -306,40 +306,40 @@ the same region is created.</LI>
 <LI>GemFire will look for the value of a region entry on disk before
 it will look in other cache instances.  That is, it will not perform a
 net search or a {@linkplain
-com.gemstone.gemfire.cache.CacheLoader#load load} if the value exists
+org.apache.geode.cache.CacheLoader#load load} if the value exists
 on disk.</LI>
 
 <LI>When data is read from or written to disk, no {@linkplain
-com.gemstone.gemfire.cache.CacheEvent cache events} are fired.</LI>
+org.apache.geode.cache.CacheEvent cache events} are fired.</LI>
 
 <LI>Region operations such as {@linkplain
-com.gemstone.gemfire.cache.Region#destroy destroy} and {@linkplain
-com.gemstone.gemfire.cache.Region#invalidate invalidate} effect the
+org.apache.geode.cache.Region#destroy destroy} and {@linkplain
+org.apache.geode.cache.Region#invalidate invalidate} effect the
 data that is stored on disk in addition to the data stored in the VM.
 That is, if an entry is destroyed in the VM (even by an {@link
-com.gemstone.gemfire.cache.ExpirationAction}), it will also be destroyed on disk.</LI>
+org.apache.geode.cache.ExpirationAction}), it will also be destroyed on disk.</LI>
 
 </UL>
 
 <h3>Region backup and restore</h3>
 
 Any GemFire resource that stores data on disk does so by configuring itself
-to use a {@link com.gemstone.gemfire.cache.DiskStore disk store}.
+to use a {@link org.apache.geode.cache.DiskStore disk store}.
 Disk stores are created using the
-{@link com.gemstone.gemfire.cache.DiskStoreFactory disk store factory API} or by
+{@link org.apache.geode.cache.DiskStoreFactory disk store factory API} or by
 configuring them in XML using the "disk-store" element.
 
 Region's specify the disk store they are in by setting the
-{@link com.gemstone.gemfire.cache.RegionAttributes#getDiskStoreName disk store name region attribute}.
+{@link org.apache.geode.cache.RegionAttributes#getDiskStoreName disk store name region attribute}.
 
-<P>A {@linkplain com.gemstone.gemfire.cache.Region#put put} on a region
+<P>A {@linkplain org.apache.geode.cache.Region#put put} on a region
 that is configured to have a disk "backup" (by using a
-{@linkplain com.gemstone.gemfire.cache.DataPolicy#withPersistence
+{@linkplain org.apache.geode.cache.DataPolicy#withPersistence
 persistent data policy})
  will result in the immediate scheduling of a
 disk write according to the region's {@link
-com.gemstone.gemfire.cache.DiskStore disk store}
-and the  {@linkplain com.gemstone.gemfire.cache.RegionAttributes#isDiskSynchronous
+org.apache.geode.cache.DiskStore disk store}
+and the  {@linkplain org.apache.geode.cache.RegionAttributes#isDiskSynchronous
 disk synchronous region attribute}.</P>
 
 <P>The actual backup data is stored in each of the disk store's specified disk
@@ -381,15 +381,15 @@ data.</P>
 
 <!-- CacheLoader, netSearch, netLoad -->
 
-<p>A {@linkplain com.gemstone.gemfire.cache.CacheLoader cache loader}
+<p>A {@linkplain org.apache.geode.cache.CacheLoader cache loader}
 allows data from outside of the VM to be placed into a region.  When
-{@link com.gemstone.gemfire.cache.Region#get} is called for a region
+{@link org.apache.geode.cache.Region#get} is called for a region
 entry that has a <code>null</code> value, the {@link
-com.gemstone.gemfire.cache.CacheLoader#load load} method of the
+org.apache.geode.cache.CacheLoader#load load} method of the
 region's cache loader is invoked.  The <code>load</code> method
 creates the value for the desired key by performing an operation such
 as a database query.  The <code>load</code> may also perform a
-{@linkplain com.gemstone.gemfire.cache.LoaderHelper#netSearch net
+{@linkplain org.apache.geode.cache.LoaderHelper#netSearch net
 search} that will look for the value in a cache instance hosted by
 another member of the distributed system.</p>
 
@@ -404,7 +404,7 @@ the remote cache's region.</p>
 
 <a name="cachewriter"><h2>Cache Writers</h2><a href="#top">Back to Top</a>
 
-<p>The {@link com.gemstone.gemfire.cache.CacheWriter} is a type of event handler
+<p>The {@link org.apache.geode.cache.CacheWriter} is a type of event handler
 that is invoked <em>synchronously before</em> the cache is modified, and has
 the ability to abort the operation. Only one CacheWriter in the distributed system
 is invoked before the operation that would modify a cache. A CacheWriter
@@ -413,13 +413,13 @@ is typically used to update an external database.</p>
 <a name="expiration"><h2>Expiration</h2></a><a href="#top">Back to Top</a>
 
 <p>Sometimes cached data has a limited lifetime.  The region attributes
-{@linkplain com.gemstone.gemfire.cache.RegionAttributes#getRegionTimeToLive
+{@linkplain org.apache.geode.cache.RegionAttributes#getRegionTimeToLive
 regionTimeToLive}, {@linkplain
-com.gemstone.gemfire.cache.RegionAttributes#getRegionIdleTimeout
+org.apache.geode.cache.RegionAttributes#getRegionIdleTimeout
 regionIdleTimeout}, {@linkplain
-com.gemstone.gemfire.cache.RegionAttributes#getEntryTimeToLive
+org.apache.geode.cache.RegionAttributes#getEntryTimeToLive
 entryTimeToLive}, and {@linkplain
-com.gemstone.gemfire.cache.RegionAttributes#getEntryIdleTimeout
+org.apache.geode.cache.RegionAttributes#getEntryIdleTimeout
 entryIdleTimeout}, specify how data is handled when it becomes too
 old.  There are two conditions under which cache data is considered
 too old: data has resided unchanged in a region for a given amount of time
@@ -430,25 +430,25 @@ time").  GemFire's caching implementation launches an "expiration
 thread" that periodically monitors region entries and will expire
 those that have become too old.  When a region entry expires, it can
 either be {@linkplain
-com.gemstone.gemfire.cache.ExpirationAction#INVALIDATE
+org.apache.geode.cache.ExpirationAction#INVALIDATE
 invalidated},  {@linkplain
-com.gemstone.gemfire.cache.ExpirationAction#DESTROY
+org.apache.geode.cache.ExpirationAction#DESTROY
 destroyed}, {@linkplain
-com.gemstone.gemfire.cache.ExpirationAction#LOCAL_INVALIDATE locally
+org.apache.geode.cache.ExpirationAction#LOCAL_INVALIDATE locally
 invalidated}, or {@linkplain
-com.gemstone.gemfire.cache.ExpirationAction#LOCAL_DESTROY locally destroyed}.</p>
+org.apache.geode.cache.ExpirationAction#LOCAL_DESTROY locally destroyed}.</p>
 
 <a name="event"><h2>Cache Events</h2></a><a href="#top">Back to Top</a>
 
-<p>The {@link com.gemstone.gemfire.cache.CacheListener}
+<p>The {@link org.apache.geode.cache.CacheListener}
 interface provides callback methods that are invoked synchronously in
 response to certain operations (such as a <code>put</code> or
 <code>invalidate</code>) being performed on a region.  The event
 listener for a region is specified with the {@link
-com.gemstone.gemfire.cache.AttributesFactory#setCacheListener
+org.apache.geode.cache.AttributesFactory#setCacheListener
 setCacheListener} method.  Each callback method on the
 <code>CacheListener</code> receives a {@link
-com.gemstone.gemfire.cache.CacheEvent} describing the operation
+org.apache.geode.cache.CacheEvent} describing the operation
 that caused the callback to be invoked and possibly containing information
 relevant to the operation
 (such as the old and new values of a region entry).</p>
@@ -462,7 +462,7 @@ instance, an eviction controller could keep track of the sizes of the
 entry values.  Before a new entry is added, the eviction controller
 could remove the entry with the largest value to free up space in
 the cache instance for new data.  GemFire provides {@link
-com.gemstone.gemfire.cache.EvictionAttributes} that will create an eviction controller
+org.apache.geode.cache.EvictionAttributes} that will create an eviction controller
 that destroys the "least recently used" Region Entry once the Region
 exceeds a given number of entries.</p>
 
@@ -470,7 +470,7 @@ exceeds a given number of entries.</p>
 
 <!-- API statistics and VSD statistics -->
 
-<p>The {@link com.gemstone.gemfire.cache.CacheStatistics} class
+<p>The {@link org.apache.geode.cache.CacheStatistics} class
 provides statistics information about the usage of a region or entry.
 Statistics are often used by eviction controllers to determine which
 entries should be invalidated or destroyed when the region reaches its
@@ -497,13 +497,13 @@ href="{@docRoot}/javadoc-images/example3-cache.xml">example3</A>.
 In this configuration, GemFire cache regions are configured as
 clients to regions in GemFire server caches running in a separate
 distributed system.
-The GemFire <a href="{@docRoot}/com/gemstone/gemfire/cache/server/package-summary.html#package_description">servers</a>
+The GemFire <a href="{@docRoot}/org/apache/geode/cache/server/package-summary.html#package_description">servers</a>
 are generally run as cacheserver processes.
-<a href="{@docRoot}/com/gemstone/gemfire/cache/client/package-summary.html#package_description">Clients</a>
+<a href="{@docRoot}/org/apache/geode/cache/client/package-summary.html#package_description">Clients</a>
 are configured with a
-{@linkplain com.gemstone.gemfire.cache.client.ClientCache client cache}
+{@linkplain org.apache.geode.cache.client.ClientCache client cache}
 which has a default
-{@linkplain com.gemstone.gemfire.cache.client.Pool pool}
+{@linkplain org.apache.geode.cache.client.Pool pool}
 that manages connections to the server caches
 which are used by the client regions.
 When a client updates its region, the update is forwarded to the server.
@@ -511,9 +511,9 @@ When a client get results in a local cache miss,
 the get request is forwarded to the server.
 The clients may also subscribe to server-side events.
 For more information on the client see the
-<a href="{@docRoot}/com/gemstone/gemfire/cache/client/package-summary.html#package_description">client</a>.
+<a href="{@docRoot}/org/apache/geode/cache/client/package-summary.html#package_description">client</a>.
 For more information on the server see the
-<a href="{@docRoot}/com/gemstone/gemfire/cache/server/package-summary.html#package_description">server</a>.</p>
+<a href="{@docRoot}/org/apache/geode/cache/server/package-summary.html#package_description">server</a>.</p>
 
 <a name="tx"><h2>Cache Transactions</h2><a href="#top">Back to Top</a>
 
@@ -561,45 +561,45 @@ one action reflecting the sum of all three.
 
 <p>The GemFire region can be configured to require the
 presence of one or more user-defined membership roles.  Each {@link
-com.gemstone.gemfire.distributed.Role} is assigned to any number of
+org.apache.geode.distributed.Role} is assigned to any number of
 applications when each application connects to the GemFire distributed
-system.  {@link com.gemstone.gemfire.cache.MembershipAttributes} are
+system.  {@link org.apache.geode.cache.MembershipAttributes} are
 then used to specify which {@linkplain
-com.gemstone.gemfire.cache.MembershipAttributes#getRequiredRoles roles
+org.apache.geode.cache.MembershipAttributes#getRequiredRoles roles
 are required} to be online and present in that region's membership
 for access to the cache region being configured.</p>
 
 <p>In addition to specifying which roles are required,
 <code>MembershipAttributes</code> are used to specify the {@link
-com.gemstone.gemfire.cache.LossAction}. The loss action determines how
+org.apache.geode.cache.LossAction}. The loss action determines how
 access to the region is affected when one or more required roles are
 offline and no longer present in the system membership. The region can be
 made completely {@linkplain
-com.gemstone.gemfire.cache.LossAction#NO_ACCESS "NO_ACCESS"},
+org.apache.geode.cache.LossAction#NO_ACCESS "NO_ACCESS"},
 which means that the application cannot read from or write to that region.
-{@linkplain com.gemstone.gemfire.cache.LossAction#LIMITED_ACCESS
+{@linkplain org.apache.geode.cache.LossAction#LIMITED_ACCESS
 "LIMITED_ACCESS"} means that the application cannot write to that region.
-{@linkplain com.gemstone.gemfire.cache.LossAction#FULL_ACCESS
+{@linkplain org.apache.geode.cache.LossAction#FULL_ACCESS
 "FULL_ACCESS"} means that the application can read from and write to that
 region as normal. If "FULL_ACCESS" is selected,
 then the application would only be aware of the missing required role if it
-registered a {@link com.gemstone.gemfire.cache.RegionRoleListener}.
+registered a {@link org.apache.geode.cache.RegionRoleListener}.
 This listener provides callbacks to notify the application when required
 roles are gained or lost, thus providing for custom integration of required
 roles with the application.</p>
 
-<p>{@link com.gemstone.gemfire.cache.ResumptionAction} defined in the
+<p>{@link org.apache.geode.cache.ResumptionAction} defined in the
 <code>MembershipAttributes</code> specifies how the application responds
 to having a missing required role return to the distributed membership.
-{@linkplain com.gemstone.gemfire.cache.ResumptionAction#NONE "None"}
+{@linkplain org.apache.geode.cache.ResumptionAction#NONE "None"}
 results in no special action, while {@linkplain
-com.gemstone.gemfire.cache.ResumptionAction#REINITIALIZE "Reinitialize"}
+org.apache.geode.cache.ResumptionAction#REINITIALIZE "Reinitialize"}
 causes the region to be reinitialized.  Reinitializing the region will
 clear all entries from that region.  If it is a replicate, the
 region will repopulate with entries available from other distributed
 members.</p>
 
-<p>{@link com.gemstone.gemfire.cache.RequiredRoles} provides methods to
+<p>{@link org.apache.geode.cache.RequiredRoles} provides methods to
 check for missing required roles for a region and to wait until all required
 roles are present. In addition, this class can be used to check if a role
 is currently present in a region's membership.</p>

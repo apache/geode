@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.gemstone.gemfire.internal.AvailablePort.Keeper;
+import org.apache.geode.internal.AvailablePort.Keeper;
 
 /**
  * Provides helper methods for acquiring a set of unique available ports. It

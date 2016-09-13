@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
@@ -22,15 +22,15 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.internal.offheap.NullOffHeapMemoryStats;
-import com.gemstone.gemfire.internal.offheap.NullOutOfOffHeapMemoryListener;
-import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
-import com.gemstone.gemfire.internal.offheap.SlabImpl;
-import com.gemstone.gemfire.internal.offheap.TinyStoredObject;
-import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.internal.offheap.NullOffHeapMemoryStats;
+import org.apache.geode.internal.offheap.NullOutOfOffHeapMemoryListener;
+import org.apache.geode.internal.offheap.OffHeapStoredObject;
+import org.apache.geode.internal.offheap.SlabImpl;
+import org.apache.geode.internal.offheap.TinyStoredObject;
+import org.apache.geode.internal.util.BlobHelper;
 
 public abstract class OldValueImporterTestBase {
 

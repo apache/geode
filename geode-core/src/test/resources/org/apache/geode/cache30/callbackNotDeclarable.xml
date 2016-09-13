@@ -27,7 +27,7 @@
   <vm-root-region name="root">
     <region-attributes>
       <cache-listener>
-        <class-name>com.gemstone.gemfire.cache30.CacheXml30DUnitTest$NotDeclarableCacheListener</class-name>
+        <class-name>org.apache.geode.cache30.CacheXml30DUnitTest$NotDeclarableCacheListener</class-name>
       </cache-listener>
     </region-attributes>
   </vm-root-region>

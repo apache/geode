@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionMessage;
 
 /**
  * A message that can reply directly to the sender
@@ -35,14 +35,14 @@ public interface DirectReplyMessage {
   /**
    * Indicates whether the message could send an acknowledgement
    * back on the connection the request was sent on.  This flag 
-   * only takes effect when {@link com.gemstone.gemfire.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)} 
+   * only takes effect when {@link org.apache.geode.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)} 
    * is set to <code>false</code>
    * If this flag is set to true, the process method <b> must </b> reply
-   * by calling {@link DistributionMessage#getReplySender(com.gemstone.gemfire.distributed.internal.DM)} and using
+   * by calling {@link DistributionMessage#getReplySender(org.apache.geode.distributed.internal.DM)} and using
    * the result to send the reply. the ReplySender determines whether to reply
    * directly or through the shared channel.
    * @return true if a direct acknowledgement is allowed
-   * @see com.gemstone.gemfire.distributed.internal.direct.DirectChannel
+   * @see org.apache.geode.distributed.internal.direct.DirectChannel
    */
   boolean supportsDirectAck();
   

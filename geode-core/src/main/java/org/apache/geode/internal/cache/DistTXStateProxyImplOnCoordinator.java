@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,22 +27,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.TransactionInDoubtException;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.DistTXPrecommitMessage.DistTxPrecommitResponse;
-import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllEntryData;
-import com.gemstone.gemfire.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
-import com.gemstone.gemfire.internal.cache.TXEntryState.DistTxThinEntryState;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.cache.tx.DistClientTXStateStub;
-import com.gemstone.gemfire.internal.cache.tx.DistTxEntryEvent;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TransactionInDoubtException;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.DistTXPrecommitMessage.DistTxPrecommitResponse;
+import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
+import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
+import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.DistClientTXStateStub;
+import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
@@ -69,7 +69,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   /*
    * (non-Javadoc)
    * 
-   * @see com.gemstone.gemfire.internal.cache.TXStateInterface#commit()
+   * @see org.apache.geode.internal.cache.TXStateInterface#commit()
    * 
    * [DISTTX] TODO Catch all exceptions in precommit and rollback and make sure
    * these messages reach all

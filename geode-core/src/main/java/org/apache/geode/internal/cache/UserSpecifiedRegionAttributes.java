@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.internal.Assert;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.Assert;
 
 /**
  * UserSpecifiedRegionAttributes provides an way to detect departures from default attribute values.
  * It may be used when collecting attributes from an XML parser or from attribute changes made using the
- * {@link com.gemstone.gemfire.cache.AttributesFactory}.  Its initial usage was to validate
+ * {@link org.apache.geode.cache.AttributesFactory}.  Its initial usage was to validate
  * when a user set a value which should not be set (for PartitionedRegions).
  * 
  * @since GemFire 5.1

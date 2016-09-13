@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.beans;
+package org.apache.geode.management.internal.beans;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,9 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.ObjectName;
 
-import com.gemstone.gemfire.management.LockServiceMXBean;
-import com.gemstone.gemfire.management.internal.FederationComponent;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
+import org.apache.geode.management.LockServiceMXBean;
+import org.apache.geode.management.internal.FederationComponent;
+import org.apache.geode.management.internal.ManagementConstants;
 
 /**
  * Bridge for the Distributed lock service. It provides an aggregated view of a

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -27,31 +27,31 @@ import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.tier.InterestType;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableCallableIF;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This tests the fix for bug #43407 under a variety of configurations and
@@ -203,7 +203,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
         myRegion.invalidate(key2);
       }
     });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
                     .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
@@ -217,7 +217,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     assertNotNull(myRegion.get(notAffectedKey));
     
     // get of an invalid entry should return null and create the entry in an invalid state
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("getting "+key1+" - should reach this cache and be INVALID");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("getting "+key1+" - should reach this cache and be INVALID");
     assertNull(myRegion.get(key1));
     assertTrue(myRegion.containsKey(key1));
     
@@ -274,7 +274,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     // test that a listener is not invoked when there is already an invalidated
     // entry in the client cache
     UpdateListener listener = new UpdateListener();
-    listener.log = com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter();
+    listener.log = org.apache.geode.test.dunit.LogWriterUtils.getLogWriter();
     myRegion.getAttributesMutator().addCacheListener(listener);
     myRegion.get(key1);
     assertEquals("expected no cache listener invocations",
@@ -321,7 +321,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
         myRegion.destroy(key2);
       }
     });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
                     .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
@@ -333,7 +333,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     // get of a valid entry should work
     assertNotNull(myRegion.get(notAffectedKey));
     // get of an invalid entry should return null and create the entry in an invalid state
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("getting "+key1+" - should reach this cache and be a TOMBSTONE");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("getting "+key1+" - should reach this cache and be a TOMBSTONE");
     assertNull(myRegion.get(key1));
     assertFalse(myRegion.containsKey(key1));
     RegionEntry entry;
@@ -386,7 +386,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     keys.add(notAffectedKey); keys.add(key1); keys.add(key2);
     Map result = myRegion.getAll(keys);
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("result of getAll = " + result);
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("result of getAll = " + result);
     assertNotNull(result.get(notAffectedKey));
     assertNull(result.get(key1));
     assertNull(result.get(key2));
@@ -443,7 +443,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
         }
       }
     });
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
                     .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
@@ -469,7 +469,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
           BucketRegion bucket = ((PartitionedRegion)myRegion).getBucketRegion(key10);
           if (bucket != null) {
             event.setRegion(bucket);
-            com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("performing local destroy in " + bucket + " ccEnabled="+bucket.concurrencyChecksEnabled + " rvv="+bucket.getVersionVector());
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("performing local destroy in " + bucket + " ccEnabled="+bucket.concurrencyChecksEnabled + " rvv="+bucket.getVersionVector());
             bucket.concurrencyChecksEnabled = false; // turn off cc so entry is removed
             bucket.mapDestroy(event, false, false, null);
             bucket.concurrencyChecksEnabled = true;

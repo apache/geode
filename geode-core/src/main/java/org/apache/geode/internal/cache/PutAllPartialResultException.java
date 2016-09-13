@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.GemFireException;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.CancelException;
+import org.apache.geode.GemFireException;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import java.io.Serializable;
 import java.util.*;
 

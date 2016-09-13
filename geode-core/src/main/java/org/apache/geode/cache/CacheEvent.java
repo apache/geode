@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.EnumListenerEvent;
 
 /**
  * A region- or entry-related event affecting the cache.

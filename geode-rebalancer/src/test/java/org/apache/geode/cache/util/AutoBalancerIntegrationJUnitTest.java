@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.util;
+package org.apache.geode.cache.util;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.util.AutoBalancer.CacheOperationFacade;
-import com.gemstone.gemfire.cache.util.AutoBalancer.GeodeCacheFacade;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
-import com.gemstone.gemfire.internal.statistics.HostStatSampler;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.util.AutoBalancer.CacheOperationFacade;
+import org.apache.geode.cache.util.AutoBalancer.GeodeCacheFacade;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.statistics.HostStatSampler;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.equalTo;
@@ -147,7 +147,7 @@ public class AutoBalancerIntegrationJUnitTest {
         + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
         + " version=\"1.0\">                                                                             "
         + "   <initializer>                                                                              "
-        + "     <class-name>com.gemstone.gemfire.cache.util.AutoBalancer</class-name>                    "
+        + "     <class-name>org.apache.geode.cache.util.AutoBalancer</class-name>                    "
         + "     <parameter name=\"schedule\">                                                            "
         + "       <string>* * * * * ? </string>                                                          "
         + "     </parameter>                                                                             "
@@ -164,7 +164,7 @@ public class AutoBalancerIntegrationJUnitTest {
         + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
         + " version=\"1.0\">                                                                             "
         + "   <initializer>                                                                              "
-        + "     <class-name>com.gemstone.gemfire.cache.util.AutoBalancer</class-name>                    "
+        + "     <class-name>org.apache.geode.cache.util.AutoBalancer</class-name>                    "
         + "   </initializer>                                                                             "
         + " </cache>";
 

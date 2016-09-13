@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.ra;
+package org.apache.geode.internal.ra;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
@@ -22,7 +22,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ManagedConnectionFactory;
 
-import com.gemstone.gemfire.ra.GFConnectionFactory;
+import org.apache.geode.ra.GFConnectionFactory;
 /**
  * 
  *

@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit testing for ComplexDiskRegion API's
@@ -46,7 +46,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.internal.cache.ComplexDiskRegion.addToBeCompacted(Oplog)'
+   * 'org.apache.geode.internal.cache.ComplexDiskRegion.addToBeCompacted(Oplog)'
    * 
    * The test will test that an oplog is correctly being added to be rolled
    */
@@ -104,7 +104,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /**
    * Test method for
-   * 'com.gemstone.gemfire.internal.cache.ComplexDiskRegion.removeFirstOplog(Oplog)'
+   * 'org.apache.geode.internal.cache.ComplexDiskRegion.removeFirstOplog(Oplog)'
    * 
    * The test verifies the FIFO property of the oplog set (first oplog to be added should be
    * the firs to be rolled).

@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.io.PrintStream;
 
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.geode.i18n.StringId;
 
 
 /**
- * Implementation of {@link com.gemstone.gemfire.LogWriter} that will write
+ * Implementation of {@link org.apache.geode.LogWriter} that will write
  * security related logs to a local stream.
  * 
  * @since GemFire 5.5

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache.partition;
+package org.apache.geode.cache.partition;
 
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.control.ResourceManager;
+import org.apache.geode.cache.control.ResourceManager;
 
 /**
  * Information describing the data storage and distribution of a 
@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
 public interface PartitionRegionInfo {
 
   /**
-   * Returns the {@link com.gemstone.gemfire.cache.Region#getFullPath() 
+   * Returns the {@link org.apache.geode.cache.Region#getFullPath() 
    * full path} of the partitioned region that this object describes.
    * 
    * @return the full path of the partitioned region that this info describes
@@ -52,7 +52,7 @@ public interface PartitionRegionInfo {
   
   /**
    * Returns the {@link 
-   * com.gemstone.gemfire.cache.PartitionAttributes#getTotalNumBuckets()
+   * org.apache.geode.cache.PartitionAttributes#getTotalNumBuckets()
    * configured number of buckets} for the partitioned region.
    * 
    * @return the configured number of buckets
@@ -81,7 +81,7 @@ public interface PartitionRegionInfo {
   
   /**
    * Returns the number of {@link 
-   * com.gemstone.gemfire.cache.PartitionAttributes#getRedundantCopies()
+   * org.apache.geode.cache.PartitionAttributes#getRedundantCopies()
    * redundant copies} the partitioned region was configured for.
    * 
    * @return the number of redundant copies the partitioned region was 
@@ -101,9 +101,9 @@ public interface PartitionRegionInfo {
   public int getActualRedundantCopies();
   
   /**
-   * Returns the {@link com.gemstone.gemfire.cache.Region#getFullPath() 
+   * Returns the {@link org.apache.geode.cache.Region#getFullPath() 
    * full path} of the partitioned region that this region has been configured 
-   * to be {@link com.gemstone.gemfire.cache.PartitionAttributes#getColocatedWith() 
+   * to be {@link org.apache.geode.cache.PartitionAttributes#getColocatedWith() 
    * colocated with} or null if it is not colocated.
    * 
    * @return the full path of the partitioned region that the region is 

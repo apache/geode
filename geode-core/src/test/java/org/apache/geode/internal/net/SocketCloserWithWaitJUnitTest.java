@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.net;
+package org.apache.geode.internal.net;
 
 import java.util.concurrent.TimeUnit;
 
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests SocketCloser with a wait time. The default SocketCloser does not wait.

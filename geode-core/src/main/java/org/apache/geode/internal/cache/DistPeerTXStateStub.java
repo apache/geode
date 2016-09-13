@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,16 +22,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
-import com.gemstone.gemfire.internal.cache.tx.DistTxEntryEvent;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * DistPeerTXStateStub lives on the transaction coordinator for a distributed
@@ -152,7 +152,7 @@ public final class DistPeerTXStateStub extends PeerTXStateStub implements
    * (non-Javadoc)
    * 
    * @see
-   * com.gemstone.gemfire.internal.cache.TXStateStub#putEntry(com.gemstone.gemfire
+   * org.apache.geode.internal.cache.TXStateStub#putEntry(org.apache.geode
    * .internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object,
    * boolean, long, boolean)
    */
@@ -176,7 +176,7 @@ public final class DistPeerTXStateStub extends PeerTXStateStub implements
    * (non-Javadoc)
    * 
    * @see
-   * com.gemstone.gemfire.internal.cache.InternalDataView#putEntryOnRemote(com
+   * org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(com
    * .gemstone.gemfire.internal.cache.EntryEventImpl, boolean, boolean,
    * java.lang.Object, boolean, long, boolean)
    */
@@ -201,8 +201,8 @@ public final class DistPeerTXStateStub extends PeerTXStateStub implements
    * (non-Javadoc)
    * 
    * @see
-   * com.gemstone.gemfire.internal.cache.TXStateInterface#destroyExistingEntry
-   * (com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean,
+   * org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry
+   * (org.apache.geode.internal.cache.EntryEventImpl, boolean,
    * java.lang.Object)
    */
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
@@ -216,8 +216,8 @@ public final class DistPeerTXStateStub extends PeerTXStateStub implements
    * (non-Javadoc)
    * 
    * @see
-   * com.gemstone.gemfire.internal.cache.InternalDataView#destroyOnRemote(java
-   * .lang.Integer, com.gemstone.gemfire.internal.cache.EntryEventImpl,
+   * org.apache.geode.internal.cache.InternalDataView#destroyOnRemote(java
+   * .lang.Integer, org.apache.geode.internal.cache.EntryEventImpl,
    * java.lang.Object)
    */
   public void destroyOnRemote(EntryEventImpl event, boolean cacheWrite,
@@ -231,8 +231,8 @@ public final class DistPeerTXStateStub extends PeerTXStateStub implements
    * (non-Javadoc)
    * 
    * @see
-   * com.gemstone.gemfire.internal.cache.TXStateInterface#invalidateExistingEntry
-   * (com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean, boolean)
+   * org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry
+   * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
   public void invalidateExistingEntry(EntryEventImpl event,
       boolean invokeCallbacks, boolean forceNewEntry) {
@@ -246,8 +246,8 @@ public final class DistPeerTXStateStub extends PeerTXStateStub implements
    * (non-Javadoc)
    * 
    * @see
-   * com.gemstone.gemfire.internal.cache.InternalDataView#invalidateOnRemote
-   * (com.gemstone.gemfire.internal.cache.EntryEventImpl, boolean, boolean)
+   * org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote
+   * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) throws DataLocationException {

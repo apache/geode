@@ -15,50 +15,50 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.query.IndexMaintenanceException;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
-import com.gemstone.gemfire.cache.query.internal.index.IndexProtocol;
-import com.gemstone.gemfire.cache.query.internal.index.IndexUtils;
-import com.gemstone.gemfire.cache.util.TimestampedEntryEvent;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
-import com.gemstone.gemfire.internal.cache.lru.Sizeable;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.PutMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tx.DistTxKeyInfo;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventCallbackArgument;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.*;
-import com.gemstone.gemfire.internal.offheap.annotations.Released;
-import com.gemstone.gemfire.internal.offheap.annotations.Retained;
-import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.internal.util.BlobHelper;
-import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.IndexMaintenanceException;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.cache.util.TimestampedEntryEvent;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.cache.partitioned.PartitionMessage;
+import org.apache.geode.internal.cache.partitioned.PutMessage;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.*;
+import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.function.Function;
 
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
-import static com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
 /**
  * Implementation of an entry event
@@ -1036,7 +1036,7 @@ public class EntryEventImpl
   }
 
   /**
-   * @see com.gemstone.gemfire.cache.CacheEvent#getRegion()
+   * @see org.apache.geode.cache.CacheEvent#getRegion()
    */
   public final LocalRegion getRegion() {
     return region;
@@ -1057,7 +1057,7 @@ public class EntryEventImpl
   }
 
   /**
-   * @see com.gemstone.gemfire.cache.CacheEvent#getCallbackArgument()
+   * @see org.apache.geode.cache.CacheEvent#getCallbackArgument()
    */
   public Object getCallbackArgument()
   {
@@ -1390,7 +1390,7 @@ public class EntryEventImpl
                             || obj == Token.NOT_AVAILABLE
                             || Token.isInvalidOrRemoved(obj)
                             // don't serialize delta object already serialized
-                            || obj instanceof com.gemstone.gemfire.Delta) { // internal delta
+                            || obj instanceof org.apache.geode.Delta) { // internal delta
       return obj;
     }
     final CachedDeserializable cd;
@@ -1579,7 +1579,7 @@ public class EntryEventImpl
     //This is a horrible hack, but we need to get the size of the object
     //When we store an entry. This code is only used when we do a put
     //in the primary.
-    if(v instanceof com.gemstone.gemfire.Delta && region.isUsedForPartitionedRegionBucket()) {
+    if(v instanceof org.apache.geode.Delta && region.isUsedForPartitionedRegionBucket()) {
       int vSize;
       Object ov = basicGetOldValue();
       if(ov instanceof CachedDeserializable && !GemFireCacheImpl.DELTAS_RECALCULATE_SIZE) {
@@ -1703,7 +1703,7 @@ public class EntryEventImpl
       boolean deltaBytesApplied = false;
       try {
         long start = CachePerfStats.getStatTime();
-        ((com.gemstone.gemfire.Delta)value).fromDelta(new DataInputStream(
+        ((org.apache.geode.Delta)value).fromDelta(new DataInputStream(
             new ByteArrayInputStream(getDeltaBytes())));
         this.region.getCachePerfStats().endDeltaUpdate(start);
         deltaBytesApplied = true;

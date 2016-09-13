@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.process;
+package org.apache.geode.internal.process;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -46,7 +46,7 @@ public interface ProcessController {
    * is provided. Only the {@link MBeanProcessController} supports the use of
    * specifying a PID because it uses the Attach API.
    *  
-   * @throws com.gemstone.gemfire.lang.AttachAPINotFoundException if the Attach API is not found
+   * @throws org.apache.geode.lang.AttachAPINotFoundException if the Attach API is not found
    */
   public void checkPidSupport();
   

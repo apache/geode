@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
-import com.gemstone.gemfire.cache.OperationAbortedException;
-import com.gemstone.gemfire.distributed.DistributedMember;
+import org.apache.geode.cache.OperationAbortedException;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * A <code>ServerRefusedConnectionException</code> indicates a client attempted

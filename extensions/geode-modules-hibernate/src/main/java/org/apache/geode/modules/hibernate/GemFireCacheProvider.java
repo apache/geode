@@ -14,17 +14,17 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.gemstone.gemfire.modules.hibernate;
+package org.apache.geode.modules.hibernate;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.modules.util.CreateRegionFunction;
-import com.gemstone.gemfire.modules.util.RegionConfiguration;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.modules.util.CreateRegionFunction;
+import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.cache.Cache;
 import org.hibernate.cache.CacheException;
@@ -39,7 +39,7 @@ public class GemFireCacheProvider implements CacheProvider {
 
   private static final Logger logger = LogService.getLogger();
 
-  protected com.gemstone.gemfire.cache.Cache _cache;
+  protected org.apache.geode.cache.Cache _cache;
 
   private DistributedLockService distributedLockService;
 
@@ -175,7 +175,7 @@ public class GemFireCacheProvider implements CacheProvider {
         this.distributedLockService = existing;
       }
     } 
-    catch (com.gemstone.gemfire.cache.CacheException e) {
+    catch (org.apache.geode.cache.CacheException e) {
       throw new CacheException(e);
     }
 

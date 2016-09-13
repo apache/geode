@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache30;
+package org.apache.geode.cache30;
 
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.VM;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
 
 /**
  * An instance of this class is delegated to by test classes that test
@@ -227,15 +227,15 @@ public class DiskRegionTestImpl implements Serializable {
       
       private Object valueInVM(Region rgn, Object key)
       throws EntryNotFoundException {
-        com.gemstone.gemfire.internal.cache.LocalRegion lrgn =
-          (com.gemstone.gemfire.internal.cache.LocalRegion)rgn;
+        org.apache.geode.internal.cache.LocalRegion lrgn =
+          (org.apache.geode.internal.cache.LocalRegion)rgn;
         return lrgn.getValueInVM(key);
       }
             
       private Object valueOnDisk(Region rgn, Object key)
       throws EntryNotFoundException {
-        com.gemstone.gemfire.internal.cache.LocalRegion lrgn =
-          (com.gemstone.gemfire.internal.cache.LocalRegion)rgn;
+        org.apache.geode.internal.cache.LocalRegion lrgn =
+          (org.apache.geode.internal.cache.LocalRegion)rgn;
         return lrgn.getValueOnDisk(key);
       }
     });

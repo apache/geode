@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.control;
+package org.apache.geode.internal.cache.control;
 
 import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.cache.control.RebalanceResults;
-import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
+import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 
 public class RebalanceResultsImpl implements RebalanceResults, Serializable {
   private Set<PartitionRebalanceInfo> detailSet = new TreeSet<PartitionRebalanceInfo>();

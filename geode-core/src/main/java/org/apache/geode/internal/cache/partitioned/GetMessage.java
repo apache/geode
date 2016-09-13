@@ -15,39 +15,39 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.partitioned;
+package org.apache.geode.internal.cache.partitioned;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
-import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
-import com.gemstone.gemfire.internal.cache.DataLocationException;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyInfo;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
-import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
-import com.gemstone.gemfire.internal.cache.Token;
-import com.gemstone.gemfire.internal.cache.VersionTagHolder;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
-import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.TransactionDataNotColocatedException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion.RawValue;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.DataLocationException;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.VersionTagHolder;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataInput;
@@ -58,10 +58,10 @@ import java.util.Set;
 
 /**
  * This message is used as the request for a
- * {@link com.gemstone.gemfire.cache.Region#get(Object)}operation. The reply is
- * sent in a {@link com.gemstone.gemfire.internal.cache.partitioned.GetMessage}. 
+ * {@link org.apache.geode.cache.Region#get(Object)}operation. The reply is
+ * sent in a {@link org.apache.geode.internal.cache.partitioned.GetMessage}. 
  * 
- * Since the {@link com.gemstone.gemfire.cache.Region#get(Object)}operation is
+ * Since the {@link org.apache.geode.cache.Region#get(Object)}operation is
  * used <bold>very </bold> frequently the performance of this class is critical.
  * 
  * @since GemFire 5.0
@@ -270,7 +270,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
 
   /**
    * Sends a PartitionedRegion
-   * {@link com.gemstone.gemfire.cache.Region#get(Object)} message   
+   * {@link org.apache.geode.cache.Region#get(Object)} message   
    * 
    * @param recipient
    *          the member that the get message is sent to
@@ -306,10 +306,10 @@ public final class GetMessage extends PartitionMessageWithDirectReply
 
   /**
    * This message is used for the reply to a
-   * {@link com.gemstone.gemfire.cache.Region#get(Object)}operation This is the
+   * {@link org.apache.geode.cache.Region#get(Object)}operation This is the
    * reply to a {@link GetMessage}.
    * 
-   * Since the {@link com.gemstone.gemfire.cache.Region#get(Object)}operation
+   * Since the {@link org.apache.geode.cache.Region#get(Object)}operation
    * is used <bold>very </bold> frequently the performance of this class is
    * critical.
    * 
@@ -517,7 +517,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
 
   /**
    * A processor to capture the value returned by {@link 
-   * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
+   * org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
    * 
    * @since GemFire 5.0
    */

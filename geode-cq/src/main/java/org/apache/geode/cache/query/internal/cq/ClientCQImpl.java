@@ -14,36 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.cq;
+package org.apache.geode.cache.query.internal.cq;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.client.internal.ProxyCache;
-import com.gemstone.gemfire.cache.client.internal.ServerCQProxyImpl;
-import com.gemstone.gemfire.cache.client.internal.ServerRegionProxy;
-import com.gemstone.gemfire.cache.client.internal.UserAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributes;
-import com.gemstone.gemfire.cache.query.CqAttributesMutator;
-import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.CqListener;
-import com.gemstone.gemfire.cache.query.CqResults;
-import com.gemstone.gemfire.cache.query.CqStatusListener;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
-import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ProxyCache;
+import org.apache.geode.cache.client.internal.ServerCQProxyImpl;
+import org.apache.geode.cache.client.internal.ServerRegionProxy;
+import org.apache.geode.cache.client.internal.UserAttributes;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqAttributesMutator;
+import org.apache.geode.cache.query.CqClosedException;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqResults;
+import org.apache.geode.cache.query.CqStatusListener;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.internal.CqStateImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.security.GemFireSecurityException;
 
 public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   private static final Logger logger = LogService.getLogger();
@@ -75,7 +75,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   }
   
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#getCQProxy()
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#getCQProxy()
    */
   public ServerCQProxyImpl getCQProxy() {
     return this.cqProxy;
@@ -585,7 +585,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
 
   /* (non-Javadoc)
-   * @see com.gemstone.gemfire.cache.query.internal.InternalCqQuery2#setProxyCache(com.gemstone.gemfire.cache.client.internal.ProxyCache)
+   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#setProxyCache(org.apache.geode.cache.client.internal.ProxyCache)
    */
   @Override
   public void setProxyCache(ProxyCache proxyCache){

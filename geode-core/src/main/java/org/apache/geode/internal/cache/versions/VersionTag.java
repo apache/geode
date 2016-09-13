@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.versions;
+package org.apache.geode.internal.cache.versions;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -23,13 +23,13 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 
 /**
  * VersionTags are sent with distribution messages and carry version info
@@ -421,7 +421,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
 
 
   public int getSizeInBytes() {
-    int size = com.gemstone.gemfire.internal.cache.lru.Sizeable.PER_OBJECT_OVERHEAD + VersionTag.TAG_SIZE;
+    int size = org.apache.geode.internal.cache.lru.Sizeable.PER_OBJECT_OVERHEAD + VersionTag.TAG_SIZE;
     // member size calculation 
     size += memberID.getSizeInBytes();
     return size;

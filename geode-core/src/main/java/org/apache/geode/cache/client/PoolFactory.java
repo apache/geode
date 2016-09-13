@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.*; // for javadocs
-import com.gemstone.gemfire.cache.query.*; // for javadocs
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.*; // for javadocs
+import org.apache.geode.cache.query.*; // for javadocs
 
 
 /**
@@ -432,7 +432,7 @@ public interface PoolFactory {
    * By default setPRSingleHopEnabled is <code>true</code>
    * in which case the client is aware of the location of partitions on servers hosting
    * {@link Region regions} with
-   * {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}.
+   * {@link org.apache.geode.cache.DataPolicy#PARTITION}.
    * Using this information, the client routes the client cache operations
    * directly to the server which is hosting the required partition for the
    * cache operation using a single network hop.
@@ -445,9 +445,9 @@ public interface PoolFactory {
    * to go to the required partition for that cache operation.
    * The client will use fewer network connections to the servers.
    * <p>
-   * Caution: for {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION partition} regions
+   * Caution: for {@link org.apache.geode.cache.DataPolicy#PARTITION partition} regions
    *  with
-   * {@link com.gemstone.gemfire.cache.PartitionAttributesFactory#setLocalMaxMemory(int) local-max-memory}
+   * {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int) local-max-memory}
    * equal to zero, no cache operations mentioned above will be routed to those
    * servers as they do not host any partitions.
    * 

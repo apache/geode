@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.internal;
+package org.apache.geode.admin.internal;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.*;
-import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.statistics.GemFireStatSampler;
-import com.gemstone.gemfire.internal.statistics.platform.ProcessStats;
+import org.apache.geode.CancelException;
+import org.apache.geode.admin.*;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.statistics.GemFireStatSampler;
+import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 import java.util.*;
 

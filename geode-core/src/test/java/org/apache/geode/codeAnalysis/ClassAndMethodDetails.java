@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.codeAnalysis;
+package org.apache.geode.codeAnalysis;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledClass;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledCode;
-import com.gemstone.gemfire.codeAnalysis.decode.CompiledMethod;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
+import org.apache.geode.codeAnalysis.decode.CompiledCode;
+import org.apache.geode.codeAnalysis.decode.CompiledMethod;
 
 /**
  * A class used to store the names of dataserializable classes and the sizes

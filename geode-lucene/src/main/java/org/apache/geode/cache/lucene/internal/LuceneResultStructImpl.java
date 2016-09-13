@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal;
+package org.apache.geode.cache.lucene.internal;
 
-import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
 
 public class LuceneResultStructImpl<K,V> implements LuceneResultStruct<K,V> {
   K key;

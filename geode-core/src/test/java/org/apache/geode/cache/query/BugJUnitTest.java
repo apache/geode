@@ -20,9 +20,9 @@
  *
  * Created on April 13, 2005, 2:40 PM
  */
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
-import static com.gemstone.gemfire.cache.query.data.TestData.createAndPopulateSet;
+import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -34,17 +34,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.data.Position;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.internal.QueryUtils;
-import com.gemstone.gemfire.internal.cache.LocalDataSet;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.cache.query.data.TestData.MyValue;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.data.Position;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.QueryObserverAdapter;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.query.internal.QueryUtils;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.query.data.TestData.MyValue;
 
 /**
  * Tests reported bugs
@@ -116,7 +116,7 @@ public class BugJUnitTest {
     String[] queries = new String[] {
       "SELECT DISTINCT * FROM /pos where NOT(SELECT DISTINCT * FROM /pos p where p.ID = 0).isEmpty",
       "-- AMBIGUOUS\n" +
-          "import com.gemstone.gemfire.cache.\"query\".data.Portfolio; " +
+          "import org.apache.geode.cache.\"query\".data.Portfolio; " +
           "SELECT DISTINCT * FROM /pos TYPE Portfolio where status = ELEMENT(SELECT DISTINCT * FROM /pos p TYPE Portfolio where ID = 0).status",
       "SELECT DISTINCT * FROM /pos where status = ELEMENT(SELECT DISTINCT * FROM /pos p where p.ID = 0).status",
       "SELECT DISTINCT * FROM /pos x where status = ELEMENT(SELECT DISTINCT * FROM /pos p where p.ID = x.ID).status",
@@ -147,7 +147,7 @@ public class BugJUnitTest {
     Query q;
     Object r;
     
-    queryStr = "import com.gemstone.gemfire.cache.\"query\".data.Portfolio; " +
+    queryStr = "import org.apache.geode.cache.\"query\".data.Portfolio; " +
             "select distinct * from /pos, (select distinct * from /pos p TYPE Portfolio, p.positions where value!=null)";
     q = qs.newQuery(queryStr);
 //    DebuggerSupport.waitForJavaDebugger(cache.getLogger());
@@ -224,7 +224,7 @@ public class BugJUnitTest {
     CacheUtils.getLogger().fine(queryStr);
     CacheUtils.getLogger().fine(Utils.printResult(r));
      
-    queryStr = "import com.gemstone.gemfire.cache.\"query\".data.Position;" +
+    queryStr = "import org.apache.geode.cache.\"query\".data.Position;" +
       "select distinct value.secId from /pos, (map<string, Position>)getPositions(23)";
     q = qs.newQuery(queryStr);
 //    DebuggerSupport.waitForJavaDebugger(cache.getLogger());

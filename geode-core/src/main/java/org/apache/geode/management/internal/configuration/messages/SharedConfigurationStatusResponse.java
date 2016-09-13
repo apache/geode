@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.configuration.messages;
+package org.apache.geode.management.internal.configuration.messages;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,10 +25,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
-import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfigurationStatus;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 
 /*****
  * 

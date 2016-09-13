@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal;
+package org.apache.geode.internal;
 
 import static org.junit.Assert.*;
 
@@ -39,11 +39,11 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.internal.ClassPathLoaderTest.BrokenClassLoader;
-import com.gemstone.gemfire.internal.ClassPathLoaderTest.NullClassLoader;
-import com.gemstone.gemfire.internal.ClassPathLoaderTest.SimpleClassLoader;
+import org.apache.geode.internal.ClassPathLoaderTest.BrokenClassLoader;
+import org.apache.geode.internal.ClassPathLoaderTest.NullClassLoader;
+import org.apache.geode.internal.ClassPathLoaderTest.SimpleClassLoader;
 
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for {@link ClassPathLoader}.

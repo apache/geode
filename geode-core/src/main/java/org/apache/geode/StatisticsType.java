@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire;
+package org.apache.geode;
 
-//import com.gemstone.gemfire.internal.Assert;
+//import org.apache.geode.internal.Assert;
 //import java.io.*;
 //import java.util.*;
 

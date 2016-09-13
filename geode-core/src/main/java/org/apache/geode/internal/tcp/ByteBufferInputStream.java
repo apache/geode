@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.tcp;
+package org.apache.geode.internal.tcp;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -29,10 +29,10 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import com.gemstone.gemfire.internal.ByteBufferWriter;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.offheap.AddressableMemoryManager;
-import com.gemstone.gemfire.internal.offheap.StoredObject;
+import org.apache.geode.internal.ByteBufferWriter;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.offheap.AddressableMemoryManager;
+import org.apache.geode.internal.offheap.StoredObject;
 
 /**
  * <p>

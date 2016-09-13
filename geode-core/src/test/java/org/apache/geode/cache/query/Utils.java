@@ -20,14 +20,14 @@
  * Created on March 11, 2005, 12:34 PM
  */
 
-package com.gemstone.gemfire.cache.query;
+package org.apache.geode.cache.query;
 
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.data.PortfolioData;
-import com.gemstone.gemfire.cache.query.data.Position;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.data.PortfolioData;
+import org.apache.geode.cache.query.data.Position;
 
 import parReg.query.unittest.NewPortfolio;
 

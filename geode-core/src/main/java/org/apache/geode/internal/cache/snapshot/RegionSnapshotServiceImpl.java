@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.cache.snapshot;
+package org.apache.geode.internal.cache.snapshot;
 
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.ProxyRegion;
-import com.gemstone.gemfire.cache.execute.*;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
-import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
-import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ProxyRegion;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
+import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
+import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
+import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.getLoggerI18n;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.getLoggerI18n;
 
 /**
  * Provides an implementation for region snapshots.
@@ -487,7 +487,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     @Override
     public String getId() {
-      return "com.gemstone.gemfire.cache.snapshot.ParallelExport";
+      return "org.apache.geode.cache.snapshot.ParallelExport";
     }
 
     @Override
@@ -533,7 +533,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     @Override
     public String getId() {
-      return "com.gemstone.gemfire.cache.snapshot.ParallelImport";
+      return "org.apache.geode.cache.snapshot.ParallelImport";
     }
 
     @Override

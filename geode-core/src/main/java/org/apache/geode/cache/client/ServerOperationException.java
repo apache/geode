@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client;
+package org.apache.geode.cache.client;
 
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
  * An exception indicating that a failure has happened on the server

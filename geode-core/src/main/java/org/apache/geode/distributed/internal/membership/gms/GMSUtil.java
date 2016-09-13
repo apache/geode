@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -25,8 +25,8 @@ import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.internal.net.SocketCreator;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.internal.net.SocketCreator;
 
 public class GMSUtil {
   

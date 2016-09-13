@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.admin.jmx.internal;
+package org.apache.geode.admin.jmx.internal;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.internal.DistributionConfig.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,16 +32,16 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.admin.DistributionLocatorConfig;
-import com.gemstone.gemfire.admin.internal.DistributedSystemConfigImpl;
-import com.gemstone.gemfire.admin.internal.InetAddressUtil;
-import com.gemstone.gemfire.admin.jmx.Agent;
-import com.gemstone.gemfire.admin.jmx.AgentConfig;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.util.IOUtils;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
+import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.admin.jmx.Agent;
+import org.apache.geode.admin.jmx.AgentConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.util.IOUtils;
 
 /**
  * Provides the JMX Agent configuration properties.
@@ -1364,7 +1364,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Returns {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#DEFAULT_HTTP_PORT}
+   * org.apache.geode.admin.jmx.AgentConfig#DEFAULT_HTTP_PORT}
    * if httpPort is empty; else validates
    * that it's an integer and returns the int form.
    */
@@ -1378,8 +1378,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Validates that httpPort is either zero or within the {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#MIN_HTTP_PORT} and {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#MAX_HTTP_PORT} values.
+   * org.apache.geode.admin.jmx.AgentConfig#MIN_HTTP_PORT} and {@link
+   * org.apache.geode.admin.jmx.AgentConfig#MAX_HTTP_PORT} values.
    */
   private int validateHttpPort(int val) {
     if (val < 0 || val > MAX_HTTP_PORT) {
@@ -1392,7 +1392,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Returns {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#DEFAULT_HTTP_BIND_ADDRESS}
+   * org.apache.geode.admin.jmx.AgentConfig#DEFAULT_HTTP_BIND_ADDRESS}
    * unless httpBindAddress can be used to
    * create a valid InetAddress.
    */
@@ -1419,7 +1419,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Returns {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#DEFAULT_SNMP_BIND_ADDRESS}
+   * org.apache.geode.admin.jmx.AgentConfig#DEFAULT_SNMP_BIND_ADDRESS}
    * unless snmpBindAddress can be used to
    * create a valid InetAddress.
    */
@@ -1461,7 +1461,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   // RMIConnectorServer property validators...
 
   /**
-   * Returns {@link com.gemstone.gemfire.admin.jmx.AgentConfig#DEFAULT_RMI_PORT}
+   * Returns {@link org.apache.geode.admin.jmx.AgentConfig#DEFAULT_RMI_PORT}
    * if rmiPort is empty; else validates
    * that it's an integer and returns the int form.
    */
@@ -1475,8 +1475,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Validates that rmiPort is either zero or within the {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#MIN_RMI_PORT}
-   * and {@link com.gemstone.gemfire.admin.jmx.AgentConfig#MAX_RMI_PORT}
+   * org.apache.geode.admin.jmx.AgentConfig#MIN_RMI_PORT}
+   * and {@link org.apache.geode.admin.jmx.AgentConfig#MAX_RMI_PORT}
    * values.
    */
   private int validateRmiPort(int val) {
@@ -1489,7 +1489,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   }
 
   /**
-   * Returns {@link com.gemstone.gemfire.admin.jmx.AgentConfig#DEFAULT_RMI_SERVER_PORT}
+   * Returns {@link org.apache.geode.admin.jmx.AgentConfig#DEFAULT_RMI_SERVER_PORT}
    * if rmi-server-port is empty; else validates that it's an integer within the
    * allowed range and returns the int form.
    */
@@ -1503,8 +1503,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Validates that rmiPort is either zero or within the {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#MIN_RMI_PORT}
-   * and {@link com.gemstone.gemfire.admin.jmx.AgentConfig#MAX_RMI_PORT}
+   * org.apache.geode.admin.jmx.AgentConfig#MIN_RMI_PORT}
+   * and {@link org.apache.geode.admin.jmx.AgentConfig#MAX_RMI_PORT}
    * values.
    */
   private int validateRmiServerPort(int val) {
@@ -1518,7 +1518,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Returns {@link
-   * com.gemstone.gemfire.admin.jmx.AgentConfig#DEFAULT_RMI_BIND_ADDRESS}
+   * org.apache.geode.admin.jmx.AgentConfig#DEFAULT_RMI_BIND_ADDRESS}
    * unless rmiBindAddress can be used to create a
    * valid InetAddress.
    */

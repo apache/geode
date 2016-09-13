@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.pdx;
+package org.apache.geode.pdx;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
@@ -41,31 +41,31 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.DeltaTestImpl;
-import com.gemstone.gemfire.ToDataException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.PdxSerializerObject;
-import com.gemstone.gemfire.internal.SystemAdmin;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import com.gemstone.gemfire.internal.util.ArrayUtils;
-import com.gemstone.gemfire.pdx.internal.DataSize;
-import com.gemstone.gemfire.pdx.internal.PdxReaderImpl;
-import com.gemstone.gemfire.pdx.internal.PdxType;
-import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
-import com.gemstone.gemfire.pdx.internal.TypeRegistry;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.DeltaTestImpl;
+import org.apache.geode.ToDataException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.PdxSerializerObject;
+import org.apache.geode.internal.SystemAdmin;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.pdx.internal.DataSize;
+import org.apache.geode.pdx.internal.PdxReaderImpl;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.PdxWriterImpl;
+import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class PdxSerializableJUnitTest {
@@ -1645,7 +1645,7 @@ public class PdxSerializableJUnitTest {
      * (non-Javadoc)
      * 
      * @see
-     * com.gemstone.gemfire.pdx.PdxSerializable#toData(com.gemstone.gemfire.
+     * org.apache.geode.pdx.PdxSerializable#toData(org.apache.geode.
      * pdx.PdxWriter)
      */
     public void toData(PdxWriter out) {
@@ -1656,7 +1656,7 @@ public class PdxSerializableJUnitTest {
      * (non-Javadoc)
      * 
      * @see
-     * com.gemstone.gemfire.pdx.PdxSerializable#fromData(com.gemstone.gemfire
+     * org.apache.geode.pdx.PdxSerializable#fromData(org.apache.geode
      * .pdx.PdxReader)
      */
     public void fromData(PdxReader in) {

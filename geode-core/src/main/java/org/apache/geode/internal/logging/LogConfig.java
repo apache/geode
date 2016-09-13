@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.logging;
+package org.apache.geode.internal.logging;
 
 import java.io.File;
 
@@ -23,7 +23,7 @@ public interface LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#log-level">"log-level"</a> property
    *
-   * @see com.gemstone.gemfire.internal.logging.LogWriterImpl
+   * @see org.apache.geode.internal.logging.LogWriterImpl
    */
   int getLogLevel();
   /**
@@ -54,7 +54,7 @@ public interface LogConfig {
    * A name is optional and by default empty.
    * If set it must be unique in the ds.
    * When set its used by tools to help identify the member.
-   * <p> The default value is: {@link com.gemstone.gemfire.distributed.internal.DistributionConfig#DEFAULT_NAME}.
+   * <p> The default value is: {@link org.apache.geode.distributed.internal.DistributionConfig#DEFAULT_NAME}.
    * @return the system's name.
    */
   String getName();

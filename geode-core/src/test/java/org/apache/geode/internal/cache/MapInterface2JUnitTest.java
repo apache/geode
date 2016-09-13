@@ -19,7 +19,7 @@
  *
  * 
  */
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -30,19 +30,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * 
@@ -210,7 +210,7 @@ public class MapInterface2JUnitTest {
        region.getCache().getLogger().info("*******Main THread coming out of wait*********");
       region.put("test","test");
       fail("The put operation should not have succeeded");
-     }catch (com.gemstone.gemfire.cache.TimeoutException cwe) {
+     }catch (org.apache.geode.cache.TimeoutException cwe) {
        assertTrue("The test correctly encounetred a TimeoutException"+ cwe.toString() , true);   
      } catch(InterruptedException ie) {
        fail("The main thread experienced Interruption"+ie);

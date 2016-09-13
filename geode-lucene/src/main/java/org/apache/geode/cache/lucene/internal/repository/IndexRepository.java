@@ -17,11 +17,11 @@
  * under the License.
  */
 
-package com.gemstone.gemfire.cache.lucene.internal.repository;
+package org.apache.geode.cache.lucene.internal.repository;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.Query;

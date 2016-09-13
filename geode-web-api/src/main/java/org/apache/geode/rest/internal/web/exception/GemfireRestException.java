@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.rest.internal.web.exception;
+package org.apache.geode.rest.internal.web.exception;
 
-import com.gemstone.gemfire.GemFireException;
+import org.apache.geode.GemFireException;
 
 /**
  * Indicates that error encountered while processing REST request.

@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.commands;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.management.cli.CliMetaData;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.cli.util.MemberNotFoundException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 
 import org.springframework.shell.core.CommandMarker;
 
@@ -40,10 +40,10 @@ import org.springframework.shell.core.CommandMarker;
  * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality for implementing
  * command classes with command for the GemFire shell (gfsh).
  * <p>
- * @see com.gemstone.gemfire.cache.Cache
- * @see com.gemstone.gemfire.cache.execute.FunctionService
- * @see com.gemstone.gemfire.distributed.DistributedMember
- * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.execute.FunctionService
+ * @see org.apache.geode.distributed.DistributedMember
+ * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.springframework.shell.core.CommandMarker
  * @since GemFire 7.0
  */
@@ -125,8 +125,8 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
    * </p>
    * @param cache the GemFire cache.
    * @return all members in the GemFire distributed system/cache.
-   * @see com.gemstone.gemfire.management.internal.cli.CliUtil#getAllMembers(com.gemstone.gemfire.cache.Cache)
-   * @deprecated use CliUtil.getAllMembers(com.gemstone.gemfire.cache.Cache) instead
+   * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.cache.Cache)
+   * @deprecated use CliUtil.getAllMembers(org.apache.geode.cache.Cache) instead
    */
   @Deprecated
   protected Set<DistributedMember> getMembers(final Cache cache) {

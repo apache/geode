@@ -16,8 +16,8 @@
  */
 
 
-package com.gemstone.gemfire.cache;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+package org.apache.geode.cache;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.*;
 

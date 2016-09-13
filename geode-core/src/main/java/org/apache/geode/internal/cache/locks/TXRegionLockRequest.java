@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache.locks;
+package org.apache.geode.internal.cache.locks;
 
-import com.gemstone.gemfire.DataSerializable;
-//import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.DataSerializable;
+//import org.apache.geode.cache.Region;
 import java.util.Set;
 
 /** Specifies a set of keys to try-lock within the scope of a region */

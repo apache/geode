@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.client.internal;
+package org.apache.geode.cache.client.internal;
 
-import com.gemstone.gemfire.cache.client.internal.AbstractOp;
-import com.gemstone.gemfire.cache.client.internal.ConnectionStats;
-import com.gemstone.gemfire.cache.client.internal.ExecutablePool;
-import com.gemstone.gemfire.cache.client.internal.QueryOp;
-import com.gemstone.gemfire.cache.client.internal.QueryOp.QueryOpImpl;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import org.apache.geode.cache.client.internal.AbstractOp;
+import org.apache.geode.cache.client.internal.ConnectionStats;
+import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.cache.client.internal.QueryOp;
+import org.apache.geode.cache.client.internal.QueryOp.QueryOpImpl;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
  * Creates a CQ and fetches initial results on a server
@@ -56,7 +56,7 @@ public class CreateCQWithIROp {
    */
   private static class CreateCQWithIROpImpl extends QueryOpImpl {
     /**
-     * @throws com.gemstone.gemfire.SerializationException if serialization fails
+     * @throws org.apache.geode.SerializationException if serialization fails
      */
     public CreateCQWithIROpImpl(String cqName, String queryStr,
         int cqState, boolean isDurable, byte regionDataPolicy) {

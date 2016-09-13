@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.cache;
+package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,11 +41,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.test.fake.Fakes;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ColocationHelperTest {
@@ -98,7 +98,7 @@ public class ColocationHelperTest {
   }
 
   /**
-   * Test method for {@link com.gemstone.gemfire.internal.cache.ColocationHelper#getColocatedRegion(com.gemstone.gemfire.internal.cache.PartitionedRegion)}.
+   * Test method for {@link org.apache.geode.internal.cache.ColocationHelper#getColocatedRegion(org.apache.geode.internal.cache.PartitionedRegion)}.
    */
   @Test
   public void testGetColocatedRegionThrowsIllegalStateExceptionForMissingParentRegion() {
@@ -122,7 +122,7 @@ public class ColocationHelperTest {
   }
 
   /**
-   * Test method for {@link com.gemstone.gemfire.internal.cache.ColocationHelper#getColocatedRegion(com.gemstone.gemfire.internal.cache.PartitionedRegion)}.
+   * Test method for {@link org.apache.geode.internal.cache.ColocationHelper#getColocatedRegion(org.apache.geode.internal.cache.PartitionedRegion)}.
    */
   @Test
   public void testGetColocatedRegionLogsWarningForMissingRegionWhenPRConfigHasRegion() {

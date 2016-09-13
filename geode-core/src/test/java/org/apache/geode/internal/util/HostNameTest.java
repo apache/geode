@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.util;
+package org.apache.geode.internal.util;
 
-import static com.gemstone.gemfire.internal.lang.SystemUtils.*;
-import static com.gemstone.gemfire.internal.util.HostName.*;
+import static org.apache.geode.internal.lang.SystemUtils.*;
+import static org.apache.geode.internal.util.HostName.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 import org.junit.Rule;
 import org.junit.Test;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.management.internal.web.shell;
+package org.apache.geode.management.internal.web.shell;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,19 +25,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.gemstone.gemfire.internal.lang.Filter;
-import com.gemstone.gemfire.internal.lang.Initable;
-import com.gemstone.gemfire.internal.lang.StringUtils;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
-import com.gemstone.gemfire.management.internal.cli.CommandRequest;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.web.domain.Link;
-import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
-import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
-import com.gemstone.gemfire.management.internal.web.http.HttpHeader;
-import com.gemstone.gemfire.management.internal.web.util.ConvertUtils;
+import org.apache.geode.internal.lang.Filter;
+import org.apache.geode.internal.lang.Initable;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.cli.CommandRequest;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.http.ClientHttpRequest;
+import org.apache.geode.management.internal.web.http.HttpHeader;
+import org.apache.geode.management.internal.web.util.ConvertUtils;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpMethod;
@@ -52,12 +52,12 @@ import org.springframework.web.util.UriTemplate;
  * GemFire shell command invocations into HTTP requests to a corresponding REST API call hosted by the GemFire Manager's
  * HTTP service using the Spring RestTemplate.
  * 
- * @see com.gemstone.gemfire.internal.lang.Initable
- * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
- * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.AbstractHttpOperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
- * @see com.gemstone.gemfire.management.internal.web.shell.SimpleHttpOperationInvoker
+ * @see org.apache.geode.internal.lang.Initable
+ * @see org.apache.geode.management.internal.cli.shell.Gfsh
+ * @see org.apache.geode.management.internal.cli.shell.OperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.AbstractHttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker
+ * @see org.apache.geode.management.internal.web.shell.SimpleHttpOperationInvoker
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
@@ -80,7 +80,7 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * referencing all REST API web service endpoints.  This constructor should only be used for testing purposes.
    * 
    * @param linkIndex the LinkIndex containing Links to all REST API web service endpoints in GemFire's REST interface.
-   * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
+   * @see org.apache.geode.management.internal.web.domain.LinkIndex
    */
   RestHttpOperationInvoker(final LinkIndex linkIndex) {
     super(REST_API_URL);
@@ -97,9 +97,9 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * 
    * @param linkIndex the LinkIndex containing Links to all REST API web service endpoints in GemFire' REST interface.
    * @param gfsh a reference to the instance of the GemFire shell using this OperationInvoker to process commands.
-   * @see #RestHttpOperationInvoker(com.gemstone.gemfire.management.internal.web.domain.LinkIndex, com.gemstone.gemfire.management.internal.cli.shell.Gfsh,  Map)
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
-   * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
+   * @see #RestHttpOperationInvoker(org.apache.geode.management.internal.web.domain.LinkIndex, org.apache.geode.management.internal.cli.shell.Gfsh,  Map)
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.web.domain.LinkIndex
    */
   public RestHttpOperationInvoker(final LinkIndex linkIndex, final Gfsh gfsh, Map<String,String> securityProperties) {
     this(linkIndex, gfsh, CliStrings.CONNECT__DEFAULT_BASE_URL, securityProperties);
@@ -115,8 +115,8 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * @param linkIndex the LinkIndex containing Links to all REST API web service endpoints in GemFire's REST interface.
    * @param gfsh a reference to the instance of the GemFire shell using this OperationInvoker to process commands.
    * @param baseUrl the String specifying the base URL to the GemFire Manager's HTTP service, REST interface.
-   * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
-   * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
+   * @see org.apache.geode.management.internal.web.domain.LinkIndex
+   * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
   public RestHttpOperationInvoker(final LinkIndex linkIndex, final Gfsh gfsh, final String baseUrl, Map<String,String> securityProperties) {
     super(gfsh, baseUrl, securityProperties);
@@ -130,7 +130,7 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * Initializes the RestHttpOperationInvokers scheduled and periodic monitoring task to assess the availibity of the
    * targeted GemFire Manager's HTTP service.
    * 
-   * @see com.gemstone.gemfire.internal.lang.Initable#init()
+   * @see org.apache.geode.internal.lang.Initable#init()
    * @see org.springframework.http.client.ClientHttpRequest
    */
   @SuppressWarnings("null")
@@ -196,7 +196,7 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * 
    * @return an instance of HttpOperationInvoker used by this RestHttpOperationInvoker as a fallback to process commands
    * via HTTP requests.
-   * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
+   * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker
    */
   protected HttpOperationInvoker getHttpOperationInvoker() {
     return httpOperationInvoker;
@@ -207,7 +207,7 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * web service endpoint is a URI/URL uniquely identifying the resource on which the command was invoked.
    * 
    * @return the LinkIndex containing Links for all GemFire REST API web service endpoints.
-   * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
+   * @see org.apache.geode.management.internal.web.domain.LinkIndex
    */
   protected LinkIndex getLinkIndex() {
     return linkIndex;
@@ -221,10 +221,10 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * @param command the CommandRequest object encapsulating details of the command invocation.
    * @return a client HTTP request detailing the operation to be performed on the remote resource targeted by the
    * command invocation.
-   * @see AbstractHttpOperationInvoker#createHttpRequest(com.gemstone.gemfire.management.internal.web.domain.Link)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
-   * @see com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest
-   * @see com.gemstone.gemfire.management.internal.web.util.ConvertUtils#convert(byte[][])
+   * @see AbstractHttpOperationInvoker#createHttpRequest(org.apache.geode.management.internal.web.domain.Link)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.web.http.ClientHttpRequest
+   * @see org.apache.geode.management.internal.web.util.ConvertUtils#convert(byte[][])
    */
   protected ClientHttpRequest createHttpRequest(final CommandRequest command) {
     ClientHttpRequest request = createHttpRequest(findLink(command));
@@ -259,8 +259,8 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * @param relation a String describing the relative operation (state transition) on the resource.
    * @return an instance of Link containing the HTTP request URI used to perform the intended operation on the resource.
    * @see #getLinkIndex()
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
-   * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex#find(String)
+   * @see org.apache.geode.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.domain.LinkIndex#find(String)
    */
   @Override
   protected Link findLink(final String relation) {
@@ -276,10 +276,10 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * @param command the CommandRequest object encapsulating the details of the command invocation.
    * @return a Link referencing the correct REST API web service endpoint (URI) and method for the command invocation.
    * @see #getLinkIndex()
-   * @see #resolveLink(com.gemstone.gemfire.management.internal.cli.CommandRequest, java.util.List)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
-   * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
+   * @see #resolveLink(org.apache.geode.management.internal.cli.CommandRequest, java.util.List)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.web.domain.Link
+   * @see org.apache.geode.management.internal.web.domain.LinkIndex
    */
   protected Link findLink(final CommandRequest command) {
     List<Link> linksFound = new ArrayList<>(getLinkIndex().size());
@@ -305,9 +305,9 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * @param command the CommandRequest object encapsulating details of the command invocation.
    * @param links a Collection of Links for the command matching the relation.
    * @return the resolved Link matching the command exactly as entered by the user.
-   * @see #findLink(com.gemstone.gemfire.management.internal.cli.CommandRequest)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
-   * @see com.gemstone.gemfire.management.internal.web.domain.Link
+   * @see #findLink(org.apache.geode.management.internal.cli.CommandRequest)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.web.domain.Link
    * @see org.springframework.web.util.UriTemplate
    */
   // Find and use the Link with the greatest number of path variables that can be expanded!
@@ -350,12 +350,12 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * 
    * @param command the command requested/entered by the user to be processed.
    * @return the result of the command execution.
-   * @see #createHttpRequest(com.gemstone.gemfire.management.internal.cli.CommandRequest)
+   * @see #createHttpRequest(org.apache.geode.management.internal.cli.CommandRequest)
    * @see #handleResourceAccessException(org.springframework.web.client.ResourceAccessException)
    * @see #isConnected()
-   * @see #send(com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest, Class, java.util.Map)
-   * @see #simpleProcessCommand(com.gemstone.gemfire.management.internal.cli.CommandRequest, RestApiCallForCommandNotFoundException)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
+   * @see #send(org.apache.geode.management.internal.web.http.ClientHttpRequest, Class, java.util.Map)
+   * @see #simpleProcessCommand(org.apache.geode.management.internal.cli.CommandRequest, RestApiCallForCommandNotFoundException)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
    * @see org.springframework.http.ResponseEntity
    */
   @Override
@@ -384,8 +384,8 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * could not be found.
    * @return the result of the command execution.
    * @see #getHttpOperationInvoker()
-   * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker#processCommand(com.gemstone.gemfire.management.internal.cli.CommandRequest)
-   * @see com.gemstone.gemfire.management.internal.cli.CommandRequest
+   * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker#processCommand(org.apache.geode.management.internal.cli.CommandRequest)
+   * @see org.apache.geode.management.internal.cli.CommandRequest
    */
   protected String simpleProcessCommand(final CommandRequest command, final RestApiCallForCommandNotFoundException e) {
     if (getHttpOperationInvoker() != null) {

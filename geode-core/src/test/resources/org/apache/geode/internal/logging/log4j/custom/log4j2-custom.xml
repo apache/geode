@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="FATAL" shutdownHook="disable" packages="com.gemstone.gemfire.internal.logging.log4j.custom">
+<Configuration status="FATAL" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j.custom">
     <Properties>
         <Property name="custom-pattern">CUSTOM: level=%level time=%date{yyyy/MM/dd HH:mm:ss.SSS z} message=%message%nthrowable=%throwable%n</Property>
     </Properties>
@@ -18,7 +18,7 @@
             </filters>
         </Logger>
         <Logger name="org.jgroups" level="FATAL" additivity="true"/>
-        <Logger name="com.gemstone.gemfire.internal.logging.log4j.custom" level="DEBUG" additivity="true"/>
+        <Logger name="org.apache.geode.internal.logging.log4j.custom" level="DEBUG" additivity="true"/>
         <Root level="INFO">
             <AppenderRef ref="CUSTOM"/>
             <AppenderRef ref="STDOUT"/>

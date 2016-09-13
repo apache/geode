@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.internal.admin.remote;
+package org.apache.geode.internal.admin.remote;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,12 +26,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.internal.admin.TransportConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.lang.StringUtils;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.admin.TransportConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * Tranport config for RemoteGfManagerAgent.
@@ -243,7 +243,7 @@ public class RemoteTransportConfig implements TransportConfig {
   /**
    * Returns a <code>Properties</code> based on this config that is
    * appropriate to use with {@link
-   * com.gemstone.gemfire.distributed.DistributedSystem#connect}.
+   * org.apache.geode.distributed.DistributedSystem#connect}.
    * @since GemFire 4.0
    */
   Properties toDSProperties() {

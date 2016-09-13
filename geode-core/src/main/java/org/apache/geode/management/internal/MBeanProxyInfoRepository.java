@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal;
+package org.apache.geode.management.internal;
 
 import java.util.Collections;
 import java.util.Map;
@@ -26,9 +26,9 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.logging.LogService;
 
 
 /**
@@ -125,7 +125,7 @@ public class MBeanProxyInfoRepository {
   }
 
   /**
-   * Finds the set of proxy instances by {@link com.gemstone.gemfire.distributed.DistributedMember} 
+   * Finds the set of proxy instances by {@link org.apache.geode.distributed.DistributedMember} 
    * 
    * @param member
    *          DistributedMember
@@ -147,7 +147,7 @@ public class MBeanProxyInfoRepository {
 
   /**
    * Removes a proxy of a given
-   * {@link com.gemstone.gemfire.distributed.DistributedMember} and given
+   * {@link org.apache.geode.distributed.DistributedMember} and given
    * {@link javax.management.ObjectName}
    * 
    * @param member

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.cache;
+package org.apache.geode.cache;
 
 /**
  * An exception thrown by a <code>CacheWriter</code> method. This exception
@@ -24,11 +24,11 @@ package com.gemstone.gemfire.cache;
  *
  *
  * @see CacheWriter
- * @see com.gemstone.gemfire.cache.Region#put(Object, Object)
- * @see com.gemstone.gemfire.cache.Region#destroy(Object)
- * @see com.gemstone.gemfire.cache.Region#create(Object, Object)
- * @see com.gemstone.gemfire.cache.Region#destroyRegion()
- * @see com.gemstone.gemfire.cache.Region#get(Object)
+ * @see org.apache.geode.cache.Region#put(Object, Object)
+ * @see org.apache.geode.cache.Region#destroy(Object)
+ * @see org.apache.geode.cache.Region#create(Object, Object)
+ * @see org.apache.geode.cache.Region#destroyRegion()
+ * @see org.apache.geode.cache.Region#get(Object)
  * @since GemFire 3.0
  */
 public class CacheWriterException extends OperationAbortedException {

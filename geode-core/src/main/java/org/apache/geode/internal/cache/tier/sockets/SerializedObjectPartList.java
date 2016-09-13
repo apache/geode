@@ -17,15 +17,15 @@
 /**
  * 
  */
-package com.gemstone.gemfire.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
 
 /**
  * A variant of the ObjectPartList which deserializes
