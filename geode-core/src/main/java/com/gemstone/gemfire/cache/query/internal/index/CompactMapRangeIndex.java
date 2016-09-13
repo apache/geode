@@ -16,16 +16,9 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import static javax.swing.UIManager.get;
-
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.query.IndexStatistics;
@@ -117,7 +110,6 @@ public class CompactMapRangeIndex extends AbstractMapIndex
         Object indexKey = mapEntry.getValue();
         this.saveIndexAddition(mapKey, indexKey, value, entry);
       }
-      removeOldMappings(((Map) key).entrySet(), entry);
     }
     else {
       for (Object mapKey : mapKeys) {
@@ -127,19 +119,6 @@ public class CompactMapRangeIndex extends AbstractMapIndex
           this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
       }
-    }
-  }
-
-  private void removeOldMappings(Collection presentKeys, RegionEntry entry) throws IMQException {
-    Map oldKeysAndValuesForEntry = entryToMapKeyIndexKeyMap.get(entry);
-    if (oldKeysAndValuesForEntry == null) {
-      oldKeysAndValuesForEntry = Collections.EMPTY_MAP;
-    }
-    Set<Entry> removedKeyValueEntries = oldKeysAndValuesForEntry != null ? oldKeysAndValuesForEntry.entrySet(): Collections.EMPTY_SET;
-    removedKeyValueEntries.removeAll(presentKeys);
-    for (Map.Entry<?,?> keyValue : removedKeyValueEntries){
-      CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(keyValue.getKey());
-      rg.removeMapping(keyValue.getValue(), entry);
     }
   }
   
