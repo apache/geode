@@ -364,7 +364,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(SSL_CIPHERS, "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
+    properties.put(SSL_CIPHERS, "any");
     properties.put(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
     properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
     properties.put(SSL_KEYSTORE_PASSWORD, "password");
