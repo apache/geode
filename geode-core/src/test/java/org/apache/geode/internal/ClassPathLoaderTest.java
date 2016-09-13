@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class ClassPathLoaderTest {
 
-  private static final int GENERATED_CLASS_BYTES_COUNT = 362;
+  private static final int GENERATED_CLASS_BYTES_COUNT = 354;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
