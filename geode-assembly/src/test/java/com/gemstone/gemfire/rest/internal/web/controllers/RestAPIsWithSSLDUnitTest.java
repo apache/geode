@@ -70,7 +70,6 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
@@ -324,7 +323,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       sslPropertyConverter(sslProperties, props, SSL_REQUIRE_AUTHENTICATION, null);
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE, null);
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE_PASSWORD, null);
-      sslPropertyConverter(sslProperties, props, SSL_HTTP_SERVICE_ALIAS, null);
+      sslPropertyConverter(sslProperties, props, SSL_WEB_ALIAS, null);
       sslPropertyConverter(sslProperties, props, SSL_ENABLED_COMPONENTS, null);
       sslPropertyConverter(sslProperties, props, SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, null);
       sslPropertyConverter(sslProperties, props, SSL_DEFAULT_ALIAS, null);
@@ -424,7 +423,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       if (!StringUtils.isEmpty(properties.getProperty(INVALID_CLIENT_ALIAS))) {
         return properties.getProperty(INVALID_CLIENT_ALIAS);
       } else {
-        return properties.getProperty(SSL_HTTP_SERVICE_ALIAS);
+        return properties.getProperty(SSL_WEB_ALIAS);
       }
     }).build();
 
@@ -497,7 +496,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
-    props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
+    props.setProperty(SSL_WEB_ALIAS, "httpservicekey");
     props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);
@@ -514,7 +513,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
-    props.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpservicekey");
+    props.setProperty(SSL_WEB_ALIAS, "httpservicekey");
     props.setProperty(INVALID_CLIENT_ALIAS, "someAlias");
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);

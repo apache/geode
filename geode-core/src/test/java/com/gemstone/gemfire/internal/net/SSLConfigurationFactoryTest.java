@@ -127,7 +127,7 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
     properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
-    properties.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpAlias");
+    properties.setProperty(SSL_WEB_ALIAS, "httpAlias");
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -147,7 +147,7 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
     properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
     properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
-    properties.setProperty(SSL_HTTP_SERVICE_ALIAS, "httpAlias");
+    properties.setProperty(SSL_WEB_ALIAS, "httpAlias");
     properties.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "any");
@@ -191,7 +191,7 @@ public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
       case GATEWAY:
         return getAliasForComponent(properties, SSL_GATEWAY_ALIAS);
       case WEB:
-        return getAliasForComponent(properties, SSL_HTTP_SERVICE_ALIAS);
+        return getAliasForComponent(properties, SSL_WEB_ALIAS);
       case JMX:
         return getAliasForComponent(properties, SSL_JMX_ALIAS);
       case LOCATOR:

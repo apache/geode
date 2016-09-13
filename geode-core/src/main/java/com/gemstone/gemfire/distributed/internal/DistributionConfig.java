@@ -37,7 +37,6 @@ import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogConfig;
 import com.gemstone.gemfire.internal.security.SecurableCommunicationChannel;
-import com.gemstone.gemfire.internal.security.SecurableComponent;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 
@@ -4298,23 +4297,23 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = SSL_HTTP_SERVICE_ALIAS)
+  @ConfigAttributeGetter(name = SSL_WEB_ALIAS)
   String getHTTPServiceSSLAlias();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_ALIAS}
+   * Sets the value of the {@link ConfigurationProperties#SSL_WEB_ALIAS}
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = SSL_HTTP_SERVICE_ALIAS)
+  @ConfigAttributeSetter(name = SSL_WEB_ALIAS)
   void setHTTPServiceSSLAlias(String alias);
 
   /**
-   * The name of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_ALIAS} property
+   * The name of the {@link ConfigurationProperties#SSL_WEB_ALIAS} property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
-  String HTTP_SERVICE_SSL_ALIAS_NAME = SSL_HTTP_SERVICE_ALIAS;
+  String HTTP_SERVICE_SSL_ALIAS_NAME = SSL_WEB_ALIAS;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_JMX_ALIAS}

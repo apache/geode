@@ -946,7 +946,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     m.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
-    m.put(SSL_HTTP_SERVICE_ALIAS, LocalizedStrings.AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+    m.put(SSL_WEB_ALIAS, LocalizedStrings.AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(HTTP_SERVICE_PORT, "If non zero, then the gemfire developer REST service will be deployed and started when the cache is created. Default value is 0.");
     m.put(HTTP_SERVICE_BIND_ADDRESS, "The address where gemfire developer REST service will listen for remote REST connections. Default is \"\" which causes the Rest service to listen on the host's default address.");
 

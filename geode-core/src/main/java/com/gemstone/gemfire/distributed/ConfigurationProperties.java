@@ -601,15 +601,15 @@ public interface ConfigurationProperties {
    */
   String HTTP_SERVICE_PORT = "http-service-port";
   /**
-   * The static String definition of the <i>"ssl-http-alias"</i> property
-   * <a name="ssl-http-alias"/a></p>
+   * The static String definition of the <i>"ssl-web-alias"</i> property
+   * <a name="ssl-web-alias"/a></p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the HTTP service.
    * </p>
    * <U><i>Optional</i></U>
    * <U>Default</U>: "" </p>
    * <U>Since</U>: Geode 1.0
    */
-  String SSL_HTTP_SERVICE_ALIAS = "ssl-http-alias";
+  String SSL_WEB_ALIAS = "ssl-web-alias";
   /**
    * The static String definition of the <i>"http-service-ssl-ciphers"</i> property
    * <a name="http-service-ssl-ciphers"/a></p>
@@ -632,7 +632,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_HTTP_SERVICE_ALIAS}
+   * @deprecated Since Geode 1.0 use {@link #SSL_ENABLED_COMPONENTS} with optional {@link #SSL_WEB_ALIAS}
    */
   @Deprecated
   String HTTP_SERVICE_SSL_ENABLED = "http-service-ssl-enabled";
@@ -1813,7 +1813,7 @@ public interface ConfigurationProperties {
    *
    * <U>Description</U>This property will be set when using multi-key keystores. This will define the alias that
    * the ssl connection factory would use when no alias has been set for the different component aliases.
-   * {@link #SSL_CLUSTER_ALIAS}, {@link #SSL_SERVER_ALIAS},{@link #SSL_LOCATOR_ALIAS},{@link #SSL_GATEWAY_ALIAS},{@link #SSL_JMX_ALIAS} , {@link #SSL_HTTP_SERVICE_ALIAS}
+   * {@link #SSL_CLUSTER_ALIAS}, {@link #SSL_SERVER_ALIAS},{@link #SSL_LOCATOR_ALIAS},{@link #SSL_GATEWAY_ALIAS},{@link #SSL_JMX_ALIAS} , {@link #SSL_WEB_ALIAS}
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: Geode 1.0
