@@ -40,7 +40,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
@@ -57,8 +56,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since GemFire 2.1
  */
 @Category(IntegrationTest.class)
-public class InternalDistributedSystemJUnitTest
-{
+public class InternalDistributedSystemJUnitTest {
 
   /**
    * A connection to a distributed system created by this test
@@ -714,7 +712,7 @@ public class InternalDistributedSystemJUnitTest
     Properties props = getCommonProperties();
     props.setProperty(SSL_ENABLED_COMPONENTS, "cluster,server");
     Config config1 = new DistributionConfigImpl(props, false);
-    assertEquals("cluster server", config1.getAttribute(SSL_ENABLED_COMPONENTS));
+    assertEquals("cluster,server", config1.getAttribute(SSL_ENABLED_COMPONENTS));
   }
 
   @Rule
