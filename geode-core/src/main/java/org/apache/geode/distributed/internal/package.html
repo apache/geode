@@ -1,0 +1,55 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<HTML>
+<BODY>
+
+Classes in this package implement distribution in GemFire.
+Every virtual machine working with distributed data (client
+VMs, the GemFire console) has an
+instance of {@link
+org.apache.geode.distributed.internal.DistributionManager}
+that is responsible for sending and receiving {@link
+org.apache.geode.distributed.internal.DistributionMessage}s.
+A <code>DistributionManager</code> has a unique {@link
+org.apache.geode.distributed.internal.DistributionManager#getId
+id} and uses a JavaGroups com.gemstone.org.javagroups.Channel
+channel to discover the other members of the distributed system.  It
+also uses JavaGroups to detect when a member has left the group.  Note
+that GemStone has org.apache.geode.distributed.internal.direct.DirectChannel#patchUpAddress
+modified the implementation of the JavaGroups com.gemstone.org.jgroups.stack.IpAddress to hold the port on which
+the distribution manager's direct channel runs.  This optimization
+allows us to start a distribution manager without having to send out a
+"startup" message.  (GemStone has also modified JGroups to perform
+less XML parsing.  This greatly improves the performace of creating a
+JavaGroups channel.)  While some messages may be broadcast to all
+members of the group, the vast majority of messages are only intended
+for a subset of the group are sent point-to-point over a {@link
+org.apache.geode.distributed.internal.direct.DirectChannel}.
+The JGroups channel and <code>DirectChannel</code> are combined
+into a {@link
+org.apache.geode.distributed.internal.DistributionChannel}
+that is used by the <code>DistributionManager</code>.
+
+<P>
+
+<CENTER>
+<IMG SRC="{@docRoot}/javadoc-images/distribution-managers.gif"
+     WIDTH="573" HEIGHT="308"/>
+</CENTER>
+
+</BODY>
+</HTML>

@@ -16,14 +16,14 @@
  */
 package com.examples.ds;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
 import java.util.Date;
 import java.util.Properties;
 
 /**
- * Places various objects that use {@link com.gemstone.gemfire.DataSerializer}s 
- * and {@link com.gemstone.gemfire.Instantiator}s into a cache {@link Region}.  
+ * Places various objects that use {@link org.apache.geode.DataSerializer}s 
+ * and {@link org.apache.geode.Instantiator}s into a cache {@link Region}.  
  * Among other things, this is used to test bug 31573.
  *
  * @since GemFire 3.5

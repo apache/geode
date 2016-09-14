@@ -16,8 +16,8 @@
  */
 package ittest.io.pivotal.geode.spark.connector;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.ConfigurationProperties;
 import io.pivotal.geode.spark.connector.GeodeConnection;
 import io.pivotal.geode.spark.connector.GeodeConnectionConf;
 import io.pivotal.geode.spark.connector.GeodeConnectionConf$;

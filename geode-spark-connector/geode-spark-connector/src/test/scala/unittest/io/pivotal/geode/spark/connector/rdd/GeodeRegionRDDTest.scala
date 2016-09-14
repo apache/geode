@@ -16,7 +16,7 @@
  */
 package unittest.io.pivotal.geode.spark.connector.rdd
 
-import com.gemstone.gemfire.cache.Region
+import org.apache.geode.cache.Region
 import io.pivotal.geode.spark.connector.internal.RegionMetadata
 import io.pivotal.geode.spark.connector.internal.rdd.{GeodeRDDPartition, GeodeRegionRDD}
 import io.pivotal.geode.spark.connector.{GeodeConnectionConf, GeodeConnection}

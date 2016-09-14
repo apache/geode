@@ -17,18 +17,18 @@
 package io.pivotal.geode.spark.connector.internal.geodefunctions
 
 import java.util.concurrent.{TimeUnit, LinkedBlockingQueue, BlockingQueue}
-import com.gemstone.gemfire.DataSerializer
-import com.gemstone.gemfire.cache.execute.ResultCollector
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl
-import com.gemstone.gemfire.cache.query.types.StructType
-import com.gemstone.gemfire.distributed.DistributedMember
-import com.gemstone.gemfire.internal.{Version, ByteArrayDataInput}
+import org.apache.geode.DataSerializer
+import org.apache.geode.cache.execute.ResultCollector
+import org.apache.geode.cache.query.internal.types.StructTypeImpl
+import org.apache.geode.cache.query.types.StructType
+import org.apache.geode.distributed.DistributedMember
+import org.apache.geode.internal.{Version, ByteArrayDataInput}
 import io.pivotal.geode.spark.connector.internal.geodefunctions.StructStreamingResultSender.
        {TYPE_CHUNK, DATA_CHUNK, ERROR_CHUNK, SER_DATA, UNSER_DATA, BYTEARR_DATA}
 
 /**
  * StructStreamingResultCollector and StructStreamingResultSender are paired
- * to transfer result of list of `com.gemstone.gemfire.cache.query.Struct`
+ * to transfer result of list of `org.apache.geode.cache.query.Struct`
  * from Geode server to Spark Connector (the client of Geode server)
  * in streaming, i.e., while sender sending the result, the collector can
  * start processing the arrived result without waiting for full result to

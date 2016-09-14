@@ -33,7 +33,7 @@ dependencies {
 
 jar {
   manifest {
-    attributes 'Main-Class': 'com.gemstone.gemfire.modules.session.installer.Installer'
+    attributes 'Main-Class': 'org.apache.geode.modules.session.installer.Installer'
   }
   baseName = 'geode-modules-session'
 }

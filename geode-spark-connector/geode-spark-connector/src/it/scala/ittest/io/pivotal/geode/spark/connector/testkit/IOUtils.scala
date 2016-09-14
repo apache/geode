@@ -18,7 +18,7 @@ package ittest.io.pivotal.geode.spark.connector.testkit
 
 import java.io.{File, IOException}
 import java.net.{InetAddress, Socket}
-import com.gemstone.gemfire.internal.AvailablePort
+import org.apache.geode.internal.AvailablePort
 import scala.util.Try
 import org.apache.log4j.PropertyConfigurator
 import java.util.Properties

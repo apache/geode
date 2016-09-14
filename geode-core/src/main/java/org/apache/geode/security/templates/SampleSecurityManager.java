@@ -37,9 +37,9 @@ import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * This class provides a sample implementation of {@link SecurityManager} for
@@ -47,7 +47,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  *
  * <p>A Geode member must be configured with the following:
  *
- * <p>{@code security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager}
+ * <p>{@code security-manager = org.apache.geode.security.examples.SampleSecurityManager}
  *
  * <p>The class can be initialized with from a JSON resource called
  * {@code security.json}. This file must exist on the classpath, so members

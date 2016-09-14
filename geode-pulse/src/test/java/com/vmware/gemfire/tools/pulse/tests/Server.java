@@ -45,11 +45,11 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 
-import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
-import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
-import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
-import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import org.apache.geode.internal.security.shiro.CustomAuthRealm;
+import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
+import org.apache.geode.management.internal.security.AccessControlMBean;
+import org.apache.geode.management.internal.security.MBeanServerWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
 
 public class Server {
 

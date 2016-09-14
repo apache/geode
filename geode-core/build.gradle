@@ -135,7 +135,7 @@ sourceSets {
 
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
-  def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
+  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
   outputs.file propertiesFile
   inputs.dir compileJava.destinationDir
 
@@ -162,22 +162,22 @@ jar {
   from sourceSets.main.output
   from sourceSets.jca.output
   
-  exclude 'com/gemstone/gemfire/management/internal/web/**'
-  exclude 'com/gemstone/gemfire/internal/i18n/StringIdResourceBundle_ja.txt'
-  exclude 'com/gemstone/gemfire/admin/doc-files/ds4_0.dtd'
+  exclude 'org/apache/geode/management/internal/web/**'
+  exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
+  exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
 }
 
 task webJar (type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive containing the gemfire management web classes.'
   from sourceSets.main.output
   baseName 'geode-web'
-  include 'com/gemstone/gemfire/management/internal/web/**'
+  include 'org/apache/geode/management/internal/web/**'
 }
 
 task raJar (type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output
-  exclude 'com/gemstone/gemfire/ra/**'
+  exclude 'org/apache/geode/ra/**'
   archiveName 'ra.jar'
 }
 

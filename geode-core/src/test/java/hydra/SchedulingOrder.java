@@ -17,7 +17,7 @@
 
 package hydra;
 
-import com.gemstone.gemfire.*;
+import org.apache.geode.*;
 
 /**
  *  Abstract class for clients giving scheduling instructions to the

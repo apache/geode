@@ -61,8 +61,8 @@ Write a client application:
 _HelloWorld.java_
 
     import java.util.Map;
-    import com.gemstone.gemfire.cache.Region;
-    import com.gemstone.gemfire.cache.client.*;
+    import org.apache.geode.cache.Region;
+    import org.apache.geode.cache.client.*;
 
     public class HelloWorld {
       public static void main(String[] args) throws Exception {

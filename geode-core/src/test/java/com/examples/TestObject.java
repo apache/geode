@@ -18,9 +18,9 @@ package com.examples;
 
 /**
  * A simple test object used by the 
- * com.gemstone.gemfire.internal.enhancer.serializer.SerializingStreamPerfTest 
+ * org.apache.geode.internal.enhancer.serializer.SerializingStreamPerfTest 
  * (this test no longer exists?) 
- * that must be in a non-<code>com.gemstone</code> package.
+ * that must be in a non-<code>org.apache</code> package.
  *
  *
  * @since GemFire 3.5

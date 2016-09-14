@@ -16,7 +16,7 @@
  */
 package unittest.io.pivotal.geode.spark.connector
 
-import com.gemstone.gemfire.cache.Region
+import org.apache.geode.cache.Region
 import io.pivotal.geode.spark.connector._
 import io.pivotal.geode.spark.connector.internal.rdd.{GeodeRDDWriter, GeodePairRDDWriter}
 import org.apache.spark.{TaskContext, SparkContext}

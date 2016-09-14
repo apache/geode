@@ -76,7 +76,7 @@ REM  Expect to find the tools.jar from the JDK
     set TOOLS_JAR=
 )
 
-@set LAUNCHER=com.gemstone.gemfire.management.internal.cli.Launcher
+@set LAUNCHER=org.apache.geode.management.internal.cli.Launcher
 @if defined JAVA_ARGS (
     @set JAVA_ARGS="%JAVA_ARGS%"
 )

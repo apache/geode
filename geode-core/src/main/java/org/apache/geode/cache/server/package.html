@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<HTML>
+  <HEAD>
+    <TITLE>org.apache.geode.cache.server package</TITLE>
+  </HEAD>
+  <BODY>
+  The <code>org.apache.geode.cache.server</code> package provides APIs used
+  for the server side of client/server caching.
+<p>
+A {@link org.apache.geode.cache.server.CacheServer cache server} can be
+declared using the <code>cache-server</code> element described in the
+<code>cache6_5.dtd</code>.
+<p>
+Or it can be created by calling {@link org.apache.geode.cache.Cache#addCacheServer}.
+<p>
+Another option is to use the <code>cacheserver</code> executable which can be found
+in the GemFire <code>bin</code> directory.
+<p>
+To obtain an instance of <code>CacheServer</code> that has already been created
+use {@link org.apache.geode.cache.Cache#getCacheServers}.
+<p>
+See the <a href="{@docRoot}/org/apache/geode/cache/client/package-summary.html#package_description">client</a> package for information
+on how to create clients that will connect to and access the cache in your
+cache server.
+  </BODY>
+</HTML>

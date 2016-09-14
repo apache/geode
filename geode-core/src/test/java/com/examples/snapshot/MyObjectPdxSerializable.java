@@ -16,9 +16,9 @@
  */
 package com.examples.snapshot;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxWriter;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 
 public class MyObjectPdxSerializable extends MyObject implements PdxSerializable {
   public MyObjectPdxSerializable() {

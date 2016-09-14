@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache
+    xmlns="http://geode.apache.org/schema/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:test="urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsJUnitTest"
+    xsi:schemaLocation=""
+    version="1.0">
+</cache>

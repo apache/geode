@@ -16,7 +16,7 @@
  */
 package org.apache.geode.examples.replicated;
 
-import com.gemstone.gemfire.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCache;
 
 public class Producer extends BaseClient {
 

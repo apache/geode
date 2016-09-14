@@ -16,7 +16,7 @@
  */
 package com.company.app;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 /**
  * com.company.app.OrdersCacheListener. Cache listener impl for CacheXmlxxTest
