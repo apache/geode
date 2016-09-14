@@ -24,7 +24,7 @@ These configuration files should be readable and writeable *only* by the dedicat
 -   `gemfire.properties`
 -   `cache.xml`
 -   `gfsecurity.properties`
-    **Note:** A default `gfsecurity.properties` is not provided in the `defaultConfigs` directory. If you choose to use this properties file, you must create it manually. See [Where to Place Security Settings](implementing_security.html) for more information.
+    A default `gfsecurity.properties` is not provided in the `defaultConfigs` directory. If you choose to use this properties file, you must create it manually. A clear text user name and associated clear text password may be in this file for authentication purposes. The file system's access rights are relied upon to protect this sensitive information.
 
 The default location of the `gemfire.properties` and `cache.xml` configuration files is the `defaultConfigs` child directory of the main installation directory.
 

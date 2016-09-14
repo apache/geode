@@ -10,15 +10,96 @@ All components use the same authentication mechanism.
 
 When a component initiates a connection to the distributed system,
 the `SecurityManager.authenticate` method is invoked.
-The component provides credentials in the form of `Properties`,
-which are passed to the `authenticate` method.
+The component provides its credentials in the form of properties
+as a parameter to the `authenticate` method.
+The credential is presumed to be the two properties:
+`security-username` and `security-password`.
 The `authenticate` method is expected to either return an object
 representing a principal or throw an `AuthenticationFailedException`.
+
+A well-designed `authenticate` method will have or will have a way of
+obtaining a set of known user and password pairs that can be compared
+to the credential presented.
+
+## How a Server Sets Its Credential
+
+In order to connect with a locator that does authentication,
+a server will need to set its credential, composed of the two properties
+`security-username` and `security-password`.
+There are two ways of accomplishing this:
+
+- Set the `security-username` and `security-password` in the server's
+`gfsecurity.properties` file that will be read upon server start up,
+as in the example
+
+     ``` pre
+     security-username=admin
+     security-password=xyz1234
+     ```
+The user name and password are stored in the clear, so the
+`gfsecurity.properties` file must be protected by restricting access with
+file system permissions.
+
+- Implement the `getCredentials` method of the `AuthInitialize` interface
+for the server.
+This callback's location is defined in the property `security-peer-auth-init`,
+as in the example
+
+     ``` pre
+     security-peer-auth-init=com.example.security.MyAuthInitialize
+     ```
+The implementation of `getCredentials` may then acquire values for
+the properties `security-username` and `security-password` in whatever way
+it wishes.
+It might look up values in a database or another external resource.
+
+## How a Cache Client Sets Its Credential
+
+In order to connect with a locator or a server that does authentication,
+a client will need to set its credential, composed of the two properties
+`security-username` and `security-password`.
+There are two ways of accomplishing this:
+
+- Set the `security-username` and `security-password` in the client's
+`gfsecurity.properties` file that will be read upon client start up,
+as in the example
+
+     ``` pre
+     security-username=webclient
+     security-password=xyz1234
+     ```
+The user name and password are stored in the clear, so the
+`gfsecurity.properties` file must be protected by restricting access with
+file system permissions.
+
+- Implement the `getCredentials` method of the `AuthInitialize` interface
+for the client.
+This callback's location is defined in the property `security-client-auth-init`,
+as in the example
+
+     ``` pre
+     security-client-auth-init=com.example.security.ClientAuthInitialize
+     ```
+The implementation of `getCredentials` may then acquire values for
+the properties `security-username` and `security-password` in whatever way
+it wishes.
+It might look up values in a database or another external resource,
+or it might prompt for values.
+
+## How Other Components Set Their Credentials
+
+gfsh prompts upon `gfsh connect`.
+
+Pulse prompts upon start up.
+
+Components connecting via the REST API do something.
+
 
 
 ## Implement SecurityManager Interface
 
-Complete these items to implement authentication.
+Complete these items to implement authentication done by either a
+locator or a server.
 
 - Decide upon an authentication algorithm.
 The [Authentication Example](authentication_examples.html)
