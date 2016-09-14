@@ -17,42 +17,24 @@ For example:
 security-manager = com.example.security.MySecurityManager
 ```
 
-## security-enabled-components Property
-
 All components of the system invoke the same callbacks.
-Security may be enabled on a component basis with
-the definition of the `security-enabled-components` property.
-Its definition restricts which system components invoke
-the authentication and authorization callbacks.
-The defined values for system components:
+Here are descriptions of the components and the connections that they
+make with the system.
 
-- `all`&mdash;All components invoke the security callbacks.
-- `server`&mdash;Invokes security callbacks upon connection and operation
-requests that a client makes of a server.
-- `cluster`&mdash;Invokes security callbacks upon connection and operation
-requests that a server makes as the peer of a locator.
-- `jmx`&mdash;Invokes security callbacks upon connection and operation
-requests that components communicating with a JMX manager make of a locator.
+- A client connects with a server and makes operation requests 
+of that server.  The callbacks invoked are those defined by the
+`SecurityManager` interface for that server.
+- A server connects with a locator, invoking the `authenticate` callback
+defined for that locator.
+- Components communicating with a locator's JMX manager connect and make
+operation requests of the locator.
+The callbacks invoked are those defined by the
+`SecurityManager` interface for that locator.
 Both `gfsh` and `Pulse` use this form of communication.
-- `http`&mdash;Invokes security callbacks upon connection and operation
-requests that applications communicating via the REST API make of a server.
-- `gateway`&mdash;Invokes security callbacks upon connection and operation
-requests that a gateway sender makes of a locator.
-
-The `security-enabled-components` property defines 
-a comma-separated list of components that will
-invoke the `authorize` callback.
-For example,
-
-``` pre
-security-enabled-components = server, cluster jmx
-```
-
-The `all` component value is used by itself, as in the example
-
-``` pre
-security-enabled-components = all
-```
+- Applications communicating via the REST API make of a server
+invoke security callbacks upon connection and operation requests.
+- Requests that a gateway sender makes of a locator
+invoke security callbacks defined for that locator.
 
 ## security-post-processor Property
 
