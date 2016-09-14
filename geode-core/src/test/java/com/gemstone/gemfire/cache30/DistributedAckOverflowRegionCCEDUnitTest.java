@@ -68,25 +68,5 @@ public class DistributedAckOverflowRegionCCEDUnitTest extends
           5, EvictionAction.OVERFLOW_TO_DISK));
     }
     return factory.create();
-  }
-
-  @Override
-  @Ignore
-  @Test
-  public void testClearWithConcurrentEvents() throws Exception {
-    // TODO this test is disabled due to frequent failures.  See bug #
-    // Remove this method from this class when the problem is fixed
-//    super.testClearWithConcurrentEvents();
-  }
-
-  @Override
-  @Ignore
-  @Test
-  public void testClearWithConcurrentEventsAsync() throws Exception {
-    // TODO this test is disabled due to frequent failures.  See bug #
-    // Remove this method from this class when the problem is fixed
-//    super.testClearWithConcurrentEventsAsync();
-  }
-  
-  
+  }  
 }
