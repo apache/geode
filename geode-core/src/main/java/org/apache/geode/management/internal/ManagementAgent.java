@@ -56,7 +56,7 @@ import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -95,7 +95,7 @@ public class ManagementAgent {
   private JMXConnectorServer jmxConnectorServer;
   private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
-  // TODO: add this -- private boolean isSecured;
+  private SecurityService securityService = SecurityService.getSecurityService();
   private boolean isHttpServiceRunning = false;
 
   /**
@@ -205,7 +205,7 @@ public class ManagementAgent {
         if (logger.isDebugEnabled()) {
           logger.debug(message);
         }
-      } else if (isIntegratedSecurity()) {
+      } else if (securityService.isIntegratedSecurity()) {
         System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
       }
 
@@ -437,7 +437,7 @@ public class ManagementAgent {
       }
     };
 
-    if (isIntegratedSecurity()) {
+    if (securityService.isIntegratedSecurity()) {
       shiroAuthenticator = new JMXShiroAuthenticator();
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
       jmxConnectorServer.addNotificationListener(shiroAuthenticator, null, jmxConnectorServer.getAttributes());
@@ -492,11 +492,6 @@ public class ManagementAgent {
     } catch (MalformedObjectNameException e) {
       throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
     }
-  }
-
-
-  private boolean isIntegratedSecurity() {
-    return IntegratedSecurityService.getSecurityService().isJmxSecurityRequired();
   }
 
   private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory, Serializable {

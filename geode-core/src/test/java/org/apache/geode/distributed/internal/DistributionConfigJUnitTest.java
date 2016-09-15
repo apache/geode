@@ -17,7 +17,6 @@
 package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -31,18 +30,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.UnmodifiableException;
-import org.apache.geode.security.SecurableComponents;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DistributionConfigJUnitTest {
@@ -81,7 +77,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 157);
+    assertEquals(attNames.length, 156);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -116,7 +112,7 @@ public class DistributionConfigJUnitTest {
     //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
     assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(86, stringList.size());
+    assertEquals(85, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }
@@ -343,7 +339,7 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     // SECURITY_ENABLED_COMPONENTS is automatically added to getSecurityProps
-    assertEquals(config.getSecurityProps().size(), 4);
+    assertEquals(config.getSecurityProps().size(), 3);
   }
 
   @Test
@@ -358,76 +354,7 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     // SECURITY_ENABLED_COMPONENTS is automatically added to getSecurityProps
-    assertEquals(config.getSecurityProps().size(), 5);
-  }
-
-  @Test
-  public void securityEnabledComponentsDefaultShouldBeAll() throws Exception {
-    Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-
-    DistributionConfig config = new DistributionConfigImpl(props);
-
-    assertThat(config.getSecurityEnabledComponents()).contains(SecurableComponents.ALL);
-  }
-
-  @Test
-  public void oneSecurityEnabledComponent() throws Exception {
-    Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    props.put(SECURITY_ENABLED_COMPONENTS, SecurableComponents.JMX);
-
-    DistributionConfig config = new DistributionConfigImpl(props);
-
-    assertThat(config.getSecurityEnabledComponents())
-      .doesNotContain(SecurableComponents.ALL)
-      .doesNotContain(SecurableComponents.GATEWAY)
-      .doesNotContain(SecurableComponents.SERVER)
-      .doesNotContain(SecurableComponents.HTTP_SERVICE)
-      .doesNotContain(SecurableComponents.CLUSTER)
-      .contains(SecurableComponents.JMX);
-  }
-
-  @Test
-  public void twoSecurityEnabledComponents() throws Exception {
-    Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    props.put(SECURITY_ENABLED_COMPONENTS, SecurableComponents.JMX + "," + SecurableComponents.CLUSTER);
-
-    DistributionConfig config = new DistributionConfigImpl(props);
-
-    assertThat(config.getSecurityEnabledComponents())
-      .doesNotContain(SecurableComponents.ALL)
-      .doesNotContain(SecurableComponents.GATEWAY)
-      .doesNotContain(SecurableComponents.SERVER)
-      .doesNotContain(SecurableComponents.HTTP_SERVICE)
-      .contains(SecurableComponents.CLUSTER)
-      .contains(SecurableComponents.JMX);
-  }
-
-  @Test
-  public void multipleSecurityEnabledComponents() throws Exception {
-    Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    props.put(SECURITY_ENABLED_COMPONENTS, SecurableComponents.JMX + "," + SecurableComponents.CLUSTER+ "," + SecurableComponents.HTTP_SERVICE);
-
-    DistributionConfig config = new DistributionConfigImpl(props);
-
-    assertThat(config.getSecurityEnabledComponents())
-      .doesNotContain(SecurableComponents.ALL)
-      .doesNotContain(SecurableComponents.GATEWAY)
-      .doesNotContain(SecurableComponents.SERVER)
-      .contains(SecurableComponents.HTTP_SERVICE)
-      .contains(SecurableComponents.CLUSTER)
-      .contains(SecurableComponents.JMX);
-  }
-
-  @Test
-  public void nonExistentSecurityEnabledComponentShouldThrow() throws Exception {
-    Properties props = new Properties();
-    props.put(SECURITY_ENABLED_COMPONENTS, "notapplicable");
-
-    assertThatThrownBy(() -> new DistributionConfigImpl(props)).isExactlyInstanceOf(GemFireConfigException.class);
+    assertEquals(config.getSecurityProps().size(), 4);
   }
 
   @Test

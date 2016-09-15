@@ -106,7 +106,7 @@ public class GMSAuthenticator implements Authenticator {
    * Method is package protected to be used in testing.
    */
   String authenticate(DistributedMember member, Properties credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
-    if (!this.securityService.isPeerSecurityRequired()) {
+    if (!securityService.isPeerSecurityRequired()) {
       return null;
     }
 

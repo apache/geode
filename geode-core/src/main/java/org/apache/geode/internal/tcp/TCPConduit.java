@@ -62,7 +62,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurableComponent;
 
 /**
  * <p>TCPConduit manages a server socket and a collection of connections to

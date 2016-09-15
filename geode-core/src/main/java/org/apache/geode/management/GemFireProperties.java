@@ -18,7 +18,6 @@ package org.apache.geode.management;
 
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurableComponent;
 
 /**
  * Composite Data type to be used by member to depict gemfire properties in key value manner

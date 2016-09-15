@@ -66,7 +66,6 @@ import org.apache.geode.internal.ConnectionWatcher;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurableComponent;
 
 /**
  * Failure Detection

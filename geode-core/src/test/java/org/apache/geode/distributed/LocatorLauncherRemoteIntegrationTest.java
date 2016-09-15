@@ -16,6 +16,20 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
@@ -30,7 +44,6 @@ import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.internal.security.SecurableComponent;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -41,20 +54,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 
 /**
  * Integration tests for launching a Locator in a forked process.
