@@ -12,13 +12,14 @@
         </Basic>
     </Appenders>
     <Loggers>
-        <Logger name="com.gemstone" level="INFO" additivity="true">
+        <Logger name="com.gemstone" level="INFO" additivity="true"/>
+        <Logger name="org.apache.geode" level="INFO" additivity="true">
             <filters>
                 <MarkerFilter marker="GEMFIRE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
             </filters>
         </Logger>
-        <Logger name="org.jgroups" level="FATAL" additivity="true"/>
         <Logger name="org.apache.geode.internal.logging.log4j.custom" level="DEBUG" additivity="true"/>
+        <Logger name="org.jgroups" level="FATAL" additivity="true"/>
         <Root level="INFO">
             <AppenderRef ref="CUSTOM"/>
             <AppenderRef ref="STDOUT"/>
