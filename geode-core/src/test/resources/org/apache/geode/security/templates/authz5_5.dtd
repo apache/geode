@@ -17,8 +17,8 @@ limitations under the License.
 -->
 <!--
 
-This is the XML DTD for the GemFire sample XML based authorization callback
-in com.gemstone.gemfire.security.templates.XmlAuthorization.
+This is the XML DTD for the Geode sample XML based authorization callback
+in org.apache.geode.security.templates.XmlAuthorization.
 
 All XMLs must include a DOCTYPE of the following form:
 
@@ -28,7 +28,7 @@ All XMLs must include a DOCTYPE of the following form:
 
 The contents of a declarative XML file correspond to APIs found in the
 
-                      com.gemstone.gemfire.security.AccessControl
+                      org.apache.geode.security.AccessControl
 
 package. The sample implementation may be used to specify access control
 policies.
@@ -37,7 +37,7 @@ policies.
 
 <!--
 
-The following conventions apply to all GemFire sample authorization
+The following conventions apply to all Geode sample authorization
 XML file elements unless indicated otherwise.
 
 - In elements that contain PCDATA, leading and trailing whitespace in
