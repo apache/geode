@@ -129,9 +129,6 @@ public class IntegratedSecurityService implements SecurityService{
 
   /**
    * convenient method for testing
-   * @param username
-   * @param password
-   * @return
    */
   public Subject login(String username, String password){
     if(StringUtils.isBlank(username) || StringUtils.isBlank(password))

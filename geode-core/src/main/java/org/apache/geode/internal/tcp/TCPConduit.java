@@ -1176,7 +1176,6 @@ public class TCPConduit implements Runnable {
   /**
    * returns the SocketCreator that should be used to produce
    * sockets for TCPConduit connections.
-   * @return
    */
   protected SocketCreator getSocketCreator() {
     return socketCreator;
