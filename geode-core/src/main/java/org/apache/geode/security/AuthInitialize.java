@@ -90,8 +90,20 @@ public interface AuthInitialize extends CacheCallback {
    *                 in case of failure to obtain the credentials
    * 
    * @return the credentials to be used for the given <code>server</code>
+   *
+   * @deprecated since Geode 1.0, use getCredentials(Properties). When using Integrated security,
+   * all members, peer/client will use the same credentials.
    */
   public Properties getCredentials(Properties securityProps,
-      DistributedMember server, boolean isPeer)
-      throws AuthenticationFailedException;
+                                   DistributedMember server, boolean isPeer)
+    throws AuthenticationFailedException;
+
+  /**
+   * Implement this since Geode1.0
+   * @param securityProps
+   * @return the credentials to be used. It needs to contain "security-username" and "security-password"
+   */
+  default public Properties getCredentials(Properties securityProps){
+    return getCredentials(securityProps, null, true);
+  }
 }

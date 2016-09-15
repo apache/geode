@@ -18,7 +18,6 @@
 package org.apache.geode.distributed;
 
 import org.apache.geode.redis.GeodeRedisServer;
-import org.apache.geode.security.SecurableComponents;
 
 /**
  * This interface defines all the configuration properties that can be used.

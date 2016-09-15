@@ -25,11 +25,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -47,12 +42,15 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTestCase {
@@ -96,7 +94,6 @@ public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTes
       props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
 
       // the following are needed for peer-to-peer authentication
-      props.setProperty(SECURITY_PEER_AUTH_INIT, UserPasswordAuthInit.class.getName());
       props.setProperty("security-username", "super-user");
       props.setProperty("security-password", "1234567");
       InternalDistributedSystem ds = getSystem(props);

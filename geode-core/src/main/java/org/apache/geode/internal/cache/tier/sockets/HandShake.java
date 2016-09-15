@@ -60,8 +60,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
@@ -88,6 +86,7 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ClientHandShake;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.IntegratedSecurityService;
@@ -98,6 +97,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.Authenticator;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
 
 public class HandShake implements ClientHandShake
 {
@@ -1596,16 +1596,20 @@ public class HandShake implements ClientHandShake
       throws AuthenticationRequiredException {
 
     Properties credentials = null;
+    // if no authInit, Try to extract the credentials directly from securityProps
+    if (StringUtils.isBlank(authInitMethod)){
+      return SecurityService.getCredentials(securityProperties);
+    }
+
+    // if authInit exists
     try {
-      if (authInitMethod != null && authInitMethod.length() > 0) {
-        AuthInitialize auth = SecurityService.getObjectOfType(authInitMethod, AuthInitialize.class);
-        auth.init(logWriter, securityLogWriter);
-        try {
-          credentials = auth.getCredentials(securityProperties, server, isPeer);
-        }
-        finally {
-          auth.close();
-        }
+      AuthInitialize auth = SecurityService.getObjectOfType(authInitMethod, AuthInitialize.class);
+      auth.init(logWriter, securityLogWriter);
+      try {
+        credentials = auth.getCredentials(securityProperties, server, isPeer);
+      }
+      finally {
+        auth.close();
       }
     }
     catch (GemFireSecurityException ex) {

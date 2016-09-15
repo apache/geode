@@ -28,13 +28,12 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
+import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class GMSAuthenticator implements Authenticator {
@@ -185,31 +184,8 @@ public class GMSAuthenticator implements Authenticator {
    * For testing only.
    */
   Properties getCredentials(DistributedMember member, Properties secProps) {
-    Properties credentials = null;
     String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
-
-    try {
-      if (authMethod != null && authMethod.length() > 0) {
-        AuthInitialize auth = SecurityService.getObjectOfType(authMethod, AuthInitialize.class);
-        assert auth != null;
-        try {
-          LogWriter logWriter = services.getLogWriter();
-          LogWriter securityLogWriter = services.getSecurityLogWriter();
-          auth.init(logWriter, securityLogWriter);
-          credentials = auth.getCredentials(secProps, member, true);
-        } finally {
-          auth.close();
-        }
-      }
-
-    } catch (GemFireSecurityException gse) {
-      throw gse;
-
-    } catch (Exception ex) {
-      throw new AuthenticationRequiredException(HandShake_FAILED_TO_ACQUIRE_AUTHINITIALIZE_METHOD_0.toLocalizedString(authMethod), ex);
-    }
-
-    return credentials;
+    return HandShake.getCredentials(authMethod, secProps, member, true, services.getLogWriter(), services.getSecurityLogWriter());
   }
 
   /**

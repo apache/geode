@@ -19,13 +19,13 @@ package org.apache.geode.internal.security;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
-
-import org.apache.geode.management.internal.security.ResourceOperation;
 
 public interface SecurityService {
 
@@ -74,6 +74,16 @@ public interface SecurityService {
 
   static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
     return IntegratedSecurityService.getObjectOfTypeFromClassName(className, expectedClazz);
+  }
+
+  public static Properties getCredentials(Properties securityProps){
+    Properties credentials = null;
+    if(securityProps.containsKey(ResourceConstants.USER_NAME) && securityProps.containsKey(ResourceConstants.PASSWORD)){
+      credentials = new Properties();
+      credentials.setProperty(ResourceConstants.USER_NAME, securityProps.getProperty(ResourceConstants.USER_NAME));
+      credentials.setProperty(ResourceConstants.PASSWORD, securityProps.getProperty(ResourceConstants.PASSWORD));
+    }
+    return credentials;
   }
 
   static SecurityService getSecurityService(){
