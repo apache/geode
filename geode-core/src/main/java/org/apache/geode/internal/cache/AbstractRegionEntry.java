@@ -434,14 +434,27 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   @Released
   protected void setValue(RegionEntryContext context, @Unretained Object value, boolean recentlyUsed) {
     _setValue(value);
-    if (value != null && context != null && (this instanceof OffHeapRegionEntry) 
-        && context instanceof LocalRegion && ((LocalRegion)context).isThisRegionBeingClosedOrDestroyed()) {
-      ((OffHeapRegionEntry)this).release();
-      ((LocalRegion)context).checkReadiness();
-    }
+    releaseOffHeapRefIfRegionBeingClosedOrDestroyed(context, value);
     if (recentlyUsed) {
       setRecentlyUsed();
     }
+  }
+
+  public void releaseOffHeapRefIfRegionBeingClosedOrDestroyed(
+      RegionEntryContext context, Object ref) {
+    if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
+      ((OffHeapRegionEntry)this).release();
+    }
+  }
+
+  private boolean isThisRegionBeingClosedOrDestroyed(RegionEntryContext context) {
+    return context instanceof LocalRegion
+        && ((LocalRegion)context).isThisRegionBeingClosedOrDestroyed();
+  }
+
+  private boolean isOffHeapReference(Object ref) {
+    return ref != Token.REMOVED_PHASE1 && this instanceof OffHeapRegionEntry
+        && ref instanceof StoredObject && ((StoredObject)ref).hasRefCount();
   }
 
   /**
@@ -792,11 +805,9 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             if(isValueNull()) {
               @Released Object value = getValueOffHeapOrDiskWithoutFaultIn(region);
               try {
-              _setValue(prepareValueForCache(region, value, false));
-              if (value != null && region != null && (this instanceof OffHeapRegionEntry) && region.isThisRegionBeingClosedOrDestroyed()) {
-                ((OffHeapRegionEntry)this).release();
-                region.checkReadiness();
-              }
+                Object preparedValue = prepareValueForCache(region, value, false);
+                _setValue(preparedValue);
+                releaseOffHeapRefIfRegionBeingClosedOrDestroyed(region, preparedValue);
               } finally {
                 OffHeapHelper.release(value);
               }

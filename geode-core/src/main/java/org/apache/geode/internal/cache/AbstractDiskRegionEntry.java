@@ -51,13 +51,9 @@ public abstract class AbstractDiskRegionEntry
   @Override
   public void setValueWithContext(RegionEntryContext context, Object value) {
     _setValue(value);
-    if (value != null && context != null && (this instanceof OffHeapRegionEntry) 
-        && context instanceof LocalRegion && ((LocalRegion)context).isThisRegionBeingClosedOrDestroyed()) {
-      ((OffHeapRegionEntry)this).release();
-      ((LocalRegion)context).checkReadiness();
-    }
+    releaseOffHeapRefIfRegionBeingClosedOrDestroyed(context, value);
   }
-  
+
   // Do not add any instances fields to this class.
   // Instead add them to the DISK section of LeafRegionEntry.cpp.
 
