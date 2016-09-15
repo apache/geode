@@ -41,7 +41,7 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.gemstone.gemfire.test.junit.categories.UITest;
+import org.apache.geode.test.junit.categories.UITest;
 
 @Category(UITest.class)
 public class PulseAutomatedTest extends PulseAbstractTest {

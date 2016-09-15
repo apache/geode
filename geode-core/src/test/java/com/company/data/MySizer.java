@@ -22,8 +22,8 @@ package com.company.data;
  */
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.cache.util.ObjectSizer;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.util.ObjectSizer;
 
 public class MySizer implements ObjectSizer, Declarable {
 

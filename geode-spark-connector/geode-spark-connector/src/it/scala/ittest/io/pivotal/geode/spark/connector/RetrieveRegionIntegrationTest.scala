@@ -19,7 +19,7 @@ package ittest.io.pivotal.geode.spark.connector
 import java.util.Properties
 
 import io.pivotal.geode.spark.connector._
-import com.gemstone.gemfire.cache.Region
+import org.apache.geode.cache.Region
 import io.pivotal.geode.spark.connector.internal.DefaultGeodeConnectionManager
 import ittest.io.pivotal.geode.spark.connector.testkit.GeodeCluster
 import ittest.io.pivotal.geode.spark.connector.testkit.IOUtils

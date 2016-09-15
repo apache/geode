@@ -16,7 +16,7 @@
  */
 package unittest.io.pivotal.geode.spark.connector.rdd
 
-import com.gemstone.gemfire.distributed.internal.ServerLocation
+import org.apache.geode.distributed.internal.ServerLocation
 import io.pivotal.geode.spark.connector.internal.RegionMetadata
 import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartitioner._
 import io.pivotal.geode.spark.connector.GeodeConnection

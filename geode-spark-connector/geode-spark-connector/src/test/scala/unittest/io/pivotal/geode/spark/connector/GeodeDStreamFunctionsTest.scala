@@ -16,7 +16,7 @@
  */
 package unittest.io.pivotal.geode.spark.connector
 
-import com.gemstone.gemfire.cache.Region
+import org.apache.geode.cache.Region
 import io.pivotal.geode.spark.connector.{GeodeConnection, GeodeConnectionConf}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.DStream

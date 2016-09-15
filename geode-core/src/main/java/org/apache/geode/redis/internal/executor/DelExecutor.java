@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;

@@ -16,7 +16,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import com.gemstone.gemfire.cache.Region;
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;

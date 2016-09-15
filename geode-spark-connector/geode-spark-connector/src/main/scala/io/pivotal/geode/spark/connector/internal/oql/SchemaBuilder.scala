@@ -16,7 +16,7 @@
  */
 package io.pivotal.geode.spark.connector.internal.oql
 
-import com.gemstone.gemfire.cache.query.internal.StructImpl
+import org.apache.geode.cache.query.internal.StructImpl
 import org.apache.spark.sql.types._
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.Logging

@@ -16,15 +16,15 @@
  */
 package io.pivotal.geode.spark.connector.internal.geodefunctions;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ import java.util.Iterator;
 
 /**
  * StructStreamingResultSender and StructStreamingResultCollector  are paired
- * to transfer result of list of `com.gemstone.gemfire.cache.query.Struct`
+ * to transfer result of list of `org.apache.geode.cache.query.Struct`
  * from GemFire server to Spark Connector (the client of GemFire server)
  * in streaming, i.e., while sender sending the result, the collector can
  * start processing the arrived result without waiting for full result to

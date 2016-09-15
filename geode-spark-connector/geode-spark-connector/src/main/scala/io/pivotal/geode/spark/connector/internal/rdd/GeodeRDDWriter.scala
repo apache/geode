@@ -16,7 +16,7 @@
  */
 package io.pivotal.geode.spark.connector.internal.rdd
 
-import com.gemstone.gemfire.cache.Region
+import org.apache.geode.cache.Region
 import io.pivotal.geode.spark.connector._
 import org.apache.spark.{Logging, TaskContext}
 

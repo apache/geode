@@ -16,7 +16,7 @@
  */
 package com.company.data;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 /**
  * A <code>TransactionListener</code> that is <code>Declarable</code>

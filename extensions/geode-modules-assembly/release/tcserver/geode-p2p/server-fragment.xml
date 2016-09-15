@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Server>
 
-    <add:Listener className="com.gemstone.gemfire.modules.session.catalina.PeerToPeerCacheLifecycleListener"
+    <add:Listener className="org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener"
       cache-xml-file="${cache.configuration.file:cache-peer.xml}"
       criticalHeapPercentage="${critical.heap.percentage:0.0}"
       evictionHeapPercentage="${eviction.heap.percentage:80.0}"

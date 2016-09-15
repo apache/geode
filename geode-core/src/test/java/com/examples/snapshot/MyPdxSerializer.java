@@ -18,11 +18,11 @@ package com.examples.snapshot;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Declarable;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 
 public class MyPdxSerializer implements PdxSerializer, Declarable {
   private final PdxSerializer auto = new ReflectionBasedAutoSerializer("com.examples.snapshot.My.*Pdx");

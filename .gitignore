@@ -21,5 +21,7 @@ build-eclipse/
 *.patch
 *.diff
 *.dat
+*.rej
+*.orig
 geode-spark-connector/**/target/
 geode-spark-connector/project/project/

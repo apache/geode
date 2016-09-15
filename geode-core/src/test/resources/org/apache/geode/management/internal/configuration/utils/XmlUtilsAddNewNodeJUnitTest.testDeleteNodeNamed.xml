@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache
+    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:test="urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsAddNewNodeJUnitTest"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+    version="8.1">
+  <async-event-queue id="aeq1">
+    <async-event-listener>
+      <class-name>null</class-name>
+    </async-event-listener>
+  </async-event-queue>
+  <async-event-queue id="aeq2">
+    <async-event-listener>
+      <class-name>null</class-name>
+    </async-event-listener>
+  </async-event-queue>
+  <pdx disk-store-name="foo" />
+  <region name="r2"></region>
+  <test:cache value="1"/>
+</cache>
