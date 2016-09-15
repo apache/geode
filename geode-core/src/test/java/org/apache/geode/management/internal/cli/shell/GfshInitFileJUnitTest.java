@@ -366,12 +366,10 @@ public class GfshInitFileJUnitTest {
     int expectedStatus = 0;
     assertNotEquals("Status <0==failure", expectedStatus, actualStatus);
 
-    int expectedLogCount = BANNER_LINES + INIT_FILE_CITATION_LINES + 1;
+    // after upgrading to Spring-shell 1.2, the bad command exception is logged as well
+    int expectedLogCount = BANNER_LINES + INIT_FILE_CITATION_LINES + 2;
     assertEquals("Log records written", expectedLogCount,
         this.junitLoggerHandler.getLog().size());
-    for (LogRecord logRecord : this.junitLoggerHandler.getLog()) {
-      assertNull("No exceptions in log", logRecord.getThrown());
-    }
   }
 
   @Test
@@ -399,12 +397,10 @@ public class GfshInitFileJUnitTest {
     int expectedStatus = 0;
     assertNotEquals("Status <0==failure", expectedStatus, actualStatus);
 
-    int expectedLogCount = BANNER_LINES + INIT_FILE_CITATION_LINES + 1;
+    // after upgrading to Spring-shell 1.2, the bad command exception is logged as well
+    int expectedLogCount = BANNER_LINES + INIT_FILE_CITATION_LINES + 2;
     assertEquals("Log records written", expectedLogCount,
         this.junitLoggerHandler.getLog().size());
-    for (LogRecord logRecord : this.junitLoggerHandler.getLog()) {
-      assertNull("No exceptions in log", logRecord.getThrown());
-    }
   }
 
   @Test
@@ -433,12 +429,10 @@ public class GfshInitFileJUnitTest {
     int expectedStatus = 0;
     assertNotEquals("Status <0==failure", expectedStatus, actualStatus);
 
-    int expectedLogCount = BANNER_LINES + INIT_FILE_CITATION_LINES + 1;
+    // after upgrading to Spring-shell 1.2, the bad command exception is logged as well
+    int expectedLogCount = BANNER_LINES + INIT_FILE_CITATION_LINES + 2;
     assertEquals("Log records written", expectedLogCount,
         this.junitLoggerHandler.getLog().size());
-    for (LogRecord logRecord : this.junitLoggerHandler.getLog()) {
-      assertNull("No exceptions in log", logRecord.getThrown());
-    }
   }
 
   /**

@@ -26,7 +26,7 @@ Java ClassMate library was originally written by Tatu Saloranta (tatu.saloranta@
   
   * Brian Langel
 
-Jackson Core 2.2.0
+Jackson Core 2.8.2
 
   # Jackson JSON processor
   
@@ -49,7 +49,7 @@ Jackson Core 2.2.0
   in some artifacts (usually source distributions); but is always available
   from the source code management (SCM) system project uses.
 
-Spring Framework 4.2.4.RELEASE
+Spring Framework 4.3.2.RELEASE
 Copyright (c) 2002-2015 Pivotal, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0
@@ -61,7 +61,7 @@ Copyright (c) 2002-2015 Pivotal, Inc.
   these subcomponents is subject to the terms and conditions of the
   subcomponent's license, as noted in the license.txt file.
 
-Spring Hateoas 0.12
+Spring Hateoas 0.21.0
 Copyright (c) [2012-2014] Pivotal Software, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0 (the "License").  

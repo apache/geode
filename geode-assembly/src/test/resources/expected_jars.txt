@@ -17,6 +17,7 @@ guava
 jackson-annotations
 jackson-core
 jackson-databind
+jackson-module-paranamer
 jackson-module-scala
 jansi
 javax.mail-api

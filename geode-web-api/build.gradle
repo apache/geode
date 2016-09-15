@@ -57,6 +57,7 @@ dependencies {
   compile 'org.springframework.security:spring-security-core:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-web:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-config:' + project.'spring-security.version'
+  compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
   compile ('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateoas.version') {
     exclude module: 'aopalliance'
     exclude module: 'commons-logging'

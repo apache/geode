@@ -26,10 +26,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.security.AbstractSecureServerDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -43,6 +39,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
@@ -52,6 +49,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONTokener;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.AbstractSecureServerDUnitTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 
 @Category({ DistributedTest.class, SecurityTest.class })
@@ -73,141 +75,24 @@ public class RestSecurityDUnitTest extends AbstractSecureServerDUnitTest {
   }
 
   protected HttpResponse doHEAD(String query, String username, String password) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
-    HttpClientContext clientContext = HttpClientContext.create();
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
-    CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-    AuthCache authCache = new BasicAuthCache();
-    BasicScheme basicAuth = new BasicScheme();
-    authCache.put(targetHost, basicAuth);
-    clientContext.setCredentialsProvider(credsProvider);
-    clientContext.setAuthCache(authCache);
-
     HttpHead httpHead = new HttpHead(CONTEXT + query);
-    try {
-      return httpclient.execute(targetHost, httpHead, clientContext);
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-      fail("Rest HEAD should not have thrown ClientProtocolException!");
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Rest HEAD Request should not have thrown IOException!");
-    }
-    return null;
+    return doRequest(httpHead, username, password);
   }
 
-  protected HttpResponse doGet(String query, String username, String password) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
-    CloseableHttpClient httpclient = HttpClients.custom().build();
-    HttpClientContext clientContext = HttpClientContext.create();
-//    // if username or password are null or empty, do not put in authentication
-//    if (!(username == null
-//          || password == null
-//          || !username.isEmpty()
-//          || !password.isEmpty())) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
-      httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-      AuthCache authCache = new BasicAuthCache();
-      BasicScheme basicAuth = new BasicScheme();
-      authCache.put(targetHost, basicAuth);
-      clientContext.setCredentialsProvider(credsProvider);
-      clientContext.setAuthCache(authCache);
-//    }
-
-    HttpGet getRequest = new HttpGet(CONTEXT + query);
-    try {
-      return httpclient.execute(targetHost, getRequest, clientContext);
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-      fail("Rest GET should not have thrown ClientProtocolException!");
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Rest GET Request should not have thrown IOException!");
-    }
-    return null;
-  }
-
-  protected HttpResponse doDelete(String query, String username, String password) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
-    CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-    AuthCache authCache = new BasicAuthCache();
-    BasicScheme basicAuth = new BasicScheme();
-    authCache.put(targetHost, basicAuth);
-
-    HttpClientContext clientContext = HttpClientContext.create();
-    clientContext.setCredentialsProvider(credsProvider);
-    clientContext.setAuthCache(authCache);
-
-    HttpDelete httpDelete = new HttpDelete(CONTEXT + query);
-    try {
-      return httpclient.execute(targetHost, httpDelete, clientContext);
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-      fail("Rest DELETE Request should not have thrown ClientProtocolException!");
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Rest DELETE Request should not have thrown IOException!");
-    }
-    return null;
-  }
 
   protected HttpResponse doPost(String query, String username, String password, String body) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
-    CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-    AuthCache authCache = new BasicAuthCache();
-    BasicScheme basicAuth = new BasicScheme();
-    authCache.put(targetHost, basicAuth);
-
-    HttpClientContext clientContext = HttpClientContext.create();
-    clientContext.setCredentialsProvider(credsProvider);
-    clientContext.setAuthCache(authCache);
-
     HttpPost httpPost = new HttpPost(CONTEXT + query);
     httpPost.addHeader("content-type", "application/json");
     httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
-    try {
-      return httpclient.execute(targetHost, httpPost, clientContext);
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-      fail("Rest POST Request should not have thrown ClientProtocolException!");
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Rest POST Request should not have thrown IOException!");
-    }
-    return null;
+    return doRequest(httpPost, username, password);
   }
+
+
   protected HttpResponse doPut(String query, String username, String password, String body) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
-    CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-    AuthCache authCache = new BasicAuthCache();
-    BasicScheme basicAuth = new BasicScheme();
-    authCache.put(targetHost, basicAuth);
-
-    HttpClientContext clientContext = HttpClientContext.create();
-    clientContext.setCredentialsProvider(credsProvider);
-    clientContext.setAuthCache(authCache);
-
     HttpPut httpPut = new HttpPut(CONTEXT + query);
     httpPut.addHeader("content-type", "application/json");
     httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
-    try {
-      return httpclient.execute(targetHost, httpPut, clientContext);
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-      fail("Rest PUT Request should not have thrown ClientProtocolException!");
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Rest PUT Request should not have thrown IOException!");
-    }
-    return null;
+    return doRequest(httpPut, username, password);
   }
 
   /**
@@ -253,5 +138,43 @@ public class RestSecurityDUnitTest extends AbstractSecureServerDUnitTest {
       str.append(line);
     }
     return new JSONTokener(str.toString());
+  }
+
+  protected HttpResponse doGet(String uri, String username, String password) throws MalformedURLException {
+    HttpGet getRequest = new HttpGet(CONTEXT + uri);
+    return doRequest(getRequest, username, password);
+  }
+
+  protected HttpResponse doDelete(String uri, String username, String password) throws MalformedURLException {
+    HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
+    return doRequest(httpDelete, username, password);
+  }
+
+  private HttpResponse doRequest(HttpRequestBase request, String username, String password) throws MalformedURLException {
+    HttpHost targetHost = new HttpHost(HOSTNAME, this.restPort, PROTOCOL);
+    CloseableHttpClient httpclient = HttpClients.custom().build();
+    HttpClientContext clientContext = HttpClientContext.create();
+    // if username is null, do not put in authentication
+    if (username != null) {
+      CredentialsProvider credsProvider = new BasicCredentialsProvider();
+      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
+      httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+      AuthCache authCache = new BasicAuthCache();
+      BasicScheme basicAuth = new BasicScheme();
+      authCache.put(targetHost, basicAuth);
+      clientContext.setCredentialsProvider(credsProvider);
+      clientContext.setAuthCache(authCache);
+    }
+
+    try {
+      return httpclient.execute(targetHost, request, clientContext);
+    } catch (ClientProtocolException e) {
+      e.printStackTrace();
+      fail("Rest GET should not have thrown ClientProtocolException!");
+    } catch (IOException e) {
+      e.printStackTrace();
+      fail("Rest GET Request should not have thrown IOException!");
+    }
+    return null;
   }
 }

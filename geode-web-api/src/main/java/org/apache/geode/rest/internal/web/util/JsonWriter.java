@@ -109,27 +109,27 @@ public class JsonWriter {
       
     generator.writeEndObject();
   }
-  
+
   public static void writeListAsJson(JsonGenerator generator, Map map, String name, String fieldName) throws JsonGenerationException, IOException{
-    
+
     generator.writeStartObject();
     generator.writeFieldName(name);
-    
+
     //introspect the Map and write its value into desired format
     generator.writeStartArray();
     Iterator iter = (Iterator) map.entrySet().iterator();
     while(iter.hasNext()) {
-      
+
       Map.Entry entry = (Map.Entry) iter.next();
       generator.writeStartObject();
       //Iterate over Map and write key-value
-      generator.writeFieldName(fieldName); 
+      generator.writeFieldName(fieldName);
       generator.writeString(entry.getKey().toString());
-      
+
       writeValueAsJson(generator, entry.getValue(), name);
-      generator.writeEndObject();  
+      generator.writeEndObject();
     }
-    
+
     generator.writeEndArray();
     generator.writeEndObject();
   }

@@ -18,8 +18,8 @@
 package org.apache.geode.rest.internal.web.util;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -28,13 +28,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.internal.StructImpl;
-import org.apache.geode.internal.HeapDataOutputStream;
 import org.json.JSONException;
-
-import org.springframework.hateoas.Link;
 import org.springframework.util.Assert;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.HeapDataOutputStream;
 
 /**
  * The JSONUtils class is a utility class for getting JSON equivalent from Java types.
@@ -66,27 +64,11 @@ public abstract class JSONUtils {
     HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
+        .createGenerator((OutputStream)outputStream, JsonEncoding.UTF8));
       generator.writeStartObject();
       generator.writeFieldName("functions");
       JsonWriter.writeCollectionAsJson(generator, functionIds);
       generator.writeEndObject();
-      generator.close();
-      return new String(outputStream.toByteArray());
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
-    } finally {
-      outputStream.close();
-    }
-  }
-
-  public static String formulateJsonForListCall(Map<String, Link> LinksByName, String keyName, String fieldName) {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
-
-    try {
-      JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
-      JsonWriter.writeListAsJson(generator, LinksByName, keyName, fieldName);
       generator.close();
       return new String(outputStream.toByteArray());
     } catch (IOException e) {
@@ -101,7 +83,7 @@ public abstract class JSONUtils {
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
+        .createGenerator((OutputStream)outputStream, JsonEncoding.UTF8));
       generator.writeStartObject();
       generator.writeFieldName(fieldName);
       JsonWriter.writeObjectArrayAsJson(generator, keys, null);
@@ -120,7 +102,7 @@ public abstract class JSONUtils {
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
+        .createGenerator((OutputStream)outputStream, JsonEncoding.UTF8));
       generator.writeStartObject();
       generator.writeFieldName(fieldName);
       JsonWriter.writeRegionSetAsJson(generator, regions);
@@ -134,46 +116,12 @@ public abstract class JSONUtils {
     }
   }
 
-  public static String formulateJsonForGetOnKey(Object value) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
-
-    try {
-      JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
-      JsonWriter.writeValueAsJson(generator, value, "GET_ON_KEY_RESPONSE");
-      generator.close();
-      return new String(outputStream.toByteArray());
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
-    } finally {
-      outputStream.close();
-    }
-  }
-
-  public static String formulateJsonForGetOnMultipleKey(Collection<Object> collection, String regionName) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
-
-    try {
-      JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
-      generator.writeStartObject();
-      generator.writeFieldName(regionName);
-      JsonWriter.writeCollectionAsJson(generator, collection);
-      generator.writeEndObject();
-      generator.close();
-      return new String(outputStream.toByteArray());
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
-    } finally {
-      outputStream.close();
-    }
-  }
 
   public static String formulateJsonForListQueriesCall(Region<String, String> queryRegion) {
     HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
+        .createGenerator((OutputStream)outputStream, JsonEncoding.UTF8));
       JsonWriter.writeQueryListAsJson(generator, "queries", queryRegion);
       generator.close();
       return new String(outputStream.toByteArray());
@@ -189,7 +137,7 @@ public abstract class JSONUtils {
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
+        .createGenerator((OutputStream)outputStream, JsonEncoding.UTF8));
       JsonWriter.writeQueryAsJson(generator, queryId, oql);
       generator.close();
       return new String(outputStream.toByteArray());
@@ -205,7 +153,7 @@ public abstract class JSONUtils {
 
     try {
       JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
+        .createGenerator((OutputStream)outputStream, JsonEncoding.UTF8));
       JsonWriter.writeCollectionAsJson(generator, collection);
       generator.close();
       return new String(outputStream.toByteArray());
@@ -215,37 +163,4 @@ public abstract class JSONUtils {
       outputStream.close();
     }
   }
-
-  public static String convertMapToJson(Map<?, ?> map) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
-
-    try {
-      JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
-      JsonWriter.writeMapAsJson(generator, map, null);
-      generator.close();
-      return new String(outputStream.toByteArray());
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
-    } finally {
-      outputStream.close();
-    }
-  }
-
-  public static String convertStructToJson(StructImpl structSet) throws JSONException {
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
-
-    try {
-      JsonGenerator generator = enableDisableJSONGeneratorFeature(getObjectMapper().getFactory()
-        .createGenerator(outputStream, JsonEncoding.UTF8));
-      JsonWriter.writeStructAsJson(generator, structSet);
-      generator.close();
-      return new String(outputStream.toByteArray());
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
-    } finally {
-      outputStream.close();
-    }
-  }
-
 }
