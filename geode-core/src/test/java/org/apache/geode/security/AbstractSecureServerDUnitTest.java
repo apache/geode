@@ -80,7 +80,6 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
     Properties props = new Properties();
     props.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/management/internal/security/clientServer.json");
     props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-//    props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
     if (postProcessor!=null) {

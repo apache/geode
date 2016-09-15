@@ -87,6 +87,9 @@ dependencies {
     exclude module: 'spring-aop'
     ext.optional = true
   }
+  compile ('org.springframework:spring-core:' + project.'springframework.version') {
+    ext.optional = true
+  }
   compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
