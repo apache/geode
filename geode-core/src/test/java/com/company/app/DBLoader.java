@@ -18,7 +18,7 @@ package com.company.app;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 /**
  * A <code>CacheLoader</code> that is <code>Declarable</code>

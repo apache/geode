@@ -35,8 +35,10 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.gemstone.gemfire.management.internal.JettyHelper;
-import com.gemstone.gemfire.test.junit.categories.UITest;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.internal.JettyHelper;
+import org.apache.geode.test.junit.categories.UITest;
 import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Locator;
 import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Peer;
 import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Region;
@@ -70,7 +72,7 @@ public class PulseUITest {
     path = getPulseWarPath();
     //System.setProperty("pulse.propMockDataUpdaterClass", "com.vmware.gemfire.tools.pulse.testbed.PropMockDataUpdater");
 
-    jetty = JettyHelper.initJetty(host, port, false, false, null, null, null);
+    jetty = JettyHelper.initJetty(host, port, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
     JettyHelper.addWebApplication(jetty, context, getPulseWarPath());
     jetty.start();
 

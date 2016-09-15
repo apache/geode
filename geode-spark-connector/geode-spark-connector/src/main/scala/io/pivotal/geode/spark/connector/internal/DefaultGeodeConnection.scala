@@ -18,11 +18,11 @@ package io.pivotal.geode.spark.connector.internal
 
 import java.net.InetAddress
 
-import com.gemstone.gemfire.cache.client.{ClientCache, ClientCacheFactory, ClientRegionShortcut}
-import com.gemstone.gemfire.cache.execute.{FunctionException, FunctionService}
-import com.gemstone.gemfire.cache.query.Query
-import com.gemstone.gemfire.cache.{Region, RegionService}
-import com.gemstone.gemfire.internal.cache.execute.InternalExecution
+import org.apache.geode.cache.client.{ClientCache, ClientCacheFactory, ClientRegionShortcut}
+import org.apache.geode.cache.execute.{FunctionException, FunctionService}
+import org.apache.geode.cache.query.Query
+import org.apache.geode.cache.{Region, RegionService}
+import org.apache.geode.internal.cache.execute.InternalExecution
 import io.pivotal.geode.spark.connector.internal.oql.QueryResultCollector
 import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartition
 import org.apache.spark.{SparkEnv, Logging}

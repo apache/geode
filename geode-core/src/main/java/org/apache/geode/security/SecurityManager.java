@@ -18,8 +18,8 @@ package org.apache.geode.security;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.security.AuthenticationFailedException;
 
 /**
  * User implementation of a authentication/authorization logic for Integrated Security.

@@ -20,7 +20,7 @@ package com.vmware.gemfire.tools.pulse.tests.junit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.test.junit.categories.UITest;
+import org.apache.geode.test.junit.categories.UITest;
 import com.google.gson.JsonObject;
 import com.vmware.gemfire.tools.pulse.internal.json.JSONObject;
 import org.apache.http.HttpEntity;

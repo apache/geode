@@ -1,0 +1,78 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<HTML>
+<BODY>
+
+<P>Provides an API for administering various GemFire components such
+as a GemFire distributed
+system, and processes that host GemFire Caches.</P>
+
+<H3>Administration of a GemFire Distributed System</H3>
+
+The Admin API provides interfaces for administrative control, 
+monitoring, and custom management of a GemFire system.
+<P>
+The {@link org.apache.geode.admin.AdminDistributedSystemFactory}
+is the starting point.  It creates an instance of
+<code>AdminDistributedSystem</code> that administers the distributed
+system to which a VM is {@linkplain
+org.apache.geode.distributed.DistributedSystem connected}.
+<P>
+<pre><code>
+DistributedSystem connection = DistributedSystem.connect(new Properties());
+AdminDistributedSystem system = 
+    AdminDistributedSystemFactory.getDistributedSystem(connection);
+system.connect(new File("admin.log"), "info");
+</code></pre>
+<P>
+This {@link org.apache.geode.admin.AdminDistributedSystem}
+interface exposes methods for such tasks as connecting to the system,
+merging system logs, getting administrative interfaces to 
+applications that host GemFire Caches.
+
+<H3>Monitoring the Health of GemFire</H3>
+
+<P>The {@link org.apache.geode.admin.GemFireHealth} interface
+allows the overall health of GemFire to be monitored.
+<code>GemFireHealth</code> monitors the behavior the members of a
+distributed system namely 
+application VMs that may host {@link org.apache.geode.cache.Cache
+cache} instances.  There are three levels of health: {@linkplain
+org.apache.geode.admin.GemFireHealth#GOOD_HEALTH good health} that
+indicates that all GemFire components are behaving reasonably,
+{@linkplain org.apache.geode.admin.GemFireHealth#OKAY_HEALTH okay
+health} that indicates that one or more GemFire components is slightly
+unhealthy and may need some attention, and {@linkplain
+org.apache.geode.admin.GemFireHealth#POOR_HEALTH poor health} that
+indicates that a GemFire component is unhealthy and needs immediate
+attention.</P>
+
+<P>Because each GemFire application has its own definition of what it
+means to be "healthy", the metrics that are used to determine health
+are configurable.  {@link
+org.apache.geode.admin.GemFireHealthConfig} provides methods for
+configuring how the health of {@linkplain
+org.apache.geode.admin.DistributedSystemHealthConfig the
+distributed system},
+{@linkplain org.apache.geode.admin.CacheHealthConfig members that
+host Cache instances}, and {@linkplain
+org.apache.geode.admin.MemberHealthConfig individual members} of
+the distributed system.  <code>GemFireHealthConfig</code> also allows
+you to configure how often GemFire's health is evaluated.</P>
+
+</BODY>
+</HTML>

@@ -1,0 +1,42 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<HTML>
+<BODY>
+
+<H2>GemFire Distribution</H2>
+
+Distributed GemFire moves information between physical machines in a
+number of different ways.  The JCache implementation uses {@link
+org.apache.geode.distributed.internal.DistributionMessage}s
+to send information back and forth between VMs.  The distributed
+collections use the remote method invocation built on top of a {@link
+org.apache.geode.tcp.TCPConuit} to access elements in remote
+collections.  GemFire distirbution uses underlying technologies such
+as JavaGroups, and sockets to implement data transfer.
+
+<P>
+
+The vast majority of these APIs are internal.  However, the user is
+exposed to concepts such as the "distribution manager" and the fact
+that multicast networking or "locators" are used to discover the other
+members of the distributed group.  The user-level configuration is
+grouped together in the {@link
+org.apache.geode.distributed.DistributedSystem} class which
+provides a "connection" or entry point to the distributed system.
+
+</BODY>
+</HTML>

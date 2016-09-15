@@ -16,7 +16,7 @@
  */
 package org.apache.geode.security;
 
-import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.ConfigurationProperties;
 
 /**
  * This class defines all the static definitions for the {@link ConfigurationProperties#SECURITY_ENABLED_COMPONENTS}
@@ -45,7 +45,7 @@ public interface SecurableComponents {
    */
   String JMX = "jmx";
   /**
-   * This determines that the http service communcation will be secured.
+   * This determines that the http service communication will be secured.
    * <U>Since</U>: Geode 1.0
    */
   String HTTP_SERVICE = "http";
@@ -54,4 +54,9 @@ public interface SecurableComponents {
    * <U>Since</U>: Geode 1.0
    */
   String GATEWAY = "gateway";
+  /**
+   * This determines that the locator communication will be secured.
+   * <U>Since</U>: Geode 1.0
+   */
+  String LOCATOR = "locator";
 }

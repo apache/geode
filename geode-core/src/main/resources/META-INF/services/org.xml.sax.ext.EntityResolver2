@@ -1,2 +1,2 @@
-com.gemstone.gemfire.internal.cache.xmlcache.PivotalEntityResolver
-com.gemstone.gemfire.internal.cache.xmlcache.GeodeEntityResolver
+org.apache.geode.internal.cache.xmlcache.PivotalEntityResolver
+org.apache.geode.internal.cache.xmlcache.GeodeEntityResolver

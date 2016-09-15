@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 subprojects {
   apply plugin: 'com.bmuschko.nexus'
   
@@ -24,7 +25,7 @@ subprojects {
   }
   
   nexus {
-    sign = true
+    sign = Boolean.parseBoolean(nexusSignArchives)
     repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
     snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
   }

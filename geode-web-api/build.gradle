@@ -53,7 +53,7 @@ dependencies {
   compile 'org.json4s:json4s-ast_2.10:' + project.'json4s.version'
   compile 'org.scala-lang:scala-library:' + project.'scala.version'
   compile 'org.scala-lang:scala-reflect:' + project.'scala.version'
-  compile ('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateos.version') {
+  compile ('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateoas.version') {
     exclude module: 'aopalliance'
     exclude module: 'commons-logging'
     exclude module: 'objenesis'

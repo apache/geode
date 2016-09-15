@@ -16,7 +16,6 @@
  */
 package org.apache.geode.security.templates;
 
-import java.io.Serializable;
 import java.security.Principal;
 import java.util.Properties;
 
@@ -45,7 +44,7 @@ public class SamplePostProcessor implements PostProcessor{
    * @return the processed value
    */
   @Override
-  public Object processRegionValue(Serializable principal,
+  public Object processRegionValue(Object principal,
                                    String regionName,
                                    Object key,
                                    Object value) {

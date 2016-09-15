@@ -17,7 +17,6 @@
 
 package org.apache.geode.security;
 
-import java.io.Serializable;
 import java.util.Properties;
 
 /**
@@ -49,7 +48,7 @@ public interface PostProcessor {
    * @return
    *        the value that will be returned to the requester
    */
-  Object processRegionValue(Serializable principal, String regionName, Object key, Object value);
+  Object processRegionValue(Object principal, String regionName, Object key, Object value);
 
   /**
    * Give the implementation a chance to close the resources used.

@@ -16,12 +16,12 @@
  */
 package io.pivotal.geode.spark.connector.internal.geodefunctions
 
-import com.gemstone.gemfire.DataSerializer
-import com.gemstone.gemfire.cache.execute.{ResultCollector, ResultSender}
-import com.gemstone.gemfire.cache.query.internal.types.{ObjectTypeImpl, StructTypeImpl}
-import com.gemstone.gemfire.cache.query.types.ObjectType
-import com.gemstone.gemfire.internal.{Version, ByteArrayDataInput, HeapDataOutputStream}
-import com.gemstone.gemfire.internal.cache.{CachedDeserializable, CachedDeserializableFactory}
+import org.apache.geode.DataSerializer
+import org.apache.geode.cache.execute.{ResultCollector, ResultSender}
+import org.apache.geode.cache.query.internal.types.{ObjectTypeImpl, StructTypeImpl}
+import org.apache.geode.cache.query.types.ObjectType
+import org.apache.geode.internal.{Version, ByteArrayDataInput, HeapDataOutputStream}
+import org.apache.geode.internal.cache.{CachedDeserializable, CachedDeserializableFactory}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import scala.collection.JavaConversions._
 import scala.concurrent.{Await, ExecutionContext, Future}

@@ -18,10 +18,10 @@ package io.pivotal.geode.spark.connector.internal.oql
 
 import java.util.concurrent.{TimeUnit, LinkedBlockingDeque}
 
-import com.gemstone.gemfire.DataSerializer
-import com.gemstone.gemfire.cache.execute.ResultCollector
-import com.gemstone.gemfire.distributed.DistributedMember
-import com.gemstone.gemfire.internal.{Version, ByteArrayDataInput}
+import org.apache.geode.DataSerializer
+import org.apache.geode.cache.execute.ResultCollector
+import org.apache.geode.distributed.DistributedMember
+import org.apache.geode.internal.{Version, ByteArrayDataInput}
 
 class QueryResultCollector extends ResultCollector[Array[Byte], Iterator[Object]]{
 

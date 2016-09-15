@@ -91,7 +91,7 @@ public class ExpectedStrings {
     expected.add(Pattern.compile("FailWithSevereInOutputJUnitTest"));
     expected.add(Pattern.compile("SystemAlertManager: A simple Alert."));
     
-    expected.add(Pattern.compile("com.gemstone.gemfire.management.DependenciesNotFoundException")); 
+    expected.add(Pattern.compile("org.apache.geode.management.DependenciesNotFoundException")); 
 
     //expected.add(Pattern.compile("Java version older than"));
     //expected.add(Pattern.compile("Minimum system requirements not met. Unexpected behavior may result in additional errors."));

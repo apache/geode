@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache
+    xmlns="http://geode.apache.org/schema/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:test="urn:java:org/apache/geode/management/internal/configuration/utils/XmlUtilsAddNewNodeJUnitTest"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0">
+  <async-event-queue id="aeq1">
+    <async-event-listener>
+      <class-name>null</class-name>
+    </async-event-listener>
+  </async-event-queue>
+  <async-event-queue id="aeq2">
+    <async-event-listener>
+      <class-name>null</class-name>
+    </async-event-listener>
+  </async-event-queue>
+  <pdx disk-store-name="foo" />
+  <region name="r1">
+    <test:region value="1"/>
+  </region>
+  <region name="r2"></region>
+  <test:cache value="1"/>
+</cache>

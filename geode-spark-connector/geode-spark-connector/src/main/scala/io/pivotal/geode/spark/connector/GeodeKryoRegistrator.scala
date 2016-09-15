@@ -19,7 +19,7 @@ package io.pivotal.geode.spark.connector
 import com.esotericsoftware.kryo.Kryo
 import io.pivotal.geode.spark.connector.internal.oql.UndefinedSerializer
 import org.apache.spark.serializer.KryoRegistrator
-import com.gemstone.gemfire.cache.query.internal.Undefined
+import org.apache.geode.cache.query.internal.Undefined
 
 class GeodeKryoRegistrator extends KryoRegistrator{
 

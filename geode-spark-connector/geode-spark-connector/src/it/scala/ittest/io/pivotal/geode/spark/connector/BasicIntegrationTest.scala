@@ -17,10 +17,10 @@
 package ittest.io.pivotal.geode.spark.connector
 
 import java.util.Properties
-import com.gemstone.gemfire.cache.query.QueryService
-import com.gemstone.gemfire.cache.query.internal.StructImpl
+import org.apache.geode.cache.query.QueryService
+import org.apache.geode.cache.query.internal.StructImpl
 import io.pivotal.geode.spark.connector._
-import com.gemstone.gemfire.cache.Region
+import org.apache.geode.cache.Region
 import io.pivotal.geode.spark.connector.internal.{RegionMetadata, DefaultGeodeConnectionManager}
 import io.pivotal.geode.spark.connector.internal.oql.{RDDConverter, QueryRDD}
 import ittest.io.pivotal.geode.spark.connector.testkit.GeodeCluster

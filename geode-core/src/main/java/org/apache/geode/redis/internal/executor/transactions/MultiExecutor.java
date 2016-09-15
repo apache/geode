@@ -16,8 +16,8 @@
  */
 package org.apache.geode.redis.internal.executor.transactions;
 
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.TransactionId;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;

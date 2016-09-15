@@ -30,7 +30,7 @@ limitations under the License.
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
   ">
   <context:annotation-config />
-  <context:component-scan base-package="com.gemstone.gemfire.rest.internal.web"/>
+  <context:component-scan base-package="org.apache.geode.rest.internal.web"/>
   
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
     <mvc:message-converters register-defaults="false">
@@ -38,7 +38,7 @@ limitations under the License.
       <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
       <!-- bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" p:objectMapper-ref="objectMapper"/-->
-      <bean class="com.gemstone.gemfire.rest.internal.web.http.converter.CustomMappingJackson2HttpMessageConverter" p:objectMapper-ref="objectMapper"/>
+      <bean class="org.apache.geode.rest.internal.web.http.converter.CustomMappingJackson2HttpMessageConverter" p:objectMapper-ref="objectMapper"/>
       <!--bean class="org.gopivotal.app.http.converter.json.JsonToPdxInstanceHttpMessageConverter"/-->
       <!--bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/-->
       <!--bean class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter" p:marshaller-ref="jaxb2Marshaller" p:unmarshaller-ref="jaxb2Marshaller"/-->
@@ -62,7 +62,7 @@ limitations under the License.
     </property>
   </bean>
   
-  <!-- bean id="objectMapper" class="com.gemstone.gemfire.rest.internal.web.config.CustomObjectMapper" factory-method="newObjectMapper"></bean-->
+  <!-- bean id="objectMapper" class="org.apache.geode.rest.internal.web.config.CustomObjectMapper" factory-method="newObjectMapper"></bean-->
   <bean id="objectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean"
         p:failOnEmptyBeans="true"
         p:indentOutput="true"
