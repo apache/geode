@@ -53,6 +53,11 @@ the properties `security-username` and `security-password` in whatever way
 it wishes.
 It might look up values in a database or another external resource.
 
+Gateway senders and receivers communicate as a component of their
+server member.
+Therefore, the credential of the server become those of the gateway
+sender or receiver.
+
 ## How a Cache Client Sets Its Credential
 
 In order to connect with a locator or a server that does authentication,
@@ -65,7 +70,7 @@ There are two ways of accomplishing this:
 as in the example
 
      ``` pre
-     security-username=webclient
+     security-username=clientapp
      security-password=xyz1234
      ```
 The user name and password are stored in the clear, so the
@@ -88,13 +93,16 @@ or it might prompt for values.
 
 ## How Other Components Set Their Credentials
 
-gfsh prompts upon `gfsh connect`.
+`gfsh` prompts for the user name and password upon invocation of
+a`gfsh connect` command.
 
-Pulse prompts upon start up.
+Pulse prompts for the user name and password upon start up.
 
-Components connecting via the REST API do something.
-
-
+Due to the stateless nature of the REST API,
+a web application or other component that speaks to a server or locator
+via the REST API goes through authentication on each request.
+The header of the request needs to include attributes that define values for
+`security-username` and `security-password`.
 
 ## Implement SecurityManager Interface
 
