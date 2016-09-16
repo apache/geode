@@ -3843,12 +3843,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     client1.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
-      (assertEquals(1, getClientCacheListnerEventCount(regionName))));
+      assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
 
     client2.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
-      (assertEquals(1, getClientCacheListnerEventCount(regionName))));
+      assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
   }
 
