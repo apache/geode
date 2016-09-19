@@ -14,28 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sequence.gemfire;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.sequence.LineMapper;
+package org.apache.geode.sequence;
 
 /**
- * A lifeline mapper that just returns a shortened version of 
- * a member id.
+ * An interface for mapping a lifeline name to a shorter version of the same
+ * line. This could also consolodate multiple lifelines onto a single line.
+ * 
+ * The most common case for this is that a lifeline represents a VM that is
+ * restarted several times. Eg time, the line name changes, but we want to put
+ * all of the states for that "logical" vm on the same line.
  *
  */
-public class DefaultLineMapper implements LineMapper {
-  private static Pattern MEMBER_ID_RE = Pattern.compile(".*\\((\\d+)(:admin)?(:loner)?\\).*:\\d+(/\\d+|.*:.*)");
-
-  public String getShortNameForLine(String name) {
-    Matcher matcher = MEMBER_ID_RE.matcher(name);
-    if(matcher.matches()) {
-      return matcher.group(1);
-    } else {
-      return name;
-    }
-  }
+public interface LineMapper {
+  
+  /**
+   * Return the short name for this lifeline.
+   */
+  public String getShortNameForLine(String lineName);
 
 }

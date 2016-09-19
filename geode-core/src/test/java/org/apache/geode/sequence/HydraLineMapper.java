@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sequence.gemfire;
+package org.apache.geode.sequence;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +27,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.sequence.LineMapper;
+import org.apache.geode.sequence.LineMapper;
 
 /**
  *

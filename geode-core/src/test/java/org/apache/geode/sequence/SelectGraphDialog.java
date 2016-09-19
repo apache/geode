@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sequence.gemfire;
+package org.apache.geode.sequence;
 
 import org.apache.geode.internal.sequencelog.model.GraphID;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
