@@ -199,7 +199,7 @@ public abstract class AbstractBaseController {
       
       final HttpHeaders headers = new HttpHeaders();
       headers.setLocation(toUri("queries", queryId));    
-      return new ResponseEntity<String>(queryResultAsJson, headers, HttpStatus.OK);
+      return new ResponseEntity<>(queryResultAsJson, headers, HttpStatus.OK);
     }else {
       throw new GemfireRestException("Server has encountered error while generating query result into restful format(JSON)!");
     }
@@ -645,7 +645,10 @@ public abstract class AbstractBaseController {
   protected String convertErrorAsJson(Throwable t) {
     StringWriter writer = new StringWriter();
     t.printStackTrace(new PrintWriter(writer));
-    return String.format("{\"message\" : \"%1$s\", \"stackTrace\" : \"%2$s\"}", t.getMessage(), writer.toString());
+    String returnString = writer.toString();
+    returnString = returnString.replace("\n"," ");
+    returnString = returnString.replace("\t"," ");
+    return String.format("{\"message\" : \"%1$s\", \"stackTrace\" : \"%2$s\"}", t.getMessage(), returnString);
   }
 
   protected Map<?,?> convertJsonToMap(final String jsonString) {
