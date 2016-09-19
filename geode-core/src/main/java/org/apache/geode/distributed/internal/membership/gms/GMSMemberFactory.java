@@ -16,25 +16,28 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
+import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.distributed.internal.membership.MemberServices;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.ConnectionException;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.AuthenticationRequiredException;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * Create a new Member based on the given inputs.
@@ -105,8 +108,7 @@ public class GMSMemberFactory implements MemberServices {
     }
     catch (GemFireConfigException
         | SystemConnectException
-        | AuthenticationFailedException
-        | AuthenticationRequiredException e) {
+        | GemFireSecurityException e) {
       throw e;
     }
     catch (RuntimeException e) {

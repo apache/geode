@@ -43,14 +43,14 @@ public class GMSAuthenticatorWithSecurityManagerTest extends AbstractGMSAuthenti
   @Test
   public void nullManagerShouldReturnNull() throws Exception {
     assertThat(securityProps).doesNotContainKey(SECURITY_MANAGER);
-    String result = authenticator.authenticate(member, securityProps, securityProps, member);
+    String result = authenticator.authenticate(member, securityProps, securityProps);
     assertThat(result).isNull();
   }
 
   @Test
   public void emptyAuthenticatorShouldReturnNull() throws Exception {
     securityProps.setProperty(SECURITY_MANAGER, "");
-    String result = authenticator.authenticate(member, securityProps, securityProps, member);
+    String result = authenticator.authenticate(member, securityProps, securityProps);
     assertThat(result).isNull();
   }
 
@@ -123,13 +123,13 @@ public class GMSAuthenticatorWithSecurityManagerTest extends AbstractGMSAuthenti
   @Test
   public void authenticateShouldReturnNullIfSuccessful() throws Exception {
     props.setProperty(SECURITY_MANAGER, "dummy");
-    String result = authenticator.authenticate(member, props, props, member);
+    String result = authenticator.authenticate(member, props, props);
     assertThat(result).isNull();
   }
 
   @Test
   public void authenticateShouldReturnNullIfNoSecurityManager() throws Exception {
-    String result = authenticator.authenticate(member, props, props, member);
+    String result = authenticator.authenticate(member, props, props);
     assertThat(result).isNull();
   }
 
@@ -137,14 +137,14 @@ public class GMSAuthenticatorWithSecurityManagerTest extends AbstractGMSAuthenti
   public void authenticateShouldReturnFailureMessageIfLoginThrows() throws Exception {
     when(securityService.login(any(Properties.class))).thenThrow(new GemFireSecurityException("dummy"));
     props.setProperty(SECURITY_MANAGER, "dummy");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
+    String result = authenticator.authenticate(member, props, props);
+    assertThat(result).startsWith("Security check failed. dummy");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfNullCredentials() throws Exception {
     props.setProperty(SECURITY_MANAGER, "dummy");
-    String result = authenticator.authenticate(member, null, props, member);
+    String result = authenticator.authenticate(member, null, props);
     assertThat(result).startsWith("Failed to find credentials from");
   }
 

@@ -99,13 +99,13 @@ public class GMSAuthenticator implements Authenticator {
    */
   @Override
   public String authenticate(InternalDistributedMember member, Properties credentials) throws AuthenticationFailedException {
-    return authenticate(member, credentials, this.securityProps, this.services.getJoinLeave().getMemberID());
+    return authenticate(member, credentials, this.securityProps);
   }
 
   /**
    * Method is package protected to be used in testing.
    */
-  String authenticate(DistributedMember member, Properties credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
+  String authenticate(DistributedMember member, Properties credentials, Properties secProps) throws AuthenticationFailedException {
     if (!securityService.isPeerSecurityRequired()) {
       return null;
     }
@@ -121,6 +121,7 @@ public class GMSAuthenticator implements Authenticator {
     try {
       if(this.securityService.isIntegratedSecurity()){
         this.securityService.login(credentials);
+        this.securityService.authorizeClusterManage();
       }
       else {
         invokeAuthenticator(secProps, member, credentials);
@@ -129,8 +130,9 @@ public class GMSAuthenticator implements Authenticator {
       securityLogWriter.warning(AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION, new Object[] {
         member, ex.getLocalizedMessage()
       }, ex);
-      failMsg = AUTH_PEER_AUTHENTICATION_FAILED.toLocalizedString(localMember);
+      failMsg = AUTH_PEER_AUTHENTICATION_FAILED.toLocalizedString(ex.getLocalizedMessage());
     }
+
     return failMsg;
   }
 

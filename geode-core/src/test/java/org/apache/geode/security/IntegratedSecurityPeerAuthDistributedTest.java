@@ -22,7 +22,11 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -31,10 +35,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCase{
@@ -106,7 +106,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     properties.setProperty(UserPasswordAuthInit.USER_NAME, "stranger");
     properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
 
-    assertThatThrownBy(() -> getSystem(properties)).isExactlyInstanceOf(AuthenticationFailedException.class);
+    assertThatThrownBy(() -> getSystem(properties)).isExactlyInstanceOf(GemFireSecurityException.class);
   }
 
   @Override
