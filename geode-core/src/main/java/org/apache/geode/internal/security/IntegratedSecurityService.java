@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.Set;
@@ -28,11 +27,22 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.shiro.CustomAuthRealm;
+import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
+import org.apache.geode.internal.security.shiro.ShiroPrincipal;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.SecurableComponents;
 import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
@@ -45,21 +55,6 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
-
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.shiro.CustomAuthRealm;
-import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
-import org.apache.geode.internal.security.shiro.ShiroPrincipal;
-import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.NotAuthorizedException;
 
 public class IntegratedSecurityService implements SecurityService{
 
@@ -81,12 +76,6 @@ public class IntegratedSecurityService implements SecurityService{
 
   private boolean isClientAuthenticator; // is there a SECURITY_CLIENT_AUTHENTICATOR
   private boolean isPeerAuthenticator; // is there a SECURITY_PEER_AUTHENTICATOR
-
-  private boolean isJmxSecurityRequired;
-  private boolean isHttpSecurityRequired;
-  private boolean isGatewaySecurityRequired;
-  private boolean isClusterSecurityRequired;
-  private boolean isServerSecurityRequired;
 
   /**
    * It first looks the shiro subject in AccessControlContext since JMX will
@@ -129,9 +118,6 @@ public class IntegratedSecurityService implements SecurityService{
 
   /**
    * convenient method for testing
-   * @param username
-   * @param password
-   * @return
    */
   public Subject login(String username, String password){
     if(StringUtils.isBlank(username) || StringUtils.isBlank(password))
@@ -325,17 +311,6 @@ public class IntegratedSecurityService implements SecurityService{
       return;
     }
 
-    String enabledComponentsString = securityProps.getProperty(SECURITY_ENABLED_COMPONENTS);
-    if (enabledComponentsString == null) {
-      enabledComponentsString = DistributionConfig.DEFAULT_SECURITY_ENABLED_COMPONENTS;
-    }
-
-    boolean isClusterSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.CLUSTER);
-    boolean isGatewaySecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.GATEWAY);
-    boolean isHttpSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.HTTP_SERVICE);
-    boolean isJmxSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.JMX);
-    boolean isServerSecured = enabledComponentsString.contains(SecurableComponents.ALL) || enabledComponentsString.contains(SecurableComponents.SERVER);
-
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
     String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
     String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
@@ -357,7 +332,7 @@ public class IntegratedSecurityService implements SecurityService{
     }
     // only set up shiro realm if user has implemented SecurityManager
     else if (!StringUtils.isBlank(securityConfig)) {
-      securityManager = getObjectOfTypeFromClassName(securityConfig, SecurityManager.class);
+      securityManager = SecurityService.getObjectOfTypeFromClassName(securityConfig, SecurityManager.class);
       securityManager.init(securityProps);
       Realm realm = new CustomAuthRealm(securityManager);
       org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
@@ -376,17 +351,10 @@ public class IntegratedSecurityService implements SecurityService{
       isPeerAuthenticator = false;
     }
 
-    isServerSecurityRequired = isClientAuthenticator || (isIntegratedSecurity && isServerSecured);
-    isClusterSecurityRequired = isPeerAuthenticator || (isIntegratedSecurity && isClusterSecured);
-
-    isGatewaySecurityRequired = isClientAuthenticator || (isIntegratedSecurity && isGatewaySecured);
-    isHttpSecurityRequired = isIntegratedSecurity && isHttpSecured;
-    isJmxSecurityRequired = isIntegratedSecurity && isJmxSecured;
-
     // this initializes the post processor
     String customPostProcessor = securityProps.getProperty(SECURITY_POST_PROCESSOR);
     if( !StringUtils.isBlank(customPostProcessor)) {
-      postProcessor = getObjectOfTypeFromClassName(customPostProcessor, PostProcessor.class);
+      postProcessor = SecurityService.getObjectOfTypeFromClassName(customPostProcessor, PostProcessor.class);
       postProcessor.init(securityProps);
     }
     else{
@@ -456,74 +424,6 @@ public class IntegratedSecurityService implements SecurityService{
     return newValue;
   }
 
-  private static void checkSameClass(Object obj1, Object obj2){
-
-  }
-
-  /**
-   * this method would never return null, it either throws an exception or
-   * returns an object
-   */
-  public static <T> T getObjectOfTypeFromClassName(String className, Class<T> expectedClazz) {
-    Class actualClass = null;
-    try {
-      actualClass = ClassLoadUtil.classFromName(className);
-    }
-    catch (Exception ex) {
-      throw new GemFireSecurityException("Instance could not be obtained, "+ex.toString(), ex);
-    }
-
-    if(!expectedClazz.isAssignableFrom(actualClass)){
-      throw new GemFireSecurityException("Instance could not be obtained. Expecting a "+expectedClazz.getName()+" class.");
-    }
-
-    T actualObject = null;
-    try {
-      actualObject =  (T)actualClass.newInstance();
-    } catch (Exception e) {
-      throw new GemFireSecurityException("Instance could not be obtained. Error instantiating "+actualClass.getName(), e);
-    }
-    return actualObject;
-  }
-
-  /**
-   * this method would never return null, it either throws an exception or
-   * returns an object
-   */
-  public static <T> T getObjectOfTypeFromFactoryMethod(String factoryMethodName, Class<T> expectedClazz){
-    T actualObject = null;
-    try {
-      Method factoryMethod = ClassLoadUtil.methodFromName(factoryMethodName);
-      actualObject = (T)factoryMethod.invoke(null, (Object[])null);
-    } catch (Exception e) {
-      throw new GemFireSecurityException("Instance could not be obtained from "+factoryMethodName, e);
-    }
-
-    if(actualObject == null){
-      throw new GemFireSecurityException("Instance could not be obtained from "+factoryMethodName);
-    }
-
-    return actualObject;
-  }
-
-  /**
-   * this method would never return null, it either throws an exception or
-   * returns an object
-   *
-   * @return an object of type expectedClazz. This method would never return
-   * null. It either returns an non-null object or throws exception.
-   */
-  public static <T> T getObjectOfType(String classOrMethod, Class<T> expectedClazz) {
-    T object = null;
-    try{
-      object = getObjectOfTypeFromClassName(classOrMethod, expectedClazz);
-    }
-    catch (Exception e){
-      object = getObjectOfTypeFromFactoryMethod(classOrMethod, expectedClazz);
-    }
-    return object;
-  }
-
   public SecurityManager getSecurityManager(){
     return securityManager;
   }
@@ -536,23 +436,11 @@ public class IntegratedSecurityService implements SecurityService{
     return isIntegratedSecurity;
   }
 
-  public boolean isClientSecurityRequired() { // TODO: rename as isServerSecurityRequired
-    return isServerSecurityRequired;
+  public boolean isClientSecurityRequired() {
+    return isClientAuthenticator || isIntegratedSecurity;
   }
 
-  public boolean isPeerSecurityRequired() { // TODO: rename as isClusterSecurityRequired
-    return isClusterSecurityRequired;
-  }
-
-  public boolean isJmxSecurityRequired() {
-    return isJmxSecurityRequired;
-  }
-
-  public boolean isGatewaySecurityRequired() {
-    return isGatewaySecurityRequired;
-  }
-
-  public boolean isHttpSecurityRequired() {
-    return isHttpSecurityRequired;
+  public boolean isPeerSecurityRequired() {
+    return isPeerAuthenticator || isIntegratedSecurity;
   }
 }

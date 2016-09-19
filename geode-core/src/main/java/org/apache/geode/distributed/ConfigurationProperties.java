@@ -18,7 +18,6 @@
 package org.apache.geode.distributed;
 
 import org.apache.geode.redis.GeodeRedisServer;
-import org.apache.geode.security.SecurableComponents;
 
 /**
  * This interface defines all the configuration properties that can be used.
@@ -1347,22 +1346,6 @@ public interface ConfigurationProperties {
    * property
    */
   String SECURITY_PEER_VERIFY_MEMBER_TIMEOUT = SECURITY_PREFIX + "peer-verifymember-timeout";
-  /**
-   * The static String definition of the <i>"security-enabled-components"</i> property
-   * <a name="security-enabled-components"/>
-   * <p>
-   * <u>Description</u>: This setting is a comma delimited list of
-   * {@link org.apache.geode.security.SecurableComponents} specifying which components will be secured
-   * by a {@link #SECURITY_MANAGER}.
-   * <p>
-   * This property has no effect unless a {@link #SECURITY_MANAGER} is
-   * specified.
-   * <p>
-   * <u>Options</u>: "all","server","cluster","gateway","http","jmx"
-   * <p>
-   * <u>Since</u>: Geode 1.0
-   */
-  String SECURITY_ENABLED_COMPONENTS = SECURITY_PREFIX + "enabled-components";
   /**
    * The static String definition of the <i>"server-bind-address"</i> property
    * <a name="server-bind-address"/a><p>

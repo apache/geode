@@ -41,10 +41,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
-
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
@@ -106,9 +102,11 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
-import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AccessControl;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
 
 /**
  * Class <code>CacheClientProxy</code> represents the server side of the
@@ -338,7 +336,7 @@ public class CacheClientProxy implements ClientSession {
   private int numDrainsInProgress = 0;
   private final Object drainsInProgressLock = new Object();
 
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private SecurityService securityService = SecurityService.getSecurityService();
   
   /**
    * Constructor.
@@ -1678,7 +1676,7 @@ public class CacheClientProxy implements ClientSession {
     // post process
     if(this.securityService.needPostProcess()) {
       Object oldValue = clientMessage.getValue();
-      Object newValue = IntegratedSecurityService.getSecurityService().postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
+      Object newValue = securityService.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
       clientMessage.setLatestValue(newValue);
     }
 

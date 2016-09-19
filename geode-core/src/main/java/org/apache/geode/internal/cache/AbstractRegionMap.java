@@ -253,7 +253,6 @@ public abstract class AbstractRegionMap implements RegionMap {
       if (_getMap().remove(key, re)) {
         ((OffHeapRegionEntry)re).release();
       }
-      _getOwner().checkReadiness(); // throw RegionDestroyedException
     }
     return value;
   }

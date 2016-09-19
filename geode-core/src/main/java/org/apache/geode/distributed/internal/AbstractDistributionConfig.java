@@ -42,7 +42,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurableComponent;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
@@ -492,29 +491,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
       if (getClusterSSLEnabled() || getJmxManagerSSLEnabled() || getHttpServiceSSLEnabled() || getServerSSLEnabled() || getGatewaySSLEnabled()) {
         throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.toLocalizedString());
       }
-    }
-    return value;
-  }
-
-  /**
-   * First check if sslComponents are in the list of valid components. If so, check that no other *-ssl-* properties other than cluster-ssl-* are set.
-   * This would mean one is mixing the "old" with the "new"
-   */
-  @ConfigAttributeChecker(name = SECURITY_ENABLED_COMPONENTS)
-  protected String checkSecurityEnabledComponents(String value) {
-    // value with no commas
-    // empty value
-    // null
-    if (StringUtils.isEmpty(value) || SecurableComponent.NONE.name().equalsIgnoreCase(value)) {
-      return value;
-    }
-    if (!value.contains(",")) {
-      SecurableComponent.getEnum(value);
-      return value;
-    }
-    StringTokenizer stringTokenizer = new StringTokenizer(value, ",");
-    while (stringTokenizer.hasMoreTokens()) {
-      SecurableComponent.getEnum(stringTokenizer.nextToken());
     }
     return value;
   }
@@ -973,8 +949,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(SECURITY_SHIRO_INIT, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
     m.put(SECURITY_MANAGER, "User defined fully qualified class name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
     m.put(SECURITY_POST_PROCESSOR, "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
-
-    m.put(SECURITY_ENABLED_COMPONENTS, "A comma delimited list of components that should be secured");
 
     m.put(SSL_ENABLED_COMPONENTS, "A comma delimited list of components that require SSL communications");
 

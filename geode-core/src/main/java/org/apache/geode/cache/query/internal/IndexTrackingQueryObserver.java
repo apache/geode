@@ -55,7 +55,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     String indexName;
     //Dont create new IndexInfo if one is already there in map for aggregation
     //of results later for whole partition region on this node.
-    if(index instanceof MapRangeIndex || index instanceof CompactMapRangeIndex){
+    if((index instanceof MapRangeIndex || index instanceof CompactMapRangeIndex) && key instanceof Object[]){
       indexName = index.getName()+ "-"+((Object[])key)[1];
     } else {
       indexName = index.getName();

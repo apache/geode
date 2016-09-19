@@ -22,17 +22,12 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -40,6 +35,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Ignore("This is broken but fixed on feature/GEODE-1673")
 @Category({DistributedTest.class, SecurityTest.class})
@@ -69,7 +67,6 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
       properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/management/internal/security/clientServer.json");
       properties.setProperty(LOCATORS, locators);
       properties.setProperty(MCAST_PORT, "0");
-      properties.setProperty(SECURITY_ENABLED_COMPONENTS, "");
       properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
       properties.setProperty(START_LOCATOR, locators);
       properties.setProperty(JMX_MANAGER, "true");
@@ -107,7 +104,6 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/management/internal/security/clientServer.json");
     properties.setProperty(LOCATORS, locators);
     properties.setProperty(MCAST_PORT, "0");
-    properties.setProperty(SECURITY_ENABLED_COMPONENTS, "");
     properties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
 

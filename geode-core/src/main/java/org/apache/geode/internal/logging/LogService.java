@@ -39,17 +39,16 @@ import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessa
 
 /**
  * Centralizes log configuration and initialization.
- * 
  */
 @SuppressWarnings("unused")
 public class LogService extends LogManager {
-  // This is highest point in the hierarchy for all GemFire logging
+  // This is highest point in the hierarchy for all Geode logging
   public static final String ROOT_LOGGER_NAME = "";
-  public static final String BASE_LOGGER_NAME = "org.apache";
+  public static final String BASE_LOGGER_NAME = "org.apache.geode";
   public static final String MAIN_LOGGER_NAME = "org.apache.geode";
   public static final String SECURITY_LOGGER_NAME = "org.apache.geode.security";
   
-  public static final String GEMFIRE_VERBOSE_FILTER = "{GEMFIRE_VERBOSE}";
+  public static final String GEMFIRE_VERBOSE_FILTER = "{GEODE_VERBOSE}";
   
   protected static final String STDOUT = "STDOUT";
 
@@ -59,9 +58,9 @@ public class LogService extends LogManager {
   public static final String CLI_CONFIG = "/log4j2-cli.xml";
 
   /**
-   * Name of variable that is set to "true" in log4j2.xml to indicate that it is the default gemfire config xml.
+   * Name of variable that is set to "true" in log4j2.xml to indicate that it is the default geode config xml.
    */
-  private static final String GEMFIRE_DEFAULT_PROPERTY = "gemfire-default";
+  private static final String GEMFIRE_DEFAULT_PROPERTY = "geode-default";
   
   /** Protected by static synchronization. Used for removal and adding stdout back in. */
   private static Appender stdoutAppender;

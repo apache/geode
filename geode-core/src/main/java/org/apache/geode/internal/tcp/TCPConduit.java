@@ -62,7 +62,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurableComponent;
 
 /**
  * <p>TCPConduit manages a server socket and a collection of connections to
@@ -262,6 +261,9 @@ public class TCPConduit implements Runnable {
     } catch (IOException io) {
       throw new ConnectionException(LocalizedStrings.TCPConduit_UNABLE_TO_INITIALIZE_CONNECTION_TABLE.toLocalizedString(), io);
     }
+    
+    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    
     this.useNIO = USE_NIO;
     if (this.useNIO) {
       InetAddress addr = address;
@@ -281,9 +283,7 @@ public class TCPConduit implements Runnable {
           }
         }
       }
-    }
-
-    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    }    
 
     startAcceptor();
   }
@@ -1176,7 +1176,6 @@ public class TCPConduit implements Runnable {
   /**
    * returns the SocketCreator that should be used to produce
    * sockets for TCPConduit connections.
-   * @return
    */
   protected SocketCreator getSocketCreator() {
     return socketCreator;

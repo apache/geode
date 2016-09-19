@@ -38,7 +38,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.geode.redis.GeodeRedisServer;
-import org.apache.geode.security.SecurableComponents;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
@@ -50,7 +49,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurableComponent;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
@@ -574,8 +572,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
 
-  private String securityEnabledComponents = DEFAULT_SECURITY_ENABLED_COMPONENTS;
-
   /**
    * "off-heap-memory-size" with value of "" or "<size>[g|m]"
    */
@@ -767,7 +763,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.securityManager = other.getSecurityManager();
     this.postProcessor = other.getPostProcessor();
 
-    this.securityEnabledComponents = ((DistributionConfigImpl) other).securityEnabledComponents;
     this.clusterSSLAlias = other.getClusterSSLAlias();
     this.gatewaySSLAlias = other.getGatewaySSLAlias();
     this.httpServiceSSLAlias = other.getHTTPServiceSSLAlias();
@@ -2193,9 +2188,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   public Properties getSecurityProps() {
-    if (security.containsKey(SECURITY_MANAGER) && !security.containsKey(SECURITY_ENABLED_COMPONENTS)) {
-      security.setProperty(SECURITY_ENABLED_COMPONENTS, SecurableComponents.ALL);
-    }
     return security;
   }
 
@@ -2511,16 +2503,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public String getShiroInit() {
     return this.shiroInit;
-  }
-
-  @Override
-  public String getSecurityEnabledComponents() {
-    return securityEnabledComponents;
-  }
-
-  @Override
-  public void setSecurityEnabledComponents(final String securityEnabledComponents) {
-    this.securityEnabledComponents = securityEnabledComponents;
   }
 
   @Override
@@ -2880,7 +2862,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
                               .append(sslDefaultAlias, that.sslDefaultAlias)
                               .append(sourceMap, that.sourceMap)
                               .append(userCommandPackages, that.userCommandPackages)
-                              .append(securityEnabledComponents, that.securityEnabledComponents)
                               .append(offHeapMemorySize, that.offHeapMemorySize)
                               .append(shiroInit, that.shiroInit)
                               .isEquals();
@@ -3056,7 +3037,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
                                       .append(sslDefaultAlias)
                                       .append(sourceMap)
                                       .append(userCommandPackages)
-                                      .append(securityEnabledComponents)
                                       .append(offHeapMemorySize)
                                       .append(lockMemory)
                                       .append(shiroInit)

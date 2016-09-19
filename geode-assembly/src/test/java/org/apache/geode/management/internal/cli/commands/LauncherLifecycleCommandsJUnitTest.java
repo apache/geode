@@ -16,6 +16,22 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.GemFireException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher;
@@ -26,16 +42,6 @@ import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
 
 /**
  * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of
@@ -46,8 +52,8 @@ import static org.junit.Assert.*;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@SuppressWarnings("unused")
 @Category(UnitTest.class)
+@SuppressWarnings("unused")
 public class LauncherLifecycleCommandsJUnitTest {
 
   private LauncherLifecycleCommands launcherCommands;
@@ -102,7 +108,7 @@ public class LauncherLifecycleCommandsJUnitTest {
     gemfireProperties.setProperty(LOG_LEVEL, "config");
     gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY_STRING);
     gemfireProperties.setProperty(MCAST_PORT, "0");
-    gemfireProperties.setProperty(NAME, "tidepool");
+    gemfireProperties.setProperty(NAME, "machine");
 
     getLauncherLifecycleCommands().addGemFireSystemProperties(commandLine, gemfireProperties);
 
@@ -138,7 +144,7 @@ public class LauncherLifecycleCommandsJUnitTest {
     gemfireProperties.setProperty(LOG_LEVEL, "config");
     gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY_STRING);
     gemfireProperties.setProperty(MCAST_PORT, "0");
-    gemfireProperties.setProperty(NAME, "tidepool");
+    gemfireProperties.setProperty(NAME, "machine");
 
     gemfireProperties.setProperty(START_DEV_REST_API, "true");
     gemfireProperties.setProperty(HTTP_SERVICE_PORT,  "8080");
@@ -418,20 +424,20 @@ public class LauncherLifecycleCommandsJUnitTest {
 
   @Test
   public void testGetLocatorId() {
-    assertEquals("tidepool[11235]", getLauncherLifecycleCommands().getLocatorId("tidepool", 11235));
-    assertEquals("tidepool.gemstone.com[11235]",
-        getLauncherLifecycleCommands().getLocatorId("tidepool.gemstone.com", 11235));
-    assertEquals("tidepool[" + DistributionLocator.DEFAULT_LOCATOR_PORT + "]",
-        getLauncherLifecycleCommands().getLocatorId("tidepool", null));
+    assertEquals("machine[11235]", getLauncherLifecycleCommands().getLocatorId("machine", 11235));
+    assertEquals("machine.domain.org[11235]",
+        getLauncherLifecycleCommands().getLocatorId("machine.domain.org", 11235));
+    assertEquals("machine[" + DistributionLocator.DEFAULT_LOCATOR_PORT + "]",
+        getLauncherLifecycleCommands().getLocatorId("machine", null));
   }
 
   @Test
   public void testGetServerId() {
-    assertEquals("tidepool[12480]", getLauncherLifecycleCommands().getServerId("tidepool", 12480));
-    assertEquals("tidepool.vmware.com[12480]",
-        getLauncherLifecycleCommands().getServerId("tidepool.vmware.com", 12480));
-    assertEquals("tidepool[" + CacheServer.DEFAULT_PORT + "]",
-        getLauncherLifecycleCommands().getServerId("tidepool", null));
+    assertEquals("machine[12480]", getLauncherLifecycleCommands().getServerId("machine", 12480));
+    assertEquals("machine.domain.org[12480]",
+        getLauncherLifecycleCommands().getServerId("machine.domain.org", 12480));
+    assertEquals("machine[" + CacheServer.DEFAULT_PORT + "]",
+        getLauncherLifecycleCommands().getServerId("machine", null));
   }
 
   @Test

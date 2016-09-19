@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurableComponent;
 import org.apache.geode.management.internal.SSLUtil;
 
 /**

@@ -271,19 +271,17 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     versionTestConcurrentEvents();
   }
   
-  @Category(FlakyTest.class) // GEODE-720: time sensitive, async actions, thread sleeps
   @Test
   public void testClearWithConcurrentEvents() throws Exception {
     z_versionTestClearWithConcurrentEvents(true);
   }
 
-  @Category(FlakyTest.class) // GEODE-599 and GEODE-1046: async actions, thread sleeps -- // GEODE-1046: this may be hitting a product bug!
   @Test
   public void testClearWithConcurrentEventsAsync() throws Exception {
     versionTestClearWithConcurrentEventsAsync();
   }
 
-  @Category(FlakyTest.class) // bug #45704
+  @Ignore("Enable after fix for bug GEODE-1891 was #45704")
   @Test
   public void testClearOnNonReplicateWithConcurrentEvents() throws Exception {
     versionTestClearOnNonReplicateWithConcurrentEvents();
