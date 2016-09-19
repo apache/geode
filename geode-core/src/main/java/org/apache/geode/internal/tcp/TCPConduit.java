@@ -261,6 +261,9 @@ public class TCPConduit implements Runnable {
     } catch (IOException io) {
       throw new ConnectionException(LocalizedStrings.TCPConduit_UNABLE_TO_INITIALIZE_CONNECTION_TABLE.toLocalizedString(), io);
     }
+    
+    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    
     this.useNIO = USE_NIO;
     if (this.useNIO) {
       InetAddress addr = address;
@@ -280,9 +283,7 @@ public class TCPConduit implements Runnable {
           }
         }
       }
-    }
-
-    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    }    
 
     startAcceptor();
   }
