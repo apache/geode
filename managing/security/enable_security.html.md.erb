@@ -5,12 +5,12 @@ title:  Enable Security with Property Definitions
 
 ## security-manager Property
 
-The callbacks that implement the authentication and authorization 
-of the various components of the system
+The authentication callback and the authorization callback that implement 
+the `SecurityManager` interface
 are specified with the `security-manager` property.
 When this property is defined, authentication and authorization are enabled.
 The definition of the `security-manager` property is the
-path to the implementation of the `SecurityManager` interface.
+fully qualified name of the class that implements the `SecurityManager` interface.
 For example:
 
 ``` pre
