@@ -182,11 +182,6 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>If true then this member is willing to be a JMX Manager. All the other JMX Manager properties will be used when it does become a manager. If this property is false then all other <code class="ph codeph">jmx-manager-*</code> properties are ignored.</td>
 <td>false (except on locators)</td>
 </tr>
-<tr class="odd">
-<td>jmx-manager-access-file</td>
-<td>By default the JMX Manager will allow full access to all mbeans by any client. If this property is set to the name of a file then it can restrict clients to only being able to read MBeans; they will not be able to modify MBeans. The access level can be configured differently in this file for each user name defined in the password file. For more information about the format of this file see Oracle's documentation of the com.sun.management.jmxremote.access.file system property. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero.</td>
-<td><em>not set</em></td>
-</tr>
 <tr class="even">
 <td>jmx-manager-bind-address</td>
 <td>By default the jmx-manager (when configured with a port) will listen on all the local host's addresses. You can use this property to configure what IP address or host name the JMX Manager will listen on for non-HTTP connections. Ignored if JMX Manager is false or <code class="ph codeph">jmx-manager-port</code> is zero.</td>
@@ -201,11 +196,6 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>jmx-manager-http-port</td>
 <td><em>Deprecated.</em> Use <code class="ph codeph">http-service-port</code> instead.</td>
 <td>7070</td>
-</tr>
-<tr class="odd">
-<td>jmx-manager-password-file</td>
-<td>By default the JMX Manager will allow clients without credentials to connect. If this property is set to the name of a file then only clients that connect with credentials that match an entry in this file will be allowed. Most JVMs require that the file is only readable by the owner. For more information about the format of this file see Oracle's documentation of the com.sun.management.jmxremote.password.file system property. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero.</td>
-<td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>jmx-manager-port</td>
