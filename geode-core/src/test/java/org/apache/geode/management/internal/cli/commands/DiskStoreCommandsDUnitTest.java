@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,6 +42,8 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -56,6 +59,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.management.cli.Result;
@@ -63,6 +67,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -208,12 +213,12 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     String stringResult = commandResultToString(cmdResult);
     System.out.println("command result=" + stringResult);
-    assertEquals(3, countLinesInString(stringResult, false));
+    assertEquals(5, countLinesInString(stringResult, false));
     assertTrue(stringContainsLine(stringResult, "Disk Store ID.*Host.*Directory"));
     assertTrue(stringContainsLine(stringResult, ".*" + diskStoreName + vm1.getPid()));
 
     // Extract the id from the returned missing disk store
-    String line = getLineFromString(stringResult, 3);
+    String line = getLineFromString(stringResult, 4);
     assertFalse(line.contains("---------"));
     StringTokenizer resultTokenizer = new StringTokenizer(line);
     String id = resultTokenizer.nextToken();
@@ -227,6 +232,240 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Do our own cleanup so that the disk store directories can be removed
     super.destroyDefaultSetup();
     for (final VM vm : (new VM[] { vm0, vm1 })) {
+      final String vmName = "VM" + vm.getPid();
+      vm.invoke(new SerializableRunnable() {
+        public void run() {
+          try {
+            FileUtil.delete((new File(diskStoreName + vm.getPid())));
+          } catch (IOException iex) {
+            // There's nothing else we can do
+          }
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testMissingDiskStoreCommandWithColocation() {
+    final String regionName = "testShowPersistentRecoveryFailuresRegion";
+    final String childName = "childRegion";
+
+    setUpJmxManagerOnVm0ThenConnect(null);
+
+    final VM vm0 = Host.getHost(0).getVM(0);
+    final VM vm1 = Host.getHost(0).getVM(1);
+    final String vm1Name = "VM" + vm1.getPid();
+    final String diskStoreName = "DiskStoreCommandsDUnitTest";
+
+    // Default setup creates a cache in the Manager, now create a cache in VM1
+    vm1.invoke(new SerializableRunnable() {
+      public void run() {
+        Properties localProps = new Properties();
+        localProps.setProperty(NAME, vm1Name);
+        getSystem(localProps);
+        Cache cache = getCache();
+      }
+    });
+
+    // Create a disk store and region in the Manager (VM0) and VM1 VMs
+    for (final VM vm : (new VM[]{vm0, vm1})) {
+      final String vmName = "VM" + vm.getPid();
+      vm.invoke(new SerializableRunnable() {
+        public void run() {
+          Cache cache = getCache();
+
+          File diskStoreDirFile = new File(diskStoreName + vm.getPid());
+          diskStoreDirFile.mkdirs();
+
+          DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+          diskStoreFactory.setDiskDirs(new File[]{diskStoreDirFile});
+          diskStoreFactory.setMaxOplogSize(1);
+          diskStoreFactory.setAllowForceCompaction(true);
+          diskStoreFactory.setAutoCompact(false);
+          diskStoreFactory.create(regionName);
+          diskStoreFactory.create(childName);
+
+          RegionFactory regionFactory = cache.createRegionFactory();
+          regionFactory.setDiskStoreName(regionName);
+          regionFactory.setDiskSynchronous(true);
+          regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          regionFactory.create(regionName);
+
+          PartitionAttributes pa = new PartitionAttributesFactory().setColocatedWith(regionName).create();
+          RegionFactory childRegionFactory = cache.createRegionFactory();
+          childRegionFactory.setPartitionAttributes(pa);
+          childRegionFactory.setDiskStoreName(childName);
+          childRegionFactory.setDiskSynchronous(true);
+          childRegionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          childRegionFactory.create(childName);
+        }
+      });
+    }
+
+    // Add data to the region
+    vm0.invoke(new SerializableRunnable() {
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion(regionName);
+        region.put("A", "a");
+        region.put("B", "b");
+      }
+    });
+
+    // Make sure that everything thus far is okay and there are no missing disk stores
+    CommandResult cmdResult = executeCommand(CliStrings.SHOW_MISSING_DISK_STORE);
+    System.out.println("command result=\n" + commandResultToString(cmdResult));
+
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    assertTrue(cmdResult.toString(), commandResultToString(cmdResult).contains("No missing disk store found"));
+
+    // Close the regions in the Manager (VM0) VM
+    vm0.invoke(new SerializableRunnable() {
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion(childName);
+        region.close();
+        region = cache.getRegion(regionName);
+        region.close();
+      }
+    });
+
+    // Add data to VM1 and then close the region
+    vm1.invoke(new SerializableRunnable() {
+      public void run() {
+        Cache cache = getCache();
+        Region childRegion = cache.getRegion(childName);
+        PartitionedRegion parentRegion = (PartitionedRegion)(cache.getRegion(regionName));
+        try {
+          parentRegion.put("A", "C");
+        } catch (Exception e) {
+          //Ignore any exception on the put
+        }
+        childRegion.close();
+        parentRegion.close();
+      }
+    });
+
+    SerializableRunnable restartParentRegion = new SerializableRunnable("Restart parent region on") {
+      public void run() {
+        Cache cache = getCache();
+
+        RegionFactory regionFactory = cache.createRegionFactory();
+        regionFactory.setDiskStoreName(regionName);
+        regionFactory.setDiskSynchronous(true);
+        regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+        try {
+          regionFactory.create(regionName);
+        } catch (Exception e) {
+          // okay to ignore
+        }
+      }
+    };
+
+    SerializableRunnable restartChildRegion = new SerializableRunnable("Restart child region") {
+      public void run() {
+        Cache cache = getCache();
+
+        PartitionAttributes pa = new PartitionAttributesFactory().setColocatedWith(regionName).create();
+        RegionFactory regionFactory = cache.createRegionFactory();
+        regionFactory.setPartitionAttributes(pa);
+        regionFactory.setDiskStoreName(childName);
+        regionFactory.setDiskSynchronous(true);
+        regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+        try {
+          regionFactory.create(childName);
+        } catch (Exception e) {
+          // okay to ignore
+          e.printStackTrace();
+        }
+      }
+    };
+
+    // Add the region back to the Manager (VM0) VM
+    AsyncInvocation async0 = vm0.invokeAsync(restartParentRegion);
+    AsyncInvocation async1 = vm1.invokeAsync(restartParentRegion);
+
+    // Wait for the region in the Manager (VM0) to come online
+    vm0.invoke(new SerializableRunnable("WaitForRegionInVm0") {
+      public void run() {
+        WaitCriterion waitCriterion = new WaitCriterion() {
+          public boolean done() {
+            Cache cache = getCache();
+            PersistentMemberManager memberManager = ((GemFireCacheImpl) cache).getPersistentMemberManager();
+            return !memberManager.getWaitingRegions().isEmpty();
+          }
+
+          public String description() {
+            return "Waiting for another persistent member to come online";
+          }
+        };
+        try {
+          waitForCriterion(waitCriterion, 5000, 100, true);
+        } catch (AssertionError ae) {
+          // Ignore. waitForCriterion is expected to timeout in this test
+        }
+      }
+    });
+
+    // Validate that there is a missing disk store on VM1
+    try {
+      cmdResult = executeCommand(CliStrings.SHOW_MISSING_DISK_STORE);
+      assertNotNull("Expect command result != null", cmdResult);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+      String stringResult = commandResultToString(cmdResult);
+      System.out.println("command result=\n" + stringResult);
+      // Expect 2 result sections with header lines and 4 information lines in the first section
+      assertEquals(6, countLinesInString(stringResult, false));
+      assertTrue(stringContainsLine(stringResult, "Host.*Distributed Member.*Parent Region.*Missing Colocated Region"));
+      assertTrue(stringContainsLine(stringResult, ".*" + regionName + ".*" + childName));
+
+      AsyncInvocation async0b = vm0.invokeAsync(restartChildRegion);
+      try {
+        async0b.get(5000, TimeUnit.MILLISECONDS);
+      } catch (Exception e) {
+        // Expected timeout - Region recovery is still waiting on vm1 child region and disk-store to come online
+      }
+
+      cmdResult = executeCommand(CliStrings.SHOW_MISSING_DISK_STORE);
+      assertNotNull("Expect command result != null", cmdResult);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+      stringResult = commandResultToString(cmdResult);
+      System.out.println("command result=\n" + stringResult);
+
+      // Extract the id from the returned missing disk store
+      String line = getLineFromString(stringResult, 4);
+      assertFalse(line.contains("---------"));
+      StringTokenizer resultTokenizer = new StringTokenizer(line);
+      String id = resultTokenizer.nextToken();
+
+      AsyncInvocation async1b = vm1.invokeAsync(restartChildRegion);
+      try {
+        async1b.get(5000, TimeUnit.MILLISECONDS);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      cmdResult = executeCommand(CliStrings.SHOW_MISSING_DISK_STORE);
+      assertNotNull("Expect command result != null", cmdResult);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+      stringResult = commandResultToString(cmdResult);
+      System.out.println("command result=\n" + stringResult);
+
+    } finally {
+      // Verify that the invokeAsync thread terminated
+      try {
+        async0.get(10000, TimeUnit.MILLISECONDS);
+        async1.get(10000, TimeUnit.MILLISECONDS);
+      } catch (Exception e) {
+        fail("Unexpected timeout waitiong for invokeAsync threads to terminate: " + e.getMessage());
+      }
+    }
+
+    // Do our own cleanup so that the disk store directories can be removed
+    super.destroyDefaultSetup();
+    for (final VM vm : (new VM[]{vm0, vm1})) {
       final String vmName = "VM" + vm.getPid();
       vm.invoke(new SerializableRunnable() {
         public void run() {
@@ -806,7 +1045,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     File incrementalBackUpDir = new File(incrementalBackUpName);
     incrementalBackUpDir.mkdir();
 
-    //Perform an incremental backup 
+    //Perform an incremental backup
     final String incrementalBackUpDirPath = incrementalBackUpDir.getCanonicalPath();
     filesToBeDeleted.add(incrementalBackUpDirPath);
 

@@ -605,6 +605,7 @@ org/apache/geode/management/internal/cli/functions/RegionFunctionArgs,true,-5158
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,true,1474255033398008062,action:org/apache/geode/cache/ExpirationAction,time:java/lang/Integer,type:org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor,false
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,true,5907052187323280919,hasPartitionAttributes:boolean,isSetPRLocalMaxMemory:boolean,isSetPRRecoveryDelay:boolean,isSetPRRedundantCopies:boolean,isSetPRStartupRecoveryDelay:boolean,isSetPRTotalMaxMemory:boolean,isSetPRTotalNumBuckets:boolean,prColocatedWith:java/lang/String,prLocalMaxMemory:int,prRecoveryDelay:long,prRedundantCopies:int,prStartupRecoveryDelay:long,prTotalMaxMemory:long,prTotalNumBuckets:int,userSpecifiedPartitionAttributes:java/util/Set
+org/apache/geode/management/internal/cli/functions/ShowMissingDiskStoresFunction,false
 org/apache/geode/management/internal/cli/functions/ShutDownFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
