@@ -14,15 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.apache.mina.util.AvailablePortFinder as MinaAvailablePortFinder
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath group: 'org.apache.mina', name: 'mina-core', version: '2.0.14'
+  }
+}
+
 def testResultsDir(def parent, def name) {
   new File(parent, name)
 }
 
 def writeTestProperties(def parent, def name) {
-  def availablePortFinder = AvailablePortFinder.createPrivate()
-  
   def props = new Properties()
-  props.setProperty('mcast-port', Integer.toString(availablePortFinder.nextAvailable))
+  props.setProperty('mcast-port', Integer.toString(MinaAvailablePortFinder.getNextAvailable()))
   props.setProperty('log-level', 'config')
   def propsFile = new File(testResultsDir(parent, name), 'gemfire.properties')
   def writer = propsFile.newWriter()
@@ -61,7 +71,7 @@ subprojects {
     testCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
     testCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
     testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-    
+
     testRuntime 'cglib:cglib:' + project.'cglib.version'
     testRuntime 'org.ow2.asm:asm:' + project.'asm.version'
   }
