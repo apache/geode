@@ -342,9 +342,6 @@ distributions {
         from { project(":geode-core").raJar }
         from { project(":geode-core").jcaJar }
 
-        // include this jar        
-        from project(":geode-web-api").jar
-        
         // dependency jars
         from depsJar
         from gfshDepsJar
@@ -364,9 +361,7 @@ distributions {
       }
 
       into ('tools/Pulse') {
-        from (project(":geode-pulse").configurations.archives.allArtifacts.files) {
-          exclude '*.jar'
-        }
+        from (project(":geode-pulse").configurations.archives.allArtifacts.files)
       }
 
       into ('tools/Modules') {
