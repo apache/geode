@@ -56,7 +56,7 @@
 	</http>
 
 	<beans:bean name="customLogoutSuccessHandler" 
-	class="com.vmware.gemfire.tools.pulse.internal.security.LogoutHandler">
+	class="org.apache.geode.tools.pulse.internal.security.LogoutHandler">
 		<beans:constructor-arg value="/Login.html"/>		
 	</beans:bean>
 	
@@ -73,7 +73,7 @@
 	</beans:bean>
 	
 	<beans:bean id="gemAuthenticationProvider" 
-		class="com.vmware.gemfire.tools.pulse.internal.security.GemFireAuthenticationProvider">
+		class="org.apache.geode.tools.pulse.internal.security.GemFireAuthenticationProvider">
   	</beans:bean>
 
 	
