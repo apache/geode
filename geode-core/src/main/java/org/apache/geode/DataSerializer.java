@@ -301,7 +301,7 @@ public abstract class DataSerializer {
    * @return the name of the class in this implementation
    */
   private static String swizzleClassNameForRead(String name) {
-    String oldPackage = "org.apache.org.jgroups.stack.tcpserver";
+    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
     String newPackage = "org.apache.geode.distributed.internal.tcpserver";
     String result = name;
     if (name.startsWith(oldPackage)) {
@@ -319,7 +319,7 @@ public abstract class DataSerializer {
    * @return the name of the class in this implementation
    */
   private static String swizzleClassNameForWrite(String name) {
-    String oldPackage = "org.apache.org.jgroups.stack.tcpserver";
+    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
     String newPackage = "org.apache.geode.distributed.internal.tcpserver";
     String result = name;
     if (name.startsWith(newPackage)) {
