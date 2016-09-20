@@ -8,7 +8,7 @@ The security implementation of every installation is unique, so these examples c
 
 ## <a id="authentication_examples__section_33A13D8566284AB999B5263844F61133" class="no-quick-link"></a>Using an LDAP Server for Client and Peer Authentication
 
-The LDAP sample code is within the Geode source tree in the `geode-core/src/test/java/com/gemstone/gemfire/security/templates/` directory. The implementation is in files `UserPasswordAuthInit.java`, `LdapUserAuthenticator.java`, and `UsernamePrincipal.java`.
+The LDAP sample code is within the Geode source tree in the `geode-core/src/test/java/org/apache/geode/security/templates/` directory. The implementation is in files `UserPasswordAuthInit.java`, `LdapUserAuthenticator.java`, and `UsernamePrincipal.java`.
 
 In the example, a client or joining peer submits its credentials to a server or locator, which in turn submits the credentials to the LDAP server. To be authenticated, the credentials must match one of the valid entries in the LDAP server. If the submitted credentials result in a connection to the LDAP server, then the connection is authenticated. If the connection to the LDAP server fails, an AuthenticationFailedException is sent back and the client or peer connection fails.
 
@@ -39,7 +39,7 @@ The sample `LdapUserAuthenticator` class implements the `Authenticator` interfac
 
 ## <a id="authentication_examples__section_6CF27B7574224218A4BA372EB6664732" class="no-quick-link"></a>Using PKCS for Encrypted Client Authentication
 
-The PKCS sample code is within the Geode source tree in the `geode-core/src/test/java/com/gemstone/gemfire/security/templates/` directory. The implementation is in files `PKCSAuthInit.java`, `PKCSAuthenticator.java`, and `PKCSPrincipal.java`.
+The PKCS sample code is within the Geode source tree in the `geode-core/src/test/java/org/apache/geode/security/templates/` directory. The implementation is in files `PKCSAuthInit.java`, `PKCSAuthenticator.java`, and `PKCSPrincipal.java`.
 
 With this sample, clients send encrypted authentication credentials to a GemFire cache server when they attempt to connect to the server. The credentials are the alias name and digital signature created using the private key retrieved from the provided keystore. The server uses a corresponding public key to decrypt the credentials. If decryption is successful, the client is authenticated and it connects to the server. An unsuccessful decryption generates an `AuthenticationFailedException` that is sent to the client, and the client connection to the server is closed.
 
