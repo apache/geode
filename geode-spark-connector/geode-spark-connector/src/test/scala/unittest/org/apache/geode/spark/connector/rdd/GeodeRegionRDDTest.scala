@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package unittest.io.pivotal.geode.spark.connector.rdd
+package unittest.org.apache.geode.spark.connector.rdd
 
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector.internal.RegionMetadata
-import io.pivotal.geode.spark.connector.internal.rdd.{GeodeRDDPartition, GeodeRegionRDD}
-import io.pivotal.geode.spark.connector.{GeodeConnectionConf, GeodeConnection}
+import org.apache.geode.spark.connector.internal.RegionMetadata
+import org.apache.geode.spark.connector.internal.rdd.{GeodeRDDPartition, GeodeRegionRDD}
+import org.apache.geode.spark.connector.{GeodeConnectionConf, GeodeConnection}
 import org.apache.spark.{TaskContext, Partition, SparkContext}
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => mockEq, any => mockAny}
@@ -78,7 +78,7 @@ class GeodeRegionRDDTest extends FunSuite with Matchers with MockitoSugar {
 
   test("getPartitions with replicated region and preferred OnePartitionPartitioner") {
     // since it's replicated region, so OnePartitionPartitioner will be used, i.e., override preferred partitioner
-    import io.pivotal.geode.spark.connector.{PreferredPartitionerPropKey, OnePartitionPartitionerName}
+    import org.apache.geode.spark.connector.{PreferredPartitionerPropKey, OnePartitionPartitionerName}
     val (regionPath, mockRegion, mockConnConf, mockConnection) = createMocks[String, String]("test")
     when(mockConnection.getRegionMetadata[String, String](regionPath)).thenReturn(Some(new RegionMetadata(regionPath, false, 0, null)))
     implicit val mockConnConf2 = mockConnConf

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.javaapi;
+package org.apache.geode.spark.connector.javaapi;
 
-import io.pivotal.geode.spark.connector.GeodeConnectionConf;
-import io.pivotal.geode.spark.connector.GeodeSQLContextFunctions;
+import org.apache.geode.spark.connector.GeodeConnectionConf;
+import org.apache.geode.spark.connector.GeodeSQLContextFunctions;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 
@@ -26,7 +26,7 @@ import org.apache.spark.sql.SQLContext;
  * OQL functionality.
  *
  * <p></p>To obtain an instance of this wrapper, use one of the factory methods in {@link
- * io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil} class.</p>
+ * org.apache.geode.spark.connector.javaapi.GeodeJavaUtil} class.</p>
  */
 public class GeodeJavaSQLContextFunctions {
 

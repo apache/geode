@@ -9,7 +9,7 @@ The best way to use the Spark Geode Connector Java API is to statically
 import all of the methods in `GeodeJavaUtil`. This utility class is
 the main entry point for Spark Geode Connector Java API.
 ```
-import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
+import static org.apache.geode.spark.connector.javaapi.GeodeJavaUtil.*;
 ```
 
 Create JavaSparkContext (don't forget about the static import):

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.geodefunctions
+package org.apache.geode.spark.connector.internal.geodefunctions
 
 import java.util.concurrent.{TimeUnit, LinkedBlockingQueue, BlockingQueue}
 import org.apache.geode.DataSerializer
@@ -23,7 +23,7 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl
 import org.apache.geode.cache.query.types.StructType
 import org.apache.geode.distributed.DistributedMember
 import org.apache.geode.internal.{Version, ByteArrayDataInput}
-import io.pivotal.geode.spark.connector.internal.geodefunctions.StructStreamingResultSender.
+import org.apache.geode.spark.connector.internal.geodefunctions.StructStreamingResultSender.
        {TYPE_CHUNK, DATA_CHUNK, ERROR_CHUNK, SER_DATA, UNSER_DATA, BYTEARR_DATA}
 
 /**

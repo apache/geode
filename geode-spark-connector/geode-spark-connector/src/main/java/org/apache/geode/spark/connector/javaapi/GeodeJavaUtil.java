@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.javaapi;
+package org.apache.geode.spark.connector.javaapi;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -25,7 +25,7 @@ import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import scala.Tuple2;
 
-import io.pivotal.geode.spark.connector.package$;
+import org.apache.geode.spark.connector.package$;
 
 /**
  * The main entry point to Spark Geode Connector Java API.

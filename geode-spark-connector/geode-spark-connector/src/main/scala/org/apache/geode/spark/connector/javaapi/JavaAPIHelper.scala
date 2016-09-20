@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.javaapi
+package org.apache.geode.spark.connector.javaapi
 
 import org.apache.spark.api.java.{JavaPairRDD, JavaRDD}
 import org.apache.spark.streaming.api.java.{JavaPairDStream, JavaDStream}

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.geodefunctions;
+package org.apache.geode.spark.connector.internal.geodefunctions;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -24,7 +24,7 @@ import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
-import io.pivotal.geode.spark.connector.internal.RegionMetadata;
+import org.apache.geode.spark.connector.internal.RegionMetadata;
 
 import java.util.HashMap;
 import java.util.HashSet;

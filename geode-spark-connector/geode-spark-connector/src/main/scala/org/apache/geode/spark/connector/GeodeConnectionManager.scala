@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector
+package org.apache.geode.spark.connector
 
 /**
  * GeodeConnectionFactory provide an common interface that manages Geode

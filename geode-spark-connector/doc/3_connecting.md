@@ -21,7 +21,7 @@ spark.geode.security-password=tiger
  
 Or in the Spark application code:
 ```
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 val sparkConf = new SparkConf()
   .set(GeodeLocatorPropKey, "192.168.1.47[10334]")
   .set("spark.geode.security-client-auth-init", "com.gemstone.geode.security.templates.UserPasswordAuthInit.create")

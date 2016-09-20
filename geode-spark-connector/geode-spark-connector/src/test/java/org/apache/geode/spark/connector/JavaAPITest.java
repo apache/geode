@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector;
+package org.apache.geode.spark.connector;
 
-import io.pivotal.geode.spark.connector.javaapi.*;
+import org.apache.geode.spark.connector.javaapi.*;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -38,7 +38,7 @@ import scala.collection.mutable.LinkedList;
 import scala.reflect.ClassTag;
 
 import static org.junit.Assert.*;
-import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
+import static org.apache.geode.spark.connector.javaapi.GeodeJavaUtil.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 

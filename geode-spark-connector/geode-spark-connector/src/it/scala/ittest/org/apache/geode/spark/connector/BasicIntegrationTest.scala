@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ittest.io.pivotal.geode.spark.connector
+package ittest.org.apache.geode.spark.connector
 
 import java.util.Properties
 import org.apache.geode.cache.query.QueryService
 import org.apache.geode.cache.query.internal.StructImpl
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector.internal.{RegionMetadata, DefaultGeodeConnectionManager}
-import io.pivotal.geode.spark.connector.internal.oql.{RDDConverter, QueryRDD}
-import ittest.io.pivotal.geode.spark.connector.testkit.GeodeCluster
-import ittest.io.pivotal.geode.spark.connector.testkit.IOUtils
+import org.apache.geode.spark.connector.internal.{RegionMetadata, DefaultGeodeConnectionManager}
+import org.apache.geode.spark.connector.internal.oql.{RDDConverter, QueryRDD}
+import ittest.org.apache.geode.spark.connector.testkit.GeodeCluster
+import ittest.org.apache.geode.spark.connector.testkit.IOUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext, TestInputDStream}
 import org.apache.spark.{SparkContext, SparkConf}
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
@@ -46,14 +46,14 @@ class BasicIntegrationTest extends FunSuite with Matchers with BeforeAndAfterAll
 
     // start spark context in local mode
     IOUtils.configTestLog4j("ERROR", "log4j.logger.org.apache.spark" -> "INFO",
-                            "log4j.logger.io.pivotal.geode.spark.connector" -> "DEBUG")
+                            "log4j.logger.org.apache.geode.spark.connector" -> "DEBUG")
     val conf = new SparkConf()
       .setAppName("BasicIntegrationTest")
       .setMaster("local[2]")
       .set("spark.streaming.clock", "org.apache.spark.streaming.util.ManualClock")
       .set(GeodeLocatorPropKey, s"localhost[$locatorPort]")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "io.pivotal.geode.spark.connector.GeodeKryoRegistrator")
+      .set("spark.kryo.registrator", "org.apache.geode.spark.connector.GeodeKryoRegistrator")
 
     sc = new SparkContext(conf)
   }
@@ -561,7 +561,7 @@ class BasicIntegrationTest extends FunSuite with Matchers with BeforeAndAfterAll
 
   test("Basic DStream test") {
     import org.apache.spark.streaming.scheduler.{StreamingListenerBatchCompleted, StreamingListener}
-    import io.pivotal.geode.spark.connector.streaming._
+    import org.apache.geode.spark.connector.streaming._
     import org.apache.spark.streaming.ManualClockHelper
 
     class TestStreamListener extends StreamingListener {

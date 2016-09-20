@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector
+package org.apache.geode.spark.connector
 
-import io.pivotal.geode.spark.connector.internal.rdd.{GeodeOuterJoinRDD, GeodeJoinRDD, GeodePairRDDWriter}
+import org.apache.geode.spark.connector.internal.rdd.{GeodeOuterJoinRDD, GeodeJoinRDD, GeodePairRDDWriter}
 import org.apache.spark.Logging
 import org.apache.spark.api.java.function.Function
 import org.apache.spark.rdd.RDD
 
 /**
  * Extra gemFire functions on RDDs of (key, value) pairs through an implicit conversion.
- * Import `io.pivotal.geode.spark.connector._` at the top of your program to
+ * Import `org.apache.geode.spark.connector._` at the top of your program to
  * use these functions.
  */
 class GeodePairRDDFunctions[K, V](val rdd: RDD[(K, V)]) extends Serializable with Logging {

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.javaapi
+package org.apache.geode.spark.connector.javaapi
 
-import io.pivotal.geode.spark.connector.internal.rdd.GeodeRegionRDD
+import org.apache.geode.spark.connector.internal.rdd.GeodeRegionRDD
 import org.apache.spark.api.java.JavaPairRDD
 
 class GeodeJavaRegionRDD[K, V](rdd: GeodeRegionRDD[K, V]) extends JavaPairRDD[K, V](rdd)(rdd.kClassTag, rdd.vClassTag) {

@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package unittest.io.pivotal.geode.spark.connector
+package unittest.org.apache.geode.spark.connector
 
 import java.net.InetAddress
 
-import io.pivotal.geode.spark.connector.internal.LocatorHelper
+import org.apache.geode.spark.connector.internal.LocatorHelper
 import org.scalatest.FunSuite
 
 class LocatorHelperTest extends FunSuite {

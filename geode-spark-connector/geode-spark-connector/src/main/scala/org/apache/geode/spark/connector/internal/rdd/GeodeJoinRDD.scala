@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.rdd
+package org.apache.geode.spark.connector.internal.rdd
 
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector.GeodeConnectionConf
+import org.apache.geode.spark.connector.GeodeConnectionConf
 import org.apache.spark.{TaskContext, Partition}
 import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._

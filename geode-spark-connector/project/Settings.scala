@@ -24,7 +24,7 @@ object Settings extends Build {
     organization := "io.pivotal",
     version := "0.5.0",
     scalaVersion := "2.10.4",
-    organization := "io.pivotal.geode.spark",
+    organization := "org.apache.geode.spark",
     organizationHomepage := Some(url("http://www.pivotal.io/"))
   ) 
 

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.oql
+package org.apache.geode.spark.connector.internal.oql
 
-import io.pivotal.geode.spark.connector.GeodeConnectionConf
-import io.pivotal.geode.spark.connector.internal.rdd.{GeodeRDDPartition, ServerSplitsPartitioner}
+import org.apache.geode.spark.connector.GeodeConnectionConf
+import org.apache.geode.spark.connector.internal.rdd.{GeodeRDDPartition, ServerSplitsPartitioner}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{TaskContext, SparkContext, Partition}
 import scala.reflect.ClassTag

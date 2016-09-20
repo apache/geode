@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package unittest.io.pivotal.geode.spark.connector
+package unittest.org.apache.geode.spark.connector
 
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector.{GeodeConnection, GeodeConnectionConf}
+import org.apache.geode.spark.connector.{GeodeConnection, GeodeConnectionConf}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.DStream
 import org.mockito.Mockito._
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 class GeodeDStreamFunctionsTest extends FunSuite with Matchers with MockitoSugar {
 
   test("test GeodePairDStreamFunctions Implicit") {
-    import io.pivotal.geode.spark.connector.streaming._
+    import org.apache.geode.spark.connector.streaming._
     val mockDStream = mock[DStream[(Int, String)]]
     // the implicit make the following line valid
     val pairDStream: GeodePairDStreamFunctions[Int, String] = mockDStream
@@ -38,7 +38,7 @@ class GeodeDStreamFunctionsTest extends FunSuite with Matchers with MockitoSugar
   }
 
   test("test GeodeDStreamFunctions Implicit") {
-    import io.pivotal.geode.spark.connector.streaming._
+    import org.apache.geode.spark.connector.streaming._
     val mockDStream = mock[DStream[String]]
     // the implicit make the following line valid
     val dstream: GeodeDStreamFunctions[String] = mockDStream
@@ -57,7 +57,7 @@ class GeodeDStreamFunctionsTest extends FunSuite with Matchers with MockitoSugar
   }
 
   test("test GeodePairDStreamFunctions.saveToGeode()") {
-    import io.pivotal.geode.spark.connector.streaming._
+    import org.apache.geode.spark.connector.streaming._
     val (regionPath, mockConnConf, mockConnection, mockRegion) = createMocks[String, String]("test")
     val mockDStream = mock[DStream[(String, String)]]
     mockDStream.saveToGeode(regionPath, mockConnConf)
@@ -67,7 +67,7 @@ class GeodeDStreamFunctionsTest extends FunSuite with Matchers with MockitoSugar
   }
 
   test("test GeodeDStreamFunctions.saveToGeode()") {
-    import io.pivotal.geode.spark.connector.streaming._
+    import org.apache.geode.spark.connector.streaming._
     val (regionPath, mockConnConf, mockConnection, mockRegion) = createMocks[String, Int]("test")
     val mockDStream = mock[DStream[String]]
     mockDStream.saveToGeode[String, Int](regionPath,  (s: String) => (s, s.length), mockConnConf)

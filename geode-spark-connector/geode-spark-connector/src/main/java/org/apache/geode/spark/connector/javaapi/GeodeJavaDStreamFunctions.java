@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.javaapi;
+package org.apache.geode.spark.connector.javaapi;
 
-import io.pivotal.geode.spark.connector.GeodeConnectionConf;
-import io.pivotal.geode.spark.connector.streaming.GeodeDStreamFunctions;
+import org.apache.geode.spark.connector.GeodeConnectionConf;
+import org.apache.geode.spark.connector.streaming.GeodeDStreamFunctions;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import java.util.Properties;
 
-import static io.pivotal.geode.spark.connector.javaapi.JavaAPIHelper.*;
+import static org.apache.geode.spark.connector.javaapi.JavaAPIHelper.*;
 
 /**
  * A Java API wrapper over {@link org.apache.spark.streaming.api.java.JavaDStream}
  * to provide Geode Spark Connector functionality.
  *
  * <p>To obtain an instance of this wrapper, use one of the factory methods in {@link
- * io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil} class.</p>
+ * org.apache.geode.spark.connector.javaapi.GeodeJavaUtil} class.</p>
  */ 
 public class GeodeJavaDStreamFunctions<T> {
   

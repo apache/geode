@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package unittest.io.pivotal.geode.spark.connector
+package unittest.org.apache.geode.spark.connector
 
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.scalatest.FunSuite

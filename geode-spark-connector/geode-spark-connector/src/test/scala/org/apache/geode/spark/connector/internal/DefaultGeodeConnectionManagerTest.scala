@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal
+package org.apache.geode.spark.connector.internal
 
-import io.pivotal.geode.spark.connector.GeodeConnectionConf
+import org.apache.geode.spark.connector.GeodeConnectionConf
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FunSuite, Matchers}

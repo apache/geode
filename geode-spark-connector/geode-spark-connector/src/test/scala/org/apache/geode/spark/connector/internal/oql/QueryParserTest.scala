@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.oql
+package org.apache.geode.spark.connector.internal.oql
 
 import org.scalatest.FunSuite
 
@@ -55,8 +55,8 @@ class QueryParserTest extends FunSuite {
     assert(r == "List(/r1/r2)")
   }
 
-  test("IMPORT io.pivotal.geode IMPORT com.mypackage SELECT key,value FROM /root/sub.entries WHERE status = 'active' ORDER BY id desc") {
-    val r = QueryParser.parseOQL("IMPORT io.pivotal.geode IMPORT com.mypackage SELECT key,value FROM /root/sub.entries WHERE status = 'active' ORDER BY id desc").get
+  test("IMPORT org.apache.geode IMPORT com.mypackage SELECT key,value FROM /root/sub.entries WHERE status = 'active' ORDER BY id desc") {
+    val r = QueryParser.parseOQL("IMPORT org.apache.geode IMPORT com.mypackage SELECT key,value FROM /root/sub.entries WHERE status = 'active' ORDER BY id desc").get
     assert(r == "List(/root/sub.entries)")
   }
 

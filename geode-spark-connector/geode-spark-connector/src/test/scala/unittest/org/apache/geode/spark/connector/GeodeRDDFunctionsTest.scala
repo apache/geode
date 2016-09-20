@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package unittest.io.pivotal.geode.spark.connector
+package unittest.org.apache.geode.spark.connector
 
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector._
-import io.pivotal.geode.spark.connector.internal.rdd.{GeodeRDDWriter, GeodePairRDDWriter}
+import org.apache.geode.spark.connector._
+import org.apache.geode.spark.connector.internal.rdd.{GeodeRDDWriter, GeodePairRDDWriter}
 import org.apache.spark.{TaskContext, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.mockito.Mockito._
@@ -31,7 +31,7 @@ import org.mockito.Matchers.{eq => mockEq, any => mockAny}
 class GeodeRDDFunctionsTest extends FunSuite with Matchers with MockitoSugar {
 
   test("test PairRDDFunction Implicit") {
-    import io.pivotal.geode.spark.connector._
+    import org.apache.geode.spark.connector._
     val mockRDD = mock[RDD[(Int, String)]]
     // the implicit make the following line valid
     val pairRDD: GeodePairRDDFunctions[Int, String] = mockRDD
@@ -39,7 +39,7 @@ class GeodeRDDFunctionsTest extends FunSuite with Matchers with MockitoSugar {
   }
   
   test("test RDDFunction Implicit") {
-    import io.pivotal.geode.spark.connector._
+    import org.apache.geode.spark.connector._
     val mockRDD = mock[RDD[String]]
     // the implicit make the following line valid
     val nonPairRDD: GeodeRDDFunctions[String] = mockRDD
@@ -85,7 +85,7 @@ class GeodeRDDFunctionsTest extends FunSuite with Matchers with MockitoSugar {
   }
   
   def verifyPairRDDFunction(useOpConf: Boolean): Unit = {
-    import io.pivotal.geode.spark.connector._
+    import org.apache.geode.spark.connector._
     val (regionPath, mockConnConf, mockConnection, mockRegion) = createMocks[String, String]("test")
     val mockRDD = mock[RDD[(String, String)]]
     val mockSparkContext = mock[SparkContext]
@@ -115,7 +115,7 @@ class GeodeRDDFunctionsTest extends FunSuite with Matchers with MockitoSugar {
   }
   
   def verifyRDDFunction(useOpConf: Boolean): Unit = {
-    import io.pivotal.geode.spark.connector._
+    import org.apache.geode.spark.connector._
     val (regionPath, mockConnConf, mockConnection, mockRegion) = createMocks[Int, String]("test")
     val mockRDD = mock[RDD[(String)]]
     val mockSparkContext = mock[SparkContext]

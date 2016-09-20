@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ittest.io.pivotal.geode.spark.connector;
+package ittest.org.apache.geode.spark.connector;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ConfigurationProperties;
-import io.pivotal.geode.spark.connector.GeodeConnection;
-import io.pivotal.geode.spark.connector.GeodeConnectionConf;
-import io.pivotal.geode.spark.connector.GeodeConnectionConf$;
-import io.pivotal.geode.spark.connector.internal.DefaultGeodeConnectionManager$;
-import io.pivotal.geode.spark.connector.javaapi.GeodeJavaRegionRDD;
-import ittest.io.pivotal.geode.spark.connector.testkit.GeodeCluster$;
-import ittest.io.pivotal.geode.spark.connector.testkit.IOUtils;
+import org.apache.geode.spark.connector.GeodeConnection;
+import org.apache.geode.spark.connector.GeodeConnectionConf;
+import org.apache.geode.spark.connector.GeodeConnectionConf$;
+import org.apache.geode.spark.connector.internal.DefaultGeodeConnectionManager$;
+import org.apache.geode.spark.connector.javaapi.GeodeJavaRegionRDD;
+import ittest.org.apache.geode.spark.connector.testkit.GeodeCluster$;
+import ittest.org.apache.geode.spark.connector.testkit.IOUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -35,14 +35,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.scalatest.junit.JUnitSuite;
-import io.pivotal.geode.spark.connector.package$;
+import org.apache.geode.spark.connector.package$;
 import scala.Tuple2;
 import scala.Option;
 import scala.Some;
 import java.util.*;
 
-import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.RDDSaveBatchSizePropKey;
-import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.javaFunctions;
+import static org.apache.geode.spark.connector.javaapi.GeodeJavaUtil.RDDSaveBatchSizePropKey;
+import static org.apache.geode.spark.connector.javaapi.GeodeJavaUtil.javaFunctions;
 import static org.junit.Assert.*;
 
 public class JavaApiIntegrationTest extends JUnitSuite {
@@ -65,7 +65,7 @@ public class JavaApiIntegrationTest extends JUnitSuite {
     // start spark context in local mode
     Properties props = new Properties();
     props.put("log4j.logger.org.apache.spark", "INFO");
-    props.put("log4j.logger.io.pivotal.geode.spark.connector","DEBUG");
+    props.put("log4j.logger.org.apache.geode.spark.connector","DEBUG");
     IOUtils.configTestLog4j("ERROR", props);
     SparkConf conf = new SparkConf()
             .setAppName("RetrieveRegionIntegrationTest")

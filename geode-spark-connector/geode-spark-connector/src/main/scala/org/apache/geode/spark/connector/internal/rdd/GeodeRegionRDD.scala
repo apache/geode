@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.rdd
+package org.apache.geode.spark.connector.internal.rdd
 
 import scala.collection.Seq
 import scala.reflect.ClassTag
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{TaskContext, Partition, SparkContext}
-import io.pivotal.geode.spark.connector.{GeodeConnectionConf, PreferredPartitionerPropKey}
-import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartitioner._
+import org.apache.geode.spark.connector.{GeodeConnectionConf, PreferredPartitionerPropKey}
+import org.apache.geode.spark.connector.internal.rdd.GeodeRDDPartitioner._
 
 /**
  * This class exposes Geode region as a RDD.

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.rdd
+package org.apache.geode.spark.connector.internal.rdd
 
-import io.pivotal.geode.spark.connector.GeodeConnection
-import io.pivotal.geode.spark.connector.internal.RegionMetadata
+import org.apache.geode.spark.connector.GeodeConnection
+import org.apache.geode.spark.connector.internal.RegionMetadata
 import org.apache.spark.{Logging, Partition}
 
 import scala.reflect.ClassTag

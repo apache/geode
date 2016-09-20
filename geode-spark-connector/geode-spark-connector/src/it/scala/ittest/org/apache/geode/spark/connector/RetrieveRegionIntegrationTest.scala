@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ittest.io.pivotal.geode.spark.connector
+package ittest.org.apache.geode.spark.connector
 
 import java.util.Properties
 
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector.internal.DefaultGeodeConnectionManager
-import ittest.io.pivotal.geode.spark.connector.testkit.GeodeCluster
-import ittest.io.pivotal.geode.spark.connector.testkit.IOUtils
+import org.apache.geode.spark.connector.internal.DefaultGeodeConnectionManager
+import ittest.org.apache.geode.spark.connector.testkit.GeodeCluster
+import ittest.org.apache.geode.spark.connector.testkit.IOUtils
 import org.apache.spark.{SparkContext, SparkConf}
 import org.scalatest.{Tag, BeforeAndAfterAll, FunSuite, Matchers}
 import java.util.{HashMap => JHashMap}
@@ -43,7 +43,7 @@ class RetrieveRegionIntegrationTest extends FunSuite with Matchers with BeforeAn
 
     // start spark context in local mode
     IOUtils.configTestLog4j("ERROR", "log4j.logger.org.apache.spark" -> "INFO",
-                            "log4j.logger.io.pivotal.geode.spark.connector" -> "DEBUG")
+                            "log4j.logger.org.apache.geode.spark.connector" -> "DEBUG")
     val conf = new SparkConf()
       .setAppName("RetrieveRegionIntegrationTest")
       .setMaster("local[2]")

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package unittest.io.pivotal.geode.spark.connector
+package unittest.org.apache.geode.spark.connector
 
 import org.apache.spark.SparkConf
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, FunSuite}
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 
 class GeodeConnectionConfTest extends FunSuite with Matchers with MockitoSugar {
 

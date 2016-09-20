@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ittest.io.pivotal.geode.spark.connector.testkit
+package ittest.org.apache.geode.spark.connector.testkit
 
 import java.io.{IOException, File}
 import java.net.InetAddress
@@ -112,7 +112,7 @@ class GeodeRunner(settings: Properties) {
   
   private def registerFunction(jmxHttpPort:Int, jar:File) {
     println("Deploying:" + jar.getName)
-    import io.pivotal.geode.spark.connector.GeodeFunctionDeployer
+    import org.apache.geode.spark.connector.GeodeFunctionDeployer
     val deployer = new GeodeFunctionDeployer(new HttpClient())
     deployer.deploy("localhost", jmxHttpPort, jar)
   }

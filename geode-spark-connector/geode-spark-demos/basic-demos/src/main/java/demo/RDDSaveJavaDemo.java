@@ -16,7 +16,7 @@
  */
 package demo;
 
-import io.pivotal.geode.spark.connector.GeodeConnectionConf;
+import org.apache.geode.spark.connector.GeodeConnectionConf;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -26,7 +26,7 @@ import scala.Tuple2;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
+import static org.apache.geode.spark.connector.javaapi.GeodeJavaUtil.*;
 
 /**
  * This Spark application demonstrates how to save a RDD to Geode using Geode Spark

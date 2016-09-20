@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal
+package org.apache.geode.spark.connector.internal
 
 import java.net.InetAddress
 
@@ -23,11 +23,11 @@ import org.apache.geode.cache.execute.{FunctionException, FunctionService}
 import org.apache.geode.cache.query.Query
 import org.apache.geode.cache.{Region, RegionService}
 import org.apache.geode.internal.cache.execute.InternalExecution
-import io.pivotal.geode.spark.connector.internal.oql.QueryResultCollector
-import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartition
+import org.apache.geode.spark.connector.internal.oql.QueryResultCollector
+import org.apache.geode.spark.connector.internal.rdd.GeodeRDDPartition
 import org.apache.spark.{SparkEnv, Logging}
-import io.pivotal.geode.spark.connector.GeodeConnection
-import io.pivotal.geode.spark.connector.internal.geodefunctions._
+import org.apache.geode.spark.connector.GeodeConnection
+import org.apache.geode.spark.connector.internal.geodefunctions._
 import java.util.{Set => JSet, List => JList }
 
 /**
@@ -58,7 +58,7 @@ private[connector] class DefaultGeodeConnection (
   }
   
   private def getClientCacheFactory: ClientCacheFactory = {
-    import io.pivotal.geode.spark.connector.map2Properties
+    import org.apache.geode.spark.connector.map2Properties
     val ccf = new ClientCacheFactory(gemFireProps)
     ccf.setPoolReadTimeout(30000)
     val servers = LocatorHelper.getAllGeodeServers(locators)

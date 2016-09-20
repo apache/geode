@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector
+package org.apache.geode.spark.connector
 
 import com.esotericsoftware.kryo.Kryo
-import io.pivotal.geode.spark.connector.internal.oql.UndefinedSerializer
+import org.apache.geode.spark.connector.internal.oql.UndefinedSerializer
 import org.apache.spark.serializer.KryoRegistrator
 import org.apache.geode.cache.query.internal.Undefined
 

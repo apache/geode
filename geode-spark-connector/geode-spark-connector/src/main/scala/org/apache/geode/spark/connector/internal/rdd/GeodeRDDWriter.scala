@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.internal.rdd
+package org.apache.geode.spark.connector.internal.rdd
 
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 import org.apache.spark.{Logging, TaskContext}
 
 import scala.collection.Iterator

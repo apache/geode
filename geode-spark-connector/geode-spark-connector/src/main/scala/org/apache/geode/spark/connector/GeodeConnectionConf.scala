@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector
+package org.apache.geode.spark.connector
 
 import org.apache.spark.SparkConf
-import io.pivotal.geode.spark.connector.internal.{DefaultGeodeConnectionManager, LocatorHelper}
+import org.apache.geode.spark.connector.internal.{DefaultGeodeConnectionManager, LocatorHelper}
 
 /**
  * Stores configuration of a connection to Geode cluster. It is serializable and can

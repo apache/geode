@@ -35,7 +35,7 @@ val conf = new SparkConf()
   .setMaster("local[*]")
   .set(GeodeLocatorPropKey, "localhost[55221]")
   .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  .set("spark.kryo.registrator", "io.pivotal.geode.spark.connector.GeodeKryoRegistrator")
+  .set("spark.kryo.registrator", "org.apache.geode.spark.connector.GeodeKryoRegistrator")
 ```
 
 and register the classes (optional)
@@ -46,7 +46,7 @@ conf.registerKryoClasses(Array(classOf[MyClass1], classOf[MyClass2]))
 Use the following options to start Spark shell:
 ```
  --conf spark.serializer=org.apache.spark.serializer.KryoSerializer
- --conf spark.kryo.registrator=io.pivotal.geode.spark.connector.GeodeKryoRegistrator
+ --conf spark.kryo.registrator=org.apache.geode.spark.connector.GeodeKryoRegistrator
 ```
 
 ## References

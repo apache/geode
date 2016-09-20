@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector
+package org.apache.geode.spark.connector
 
 import org.apache.geode.cache.execute.ResultCollector
 import org.apache.geode.cache.query.Query
 import org.apache.geode.cache.Region
-import io.pivotal.geode.spark.connector.internal.RegionMetadata
-import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartition
+import org.apache.geode.spark.connector.internal.RegionMetadata
+import org.apache.geode.spark.connector.internal.rdd.GeodeRDDPartition
 
 
 trait GeodeConnection {

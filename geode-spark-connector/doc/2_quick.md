@@ -79,10 +79,10 @@ res0: String = localhost[55221]
 ```
 
 In order to enable Geode specific functions, you need to import 
-`io.pivotal.geode.spark.connector._`
+`org.apache.geode.spark.connector._`
 ```
-scala> import io.pivotal.geode.spark.connector._
-import io.pivotal.geode.spark.connector._
+scala> import org.apache.geode.spark.connector._
+import org.apache.geode.spark.connector._
 ```
 
 ### Save Pair RDD to Geode
@@ -154,7 +154,7 @@ NEXT_STEP_NAME : END
 The same API is used to expose both replicated and partitioned region as RDDs. 
 ```
 scala> val rdd = sc.geodeRegion[String, String]("str_str_region")
-rdd: io.pivotal.geode.spark.connector.rdd.GemFireRDD[String,String] = GemFireRDD[2] at RDD at GemFireRDD.scala:19
+rdd: org.apache.geode.spark.connector.rdd.GemFireRDD[String,String] = GemFireRDD[2] at RDD at GemFireRDD.scala:19
 
 scala> rdd.foreach(println)
 (1,one)
@@ -162,7 +162,7 @@ scala> rdd.foreach(println)
 (2,two)
 
 scala> val rdd2 = sc.geodeRegion[Int, String]("int_str_region")
-rdd2: io.pivotal.geode.spark.connector.rdd.GemFireRDD[Int,String] = GemFireRDD[3] at RDD at GemFireRDD.scala:19
+rdd2: org.apache.geode.spark.connector.rdd.GemFireRDD[Int,String] = GemFireRDD[3] at RDD at GemFireRDD.scala:19
 
 scala> rdd2.foreach(println)
 (2,ab)

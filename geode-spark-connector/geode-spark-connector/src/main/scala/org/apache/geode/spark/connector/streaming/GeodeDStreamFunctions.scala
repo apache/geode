@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector.streaming
+package org.apache.geode.spark.connector.streaming
 
-import io.pivotal.geode.spark.connector.GeodeConnectionConf
-import io.pivotal.geode.spark.connector.internal.rdd.{GeodePairRDDWriter, GeodeRDDWriter}
+import org.apache.geode.spark.connector.GeodeConnectionConf
+import org.apache.geode.spark.connector.internal.rdd.{GeodePairRDDWriter, GeodeRDDWriter}
 import org.apache.spark.Logging
 import org.apache.spark.api.java.function.PairFunction
 import org.apache.spark.streaming.dstream.DStream
 
 /**
  * Extra geode functions on DStream of non-pair elements through an implicit conversion.
- * Import `io.pivotal.geode.spark.connector.streaming._` at the top of your program to
+ * Import `org.apache.geode.spark.connector.streaming._` at the top of your program to
  * use these functions.
  */
 class GeodeDStreamFunctions[T](val dstream: DStream[T]) extends Serializable with Logging {
@@ -63,7 +63,7 @@ class GeodeDStreamFunctions[T](val dstream: DStream[T]) extends Serializable wit
 
 /**
  * Extra geode functions on DStream of (key, value) pairs through an implicit conversion.
- * Import `io.pivotal.geode.spark.connector.streaming._` at the top of your program to
+ * Import `org.apache.geode.spark.connector.streaming._` at the top of your program to
  * use these functions.
  */
 class GeodePairDStreamFunctions[K, V](val dstream: DStream[(K,V)]) extends Serializable with Logging {

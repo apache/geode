@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package unittest.io.pivotal.geode.spark.connector.rdd
+package unittest.org.apache.geode.spark.connector.rdd
 
 import org.apache.geode.distributed.internal.ServerLocation
-import io.pivotal.geode.spark.connector.internal.RegionMetadata
-import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartitioner._
-import io.pivotal.geode.spark.connector.GeodeConnection
-import io.pivotal.geode.spark.connector.internal.rdd._
+import org.apache.geode.spark.connector.internal.RegionMetadata
+import org.apache.geode.spark.connector.internal.rdd.GeodeRDDPartitioner._
+import org.apache.geode.spark.connector.GeodeConnection
+import org.apache.geode.spark.connector.internal.rdd._
 import org.apache.spark.Partition
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
@@ -55,7 +55,7 @@ class GeodeRDDPartitionerTest extends FunSuite with Matchers with MockitoSugar {
   }
   
   test("GeodeRDDPartitioner.apply method") {
-    import io.pivotal.geode.spark.connector.internal.rdd.GeodeRDDPartitioner._
+    import org.apache.geode.spark.connector.internal.rdd.GeodeRDDPartitioner._
     for ((name, partitioner) <- partitioners) assert(GeodeRDDPartitioner(name) == partitioner)
     assert(GeodeRDDPartitioner("dummy") == GeodeRDDPartitioner.defaultPartitionedRegionPartitioner)
     assert(GeodeRDDPartitioner() == GeodeRDDPartitioner.defaultPartitionedRegionPartitioner)
@@ -158,7 +158,7 @@ class GeodeRDDPartitionerTest extends FunSuite with Matchers with MockitoSugar {
   }
 
   test("ServerSplitsPartitioner.partitions(): partitioned region w/ some data ") {
-    import io.pivotal.geode.spark.connector.NumberPartitionsPerServerPropKey
+    import org.apache.geode.spark.connector.NumberPartitionsPerServerPropKey
     val regionPath = "test"
     val mockConnection = mock[GeodeConnection]
     val map: Map[(String, Int), Set[Int]] = Map(

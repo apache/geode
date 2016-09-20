@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.pivotal.geode.spark.connector
+package org.apache.geode.spark.connector
 
-import io.pivotal.geode.spark.connector.internal.oql.{OQLRelation, QueryRDD}
+import org.apache.geode.spark.connector.internal.oql.{OQLRelation, QueryRDD}
 import org.apache.spark.Logging
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
