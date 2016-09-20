@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
 import org.apache.geode.test.junit.categories.UITest;
 import org.junit.BeforeClass;

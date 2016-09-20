@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
 public interface AggregateStatementMBean {
   String OBJECT_NAME = "GemFireXD:service=Statement,type=Aggregate";

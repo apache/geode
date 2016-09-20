@@ -118,8 +118,6 @@ org/apache/geode/internal/security/IntegratedSecurityService
 org/apache/geode/internal/security/IntegratedSecurityService$SerializationProxy
 org/apache/geode/internal/security/SecurityService
 org/apache/geode/internal/statistics/platform/LinuxProcFsStatistics$CPU
-com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration
-com/gemstone/org/apache/logging/log4j/core/config/xml/GemFireXmlConfiguration$ErrorType
 org/apache/geode/internal/ra/GFConnectionFactoryImpl
 org/apache/geode/internal/ra/GFConnectionImpl
 org/apache/geode/internal/ra/spi/JCAManagedConnectionFactory

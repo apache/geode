@@ -26,7 +26,7 @@
 * @version 1.0
 * @since GemFire   2014-04-02
 */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
 import static org.junit.Assert.*;
 

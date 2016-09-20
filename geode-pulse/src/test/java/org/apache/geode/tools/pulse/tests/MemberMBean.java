@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
 public interface MemberMBean {
   String OBJECT_NAME = "GemFire:type=Member";

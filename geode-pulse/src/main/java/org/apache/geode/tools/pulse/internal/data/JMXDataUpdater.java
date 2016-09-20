@@ -17,14 +17,14 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.data;
+package org.apache.geode.tools.pulse.internal.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.vmware.geode.tools.pulse.internal.controllers.PulseController;
-import com.vmware.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
-import com.vmware.geode.tools.pulse.internal.log.PulseLogWriter;
-import com.vmware.geode.tools.pulse.internal.util.StringUtils;
+import org.apache.geode.tools.pulse.internal.controllers.PulseController;
+import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
+import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.geode.tools.pulse.internal.util.StringUtils;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;

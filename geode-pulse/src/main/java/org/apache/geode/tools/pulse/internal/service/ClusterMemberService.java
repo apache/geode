@@ -17,16 +17,16 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.service;
+package org.apache.geode.tools.pulse.internal.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.vmware.geode.tools.pulse.internal.controllers.PulseController;
-import com.vmware.geode.tools.pulse.internal.data.Cluster;
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
-import com.vmware.geode.tools.pulse.internal.data.Repository;
-import com.vmware.geode.tools.pulse.internal.util.TimeUtils;
+import org.apache.geode.tools.pulse.internal.controllers.PulseController;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.util.TimeUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.vmware.geode.tools.pulse.internal.security;
+package org.apache.geode.tools.pulse.internal.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,8 +23,8 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
-import com.vmware.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

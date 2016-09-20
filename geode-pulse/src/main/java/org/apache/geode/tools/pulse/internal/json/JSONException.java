@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.json;
+package org.apache.geode.tools.pulse.internal.json;
 
 /**
  * The JSONException is thrown by the JSON.org classes when things are amiss.

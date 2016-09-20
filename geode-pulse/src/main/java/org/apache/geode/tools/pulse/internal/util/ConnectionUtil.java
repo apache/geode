@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.internal.util;
+package org.apache.geode.tools.pulse.internal.util;
 
 import java.io.IOException;
 

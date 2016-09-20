@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.log;
+package org.apache.geode.tools.pulse.internal.log;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 
 /**
  * Class PulseLogger

@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.json;
+package org.apache.geode.tools.pulse.internal.json;
 
 /**
  * This provides static methods to convert comma delimited text into a

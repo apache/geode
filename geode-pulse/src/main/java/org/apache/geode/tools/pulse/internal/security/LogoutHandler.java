@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vmware.geode.tools.pulse.internal.security;
+package org.apache.geode.tools.pulse.internal.security;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vmware.geode.tools.pulse.internal.data.Repository;
-import com.vmware.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;

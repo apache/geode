@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -38,7 +38,7 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;

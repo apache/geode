@@ -16,9 +16,9 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
-import static com.vmware.geode.tools.pulse.tests.PulseAbstractTest.*;
+import static org.apache.geode.tools.pulse.tests.PulseAbstractTest.*;
 import static org.junit.Assert.*;
 
 import java.util.Collections;

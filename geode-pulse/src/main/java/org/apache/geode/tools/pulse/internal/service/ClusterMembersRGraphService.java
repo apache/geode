@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.service;
+package org.apache.geode.tools.pulse.internal.service;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -33,9 +33,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import com.vmware.geode.tools.pulse.internal.data.Cluster;
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
-import com.vmware.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
  * Class ClusterMembersRGraphService

@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.testbed;
+package org.apache.geode.tools.pulse.testbed;
 
 import java.io.File;
 import java.io.FileInputStream;

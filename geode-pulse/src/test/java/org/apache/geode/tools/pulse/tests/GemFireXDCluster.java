@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.openmbean.CompositeData;

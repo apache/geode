@@ -16,24 +16,24 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.testbed;
+package org.apache.geode.tools.pulse.testbed;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.vmware.geode.tools.pulse.internal.data.Cluster;
-import com.vmware.geode.tools.pulse.internal.data.Cluster.Alert;
-import com.vmware.geode.tools.pulse.internal.data.Cluster.Client;
-import com.vmware.geode.tools.pulse.internal.data.Cluster.GatewayReceiver;
-import com.vmware.geode.tools.pulse.internal.data.Cluster.GatewaySender;
-import com.vmware.geode.tools.pulse.internal.data.Cluster.Member;
-import com.vmware.geode.tools.pulse.internal.data.Cluster.Region;
-import com.vmware.geode.tools.pulse.internal.data.IClusterUpdater;
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
-import com.vmware.geode.tools.pulse.internal.data.Repository;
-import com.vmware.geode.tools.pulse.internal.log.PulseLogWriter;
-import com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Locator;
-import com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Peer;
-import com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Server;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.Cluster.Alert;
+import org.apache.geode.tools.pulse.internal.data.Cluster.Client;
+import org.apache.geode.tools.pulse.internal.data.Cluster.GatewayReceiver;
+import org.apache.geode.tools.pulse.internal.data.Cluster.GatewaySender;
+import org.apache.geode.tools.pulse.internal.data.Cluster.Member;
+import org.apache.geode.tools.pulse.internal.data.Cluster.Region;
+import org.apache.geode.tools.pulse.internal.data.IClusterUpdater;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Locator;
+import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Peer;
+import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -167,11 +167,11 @@ public class PropMockDataUpdater implements IClusterUpdater {
 
         //Read from property file
         int randomInt = (randomGenerator.nextInt(5)) + 1;
-        List<com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Region> thisMemberRegions = testbed.getRootDs().getRegions(memberSet.getValue().getName());
+        List<org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Region> thisMemberRegions = testbed.getRootDs().getRegions(memberSet.getValue().getName());
 
         int regionExists = 0;
         int index=0;
-        for (com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Region thisMemberRegion : thisMemberRegions) {
+        for (org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Region thisMemberRegion : thisMemberRegions) {
           Region region = initMemberRegion(index++,thisMemberRegion.getName(),memberSet.getValue().getName(),
               thisMemberRegion.getEntryCount(),thisMemberRegion.getType(), thisMemberRegion.getMembers().size()); //read from property file
           if (regionsList.size() > 0) {

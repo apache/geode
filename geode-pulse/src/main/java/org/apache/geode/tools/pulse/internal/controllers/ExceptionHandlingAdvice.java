@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.controllers;
+package org.apache.geode.tools.pulse.internal.controllers;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.vmware.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 
 /**
  * For handling IO exception in our controllers

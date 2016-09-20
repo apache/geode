@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.log;
+package org.apache.geode.tools.pulse.internal.log;
 
 /**
  * interface LogWriter

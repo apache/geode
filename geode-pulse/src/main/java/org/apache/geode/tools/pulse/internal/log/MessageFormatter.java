@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.log;
+package org.apache.geode.tools.pulse.internal.log;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,8 +29,8 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
-import com.vmware.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
  * Class MessageFormatter

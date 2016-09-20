@@ -17,14 +17,14 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal;
+package org.apache.geode.tools.pulse.internal;
 
-import com.vmware.geode.tools.pulse.internal.controllers.PulseController;
-import com.vmware.geode.tools.pulse.internal.data.PulseConfig;
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
-import com.vmware.geode.tools.pulse.internal.data.Repository;
-import com.vmware.geode.tools.pulse.internal.log.PulseLogWriter;
-import com.vmware.geode.tools.pulse.internal.util.StringUtils;
+import org.apache.geode.tools.pulse.internal.controllers.PulseController;
+import org.apache.geode.tools.pulse.internal.data.PulseConfig;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.geode.tools.pulse.internal.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 

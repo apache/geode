@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests.junit;
+package org.apache.geode.tools.pulse.tests.junit;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -32,7 +32,7 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.*;
 
-import com.vmware.geode.tools.pulse.internal.json.JSONObject;
+import org.apache.geode.tools.pulse.internal.json.JSONObject;
 
 /**
  * JUnit Tests for ClusterSelectedRegionsMemberService in the back-end server for region detail page

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vmware.geode.tools.pulse.controllers;
+package org.apache.geode.tools.pulse.controllers;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
@@ -35,14 +35,14 @@ import java.util.UUID;
 import javax.servlet.ServletContextListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vmware.geode.tools.pulse.internal.PulseAppListener;
+import org.apache.geode.tools.pulse.internal.PulseAppListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.geode.test.junit.categories.UnitTest;
-import com.vmware.geode.tools.pulse.internal.controllers.PulseController;
-import com.vmware.geode.tools.pulse.internal.data.Cluster;
-import com.vmware.geode.tools.pulse.internal.data.PulseConfig;
-import com.vmware.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.controllers.PulseController;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.PulseConfig;
+import org.apache.geode.tools.pulse.internal.data.Repository;
 
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.junit.Before;

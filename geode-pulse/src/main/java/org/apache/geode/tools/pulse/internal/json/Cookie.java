@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.json;
+package org.apache.geode.tools.pulse.internal.json;
 
 /**
  * Convert a web browser cookie specification to a JSONObject and back.

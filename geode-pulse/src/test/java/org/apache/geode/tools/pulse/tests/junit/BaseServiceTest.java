@@ -16,13 +16,13 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests.junit;
+package org.apache.geode.tools.pulse.tests.junit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.geode.test.junit.categories.UITest;
 import com.google.gson.JsonObject;
-import com.vmware.geode.tools.pulse.internal.json.JSONObject;
+import org.apache.geode.tools.pulse.internal.json.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -208,7 +208,7 @@ public abstract class BaseServiceTest {
   *
   * Tests that service returns json object
   *
-  * Test method for {@link com.vmware.geode.tools.pulse.internal.service.ClusterSelectedRegionService#execute(javax.servlet.http.HttpServletRequest)}.
+  * Test method for {@link org.apache.geode.tools.pulse.internal.service.ClusterSelectedRegionService#execute(javax.servlet.http.HttpServletRequest)}.
   */
   @Test
   public void testServerLoginLogout() {

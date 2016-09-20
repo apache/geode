@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.data;
+package org.apache.geode.tools.pulse.internal.data;
 
 import java.util.ResourceBundle;
 

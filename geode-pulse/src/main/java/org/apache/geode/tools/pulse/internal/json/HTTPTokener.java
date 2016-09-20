@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.json;
+package org.apache.geode.tools.pulse.internal.json;
 
 /**
  * The HTTPTokener extends the JSONTokener to provide additional methods

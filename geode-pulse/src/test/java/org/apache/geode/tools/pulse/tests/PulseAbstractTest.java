@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  */
-package com.vmware.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests;
 
 import static org.junit.Assert.*;
 
@@ -47,7 +47,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.JettyHelper;
-import com.vmware.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 
 @SuppressWarnings("deprecated")
 public abstract class PulseAbstractTest extends PulseBaseTest {

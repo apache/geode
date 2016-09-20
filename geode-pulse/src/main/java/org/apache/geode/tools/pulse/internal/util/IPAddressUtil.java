@@ -17,7 +17,7 @@
  *
  */
 
-package com.vmware.geode.tools.pulse.internal.util;
+package org.apache.geode.tools.pulse.internal.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

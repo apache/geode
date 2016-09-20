@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vmware.geode.tools.pulse.testbed.driver;
+package org.apache.geode.tools.pulse.testbed.driver;
 
-import static com.vmware.geode.tools.pulse.tests.PulseAbstractTest.*;
+import static org.apache.geode.tools.pulse.tests.PulseAbstractTest.*;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
@@ -39,11 +39,11 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.test.junit.categories.UITest;
-import com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Locator;
-import com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Peer;
-import com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Region;
-import com.vmware.geode.tools.pulse.testbed.GemFireDistributedSystem.Server;
-import com.vmware.geode.tools.pulse.testbed.TestBed;
+import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Locator;
+import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Peer;
+import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Region;
+import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Server;
+import org.apache.geode.tools.pulse.testbed.TestBed;
 
 @Ignore("TODO: test is ignored")
 @Category(UITest.class)
@@ -70,7 +70,7 @@ public class PulseUITest {
     int port = 8080;
     String context = "/pulse";
     path = getPulseWarPath();
-    //System.setProperty("pulse.propMockDataUpdaterClass", "com.vmware.geode.tools.pulse.testbed.PropMockDataUpdater");
+    //System.setProperty("pulse.propMockDataUpdaterClass", "org.apache.geode.tools.pulse.testbed.PropMockDataUpdater");
 
     jetty = JettyHelper.initJetty(host, port, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
     JettyHelper.addWebApplication(jetty, context, getPulseWarPath());
