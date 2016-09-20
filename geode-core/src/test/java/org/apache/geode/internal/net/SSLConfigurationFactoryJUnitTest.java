@@ -34,7 +34,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class SSLConfigurationFactoryTest extends JUnit4DistributedTestCase {
+public class SSLConfigurationFactoryJUnitTest extends JUnit4DistributedTestCase {
 
   @After
   public void tearDownTest() {
