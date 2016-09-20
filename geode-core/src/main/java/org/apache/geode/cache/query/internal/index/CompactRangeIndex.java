@@ -984,7 +984,8 @@ public class CompactRangeIndex extends AbstractIndex {
 
     if (key != null) {
       right = key.evaluate(context);
-      if(null != right  && indexInfo._getIndex() instanceof CompactMapRangeIndex){
+      //This next check is for map queries with In Clause, in those cases the reevaluation creates a tuple.  In other cases it does not
+      if(null != right  && indexInfo._getIndex() instanceof CompactMapRangeIndex && right instanceof Object[]){
         right = ((Object[])right)[0];
       }
     } else {

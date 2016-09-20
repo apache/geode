@@ -393,7 +393,7 @@ public class MapRangeIndexMaintenanceJUnitTest{
   }
 
   @Test
-  public void updatingAMapFieldSameKeysShouldUpdateCorrectly() throws Exception {
+  public void updatingAMapFieldSameKeysSameValuesShouldUpdateCorrectly() throws Exception {
     //Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
@@ -414,12 +414,13 @@ public class MapRangeIndexMaintenanceJUnitTest{
     Portfolio p2 = new Portfolio(1, 1);
     HashMap map2 = new HashMap();
     p2.positions = map2;
-    map2.put("NEW_KEY", 1);
+    map2.put("SUN", 1);
+    map2.put("IBM", 2);
     region.put(1, p2);
 
     SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
                                               .execute();
-    assertEquals(0, results.size());
+    assertEquals(1, results.size());
   }
 
   @Test
@@ -500,7 +501,7 @@ public class MapRangeIndexMaintenanceJUnitTest{
 
 
   @Test
-  public void testUpdateWithSameKeysDifferentValuesShouldRetainIndexMappings() throws Exception {
+  public void updatingWithSameKeysDifferentValuesShouldRetainIndexMappings() throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
