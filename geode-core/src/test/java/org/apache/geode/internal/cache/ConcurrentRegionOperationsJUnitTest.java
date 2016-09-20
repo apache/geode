@@ -521,19 +521,19 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
       this.timeToStop.set(true);
     }
     for (int i = 0; i < numberOfPutsThreads; i++) {
-      ThreadUtils.join(putThreads[i], 10*1000);
+      ThreadUtils.join(putThreads[i], 60*1000);
     }
     for (int i = 0; i < numberOfGetsThreads; i++) {
-      ThreadUtils.join(getThreads[i], 10*1000);
+      ThreadUtils.join(getThreads[i], 60*1000);
     }
     for (int i = 0; i < numberOfDestroysThreads; i++) {
-      ThreadUtils.join(destroyThreads[i], 10*1000);
+      ThreadUtils.join(destroyThreads[i], 60*1000);
     }
     for (int i = 0; i < numberOfClearThreads; i++) {
-      ThreadUtils.join(clearThreads[i], 10*1000);
+      ThreadUtils.join(clearThreads[i], 60*1000);
     }
     for (int i = 0; i < numberOfForceRollThreads; i++) {
-      ThreadUtils.join(forceRollThreads[i], 10*1000);
+      ThreadUtils.join(forceRollThreads[i], 60*1000);
     }
 
     if (this.validate) {
