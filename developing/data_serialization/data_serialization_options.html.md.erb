@@ -15,6 +15,9 @@ All data that Geode moves out of the local cache must be serializable. However, 
 -   Regions that receive events from remote caches
 -   Regions that provide function arguments and results
 
+**Note:**
+If you are storing objects with the [HTTP Session Management Modules](../../tools_modules/http_session_mgmt/chapter_overview.html), these objects must be serializable since they are serialized before being stored in the region.
+
 To minimize the cost of serialization and deserialization, Geode avoids changing the data format whenever possible. This means your data might be stored in the cache in serialized or deserialized form, depending on how you use it. For example, if a server acts only as a storage location for data distribution between clients, it makes sense to leave the data in serialized form, ready to be transmitted to clients that request it. Partitioned region data is always initially stored in serialized form.
 
 ## <a id="data_serialization_options__section_691C2CF5A4E24D599070A7AADEDF2BEC" class="no-quick-link"></a>Data Serialization Options
@@ -36,6 +39,7 @@ Geode Data serialization is about 25% faster than PDX serialization, however usi
 | Provides single field access of serialized data, without full deserialization - supported also for OQL querying.                 |                                                      | X                                                   |
 | Automatically ported to other languages by Geode                                                    |                                                      | X                                                   |
 | Works with .NET clients.                                                                                                         | X                                                    | X                                                   |
+| Works with C++ clients.                                                                                                         | X                                                    | X                                                   |
 | Works with Geode delta propagation.                                                                 | X                                                    | X (See note below.)                                 |
 
 <span class="tablecap">**Table 1.** Serialization Options: Comparison of Features</span>
