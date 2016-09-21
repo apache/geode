@@ -201,3 +201,121 @@ FROM /exampleRegion p, p.positions.values pos
 WHERE p.ID > 0 OR p.status = 'active' OR pos.secId
 OR pos.secId = 'IBM'
 ```
+
+<div style="background-color:lightyellow;">
+<h2>(Experimental Feature) Aggregate Functions</h2>
+
+<p>
+Some prose here about being experimental.
+</p>
+
+<p>
+The aggregate functions 
+<code>MIN</code>,
+<code>MAX</code>,
+<code>AVG</code>,
+<code>AVG</code> over a DISTINCT expression,
+<code>SUM</code> over a DISTINCT expression,
+<code>COUNT</code>, and
+<code>COUNT</code> over a DISTINCT expression
+are supported.
+The <code>GROUP BY</code> extension is also supported where appropriate.
+</p>
+
+<p>
+The <code>MIN</code> function returns the smallest of the selected
+expression.
+The type of the expression must evaluate to a 
+<code>java.lang.Comparable</code>.
+</p>
+
+<p>
+The <code>MAX</code> function returns the largest of the selected
+expression.
+The type of the expression must evaluate to a 
+<code>java.lang.Comparable</code>.
+</p>
+
+<p>
+The <code>AVG</code> function returns the arithmetic mean of the set
+formed by the selected expression.
+The type of the expression must evaluate to a 
+<code>java.lang.Number</code>.
+For partitioned regions,
+each node's buckets provide both a sum and the number of elements
+to the node executing the query,
+such that a correct average may be computed.
+</p>
+
+<p>
+The <code>AVG</code> function where the DISTINCT modifier is applied
+to the expression returns the arithmetic mean of the set
+of unique (distinct) values.
+The type of the expression must evaluate to a 
+<code>java.lang.Number</code>.
+For partitioned regions,
+the distinct values in a node's buckets are returned
+to the node executing the query.
+The query node can then calculate the avarage over
+the values that are unique across nodes,
+after eliminating duplicate values that come from separate nodes.
+</p>
+
+<p>
+The <code>SUM</code> function returns the sum over the set
+formed by the selected expression.
+The type of the expression must evaluate to a 
+<code>java.lang.Number</code>.
+For partitioned regions,
+each node's buckets compute a sum over that node,
+returning that sum
+to the node executing the query,
+when then sums across all nodes.
+</p>
+
+<p>
+The <code>SUM</code> function where the DISTINCT modifier is applied
+to the expression returns the sum over the set
+of unique (distinct) values.
+The type of the expression must evaluate to a 
+<code>java.lang.Number</code>.
+For partitioned regions,
+the distinct values in a node's buckets are returned
+to the node executing the query.
+The query node can then calculate the sum over
+the values that are unique across nodes,
+after eliminating duplicate values that come from separate nodes.
+</p>
+
+<p>
+The <code>COUNT</code> function returns the quantity of values in the set
+formed by the selected expression.
+For example, to return the quantity of employees who have a
+positive sales amount:
+</p>
+<pre>
+SELECT count(e.sales) FROM /employees e WHERE e.sales > 0.0
+</pre>
+<p>
+The <code>COUNT</code> function where the DISTINCT modifier is applied
+returns the quantity of unique (distinct) values in the set
+formed by the selected expression.
+</p>
+</div>
+
+<div style="background-color:lightyellow;">
+<h2>(Experimental Feature) GROUP BY Extension for Aggregate Functions</h2>
+
+<p>
+<code>GROUP BY</code> is required 
+when aggregate functions are used in combination
+with other selected items.
+It permits ordering.
+For example,
+</p>
+
+<pre>
+SELECT ID, MAX(e.sales) FROM /employees e GROUP BY ID
+</pre>
+
+</div>
