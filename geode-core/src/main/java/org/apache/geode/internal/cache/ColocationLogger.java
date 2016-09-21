@@ -146,7 +146,7 @@ public class ColocationLogger implements Runnable {
    *
    * @return missingChildren
    */
-  public List<String> getMissingChildRegions() {
+  public List<String> updateAndGetMissingChildRegions() {
     synchronized (loggerLock) {
       Set<String> childRegions = (Set<String>) ColocationHelper.getAllColocationRegions(this.region).keySet();
       missingChildren.removeAll(childRegions);
