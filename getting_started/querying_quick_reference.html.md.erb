@@ -112,7 +112,7 @@ SELECT DISTINCT * FROM /exampleRegion p WHERE p.status = 'active'
 SELECT p.ID, p.status FROM /exampleRegion p WHERE p.ID > 0
 ```
 
-**Using the NOT Operator**.
+**Using the NOT Operator**
 
 See [Operators](../developing/query_additional/operators.html#operators) for a complete list of supported operators.
 
@@ -121,7 +121,7 @@ SELECT DISTINCT * FROM /exampleRegion WHERE NOT (status = 'active') AND ID = 2
 ```
 
 ``` pre
-SELECT * FROM /exampleRegion WHERE NOT (ID IN SET(1,2)
+SELECT * FROM /exampleRegion WHERE NOT (ID IN SET(1,2))
 ```
 
 **Using the AND and OR Operators**
