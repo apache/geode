@@ -164,7 +164,7 @@ You can also use transaction plug-in event handlers when running JTA global tran
 
 When you commit a transaction, if a transaction writer is installed in the cache where the data updates were performed, it is called. The writer can do whatever work you need, including aborting the transaction.
 
-The transaction writer is the last place that an application can rollback a transaction. If the transaction writer throws any exception, the transaction is rolled back. For example, you might use a transaction writer to update a backend data source before the Geode cache transaction completes the commit. If the backend data source update fails, the transaction writer implementation can throw a [TransactionWriterException](/releases/latest/javadoc/com/gemstone/gemfire/cache/TransactionWriterException.html) to veto the transaction.
+The transaction writer is the last place that an application can rollback a transaction. If the transaction writer throws any exception, the transaction is rolled back. For example, you might use a transaction writer to update a backend data source before the Geode cache transaction completes the commit. If the backend data source update fails, the transaction writer implementation can throw a [TransactionWriterException](/releases/latest/javadoc/org/apache/geode/cache/TransactionWriterException.html) to veto the transaction.
 
 A typical usage scenario would be to use the transaction writer to prepare the commit on the external database. Then in a transaction listener, you can apply the commit on the database.
 

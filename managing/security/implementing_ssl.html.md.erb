@@ -18,8 +18,8 @@ to communicate using SSL, and the kind of communications to which each component
 <dt>**gateway**</dt>
 <dd>Communication across WAN gateways from one site to another</dd>
 
-<dt>**http**</dt>
-<dd>All HTTP-based services hosted on the configured server, which can include the Developer REST API
+<dt>**web**</dt>
+<dd>All web-based services hosted on the configured server, which can include the Developer REST API
 service, the Management REST API service (used for remote cluster management) and the Pulse
 monitoring tool's web-based user interface.</dd>
 
@@ -52,10 +52,10 @@ protocols, and to provide the location and credentials for key and trust stores.
 <dd>list of components for which to enable SSL. "all" or comma-separated list of components</dd>
 
 <dt>**ssl-require-authentication**</dt>
-<dd>Requires two-way authentication, applies to all components except http. boolean - if true (the default), two-way authentication is required.</dd>
+<dd>Requires two-way authentication, applies to all components except web. boolean - if true (the default), two-way authentication is required.</dd>
 
-<dt>**ssl-http-require-authentication**</dt>
-<dd>Requires two-way authentication for http component. boolean - if true, two-way authentication is required. Default is false (one-way authentication only).</dd>
+<dt>**ssl-web-require-authentication**</dt>
+<dd>Requires two-way authentication for web component. boolean - if true, two-way authentication is required. Default is false (one-way authentication only).</dd>
 
 <dt>**ssl-default-alias**</dt>
 <dd>A server uses one key store to hold its SSL certificates. All components on that server can share a
@@ -156,7 +156,7 @@ The following table lists the components you can configure to use SSL.
 |-----------|-----------------------------------------------------------------------|
 | cluster   | Peer-to-peer communications among members of a distributed system     |
 | gateway   | Communication across WAN gateways from one site to another            |
-| http      | Hypertext transport protocol communication, including REST interfaces |
+| web       | Web-based communication, including REST interfaces                    |
 | jmx       | Java management extension communications, including gfsh              |
 | locator   | Communication with and between locators                               |
 | server    | Communication between clients and servers                             |
@@ -168,9 +168,9 @@ The following table lists the properties you can use to configure SSL on your Ge
 
 | Property                           | Description                                                                  | Value |
 |------------------------------------|------------------------------------------------------------------------------|-------|
-| ssl&#8209;enabled&#8209;components | list of components for which to enable SSL | "all" or comma-separated list of components: cluster, gateway, http, jmx, locator, server |
-| ssl-require-authentication         | requires two-way authentication, applies to all components except http | boolean - if true (the default), two-way authentication is required |
-| ssl&#8209;http&#8209;require&#8209;authentication    | requires two-way authentication for http component | boolean - if true, two-way authentication is required. Default is false (one-way authentication only) |
+| ssl&#8209;enabled&#8209;components | list of components for which to enable SSL | "all" or comma-separated list of components: cluster, gateway, web, jmx, locator, server |
+| ssl-require-authentication         | requires two-way authentication, applies to all components except web | boolean - if true (the default), two-way authentication is required |
+| ssl&#8209;web&#8209;require&#8209;authentication    | requires two-way authentication for web component | boolean - if true, two-way authentication is required. Default is false (one-way authentication only) |
 | ssl-default-alias                  | default certificate name                   | string - if empty, use first certificate in key store |
 | ssl-_component_-alias              | component-specific certificate name        | string - applies to specified _component_ |
 | ssl-ciphers                        | list of SSL ciphers                        | comma-separated list (default "any") |
