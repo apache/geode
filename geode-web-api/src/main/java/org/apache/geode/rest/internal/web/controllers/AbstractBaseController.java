@@ -35,17 +35,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -60,13 +49,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.JSONFormatterException;
 import org.apache.geode.pdx.PdxInstance;
@@ -82,10 +71,21 @@ import org.apache.geode.rest.internal.web.util.IdentifiableUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.NumberUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 
 /**
  * AbstractBaseController class contains common functionalities required for other controllers. 
@@ -104,6 +104,7 @@ public abstract class AbstractBaseController {
   protected static final String UTF_8 = "UTF-8";
   protected static final String DEFAULT_ENCODING = UTF_8;
   private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+  protected SecurityService securityService = IntegratedSecurityService.getSecurityService();
   
   //private Cache cache = GemFireCacheImpl.getExisting(null);
   
@@ -199,7 +200,7 @@ public abstract class AbstractBaseController {
       
       final HttpHeaders headers = new HttpHeaders();
       headers.setLocation(toUri("queries", queryId));    
-      return new ResponseEntity<>(queryResultAsJson, headers, HttpStatus.OK);
+      return new ResponseEntity<String>(queryResultAsJson, headers, HttpStatus.OK);
     }else {
       throw new GemfireRestException("Server has encountered error while generating query result into restful format(JSON)!");
     }
@@ -252,7 +253,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow null keys or values!", regionNamePath), npe);
     }catch(IllegalArgumentException iae){
       throw new GemfireRestException(String.format("Resource (%1$s) configuration prevents specified data from being stored in it!", regionNamePath), iae);
-    }catch(org.apache.geode.distributed.LeaseExpiredException lee){
+    }catch(LeaseExpiredException lee){
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     }catch(TimeoutException toe){
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", toe);
@@ -278,7 +279,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow null keys or values!", regionNamePath), npe);
     }catch(IllegalArgumentException iae){
       throw new GemfireRestException(String.format("Resource (%1$s) configuration prevents specified data from being stored in it!", regionNamePath), iae);
-    }catch(org.apache.geode.distributed.LeaseExpiredException lee){
+    }catch(LeaseExpiredException lee){
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     }catch(TimeoutException toe){
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", toe);
@@ -305,7 +306,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow null keys or values!", regionNamePath), npe);
     }catch(IllegalArgumentException iae){
       throw new GemfireRestException(String.format("Resource (%1$s) configuration prevents specified data from being stored in it!", regionNamePath), iae);
-    }catch(org.apache.geode.distributed.LeaseExpiredException lee){
+    }catch(LeaseExpiredException lee){
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     }catch(TimeoutException toe){
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", toe);
@@ -325,7 +326,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow null keys or values!", regionNamePath), npe);
     } catch (ClassCastException cce) {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow to store specified key or value type in this region!", regionNamePath), cce);
-    } catch (org.apache.geode.distributed.LeaseExpiredException lee) {
+    } catch (LeaseExpiredException lee) {
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     } catch (TimeoutException toe) {
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", toe);
@@ -368,7 +369,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException("NULL query ID or query string is not supported!", npe);
     } catch(IllegalArgumentException iae) {
       throw new GemfireRestException("Server has not allowed to perform the requested operation!", iae);
-    } catch(org.apache.geode.distributed.LeaseExpiredException lee) {
+    } catch(LeaseExpiredException lee) {
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     } catch(TimeoutException te) {
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", te);
@@ -382,7 +383,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException("NULL query ID or query string is not supported!", npe);
     } catch (ClassCastException cce) {
       throw new GemfireRestException("specified queryId or query string is not supported!", cce);
-    } catch (org.apache.geode.distributed.LeaseExpiredException lee) {
+    } catch (LeaseExpiredException lee) {
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     } catch (TimeoutException toe) {
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", toe);
@@ -403,7 +404,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException("NULL query ID or query string is not supported!", npe);
     } catch(IllegalArgumentException iae){
       throw new GemfireRestException("Configuration does not allow to perform the requested operation!", iae);
-    } catch(org.apache.geode.distributed.LeaseExpiredException lee){
+    } catch(LeaseExpiredException lee){
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     } catch(TimeoutException toe){
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", toe);
@@ -451,7 +452,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow null keys or values!", regionNamePath), npe);
     }catch(IllegalArgumentException iae){
       throw new GemfireRestException(String.format("Resource (%1$s) configuration prevents specified data from being stored in it!", regionNamePath), iae);
-    }catch(org.apache.geode.distributed.LeaseExpiredException lee){
+    }catch(LeaseExpiredException lee){
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     }catch(TimeoutException toe){
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", toe);
@@ -645,10 +646,7 @@ public abstract class AbstractBaseController {
   protected String convertErrorAsJson(Throwable t) {
     StringWriter writer = new StringWriter();
     t.printStackTrace(new PrintWriter(writer));
-    String returnString = writer.toString();
-    returnString = returnString.replace("\n"," ");
-    returnString = returnString.replace("\t"," ");
-    return String.format("{\"message\" : \"%1$s\", \"stackTrace\" : \"%2$s\"}", t.getMessage(), returnString);
+    return String.format("{\"message\" : \"%1$s\", \"stackTrace\" : \"%2$s\"}", t.getMessage(), writer.toString());
   }
 
   protected Map<?,?> convertJsonToMap(final String jsonString) {
@@ -794,7 +792,7 @@ public abstract class AbstractBaseController {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow null keys!", regionNamePath), npe);
     } catch(IllegalArgumentException iae) {
       throw new GemfireRestException(String.format("Resource (%1$s) configuration does not allow requested operation on specified key!", regionNamePath), iae);
-    } catch(org.apache.geode.distributed.LeaseExpiredException lee) {
+    } catch(LeaseExpiredException lee) {
       throw new GemfireRestException("Server has encountered error while processing this request!", lee);
     } catch(TimeoutException te) {
       throw new GemfireRestException("Server has encountered timeout error while processing this request!", te);
