@@ -2140,6 +2140,21 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   public static void createClientWithLocator(int port0,String host,
       String regionName) {
+    createClientWithLocator(port0, host);
+
+    AttributesFactory factory = new AttributesFactory();
+    factory.setPoolName("pool");
+    factory.setDataPolicy(DataPolicy.NORMAL);
+    RegionAttributes attrs = factory.create();
+    region = cache.createRegion(regionName, attrs);
+    region.registerInterest("ALL_KEYS");
+    assertNotNull(region);
+    LogWriterUtils.getLogWriter().info(
+        "Distributed Region " + regionName + " created Successfully :"
+            + region.toString());
+  }
+
+  public static void createClientWithLocator(final int port0, final String host) {
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -2156,21 +2171,10 @@ public class WANTestBase extends JUnit4DistributedTestCase {
           .setPingInterval(250).setSubscriptionEnabled(true)
           .setSubscriptionRedundancy(-1).setReadTimeout(2000)
           .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
-          .setRetryAttempts(3).create(regionName);
+          .setRetryAttempts(3).create("pool");
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
-
-    AttributesFactory factory = new AttributesFactory();
-    factory.setPoolName(p.getName());
-    factory.setDataPolicy(DataPolicy.NORMAL);
-    RegionAttributes attrs = factory.create();
-    region = cache.createRegion(regionName, attrs);
-    region.registerInterest("ALL_KEYS");
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region " + regionName + " created Successfully :"
-            + region.toString());
   }
 
   public static int createReceiver_PDX(int locPort) {
