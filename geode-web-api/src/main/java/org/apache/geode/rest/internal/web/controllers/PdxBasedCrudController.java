@@ -20,6 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.RegionData;
+import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,17 +42,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.util.ArrayUtils;
-import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
-import org.apache.geode.rest.internal.web.controllers.support.RegionData;
-import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on region
@@ -88,6 +87,8 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiResponses( {
     @ApiResponse( code = 201, message = "Created."),
     @ApiResponse( code = 400, message = "Data specified (JSON doc) in the request body is invalid." ),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 409, message = "Key already exist in region."),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")   
@@ -95,7 +96,7 @@ public class PdxBasedCrudController extends CommonCrudController {
   public ResponseEntity<?> create(@PathVariable("region") String region,
       @RequestParam(value = "key", required = false) String key,
       @RequestBody final String json) {
-    
+    securityService.authorizeRegionWrite(region);
     key = generateKey(key);
     
     if(logger.isDebugEnabled()){
@@ -141,12 +142,14 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiResponses( {
     @ApiResponse( code = 200, message = "OK."),
     @ApiResponse( code = 400, message = "Bad request." ),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")    
   } )
   public ResponseEntity<?> read(@PathVariable("region") String region,
       @RequestParam(value = "limit", defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit) {
-    
+    securityService.authorizeRegionRead(region);
     if(logger.isDebugEnabled()){
       logger.debug("Reading all data in Region ({})...", region);
     }
@@ -219,6 +222,8 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiResponses( {
     @ApiResponse( code = 200, message = "OK."),
     @ApiResponse( code = 400, message = "Bad Request."),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")  
   } )
@@ -226,7 +231,9 @@ public class PdxBasedCrudController extends CommonCrudController {
       @PathVariable("region") String region,
       @PathVariable("keys") final String[] keys,
       @RequestParam(value = "ignoreMissingKey", required = false ) final String ignoreMissingKey) {
-    
+
+    for (String key : keys)
+      securityService.authorizeRegionRead(region, key);
     if(logger.isDebugEnabled()){
       logger.debug("Reading data for keys ({}) in Region ({})",
           ArrayUtils.toString(keys), region);
@@ -302,6 +309,8 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiResponses( {
     @ApiResponse( code = 200, message = "OK."),
     @ApiResponse( code = 400, message = "Bad Request."),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
     @ApiResponse( code = 409, message = "For CAS, @old value does not match to the current value in region" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")
@@ -310,7 +319,8 @@ public class PdxBasedCrudController extends CommonCrudController {
       @PathVariable("keys") final String[] keys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
       @RequestBody final String json) {
-    
+    for (String key : keys)
+      securityService.authorizeRegionWrite(region, key);
     if(logger.isDebugEnabled()){
       logger.debug("updating key(s) for region ({}) ", region);
     }
@@ -334,11 +344,13 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiResponses( {
     @ApiResponse( code = 200, message = "OK."),
     @ApiResponse( code = 400, message = "Bad request." ),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")    
   } )
   public ResponseEntity<?> size(@PathVariable("region") String region) {
-    
+    securityService.authorizeRegionRead(region);
     if(logger.isDebugEnabled()){
       logger.debug("Determining the number of entries in Region ({})...", region);
     }

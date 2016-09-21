@@ -19,20 +19,10 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -48,10 +38,20 @@ import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 
 /**
  * The QueryingController class serves all HTTP REST requests related to the gemfire querying
@@ -86,37 +86,39 @@ public class QueryAccessController extends AbstractBaseController {
   }
   
   /**
-   * list all parameterized Queries created in a Gemfire data node
+   * list all parametrized Queries created in a Gemfire data node
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET,  produces = { MediaType.APPLICATION_JSON_VALUE })
   @ApiOperation(
-    value = "list all parameterized queries",
-    notes = "List all parameterized queries by id/name",
+    value = "list all parametrized queries",
+    notes = "List all parametrized queries by id/name",
     response  = void.class
   )
   @ApiResponses( {
-    @ApiResponse( code = 200, message = "OK." ),  
-    @ApiResponse( code = 500, message = "if GemFire throws an error or exception" )   
+    @ApiResponse( code = 200, message = "OK." ),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
+    @ApiResponse( code = 500, message = "if GemFire throws an error or exception" )
   } )
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<?> list() {
- 
+    securityService.authorizeDataRead();
     if (logger.isDebugEnabled()) {
-      logger.debug("Listing all parameterized Queries in GemFire...");
+      logger.debug("Listing all parametrized Queries in GemFire...");
     }
     
-    final Region<String, String> parameterizedQueryRegion = getQueryStore(PARAMETERIZED_QUERIES_REGION);
+    final Region<String, String> parametrizedQueryRegion = getQueryStore(PARAMETERIZED_QUERIES_REGION);
     
-    String queryListAsJson =  JSONUtils.formulateJsonForListQueriesCall(parameterizedQueryRegion);
+    String queryListAsJson =  JSONUtils.formulateJsonForListQueriesCall(parametrizedQueryRegion);
     final HttpHeaders headers = new HttpHeaders();  
     headers.setLocation(toUri("queries"));
     return new ResponseEntity<String>(queryListAsJson, headers, HttpStatus.OK);
   } 
   
   /**
-   * Create a named, parameterized Query
+   * Create a named, parametrized Query
    * @param queryId uniquely identify the query
    * @param oqlInUrl OQL query string specified in a request URL
    * @param oqlInBody OQL query string specified in a request body
@@ -124,23 +126,26 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.POST)
   @ApiOperation(
-    value = "create a parameterized Query",
-    notes = "Prepare the specified parameterized query and assign the corresponding ID for lookup",
+    value = "create a parametrized Query",
+    notes = "Prepare the specified parametrized query and assign the corresponding ID for lookup",
     response  = void.class
   )
   @ApiResponses( {
     @ApiResponse( code = 201, message = "Successfully created." ),
-    @ApiResponse( code = 409, message = "QueryId already assigned to other query." ),  
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
+    @ApiResponse( code = 409, message = "QueryId already assigned to other query." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )
   } )
   public ResponseEntity<?> create(@RequestParam("id") final String queryId,
                                   @RequestParam(value = "q", required = false) String oqlInUrl,
                                   @RequestBody(required = false) final String oqlInBody)
   {
+    securityService.authorizeDataWrite();
     final String oqlStatement = validateQuery(oqlInUrl, oqlInBody);
     
     if (logger.isDebugEnabled()) {
-      logger.debug("Creating a named, parameterized Query ({}) with ID ({})...", oqlStatement, queryId);
+      logger.debug("Creating a named, parametrized Query ({}) with ID ({})...", oqlStatement, queryId);
     }
 
     // store the compiled OQL statement with 'queryId' as the Key into the hidden, ParameterizedQueries Region...
@@ -170,12 +175,14 @@ public class QueryAccessController extends AbstractBaseController {
   )
   @ApiResponses( {
     @ApiResponse( code = 200, message = "OK." ),
-    @ApiResponse( code = 500, message = "GemFire throws an error or exception" )   
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
+    @ApiResponse( code = 500, message = "GemFire throws an error or exception" )
   } )
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<String> runAdhocQuery(@RequestParam("q") String oql) {
-    
+    securityService.authorizeDataRead();
     if (logger.isDebugEnabled()) {
       logger.debug("Running an adhoc Query ({})...", oql);
     }
@@ -210,19 +217,21 @@ public class QueryAccessController extends AbstractBaseController {
   }
 
   /**
-   * Run named parameterized Query with ID
+   * Run named parametrized Query with ID
    * @param queryId id of the OQL string
    * @param arguments query bind params required while executing query
    * @return query result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{query}", produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(
-    value = "run parameterized query",
+    value = "run parametrized query",
     notes = "run the specified named query passing in scalar values for query parameters in the GemFire cluster",
     response  = void.class
   )
   @ApiResponses( {
     @ApiResponse( code = 200, message = "Query successfully executed." ),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 400, message = "Query bind params specified as JSON document in the request body is invalid" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception" )   
   } )
@@ -231,6 +240,7 @@ public class QueryAccessController extends AbstractBaseController {
   public ResponseEntity<String> runNamedQuery(@PathVariable("query") String queryId,
                                               @RequestBody String arguments)
   {
+    securityService.authorizeDataWrite();
     if (logger.isDebugEnabled()) {
       logger.debug("Running named Query with ID ({})...", queryId);
     }
@@ -286,30 +296,32 @@ public class QueryAccessController extends AbstractBaseController {
   }
 
   /**
-   * Update named, parameterized Query
+   * Update named, parametrized Query
    * @param queryId uniquely identify the query
    * @param oqlInUrl OQL query string specified in a request URL
    * @param oqlInBody OQL query string specified in a request body
    */
   @RequestMapping(method = RequestMethod.PUT, value = "/{query}")
   @ApiOperation(
-    value = "update parameterized query",
-    notes = "Update named, parameterized query by ID",
+    value = "update parametrized query",
+    notes = "Update named, parametrized query by ID",
     response  = void.class
   )
   @ApiResponses( {
     @ApiResponse( code = 200, message = "Updated successfully." ),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "queryId does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )   
   } )
   public ResponseEntity<?> update( @PathVariable("query") final String queryId,
                                    @RequestParam(value = "q", required = false) String oqlInUrl,
                                    @RequestBody(required = false) final String oqlInBody) {
-    
+    securityService.authorizeDataWrite();
     final String oqlStatement = validateQuery(oqlInUrl, oqlInBody);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Updating a named, parameterized Query ({}) with ID ({})...", oqlStatement, queryId);
+      logger.debug("Updating a named, parametrized Query ({}) with ID ({})...", oqlStatement, queryId);
     }
 
     // update the OQL statement with 'queryId' as the Key into the hidden, ParameterizedQueries Region...
@@ -320,26 +332,28 @@ public class QueryAccessController extends AbstractBaseController {
     return new ResponseEntity<Object>(HttpStatus.OK);
   }
 
-  //delete named, parameterized query
+  //delete named, parametrized query
   /**
-   * Delete named, parameterized Query
+   * Delete named, parametrized Query
    * @param queryId uniquely identify the query to be deleted
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{query}")
   @ApiOperation(
-    value = "delete parameterized query",
-    notes = "delete named, parameterized query by ID",
+    value = "delete parametrized query",
+    notes = "delete named, parametrized query by ID",
     response  = void.class
   )
   @ApiResponses( {
     @ApiResponse( code = 200, message = "Deleted successfully." ),
+    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "queryId does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception" )   
   } )
   public ResponseEntity<?> delete(@PathVariable("query") final String queryId) {
-
+    securityService.authorizeDataWrite();
     if (logger.isDebugEnabled()) {
-      logger.debug("Deleting a named, parameterized Query with ID ({}).", queryId);
+      logger.debug("Deleting a named, parametrized Query with ID ({}).", queryId);
     }
     
     //delete the OQL statement with 'queryId' as the Key into the hidden,
