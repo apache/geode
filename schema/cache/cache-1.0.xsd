@@ -45,7 +45,7 @@ If you are declaring a client cache then use this schema:
     version="1.0">
 
 The contents of a declarative XML file correspond to APIs found in the
-com.gemstone.gemfire.cache and com.gemstone.gemfire.cache.client
+org.apache.geode.cache and org.apache.geode.cache.client
 packages. A declarative caching XML file is used to populate a Cache
 or a ClientCache when it is created.
 
