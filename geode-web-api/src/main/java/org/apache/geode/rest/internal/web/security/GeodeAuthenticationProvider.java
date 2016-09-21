@@ -16,9 +16,8 @@
  *
  */
 
-package org.apache.geode.security;
+package org.apache.geode.rest.internal.web.security;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.shiro.subject.Subject;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,6 +25,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.security.AuthenticationFailedException;
 
 
 @Component

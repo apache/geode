@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-package org.apache.geode.security;
+package org.apache.geode.rest.internal.web.security;
 
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
@@ -34,7 +34,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@ComponentScan(basePackages = { "org.apache.geode.rest.internal.web", "org.apache.geode.security"})
+@ComponentScan("org.apache.geode.rest.internal.web")
 public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();

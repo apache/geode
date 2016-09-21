@@ -16,7 +16,7 @@
  *
  */
 
-package org.apache.geode.security;
+package org.apache.geode.rest.internal.web.security;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;

@@ -30,7 +30,6 @@ limitations under the License.
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
   ">
   <context:annotation-config />
-  <!--<context:component-scan base-package="org.apache.geode.rest.internal.web.*"/>-->
 
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
     <mvc:message-converters register-defaults="false">
@@ -75,5 +74,5 @@ limitations under the License.
     </property>
   </bean>
 
-  <bean class="org.apache.geode.security.RestSecurityConfiguration" />
+  <bean class="org.apache.geode.rest.internal.web.security.RestSecurityConfiguration" />
 </beans>
