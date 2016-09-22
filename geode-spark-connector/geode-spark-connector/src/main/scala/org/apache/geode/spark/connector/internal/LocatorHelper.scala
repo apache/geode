@@ -63,7 +63,8 @@ object LocatorHelper extends Logging {
       try {
         val addr = new InetSocketAddress(host, port)
         val req = new GetAllServersRequest(serverGroup)
-        val res = TcpClient.requestToServer(addr.getAddress, addr.getPort, req, 2000)
+        val tcpClient = new TcpClient();
+        val res = tcpClient.requestToServer(addr.getAddress, addr.getPort, req, 2000)
         if (res != null) {
           import scala.collection.JavaConverters._
           val servers = res.asInstanceOf[GetAllServersResponse].getServers.asInstanceOf[JArrayList[ServerLocation]]
