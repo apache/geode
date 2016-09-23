@@ -73,13 +73,14 @@ import javax.naming.Context;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireCacheException;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
@@ -89,7 +90,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheExistsException;
-import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CacheXmlException;
@@ -139,6 +139,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -159,13 +160,13 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -208,6 +209,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -216,6 +218,7 @@ import org.apache.geode.management.internal.JmxManagerAdvisee;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.management.internal.beans.ManagementListener;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
@@ -227,6 +230,7 @@ import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.redis.GeodeRedisServer;
 
 // @todo somebody Come up with more reasonable values for {@link #DEFAULT_LOCK_TIMEOUT}, etc.
 /**
@@ -572,6 +576,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   private static int clientFunctionTimeout;
 
   private final static Boolean DISABLE_AUTO_EVICTION = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableAutoEviction");
+
+  private static SecurityService securityService = SecurityService.getSecurityService();
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -944,66 +950,96 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   /*****
    * Request the shared configuration from the locator(s) which have the Cluster config service running
-   * Applies the shared configuration to this cache, only if its a GEMFIRE && NON-LOCATOR && NON-CLIENT cache 
    */
-  public void requestAndApplySharedConfiguration() {
+  public ConfigurationResponse requestSharedConfiguration() {
     //Request the shared configuration from the locator(s)
     final DistributionConfig config = this.system.getConfig();
 
-    if (dm instanceof DistributionManager) {
-      if (((DistributionManager) dm).getDMType() != DistributionManager.LOCATOR_DM_TYPE
-          && !isClient
-          && Locator.getLocator() == null
-          ) {
-        
-        boolean useSharedConfiguration = config.getUseSharedConfiguration();
+    if (!(dm instanceof DistributionManager))
+      return null;
 
-        if (useSharedConfiguration) {
-          Map<InternalDistributedMember, Collection<String>> scl = this.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
+    // do nothing if this vm is/has locator or this is a client
+    if( ((DistributionManager)dm).getDMType() == DistributionManager.LOCATOR_DM_TYPE
+      || isClient
+      || Locator.getLocator() !=null )
+      return null;
 
-          //If there are no locators with Shared configuration, that means the system has been started without shared configuration 
-          //then do not make requests to the locators
-          if (!scl.isEmpty()) {
-            String groupsString = config.getGroups();
-            ConfigurationResponse response = null;
-            List<String> locatorConnectionStrings = getSharedConfigLocatorConnectionStringList();
-            
-            try {
-              response = ClusterConfigurationLoader.requestConfigurationFromLocators(ClusterConfigurationLoader.getGroups(groupsString), locatorConnectionStrings);
+    Map<InternalDistributedMember, Collection<String>> scl = this.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
 
-              //log the configuration received from the locator
-              logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_RECEIVED_SHARED_CONFIGURATION_FROM_LOCATORS));
-              logger.info(response.describeConfig());
-              
-              //deploy the Jars
-              ClusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(this, response);
+    //If there are no locators with Shared configuration, that means the system has been started without shared configuration
+    //then do not make requests to the locators
+    if(scl.isEmpty()) {
+      logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_NO_LOCATORS_FOUND_WITH_SHARED_CONFIGURATION));
+      return null;
+    }
 
-              //Apply the xml configuration 
-              ClusterConfigurationLoader.applyClusterConfiguration(this, response, ClusterConfigurationLoader.getGroups(groupsString));
+    String groupsString = config.getGroups();
+    ConfigurationResponse response = null;
+    List<String> locatorConnectionStrings = getSharedConfigLocatorConnectionStringList();
 
-            } catch (ClusterConfigurationNotAvailableException e) {
-              throw new CacheRuntimeException(LocalizedStrings.GemFireCache_SHARED_CONFIGURATION_NOT_AVAILABLE.toLocalizedString(), e) {
-                private static final long serialVersionUID = 1L;
-              };
-            } catch (IOException e) {
-              throw new CacheRuntimeException(LocalizedStrings.GemFireCache_EXCEPTION_OCCURED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION.toLocalizedString(), e) {
-                private static final long serialVersionUID = 1L;
-              };      
-            } catch (ClassNotFoundException e) {
-              throw new CacheRuntimeException(LocalizedStrings.GemFireCache_EXCEPTION_OCCURED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION.toLocalizedString(), e) {
-                private static final long serialVersionUID = 1L;
-              };
-            }
-          } else {
-            logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_NO_LOCATORS_FOUND_WITH_SHARED_CONFIGURATION));
-          }
+    try {
+      response = ClusterConfigurationLoader.requestConfigurationFromLocators(system.getConfig(), locatorConnectionStrings);
+
+      //log the configuration received from the locator
+      logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_RECEIVED_SHARED_CONFIGURATION_FROM_LOCATORS));
+      logger.info(response.describeConfig());
+
+      Configuration clusterConfig = response.getRequestedConfiguration().get(SharedConfiguration.CLUSTER_CONFIG);
+      Properties clusterSecProperties = (clusterConfig==null) ? new Properties():clusterConfig.getGemfireProperties();
+
+      // If not using shared configuration, return null or throw an exception is locator is secured
+      if(!config.getUseSharedConfiguration()){
+        if (clusterSecProperties.containsKey(ConfigurationProperties.SECURITY_MANAGER)) {
+          throw new GemFireConfigException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toLocalizedString());
         } else {
           logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_NOT_USING_SHARED_CONFIGURATION));
+          return null;
         }
       }
+
+      Properties serverSecProperties = config.getSecurityProps();
+      //check for possible mis-configuration
+      if (isMisConfigured(clusterSecProperties, serverSecProperties, ConfigurationProperties.SECURITY_MANAGER)
+       || isMisConfigured(clusterSecProperties, serverSecProperties, ConfigurationProperties.SECURITY_POST_PROCESSOR)) {
+        throw new GemFireConfigException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
+      }
+      return response;
+
+    } catch (ClusterConfigurationNotAvailableException e) {
+      throw new GemFireConfigException(LocalizedStrings.GemFireCache_SHARED_CONFIGURATION_NOT_AVAILABLE.toLocalizedString(), e);
+    } catch (UnknownHostException e) {
+      throw new GemFireConfigException(e.getLocalizedMessage(), e);
     }
   }
-  
+
+  public void deployJarsRecevedFromClusterConfiguration(ConfigurationResponse response){
+    try{
+      ClusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(this, response);
+    } catch (IOException e) {
+      throw new GemFireConfigException(LocalizedStrings.GemFireCache_EXCEPTION_OCCURED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION.toLocalizedString(), e);
+    } catch (ClassNotFoundException e) {
+      throw new GemFireConfigException(LocalizedStrings.GemFireCache_EXCEPTION_OCCURED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION.toLocalizedString(), e);
+    }
+  }
+
+
+  // When called, clusterProps and serverProps and key could not be null
+  public static boolean isMisConfigured(Properties clusterProps, Properties serverProps, String key){
+    String clusterPropValue = clusterProps.getProperty(key);
+    String serverPropValue = serverProps.getProperty(key);
+
+    // if this server prop is not specified, this is always OK.
+    if(StringUtils.isBlank(serverPropValue))
+      return false;
+
+    // server props is not blank, but cluster props is blank, NOT OK.
+    if(StringUtils.isBlank(clusterPropValue))
+      return true;
+
+    // at this point check for eqality
+    return !clusterPropValue.equals(serverPropValue);
+  }
+
   public List<String> getSharedConfigLocatorConnectionStringList() {
     List<String> locatorConnectionStringList = new ArrayList<String>();
     
@@ -1094,13 +1130,21 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
     
     ClassPathLoader.setLatestToDefault();
+
+    //request and check cluster configuration
+    ConfigurationResponse configurationResponse = requestSharedConfiguration();
+    deployJarsRecevedFromClusterConfiguration(configurationResponse);
+
+    // apply the cluster's properties configuration and initialize security using that configuration
+    ClusterConfigurationLoader.applyClusterPropertiesConfiguration(this, configurationResponse, system.getConfig());
+    securityService.initSecurity(system.getConfig().getSecurityProps());
        
     SystemMemberCacheEventProcessor.send(this, Operation.CACHE_CREATE);
     this.resourceAdvisor.initializationGate();
     
     //Register function that we need to execute to fetch available REST service endpoints in DS
     FunctionService.registerFunction(new FindRestEnabledServersFunction());
-    
+
     // moved this after initializeDeclarativeCache because in the future
     // distributed system creation will not happen until we have read
     // cache.xml file.
@@ -1109,18 +1153,19 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     // processing can deliver (region creation, etc.).
     // This call may need to be moved inside initializeDeclarativeCache.
     /** Entry to GemFire Management service **/
-    this.jmxAdvisor.initializationGate();  
+    this.jmxAdvisor.initializationGate();
+
+    // this starts up the ManagementService, register and federate the internal beans
     system.handleResourceEvent(ResourceEvent.CACHE_CREATE, this);
-    
-    
+
     boolean completedCacheXml = false;
-    
+
     initializeServices();
     
     try {
       //Deploy all the jars from the deploy working dir.
       new JarDeployer(this.system.getConfig().getDeployWorkingDir()).loadPreviouslyDeployedJars();
-      requestAndApplySharedConfiguration();
+      ClusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse, system.getConfig());
       initializeDeclarativeCache();
       completedCacheXml = true;
     } finally {
@@ -1954,6 +1999,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   public void close(String reason, Throwable systemFailureCause, boolean keepalive, boolean keepDS) {
+    securityService.close();
+
     if (isClosed()) {
       return;
     }

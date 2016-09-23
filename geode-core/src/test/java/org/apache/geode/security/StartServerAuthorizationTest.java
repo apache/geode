@@ -23,17 +23,17 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.File;
 import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
@@ -44,19 +44,17 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     VM locator = host.getVM(0);
     // set up locator with security
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    this.locatorPort = ports[0];
-    int jmxPort = ports[1];
-    locator.invoke(()->{
+    this.locatorPort = locator.invoke(()->{
       Properties props = new Properties();
       props.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/management/internal/security/cacheServer.json");
       props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
       props.setProperty(MCAST_PORT, "0");
       props.put(JMX_MANAGER, "true");
       props.put(JMX_MANAGER_START, "true");
-      props.put(JMX_MANAGER_PORT, jmxPort+"");
+      props.put(JMX_MANAGER_PORT, 0);
       props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-      Locator.startLocatorAndDS(locatorPort, new File("locator.log"), props);
+      Locator lc = Locator.startLocatorAndDS(locatorPort, new File("locator.log"), props);
+      return lc.getPort();
     });
   }
 

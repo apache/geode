@@ -276,9 +276,6 @@ org/apache/geode/internal/cache/FilterProfile$interestType,false
 org/apache/geode/internal/cache/FilterProfile$operationType,false
 org/apache/geode/internal/cache/ForceReattemptException,true,-595988965679204903,hasHash:boolean,keyHash:int
 org/apache/geode/internal/cache/ForceableLinkedBlockingQueue,true,-6903933977591709194,capacity:int,count:java/util/concurrent/atomic/AtomicInteger,notEmpty:java/util/concurrent/locks/Condition,notFull:java/util/concurrent/locks/Condition,putLock:java/util/concurrent/locks/ReentrantLock,takeLock:java/util/concurrent/locks/ReentrantLock
-org/apache/geode/internal/cache/GemFireCacheImpl$3,true,1,this$0:org/apache/geode/internal/cache/GemFireCacheImpl
-org/apache/geode/internal/cache/GemFireCacheImpl$4,true,1,this$0:org/apache/geode/internal/cache/GemFireCacheImpl
-org/apache/geode/internal/cache/GemFireCacheImpl$5,true,1,this$0:org/apache/geode/internal/cache/GemFireCacheImpl
 org/apache/geode/internal/cache/IdentityArrayList,true,449125332499184497,size:int,wrapped:boolean
 org/apache/geode/internal/cache/IncomingGatewayStatus,true,-4579815367602658353,_memberId:java/lang/String,_socketAddress:java/net/InetAddress,_socketPort:int
 org/apache/geode/internal/cache/InitialImageOperation$GIIStatus,false

@@ -16,6 +16,21 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -28,19 +43,10 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.*;
 import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
-import org.apache.logging.log4j.Logger;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
 
 public class ClusterConfigurationLoader {
   
@@ -54,6 +60,9 @@ public class ClusterConfigurationLoader {
    * @throws ClassNotFoundException 
    */
   public static void deployJarsReceivedFromClusterConfiguration(Cache cache , ConfigurationResponse response) throws IOException, ClassNotFoundException {
+    if(response == null)
+      return;
+
     String []jarFileNames = response.getJarNames();
     byte [][]jarBytes = response.getJars();
     
@@ -74,86 +83,109 @@ public class ClusterConfigurationLoader {
   }
 
   /***
-   * Apply the cache-xml based configuration on this member
+   * Apply the cache-xml cluster configuration on this member
    * @param cache Cache created for this member
    * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
-   * @param groups List of groups this member belongs to.
+   * @param config this member's config.
    */
-  public static void applyClusterConfiguration(Cache cache , ConfigurationResponse response, List<String> groups) {
+  public static void applyClusterXmlConfiguration(Cache cache , ConfigurationResponse response, DistributionConfig config) {
+    if(response == null || response.getRequestedConfiguration().isEmpty())
+      return;
+
+    List<String> groups = getGroups(config);
     Map<String, Configuration> requestedConfiguration = response.getRequestedConfiguration();
 
-    final Properties runtimeProps = new Properties();
     List<String> cacheXmlContentList = new LinkedList<String>();
 
-    if (!requestedConfiguration.isEmpty()) {
+    // apply the cluster config first
+    Configuration clusterConfiguration = requestedConfiguration.get(SharedConfiguration.CLUSTER_CONFIG);
+    if (clusterConfiguration != null) {
+      String cacheXmlContent = clusterConfiguration.getCacheXmlContent();
+      if (!StringUtils.isBlank(cacheXmlContent)) {
+        cacheXmlContentList.add(cacheXmlContent);
+      }
+    }
 
-      //Need to apply the properties before doing a loadCacheXml
-
-      Configuration clusterConfiguration = requestedConfiguration.get(SharedConfiguration.CLUSTER_CONFIG);
-      if (clusterConfiguration != null) {
-        String cacheXmlContent = clusterConfiguration.getCacheXmlContent();
+    // then apply the groups config
+    for (String group : groups) {
+      Configuration groupConfiguration = requestedConfiguration.get(group);
+      if (groupConfiguration != null) {
+        String cacheXmlContent = groupConfiguration.getCacheXmlContent();
         if (!StringUtils.isBlank(cacheXmlContent)) {
           cacheXmlContentList.add(cacheXmlContent);
         }
-        runtimeProps.putAll(clusterConfiguration.getGemfireProperties());
       }
-      
-      requestedConfiguration.remove(SharedConfiguration.CLUSTER_CONFIG);
-      for (String group : groups) {
-        Configuration groupConfiguration = requestedConfiguration.get(group);
-        if (groupConfiguration != null) {
-          String cacheXmlContent = groupConfiguration.getCacheXmlContent();
-          if (!StringUtils.isBlank(cacheXmlContent)) {
-            cacheXmlContentList.add(cacheXmlContent);
-          }
-          runtimeProps.putAll(groupConfiguration.getGemfireProperties());
+    }
+
+    // apply the requested cache xml
+    for (String cacheXmlContent : cacheXmlContentList) {
+      InputStream is = new ByteArrayInputStream(cacheXmlContent.getBytes());
+      try {
+        cache.loadCacheXml(is);
+      } finally {
+        try {
+          is.close();
+        } catch (IOException e) {
         }
       }
-      
-      DistributionConfig config = ((GemFireCacheImpl)cache).getSystem().getConfig();
+    }
+  }
 
-      Set<Object> attNames = runtimeProps.keySet();
+  /***
+   * Apply the gemfire properties cluster configuration on this member
+   * @param cache Cache created for this member
+   * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
+   * @param config this member's config
+   */
+  public static void applyClusterPropertiesConfiguration(Cache cache , ConfigurationResponse response, DistributionConfig config) {
+    if(response == null || response.getRequestedConfiguration().isEmpty())
+      return;
 
-      if (!attNames.isEmpty()) {
-        for (Object attNameObj : attNames) {
-          String attName = (String) attNameObj;
-          String attValue = runtimeProps.getProperty(attName) ;
-          try {
-            config.setAttribute(attName, attValue, ConfigSource.runtime());
-          } catch (IllegalArgumentException e) {
-            logger.info(e.getMessage());
-          } catch (UnmodifiableException e) {
-            logger.info(e.getMessage());
-          }
-        }
+    List<String> groups = getGroups(config);
+    Map<String, Configuration> requestedConfiguration = response.getRequestedConfiguration();
+
+    final Properties runtimeProps = new Properties();
+
+    // apply the cluster config first
+    Configuration clusterConfiguration = requestedConfiguration.get(SharedConfiguration.CLUSTER_CONFIG);
+    if (clusterConfiguration != null) {
+      runtimeProps.putAll(clusterConfiguration.getGemfireProperties());
+    }
+
+    // then apply the group config
+    for (String group : groups) {
+      Configuration groupConfiguration = requestedConfiguration.get(group);
+      if (groupConfiguration != null) {
+        runtimeProps.putAll(groupConfiguration.getGemfireProperties());
       }
+    }
 
-      if (!cacheXmlContentList.isEmpty()) {
-        for (String cacheXmlContent : cacheXmlContentList) {
-          InputStream is = new ByteArrayInputStream(cacheXmlContent.getBytes());
-          try {
-            cache.loadCacheXml(is);
-          } finally {
-            try {
-              is.close();
-            } catch (IOException e) {
-            }
-          }
-        }
+    Set<Object> attNames = runtimeProps.keySet();
+    for (Object attNameObj : attNames) {
+      String attName = (String) attNameObj;
+      String attValue = runtimeProps.getProperty(attName) ;
+      try {
+        config.setAttribute(attName, attValue, ConfigSource.runtime());
+      } catch (IllegalArgumentException e) {
+        logger.info(e.getMessage());
+      } catch (UnmodifiableException e) {
+        logger.info(e.getMessage());
       }
     }
   }
   
   /**
    * Request the shared configuration for group(s) from locator(s) this member is bootstrapped with. 
-   * @param groups The groups this member wants to be part of.
+   * @param config this member's configuration.
    * @return {@link ConfigurationResponse}
    * @throws ClusterConfigurationNotAvailableException 
    * @throws UnknownHostException 
    */
-  public static ConfigurationResponse requestConfigurationFromLocators(List<String> groups, List<String> locatorList) throws ClusterConfigurationNotAvailableException, UnknownHostException {
+  public static ConfigurationResponse requestConfigurationFromLocators(DistributionConfig config, List<String> locatorList) throws ClusterConfigurationNotAvailableException, UnknownHostException {
+    List<String> groups = ClusterConfigurationLoader.getGroups(config);
     ConfigurationRequest request = new ConfigurationRequest();
 
+    request.addGroups(SharedConfiguration.CLUSTER_CONFIG);
     for (String group : groups) {
       request.addGroups(group);
     }
@@ -199,16 +231,15 @@ public class ClusterConfigurationLoader {
 
     return response;
   }
-  
 
- public static List<String> getGroups(String groupString) {
-   List<String> groups = new ArrayList<String>();
-   groups.add(SharedConfiguration.CLUSTER_CONFIG);
-   if (!StringUtils.isBlank(groupString)) {
-     groups.addAll((Arrays.asList(groupString.split(","))));
-   }
-   return groups;
- }
+  private static List<String> getGroups(DistributionConfig config) {
+    String groupString = config.getGroups();
+    List<String> groups = new ArrayList<String>();
+    if (!StringUtils.isBlank(groupString)) {
+      groups.addAll((Arrays.asList(groupString.split(","))));
+    }
+    return groups;
+  }
  
  /***
   * Get the host and port information of the locators 

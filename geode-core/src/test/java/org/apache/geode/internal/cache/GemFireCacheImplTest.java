@@ -19,12 +19,12 @@ package org.apache.geode.internal.cache;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
+import com.jayway.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
-import com.jayway.awaitility.Awaitility;
 
 @Category(UnitTest.class)
 public class GemFireCacheImplTest {
@@ -63,5 +62,57 @@ public class GemFireCacheImplTest {
     } finally {
       gfc.close();
     }
+  }
+
+  @Test
+  public void testIsMisConfigured(){
+    Properties clusterProps = new Properties();
+    Properties serverProps = new Properties();
+
+    // both does not have the key
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+
+    //cluster has the key, not the server
+    clusterProps.setProperty("key", "value");
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+    clusterProps.setProperty("key", "");
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+
+    // server has the key, not the cluster
+    clusterProps.clear();
+    serverProps.clear();
+    serverProps.setProperty("key", "value");
+    assertTrue(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+    serverProps.setProperty("key", "");
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+
+    // server has the key, not the cluster
+    clusterProps.clear();
+    serverProps.clear();
+    clusterProps.setProperty("key", "");
+    serverProps.setProperty("key", "value");
+    assertTrue(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+    serverProps.setProperty("key", "");
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+
+    // server and cluster has the same value
+    clusterProps.clear();
+    serverProps.clear();
+    clusterProps.setProperty("key", "value");
+    serverProps.setProperty("key", "value");
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+    clusterProps.setProperty("key", "");
+    serverProps.setProperty("key", "");
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+
+    // server and cluster has the different value
+    clusterProps.clear();
+    serverProps.clear();
+    clusterProps.setProperty("key", "value1");
+    serverProps.setProperty("key", "value2");
+    assertTrue(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
+    clusterProps.setProperty("key", "value1");
+    serverProps.setProperty("key", "");
+    assertFalse(GemFireCacheImpl.isMisConfigured(clusterProps, serverProps, "key"));
   }
 }

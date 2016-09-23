@@ -16,6 +16,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,13 +85,11 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
 @SuppressWarnings({ "deprecation", "unchecked" })
 public class SharedConfiguration {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   /**
    * Name of the directory where the shared configuration artifacts are stored
    */
@@ -127,7 +127,7 @@ public class SharedConfiguration {
   private final DistributedLockService sharedConfigLockingService;
 
   /**
-   * Gets or creates (if not created) shared configuration lock service 
+   * Gets or creates (if not created) shared configuration lock service
    */
   public static DistributedLockService getSharedConfigLockService(DistributedSystem ds) {
     DistributedLockService sharedConfigDls = DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
@@ -202,7 +202,7 @@ public class SharedConfiguration {
       Configuration configuration = (Configuration) configRegion.get(group);
       if (configuration == null) {
         configuration = new Configuration(group);
-      } 
+      }
       String xmlContent = configuration.getCacheXmlContent();
       if (xmlContent == null || xmlContent.isEmpty()) {
         StringWriter sw = new StringWriter();
@@ -271,8 +271,10 @@ public class SharedConfiguration {
     } else {
       //Write out the existing configuration into the 'shared_config' directory
       //And get deployed jars from other locators.
-      lockSharedConfiguration(); 
-      try {
+      lockSharedConfiguration();
+      putSecurityPropsIntoClusterConfig(configRegion);
+
+       try {
         Set<Entry<String, Configuration>> configEntries = configRegion.entrySet();
 
         for (Entry<String, Configuration> configEntry : configEntries) {
@@ -291,6 +293,23 @@ public class SharedConfiguration {
     }
 
     status.set(SharedConfigurationStatus.RUNNING);
+  }
+
+  private void putSecurityPropsIntoClusterConfig(final Region<String, Configuration> configRegion) {
+    Properties securityProps =  cache.getDistributedSystem().getSecurityProperties();
+    Configuration clusterPropertiesConfig = configRegion.get(SharedConfiguration.CLUSTER_CONFIG);
+    if(clusterPropertiesConfig == null){
+      clusterPropertiesConfig = new Configuration(SharedConfiguration.CLUSTER_CONFIG);
+      configRegion.put(SharedConfiguration.CLUSTER_CONFIG, clusterPropertiesConfig);
+    }
+    // put security-manager and security-post-processor in the cluster config
+    Properties clusterProperties = clusterPropertiesConfig.getGemfireProperties();
+    if (securityProps.containsKey(SECURITY_MANAGER)) {
+      clusterProperties.setProperty(SECURITY_MANAGER, securityProps.getProperty(SECURITY_MANAGER));
+    }
+    if (securityProps.containsKey(SECURITY_POST_PROCESSOR)) {
+      clusterProperties.setProperty(SECURITY_POST_PROCESSOR, securityProps.getProperty(SECURITY_POST_PROCESSOR));
+    }
   }
 
   /**
@@ -328,7 +347,7 @@ public class SharedConfiguration {
       }
 
     }
-    configResponse.setFailedToGetSharedConfig(true); 
+    configResponse.setFailedToGetSharedConfig(true);
 
     return configResponse;
   }
@@ -366,7 +385,7 @@ public class SharedConfiguration {
           configRegion.put(group, configuration);
           writeConfig(configuration);
         }
-      } 
+      }
     }
   }
 
@@ -382,7 +401,7 @@ public class SharedConfiguration {
 
       if (configuration == null) {
         configuration = new Configuration(group);
-      } 
+      }
       String xmlContent = configuration.getCacheXmlContent();
       if (xmlContent == null || xmlContent.isEmpty()) {
         StringWriter sw = new StringWriter();
@@ -638,7 +657,7 @@ public class SharedConfiguration {
           jarNames = (String[])jars[0];
           jarBytes = (byte[][]) jars[1];
           break;
-        } 
+        }
       }
     }
 
@@ -700,7 +719,7 @@ public class SharedConfiguration {
           }
         }
 
-        File [] diskDirs = {diskDir}; 
+        File [] diskDirs = {diskDir};
         cache.createDiskStoreFactory()
         .setDiskDirs(diskDirs)
         .setAutoCompact(true)
@@ -740,10 +759,10 @@ public class SharedConfiguration {
    * @param configName
    * @param configDirectory
    * @return {@link Configuration}
-   * @throws TransformerException 
-   * @throws TransformerFactoryConfigurationError 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
+   * @throws TransformerException
+   * @throws TransformerFactoryConfigurationError
+   * @throws ParserConfigurationException
+   * @throws SAXException
    */
   private Configuration readConfiguration(final String configName, final String configDirectory) throws SAXException, ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException {
     Configuration configuration = new Configuration(configName);
@@ -791,11 +810,11 @@ public class SharedConfiguration {
 
   /**
    * Reads the "shared_config" directory and loads all the cache.xml, gemfire.properties and deployed jars information
-   * @return {@link Map} 
-   * @throws TransformerException 
-   * @throws TransformerFactoryConfigurationError 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
+   * @return {@link Map}
+   * @throws TransformerException
+   * @throws TransformerFactoryConfigurationError
+   * @throws ParserConfigurationException
+   * @throws SAXException
    */
   private Map<String, Configuration> readSharedConfigurationFromDisk() throws SAXException, ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException {
     String[] subdirectoryNames = getSubdirectories(configDirPath);
@@ -812,7 +831,7 @@ public class SharedConfiguration {
   }
 
   /**
-   * Removes the jar files from the given directory     
+   * Removes the jar files from the given directory
    * @param dirPath Path of the configuration directory
    * @param jarNames Names of the jar files
    * @throws IOException
@@ -848,7 +867,7 @@ public class SharedConfiguration {
   }
 
   /**
-   * Writes the 
+   * Writes the
    * @param dirPath target directory , where the jar files are to be written
    * @param jarNames Array containing the name of the jar files.
    * @param jarBytes Array of byte arrays for the jar files.
