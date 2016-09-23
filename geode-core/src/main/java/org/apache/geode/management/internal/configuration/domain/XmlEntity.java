@@ -32,8 +32,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.geode.internal.Assert;
 import org.apache.logging.log4j.Logger;
-import org.springframework.util.Assert;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -155,10 +155,10 @@ public class XmlEntity implements DataSerializable {
    * @since GemFire 8.1
    */
   private final void init() {
-    Assert.hasLength(type, "Type cannot be empty");
-    Assert.hasLength(prefix, "Prefix cannot be empty");
-    Assert.hasLength(namespace, "Namespace cannot be empty");
-    Assert.notNull(attributes, "Attributes cannot be null");
+    Assert.assertTrue(!StringUtils.isBlank(type));
+    Assert.assertTrue(!StringUtils.isBlank(prefix));
+    Assert.assertTrue(!StringUtils.isBlank(namespace));
+    Assert.assertTrue(attributes != null);
 
     if (null == xmlDefinition) {
       xmlDefinition = loadXmlDefinition();

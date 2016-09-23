@@ -30,10 +30,10 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.springframework.util.StringUtils;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.ClassPathLoader;
@@ -221,7 +221,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements PdxInstance, Senda
         //introspect the JSON, does the @type meta-data exist.
         String className = extractTypeMetaData();
         
-        if(StringUtils.hasText(className)) {
+        if(StringUtils.isNotBlank(className)) {
           try {
             String JSON = JSONFormatter.toJSON(this);
             ObjectMapper objMapper = USE_STATIC_MAPPER? mapper : createObjectMapper();
