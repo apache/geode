@@ -48,6 +48,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
+import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -246,15 +247,19 @@ public abstract class AbstractRegionMap implements RegionMap {
 
 
   public final RegionEntry putEntryIfAbsent(Object key, RegionEntry re) {
-    RegionEntry value = (RegionEntry)_getMap().putIfAbsent(key, re);
-    if (value == null && (re instanceof OffHeapRegionEntry) 
+    RegionEntry oldRe = (RegionEntry)_getMap().putIfAbsent(key, re);
+    if (oldRe == null && (re instanceof OffHeapRegionEntry) 
         && _isOwnerALocalRegion() && _getOwner().isThisRegionBeingClosedOrDestroyed()) {
       // prevent orphan during concurrent destroy (#48068)
-      if (_getMap().remove(key, re)) {
-        ((OffHeapRegionEntry)re).release();
+      Object v = re._getValue();
+      if (v != Token.REMOVED_PHASE1 && v != Token.REMOVED_PHASE2
+          && v instanceof StoredObject && ((StoredObject)v).hasRefCount()) {
+        if (_getMap().remove(key, re)) {
+          ((OffHeapRegionEntry)re).release();
+        }
       }
     }
-    return value;
+    return oldRe;
   }
 
   @Override
@@ -640,12 +645,11 @@ public abstract class AbstractRegionMap implements RegionMap {
       while (oldRe != null) {
         synchronized (oldRe) {
           if (oldRe.isRemoved() && !oldRe.isTombstone()) {
-            oldRe = putEntryIfAbsent(key, newRe);
-            if (oldRe != null) {
-              if (_isOwnerALocalRegion()) {
-                _getOwner().getCachePerfStats().incRetries();
-              }
+            if (_isOwnerALocalRegion()) {
+              _getOwner().getCachePerfStats().incRetries();
             }
+            _getMap().remove(key, oldRe);
+            oldRe = putEntryIfAbsent(key, newRe);
           } 
           /*
            * Entry already exists which should be impossible.
@@ -844,10 +848,9 @@ public abstract class AbstractRegionMap implements RegionMap {
           while (!done && oldRe != null) {
             synchronized (oldRe) {
               if (oldRe.isRemovedPhase2()) {
+                owner.getCachePerfStats().incRetries();
+                _getMap().remove(key, oldRe);
                 oldRe = putEntryIfAbsent(key, newRe);
-                if (oldRe != null) {
-                  owner.getCachePerfStats().incRetries();
-                }
               }
               else {
                 boolean acceptedVersionTag = false;
@@ -1104,10 +1107,9 @@ public abstract class AbstractRegionMap implements RegionMap {
                   while (!opCompleted && oldRe != null) {
                     synchronized (oldRe) {
                       if (oldRe.isRemovedPhase2()) {
+                        owner.getCachePerfStats().incRetries();
+                        _getMap().remove(event.getKey(), oldRe);
                         oldRe = putEntryIfAbsent(event.getKey(), newRe);
-                        if (oldRe != null) {
-                          owner.getCachePerfStats().incRetries();
-                        }
                       } else {
                         event.setRegionEntry(oldRe);
 
@@ -1356,6 +1358,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                     && (event.isOriginRemote() || event.getContext() != null || removeRecoveredEntry));
                 if (!re.isRemoved() || createTombstoneForConflictChecks) {
                   if (re.isRemovedPhase2()) {
+                    _getMap().remove(event.getKey(), re);
+                    owner.getCachePerfStats().incRetries();
                     retry = true;
                     continue;
                   }
@@ -1650,10 +1654,9 @@ public abstract class AbstractRegionMap implements RegionMap {
             while (!opCompleted && oldRe != null) {
               synchronized (oldRe) {
                 if (oldRe.isRemovedPhase2()) {
+                  owner.getCachePerfStats().incRetries();
+                  _getMap().remove(key, oldRe);
                   oldRe = putEntryIfAbsent(key, newRe);
-                  if (oldRe != null) {
-                    owner.getCachePerfStats().incRetries();
-                  }
                 }
                 else {
                   try {
@@ -1874,10 +1877,9 @@ public abstract class AbstractRegionMap implements RegionMap {
                     // that is destroying the RE will see the invalidation and not
                     // proceed to phase 2 of removal.
                     if (oldRe.isRemovedPhase2()) {
+                      owner.getCachePerfStats().incRetries();
+                      _getMap().remove(event.getKey(), oldRe);
                       oldRe = putEntryIfAbsent(event.getKey(), newRe);
-                      if (oldRe != null) {
-                        owner.getCachePerfStats().incRetries();
-                      }
                     } else {
                       opCompleted = true;
                       event.setRegionEntry(oldRe);
@@ -2335,10 +2337,9 @@ public abstract class AbstractRegionMap implements RegionMap {
               while (!opCompleted && oldRe != null) {
                 synchronized (oldRe) {
                   if (oldRe.isRemovedPhase2()) {
+                    owner.getCachePerfStats().incRetries();
+                    _getMap().remove(key, oldRe);
                     oldRe = putEntryIfAbsent(key, newRe);
-                    if (oldRe != null) {
-                      owner.getCachePerfStats().incRetries();
-                    }
                   }
                   else {
                     opCompleted = true;
@@ -2711,8 +2712,9 @@ public abstract class AbstractRegionMap implements RegionMap {
             // from the map. otherwise we can append an event to it
             // and change its state
             if (re.isRemovedPhase2()) {
-              re = getOrCreateRegionEntry(owner, event, Token.REMOVED_PHASE1, null, onlyExisting, false);
               _getOwner().getCachePerfStats().incRetries();
+              _getMap().remove(event.getKey(), re);
+              re = getOrCreateRegionEntry(owner, event, Token.REMOVED_PHASE1, null, onlyExisting, false);
               if (re == null) {
                 // this will happen when onlyExisting is true
                 return null;
@@ -3192,10 +3194,9 @@ public abstract class AbstractRegionMap implements RegionMap {
             while (!opCompleted && oldRe != null) {
               synchronized (oldRe) {
                 if (oldRe.isRemovedPhase2()) {
+                  owner.getCachePerfStats().incRetries();
+                  _getMap().remove(key, oldRe);
                   oldRe = putEntryIfAbsent(key, newRe);
-                  if (oldRe != null) {
-                    owner.getCachePerfStats().incRetries();
-                  }
                 }
                 else {
                   opCompleted = true;
