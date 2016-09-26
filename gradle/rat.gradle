@@ -60,6 +60,7 @@ rat {
     '**/*.ipr',
     '**/*.iws',
     '.idea/**',
+    'geode-spark-connector/.idea/**',
     '**/tags',
 
     // text files
