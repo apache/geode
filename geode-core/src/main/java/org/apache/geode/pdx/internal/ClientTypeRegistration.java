@@ -74,15 +74,11 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   private void sendTypeToAllPools(PdxType type, int id, Pool pool) {
-
     try {
       AddPDXTypeOp.execute((ExecutablePool) pool, id, type);
-    } catch (ServerConnectivityException ignore) {
-      logger.debug("Received an exception sending pdx type to pool {}, {}", pool, ignore.getMessage(), ignore);
-      //TODO DAN - is it really safe to ignore this? What if this is the pool
-      //we're about to do a put on? I think maybe we really should pass the context
-      //down to this point, if it is available. Maybe just an optional thread local?
-      //Then we could go straight to that pool to register the type and bail otherwise.
+    } catch (ServerConnectivityException serverConnectivityException) {
+      logger.debug("Received an exception sending pdx type to pool {}, {}", pool, serverConnectivityException.getMessage(), serverConnectivityException);
+      throw serverConnectivityException;
     }
   }
 
@@ -177,12 +173,9 @@ public class ClientTypeRegistration implements TypeRegistration {
   private void sendEnumIdToAllPools(EnumInfo enumInfo, int id, Pool pool) {
     try {
       AddPDXEnumOp.execute((ExecutablePool) pool, id, enumInfo);
-    } catch (ServerConnectivityException ignore) {
-      logger.debug("Received an exception sending pdx type to pool {}, {}", pool, ignore.getMessage(), ignore);
-      //TODO DAN - is it really safe to ignore this? What if this is the pool
-      //we're about to do a put on? I think maybe we really should pass the context
-      //down to this point, if it is available. Maybe just an optional thread local?
-      //Then we could go straight to that pool to register the type and bail otherwise.
+    } catch (ServerConnectivityException serverConnectivityException) {
+      logger.debug("Received an exception sending pdx type to pool {}, {}", pool, serverConnectivityException.getMessage(), serverConnectivityException);
+      throw serverConnectivityException;
     }
   }
 

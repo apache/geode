@@ -61,8 +61,6 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
   private VM server;
   private VM client;
   private Host host;
-  private LocatorLauncher locatorLauncher;
-  private static ServerLauncher serverLauncher;
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
@@ -167,7 +165,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     for (String propertyName : properties.stringPropertyNames()) {
       builder.set(propertyName, properties.getProperty(propertyName));
     }
-    locatorLauncher = builder.setBindAddress(serverHostName)
+    LocatorLauncher locatorLauncher = builder.setBindAddress(serverHostName)
                              .setHostnameForClients(serverHostName)
                              .setMemberName(memberName)
                              .setPort(locatorPort)
@@ -190,7 +188,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
       builder.set(propertyName, properties.getProperty(propertyName));
     }
 
-    serverLauncher = builder.set("locators", serverHostName + "[" + locatorPort + "]")
+    ServerLauncher serverLauncher = builder.set("locators", serverHostName + "[" + locatorPort + "]")
                             .setMemberName(memberName)
                             .set("log-level", "config")
                             .setHostNameForClients(serverHostName)
