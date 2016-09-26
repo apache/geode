@@ -100,12 +100,15 @@ CacheableStringPtr ClientMetadata::getColocatedWith()
   return m_colocatedWith;
 }
 
+// serverLocation should be checked for isPrimary() after this function returns. If there is only primary without secondaries,
+// and tryPrimary=false, we actualy receive a primary although asked for secondary.
 void ClientMetadata::getServerLocation(int bucketId, bool tryPrimary, BucketServerLocationPtr& serverLocation, int8_t& version)
 {  
   //ReadGuard guard (m_readWriteLock);
   checkBucketId(bucketId);
   //BucketServerLocationsType locations = m_bucketServerLocationsList[bucketId];
   if(m_bucketServerLocationsList[bucketId].empty()) {
+	serverLocation = NULLPTR;
     return;
   }
   else if (tryPrimary) {
@@ -130,8 +133,15 @@ void ClientMetadata::getServerLocation(int bucketId, bool tryPrimary, BucketServ
     else {
       version = serverLocation->getVersion();
     }
-    RandGen randgen; 
-    serverLocation = m_bucketServerLocationsList[bucketId].at(randgen((int)m_bucketServerLocationsList[bucketId].size()));
+    if ((int)m_bucketServerLocationsList[bucketId].size() == 1)
+    {
+     return; // no other copies for this bucket. make sure outside that this is actualy a secondary.
+    }
+    RandGen randgen;
+    while (serverLocation->isPrimary())
+    {
+     serverLocation = m_bucketServerLocationsList[bucketId].at(randgen((int)m_bucketServerLocationsList[bucketId].size()));
+    }
   } 
   //return m_bucketServerLocationsList[bucketId].at(0);
 }
