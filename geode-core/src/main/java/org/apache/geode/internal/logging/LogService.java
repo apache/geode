@@ -48,8 +48,9 @@ public class LogService extends LogManager {
   public static final String MAIN_LOGGER_NAME = "org.apache.geode";
   public static final String SECURITY_LOGGER_NAME = "org.apache.geode.security";
   
-  public static final String GEMFIRE_VERBOSE_FILTER = "{GEODE_VERBOSE}";
-  
+  public static final String GEODE_VERBOSE_FILTER = "{GEODE_VERBOSE}";
+  public static final String GEMFIRE_VERBOSE_FILTER = "{GEMFIRE_VERBOSE}";
+
   protected static final String STDOUT = "STDOUT";
 
   private static final PropertyChangeListener propertyChangeListener = new PropertyChangeListenerImpl();

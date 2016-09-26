@@ -26,7 +26,6 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.filter.AbstractFilterable;
@@ -172,7 +171,9 @@ public class Configurator {
       boolean isRoot = loggerConfig.getName().equals("");
       boolean isGemFire = loggerConfig.getName().startsWith(LogService.BASE_LOGGER_NAME);
       boolean hasFilter = loggerConfig.hasFilter();
-      boolean isGemFireVerboseFilter = hasFilter && LogService.GEMFIRE_VERBOSE_FILTER.equals(loggerConfig.getFilter().toString());
+      boolean isGemFireVerboseFilter = hasFilter
+                                       && (LogService.GEODE_VERBOSE_FILTER.equals(loggerConfig.getFilter().toString())
+                                           || LogService.GEMFIRE_VERBOSE_FILTER.equals(loggerConfig.getFilter().toString()));
       
       if (isRoot || isGemFire) {
         // check for Logger Filter
@@ -188,9 +189,7 @@ public class Configurator {
     for (LoggerConfig loggerConfig : config.getLoggers().values()) {
       boolean isRoot = loggerConfig.getName().equals("");
       boolean isGemFire = loggerConfig.getName().startsWith(LogService.BASE_LOGGER_NAME);
-      boolean hasFilter = loggerConfig.hasFilter();
-      boolean isGemFireVerboseFilter = hasFilter && LogService.GEMFIRE_VERBOSE_FILTER.equals(loggerConfig.getFilter().toString());
-      
+
       if (isRoot || isGemFire) {
         // check for AppenderRef Filter
         for (AppenderRef appenderRef : loggerConfig.getAppenderRefs()) {

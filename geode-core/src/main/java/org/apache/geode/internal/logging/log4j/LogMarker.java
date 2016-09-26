@@ -27,9 +27,12 @@ public interface LogMarker {
   /**
    * GEODE_VERBOSE is a parent to all other markers so that they can all be turned off with<br>
    * &ltMarkerFilter marker="GEODE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/&gt
+   *
+   * GEMFIRE_VERBOSE will be deprecated in the near future
    */
-  public static final Marker GEODE_VERBOSE = MarkerManager.getMarker("GEODE_VERBOSE");
-  
+  public static final Marker GEMFIRE_VERBOSE = MarkerManager.getMarker("GEMFIRE_VERBOSE");
+  public static final Marker GEODE_VERBOSE = MarkerManager.getMarker("GEODE_VERBOSE").setParents(GEMFIRE_VERBOSE);
+
   public static final Marker BRIDGE_SERVER = MarkerManager.getMarker("BRIDGE_SERVER").addParents(GEODE_VERBOSE);
   public static final Marker DLS = MarkerManager.getMarker("DLS").addParents(GEODE_VERBOSE);
   
