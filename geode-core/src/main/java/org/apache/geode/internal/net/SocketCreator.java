@@ -73,8 +73,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.util.StringUtils;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
