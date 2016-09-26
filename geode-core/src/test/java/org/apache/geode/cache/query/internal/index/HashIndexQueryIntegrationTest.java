@@ -52,7 +52,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.pdx.PdxInstance;
 
 @Category(IntegrationTest.class)
-public class HashIndexJUnitTest {
+public class HashIndexQueryIntegrationTest {
 
   private QueryService qs;
   private Region region;
@@ -66,31 +66,6 @@ public class HashIndexJUnitTest {
     qs = CacheUtils.getQueryService();
     observer = new MyQueryObserverAdapter();
     QueryObserverHolder.setInstance(observer);
-
-  }
-  
-  @Test
-  public void testInvalidTokensForHash() throws Exception {
-    CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("exampleRegion");
-    region = CacheUtils.getCache().getRegion("/exampleRegion");
-    region.put("0", new Portfolio(0));
-    region.invalidate("0");
-    index = qs.createHashIndex("compact range index", "p.status", "/exampleRegion p");
-    SelectResults results = (SelectResults) qs.newQuery("Select * from /exampleRegion r where r.status='active'").execute();
-    //the remove should have happened
-    assertEquals(0, results.size());
-
-    results = (SelectResults) qs.newQuery("Select * from /exampleRegion r where r.status!='inactive'").execute();
-    assertEquals(0, results.size());
-    
-    HashIndex cindex = (HashIndex)index;
-    Iterator iterator =  cindex.entriesSet.iterator();
-    int count = 0;
-    while (iterator.hasNext()) {
-      count++;
-      iterator.next();
-    }
-    assertEquals("incorrect number of entries in collection", 0, count);
   }
   
   private void createJoinTable(int numEntries) throws Exception {

@@ -262,7 +262,8 @@ public class IndexManager  {
       IndexCreationHelper helper = null;
       boolean isCompactOrHash = false;
       //Hash index not supported for overflow but we "thought" we were so let's maintain backwards compatibility
-      //and create a regular compact range index instead
+      //and create a regular compact range index instead.  This is due to having to reload  entries from overflow just
+      //to recalculate the index key for the entry for comparisons during query.
       if (indexType == IndexType.HASH && isOverFlowRegion()) {
         indexType = IndexType.FUNCTIONAL;
       }

@@ -16,6 +16,7 @@
  */
 
 package org.apache.geode.cache.query.internal.index;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -1475,6 +1476,15 @@ public class CompactRangeIndex extends AbstractIndex {
 
         doNestedIterations(0, add, context);
 
+      } catch (TypeMismatchException tme) {
+        if (tme.getRootCause() instanceof EntryDestroyedException) {
+          //This code relies on current implementation of remove mapping, relying on behavior that will force a
+          //crawl through the index to remove the entry if it exists, even if it is not present at the provided key
+          removeMapping(QueryService.UNDEFINED, target);
+        }
+        else {
+          throw new IMQException(tme);
+        }
       } catch (IMQException imqe) {
         throw imqe;
       } catch (Exception e) {

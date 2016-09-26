@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -47,8 +48,6 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.cache.query.internal.AttributeDescriptor;
-import org.apache.geode.cache.query.internal.CompiledComparison;
 import org.apache.geode.cache.query.internal.CompiledIteratorDef;
 import org.apache.geode.cache.query.internal.CompiledPath;
 import org.apache.geode.cache.query.internal.CompiledSortCriterion;
@@ -80,9 +79,6 @@ import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.StoredObject;
-import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.offheap.annotations.Retained;
-import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * A HashIndex is an index that can be used for equal and not equals queries It
@@ -1215,6 +1211,15 @@ public class HashIndex extends AbstractIndex {
         context = createExecutionContext(target);
         doNestedIterations(0, add, context);
 
+      } catch (TypeMismatchException tme) {
+        if (tme.getRootCause() instanceof EntryDestroyedException) {
+          //This code relies on current implementation of remove mapping, relying on behavior that will force a
+          //crawl through the index to remove the entry if it exists, even if it is not present at the provided key
+          entriesSet.remove(QueryService.UNDEFINED, target, -1);
+        }
+        else {
+          throw new IMQException(tme);
+        }
       } catch (IMQException imqe) {
         throw imqe;
       } catch (Exception e) {
@@ -1438,7 +1443,7 @@ public class HashIndex extends AbstractIndex {
       return fromIterators;
     }
 
-    private ExecutionContext createExecutionContext(RegionEntry target) {
+    private ExecutionContext createExecutionContext(RegionEntry target) throws NameResolutionException, TypeMismatchException {
       DummyQRegion dQRegion = new DummyQRegion(rgn);
       dQRegion.setEntry(target);
       Object params[] = { dQRegion };
@@ -1471,9 +1476,6 @@ public class HashIndex extends AbstractIndex {
             .Assert(
                 this.indexResultSetType != null,
                 "IMQEvaluator::evaluate:The StrcutType should have been initialized during index creation");
-      } catch (Exception e) {
-        e.printStackTrace(System.out);
-        throw new Error("Unable to reevaluate, this should not happen");
       } finally {
 
       }
@@ -1484,25 +1486,25 @@ public class HashIndex extends AbstractIndex {
       Object value = object;
       
       ExecutionContext newContext = null;
-
-      if (object instanceof RegionEntry) {
-        RegionEntry regionEntry = (RegionEntry) object;
-        newContext = createExecutionContext(regionEntry);
-        value = getTargetObjectForUpdate(regionEntry);
-      }
-
-      // context we use is the update context, from IMQEvaluator
-      List iterators = newContext.getCurrentIterators();
-      RuntimeIterator itr = (RuntimeIterator) iterators.get(0);
-      itr.setCurrent(value);
-
       Object key = null;
       try {
+        if (object instanceof RegionEntry) {
+          RegionEntry regionEntry = (RegionEntry) object;
+          newContext = createExecutionContext(regionEntry);
+          value = getTargetObjectForUpdate(regionEntry);
+        }
+
+        // context we use is the update context, from IMQEvaluator
+        List iterators = newContext.getCurrentIterators();
+        RuntimeIterator itr = (RuntimeIterator) iterators.get(0);
+        itr.setCurrent(value);
+
         key = this.indexedExpr.evaluate(newContext);
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
           logger.debug("Could not reevaluate key for hash index");
         }
+        throw new Error("Could not reevaluate key for hash index", e);
       }
       
       if (key == null) {
