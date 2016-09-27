@@ -30,6 +30,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -43,9 +45,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.AvailablePort;
@@ -62,48 +67,39 @@ import org.apache.geode.util.test.TestUtil;
 @Category(IntegrationTest.class)
 public class JSSESocketJUnitTest {
 
-  public
+  private static volatile boolean factoryInvoked;
+
+  private ServerSocket acceptor;
+  private Socket server;
+  private int randport;
+
   @Rule
-  TestName name = new TestName();
+  public TestName name = new TestName();
 
-  private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
-
-  ServerSocket acceptor;
-  Socket server;
-
-  static ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-  private int randport = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+  @Rule
+  public SystemOutRule systemOutRule = new SystemOutRule();
 
   @Before
   public void setUp() throws Exception {
-    System.out.println("\n\n########## setup " + name.getMethodName() + " ############\n\n");
-    server = null;
-    acceptor = null;
-    baos.reset();
+    randport = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
   }
 
   @After
   public void tearDown() throws Exception {
-    System.out.println("\n\n########## teardown " + name.getMethodName() + " ############\n\n");
-
     if (server != null) {
       server.close();
     }
     if (acceptor != null) {
       acceptor.close();
     }
-    System.out.println(baos.toString());
     SocketCreatorFactory.close();
   }
 
-  //----- test methods ------
-
   @Test
   public void testSSLSocket() throws Exception {
-    final Object[] receiver = new Object[1];
+    systemOutRule.mute().enableLog();
 
-    TestAppender.create();
+    final Object[] receiver = new Object[1];
 
     // Get original base log level
     Level originalBaseLevel = LogService.getBaseLogLevel();
@@ -136,7 +132,7 @@ public class JSSESocketJUnitTest {
       Socket client = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).connectForServer(InetAddress.getByName("localhost"), randport);
 
       ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-      String expected = new String("testing " + name.getMethodName());
+      String expected = "testing " + name.getMethodName();
       oos.writeObject(expected);
       oos.flush();
 
@@ -144,27 +140,19 @@ public class JSSESocketJUnitTest {
 
       client.close();
       serverSocket.close();
-      if (expected.equals(receiver[0])) {
-        System.out.println("received " + receiver[0] + " as expected.");
-      } else {
-        throw new Exception("Expected \"" + expected + "\" but received \"" + receiver[0] + "\"");
+      assertEquals("Expected \"" + expected + "\" but received \"" + receiver[0] + "\"", expected, receiver[0]);
+
+      String stdOut = systemOutRule.getLog();
+      int foundExpectedString = 0;
+
+      Pattern pattern = Pattern.compile(".*peer CN=.*");
+      Matcher matcher = pattern.matcher(stdOut);
+      while (matcher.find()) {
+        foundExpectedString++;
       }
 
-      String logOutput = baos.toString();
-      StringReader sreader = new StringReader(logOutput);
-      LineNumberReader reader = new LineNumberReader(sreader);
-      int peerLogCount = 0;
-      String line = null;
-      while ((line = reader.readLine()) != null) {
+      assertEquals(2, foundExpectedString);
 
-        if (line.matches(".*peer CN=.*")) {
-          System.out.println("Found peer log statement.");
-          peerLogCount++;
-        }
-      }
-      if (peerLogCount != 2) {
-        throw new Exception("Expected to find to peer identities logged.");
-      }
     } finally {
       // Reset original base log level
       LogService.setBaseLogLevel(originalBaseLevel);
@@ -198,22 +186,7 @@ public class JSSESocketJUnitTest {
     }
   }
 
-  static boolean factoryInvoked;
-
-  public static class TSocketFactory implements org.apache.geode.distributed.ClientSocketFactory {
-
-    public TSocketFactory() {
-    }
-
-    public Socket createSocket(InetAddress address, int port) throws IOException {
-      JSSESocketJUnitTest.factoryInvoked = true;
-      throw new IOException("splort!");
-    }
-  }
-
-  //------------- utilities -----
-
-  protected File findTestJKS() {
+  private File findTestJKS() {
     return new File(TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore"));
   }
 
@@ -237,32 +210,14 @@ public class JSSESocketJUnitTest {
     return t;
   }
 
-  public static final class TestAppender extends AbstractAppender {
+  private static class TSocketFactory implements ClientSocketFactory {
 
-    private static final String APPENDER_NAME = TestAppender.class.getName();
-    private final static String SOCKET_CREATOR_CLASSNAME = SocketCreator.class.getName();
-
-    private TestAppender() {
-      super(APPENDER_NAME, null, PatternLayout.createDefaultLayout());
-      start();
+    public TSocketFactory() {
     }
 
-    public static Appender create() {
-      Appender appender = new TestAppender();
-      Logger socketCreatorLogger = (Logger) LogManager.getLogger(SOCKET_CREATOR_CLASSNAME);
-      LoggerConfig config = socketCreatorLogger.getContext().getConfiguration().getLoggerConfig(SOCKET_CREATOR_CLASSNAME);
-      config.addAppender(appender, Level.DEBUG, null);
-      return appender;
-    }
-
-    @SuppressWarnings("synthetic-access")
-    @Override
-    public void append(final LogEvent event) {
-      try {
-        baos.write(new String(event.getMessage().getFormattedMessage() + "\n").getBytes());
-      } catch (IOException ioex) {
-        logger.warn(ioex);
-      }
+    public Socket createSocket(InetAddress address, int port) throws IOException {
+      JSSESocketJUnitTest.factoryInvoked = true;
+      throw new IOException("splort!");
     }
   }
 }
