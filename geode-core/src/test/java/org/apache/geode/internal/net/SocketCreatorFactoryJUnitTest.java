@@ -22,20 +22,27 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(UnitTest.class)
-public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
+@Category(IntegrationTest.class)
+public class SocketCreatorFactoryJUnitTest {
+
+  @After
+  public void tearDown() throws Exception {
+    SocketCreatorFactory.close();
+  }
 
   @Test
-  public void testNewSSLConfigSSLComponentLocator() {
+  public void testNewSSLConfigSSLComponentLocator() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.LOCATOR.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -50,7 +57,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentALL() {
+  public void testNewSSLConfigSSLComponentALL() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.ALL.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -65,7 +72,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentCLUSTER() {
+  public void testNewSSLConfigSSLComponentCLUSTER() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.CLUSTER.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -80,7 +87,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentGATEWAY() {
+  public void testNewSSLConfigSSLComponentGATEWAY() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.GATEWAY.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -95,7 +102,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentHTTP_SERVICE() {
+  public void testNewSSLConfigSSLComponentHTTP_SERVICE() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.WEB.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -110,7 +117,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentJMX() {
+  public void testNewSSLConfigSSLComponentJMX() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.JMX.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -125,7 +132,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentSERVER() {
+  public void testNewSSLConfigSSLComponentSERVER() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.SERVER.getConstant());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -141,7 +148,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentCombinations1() {
+  public void testNewSSLConfigSSLComponentCombinations1() throws Exception {
     Properties properties = configureSSLProperties(commaDelimitedString(SecurableCommunicationChannel.CLUSTER.getConstant(), SecurableCommunicationChannel.SERVER.getConstant()));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -156,9 +163,8 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentCombinations2() {
-    Properties properties = configureSSLProperties(commaDelimitedString(SecurableCommunicationChannel.CLUSTER.getConstant(), SecurableCommunicationChannel.SERVER.getConstant(), SecurableCommunicationChannel.WEB
-      .getConstant(), SecurableCommunicationChannel.JMX.getConstant()));
+  public void testNewSSLConfigSSLComponentCombinations2() throws Exception {
+    Properties properties = configureSSLProperties(commaDelimitedString(SecurableCommunicationChannel.CLUSTER.getConstant(), SecurableCommunicationChannel.SERVER.getConstant(), SecurableCommunicationChannel.WEB.getConstant(), SecurableCommunicationChannel.JMX.getConstant()));
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
@@ -172,7 +178,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentAliasWithMultiKeyStore() {
+  public void testNewSSLConfigSSLComponentAliasWithMultiKeyStore() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.ALL.getConstant());
 
     properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
@@ -193,7 +199,7 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
   }
 
   @Test
-  public void testNewSSLConfigSSLComponentWithoutAliasWithMultiKeyStore() {
+  public void testNewSSLConfigSSLComponentWithoutAliasWithMultiKeyStore() throws Exception {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.ALL.getConstant());
 
     properties.setProperty(SSL_KEYSTORE, TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
@@ -210,27 +216,23 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
     Assert.assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
   }
 
-  private Properties configureSSLProperties(String sslComponents) {
-    Properties properties = new Properties();
-    try {
-      File jks = findTestJKS();
+  private Properties configureSSLProperties(String sslComponents) throws IOException {
+    File jks = findTestJKS();
 
-      properties.setProperty(MCAST_PORT, "0");
-      properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-      properties.setProperty(SSL_CIPHERS, "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-      properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
-      properties.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
-      properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-      properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-      properties.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
-      properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-      properties.setProperty(SSL_ENABLED_COMPONENTS, sslComponents);
-    } catch (IOException e) {
-      Assert.fail("Failed to configure the cluster");
-    }
+    Properties properties = new Properties();
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_CIPHERS, "TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
+    properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, sslComponents);
+
     return properties;
   }
-
 
   private String commaDelimitedString(final String... sslComponents) {
     StringBuilder stringBuilder = new StringBuilder();
@@ -241,20 +243,27 @@ public class SocketCreatorFactoryJUnitTest extends JSSESocketJUnitTest {
     return stringBuilder.substring(0, stringBuilder.length() - 1);
   }
 
+  @Ignore("Test is not implemented")
   @Test
   public void testLegacyServerSSLConfig() {
   }
 
+  @Ignore("Test is not implemented")
   @Test
   public void testLegacyJMXSSLConfig() {
   }
 
+  @Ignore("Test is not implemented")
   @Test
   public void testLegacyGatewaySSLConfig() {
   }
 
+  @Ignore("Test is not implemented")
   @Test
   public void testLegacyHttpServiceSSLConfig() {
   }
 
+  private File findTestJKS() {
+    return new File(TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore"));
+  }
 }

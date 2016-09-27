@@ -32,7 +32,6 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientRegisterInterestAuthDistributedTest extends AbstractSecureServerDUnitTest {
-
   @Test
   public void testRegisterInterest() throws InterruptedException {
     // client1 connects to server as a user not authorized to do any operations
