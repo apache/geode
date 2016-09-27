@@ -48,6 +48,12 @@ subprojects {
         }
     }
 
+    test {
+      def geodeHome = System.getenv('GEODE_HOME');
+      geodeHome = geodeHome != null ? geodeHome : file('../../geode-assembly/build/install/apache-geode/').absolutePath
+      environment 'GEODE_HOME': geodeHome
+    }
+
 
 }
 
