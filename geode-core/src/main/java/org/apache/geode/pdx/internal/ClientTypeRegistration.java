@@ -41,9 +41,6 @@ import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
-/**
- *
- */
 public class ClientTypeRegistration implements TypeRegistration {
 
   private static final Logger logger = LogService.getLogger();
@@ -63,7 +60,7 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         newTypeId = GetPDXIdForTypeOp.execute((ExecutablePool) pool, newType);
         newType.setTypeId(newTypeId);
-        sendTypeToAllPools(newType, newTypeId, pool);
+        sendTypeToPool(newType, newTypeId, pool);
         return newTypeId;
       } catch (ServerConnectivityException e) {
         //ignore, try the next pool.
@@ -73,7 +70,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     throw returnCorrectExceptionForFailure(pools, newTypeId, lastException);
   }
 
-  private void sendTypeToAllPools(PdxType type, int id, Pool pool) {
+  private void sendTypeToPool(PdxType type, int id, Pool pool) {
     try {
       AddPDXTypeOp.execute((ExecutablePool) pool, id, type);
     } catch (ServerConnectivityException serverConnectivityException) {
@@ -102,25 +99,25 @@ public class ClientTypeRegistration implements TypeRegistration {
     if (lastException != null) {
       throw lastException;
     } else {
-      if (pools.isEmpty()) {
-        if (this.cache.isClosed()) {
-          throw this.cache.getCacheClosedException("PDX detected cache was closed", null);
-        } else {
-          throw new CacheClosedException("Client pools have been closed so the PDX type registry can not lookup a type.");
-        }
-      } else {
-        throw new InternalGemFireError("getType: Unable to determine PDXType for id " + typeId + " from existing client to server pools " + pools);
-      }
+      throw returnCorrectExceptionForFailure(pools, typeId, lastException);
     }
   }
 
-  private static Collection<Pool> getAllPools() {
+  private Collection<Pool> getAllPools() {
     Collection<Pool> pools = PoolManagerImpl.getPMI().getMap().values();
+
     for (Iterator<Pool> itr = pools.iterator(); itr.hasNext(); ) {
       PoolImpl pool = (PoolImpl) itr.next();
       if (pool.isUsedByGateway()) {
         itr.remove();
       }
+    }
+
+    if (pools.isEmpty()) {
+      if (this.cache.isClosed()) {
+        throw new CacheClosedException("PDX detected cache was closed");
+      }
+      throw new CacheClosedException("Client pools have been closed so the PDX type registry is not available.");
     }
     return pools;
   }
@@ -160,7 +157,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     for (Pool pool : pools) {
       try {
         int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, enumInfo);
-        sendEnumIdToAllPools(enumInfo, result, pool);
+        sendEnumIdToPool(enumInfo, result, pool);
         return result;
       } catch (ServerConnectivityException e) {
         //ignore, try the next pool.
@@ -170,7 +167,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     throw returnCorrectExceptionForFailure(pools, -1, lastException);
   }
 
-  private void sendEnumIdToAllPools(EnumInfo enumInfo, int id, Pool pool) {
+  private void sendEnumIdToPool(EnumInfo enumInfo, int id, Pool pool) {
     try {
       AddPDXEnumOp.execute((ExecutablePool) pool, id, enumInfo);
     } catch (ServerConnectivityException serverConnectivityException) {
@@ -211,12 +208,6 @@ public class ClientTypeRegistration implements TypeRegistration {
   @Override
   public Map<Integer, PdxType> types() {
     Collection<Pool> pools = getAllPools();
-    if (pools.isEmpty()) {
-      if (this.cache.isClosed()) {
-        throw new CacheClosedException("PDX detected cache was closed");
-      }
-      throw new CacheClosedException("Client pools have been closed so the PDX type registry is not available.");
-    }
 
     Map<Integer, PdxType> types = new HashMap<>();
     for (Pool p : pools) {
@@ -233,12 +224,6 @@ public class ClientTypeRegistration implements TypeRegistration {
   @Override
   public Map<Integer, EnumInfo> enums() {
     Collection<Pool> pools = getAllPools();
-    if (pools.isEmpty()) {
-      if (this.cache.isClosed()) {
-        throw new CacheClosedException("PDX detected cache was closed");
-      }
-      throw new CacheClosedException("Client pools have been closed so the PDX type registry is not available.");
-    }
 
     Map<Integer, EnumInfo> enums = new HashMap<>();
     for (Pool p : pools) {
@@ -277,7 +262,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
-        sendTypeToAllPools(importedType, typeId, pool);
+        sendTypeToPool(importedType, typeId, pool);
         return;
       } catch (ServerConnectivityException e) {
         //ignore, try the next pool.
@@ -294,7 +279,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
-        sendEnumIdToAllPools(importedInfo, enumId, pool);
+        sendEnumIdToPool(importedInfo, enumId, pool);
       } catch (ServerConnectivityException e) {
         //ignore, try the next pool.
         lastException = e;
@@ -308,15 +293,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     if (lastException != null) {
       throw lastException;
     } else {
-      if (pools.isEmpty()) {
-        if (this.cache.isClosed()) {
-          throw this.cache.getCacheClosedException("PDX detected cache was closed", null);
-        } else {
-          throw new CacheClosedException("Client pools have been closed so the PDX type registry can not lookup a type.");
-        }
-      } else {
-        throw new InternalGemFireError("Unable to determine PDXType for id " + typeId);
-      }
+      throw new InternalGemFireError("Unable to determine PDXType for id " + typeId);
     }
   }
 
