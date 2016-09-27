@@ -87,13 +87,13 @@ subprojects {
 }
 
 task cleanExamples(type: GradleBuild) {
-  buildFile = 'geode-examples/build.gradle'
+  buildFile = "${rootProject.projectDir}/geode-examples/build.gradle"
   tasks = ['clean']
 }
 
 clean.dependsOn cleanExamples
 
 task buildExamples(type: GradleBuild, dependsOn: ':geode-assembly:installDist') {
-  buildFile = 'geode-examples/build.gradle'
+  buildFile = "${rootProject.projectDir}/geode-examples/build.gradle"
   tasks = ['build']
 }
