@@ -32,14 +32,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.custom.BasicAppender;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Integration tests with custom log4j2 configuration.
  */
+@Category(UnitTest.class)
 public class LogMarkerJUnitTest {
 
   private String beforeConfigFileProp;
