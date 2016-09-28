@@ -265,7 +265,7 @@ protected:
             m_connManager.getCacheImpl( )->getRegion(request.getRegionName().c_str(), region);
             if (region != NULLPTR) {
               slTmp = NULLPTR;
-              m_clientMetadataService->markPrimaryBucketForTimeoutButLookSecondaryBucket(
+              m_clientMetadataService->markAllBucketsOfServerThatContainsTheKeyAsPrimary(
                   region, request.getKey(), request.getValue(), request.getCallbackArgument(), request.forPrimary(),slTmp, version);              
             }
             return NULL;
