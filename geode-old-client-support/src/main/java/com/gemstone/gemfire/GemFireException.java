@@ -15,7 +15,7 @@
  * limitations under the License.
  */
    
-package org.apache.geode;
+package com.gemstone.gemfire;
 
 /**
  * This is the abstract superclass of exceptions that are thrown to
@@ -27,6 +27,7 @@ package org.apache.geode;
  * 
  * @see org.apache.geode.GemFireCheckedException
  * @see org.apache.geode.cache.CacheRuntimeException
+ * @deprecated use org.apache.geode exceptions, not com.gemstone.gemfire exceptions
  */
 // Implementation note: This class is abstract so that we are forced
 // to have more specific exception types.  We want to avoid using

@@ -50,8 +50,7 @@ private static final long serialVersionUID = -5643670216230359426L;
     super(rgn.getFullPath(), cause);
     this.region = rgn;
   }
-  
-  
+
   /**
    * Return the Region that already exists which prevented region creation.
    * @return the Region that already exists, or null if this exception has

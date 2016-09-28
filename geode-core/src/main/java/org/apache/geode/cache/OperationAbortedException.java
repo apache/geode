@@ -26,7 +26,8 @@ package org.apache.geode.cache;
  * @since GemFire 3.0
  */
 public abstract class OperationAbortedException extends CacheRuntimeException {
-  
+  private static final long serialVersionUID = -8293166225026556949L;
+
   /**
    * Creates a new instance of <code>OperationAbortedException</code> without detail message.
    */
