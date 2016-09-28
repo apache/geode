@@ -47,6 +47,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.util.concurrent.Future;
+import org.apache.geode.cache.*;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.Coder;
@@ -56,16 +57,6 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -231,13 +222,13 @@ public class GeodeRedisServer {
    * The field that defines the name of the {@link Region} which holds all of
    * the strings. The current value of this field is {@value #STRING_REGION}.
    */
-  public static final String STRING_REGION = "__StRiNgS";
+  public static final String STRING_REGION = "ReDiS_StRiNgS";
 
   /**
    * The field that defines the name of the {@link Region} which holds all of
    * the HyperLogLogs. The current value of this field is {@value #HLL_REGION}.
    */
-  public static final String HLL_REGION = "__HlL";
+  public static final String HLL_REGION = "ReDiS_HlL";
 
   /**
    * The field that defines the name of the {@link Region} which holds all of
@@ -425,23 +416,24 @@ public class GeodeRedisServer {
   private void initializeRedis() {
     synchronized (this.cache) {
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
-      InternalRegionArguments ira = new InternalRegionArguments().setInternalRegion(true);
-      AttributesFactory af = new AttributesFactory();
-      af.setScope(Scope.LOCAL);
-      RegionAttributes ra = af.create();
+
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
       Region<String, RedisDataType> redisMetaData;
       GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
       try {
         if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
-          stringsRegion = gemFireCache.createVMRegion(GeodeRedisServer.STRING_REGION, ra, ira);
+          RegionFactory<ByteArrayWrapper, ByteArrayWrapper> regionFactory = gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+          stringsRegion = regionFactory.create(STRING_REGION);
         }
         if ((hLLRegion = cache.getRegion(HLL_REGION)) == null) {
-          hLLRegion = gemFireCache.createVMRegion(HLL_REGION, ra, ira);
+          RegionFactory<ByteArrayWrapper, HyperLogLogPlus> regionFactory = gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+          hLLRegion = regionFactory.create(HLL_REGION);
         }
         if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
+          AttributesFactory af = new AttributesFactory();
           af.addCacheListener(metaListener);
           af.setDataPolicy(DataPolicy.REPLICATE);
+          InternalRegionArguments ira = new InternalRegionArguments().setInternalRegion(true).setIsUsedForMetaRegion(true);
           redisMetaData = gemFireCache.createVMRegion(REDIS_META_DATA_REGION, af.create(), ira);
         }
       } catch (IOException | ClassNotFoundException e) {

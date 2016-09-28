@@ -32,6 +32,7 @@ import org.mockito.MockitoAnnotations;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.DestroyOperationContext;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
@@ -113,6 +114,7 @@ public class Destroy65Test {
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(this.serverConnection.getReplyMessage()).thenReturn(this.responseMessage);
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
+    when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
   }
 
   @Test

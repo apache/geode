@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.cache.query.dunit;
+package org.apache.geode.cache.query.internal.index;
 
 import static org.junit.Assert.*;
 
@@ -27,38 +27,32 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.internal.Op;
+import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.PortfolioPdx;
 
+import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(DistributedTest.class)
-public class CompactRangeIndexQueryDUnitTest extends JUnit4CacheTestCase {
-
-  VM vm0;
-
-  @Override
-  public final void postSetUp() throws Exception {
-    getSystem();
-    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
-      public void run() {
-        getSystem();
-      }
-    });
-    Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-  }
+@Category(IntegrationTest.class)
+public class CompactRangeIndexQueryIntegrationTest {
 
   @Test
   public void multipleNotEqualsClausesOnAPartitionedRegionShouldReturnCorrectResults() throws Exception {
-    Cache cache = getCache();
+    Cache cache = CacheUtils.getCache();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("portfolios");
     int numMatching = 10;
     QueryService qs = cache.getQueryService();
@@ -78,7 +72,8 @@ public class CompactRangeIndexQueryDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void whenAuxFilterWithAnIterableFilterShouldNotCombineFiltersIntoAndJunction() throws Exception {
-    Cache cache = getCache();
+    CacheUtils.startCache();
+    Cache cache = CacheUtils.getCache();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("ExampleRegion");
     QueryService qs = cache.getQueryService();
     qs.createIndex("ExampleRegionIndex", "er['codeNumber','origin']", "/ExampleRegion er");

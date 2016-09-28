@@ -120,7 +120,7 @@ public class SSLConfigurationFactory {
       case WEB: {
         if (sslEnabledComponents.length > 0) {
           sslConfig = setAliasForComponent(sslConfig, getDistributionConfig().getHTTPServiceSSLAlias());
-          sslConfig.setRequireAuth(getDistributionConfig().getSSLHTTPRequireAuthentication());
+          sslConfig.setRequireAuth(getDistributionConfig().getSSLWebRequireAuthentication());
         } else {
           sslConfig = configureLegacyHttpServiceSSL(sslConfig);
         }

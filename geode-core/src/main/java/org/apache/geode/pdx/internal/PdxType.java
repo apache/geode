@@ -37,6 +37,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxFieldAlreadyExistsException;
 import org.apache.geode.pdx.PdxSerializationException;
@@ -74,6 +75,7 @@ public class PdxType implements DataSerializable {
   public PdxType(String name, boolean expectDomainClass) {
     this.className = name;
     this.noDomainClass = !expectDomainClass;
+    swizzleGemFireClassNames();
   }
 
   public PdxType(PdxType copy) {
@@ -88,9 +90,17 @@ public class PdxType implements DataSerializable {
 
   private static final byte NO_DOMAIN_CLASS_BIT = 1;
   private static final byte HAS_DELETED_FIELD_BIT = 2;
+
+  private void swizzleGemFireClassNames() {
+    OldClientSupportService svc = InternalDataSerializer.getOldClientSupportService();
+    if (svc != null) {
+      this.className = svc.processIncomingClassName(this.className);
+    }
+  }
   
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.className = DataSerializer.readString(in);
+    swizzleGemFireClassNames();
     {
       byte bits = in.readByte();
       this.noDomainClass = (bits & NO_DOMAIN_CLASS_BIT) != 0;

@@ -16,31 +16,21 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.cache.EnumListenerEvent;
-import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PoolManagerImpl;
-import org.apache.geode.internal.cache.tier.sockets.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
-import org.apache.geode.pdx.NonPortableClassException;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxSerializable;
-import org.apache.geode.pdx.PdxSerializer;
-import org.apache.geode.pdx.internal.*;
-import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.NotSerializableException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.UTFDataFormatException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -50,11 +40,84 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.CanonicalInstantiator;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.GemFireRethrowable;
+import org.apache.geode.Instantiator;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SerializationException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.ToDataException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.LonerDistributionManager;
+import org.apache.geode.distributed.internal.SerialDistributionMessage;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
+import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
+import org.apache.geode.pdx.NonPortableClassException;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.PdxInputStream;
+import org.apache.geode.pdx.internal.PdxInstanceEnum;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.PdxOutputStream;
+import org.apache.geode.pdx.internal.PdxReaderImpl;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.PdxWriterImpl;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Contains static methods for data serializing instances of internal
@@ -68,6 +131,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static final Logger logger = LogService.getLogger();
   
   private static final Set loggedClasses = new HashSet();
+
   /**
    * Maps Class names to their DataSerializer.  This is used to
    * find a DataSerializer during serialization.
@@ -75,6 +139,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static final ConcurrentHashMap<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<String, DataSerializer>();
   
   private static final String serializationVersionTxt = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "serializationVersion");
+
+  /**
+   * support for old GemFire clients and WAN sites - needed to
+   * enable moving from GemFire to Geode
+   */
+  private static OldClientSupportService oldClientSupportService;
+
   /**
    * Any time new serialization format is added then a new enum needs to be added here.
    * @since GemFire 6.6.2
@@ -606,6 +677,14 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    */
   private static final int ubyteToInt(byte ub) {
     return ub & 0xFF;
+  }
+
+  public static void setOldClientSupportService(final OldClientSupportService svc) {
+    oldClientSupportService = svc;
+  }
+
+  public static OldClientSupportService getOldClientSupportService() {
+    return oldClientSupportService;
   }
 
   /**
@@ -1166,7 +1245,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
     return coll.toArray(new SerializerAttributesHolder[coll.size()]);
   }
-
+  
   /**
    * Persist this class's map to out 
    */
@@ -3509,9 +3588,13 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       throws IOException, ClassNotFoundException {
 
       String className = desc.getName();
+      OldClientSupportService svc = getOldClientSupportService();
+      if (svc != null) {
+        className = svc.processIncomingClassName(className);
+      }
      try {
-        return getCachedClass(className);
-
+       Class clazz = getCachedClass(className);
+       return clazz;
       } catch (ClassNotFoundException ex) {
         return super.resolveClass(desc);
       }

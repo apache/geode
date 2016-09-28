@@ -28,6 +28,7 @@ import org.apache.geode.cache.CacheRuntimeException;
  * @since GemFire 6.0
  */
 public abstract class CancelException extends CacheRuntimeException {
+  public static final long serialVersionUID = 3215578659523282642L;
 
   /**
    * for serialization

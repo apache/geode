@@ -3750,6 +3750,10 @@ public class LocalizedStrings {
 
   public static StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS = new StringId(6643, "The alias options for the SSL options provided seem to be invalid. Please check that all required aliases are set");
 
+  public static StringId GEMFIRE_CACHE_SECURITY_MISCONFIGURATION = new StringId(6644, "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
+  public static StringId GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2 = new StringId(6645, "A server must use cluster configuration when joining a secured cluster.");
+
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**

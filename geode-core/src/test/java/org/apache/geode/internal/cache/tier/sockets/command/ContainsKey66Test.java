@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -87,6 +88,7 @@ public class ContainsKey66Test {
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
     when(this.serverConnection.getResponseMessage()).thenReturn(this.responseMessage);
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
+    when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
 
     when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
 

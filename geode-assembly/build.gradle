@@ -55,6 +55,7 @@ dependencies {
   archives project(':geode-json')  
   archives project(':geode-core')
   archives project(':geode-lucene')
+  archives project(':geode-old-client-support')
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-pulse')
@@ -332,6 +333,9 @@ distributions {
 
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
+        
+        from project(":geode-old-client-support").configurations.runtime
+        from project(":geode-old-client-support").configurations.archives.allArtifacts.files
 
         from configurations.bundled
         from configurations.gfshDependencies

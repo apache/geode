@@ -19,6 +19,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static com.sun.corba.se.impl.util.RepositoryId.cache;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
@@ -540,8 +542,9 @@ public abstract class BaseCommand implements Command {
     writeChunkedException(origMsg, e, isSevere, servConn, originalReponse, 2);
   }
 
-  protected static void writeChunkedException(Message origMsg, Throwable e,
+  protected static void writeChunkedException(Message origMsg, Throwable exception,
       boolean isSevere, ServerConnection servConn, ChunkedMessage originalReponse, int numOfParts) throws IOException {
+    Throwable e = getClientException(servConn, exception);
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     chunkedResponseMsg.setServerConnection(servConn);
     if (originalReponse.headerHasBeenSent()) {
@@ -587,22 +590,34 @@ public abstract class BaseCommand implements Command {
       boolean isSevere, ServerConnection servConn) throws IOException {
     writeException(origMsg, MessageType.EXCEPTION, e, isSevere, servConn);
   }
+  
+  private static Throwable getClientException(ServerConnection servConn, Throwable e) {
+    if (cache instanceof InternalCache) {
+      InternalCache cache = (InternalCache) servConn.getCache();
+      OldClientSupportService svc = cache.getService(OldClientSupportService.class);
+      if (svc != null) {
+        return svc.getThrowable(e, servConn.getClientVersion());
+      }
+    }
+    return e;
+  }
 
   protected static void writeException(Message origMsg, int msgType, Throwable e,
       boolean isSevere, ServerConnection servConn) throws IOException {
+    Throwable theException = getClientException(servConn, e);
     Message errorMsg = servConn.getErrorResponseMessage();
     errorMsg.setMessageType(msgType);
     errorMsg.setNumberOfParts(2);
     errorMsg.setTransactionId(origMsg.getTransactionId());
     if (isSevere) {
-      String msg = e.getMessage();
+      String msg = theException.getMessage();
       if (msg == null) {
-        msg = e.toString();
+        msg = theException.toString();
       }
       logger.fatal(LocalizedMessage.create(LocalizedStrings.BaseCommand_SEVERE_CACHE_EXCEPTION_0, msg));
     }
-    errorMsg.addObjPart(e);
-    errorMsg.addStringPart(getExceptionTrace(e));
+    errorMsg.addObjPart(theException);
+    errorMsg.addStringPart(getExceptionTrace(theException));
     errorMsg.send(servConn);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Wrote exception: {}", servConn.getName(), e.getMessage(), e);
@@ -742,8 +757,9 @@ public abstract class BaseCommand implements Command {
   }
 
   protected static void writeQueryResponseException(Message origMsg,
-      Throwable e, boolean isSevere, ServerConnection servConn)
+      Throwable exception, boolean isSevere, ServerConnection servConn)
       throws IOException {
+    Throwable e = getClientException(servConn, exception);
     ChunkedMessage queryResponseMsg = servConn.getQueryResponseMessage();
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     if (queryResponseMsg.headerHasBeenSent()) {
@@ -799,8 +815,9 @@ public abstract class BaseCommand implements Command {
   }
   
   protected static void writeFunctionResponseException(Message origMsg,
-      int messageType, String message, ServerConnection servConn, Throwable e)
+      int messageType, String message, ServerConnection servConn, Throwable exception)
       throws IOException {
+    Throwable e = getClientException(servConn, exception);
     ChunkedMessage functionResponseMsg = servConn.getFunctionResponseMessage();
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     if (functionResponseMsg.headerHasBeenSent()) {

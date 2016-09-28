@@ -37,7 +37,7 @@ public interface IndexStore {
 
   /**
    * Remove a mapping from the index store
-   * 
+   * If entry at indexKey is not found, we must crawl the index to be sure the region entry does not exist
    * @param indexKey
    * @param re
    */
