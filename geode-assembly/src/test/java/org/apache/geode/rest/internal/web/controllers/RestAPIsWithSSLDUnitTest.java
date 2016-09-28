@@ -325,7 +325,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       sslPropertyConverter(sslProperties, props, SSL_TRUSTSTORE_PASSWORD, null);
       sslPropertyConverter(sslProperties, props, SSL_WEB_ALIAS, null);
       sslPropertyConverter(sslProperties, props, SSL_ENABLED_COMPONENTS, null);
-      sslPropertyConverter(sslProperties, props, SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, null);
+      sslPropertyConverter(sslProperties, props, SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, null);
       sslPropertyConverter(sslProperties, props, SSL_DEFAULT_ALIAS, null);
     }
     return props;
@@ -497,7 +497,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     props.setProperty(SSL_WEB_ALIAS, "httpservicekey");
-    props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    props.setProperty(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL", props);
   }
@@ -512,7 +512,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
-    props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    props.setProperty(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
     props.setProperty(SSL_WEB_ALIAS, "httpservicekey");
     props.setProperty(INVALID_CLIENT_ALIAS, "someAlias");
     String restEndpoint = startInfraWithSSL(props, false);
@@ -663,7 +663,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "SSL");
     props.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-    props.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    props.setProperty(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);

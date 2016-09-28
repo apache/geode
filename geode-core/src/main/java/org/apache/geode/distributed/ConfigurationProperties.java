@@ -691,7 +691,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.1
-   * @deprecated Since Geode 1.0 use {@link #SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION}
+   * @deprecated Since Geode 1.0 use {@link #SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = "http-service-ssl-require-authentication";
@@ -1803,12 +1803,12 @@ public interface ConfigurationProperties {
    */
   String SSL_DEFAULT_ALIAS = "ssl-default-alias";
   /**
-   * The static String definition of the <i>"ssl-http-require-authentication"</i> property
+   * The static String definition of the <i>"ssl-web-require-authentication"</i> property
    *
    * <U>Description</U>If false allows client side's http connection to be authenticated without a 2-way SSL authentication.
    * </p>
    * <U>Default</U>: "false"</p>
    * <U>Since</U>: Geode 1.0
    */
-  String SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION = "ssl-http-require-authentication";
+  String SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = "ssl-web-require-authentication";
 }

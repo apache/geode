@@ -562,7 +562,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private String sslKeyStorePassword = DEFAULT_SSL_KEYSTORE_PASSWORD;
   private String sslTrustStore = DEFAULT_SSL_TRUSTSTORE;
   private String sslTrustStorePassword = DEFAULT_SSL_TRUSTSTORE_PASSWORD;
-  private boolean sslHttpServiceRequireAuthentication = DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION;
+  private boolean sslWebServiceRequireAuthentication = DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 
   private String locatorSSLAlias = DEFAULT_SSL_ALIAS;
 
@@ -782,7 +782,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.sslTrustStorePassword = other.getSSLTrustStorePassword();
     this.sslProperties = other.getSSLProperties();
     this.sslDefaultAlias = other.getSSLDefaultAlias();
-    this.sslHttpServiceRequireAuthentication = other.getSSLHTTPRequireAuthentication();
+    this.sslWebServiceRequireAuthentication = other.getSSLWebRequireAuthentication();
 
 
   }
@@ -2668,13 +2668,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public boolean getSSLHTTPRequireAuthentication() {
-    return sslHttpServiceRequireAuthentication;
+  public boolean getSSLWebRequireAuthentication() {
+    return sslWebServiceRequireAuthentication;
   }
 
   @Override
-  public void setSSLHTTPRequireAuthentication(final boolean requiresAuthenatication) {
-    this.sslHttpServiceRequireAuthentication = requiresAuthenatication;
+  public void setSSLWebRequireAuthentication(final boolean requiresAuthenatication) {
+    this.sslWebServiceRequireAuthentication = requiresAuthenatication;
   }
 
   ///////////////////////  Utility Methods  ///////////////////////
@@ -2760,7 +2760,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
                               .append(httpServiceSSLEnabled, that.httpServiceSSLEnabled)
                               .append(httpServiceSSLRequireAuthentication, that.httpServiceSSLRequireAuthentication)
                               .append(sslRequireAuthentication, that.sslRequireAuthentication)
-                              .append(sslHttpServiceRequireAuthentication, that.sslHttpServiceRequireAuthentication)
+                              .append(sslWebServiceRequireAuthentication, that.sslWebServiceRequireAuthentication)
                               .append(lockMemory, that.lockMemory)
                               .append(modifiable, that.modifiable)
                               .append(name, that.name)
@@ -3032,7 +3032,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
                                       .append(sslKeyStorePassword)
                                       .append(sslTrustStore)
                                       .append(sslTrustStorePassword)
-                                      .append(sslHttpServiceRequireAuthentication)
+                                      .append(sslWebServiceRequireAuthentication)
                                       .append(locatorSSLAlias)
                                       .append(sslDefaultAlias)
                                       .append(sourceMap)

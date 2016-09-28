@@ -961,7 +961,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of trusted certificates.");
     m.put(SSL_TRUSTSTORE_PASSWORD, "Password to unlock the truststore.");
     m.put(SSL_DEFAULT_ALIAS, "The default certificate alias to be used in a multi-key keystore");
-    m.put(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "This property determines is the HTTP service with use mutual ssl authentication.");
+    m.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "This property determines is the HTTP service with use mutual ssl authentication.");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 
