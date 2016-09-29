@@ -28,8 +28,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.logging.log4j.Logger;
-import org.quartz.CronExpression;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 
 import org.apache.geode.GemFireConfigException;
@@ -72,6 +72,7 @@ import org.apache.geode.internal.logging.LogService;
  * <LI>TBD THRESHOLDS
  * 
  */
+@Experimental("The autobalancer may be removed or the API may change in future releases")
 public class AutoBalancer implements Declarable {
   /**
    * Use this configuration to manage out-of-balance audit frequency. If the
@@ -202,10 +203,12 @@ public class AutoBalancer implements Declarable {
       if (schedule == null || schedule.isEmpty()) {
         throw new GemFireConfigException("Missing configuration: " + SCHEDULE);
       }
-      if (!CronExpression.isValidExpression(schedule)) {
-        throw new GemFireConfigException("Invalid schedule: " + schedule);
+
+      try {
+        generator = new CronSequenceGenerator(schedule);
+      } catch(Exception e) {
+        throw new GemFireConfigException("Cron expression could not be parsed: " + schedule, e);
       }
-      generator = new CronSequenceGenerator(schedule);
 
       submitNext();
     }

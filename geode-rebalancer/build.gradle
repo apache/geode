@@ -19,10 +19,10 @@ dependencies {
   provided project(':geode-common')
   provided project(':geode-core')
 
-  compile ('org.quartz-scheduler:quartz:' + project.'quartz.version') {
-    exclude module: 'c3p0'
-    exclude module: 'slf4j-api'
+  compile ('org.springframework:spring-context:' + project.'springframework.version') {
+    exclude module: 'spring-beans'
+    exclude module: 'spring-expression'
+    exclude module: 'spring-aop'
   }
-  compile ('org.springframework:spring-context:' + project.'springframework.version')
   testCompile project(':geode-junit')
 }
