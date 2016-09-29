@@ -348,12 +348,17 @@ public class ManagementAgent {
     final int port = this.config.getJmxManagerPort();
     final String hostname;
     final InetAddress bindAddr;
-    if (this.config.getJmxManagerBindAddress().equals("")) {
+    if (StringUtils.isBlank(this.config.getJmxManagerBindAddress())) {
       hostname = SocketCreator.getLocalHost().getHostName();
       bindAddr = null;
     } else {
       hostname = this.config.getJmxManagerBindAddress();
       bindAddr = InetAddress.getByName(hostname);
+    }
+
+    String jmxManagerHostnameForClients = this.config.getJmxManagerHostnameForClients();
+    if (!StringUtils.isBlank(jmxManagerHostnameForClients)) {
+      System.setProperty("java.rmi.server.hostname", jmxManagerHostnameForClients);
     }
 
     final SocketCreator socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX);
