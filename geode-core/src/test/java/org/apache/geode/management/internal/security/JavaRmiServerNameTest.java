@@ -28,10 +28,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
-public class JavaRmiServerNameJunitTest {
+@Category(IntegrationTest.class)
+public class JavaRmiServerNameTest {
 
   private static final String JMX_HOST = "myHostname";
 
@@ -49,7 +49,7 @@ public class JavaRmiServerNameJunitTest {
     properties.put("jmx-manager-hostname-for-clients", JMX_HOST);
 
     new CacheFactory(properties).create();
-    assertEquals (JMX_HOST, System.getProperty("java.rmi.server.hostname"));
+    assertEquals(JMX_HOST, System.getProperty("java.rmi.server.hostname"));
   }
 
 }
