@@ -16,6 +16,10 @@
  */
 package org.apache.geode.management.internal.cli.i18n;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.text.MessageFormat;
+
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -23,10 +27,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-
-import java.text.MessageFormat;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**-
  *  * Contains 'String' constants used as key to the Localized strings to be used
@@ -1636,7 +1636,7 @@ public class CliStrings {
   public static final String START_LOCATOR__PORT = "port";
   public static final String START_LOCATOR__PORT__HELP = "Port the Locator will listen on.";
   public static final String START_LOCATOR__PROPERTIES = "properties-file";
-  public static final String START_LOCATOR__PROPERTIES__HELP = "The gemfire.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=)."; // TODO:GEODE-1466: update golden file to geode.properties
+  public static final String START_LOCATOR__PROPERTIES__HELP = "The geode.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=)."; // TODO:GEODE-1466: update golden file to geode.properties
   public static final String START_LOCATOR__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_LOCATOR__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Locator's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory (--dir=).";
   public static final String START_LOCATOR__INITIALHEAP = "initial-heap";
@@ -1737,7 +1737,7 @@ public class CliStrings {
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE = ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP = "The total size of off-heap memory specified as off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates whether the size should be interpreted as gigabytes or megabytes. A non-zero size causes that much memory to be allocated from the operating system and reserved for off-heap use.";
   public static final String START_SERVER__PROPERTIES = "properties-file";
-  public static final String START_SERVER__PROPERTIES__HELP = "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory."; // TODO:GEODE-1466: update golden file to geode.properties
+  public static final String START_SERVER__PROPERTIES__HELP = "The geode.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory."; // TODO:GEODE-1466: update golden file to geode.properties
   public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
   public static final String START_SERVER__REDIS_PORT__HELP = "Sets the port that the Geode Redis service listens on for Redis clients.";
   public static final String START_SERVER__REDIS_BIND_ADDRESS = ConfigurationProperties.REDIS_BIND_ADDRESS;
