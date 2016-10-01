@@ -264,6 +264,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
    * the metadata are fetched and then later up one more partition and do some operations on them. It should
    * fetch new fpa. 
    */
+  @Category(FlakyTest.class) // GEODE-1923
   @Test
   public void test_FPAmetadataFetch() {
     

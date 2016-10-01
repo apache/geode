@@ -42,11 +42,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserDUnitTest extends CliCommandTestBase {
 
+  @Category(FlakyTest.class) // GEODE-1579
   @Test
   public void testMultiUser() throws IOException, JSONException, InterruptedException {
     Properties properties = new Properties();

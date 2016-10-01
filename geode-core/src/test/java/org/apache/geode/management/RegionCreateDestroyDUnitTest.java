@@ -41,6 +41,7 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
@@ -92,6 +93,7 @@ public class RegionCreateDestroyDUnitTest extends JUnit4CacheTestCase {
     return props;
   }
 
+  @Category(FlakyTest.class) // GEODE-1922
   @Test
   public void testCreateDestroyValidRegion() throws InterruptedException {
     Cache serverCache = getCache();
@@ -139,6 +141,7 @@ public class RegionCreateDestroyDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-1878
   @Test
   public void testCreateDestroyReservedRegion() throws InterruptedException {
     Cache serverCache = getCache();

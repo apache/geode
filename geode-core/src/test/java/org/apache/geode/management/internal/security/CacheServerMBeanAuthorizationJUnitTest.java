@@ -26,10 +26,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({ IntegrationTest.class, SecurityTest.class })
+@Category({ IntegrationTest.class, SecurityTest.class, FlakyTest.class }) // GEODE-1953
 public class CacheServerMBeanAuthorizationJUnitTest {
 
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);

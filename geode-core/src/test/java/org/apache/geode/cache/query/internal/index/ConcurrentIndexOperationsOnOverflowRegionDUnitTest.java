@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.util.Collection;
 import java.util.Set;
@@ -73,9 +74,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
   public static volatile boolean hooked = false;
 
-  /**
-   *
-   */
+  @Category(FlakyTest.class) // GEODE-1828
   @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnRR() {
     Host host = Host.getHost(0);

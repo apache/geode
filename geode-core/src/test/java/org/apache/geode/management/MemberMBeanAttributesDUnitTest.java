@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.lang.management.ManagementFactory;
 
@@ -105,6 +106,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
     isOSRelatedAttrsOK(managedNodeList.get(0));
   }
   
+  @Category(FlakyTest.class) // GEODE-1482
   @Test
   public void testConfigAttributes() throws Exception {
     initManagement(false);

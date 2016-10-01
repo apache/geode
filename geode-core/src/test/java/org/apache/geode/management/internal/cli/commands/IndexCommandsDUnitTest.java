@@ -333,6 +333,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(VM1Name));
   }
 
+  @Category(FlakyTest.class) // GEODE-1684
   @Test
   public void testCreateAndDestroyIndexOnGroup() {
     setupSystem();
@@ -520,6 +521,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
   }
 
+  @Category(FlakyTest.class) // GEODE-1315
   @Test
   public void testDestroyIndexWithoutIndexName() {
     setupSystem();
@@ -582,6 +584,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying indexes correctly updates the shared configuration.
    */
+  @Category(FlakyTest.class) // GEODE-1954
   @Test
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();

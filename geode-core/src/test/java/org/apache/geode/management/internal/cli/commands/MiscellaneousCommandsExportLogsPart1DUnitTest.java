@@ -36,7 +36,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -104,6 +104,7 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     FileUtil.delete(new File("./testExportLogs" + dir));
   }
 
+  @Category(FlakyTest.class) // GEODE-1477 (http)
   @Test
   public void testExportLogsForMerge() throws IOException {
     setupForExportLogs();

@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -273,6 +274,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest e
    * Ensure that the while executing the function if the servers is down then
    * the execution is failover to other available server
    */
+  @Category(FlakyTest.class) // GEODE-1497
   @Test
   public void testServerFailoverWithTwoServerAliveHA()
       throws InterruptedException {

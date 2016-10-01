@@ -220,6 +220,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-1706
   @Test
   public void testShutDownWithoutTimeout() {
 
@@ -289,7 +290,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(defaultShell.isConnectedAndReady());
   }
 
-  @Category(FlakyTest.class) // GEODE-1385: time sensitive, HeadlessGfsh
+  @Category(FlakyTest.class) // GEODE-1385, 1518: time sensitive, HeadlessGfsh
   @Test
   public void testShutDownForTIMEOUT() {
     setupForShutDown();
@@ -393,6 +394,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(Boolean.FALSE.equals(vm0.invoke(connectedChecker)));
   }
 
+  @Category(FlakyTest.class) // GEODE-1605
   @Test
   public void testChangeLogLevelForMembers() {
     final VM vm0 = Host.getHost(0).getVM(0);

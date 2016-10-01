@@ -527,6 +527,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         getTestMethodName() + "_RR_1", 1000 ));
   }
 
+  @Category(FlakyTest.class) // GEODE-1804
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy3()
       throws Exception {
@@ -624,6 +625,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * receiver configured on remote site. Puts to the local region are in progress.
    * Receiver on remote site is stopped in the middle by closing remote site cache.
    */
+  @Category(FlakyTest.class) // GEODE-1552
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverStopped() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -962,7 +964,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.checkMinimumGatewayReceiverStats( 1, 1 ));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR_1", 8000));
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1364, 1478
   @Test
   public void testReplicatedSerialPropagationToTwoWanSites() throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);

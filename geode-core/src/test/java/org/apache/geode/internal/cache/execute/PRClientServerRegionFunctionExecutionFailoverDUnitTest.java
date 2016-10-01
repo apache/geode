@@ -59,6 +59,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRClientServerTestBase {
@@ -183,6 +184,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
   }
 
   // retry attempts is 2
+  @Category(FlakyTest.class) // GEODE-1806
   @Test
   public void testOnRegionFailoverWithOneServerDownHA()
       throws InterruptedException {

@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.io.IOException;
 
@@ -140,6 +141,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
   /**
    * Enable persistence for the GatewaySender but not the region
    */
+  @Category(FlakyTest.class) // GEODE-1670
   @Test
   public void testPartitionedRegionWithPersistentGatewaySender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

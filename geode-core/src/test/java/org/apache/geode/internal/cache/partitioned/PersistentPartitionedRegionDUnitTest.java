@@ -1467,6 +1467,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Test for bug 41336
    */
+  @Category(FlakyTest.class) // GEODE-1738
   @Test
   public void testCrashDuringBucketCreation() throws Throwable {
     Host host = Host.getHost(0);

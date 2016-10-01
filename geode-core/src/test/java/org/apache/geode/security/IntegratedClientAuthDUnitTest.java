@@ -28,11 +28,13 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientAuthDUnitTest extends AbstractSecureServerDUnitTest {
 
+  @Category(FlakyTest.class) // GEODE-1877
   @Test
   public void authWithCorrectPasswordShouldPass() {
     client1.invoke("logging in super-user with correct password", () -> {
@@ -46,6 +48,7 @@ public class IntegratedClientAuthDUnitTest extends AbstractSecureServerDUnitTest
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-1875
   @Test
   public void authWithIncorrectPasswordShouldFail() {
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
