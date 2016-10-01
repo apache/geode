@@ -35,6 +35,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -120,6 +121,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(errorMessage));
   }
 
+  @Category(FlakyTest.class) // GEODE-1705
   @Test
   public void testCloseDurableCQ() throws Exception{
     setupSystem();

@@ -25,6 +25,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -398,6 +399,7 @@ public class WanCommandCreateGatewayReceiverDUnitTest extends WANCommandTestBase
   /**
    * GatewayReceiver with given attributes on multiple members.
    */
+  @Category(FlakyTest.class) // GEODE-1355
   @Test
   public void testCreateGatewayReceiver_onMultipleMembers() {
 

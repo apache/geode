@@ -19,6 +19,7 @@ package org.apache.geode.redis;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import org.apache.geode.redis.GeodeRedisServer;
@@ -131,6 +132,7 @@ public class HashesJUnitTest {
     assertTrue(retSet.containsAll(keys));
   }
 
+  @Category(FlakyTest.class) // GEODE-1942
   @Test
   public void testHIncrBy() {
     String key = randString();

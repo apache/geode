@@ -17,20 +17,17 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.TYPE_CREATE;
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.cache.ClientSession;
-import org.apache.geode.internal.cache.ha.HARegionQueue;
-import org.apache.geode.internal.cache.ha.HARegionQueueStats;
-import com.jayway.awaitility.Awaitility;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
@@ -51,6 +48,8 @@ import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.ha.HARegionQueueStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -62,6 +61,11 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.jayway.awaitility.Awaitility;
 
 @Category(DistributedTest.class)
 public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
@@ -125,6 +129,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
    * Test that a durable client VM with multiple BridgeClients correctly
    * registers on the server.
    */
+  @Category(FlakyTest.class) // GEODE-1618
   @Test
   public void testMultipleBridgeClientsInSingleDurableVM() {
     // Start a server

@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.util.Map;
 
@@ -68,6 +69,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
     super();
   }
 
+  @Category(FlakyTest.class) // GEODE-1629
   @Test
   public void testMBeanCallback() throws Exception {
 

@@ -49,6 +49,7 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import org.apache.logging.log4j.Level;
@@ -99,6 +100,7 @@ public class MembershipJUnitTest {
    * the membership view, closes one of the managers
    * and makes more assertions.
    */
+  @Category(FlakyTest.class) // GEODE-1550
   @Test
   public void testMultipleManagersInSameProcess() throws Exception {
     

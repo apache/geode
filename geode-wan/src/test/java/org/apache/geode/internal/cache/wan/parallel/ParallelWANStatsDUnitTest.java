@@ -224,6 +224,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     vm3.invoke(() -> WANTestBase.checkGatewayReceiverStats(10, NUM_PUTS, NUM_PUTS ));
   }
   
+  @Category(FlakyTest.class) // GEODE-1384
   @Test
   public void testParallelPropagationHA() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

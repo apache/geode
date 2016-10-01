@@ -31,6 +31,7 @@ import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -206,6 +207,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     return waitCriterion;
   }
 
+  @Category(FlakyTest.class) // GEODE-1764
   @Test
   public void testShowMetricsMember() throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();

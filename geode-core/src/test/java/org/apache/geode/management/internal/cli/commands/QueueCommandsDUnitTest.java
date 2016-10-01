@@ -35,6 +35,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -69,6 +70,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     disconnectAllFromDS();
   }
 
+  @Category(FlakyTest.class) // GEODE-1429
   @Test
   public void testAsyncEventQueue() throws IOException {
     final String queue1Name = "testAsyncEventQueue1";

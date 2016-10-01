@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -384,6 +384,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
    * As this is the case of HA then system should retry the function execution. After 5th attempt
    * function will send Boolean as last result.
    */
+  @Category(FlakyTest.class) // GEODE-1932
   @Test
   public void testOnServerExecution_FunctionInvocationTargetException() {
     createScenario();

@@ -73,6 +73,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the client connection pool in GemFire.
@@ -5749,6 +5750,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * Now confirm that a tx done in a peer of a server (the server having
    * an empty region and wanting all events) sends the tx to its clients
    */
+  @Category(FlakyTest.class) // GEODE-1717
   @Test
   public void test038Bug39526part2() throws CacheException, InterruptedException {
     disconnectAllFromDS();

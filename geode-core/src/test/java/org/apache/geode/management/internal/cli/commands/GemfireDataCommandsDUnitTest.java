@@ -832,6 +832,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-1249
   public void testSimplePutIfAbsentCommand() {
     final String keyPrefix = "testKey";
     final String valuePrefix = "testValue";
@@ -892,6 +893,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
   }
 
+  @Category(FlakyTest.class) // GEODE-1496 (http)
   @Test
   public void testSimpleRemoveCommand() {
     final String keyPrefix = "testKey";
@@ -1120,6 +1122,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1822
   @Test
   public void testGetLocateEntryLocationsForPR() {
     final String keyPrefix = "testKey";
@@ -1334,6 +1337,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1430
   @Test
   public void testPutJsonKeys() {
     final String keyPrefix = "testKey";
@@ -1534,6 +1538,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
+  @Category(FlakyTest.class) // GEODE-1404
   @Test
   public void testImportExportData() throws InterruptedException, IOException {
     final String regionName = "Region1";
@@ -1832,6 +1837,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1561
   @Test
   public void testSimulateForEntireDS() {
     setupTestRebalanceForEntireDS();
@@ -1880,6 +1886,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1487
   @Test
   public void testRebalanceForEntireDS() {
     setupTestRebalanceForEntireDS();

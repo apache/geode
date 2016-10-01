@@ -36,6 +36,8 @@ import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.Be
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+
 import com.jayway.awaitility.Awaitility;
 
 import org.junit.Test;
@@ -66,6 +68,7 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
     putEntriesAndValidateResultsWithRedundancy();
   }
 
+  @Category(FlakyTest.class) // GEODE-1956
   @Test
   public void returnCorrectResultsWhenCloseCacheHappensOnIndexUpdate() throws InterruptedException {
     dataStore1.invoke(() -> {
@@ -80,6 +83,7 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
     dataStore1.invoke(() -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
   }
 
+  @Category(FlakyTest.class) // GEODE-1824
   @Test
   public void returnCorrectResultsWhenCloseCacheHappensOnPartialIndexWrite() throws InterruptedException {
     final DistributedMember member2 = dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());

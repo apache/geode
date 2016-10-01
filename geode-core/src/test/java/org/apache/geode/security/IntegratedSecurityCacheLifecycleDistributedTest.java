@@ -34,6 +34,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -78,6 +79,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
     });
   }
 
+  @Category(FlakyTest.class) // GEODE-1662
   @Test
   public void initAndCloseTest() throws Exception {
     connect();

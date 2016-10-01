@@ -93,6 +93,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests putAll for c/s. Also tests removeAll
@@ -3508,6 +3509,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
   /**
    * basically same test as testVersionsOnClientsWithNotificationsOnly but also do a removeAll
    */
+  @Category(FlakyTest.class) // GEODE-1419
   @Test
   public void testRAVersionsOnClientsWithNotificationsOnly() {
     final String title = "testRAVersionsInClients";

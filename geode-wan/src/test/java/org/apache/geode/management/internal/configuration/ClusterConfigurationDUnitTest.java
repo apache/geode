@@ -51,6 +51,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -113,6 +114,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     jarFileNames.clear();
   }
 
+  @Category(FlakyTest.class) // GEODE-1335
   @Test
   public void testConfigDistribution() throws Exception {
     addIgnoredException("could not get remote locator");

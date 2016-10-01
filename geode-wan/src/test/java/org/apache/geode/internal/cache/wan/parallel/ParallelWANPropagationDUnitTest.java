@@ -498,7 +498,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
       getTestMethodName()+"_child2", 0 ));
   }
 
-  
+  @Category(FlakyTest.class) // GEODE-1312  
   @Test
   public void testParallelPropagationWithOverflow() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

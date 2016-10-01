@@ -1274,7 +1274,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * thus making the query data and region data inconsistent.
    * @throws Exception
    */
-  @Category(FlakyTest.class) // GEODE-1181: random ports, eats exceptions (fixed some), async behavior
+  @Category(FlakyTest.class) // GEODE-1181, 1253: random ports, eats exceptions (fixed some), async behavior
   @Test
   public void testEventsDuringQueryExecution() throws Exception {
     final Host host = Host.getHost(0);

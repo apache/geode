@@ -66,6 +66,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServerTestBase {
@@ -359,6 +360,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.serverMultiKeyExecution_SendException( isByName));
   }
   
+  @Category(FlakyTest.class) // GEODE-1595
   @Test
   public void testserverMultiKeyExecution_ThrowException(){
     createScenario();

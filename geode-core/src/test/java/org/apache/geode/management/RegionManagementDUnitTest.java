@@ -61,6 +61,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class checks and verifies various data and operations exposed through
@@ -123,6 +124,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
 
+  @Category(FlakyTest.class) // GEODE-1538
   @Test
   public void testDistributedRegion() throws Exception {
 

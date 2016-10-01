@@ -23,6 +23,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -402,6 +403,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1395
   @Test
   public void testGatewayReceiverStatus_OnMember(){
 

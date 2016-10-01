@@ -1425,7 +1425,7 @@ private void waitForAsyncQueueToGetEmpty() {
    * killed and subsequently vm3 is brought up. Buckets are now rebalanced
    * between vm1 & vm3.
    */
-  @Category(FlakyTest.class) // GEODE-688 & GEODE-713: random ports, thread sleeps, async actions
+  @Category(FlakyTest.class) // GEODE-688: random ports, thread sleeps, async actions
   @Test
   public void testParallelAsyncEventQueueHA_Scenario2() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));

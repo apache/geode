@@ -204,6 +204,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Just make sure there are no unexpected server crashes
    */
+  @Category(FlakyTest.class) // GEODE-1697
   @Test
   public void testConcOps() throws Exception {
 

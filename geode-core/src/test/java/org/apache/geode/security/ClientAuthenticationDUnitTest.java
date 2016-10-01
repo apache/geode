@@ -51,6 +51,7 @@ public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase 
     doTestInvalidCredentials(false);
   }
 
+  @Category(FlakyTest.class) // GEODE-1683
   @Test
   public void testInvalidAuthInit() throws Exception {
     doTestInvalidAuthInit(false);

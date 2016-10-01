@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -961,6 +962,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1251
   @Test
   public void testCqResultsCachingWithFailOver() throws Exception
   {

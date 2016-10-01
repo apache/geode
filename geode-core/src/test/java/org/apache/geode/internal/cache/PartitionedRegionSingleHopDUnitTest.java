@@ -726,6 +726,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
 
+  @Category(FlakyTest.class) // GEODE-1763
   @Test
   public void testMetadataIsSameOnAllServersAndClients() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));

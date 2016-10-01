@@ -36,6 +36,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -113,6 +114,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
     jarFileNames = null;
   }
 
+  @Category(FlakyTest.class) // GEODE-1606
   @Test
   public void testStartServerAndExecuteCommands() throws Exception {
     final HeadlessGfsh gfsh = new HeadlessGfsh("gfsh2", 300, this.gfshDir);

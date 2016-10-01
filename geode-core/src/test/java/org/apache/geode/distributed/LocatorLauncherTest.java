@@ -20,6 +20,7 @@ import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import joptsimple.OptionException;
 import org.junit.Rule;
@@ -128,6 +129,7 @@ public class LocatorLauncherTest {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1308
   @Test(expected = IllegalArgumentException.class)
   public void testSetBindAddressToNonLocalHost() {
     try {

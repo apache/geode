@@ -134,6 +134,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     assertEquals(1, createList2.size());
   }
 
+  @Category(FlakyTest.class) // GEODE-1148
   @Test
   public void testReplicatedSerialPropagationLoopBack3SitesLoop() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

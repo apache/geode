@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.util.Map;
 
@@ -118,6 +119,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   }
   
+  @Category(FlakyTest.class) // GEODE-1603
   @Test
   public void testReceiverMBean() throws Exception {
 

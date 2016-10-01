@@ -16,19 +16,13 @@
  */
 package org.apache.geode.management;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,17 +32,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.cache.query.dunit.QueryAPITestPartitionResolver;
 import org.apache.geode.cache.query.dunit.QueryUsingFunctionContextDUnitTest;
-import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -68,10 +58,13 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * 
@@ -428,6 +421,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     });
   }
   
+  @Category(FlakyTest.class) // GEODE-1539
   @Test
   public void testMemberWise() throws Exception {
 
