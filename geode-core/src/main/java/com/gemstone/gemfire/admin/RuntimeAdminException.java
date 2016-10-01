@@ -14,36 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-   
+
 package com.gemstone.gemfire.admin;
 
 /**
  * A <code>RuntimeAdminException</code> is thrown when a runtime errors occurs
- * during administration or monitoring of GemFire. 
+ * during administration or monitoring of GemFire.
  *
  * @since GemFire     3.5
- *
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
-public class RuntimeAdminException 
-extends com.gemstone.gemfire.GemFireException {
+public class RuntimeAdminException
+        extends com.gemstone.gemfire.GemFireException {
 
-  private static final long serialVersionUID = -7512771113818634005L;
+    private static final long serialVersionUID = -7512771113818634005L;
 
-  public RuntimeAdminException() {
-    super();
-  }
+    public RuntimeAdminException() {
+        super();
+    }
 
-  public RuntimeAdminException(String message) {
-    super(message);
-  }
+    public RuntimeAdminException(String message) {
+        super(message);
+    }
 
-  public RuntimeAdminException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    public RuntimeAdminException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-  public RuntimeAdminException(Throwable cause) {
-    super(cause);
-  }
-    
+    public RuntimeAdminException(Throwable cause) {
+        super(cause);
+    }
+
 }

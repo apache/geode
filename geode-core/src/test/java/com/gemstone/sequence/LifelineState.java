@@ -61,33 +61,33 @@ public class LifelineState {
 
     public void paint(Graphics2D g, StateColorMap colorMap) {
         Rectangle bounds = g.getClipBounds();
-        if(startY > bounds.getMaxY()  || startY+height <bounds.getMinY()) {
+        if (startY > bounds.getMaxY() || startY + height < bounds.getMinY()) {
             return;
         }
-        
+
         int x = line.getX();
-        int width  = line.getWidth();
+        int width = line.getWidth();
 
         Color color = colorMap.getColor(stateName);
         g.setColor(color);
         g.fillRoundRect(x, startY, width, height, ARC_SIZE, ARC_SIZE);
         g.setColor(Color.BLACK);
     }
-    
-    public void highlight(Graphics2D g) {
-      Rectangle bounds = g.getClipBounds();
-      if(startY > bounds.getMaxY()  || startY+height <bounds.getMinY()) {
-          return;
-      }
-      
-      int x = line.getX();
-      int width  = line.getWidth();
 
-      g.drawRoundRect(x, startY, width, height, ARC_SIZE, ARC_SIZE);
+    public void highlight(Graphics2D g) {
+        Rectangle bounds = g.getClipBounds();
+        if (startY > bounds.getMaxY() || startY + height < bounds.getMinY()) {
+            return;
+        }
+
+        int x = line.getX();
+        int width = line.getWidth();
+
+        g.drawRoundRect(x, startY, width, height, ARC_SIZE, ARC_SIZE);
     }
 
     public void resize(double scale, long base) {
-        startY = (int)  ((startTime - base) * scale);
+        startY = (int) ((startTime - base) * scale);
         height = (int) ((endTime - startTime) * scale);
     }
 
@@ -96,19 +96,19 @@ public class LifelineState {
     }
 
     public Lifeline getLine() {
-      return line;
+        return line;
     }
 
     public void addInboundArrow(Arrow arrow) {
-      inboundArrows.add(arrow);
+        inboundArrows.add(arrow);
     }
 
     public Set<Arrow> getInboundArrows() {
-      return inboundArrows;
+        return inboundArrows;
     }
-    
+
     @Override
     public String toString() {
-      return line.getName() + "@" + startTime + ":" + stateName;
+        return line.getName() + "@" + startTime + ":" + stateName;
     }
 }

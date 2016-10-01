@@ -31,7 +31,7 @@ import static java.lang.Math.random;
  */
 public class StateColorMap {
     private Map<Object, Color> colors = new HashMap<Object, Color>();
-    private static Color[] PREDEFINED_COLORS = new Color[] { Color.BLUE, Color.BLACK, Color.PINK, Color.CYAN, Color.ORANGE, Color.GREEN};
+    private static Color[] PREDEFINED_COLORS = new Color[]{Color.BLUE, Color.BLACK, Color.PINK, Color.CYAN, Color.ORANGE, Color.GREEN};
 
     private ColorList colorList = new ColorList();
 
@@ -44,7 +44,7 @@ public class StateColorMap {
 
     public Color getColor(Object state) {
         Color color = colors.get(state);
-        if(color == null) {
+        if (color == null) {
             color = colorList.nextColor();
             colors.put(state, color);
         }
@@ -56,10 +56,10 @@ public class StateColorMap {
         int colorIndex;
 
         public Color nextColor() {
-            if(colorIndex < PREDEFINED_COLORS.length) {
+            if (colorIndex < PREDEFINED_COLORS.length) {
                 return PREDEFINED_COLORS[colorIndex++];
             } else {
-                return Color.getHSBColor((float)random(), (float)random(), (float)random());
+                return Color.getHSBColor((float) random(), (float) random(), (float) random());
             }
         }
     }

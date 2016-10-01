@@ -45,217 +45,222 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * @since GemFire 6.5
  */
 public interface GemFireCache extends RegionService {
-  /** Returns the name of this cache.
-   * This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
-   * @return the String name of this cache
-   */
-  public String getName();
-  /**
-   * Returns the distributed system used by this cache.
-   * This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
-   */
-  public DistributedSystem getDistributedSystem();
-  /**
-   * Returns the <code>ResourceManager</code> for managing this cache's 
-   * resources.
-   * 
-   * @return <code>ResourceManager</code> for managing this cache's resources
-   * @since GemFire 6.0
-   */
-  public ResourceManager getResourceManager();
+    /**
+     * Returns the name of this cache.
+     * This method does not throw
+     * <code>CacheClosedException</code> if the cache is closed.
+     *
+     * @return the String name of this cache
+     */
+    public String getName();
 
-  /**
-   * Sets the "copy on read" feature for cache read operations.
-   *
-   * @since GemFire 4.0
-   */
-  public void setCopyOnRead(boolean copyOnRead);
+    /**
+     * Returns the distributed system used by this cache.
+     * This method does not throw
+     * <code>CacheClosedException</code> if the cache is closed.
+     */
+    public DistributedSystem getDistributedSystem();
 
-  /**
-   * Indicates whether the "copy on read" is enabled for this cache.
-   * 
-   * @return true if "copy on read" is enabled, false otherwise.
-   *
-   * @since GemFire 4.0
-   */
-  public boolean getCopyOnRead();
+    /**
+     * Returns the <code>ResourceManager</code> for managing this cache's
+     * resources.
+     *
+     * @return <code>ResourceManager</code> for managing this cache's resources
+     * @since GemFire 6.0
+     */
+    public ResourceManager getResourceManager();
 
-  /**
-   * Returns the <code>RegionAttributes</code> with the given
-   * <code>id</code> or <code>null</code> if no
-   * <code>RegionAttributes</code> with that id exists.
-   *
-   * @see #setRegionAttributes
-   *
-   * @since GemFire 4.1
-   */
-  public <K,V> RegionAttributes<K,V> getRegionAttributes(String id);
+    /**
+     * Sets the "copy on read" feature for cache read operations.
+     *
+     * @since GemFire 4.0
+     */
+    public void setCopyOnRead(boolean copyOnRead);
 
-  /**
-   * Sets the <code>id</code> of the given
-   * <code>RegionAttributes</code>.  If a region attributes named
-   * <code>name</code> already exists, the mapping will be overwritten
-   * with <code>attrs</code>.  However, changing the mapping will not
-   * effect existing regions.
-   *
-   * @param id
-   *        The id of the region attributes
-   * @param attrs
-   *        The attributes to associate with <code>id</code>.  If
-   *        <code>attrs</code> is <code>null</code>, any existing
-   *        <code>RegionAttributes</code> associated with
-   *        <code>id</code> will be removed.
-   *
-   * @see #getRegionAttributes
-   *
-   * @since GemFire 4.1
-   */
-  public <K,V> void setRegionAttributes(String id, RegionAttributes<K,V> attrs);
+    /**
+     * Indicates whether the "copy on read" is enabled for this cache.
+     *
+     * @return true if "copy on read" is enabled, false otherwise.
+     * @since GemFire 4.0
+     */
+    public boolean getCopyOnRead();
 
-  /**
-   * Returns an unmodifiable mapping of ids to region attributes.  The
-   * keys of the map are {@link String}s and the values of the map are
-   * {@link RegionAttributes}.
-   *
-   * @since GemFire 4.1
-   */
-  public <K,V> Map<String, RegionAttributes<K,V>> listRegionAttributes();
+    /**
+     * Returns the <code>RegionAttributes</code> with the given
+     * <code>id</code> or <code>null</code> if no
+     * <code>RegionAttributes</code> with that id exists.
+     *
+     * @see #setRegionAttributes
+     * @since GemFire 4.1
+     */
+    public <K, V> RegionAttributes<K, V> getRegionAttributes(String id);
 
-  /**
-   * Loads the cache configuration described in a <a
-   * href="package-summary.html#declarative">declarative caching XML
-   * file</a> into this cache.  If the XML describes a region that
-   * already exists, any mutable region attributes, indexes, and
-   * region entries that are defined in the XML are updated/added.
-   *
-   * <P>
-   *
-   * Because this method may perform a {@link Region#put(Object, Object) put} on a
-   * <code>Region</code>, it declares that it throws a
-   * <code>TimeoutException</code>, <code>CacheWriterException</code>,
-   * <code>GatewayException</code>,
-   * or <code>RegionExistsException</code>.
-   *
-   * @throws CacheXmlException
-   *         If the XML read from <code>is</code> does not conform to
-   *         the dtd or if an <code>IOException</code> occurs while
-   *         reading the XML.
-   *
-   * @since GemFire 4.1
-   */
-  public void loadCacheXml(InputStream is) 
-    throws TimeoutException, CacheWriterException,
-           GatewayException,
-           RegionExistsException;
+    /**
+     * Sets the <code>id</code> of the given
+     * <code>RegionAttributes</code>.  If a region attributes named
+     * <code>name</code> already exists, the mapping will be overwritten
+     * with <code>attrs</code>.  However, changing the mapping will not
+     * effect existing regions.
+     *
+     * @param id    The id of the region attributes
+     * @param attrs The attributes to associate with <code>id</code>.  If
+     *              <code>attrs</code> is <code>null</code>, any existing
+     *              <code>RegionAttributes</code> associated with
+     *              <code>id</code> will be removed.
+     * @see #getRegionAttributes
+     * @since GemFire 4.1
+     */
+    public <K, V> void setRegionAttributes(String id, RegionAttributes<K, V> attrs);
 
-  /**
-   * Gets the logging object for GemFire.
-   * This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
-   * @return the logging object
-   */
-  public LogWriter getLogger();
+    /**
+     * Returns an unmodifiable mapping of ids to region attributes.  The
+     * keys of the map are {@link String}s and the values of the map are
+     * {@link RegionAttributes}.
+     *
+     * @since GemFire 4.1
+     */
+    public <K, V> Map<String, RegionAttributes<K, V>> listRegionAttributes();
 
-  /**
-   * Gets the security logging object for GemFire.
-   * This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
-   * @return the security logging object
-   */
-  public LogWriter getSecurityLogger();
+    /**
+     * Loads the cache configuration described in a <a
+     * href="package-summary.html#declarative">declarative caching XML
+     * file</a> into this cache.  If the XML describes a region that
+     * already exists, any mutable region attributes, indexes, and
+     * region entries that are defined in the XML are updated/added.
+     * <p>
+     * <p>
+     * <p>
+     * Because this method may perform a {@link Region#put(Object, Object) put} on a
+     * <code>Region</code>, it declares that it throws a
+     * <code>TimeoutException</code>, <code>CacheWriterException</code>,
+     * <code>GatewayException</code>,
+     * or <code>RegionExistsException</code>.
+     *
+     * @throws CacheXmlException If the XML read from <code>is</code> does not conform to
+     *                           the dtd or if an <code>IOException</code> occurs while
+     *                           reading the XML.
+     * @since GemFire 4.1
+     */
+    public void loadCacheXml(InputStream is)
+            throws TimeoutException, CacheWriterException,
+            GatewayException,
+            RegionExistsException;
 
-  /**
-   * Returns the DiskStore by name or <code>null</code> if no disk store is found.
-   * @param name the name of the disk store to find. If <code>null</code> then the
-   * default disk store, if it exists, is returned.
-   * @since GemFire 6.5
-   */
-  public DiskStore findDiskStore(String name);
-  
-  /**
-   * create diskstore factory 
-   * 
-   * @since GemFire 6.5
-   */
-  public DiskStoreFactory createDiskStoreFactory();
-  
-  public GatewaySenderFactory createGatewaySenderFactory();
-  
-  /**
-   * Returns whether { @link PdxInstance} is preferred for PDX types instead of Java object.
-   * @see com.gemstone.gemfire.cache.CacheFactory#setPdxReadSerialized(boolean)
-   * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxReadSerialized(boolean)
-   * 
-   * @since GemFire 6.6
-   */
-  public boolean getPdxReadSerialized();
-  
-  /**
-   * Returns the PdxSerializer used by this cache, or null
-   * if no PDX serializer is defined.
-   * 
-   * @since GemFire 6.6
-   * @see CacheFactory#setPdxSerializer(PdxSerializer)
-   * @see ClientCacheFactory#setPdxSerializer(PdxSerializer)
-   */
-  public PdxSerializer getPdxSerializer();
-  
-  /**
-   * Returns the disk store used for PDX meta data
-   * @since GemFire 6.6
-   * @see CacheFactory#setPdxDiskStore(String)
-   * @see ClientCacheFactory#setPdxDiskStore(String)
-   */
-  public String getPdxDiskStore();
-  
-  /**
-   * Returns true if the PDX metadata for this
-   * cache is persistent
-   * @since GemFire 6.6
-   * @see CacheFactory#setPdxPersistent(boolean)
-   * @see ClientCacheFactory#setPdxPersistent(boolean)
-   */
-  public boolean getPdxPersistent();
-  /**
-   * Returns true if fields that are not read during PDX deserialization
-   * should be ignored during the PDX serialization.
-   * @since GemFire 6.6
-   * @see CacheFactory#setPdxIgnoreUnreadFields(boolean)
-   * @see ClientCacheFactory#setPdxIgnoreUnreadFields(boolean)
-   */
-  public boolean getPdxIgnoreUnreadFields();
-  /**
-   * Get the CacheTransactionManager instance for this Cache.
-   *
-   * @return The CacheTransactionManager instance.
-   *
-   * @throws CacheClosedException if the cache is closed.
-   *
-   * @since GemFire 4.0
-   */
-  public CacheTransactionManager getCacheTransactionManager();
-  /**
-   * Returns the JNDI context associated with the Cache.
-   * @return javax.naming.Context
-   * Added as part of providing JTA implementation in Gemfire.
-   *
-   * @since GemFire 4.0
-   */
-  public Context getJNDIContext();
+    /**
+     * Gets the logging object for GemFire.
+     * This method does not throw
+     * <code>CacheClosedException</code> if the cache is closed.
+     *
+     * @return the logging object
+     */
+    public LogWriter getLogger();
 
-  /**
-   * Returns the Declarable used to initialize this cache or <code>null</code>
-   * if it does not have an initializer.
-   * @since GemFire 6.6
-   */
-  public Declarable getInitializer();
+    /**
+     * Gets the security logging object for GemFire.
+     * This method does not throw
+     * <code>CacheClosedException</code> if the cache is closed.
+     *
+     * @return the security logging object
+     */
+    public LogWriter getSecurityLogger();
 
-  /**
-   * Returns the Properties used to initialize the cache initializer or
-   * <code>null</code> if no initializer properties exist.
-   * @since GemFire 6.6
-   */
-  public Properties getInitializerProps();
+    /**
+     * Returns the DiskStore by name or <code>null</code> if no disk store is found.
+     *
+     * @param name the name of the disk store to find. If <code>null</code> then the
+     *             default disk store, if it exists, is returned.
+     * @since GemFire 6.5
+     */
+    public DiskStore findDiskStore(String name);
+
+    /**
+     * create diskstore factory
+     *
+     * @since GemFire 6.5
+     */
+    public DiskStoreFactory createDiskStoreFactory();
+
+    public GatewaySenderFactory createGatewaySenderFactory();
+
+    /**
+     * Returns whether { @link PdxInstance} is preferred for PDX types instead of Java object.
+     *
+     * @see com.gemstone.gemfire.cache.CacheFactory#setPdxReadSerialized(boolean)
+     * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxReadSerialized(boolean)
+     * @since GemFire 6.6
+     */
+    public boolean getPdxReadSerialized();
+
+    /**
+     * Returns the PdxSerializer used by this cache, or null
+     * if no PDX serializer is defined.
+     *
+     * @see CacheFactory#setPdxSerializer(PdxSerializer)
+     * @see ClientCacheFactory#setPdxSerializer(PdxSerializer)
+     * @since GemFire 6.6
+     */
+    public PdxSerializer getPdxSerializer();
+
+    /**
+     * Returns the disk store used for PDX meta data
+     *
+     * @see CacheFactory#setPdxDiskStore(String)
+     * @see ClientCacheFactory#setPdxDiskStore(String)
+     * @since GemFire 6.6
+     */
+    public String getPdxDiskStore();
+
+    /**
+     * Returns true if the PDX metadata for this
+     * cache is persistent
+     *
+     * @see CacheFactory#setPdxPersistent(boolean)
+     * @see ClientCacheFactory#setPdxPersistent(boolean)
+     * @since GemFire 6.6
+     */
+    public boolean getPdxPersistent();
+
+    /**
+     * Returns true if fields that are not read during PDX deserialization
+     * should be ignored during the PDX serialization.
+     *
+     * @see CacheFactory#setPdxIgnoreUnreadFields(boolean)
+     * @see ClientCacheFactory#setPdxIgnoreUnreadFields(boolean)
+     * @since GemFire 6.6
+     */
+    public boolean getPdxIgnoreUnreadFields();
+
+    /**
+     * Get the CacheTransactionManager instance for this Cache.
+     *
+     * @return The CacheTransactionManager instance.
+     * @throws CacheClosedException if the cache is closed.
+     * @since GemFire 4.0
+     */
+    public CacheTransactionManager getCacheTransactionManager();
+
+    /**
+     * Returns the JNDI context associated with the Cache.
+     *
+     * @return javax.naming.Context
+     * Added as part of providing JTA implementation in Gemfire.
+     * @since GemFire 4.0
+     */
+    public Context getJNDIContext();
+
+    /**
+     * Returns the Declarable used to initialize this cache or <code>null</code>
+     * if it does not have an initializer.
+     *
+     * @since GemFire 6.6
+     */
+    public Declarable getInitializer();
+
+    /**
+     * Returns the Properties used to initialize the cache initializer or
+     * <code>null</code> if no initializer properties exist.
+     *
+     * @since GemFire 6.6
+     */
+    public Properties getInitializerProps();
 }

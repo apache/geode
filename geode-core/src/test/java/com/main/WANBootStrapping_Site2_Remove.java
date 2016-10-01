@@ -26,49 +26,45 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -2
- * 
+ * <p>
  * This locator is started so that the locator information regarding the site 2
  * is removed from site 1's locator and at the same time
  * MyDistributedSystemListener's removeDistributedSystem is invoked on site 1's locator which will stop the GatewaySender
- * 
- * 
  */
 
 public class WANBootStrapping_Site2_Remove {
 
-  public static void main(String[] args) {
-    
-    // On this locator, I am not expecting a listener to take any action, so a
-    // empty listener is a passed
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener",
-    "");
-    
-    System.out.println("Starting a locator with negative ds id -2");
-    Properties properties = new Properties();
-    properties.setProperty(MCAST_PORT, "0");
-    properties.setProperty(DISTRIBUTED_SYSTEM_ID, ""+ (-2));
-    properties.setProperty(REMOTE_LOCATORS, "localhost[" + 10101 + "]");
-    properties.setProperty(LOG_LEVEL, "warning");
-    Locator locator = null;
-    try {
-      locator = Locator.startLocatorAndDS(30445, null, properties);
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
-    
-    try {
-      Thread.sleep(1000);
-    }
-    catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    System.out.println("Stoping locator");    
-    locator.stop();
-    System.out.println("Locator stopped ");
-    
-    System.exit(0);
-  }
+    public static void main(String[] args) {
 
-  
+        // On this locator, I am not expecting a listener to take any action, so a
+        // empty listener is a passed
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener",
+                "");
+
+        System.out.println("Starting a locator with negative ds id -2");
+        Properties properties = new Properties();
+        properties.setProperty(MCAST_PORT, "0");
+        properties.setProperty(DISTRIBUTED_SYSTEM_ID, "" + (-2));
+        properties.setProperty(REMOTE_LOCATORS, "localhost[" + 10101 + "]");
+        properties.setProperty(LOG_LEVEL, "warning");
+        Locator locator = null;
+        try {
+            locator = Locator.startLocatorAndDS(30445, null, properties);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Stoping locator");
+        locator.stop();
+        System.out.println("Locator stopped ");
+
+        System.exit(0);
+    }
+
+
 }

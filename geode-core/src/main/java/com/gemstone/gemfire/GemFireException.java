@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-   
+
 package com.gemstone.gemfire;
 
 /**
  * This is the abstract superclass of exceptions that are thrown to
  * indicate incorrect usage of GemFire.
- *
+ * <p>
  * Since these exceptions are unchecked, this class really
  * <em>ought</em> to be called <code>GemFireRuntimeException</code>;
  * however, the current name is retained for compatibility's sake.
- * 
+ *
  * @see com.gemstone.gemfire.GemFireCheckedException
  * @see com.gemstone.gemfire.cache.CacheRuntimeException
  */
@@ -34,69 +34,69 @@ package com.gemstone.gemfire;
 // GsError).
 public abstract class GemFireException extends RuntimeException {
 
-  /** The cause of this <code>GemFireException</code> */
+    /** The cause of this <code>GemFireException</code> */
 //  private Throwable cause;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>GemFireException</code> with no detailed message.
-   */
-  public GemFireException() {
-    super();
-  }
+    /**
+     * Creates a new <code>GemFireException</code> with no detailed message.
+     */
+    public GemFireException() {
+        super();
+    }
 
-  /**
-   * Creates a new <code>GemFireException</code> with the given detail
-   * message.
-   */
-  public GemFireException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>GemFireException</code> with the given detail
+     * message.
+     */
+    public GemFireException(String message) {
+        super(message);
+    }
 
-  /**
-   * Creates a new <code>GemFireException</code> with the given detail
-   * message and cause.
-   */
-  public GemFireException(String message, Throwable cause) {
-    super(message, cause);
+    /**
+     * Creates a new <code>GemFireException</code> with the given detail
+     * message and cause.
+     */
+    public GemFireException(String message, Throwable cause) {
+        super(message, cause);
 //    this.cause = cause;
-  }
-  
-  /**
-   * Creates a new <code>GemFireException</code> with the given cause and
-   * no detail message
-   */
-  public GemFireException(Throwable cause) {
-    super(cause);
+    }
+
+    /**
+     * Creates a new <code>GemFireException</code> with the given cause and
+     * no detail message
+     */
+    public GemFireException(Throwable cause) {
+        super(cause);
 //    this.cause = cause;
-  }
+    }
 
-  ////////////////////  Instance Methods  ////////////////////
+    ////////////////////  Instance Methods  ////////////////////
 
-  /**
-   * Returns the cause of this <code>GemFireException</code> or
-   * <code>null</code> if the cause is nonexistent or unknown.
-   */
+    /**
+     * Returns the cause of this <code>GemFireException</code> or
+     * <code>null</code> if the cause is nonexistent or unknown.
+     */
 //  public Throwable getCause() {
 //    return this.cause;
 //  }
 
-  /**
-   * Returns the root cause of this <code>GemFireException</code> or
-   * <code>null</code> if the cause is nonexistent or unknown.
-   */
-  public Throwable getRootCause() {
-    if ( this.getCause() == null ) {
-      return null;
+    /**
+     * Returns the root cause of this <code>GemFireException</code> or
+     * <code>null</code> if the cause is nonexistent or unknown.
+     */
+    public Throwable getRootCause() {
+        if (this.getCause() == null) {
+            return null;
+        }
+        Throwable root = this.getCause();
+        while (root.getCause() != null) {
+            root = root.getCause();
+        }
+        return root;
     }
-    Throwable root = this.getCause();
-    while ( root.getCause() != null ) {
-      root = root.getCause();
-    }
-    return root;
-  }
-  
+
 //  public void printStackTrace() {
 //    super.printStackTrace();
 //    if (this.cause != null) {
@@ -104,7 +104,7 @@ public abstract class GemFireException extends RuntimeException {
 //      this.cause.printStackTrace();
 //    }
 //  }
-  
+
 //  public void printStackTrace(java.io.PrintWriter pw) {
 //    super.printStackTrace(pw);
 //
@@ -134,9 +134,9 @@ public abstract class GemFireException extends RuntimeException {
 //    }
 //  }
 
-  /**
-   * Represent the receiver as well as the cause
-   */
+    /**
+     * Represent the receiver as well as the cause
+     */
 //  public String toString() {
 //    String result = super.toString();
 //    if (cause != null) {

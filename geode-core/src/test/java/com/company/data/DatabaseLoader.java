@@ -25,18 +25,18 @@ import com.gemstone.gemfire.cache.*;
  */
 public class DatabaseLoader implements CacheLoader, Declarable {
 
-  public Object load(LoaderHelper helper)
-    throws CacheLoaderException {
+    public Object load(LoaderHelper helper)
+            throws CacheLoaderException {
 
-    throw new UnsupportedOperationException("I do NOTHING");
-  }
+        throw new UnsupportedOperationException("I do NOTHING");
+    }
 
-  public void init(java.util.Properties props) {
+    public void init(java.util.Properties props) {
 
-  }
+    }
 
-  public void close() {
+    public void close() {
 
-  }
+    }
 
 }

@@ -31,84 +31,78 @@ import com.gemstone.gemfire.internal.cache.wan.DistributedSystemListener;
  * addedDistributedSystem is called a Region is created on both sites and
  * GatewaySender and GatewayReciever is started on site 1 and site 2
  * respectively.
- * 
+ * <p>
  * When a removedDistributedSystem is called, GatewaySender and GatewayReceiver
  * is stopped on site1 and site2 respectively.
- * 
- * 
  */
 public class MyDistributedSystemListener implements DistributedSystemListener {
 
-  Cache cache;
-  
-  public MyDistributedSystemListener() {
-  }
-  
-  /**
-   * Please note that dynamic addition of the sender id to region is not yet available.  
-   */
-  public void addedDistributedSystem(int remoteDsId) {
-    cache = CacheFactory.getAnyInstance();
-    
-    //When a site with distributed-system-id = 2 joins, create a region and a gatewaysender with remoteDsId = 2 
-    if (remoteDsId == 2) {
-      if (cache != null) {
-        GatewaySender serialSender= cache
-            .createGatewaySenderFactory()
-            .setManualStart(true)
-            .setPersistenceEnabled(false)
-            .setDiskStoreName("LN_" + remoteDsId)
-            .create("LN_"+ remoteDsId, remoteDsId);
-        System.out.println("Sender Created : " + serialSender.getId());
-        
-        Region region= cache.createRegionFactory()
-                       //.addSerialGatewaySenderId("LN_" + remoteDsId)
-                       .create("MyRegion");
-        System.out.println("Created Region : " + region.getName());
-        
-        try {
-          serialSender.start();
-          System.out.println("Sender Started: " + serialSender.getId());
-        }
-        catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-      else {
-        throw new CacheClosedException("Cache is not initialized here");
-      }
-    }else{ //When a site with distributed-system-id = 1 joins, create a region and a gatewayReceiver with  
-      if (cache != null) {
-        Region region = cache.createRegionFactory().create("MyRegion");
-        System.out.println("Created Region :" +  region.getName());
+    Cache cache;
 
-        GatewayReceiver receiver= cache.createGatewayReceiverFactory()
-                                 .setStartPort(12345)
-                                 .setManualStart(true)
-                                 .create();
-        System.out.println("Created GatewayReceiver : " + receiver);
-        try {
-          receiver.start();
-          System.out.println("GatewayReceiver Started.");
-        }
-        catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
+    public MyDistributedSystemListener() {
     }
-  }
 
-  public void removedDistributedSystem(int remoteDsId) {
-    cache = CacheFactory.getAnyInstance();
-    if (remoteDsId == 2) { //When a site with distributed-system-id = -2 joins, stop gatewaysender with remoteDsId = 2 
-      if (cache != null) {
-        GatewaySender sender = cache.getGatewaySender("LN_"+2);
-        sender.stop();
-      }
+    /**
+     * Please note that dynamic addition of the sender id to region is not yet available.
+     */
+    public void addedDistributedSystem(int remoteDsId) {
+        cache = CacheFactory.getAnyInstance();
+
+        //When a site with distributed-system-id = 2 joins, create a region and a gatewaysender with remoteDsId = 2
+        if (remoteDsId == 2) {
+            if (cache != null) {
+                GatewaySender serialSender = cache
+                        .createGatewaySenderFactory()
+                        .setManualStart(true)
+                        .setPersistenceEnabled(false)
+                        .setDiskStoreName("LN_" + remoteDsId)
+                        .create("LN_" + remoteDsId, remoteDsId);
+                System.out.println("Sender Created : " + serialSender.getId());
+
+                Region region = cache.createRegionFactory()
+                        //.addSerialGatewaySenderId("LN_" + remoteDsId)
+                        .create("MyRegion");
+                System.out.println("Created Region : " + region.getName());
+
+                try {
+                    serialSender.start();
+                    System.out.println("Sender Started: " + serialSender.getId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                throw new CacheClosedException("Cache is not initialized here");
+            }
+        } else { //When a site with distributed-system-id = 1 joins, create a region and a gatewayReceiver with
+            if (cache != null) {
+                Region region = cache.createRegionFactory().create("MyRegion");
+                System.out.println("Created Region :" + region.getName());
+
+                GatewayReceiver receiver = cache.createGatewayReceiverFactory()
+                        .setStartPort(12345)
+                        .setManualStart(true)
+                        .create();
+                System.out.println("Created GatewayReceiver : " + receiver);
+                try {
+                    receiver.start();
+                    System.out.println("GatewayReceiver Started.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
-    else{ // When a site with distributed-system-id = -1 joins, stop gatewayReceiver
-      GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
-      receiver.stop();
+
+    public void removedDistributedSystem(int remoteDsId) {
+        cache = CacheFactory.getAnyInstance();
+        if (remoteDsId == 2) { //When a site with distributed-system-id = -2 joins, stop gatewaysender with remoteDsId = 2
+            if (cache != null) {
+                GatewaySender sender = cache.getGatewaySender("LN_" + 2);
+                sender.stop();
+            }
+        } else { // When a site with distributed-system-id = -1 joins, stop gatewayReceiver
+            GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
+            receiver.stop();
+        }
     }
-  }
 }

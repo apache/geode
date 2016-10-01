@@ -19,12 +19,13 @@ package com.gemstone.gemfire.admin;
 /**
  * A listener whose callback methods are invoked when an {@link Alert}
  * is received.
+ *
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface AlertListener extends java.util.EventListener {
 
-  /**
-   * Invoked when an <code>Alert</code> is received.
-   */
-  public void alert(Alert alert);
+    /**
+     * Invoked when an <code>Alert</code> is received.
+     */
+    public void alert(Alert alert);
 }

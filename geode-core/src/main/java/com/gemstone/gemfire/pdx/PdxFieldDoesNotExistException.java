@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire.pdx;
 
@@ -24,18 +24,19 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown when a PDX field does not exist and the current operation requires its existence.
  * PDX fields exist after they are written by one of the writeXXX methods on {@link PdxWriter}.
- * @since GemFire 6.6
  *
+ * @since GemFire 6.6
  */
 public class PdxFieldDoesNotExistException extends GemFireException {
 
-  private static final long serialVersionUID = 1617023951410281507L;
+    private static final long serialVersionUID = 1617023951410281507L;
 
-  /**
-   * Constructs a new exception with the given message
-   * @param message the message of the new exception
-   */
-  public PdxFieldDoesNotExistException(String message) {
-    super(message);
-  }
+    /**
+     * Constructs a new exception with the given message
+     *
+     * @param message the message of the new exception
+     */
+    public PdxFieldDoesNotExistException(String message) {
+        super(message);
+    }
 }

@@ -33,58 +33,57 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class AnalyzeWANSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
-  
-  @Before
-  public void loadClasses() throws Exception {
-    if (classes.size() > 0) {
-      return;
+
+    @Before
+    public void loadClasses() throws Exception {
+        if (classes.size() > 0) {
+            return;
+        }
+        System.out.println("loadClasses starting");
+        List<String> excludedClasses = loadExcludedClasses(new File(TestUtil.getResourcePath(AnalyzeWANSerializablesJUnitTest.class, "excludedClasses.txt")));
+        List<String> openBugs = loadOpenBugs(new File(TestUtil.getResourcePath(AnalyzeWANSerializablesJUnitTest.class, "openBugs.txt")));
+        excludedClasses.addAll(openBugs);
+
+        String cp = System.getProperty("java.class.path");
+        System.out.println("java classpath is " + cp);
+        System.out.flush();
+        String[] entries = cp.split(File.pathSeparator);
+        String buildDirName =
+                "geode-wan" + File.separatorChar
+                        + "build" + File.separatorChar
+                        + "classes" + File.separatorChar
+                        + "main";
+        String buildDir = null;
+
+        for (int i = 0; i < entries.length && buildDir == null; i++) {
+            System.out.println("examining '" + entries[i] + "'");
+            System.out.flush();
+            if (entries[i].endsWith(buildDirName)) {
+                buildDir = entries[i];
+            }
+        }
+        if (buildDir != null) {
+            System.out.println("loading class files from " + buildDir);
+            System.out.flush();
+            long start = System.currentTimeMillis();
+            loadClassesFromBuild(new File(buildDir), excludedClasses);
+            long finish = System.currentTimeMillis();
+            System.out.println("done loading " + classes.size() + " classes.  elapsed time = "
+                    + (finish - start) / 1000 + " seconds");
+        } else {
+            fail("unable to find WAN classes");
+        }
     }
-    System.out.println("loadClasses starting");
-    List<String> excludedClasses = loadExcludedClasses(new File(TestUtil.getResourcePath(AnalyzeWANSerializablesJUnitTest.class, "excludedClasses.txt")));
-    List<String> openBugs = loadOpenBugs(new File(TestUtil.getResourcePath(AnalyzeWANSerializablesJUnitTest.class, "openBugs.txt")));
-    excludedClasses.addAll(openBugs);
-    
-    String cp = System.getProperty("java.class.path");
-    System.out.println("java classpath is " + cp);
-    System.out.flush();
-    String[] entries = cp.split(File.pathSeparator);
-    String buildDirName =
-         "geode-wan"+File.separatorChar
-        +"build"+File.separatorChar
-        +"classes"+File.separatorChar
-        +"main";
-    String buildDir = null;
-    
-    for (int i=0; i<entries.length  &&  buildDir==null; i++) {
-      System.out.println("examining '" + entries[i] + "'");
-      System.out.flush();
-      if (entries[i].endsWith(buildDirName)) {
-        buildDir = entries[i];
-      }
+
+    @AfterClass
+    public static void cleanup() {
+        if (classes != null) {
+            classes.clear();
+        }
     }
-    if (buildDir != null) {
-      System.out.println("loading class files from " + buildDir);
-      System.out.flush();
-      long start = System.currentTimeMillis();
-      loadClassesFromBuild(new File(buildDir), excludedClasses);
-      long finish = System.currentTimeMillis();
-      System.out.println("done loading " + classes.size() + " classes.  elapsed time = "
-          + (finish-start)/1000 + " seconds");
-    }
-    else {
-      fail("unable to find WAN classes");
-    }
-  }
-  
-  @AfterClass
-  public static void cleanup() {
-    if (classes != null) {
-      classes.clear();
-    }
-  }
-  
+
 }

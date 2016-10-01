@@ -19,17 +19,16 @@ package com.gemstone.sequence;
 /**
  * An interface for mapping a lifeline name to a shorter version of the same
  * line. This could also consolodate multiple lifelines onto a single line.
- * 
+ * <p>
  * The most common case for this is that a lifeline represents a VM that is
  * restarted several times. Eg time, the line name changes, but we want to put
  * all of the states for that "logical" vm on the same line.
- *
  */
 public interface LineMapper {
-  
-  /**
-   * Return the short name for this lifeline.
-   */
-  public String getShortNameForLine(String lineName);
+
+    /**
+     * Return the short name for this lifeline.
+     */
+    public String getShortNameForLine(String lineName);
 
 }

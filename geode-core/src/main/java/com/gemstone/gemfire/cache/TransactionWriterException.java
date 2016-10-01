@@ -18,27 +18,25 @@
 package com.gemstone.gemfire.cache;
 
 
-
 /**
- * Exception thrown by implementors of {@link TransactionWriter#beforeCommit} to 
+ * Exception thrown by implementors of {@link TransactionWriter#beforeCommit} to
  * signal that the current transaction should be aborted.
- * 
+ *
  * @see TransactionWriter#beforeCommit
  * @since GemFire 6.5
- *
  */
 public class TransactionWriterException extends Exception {
 
-  /**
-   * 
-   */
-  private static final long serialVersionUID = -5557392877576634835L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = -5557392877576634835L;
 
-  public TransactionWriterException(String s) {
-    super(s);
-  }
-  
-  public TransactionWriterException(Throwable t) {
-    super(t);
-  }
+    public TransactionWriterException(String s) {
+        super(s);
+    }
+
+    public TransactionWriterException(Throwable t) {
+        super(t);
+    }
 }

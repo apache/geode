@@ -23,26 +23,26 @@ package com.gemstone.gemfire.cache;
  * @since GemFire 5.7
  */
 public class IncompatibleVersionException extends VersionException {
-private static final long serialVersionUID = 668812986092856749L;
+    private static final long serialVersionUID = 668812986092856749L;
 
-  /**
-   * Constructs a new <code>IncompatibleVersionException</code>.
-   *
-   * @param clientVersion The client <code>Version</code>
-   * @param serverVersion The server <code>Version</code>
-   */
-  public IncompatibleVersionException(Object/*Version*/ clientVersion,
-      Object/*Version*/ serverVersion) {
-    this("Client version " + clientVersion
-        + " is incompatible with server version " + serverVersion);
-  }
+    /**
+     * Constructs a new <code>IncompatibleVersionException</code>.
+     *
+     * @param clientVersion The client <code>Version</code>
+     * @param serverVersion The server <code>Version</code>
+     */
+    public IncompatibleVersionException(Object/*Version*/ clientVersion,
+                                        Object/*Version*/ serverVersion) {
+        this("Client version " + clientVersion
+                + " is incompatible with server version " + serverVersion);
+    }
 
-  /**
-   * Constructs a new <code>IncompatibleVersionException</code>.
-   *
-   * @param message The exception message
-   */
-  public IncompatibleVersionException(String message) {
-    super(message);
-  }
+    /**
+     * Constructs a new <code>IncompatibleVersionException</code>.
+     *
+     * @param message The exception message
+     */
+    public IncompatibleVersionException(String message) {
+        super(message);
+    }
 }

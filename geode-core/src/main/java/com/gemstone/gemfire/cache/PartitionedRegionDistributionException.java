@@ -17,29 +17,28 @@
 package com.gemstone.gemfire.cache;
 
 /**
- * Indicates a failure to perform a distributed operation on a Partitioned Region 
+ * Indicates a failure to perform a distributed operation on a Partitioned Region
  * after multiple attempts.
  *
  * @since GemFire 5.1
  */
 public class PartitionedRegionDistributionException extends
-   CacheRuntimeException
-{
-  private static final long serialVersionUID = -3004093739855972548L;
-   
-  public PartitionedRegionDistributionException() {
-    super();
-  }
+        CacheRuntimeException {
+    private static final long serialVersionUID = -3004093739855972548L;
 
-  public PartitionedRegionDistributionException(String msg) {
-    super(msg);
-  }
+    public PartitionedRegionDistributionException() {
+        super();
+    }
 
-  public PartitionedRegionDistributionException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
+    public PartitionedRegionDistributionException(String msg) {
+        super(msg);
+    }
 
-  public PartitionedRegionDistributionException(Throwable cause) {
-    super(cause);
-  }
+    public PartitionedRegionDistributionException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+
+    public PartitionedRegionDistributionException(Throwable cause) {
+        super(cause);
+    }
 }

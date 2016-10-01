@@ -23,23 +23,23 @@ import java.io.IOException;
 import com.gemstone.gemfire.DataSerializable;
 
 public class MyObjectDataSerializable extends MyObject implements DataSerializable {
-  public MyObjectDataSerializable() {
-  }
+    public MyObjectDataSerializable() {
+    }
 
-  public MyObjectDataSerializable(long number, String s) {
-    super(number, s);
-  }
-  
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    out.writeLong(f1);
-    out.writeUTF(f2);
-  }
+    public MyObjectDataSerializable(long number, String s) {
+        super(number, s);
+    }
 
-  @Override
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
-    f1 = in.readLong();
-    f2 = in.readUTF();
-  }
+    @Override
+    public void toData(DataOutput out) throws IOException {
+        out.writeLong(f1);
+        out.writeUTF(f2);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException,
+            ClassNotFoundException {
+        f1 = in.readLong();
+        f2 = in.readUTF();
+    }
 }

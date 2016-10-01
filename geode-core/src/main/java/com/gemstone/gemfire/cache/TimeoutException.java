@@ -17,10 +17,9 @@
 
 package com.gemstone.gemfire.cache;
 
-/** Thrown if a <code>netSearch</code> times out without getting a response back from a cache,
+/**
+ * Thrown if a <code>netSearch</code> times out without getting a response back from a cache,
  * or when attempting to acquire a distributed lock.
- *
- *
  *
  * @see LoaderHelper#netSearch
  * @see com.gemstone.gemfire.cache.Region#invalidateRegion()
@@ -35,38 +34,41 @@ package com.gemstone.gemfire.cache;
  * @since GemFire 3.0
  */
 public class TimeoutException extends OperationAbortedException {
-private static final long serialVersionUID = -6260761691185737442L;
-  
-  /**
-   * Creates a new instance of <code>TimeoutException</code> without detail message.
-   */
-  public TimeoutException() {
-  }
-  
-  
-  /**
-   * Constructs an instance of <code>TimeoutException</code> with the specified detail message.
-   * @param msg the detail message
-   */
-  public TimeoutException(String msg) {
-    super(msg);
-  }
-  
-  /**
-   * Constructs an instance of <code>TimeoutException</code> with the specified detail message
-   * and cause.
-   * @param msg the detail message
-   * @param cause the causal Throwable
-   */
-  public TimeoutException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
-  
-  /**
-   * Constructs an instance of <code>TimeoutException</code> with the specified cause.
-   * @param cause the causal Throwable
-   */
-  public TimeoutException(Throwable cause) {
-    super(cause);
-  }
+    private static final long serialVersionUID = -6260761691185737442L;
+
+    /**
+     * Creates a new instance of <code>TimeoutException</code> without detail message.
+     */
+    public TimeoutException() {
+    }
+
+
+    /**
+     * Constructs an instance of <code>TimeoutException</code> with the specified detail message.
+     *
+     * @param msg the detail message
+     */
+    public TimeoutException(String msg) {
+        super(msg);
+    }
+
+    /**
+     * Constructs an instance of <code>TimeoutException</code> with the specified detail message
+     * and cause.
+     *
+     * @param msg   the detail message
+     * @param cause the causal Throwable
+     */
+    public TimeoutException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+
+    /**
+     * Constructs an instance of <code>TimeoutException</code> with the specified cause.
+     *
+     * @param cause the causal Throwable
+     */
+    public TimeoutException(Throwable cause) {
+        super(cause);
+    }
 }

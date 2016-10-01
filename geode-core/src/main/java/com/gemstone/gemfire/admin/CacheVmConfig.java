@@ -21,33 +21,32 @@ package com.gemstone.gemfire.admin;
  * administration API.  The VM may or may not be running.
  *
  * @see AdminDistributedSystem#addCacheVm()
- *
  * @since GemFire 5.7
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface CacheVmConfig extends ManagedEntityConfig {
-  /**
-   * Returns the <code>cache.xml</code> declarative caching
-   * initialization file used to configure this cache server VM.  By
-   * default, a cache server VM is started without an XML file.
-   */
-  public String getCacheXMLFile();
+    /**
+     * Returns the <code>cache.xml</code> declarative caching
+     * initialization file used to configure this cache server VM.  By
+     * default, a cache server VM is started without an XML file.
+     */
+    public String getCacheXMLFile();
 
-  /**
-   * Sets the <code>cache.xml</code> declarative caching
-   * initialization file used to configure this cache server VM.
-   */
-  public void setCacheXMLFile(String cacheXml);
+    /**
+     * Sets the <code>cache.xml</code> declarative caching
+     * initialization file used to configure this cache server VM.
+     */
+    public void setCacheXMLFile(String cacheXml);
 
-  /**
-   * Returns the location(s) of user classes (such as cache loaders)
-   * required by the cache server VM.
-   */
-  public String getClassPath();
+    /**
+     * Returns the location(s) of user classes (such as cache loaders)
+     * required by the cache server VM.
+     */
+    public String getClassPath();
 
-  /**
-   * Sets the location(s) of user classes (such as cache loaders)
-   * required by the cache server VM.
-   */
-  public void setClassPath(String classpath);
+    /**
+     * Sets the location(s) of user classes (such as cache loaders)
+     * required by the cache server VM.
+     */
+    public void setClassPath(String classpath);
 }

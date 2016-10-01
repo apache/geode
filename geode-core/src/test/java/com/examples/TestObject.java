@@ -17,38 +17,37 @@
 package com.examples;
 
 /**
- * A simple test object used by the 
- * com.gemstone.gemfire.internal.enhancer.serializer.SerializingStreamPerfTest 
- * (this test no longer exists?) 
+ * A simple test object used by the
+ * com.gemstone.gemfire.internal.enhancer.serializer.SerializingStreamPerfTest
+ * (this test no longer exists?)
  * that must be in a non-<code>com.gemstone</code> package.
- *
  *
  * @since GemFire 3.5
  */
 public class TestObject {
 
-  private int intField;
-  private String stringField;
-  private Object objectField;
+    private int intField;
+    private String stringField;
+    private Object objectField;
 
-  /**
-   * Creates a new <code>TestObject</code>
-   */
-  public TestObject() {
-    this.intField = 42;
-    this.stringField = "123456789012345678901234567890";
-    this.objectField = new Integer(67);
-  }
+    /**
+     * Creates a new <code>TestObject</code>
+     */
+    public TestObject() {
+        this.intField = 42;
+        this.stringField = "123456789012345678901234567890";
+        this.objectField = new Integer(67);
+    }
 
-  //////////////////////  Inner Classes  //////////////////////
+    //////////////////////  Inner Classes  //////////////////////
 
-  /**
-   * A <code>Serializable</code> object that is serialized
-   */
-  public static class SerializableTestObject extends TestObject
-    implements java.io.Serializable {
-    
-  }
-  
+    /**
+     * A <code>Serializable</code> object that is serialized
+     */
+    public static class SerializableTestObject extends TestObject
+            implements java.io.Serializable {
+
+    }
+
 }
 

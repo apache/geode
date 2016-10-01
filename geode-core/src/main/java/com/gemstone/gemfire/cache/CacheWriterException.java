@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache;
  * is propagated back to the caller that initiated modification of the
  * cache, even if the caller is not in the same cache VM.
  *
- *
  * @see CacheWriter
  * @see com.gemstone.gemfire.cache.Region#put(Object, Object)
  * @see com.gemstone.gemfire.cache.Region#destroy(Object)
@@ -32,38 +31,41 @@ package com.gemstone.gemfire.cache;
  * @since GemFire 3.0
  */
 public class CacheWriterException extends OperationAbortedException {
-private static final long serialVersionUID = -2872212342970454458L;
-  
-  /**
-   * Creates a new instance of <code>CacheWriterException</code>.
-   */
-  public CacheWriterException() {
-  }
-  
-  
-  /**
-   * Constructs an instance of <code>CacheWriterException</code> with the specified detail message.
-   * @param msg the detail message
-   */
-  public CacheWriterException(String msg) {
-    super(msg);
-  }
-  
-  /**
-   * Constructs an instance of <code>CacheWriterException</code> with the specified detail message
-   * and cause.
-   * @param msg the detail message
-   * @param cause the causal Throwable
-   */
-  public CacheWriterException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
-  
-  /**
-   * Constructs an instance of <code>CacheWriterException</code> with the specified cause.
-   * @param cause the causal Throwable
-   */
-  public CacheWriterException(Throwable cause) {
-    super(cause);
-  }
+    private static final long serialVersionUID = -2872212342970454458L;
+
+    /**
+     * Creates a new instance of <code>CacheWriterException</code>.
+     */
+    public CacheWriterException() {
+    }
+
+
+    /**
+     * Constructs an instance of <code>CacheWriterException</code> with the specified detail message.
+     *
+     * @param msg the detail message
+     */
+    public CacheWriterException(String msg) {
+        super(msg);
+    }
+
+    /**
+     * Constructs an instance of <code>CacheWriterException</code> with the specified detail message
+     * and cause.
+     *
+     * @param msg   the detail message
+     * @param cause the causal Throwable
+     */
+    public CacheWriterException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+
+    /**
+     * Constructs an instance of <code>CacheWriterException</code> with the specified cause.
+     *
+     * @param cause the causal Throwable
+     */
+    public CacheWriterException(Throwable cause) {
+        super(cause);
+    }
 }

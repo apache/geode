@@ -31,7 +31,7 @@ import java.awt.event.ComponentEvent;
 public class SequencePanel extends JPanel {
 
     public SequencePanel(SequenceDiagram sequenceDiagram) {
-         //Set up the drawing area.
+        //Set up the drawing area.
         ZoomingPanel drawingPane = new ZoomingPanel();
         drawingPane.setBackground(Color.white);
         drawingPane.setSequenceDiagram(sequenceDiagram);
@@ -40,7 +40,7 @@ public class SequencePanel extends JPanel {
         final JScrollPane scroller = new JScrollPane(drawingPane);
         scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        final TimeAxis timeAxis = new TimeAxis(TimeAxis.VERTICAL, 
+        final TimeAxis timeAxis = new TimeAxis(TimeAxis.VERTICAL,
                 sequenceDiagram.getMinTime(),
                 sequenceDiagram.getMaxTime());
         timeAxis.setPreferredHeight(drawingPane.getHeight());
@@ -72,12 +72,12 @@ public class SequencePanel extends JPanel {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                Component source =e.getComponent();
+                Component source = e.getComponent();
                 scroller.setSize(source.getSize());
                 scroller.revalidate();
             }
         });
 
-        
+
     }
 }

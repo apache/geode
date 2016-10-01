@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire.pdx;
 
@@ -23,18 +23,19 @@ import com.gemstone.gemfire.GemFireException;
 
 /**
  * Thrown when a configuration that is now allowed by PDX is detected.
- * @since GemFire 6.6
  *
+ * @since GemFire 6.6
  */
 public class PdxConfigurationException extends GemFireException {
 
-  private static final long serialVersionUID = -2329989020829052537L;
+    private static final long serialVersionUID = -2329989020829052537L;
 
-  /**
-   * Constructs a new exception with the given message
-   * @param message the message of the new exception
-   */
-  public PdxConfigurationException(String message) {
-    super(message);
-  }
+    /**
+     * Constructs a new exception with the given message
+     *
+     * @param message the message of the new exception
+     */
+    public PdxConfigurationException(String message) {
+        super(message);
+    }
 }

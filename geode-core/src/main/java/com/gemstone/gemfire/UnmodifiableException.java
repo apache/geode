@@ -23,14 +23,14 @@ package com.gemstone.gemfire;
  * not be modified is that the member is active.
  */
 public class UnmodifiableException extends GemFireException {
-private static final long serialVersionUID = -1043243260052395455L;
+    private static final long serialVersionUID = -1043243260052395455L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>UnmodifiableException</code>.
-   */
-  public UnmodifiableException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>UnmodifiableException</code>.
+     */
+    public UnmodifiableException(String message) {
+        super(message);
+    }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire;
 
@@ -24,40 +24,43 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
 /**
  * Abstract root class of all GemFire exceptions representing system
  * cancellation
- * 
+ *
  * @since GemFire 6.0
  */
 public abstract class CancelException extends CacheRuntimeException {
 
-  /**
-   * for serialization
-   */
-  public CancelException() {
-  }
+    /**
+     * for serialization
+     */
+    public CancelException() {
+    }
 
-  /**
-   * Create instance with given message
-   * @param message the message
-   */
-  public CancelException(String message) {
-    super(message);
-  }
+    /**
+     * Create instance with given message
+     *
+     * @param message the message
+     */
+    public CancelException(String message) {
+        super(message);
+    }
 
-  /**
-   * Create instance with given message and cause
-   * @param message the message
-   * @param cause the cause
-   */
-  public CancelException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * Create instance with given message and cause
+     *
+     * @param message the message
+     * @param cause   the cause
+     */
+    public CancelException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-  /**
-   * Create instance with empty message and given cause
-   * @param cause the cause
-   */
-  public CancelException(Throwable cause) {
-    super(cause);
-  }
+    /**
+     * Create instance with empty message and given cause
+     *
+     * @param cause the cause
+     */
+    public CancelException(Throwable cause) {
+        super(cause);
+    }
 
 }

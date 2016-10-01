@@ -110,13 +110,8 @@ public class GetDurableCQsOp {
           // Get the exception toString part.
           // This was added for c++ thin client and not used in java
           // Part exceptionToStringPart = msg.getPart(1);
-        } else if (isErrorResponse(msgType)) {
-          getDurableCQsResponseMsg.receiveChunk();
-          Part part = msg.getPart(0);
-          throw new ServerOperationException(part.getString());
-        } else {
-          throw new InternalGemFireError("Unexpected message type "
-                                         + MessageType.getString(msgType));
+        }else{
+          processResponseException(msgType, getDurableCQsResponseMsg);
         }
       }
       

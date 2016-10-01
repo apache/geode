@@ -27,37 +27,36 @@ import com.gemstone.gemfire.cache.*;
  */
 public class DBLoader implements CacheLoader, Declarable {
 
-  private Properties props = new Properties();
-  
-  public Object load(LoaderHelper helper)
-    throws CacheLoaderException {
+    private Properties props = new Properties();
 
-    throw new UnsupportedOperationException("I do NOTHING");
-  }
+    public Object load(LoaderHelper helper)
+            throws CacheLoaderException {
 
-  public void init(java.util.Properties props) {
-    this.props = props; 
-  }
-
-  public void close() {
-  }
-
-  public boolean equals(Object obj)
-  {
-    if (this == obj) {
-      return true;
+        throw new UnsupportedOperationException("I do NOTHING");
     }
 
-    if (! (obj instanceof DBLoader)) {
-      return false;
+    public void init(java.util.Properties props) {
+        this.props = props;
     }
-    
-    DBLoader other = (DBLoader) obj;
-    if (! this.props.equals(other.props)) {
-      return false;
+
+    public void close() {
     }
-    
-    return true;
-  }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof DBLoader)) {
+            return false;
+        }
+
+        DBLoader other = (DBLoader) obj;
+        if (!this.props.equals(other.props)) {
+            return false;
+        }
+
+        return true;
+    }
 
 }

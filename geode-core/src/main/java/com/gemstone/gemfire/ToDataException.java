@@ -20,22 +20,24 @@ package com.gemstone.gemfire;
  * A <code>ToDataException</code> is thrown during serialization if
  * {@link DataSerializable#toData} throws an exception or if
  * {@link DataSerializer#toData} is called and returns false.
- * 
+ *
  * @since GemFire 6.5
  */
 public class ToDataException extends SerializationException {
-  private static final long serialVersionUID = -2329606027453879918L;
-  /**
-   * Creates a new <code>ToDataException</code> with the given message
-   */
-  public ToDataException(String message) {
-      super(message);
-  }
-  /**
-   * Creates a new <code>ToDataException</code> with the given message
-   * and cause.
-   */
-  public ToDataException(String message, Throwable cause) {
-      super(message, cause);
-  }
+    private static final long serialVersionUID = -2329606027453879918L;
+
+    /**
+     * Creates a new <code>ToDataException</code> with the given message
+     */
+    public ToDataException(String message) {
+        super(message);
+    }
+
+    /**
+     * Creates a new <code>ToDataException</code> with the given message
+     * and cause.
+     */
+    public ToDataException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -27,9 +27,9 @@ import java.awt.geom.GeneralPath;
  * To change this template use File | Settings | File Templates.
  */
 public class Arrow {
-    private static int ARROW_WIDTH=10;
-    private static int CIRCLE_WIDTH=6;
-    private static int LABEL_OFFSET=10;
+    private static int ARROW_WIDTH = 10;
+    private static int CIRCLE_WIDTH = 6;
+    private static int LABEL_OFFSET = 10;
 
     private final String label;
     private final LifelineState startingState;
@@ -47,24 +47,24 @@ public class Arrow {
         int y = endingState.getStartY();
 
         //don't paint if we're not in the clip area
-        if(y + ARROW_WIDTH < boundary.getMinY() || y - ARROW_WIDTH > boundary.getMaxY()) {
+        if (y + ARROW_WIDTH < boundary.getMinY() || y - ARROW_WIDTH > boundary.getMaxY()) {
             return;
         }
 
         //TODO - we need to clip by X coordinate as well.
-        
+
         boolean isReflexsive = getStartingLine() == getEndingLine();
-        if(isReflexsive) {
+        if (isReflexsive) {
             paintReflexive(g);
         } else {
             paintNormal(g);
         }
     }
-    
+
     private Lifeline getStartingLine() {
         return startingState.getLine();
     }
-    
+
     private Lifeline getEndingLine() {
         return endingState.getLine();
     }
@@ -88,8 +88,8 @@ public class Arrow {
         int x2 = endingLine.getX();
         int y = endingState.getStartY();
 
-        if(x2 > x1) {
-            int startX  = x1 + startingLine.getWidth();
+        if (x2 > x1) {
+            int startX = x1 + startingLine.getWidth();
             int endX = x2;
 
             GeneralPath path = new GeneralPath();
@@ -99,10 +99,10 @@ public class Arrow {
             path.moveTo(endX, y);
             path.lineTo(endX - ARROW_WIDTH, y + ARROW_WIDTH);
             g.draw(path);
-            g.fillArc(startX, y - CIRCLE_WIDTH/2, CIRCLE_WIDTH, CIRCLE_WIDTH, 0, 360);
+            g.fillArc(startX, y - CIRCLE_WIDTH / 2, CIRCLE_WIDTH, CIRCLE_WIDTH, 0, 360);
             g.drawString(label, startX + LABEL_OFFSET, y - LABEL_OFFSET);
         } else {
-            int startX  = x1;
+            int startX = x1;
             int endX = x2 + endingLine.getWidth();
 
             GeneralPath path = new GeneralPath();
@@ -113,12 +113,12 @@ public class Arrow {
             path.lineTo(endX + ARROW_WIDTH, y + ARROW_WIDTH);
             g.draw(path);
             int labelWidth = g.getFontMetrics().stringWidth(label);
-            g.fillArc(startX - CIRCLE_WIDTH/2, y - CIRCLE_WIDTH/2, CIRCLE_WIDTH, CIRCLE_WIDTH, 0, 360);
+            g.fillArc(startX - CIRCLE_WIDTH / 2, y - CIRCLE_WIDTH / 2, CIRCLE_WIDTH, CIRCLE_WIDTH, 0, 360);
             g.drawString(label, startX - LABEL_OFFSET - labelWidth, y - LABEL_OFFSET);
         }
     }
 
     public LifelineState getStartingState() {
-      return startingState;
+        return startingState;
     }
 }

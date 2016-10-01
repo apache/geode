@@ -23,27 +23,25 @@ package com.gemstone.gemfire.cache;
  * the inability to load a {@link Declarable} class.
  *
  * @see CacheFactory#create
- *
- *
  * @since GemFire 3.0
  */
 public class CacheXmlException extends CacheRuntimeException {
-private static final long serialVersionUID = -4343870964883131754L;
+    private static final long serialVersionUID = -4343870964883131754L;
 
-  /**
-   * Creates a new <code>CacheXmlException</code> with the given
-   * description and cause.
-   */
-  public CacheXmlException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * Creates a new <code>CacheXmlException</code> with the given
+     * description and cause.
+     */
+    public CacheXmlException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-  /**
-   * Creates a new <code>CacheXmlException</code> with the given
-   * description.
-   */
-  public CacheXmlException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>CacheXmlException</code> with the given
+     * description.
+     */
+    public CacheXmlException(String message) {
+        super(message);
+    }
 
 }

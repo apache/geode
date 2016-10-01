@@ -23,20 +23,21 @@ package com.gemstone.gemfire;
  * not compatible with the attribute's type.
  */
 public class InvalidValueException extends GemFireException {
-private static final long serialVersionUID = 6186767885369527709L;
+    private static final long serialVersionUID = 6186767885369527709L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>InvalidValueException</code>.
-   */
-  public InvalidValueException(String message) {
-    super(message);
-  }
-  /**
-   * Creates a new <code>InvalidValueException</code>.
-   */
-  public InvalidValueException(String message, Throwable ex) {
-    super(message, ex);
-  }
+    /**
+     * Creates a new <code>InvalidValueException</code>.
+     */
+    public InvalidValueException(String message) {
+        super(message);
+    }
+
+    /**
+     * Creates a new <code>InvalidValueException</code>.
+     */
+    public InvalidValueException(String message, Throwable ex) {
+        super(message, ex);
+    }
 }

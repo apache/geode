@@ -24,23 +24,24 @@ package com.gemstone.gemfire;
  * catch <code>Exception</code> to not accidently catch this exception.
  * <p> Note: if user code catches this error (or its subclasses) then it <em>must</em>
  * be rethrown.
- * 
+ *
  * @since GemFire 5.7
  */
 public class GemFireRethrowable extends Error {
-  private static final long serialVersionUID = 8349791552668922571L;
+    private static final long serialVersionUID = 8349791552668922571L;
 
-  /**
-   * Create a GemFireRethrowable.
-   */
-  public GemFireRethrowable() {
-  }
+    /**
+     * Create a GemFireRethrowable.
+     */
+    public GemFireRethrowable() {
+    }
 
-  /**
-   * Create a GemFireRethrowable with the specified message.
-   * @param message
-   */
-  public GemFireRethrowable(String message) {
-    super(message);
-  }
+    /**
+     * Create a GemFireRethrowable with the specified message.
+     *
+     * @param message
+     */
+    public GemFireRethrowable(String message) {
+        super(message);
+    }
 }

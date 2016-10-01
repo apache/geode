@@ -53,11 +53,11 @@ public class ZoomingPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() != MouseEvent.BUTTON1) {
-                    unzoom();    
+                    unzoom();
                 } else {
-                  child.selectState(e.getX(), e.getY());
+                    child.selectState(e.getX(), e.getY());
                 }
-                
+
             }
         });
 
@@ -65,15 +65,15 @@ public class ZoomingPanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 Rectangle r = new Rectangle(e.getX(), e.getY(), 1, 1);
-                ((JPanel)e.getSource()).scrollRectToVisible(r);
+                ((JPanel) e.getSource()).scrollRectToVisible(r);
                 showBox(e.getX(), e.getY());
             }
 
             @Override
             public void mouseMoved(MouseEvent e) {
-              int popupX = ZoomingPanel.this.getLocationOnScreen().x + e.getX();
-              int popupY = ZoomingPanel.this.getLocationOnScreen().y + e.getY();
-              child.showPopupText(e.getX(), e.getY(), popupX, popupY);
+                int popupX = ZoomingPanel.this.getLocationOnScreen().x + e.getX();
+                int popupY = ZoomingPanel.this.getLocationOnScreen().y + e.getY();
+                child.showPopupText(e.getX(), e.getY(), popupX, popupY);
             }
         });
         BorderLayout layout = new BorderLayout();
@@ -89,7 +89,7 @@ public class ZoomingPanel extends JPanel {
     void resizeMe(int zoomBoxX, int zoomBoxY, int zoomBoxWidth, int zoomBoxHeight) {
         Dimension viewSize = getParent().getSize();
         double windowWidth = viewSize.getWidth();
-        double  windowHeight = viewSize.getHeight();
+        double windowHeight = viewSize.getHeight();
         double scaleX = getWidth() / ((double) zoomBoxWidth);
         double scaleY = getHeight() / ((double) zoomBoxHeight);
         int oldWidth = getWidth();
@@ -106,12 +106,12 @@ public class ZoomingPanel extends JPanel {
 //        int scrollY = (int) (zoomBoxY * scaleY);
 //        int scrollWidth= (int) (zoomBoxWidth * scaleX);
 //        int scrollHeight = (int) (zoomBoxHeight * scaleY);
-        int scrollX = (int) (zoomBoxX  *  (width / (double) oldWidth));
-        int scrollY = (int) (zoomBoxY *  (height / (double) oldHeight));
-        int scrollWidth= (int) (zoomBoxWidth *  (width / (double) oldWidth));
-        int scrollHeight = (int) (zoomBoxHeight *  (height / (double) oldHeight));        
+        int scrollX = (int) (zoomBoxX * (width / (double) oldWidth));
+        int scrollY = (int) (zoomBoxY * (height / (double) oldHeight));
+        int scrollWidth = (int) (zoomBoxWidth * (width / (double) oldWidth));
+        int scrollHeight = (int) (zoomBoxHeight * (height / (double) oldHeight));
         Rectangle r = new Rectangle(scrollX, scrollY, scrollWidth, scrollHeight);
-        ((JViewport)getParent()).scrollRectToVisible(r);
+        ((JViewport) getParent()).scrollRectToVisible(r);
         repaint();
 
     }
@@ -122,7 +122,7 @@ public class ZoomingPanel extends JPanel {
     }
 
     private void showBox(int x, int y) {
-        if(zoomBoxWidth != -1) {
+        if (zoomBoxWidth != -1) {
             repaint(getBoxX(), getBoxY(), getBoxWidth(), getBoxHeight());
         }
 
@@ -138,10 +138,10 @@ public class ZoomingPanel extends JPanel {
     }
 
     private void endBox(int x, int y) {
-        if(zoomBoxStartX != -1 && zoomBoxStartY != -1
+        if (zoomBoxStartX != -1 && zoomBoxStartY != -1
                 && zoomBoxWidth != -1 && zoomBoxHeight != -1
                 && zoomBoxWidth != 0 && zoomBoxHeight != 0) {
-            resizeMe(getBoxX() , getBoxY(), getBoxWidth(), getBoxHeight());
+            resizeMe(getBoxX(), getBoxY(), getBoxWidth(), getBoxHeight());
             repaint(getBoxX(), getBoxY(), getBoxWidth(), getBoxHeight());
             this.zoomBoxStartX = -1;
             this.zoomBoxStartY = -1;
@@ -167,12 +167,11 @@ public class ZoomingPanel extends JPanel {
     }
 
 
-
     @Override
     public void paint(Graphics g) {
         super.paint(g);
 
-        if(zoomBoxStartX != -1 && zoomBoxStartY != -1 && zoomBoxWidth != -1 && zoomBoxHeight != -1) {
+        if (zoomBoxStartX != -1 && zoomBoxStartY != -1 && zoomBoxWidth != -1 && zoomBoxHeight != -1) {
             Graphics2D g2 = (Graphics2D) g.create();
 
             Composite old = g2.getComposite();

@@ -19,6 +19,7 @@ package demo;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
 import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
 
 /**
@@ -38,20 +39,20 @@ import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
  */
 public class RegionToRDDJavaDemo {
 
-  public static void main(String[] argv) {
+    public static void main(String[] argv) {
 
-    if (argv.length != 1) {
-      System.err.printf("Usage: RegionToRDDJavaDemo <locators>\n");
-      return;
+        if (argv.length != 1) {
+            System.err.printf("Usage: RegionToRDDJavaDemo <locators>\n");
+            return;
+        }
+
+        SparkConf conf = new SparkConf().setAppName("RegionToRDDJavaDemo");
+        conf.set(GeodeLocatorPropKey, argv[0]);
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        JavaPairRDD<String, String> rdd = javaFunctions(sc).geodeRegion("str_str_region");
+        System.out.println("=== geodeRegion =======\n" + rdd.collect() + "\n=========================");
+
+        sc.stop();
     }
-    
-    SparkConf conf = new SparkConf().setAppName("RegionToRDDJavaDemo"); 
-    conf.set(GeodeLocatorPropKey, argv[0]);
-    JavaSparkContext sc = new JavaSparkContext(conf);
-
-    JavaPairRDD<String, String> rdd = javaFunctions(sc).geodeRegion("str_str_region");
-    System.out.println("=== geodeRegion =======\n" + rdd.collect() + "\n=========================");
-    
-    sc.stop();
-  }
 }

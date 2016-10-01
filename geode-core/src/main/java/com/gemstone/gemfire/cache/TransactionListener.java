@@ -25,14 +25,13 @@ package com.gemstone.gemfire.cache;
  * will no longer exist at the time the listener code executes.  The
  * thread that performed the transaction operation will not see that
  * operation complete until the listener method completes its
- * execution. 
- *
+ * execution.
+ * <p>
  * <p>Multiple transactions, on the same cache, can cause concurrent
  * invocation of <code>TransactionListener</code> methods.  Any
  * exceptions thrown by the listener are caught and logged.
- *
+ * <p>
  * <p>Rollback and failed commit operations are local.
- *
  *
  * @see CacheTransactionManager#setListener
  * @see CacheTransactionManager#getListener
@@ -40,26 +39,29 @@ package com.gemstone.gemfire.cache;
  */
 
 public interface TransactionListener extends CacheCallback {
-  
-  /** Called after a successful commit of a transaction.
-   * 
-   * @param event the TransactionEvent
-   * @see CacheTransactionManager#commit
-   */
-  public void afterCommit(TransactionEvent event);
 
-  /** Called after an unsuccessful commit operation.
-   * 
-   * @param event the TransactionEvent
-   * @see CacheTransactionManager#commit
-   */
-  public void afterFailedCommit(TransactionEvent event);
+    /**
+     * Called after a successful commit of a transaction.
+     *
+     * @param event the TransactionEvent
+     * @see CacheTransactionManager#commit
+     */
+    public void afterCommit(TransactionEvent event);
 
-  /** Called after an explicit rollback of a transaction.
-   * 
-   * @param event the TransactionEvent
-   * @see CacheTransactionManager#rollback
-   * @see CacheTransactionManager#commit
-   */
-  public void afterRollback(TransactionEvent event);
+    /**
+     * Called after an unsuccessful commit operation.
+     *
+     * @param event the TransactionEvent
+     * @see CacheTransactionManager#commit
+     */
+    public void afterFailedCommit(TransactionEvent event);
+
+    /**
+     * Called after an explicit rollback of a transaction.
+     *
+     * @param event the TransactionEvent
+     * @see CacheTransactionManager#rollback
+     * @see CacheTransactionManager#commit
+     */
+    public void afterRollback(TransactionEvent event);
 }

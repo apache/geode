@@ -17,27 +17,26 @@
 package com.gemstone.gemfire.cache;
 
 /**
- * 
  * <h3>Description of the conditions under which this exception is thrown</h3>
  * <p>
  * When a <code>PartitionedRegionStorageException</code> message contains
  * the string:
- * 
+ * <p>
  * <pre>
  * There are not enough data store members to create a bucket.
  * </pre>
- * 
+ * <p>
  * A new data store must be added to the partitioned region for future bucket creation.
  * </p>
- * 
+ * <p>
  * <p>
  * When a <code>PartitionedRegionStorageException</code> message contains
  * the string:
- * 
+ * <p>
  * <pre>
  * Too many data store members have refused the request to create a bucket.
  * </pre>
- * 
+ * <p>
  * There are enough data stores, however some have refused possibly due to these
  * conditions:
  * <ol>
@@ -49,46 +48,49 @@ package com.gemstone.gemfire.cache;
  * <li>The distributed system on that member has been disconnected.</li>
  * </ol>
  * </p>
- * 
+ * <p>
  * <p>
  * When a <code>PartitionedRegionStorageException</code> message contains
  * the string:
- * 
+ * <p>
  * <pre>
  * Creation of a bucket for partitioned region failed in N attempts.
  * </pre>
  * If the number of attempts is lesser than the number of available
- * data store members, contact GemFire support providing all logs and statistics files from 
- * all members containing the partitioned region.  Otherwise, shutdown and then restart one 
- * or more of the data stores, given that it is safe to do so, for example when redundantCopies 
+ * data store members, contact GemFire support providing all logs and statistics files from
+ * all members containing the partitioned region.  Otherwise, shutdown and then restart one
+ * or more of the data stores, given that it is safe to do so, for example when redundantCopies
  * is greater than 0.
  * </p>
- * 
- * 
+ *
  * @see com.gemstone.gemfire.cache.PartitionAttributesFactory
  * @since GemFire 5.0
  */
-public class PartitionedRegionStorageException extends CacheRuntimeException  {
-private static final long serialVersionUID = 5905463619475329732L;
+public class PartitionedRegionStorageException extends CacheRuntimeException {
+    private static final long serialVersionUID = 5905463619475329732L;
 
-    /** Creates a new instance of PartitionedRegionStorageException */
+    /**
+     * Creates a new instance of PartitionedRegionStorageException
+     */
     public PartitionedRegionStorageException() {
     }
-    
-    
+
+
     /**
      * Creates a new {@link PartitionedRegionStorageException} with a message.
+     *
      * @param msg The string message for the PartitionedRegionStorageException.
      */
- 
+
     public PartitionedRegionStorageException(String msg) {
-      super(msg);
-    }    
-    
+        super(msg);
+    }
+
     /**
      * Creates a new {@link PartitionedRegionStorageException} with a message and Throwable cause.
+     *
      * @param message The string message for the PartitionedRegionStorageException.
-     * @param cause Throwable cause for this {@link PartitionedRegionStorageException}.
+     * @param cause   Throwable cause for this {@link PartitionedRegionStorageException}.
      */
     public PartitionedRegionStorageException(String message, Throwable cause) {
         super(message, cause);

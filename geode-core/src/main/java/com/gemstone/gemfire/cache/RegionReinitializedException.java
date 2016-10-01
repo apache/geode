@@ -22,26 +22,29 @@ package com.gemstone.gemfire.cache;
  * A new reference must be acquired from the Cache the region's parent
  * region.
  *
- *
  * @since GemFire 4.0
  */
 public class RegionReinitializedException extends RegionDestroyedException {
-private static final long serialVersionUID = 8532904304288670752L;
+    private static final long serialVersionUID = 8532904304288670752L;
 //  private String regionFullPath;
-  
-  /** Constructs a <code>RegionReinitializedException</code> with a message.
-   * @param msg the String message
-   */
-  public RegionReinitializedException(String msg, String regionFullPath) {
-    super(msg, regionFullPath);
-  }
-  
-  /** Constructs a <code>RegionDestroyedException</code> with a message and
-   * a cause.
-   * @param s the String message
-   * @param ex the Throwable cause
-   */
-  public RegionReinitializedException(String s, String regionFullPath, Throwable ex) {
-    super(s, regionFullPath, ex);
-  }
+
+    /**
+     * Constructs a <code>RegionReinitializedException</code> with a message.
+     *
+     * @param msg the String message
+     */
+    public RegionReinitializedException(String msg, String regionFullPath) {
+        super(msg, regionFullPath);
+    }
+
+    /**
+     * Constructs a <code>RegionDestroyedException</code> with a message and
+     * a cause.
+     *
+     * @param s  the String message
+     * @param ex the Throwable cause
+     */
+    public RegionReinitializedException(String s, String regionFullPath, Throwable ex) {
+        super(s, regionFullPath, ex);
+    }
 }

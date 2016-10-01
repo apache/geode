@@ -17,13 +17,6 @@
 package com.gemstone.gemfire.internal.statistics;
 
 //import com.gemstone.gemfire.distributed.DistributedSystem;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
@@ -31,8 +24,14 @@ import com.gemstone.gemfire.internal.concurrent.Atomics;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
-
 import org.apache.logging.log4j.Logger;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 
 // @todo darrel Add statistics instances to archive when they are created. 
 /**

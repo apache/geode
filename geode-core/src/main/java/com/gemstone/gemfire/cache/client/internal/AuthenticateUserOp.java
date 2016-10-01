@@ -192,29 +192,7 @@ public class AuthenticateUserOp {
 
     @Override
     protected Object attemptReadResponse(Connection cnx) throws Exception {
-      Message msg = createResponseMessage();
-      if (msg != null) {
-        msg.setComms(cnx.getSocket(), cnx.getInputStream(),
-            cnx.getOutputStream(), cnx.getCommBuffer(), cnx.getStats());
-        if (msg instanceof ChunkedMessage) {
-          try {
-            return processResponse(cnx, msg);
-          } finally {
-            msg.unsetComms();
-            processSecureBytes(cnx, msg);
-          }
-        } else {
-          try {
-            msg.recv();
-          } finally {
-            msg.unsetComms();
-            processSecureBytes(cnx, msg);
-          }
-          return processResponse(cnx, msg);
-        }
-      } else {
-        return null;
-      }
+      return readResponse(cnx);
     }
 
     protected Object processResponse(Connection cnx, Message msg) throws Exception {
@@ -222,7 +200,7 @@ public class AuthenticateUserOp {
       Part part = msg.getPart(0);
       final int msgType = msg.getMessageType();
       long userId = -1;
-      if (msgType == MessageType.RESPONSE) {
+        if (msgType == MessageType.RESPONSE) {
         bytes = (byte[])part.getObject();
         if (bytes.length == 0) {
           cnx.getServer().setRequiresCredentials(false);

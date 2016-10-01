@@ -26,17 +26,19 @@ import java.io.*;
  * @since GemFire 5.7
  */
 public abstract class ExternalizableDSFID
-  implements DataSerializableFixedID, Externalizable
-{
-  public abstract int getDSFID();
-  public abstract void toData(DataOutput out) throws IOException;
-  public abstract void fromData(DataInput in) throws IOException, ClassNotFoundException;
+        implements DataSerializableFixedID, Externalizable {
+    public abstract int getDSFID();
 
-  public final void writeExternal(ObjectOutput out) throws IOException {
-    toData(out);
-  }
-  public final void readExternal(ObjectInput in)
-    throws IOException, ClassNotFoundException {
-    fromData(in);
-  }
+    public abstract void toData(DataOutput out) throws IOException;
+
+    public abstract void fromData(DataInput in) throws IOException, ClassNotFoundException;
+
+    public final void writeExternal(ObjectOutput out) throws IOException {
+        toData(out);
+    }
+
+    public final void readExternal(ObjectInput in)
+            throws IOException, ClassNotFoundException {
+        fromData(in);
+    }
 }

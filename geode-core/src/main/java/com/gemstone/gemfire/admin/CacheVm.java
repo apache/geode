@@ -22,7 +22,7 @@ package com.gemstone.gemfire.admin;
  * <p>Note that this may not represent an instance of
  * {@link com.gemstone.gemfire.cache.server.CacheServer}. It is possible for
  * a cache VM to be started but for it not to listen for client connections
- * in which case it is not a 
+ * in which case it is not a
  * {@link com.gemstone.gemfire.cache.server.CacheServer}
  * but is an instance of this interface.
  *
@@ -30,8 +30,8 @@ package com.gemstone.gemfire.admin;
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface CacheVm extends SystemMember, ManagedEntity {
-  /**
-   * Returns the configuration of this cache vm
-   */
-  public CacheVmConfig getVmConfig();
+    /**
+     * Returns the configuration of this cache vm
+     */
+    public CacheVmConfig getVmConfig();
 }

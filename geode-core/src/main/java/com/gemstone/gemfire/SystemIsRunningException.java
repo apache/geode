@@ -26,21 +26,21 @@ package com.gemstone.gemfire;
  * <p>As of GemFire 5.0 this exception should be named LocatorIsRunningException.
  */
 public class SystemIsRunningException extends GemFireException {
-private static final long serialVersionUID = 3516268055878767189L;
+    private static final long serialVersionUID = 3516268055878767189L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>SystemIsRunningException</code>.
-   */
-  public SystemIsRunningException() {
-    super();
-  }
+    /**
+     * Creates a new <code>SystemIsRunningException</code>.
+     */
+    public SystemIsRunningException() {
+        super();
+    }
 
-  /**
-   * Creates a new <code>SystemIsRunningException</code>.
-   */
-  public SystemIsRunningException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>SystemIsRunningException</code>.
+     */
+    public SystemIsRunningException(String message) {
+        super(message);
+    }
 }

@@ -28,7 +28,7 @@ import java.util.Set;
  * FixedPartitionResolver to get the name of the quarter based on the date given
  * as part of {@link com.gemstone.gemfire.cache.EntryOperation}.
  * </p>
- * 
+ * <p>
  * public class QuarterPartitionResolver implements FixedPartitionResolver{<br>
  * &nbsp &nbsp public String getPartitionName(EntryOperation opDetails, Set
  * allAvailablePartitions) {<br>
@@ -55,24 +55,19 @@ import java.util.Set;
  *
  * @see PartitionResolver
  * @since GemFire 6.6
- *
- * 
  */
 public interface FixedPartitionResolver<K, V> extends PartitionResolver<K, V> {
 
-  /**
-   * This method is used to get the name of the partition for the given entry
-   * operation.
-   * 
-   * @param opDetails
-   *          the details of the entry operation e.g. {@link Region#get(Object)}
-   * @param targetPartitions
-   *           Avoid using this parameter.This set is deprecated from 8.0 and same will be removed in future release.
-   *           Represents all the available primary partitions on the nodes.
-   * 
-   * @return partition-name associated with node which allows mapping of given
-   *         data to user defined partition
-   */
-  public String getPartitionName(EntryOperation<K, V> opDetails,
-      @Deprecated Set<String> targetPartitions);
+    /**
+     * This method is used to get the name of the partition for the given entry
+     * operation.
+     *
+     * @param opDetails        the details of the entry operation e.g. {@link Region#get(Object)}
+     * @param targetPartitions Avoid using this parameter.This set is deprecated from 8.0 and same will be removed in future release.
+     *                         Represents all the available primary partitions on the nodes.
+     * @return partition-name associated with node which allows mapping of given
+     * data to user defined partition
+     */
+    public String getPartitionName(EntryOperation<K, V> opDetails,
+                                   @Deprecated Set<String> targetPartitions);
 }

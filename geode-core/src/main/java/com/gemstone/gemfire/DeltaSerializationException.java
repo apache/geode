@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire;
 
@@ -23,37 +23,37 @@ package com.gemstone.gemfire;
  * This exception wraps any checked exception encountered during invocation of
  * {@link Delta#fromDelta(java.io.DataInput)} or
  * {@link Delta#toDelta(java.io.DataOutput)} in GemFire.
- * 
+ *
  * @since GemFire 6.5
  */
 public class DeltaSerializationException extends RuntimeException {
 
-  /**
-   * Default constructor
-   */
-  public DeltaSerializationException() {
-  }
+    /**
+     * Default constructor
+     */
+    public DeltaSerializationException() {
+    }
 
-  /**
-   * @param message
-   */
-  public DeltaSerializationException(String message) {
-    super(message);
-  }
+    /**
+     * @param message
+     */
+    public DeltaSerializationException(String message) {
+        super(message);
+    }
 
-  /**
-   * @param cause
-   */
-  public DeltaSerializationException(Throwable cause) {
-    super(cause);
-  }
+    /**
+     * @param cause
+     */
+    public DeltaSerializationException(Throwable cause) {
+        super(cause);
+    }
 
-  /**
-   * @param message
-   * @param cause
-   */
-  public DeltaSerializationException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * @param message
+     * @param cause
+     */
+    public DeltaSerializationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

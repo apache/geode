@@ -17,51 +17,58 @@
 package com.gemstone.gemfire.internal;
 
 import java.io.*;
+
 import com.gemstone.gemfire.DataSerializer;
 
-/** NullDataOutputStream is an OutputStream that also implements DataOutput
+/**
+ * NullDataOutputStream is an OutputStream that also implements DataOutput
  * and does not store any data written to it.
  * This makes it useful for calculating the size of a stream without
  * consuming any memory.
  * <p>This class is not thread safe
  *
- *  @since GemFire 5.0.2
- * 
+ * @since GemFire 5.0.2
  */
 public final class NullDataOutputStream extends OutputStream implements
-    ObjToByteArraySerializer {
+        ObjToByteArraySerializer {
 
-  private int size;
+    private int size;
 
-  public NullDataOutputStream() {
-    this.size = 0;
-  }
-  
-  /** write the low-order 8 bits of the given int */
-  @Override
-  public final void write(int b) {
-    this.size++;
-  }
+    public NullDataOutputStream() {
+        this.size = 0;
+    }
 
-  /** override OutputStream's write() */
-  @Override
-  public final void write(byte[] source, int offset, int len) {
-    this.size += len;
-  }
+    /**
+     * write the low-order 8 bits of the given int
+     */
+    @Override
+    public final void write(int b) {
+        this.size++;
+    }
 
-  public final int size() {
-    return this.size;
-  }
+    /**
+     * override OutputStream's write()
+     */
+    @Override
+    public final void write(byte[] source, int offset, int len) {
+        this.size += len;
+    }
 
-  @Override
-  public void flush() {
-  }
-  @Override
-  public void close() {
-  }
+    public final int size() {
+        return this.size;
+    }
 
-  // DataOutput methods
-  /**
+    @Override
+    public void flush() {
+    }
+
+    @Override
+    public void close() {
+    }
+
+    // DataOutput methods
+
+    /**
      * Writes a <code>boolean</code> value to this output stream.
      * If the argument <code>v</code>
      * is <code>true</code>, the value <code>(byte)1</code>
@@ -73,14 +80,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * which will then return a <code>boolean</code>
      * equal to <code>v</code>.
      *
-     * @param      v   the boolean to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the boolean to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeBoolean(boolean v) throws IOException {
-    write(v ? 1 : 0);
-  }
+    public final void writeBoolean(boolean v) throws IOException {
+        write(v ? 1 : 0);
+    }
 
-  /**
+    /**
      * Writes to the output stream the eight low-
      * order bits of the argument <code>v</code>.
      * The 24 high-order bits of <code>v</code>
@@ -92,14 +99,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * which will then return a <code>byte</code>
      * equal to <code>(byte)v</code>.
      *
-     * @param      v   the byte value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the byte value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeByte(int v) throws IOException {
-    write(v);
-  }
+    public final void writeByte(int v) throws IOException {
+        write(v);
+    }
 
-  /**
+    /**
      * Writes two bytes to the output
      * stream to represent the value of the argument.
      * The byte values to be written, in the  order
@@ -114,14 +121,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * will then return a <code>short</code> equal
      * to <code>(short)v</code>.
      *
-     * @param      v   the <code>short</code> value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the <code>short</code> value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeShort(int v) throws IOException {
-    this.size += 2;
-  }
+    public final void writeShort(int v) throws IOException {
+        this.size += 2;
+    }
 
-  /**
+    /**
      * Writes a <code>char</code> value, wich
      * is comprised of two bytes, to the
      * output stream.
@@ -137,14 +144,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * will then return a <code>char</code> equal
      * to <code>(char)v</code>.
      *
-     * @param      v   the <code>char</code> value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the <code>char</code> value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeChar(int v) throws IOException {
-    this.size += 2;
-  }
+    public final void writeChar(int v) throws IOException {
+        this.size += 2;
+    }
 
-  /**
+    /**
      * Writes an <code>int</code> value, which is
      * comprised of four bytes, to the output stream.
      * The byte values to be written, in the  order
@@ -160,14 +167,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * <code>DataInput</code> , which will then
      * return an <code>int</code> equal to <code>v</code>.
      *
-     * @param      v   the <code>int</code> value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the <code>int</code> value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeInt(int v) throws IOException {
-    this.size += 4;
-  }
+    public final void writeInt(int v) throws IOException {
+        this.size += 4;
+    }
 
-  /**
+    /**
      * Writes a <code>long</code> value, which is
      * comprised of eight bytes, to the output stream.
      * The byte values to be written, in the  order
@@ -188,14 +195,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * will then return a <code>long</code> equal
      * to <code>v</code>.
      *
-     * @param      v   the <code>long</code> value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the <code>long</code> value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeLong(long v) throws IOException {
-    this.size += 8;
-  }
+    public final void writeLong(long v) throws IOException {
+        this.size += 8;
+    }
 
-  /**
+    /**
      * Writes a <code>float</code> value,
      * which is comprised of four bytes, to the output stream.
      * It does this as if it first converts this
@@ -209,14 +216,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * which will then return a <code>float</code>
      * equal to <code>v</code>.
      *
-     * @param      v   the <code>float</code> value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the <code>float</code> value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeFloat(float v) throws IOException {
-    this.size += 4;
-  }
+    public final void writeFloat(float v) throws IOException {
+        this.size += 4;
+    }
 
-  /**
+    /**
      * Writes a <code>double</code> value,
      * which is comprised of eight bytes, to the output stream.
      * It does this as if it first converts this
@@ -230,14 +237,14 @@ public final class NullDataOutputStream extends OutputStream implements
      * which will then return a <code>double</code>
      * equal to <code>v</code>.
      *
-     * @param      v   the <code>double</code> value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param v the <code>double</code> value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeDouble(double v) throws IOException {
-    this.size += 8;
-  }
+    public final void writeDouble(double v) throws IOException {
+        this.size += 8;
+    }
 
-  /**
+    /**
      * Writes a string to the output stream.
      * For every character in the string
      * <code>s</code>,  taken in order, one byte
@@ -254,17 +261,17 @@ public final class NullDataOutputStream extends OutputStream implements
      * high-order eight bits of each character
      * in the string are ignored.
      *
-     * @param      str the string of bytes to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param str the string of bytes to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeBytes(String str) throws IOException {
-    int strlen = str.length();
-    if (strlen > 0) {
-      this.size += strlen;
+    public final void writeBytes(String str) throws IOException {
+        int strlen = str.length();
+        if (strlen > 0) {
+            this.size += strlen;
+        }
     }
-  }
 
-  /**
+    /**
      * Writes every character in the string <code>s</code>,
      * to the output stream, in order,
      * two bytes per character. If <code>s</code>
@@ -279,17 +286,17 @@ public final class NullDataOutputStream extends OutputStream implements
      * byte first, in exactly the manner of the
      * <code>writeChar</code> method.
      *
-     * @param      s   the string value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param s the string value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeChars(String s) throws IOException {
-    int len = s.length();
-    if (len > 0) {
-      this.size += len*2;
+    public final void writeChars(String s) throws IOException {
+        int len = s.length();
+        if (len > 0) {
+            this.size += len * 2;
+        }
     }
-  }
 
-  /**
+    /**
      * Writes two bytes of length information
      * to the output stream, followed
      * by the Java modified UTF representation
@@ -336,43 +343,43 @@ public final class NullDataOutputStream extends OutputStream implements
      * <code>DataInput</code> , which will then
      * return a <code>String</code> equal to <code>s</code>.
      *
-     * @param      str   the string value to be written.
-     * @exception  IOException  if an I/O error occurs.
+     * @param str the string value to be written.
+     * @throws IOException if an I/O error occurs.
      */
-  public final void writeUTF(String str) throws IOException {
-    int strlen = str.length();
-    if (strlen > 65535) {
-      throw new UTFDataFormatException();
+    public final void writeUTF(String str) throws IOException {
+        int strlen = str.length();
+        if (strlen > 65535) {
+            throw new UTFDataFormatException();
+        }
+        int utfSize = 0;
+        for (int i = 0; i < strlen; i++) {
+            int c = str.charAt(i);
+            if ((c >= 0x0001) && (c <= 0x007F)) {
+                utfSize += 1;
+            } else if (c > 0x07FF) {
+                utfSize += 3;
+            } else {
+                utfSize += 2;
+            }
+        }
+        if (utfSize > 65535) {
+            throw new UTFDataFormatException();
+        }
+        this.size += utfSize + 2; // +2 for the short that the length is encoded in
     }
-    int utfSize = 0;
-    for (int i = 0; i < strlen; i++) {
-      int c = str.charAt(i);
-      if ((c >= 0x0001) && (c <= 0x007F)) {
-        utfSize += 1;
-      } else if (c > 0x07FF) {
-        utfSize += 3;
-      } else {
-        utfSize += 2;
-      }
-    }
-    if (utfSize > 65535) {
-      throw new UTFDataFormatException();
-    }
-    this.size += utfSize + 2; // +2 for the short that the length is encoded in
-  }
 
-  /**
-   * Writes the given object to this stream as a byte array.
-   * The byte array is produced by serializing v. The serialization
-   * is done by calling DataSerializer.writeObject.
-   */
-  public void writeAsSerializedByteArray(Object v) throws IOException {
-    if (v instanceof HeapDataOutputStream) {
-      this.size += 4; // length is encoded as an int (or less)
-      this.size += ((HeapDataOutputStream)v).size();
-    } else {
-      this.size += 5; // length is encoded as a byte + an int
-      DataSerializer.writeObject(v, this);
+    /**
+     * Writes the given object to this stream as a byte array.
+     * The byte array is produced by serializing v. The serialization
+     * is done by calling DataSerializer.writeObject.
+     */
+    public void writeAsSerializedByteArray(Object v) throws IOException {
+        if (v instanceof HeapDataOutputStream) {
+            this.size += 4; // length is encoded as an int (or less)
+            this.size += ((HeapDataOutputStream) v).size();
+        } else {
+            this.size += 5; // length is encoded as a byte + an int
+            DataSerializer.writeObject(v, this);
+        }
     }
-  }
 }

@@ -21,34 +21,33 @@ package com.gemstone.gemfire.admin;
  * administration API.  The cache server may or may not be running.
  *
  * @see AdminDistributedSystem#addCacheServer()
- *
  * @since GemFire 4.0
  * @deprecated as of 5.7 use {@link CacheVmConfig} instead.
  */
 @Deprecated
 public interface CacheServerConfig extends CacheVmConfig {
-  /**
-   * Returns the <code>cache.xml</code> declarative caching
-   * initialization file used to configure this cache server VM.  By
-   * default, a cache server VM is started without an XML file.
-   */
-  public String getCacheXMLFile();
+    /**
+     * Returns the <code>cache.xml</code> declarative caching
+     * initialization file used to configure this cache server VM.  By
+     * default, a cache server VM is started without an XML file.
+     */
+    public String getCacheXMLFile();
 
-  /**
-   * Sets the <code>cache.xml</code> declarative caching
-   * initialization file used to configure this cache server VM.
-   */
-  public void setCacheXMLFile(String cacheXml);
+    /**
+     * Sets the <code>cache.xml</code> declarative caching
+     * initialization file used to configure this cache server VM.
+     */
+    public void setCacheXMLFile(String cacheXml);
 
-  /**
-   * Returns the location(s) of user classes (such as cache loaders)
-   * required by the cache server VM.
-   */
-  public String getClassPath();
+    /**
+     * Returns the location(s) of user classes (such as cache loaders)
+     * required by the cache server VM.
+     */
+    public String getClassPath();
 
-  /**
-   * Sets the location(s) of user classes (such as cache loaders)
-   * required by the cache server VM.
-   */
-  public void setClassPath(String classpath);
+    /**
+     * Sets the location(s) of user classes (such as cache loaders)
+     * required by the cache server VM.
+     */
+    public void setClassPath(String classpath);
 }

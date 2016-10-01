@@ -21,17 +21,17 @@ import com.gemstone.gemfire.cache.control.RebalanceOperation;
 /**
  * Thrown when a {@link RebalanceOperation} occurs concurrently with a transaction.
  * This can be thrown while doing transactional operations or during commit.
- *
+ * <p>
  * <p>This exception only occurs when a transaction
  * involves partitioned regions.
- * 
+ *
  * @since GemFire 6.6
  */
 public class TransactionDataRebalancedException extends TransactionException {
-  
-  private static final long serialVersionUID = -2217135580436381984L;
 
-  public TransactionDataRebalancedException(String s) {
-    super(s);
-  }
+    private static final long serialVersionUID = -2217135580436381984L;
+
+    public TransactionDataRebalancedException(String s) {
+        super(s);
+    }
 }

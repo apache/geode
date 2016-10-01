@@ -18,48 +18,52 @@
 package com.gemstone.gemfire.cache;
 
 
-/** Thrown when attempting to create a {@link Cache} if one already exists.
- *
+/**
+ * Thrown when attempting to create a {@link Cache} if one already exists.
  *
  * @see CacheFactory#create
  * @since GemFire 3.0
  */
 public class CacheExistsException extends CacheException {
-private static final long serialVersionUID = 4090002289325418100L;
+    private static final long serialVersionUID = 4090002289325418100L;
 
-  /** The <code>Cache</code> that already exists */
-  private final transient Cache cache;
+    /**
+     * The <code>Cache</code> that already exists
+     */
+    private final transient Cache cache;
 
-  ///////////////////////  Constructors  ///////////////////////
+    ///////////////////////  Constructors  ///////////////////////
 
-  /**
-   * Constructs an instance of <code>CacheExistsException</code> with the specified detail message.
-   * @param msg the detail message
-   */
-  public CacheExistsException(Cache cache, String msg) {
-    super(msg);
-    this.cache = cache;
-  }
-  
-  /**
-   * Constructs an instance of <code>CacheExistsException</code> with the specified detail message
-   * and cause.
-   * @param msg the detail message
-   * @param cause the causal Throwable
-   */
-  public CacheExistsException(Cache cache, String msg, Throwable cause) {
-    super(msg, cause);
-    this.cache = cache;
-  }
+    /**
+     * Constructs an instance of <code>CacheExistsException</code> with the specified detail message.
+     *
+     * @param msg the detail message
+     */
+    public CacheExistsException(Cache cache, String msg) {
+        super(msg);
+        this.cache = cache;
+    }
 
-  ///////////////////////  Instance Methods  ///////////////////////
+    /**
+     * Constructs an instance of <code>CacheExistsException</code> with the specified detail message
+     * and cause.
+     *
+     * @param msg   the detail message
+     * @param cause the causal Throwable
+     */
+    public CacheExistsException(Cache cache, String msg, Throwable cause) {
+        super(msg, cause);
+        this.cache = cache;
+    }
 
-  /**
-   * Returns the <code>Cache</code> that already exists.
-   *
-   * @since GemFire 4.0
-   */
-  public Cache getCache() {
-    return this.cache;
-  }
+    ///////////////////////  Instance Methods  ///////////////////////
+
+    /**
+     * Returns the <code>Cache</code> that already exists.
+     *
+     * @since GemFire 4.0
+     */
+    public Cache getCache() {
+        return this.cache;
+    }
 }

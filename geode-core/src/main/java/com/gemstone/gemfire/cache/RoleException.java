@@ -19,49 +19,52 @@ package com.gemstone.gemfire.cache;
 /**
  * <code>RoleException</code> is the superclass of those exceptions
  * that can be thrown to indicate a reliability failure on one or more {@link
- * Region regions} that have been configured with required roles using 
+ * Region regions} that have been configured with required roles using
  * {@link MembershipAttributes}.
  *
  * @deprecated this feature is scheduled to be removed
  */
 public abstract class RoleException extends CacheRuntimeException {
-  private static final long serialVersionUID = -7521056108445887394L;
+    private static final long serialVersionUID = -7521056108445887394L;
 
-  /**
-   * Creates a new instance of <code>RoleException</code> without
-   * detail message.
-   */
-  public RoleException() {
-  }
-  
-  
-  /**
-   * Constructs an instance of <code>RoleException</code> with the
-   * specified detail message.
-   * @param msg the detail message
-   */
-  public RoleException(String msg) {
-    super(msg);
-  }
-  
-  /**
-   * Constructs an instance of <code>RoleException</code> with the
-   * specified detail message and cause.
-   * @param msg the detail message
-   * @param cause the causal Throwable
-   */
-  public RoleException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
-  
-  /**
-   * Constructs an instance of <code>RoleException</code> with the
-   * specified cause.
-   * @param cause the causal Throwable
-   */
-  public RoleException(Throwable cause) {
-    super(cause);
-  }
+    /**
+     * Creates a new instance of <code>RoleException</code> without
+     * detail message.
+     */
+    public RoleException() {
+    }
+
+
+    /**
+     * Constructs an instance of <code>RoleException</code> with the
+     * specified detail message.
+     *
+     * @param msg the detail message
+     */
+    public RoleException(String msg) {
+        super(msg);
+    }
+
+    /**
+     * Constructs an instance of <code>RoleException</code> with the
+     * specified detail message and cause.
+     *
+     * @param msg   the detail message
+     * @param cause the causal Throwable
+     */
+    public RoleException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+
+    /**
+     * Constructs an instance of <code>RoleException</code> with the
+     * specified cause.
+     *
+     * @param cause the causal Throwable
+     */
+    public RoleException(Throwable cause) {
+        super(cause);
+    }
 
 }
 

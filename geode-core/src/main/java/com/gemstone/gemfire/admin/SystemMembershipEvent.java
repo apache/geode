@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.admin;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
+
 /**
  * An event that describes the distributed member originated this event.
  * Instances of this are delivered to a {@link SystemMembershipListener} when a
@@ -26,15 +27,16 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMembershipEvent {
-  /**
-   * Returns the distributed member as a String.
-   */
-  public String getMemberId();
+    /**
+     * Returns the distributed member as a String.
+     */
+    public String getMemberId();
 
-  /**
-   * Returns the {@link DistributedMember} that this event originated in.
-   * @return the member that performed the operation that originated this event.
-   * @since GemFire 5.0
-   */
-  public DistributedMember getDistributedMember();
+    /**
+     * Returns the {@link DistributedMember} that this event originated in.
+     *
+     * @return the member that performed the operation that originated this event.
+     * @since GemFire 5.0
+     */
+    public DistributedMember getDistributedMember();
 }

@@ -24,40 +24,43 @@ import java.io.DataInput;
  * {@link Delta} may also choose to throw this in
  * {@link Delta#fromDelta(DataInput in)}. GemFire, on encountering this
  * exception distributes the full application object.
- * 
+ *
  * @since GemFire 6.1
  */
 public class InvalidDeltaException extends GemFireException {
 
-  /**
-   * Creates a new <code>InvalidDeltaException</code>. 
-   */
-  public InvalidDeltaException() {
-  }
+    /**
+     * Creates a new <code>InvalidDeltaException</code>.
+     */
+    public InvalidDeltaException() {
+    }
 
-  /**
-   * Creates a new <code>InvalidDeltaException</code>. 
-   * @param msg String explaining the exception
-   */
-  public InvalidDeltaException(String msg) {
-    super(msg);
-  }
+    /**
+     * Creates a new <code>InvalidDeltaException</code>.
+     *
+     * @param msg String explaining the exception
+     */
+    public InvalidDeltaException(String msg) {
+        super(msg);
+    }
 
-  /**
-   * Creates a new <code>InvalidDeltaException</code>. 
-   * @param e Throwable
-   */
-  public InvalidDeltaException(Throwable e) {
-    super(e);
-  }
+    /**
+     * Creates a new <code>InvalidDeltaException</code>.
+     *
+     * @param e Throwable
+     */
+    public InvalidDeltaException(Throwable e) {
+        super(e);
+    }
 
-  /**
-   * Creates a new <code>InvalidDeltaException</code>. 
-   * @param msg String explaining the exception
-   * @param e Throwable
-   */
-  public InvalidDeltaException(String msg, Throwable e) {
-    super(msg, e);
-  }
+    /**
+     * Creates a new <code>InvalidDeltaException</code>.
+     *
+     * @param msg String explaining the exception
+     * @param e   Throwable
+     */
+    public InvalidDeltaException(String msg, Throwable e) {
+        super(msg, e);
+    }
 
 }

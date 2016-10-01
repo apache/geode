@@ -19,58 +19,59 @@ package com.gemstone.gemfire.admin;
 /**
  * Provides configuration information relating to the health of an
  * entire GemFire distributed system.
- *
- * <P>
- *
+ * <p>
+ * <p>
+ * <p>
  * If any of the following criteria is
  * true, then the distributed system is considered to be in
  * {@link GemFireHealth#OKAY_HEALTH OKAY_HEALTH}.
- *
+ * <p>
  * <UL>
- *
+ * <p>
  * </UL>
- *
+ * <p>
  * If any of the following criteria is true, then the distributed
  * system is considered to be in {@link GemFireHealth#POOR_HEALTH
  * POOR_HEALTH}.
- *
+ * <p>
  * <UL>
- *
+ * <p>
  * <LI>Too many application members {@linkplain
  * #getMaxDepartedApplications unexpectedly leave} the distributed
  * system.</LI>
- *
+ * <p>
  * <LI>Too many application members {@linkplain
  * #getMaxDepartedApplications unexpectedly leave} the distributed
  * system.</LI>
- *
+ * <p>
  * </UL>
- *
  *
  * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
- * */
+ */
 public interface DistributedSystemHealthConfig {
 
-  /** The default maximum number of application members that can
-   * unexceptedly leave a healthy the distributed system. */
-  public static final long DEFAULT_MAX_DEPARTED_APPLICATIONS = 10;
+    /**
+     * The default maximum number of application members that can
+     * unexceptedly leave a healthy the distributed system.
+     */
+    public static final long DEFAULT_MAX_DEPARTED_APPLICATIONS = 10;
 
-  ///////////////////////  Instance Methods  ///////////////////////
+    ///////////////////////  Instance Methods  ///////////////////////
 
-  /**
-   * Returns the maximum number of application members that can
-   * unexceptedly leave a healthy the distributed system.
-   *
-   * @see #DEFAULT_MAX_DEPARTED_APPLICATIONS
-   */
-  public long getMaxDepartedApplications();
+    /**
+     * Returns the maximum number of application members that can
+     * unexceptedly leave a healthy the distributed system.
+     *
+     * @see #DEFAULT_MAX_DEPARTED_APPLICATIONS
+     */
+    public long getMaxDepartedApplications();
 
-  /**
-   * Sets the maximum number of application members that can
-   * unexceptedly leave a healthy the distributed system.
-   *
-   * @see #getMaxDepartedApplications
-   */
-  public void setMaxDepartedApplications(long maxDepartedApplications);
+    /**
+     * Sets the maximum number of application members that can
+     * unexceptedly leave a healthy the distributed system.
+     *
+     * @see #getMaxDepartedApplications
+     */
+    public void setMaxDepartedApplications(long maxDepartedApplications);
 }

@@ -19,20 +19,20 @@ package com.gemstone.gemfire.cache;
 
 import java.util.Set;
 
-/** 
- * Contains information about an event affecting a region reliability, 
- * including its identity and the circumstances of the event. This is 
+/**
+ * Contains information about an event affecting a region reliability,
+ * including its identity and the circumstances of the event. This is
  * passed in to {@link RegionRoleListener}.
  *
- * @deprecated this feature is scheduled to be removed
  * @see RegionRoleListener
+ * @deprecated this feature is scheduled to be removed
  */
-public interface RoleEvent<K,V> extends RegionEvent<K,V> {
-  
-  /**
-   * Returns the required roles that were lost or gained because of this
-   * event.
-   */
-  public Set<String> getRequiredRoles();
-  
+public interface RoleEvent<K, V> extends RegionEvent<K, V> {
+
+    /**
+     * Returns the required roles that were lost or gained because of this
+     * event.
+     */
+    public Set<String> getRequiredRoles();
+
 }

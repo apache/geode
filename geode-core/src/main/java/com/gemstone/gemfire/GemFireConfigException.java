@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-   
+
 package com.gemstone.gemfire;
 
 /**
@@ -22,21 +22,21 @@ package com.gemstone.gemfire;
  * while processing a GemFire configuration XML file.
  */
 public class GemFireConfigException extends GemFireException {
-private static final long serialVersionUID = 7791789785331120991L;
+    private static final long serialVersionUID = 7791789785331120991L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>GemFireConfigException</code>.
-   */
-  public GemFireConfigException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>GemFireConfigException</code>.
+     */
+    public GemFireConfigException(String message) {
+        super(message);
+    }
 
-  /**
-   * Creates a new <code>GemFireConfigException</code>.
-   */
-  public GemFireConfigException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * Creates a new <code>GemFireConfigException</code>.
+     */
+    public GemFireConfigException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

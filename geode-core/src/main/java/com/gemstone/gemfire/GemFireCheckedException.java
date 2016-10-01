@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-   
+
 package com.gemstone.gemfire;
 
 /**
@@ -23,68 +23,68 @@ package com.gemstone.gemfire;
  * <p>
  * This class ought to be called <em>GemFireException</em>, but that name
  * is reserved for an older class that extends {@link java.lang.RuntimeException}.
- * 
+ *
  * @see com.gemstone.gemfire.GemFireException
  * @since GemFire 5.1
  */
 public abstract class GemFireCheckedException extends Exception {
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>GemFireException</code> with no detailed message.
-   */
-  public GemFireCheckedException() {
-    super();
-  }
+    /**
+     * Creates a new <code>GemFireException</code> with no detailed message.
+     */
+    public GemFireCheckedException() {
+        super();
+    }
 
-  /**
-   * Creates a new <code>GemFireCheckedException</code> with the given detail
-   * message.
-   */
-  public GemFireCheckedException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>GemFireCheckedException</code> with the given detail
+     * message.
+     */
+    public GemFireCheckedException(String message) {
+        super(message);
+    }
 
-  /**
-   * Creates a new <code>GemFireException</code> with the given detail
-   * message and cause.
-   */
-  public GemFireCheckedException(String message, Throwable cause) {
-    super(message);
-    this.initCause(cause);
-  }
-  
-  /**
-   * Creates a new <code>GemFireCheckedException</code> with the given cause and
-   * no detail message
-   */
-  public GemFireCheckedException(Throwable cause) {
-    super();
-    this.initCause(cause);
-  }
+    /**
+     * Creates a new <code>GemFireException</code> with the given detail
+     * message and cause.
+     */
+    public GemFireCheckedException(String message, Throwable cause) {
+        super(message);
+        this.initCause(cause);
+    }
 
-  ////////////////////  Instance Methods  ////////////////////
+    /**
+     * Creates a new <code>GemFireCheckedException</code> with the given cause and
+     * no detail message
+     */
+    public GemFireCheckedException(Throwable cause) {
+        super();
+        this.initCause(cause);
+    }
 
-  /**
-   * Returns the root cause of this <code>GemFireCheckedException</code> or
-   * <code>null</code> if the cause is nonexistent or unknown.
-   */
-  public Throwable getRootCause() {
-      if ( this.getCause() == null ) return null;
-      Throwable root = this.getCause();
-      while ( root != null ) {
+    ////////////////////  Instance Methods  ////////////////////
+
+    /**
+     * Returns the root cause of this <code>GemFireCheckedException</code> or
+     * <code>null</code> if the cause is nonexistent or unknown.
+     */
+    public Throwable getRootCause() {
+        if (this.getCause() == null) return null;
+        Throwable root = this.getCause();
+        while (root != null) {
 //          if ( ! ( root instanceof GemFireCheckedException )) {
 //              break;
 //          }
 //          GemFireCheckedException tmp = (GemFireCheckedException) root;
-          if ( root.getCause() == null ) {
-              break;
-          } else {
-              root = root.getCause();
-          }
-      }
-      return root;
-  }
-  
+            if (root.getCause() == null) {
+                break;
+            } else {
+                root = root.getCause();
+            }
+        }
+        return root;
+    }
+
 }

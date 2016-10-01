@@ -22,8 +22,6 @@ import javax.resource.Referenceable;
 import javax.resource.ResourceException;
 
 
-
-public interface GFConnectionFactory extends Referenceable, Serializable
-{
-  public GFConnection getConnection() throws ResourceException;
+public interface GFConnectionFactory extends Referenceable, Serializable {
+    GFConnection getConnection() throws ResourceException;
 }

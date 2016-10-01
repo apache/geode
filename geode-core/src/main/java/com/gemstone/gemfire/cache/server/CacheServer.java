@@ -16,16 +16,14 @@
  */
 package com.gemstone.gemfire.cache.server;
 
-import java.io.IOException;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.ClientSession;
 import com.gemstone.gemfire.cache.InterestRegistrationListener;
 import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.cache.server.internal.ConnectionCountProbe;
 import com.gemstone.gemfire.distributed.DistributedMember;
+
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * A cache server that serves the contents of a

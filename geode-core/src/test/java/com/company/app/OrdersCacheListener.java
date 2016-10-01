@@ -25,27 +25,39 @@ import com.gemstone.gemfire.cache.*;
  */
 public class OrdersCacheListener implements CacheListener, Declarable {
 
-  public OrdersCacheListener() {}
+    public OrdersCacheListener() {
+    }
 
-  public void afterCreate(EntryEvent event) {}
+    public void afterCreate(EntryEvent event) {
+    }
 
-  public void afterUpdate(EntryEvent event) {}
+    public void afterUpdate(EntryEvent event) {
+    }
 
-  public void afterInvalidate(EntryEvent event) {}
+    public void afterInvalidate(EntryEvent event) {
+    }
 
-  public void afterDestroy(EntryEvent event) {}
+    public void afterDestroy(EntryEvent event) {
+    }
 
-  public void afterRegionInvalidate(RegionEvent event) {}
+    public void afterRegionInvalidate(RegionEvent event) {
+    }
 
-  public void afterRegionDestroy(RegionEvent event) {}
+    public void afterRegionDestroy(RegionEvent event) {
+    }
 
-  public void afterRegionClear(RegionEvent event) {}
-  
-  public void afterRegionCreate(RegionEvent event) {}
-  
-  public void afterRegionLive(RegionEvent event) {}
-  
-  public void close() {}
-  
-  public void init(java.util.Properties props) {}
+    public void afterRegionClear(RegionEvent event) {
+    }
+
+    public void afterRegionCreate(RegionEvent event) {
+    }
+
+    public void afterRegionLive(RegionEvent event) {
+    }
+
+    public void close() {
+    }
+
+    public void init(java.util.Properties props) {
+    }
 }

@@ -29,21 +29,22 @@ package com.gemstone.gemfire;
  * <p>As of GemFire 5.0 this exception should be named UnstartedLocatorException.
  */
 public class UnstartedSystemException extends NoSystemException {
-private static final long serialVersionUID = -4285897556527521788L;
+    private static final long serialVersionUID = -4285897556527521788L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>UnstartedSystemException</code>.
-   */
-  public UnstartedSystemException(String message) {
-    super(message);
-  }
-  /**
-   * Creates a new <code>UnstartedSystemException</code> with the given message
-   * and cause.
-   */
-  public UnstartedSystemException(String message, Throwable cause) {
-      super(message, cause);
-  }
+    /**
+     * Creates a new <code>UnstartedSystemException</code>.
+     */
+    public UnstartedSystemException(String message) {
+        super(message);
+    }
+
+    /**
+     * Creates a new <code>UnstartedSystemException</code> with the given message
+     * and cause.
+     */
+    public UnstartedSystemException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

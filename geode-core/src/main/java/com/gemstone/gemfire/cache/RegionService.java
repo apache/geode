@@ -48,32 +48,34 @@ import com.gemstone.gemfire.pdx.PdxInstanceFactory;
  * @since GemFire 6.5
  */
 public interface RegionService extends AutoCloseable {
-  /**
-   * the cancellation criterion for this service
-   * @return the service's cancellation object
-   */
-  public CancelCriterion getCancelCriterion();
-  /**
-   * Return the existing region (or subregion) with the specified
-   * path.
-   * Whether or not the path starts with a forward slash it is interpreted as a
-   * full path starting at a root.
-   *
-   * @param path the path to the region
-   * @return the Region or null if not found
-   * @throws IllegalArgumentException if path is null, the empty string, or "/"
-   */
-  public <K,V> Region<K,V> getRegion(String path);
+    /**
+     * the cancellation criterion for this service
+     *
+     * @return the service's cancellation object
+     */
+    public CancelCriterion getCancelCriterion();
 
-  /**
-   * Returns unmodifiable set of the root regions that are in the region service.
-   * This set is a snapshot; it is not backed by the region service.
-   *
-   * @return a Set of regions
-   */
-  public Set<Region<?,?>> rootRegions();
-  
-  // We did not have time to add this feature to 6.6.2
+    /**
+     * Return the existing region (or subregion) with the specified
+     * path.
+     * Whether or not the path starts with a forward slash it is interpreted as a
+     * full path starting at a root.
+     *
+     * @param path the path to the region
+     * @return the Region or null if not found
+     * @throws IllegalArgumentException if path is null, the empty string, or "/"
+     */
+    public <K, V> Region<K, V> getRegion(String path);
+
+    /**
+     * Returns unmodifiable set of the root regions that are in the region service.
+     * This set is a snapshot; it is not backed by the region service.
+     *
+     * @return a Set of regions
+     */
+    public Set<Region<?, ?>> rootRegions();
+
+    // We did not have time to add this feature to 6.6.2
 //  /**
 //   * Returns a factory that can create a {@link PdxInstance}.
 //   * If you want to be able to deserialize the PdxInstance then name
@@ -91,51 +93,57 @@ public interface RegionService extends AutoCloseable {
 //   */
 //  public PdxInstanceFactory createPdxInstanceFactory(String name, boolean expectDomainClass);
 
-  /**
-   * Returns a factory that can create a {@link PdxInstance}.
-   * @param className the fully qualified class name that the PdxInstance will become
-   *   when it is fully deserialized.
-   * @return the factory
-   * @since GemFire 6.6.2
-   */
-  public PdxInstanceFactory createPdxInstanceFactory(String className);
-  /**
-   * Creates and returns a PdxInstance that represents an enum value.
-   * @param className the name of the enum class
-   * @param enumName the name of the enum constant
-   * @param enumOrdinal the ordinal value of the enum constant
-   * @return a PdxInstance that represents the enum value
-   * @throws IllegalArgumentException if className or enumName are <code>null</code>.
-   * @since GemFire 6.6.2
-   */
-  public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal);
+    /**
+     * Returns a factory that can create a {@link PdxInstance}.
+     *
+     * @param className the fully qualified class name that the PdxInstance will become
+     *                  when it is fully deserialized.
+     * @return the factory
+     * @since GemFire 6.6.2
+     */
+    public PdxInstanceFactory createPdxInstanceFactory(String className);
 
-  /**
-   * Return the QueryService for this region service.
-   * For a region service in a client the returned QueryService will
-   * execute queries on the server.
-   * For a region service not in a client the returned QueryService will
-   * execute queries on the local and peer regions.
-   */
-  public QueryService getQueryService();
-  /**
-   * Terminates this region service and releases all its resources.
-   * Calls {@link Region#close} on each region in the service.
-   * After this service is closed, any further
-   * method calls on this service or any region object
-   * obtained from the service will throw
-   * {@link CacheClosedException}, unless otherwise noted.
-   * @throws CacheClosedException if the service is already closed.
-   */
-  public void close();
-  /**
-   * Indicates if this region service has been closed.
-   * After a new service is created, this method returns false;
-   * After close is called on this service, this method
-   * returns true. This method does not throw <code>CacheClosedException</code>
-   * if the service is closed.
-   *
-   * @return true, if this service has just been created or has started to close; false, otherwise
-   */
-  public boolean isClosed();
+    /**
+     * Creates and returns a PdxInstance that represents an enum value.
+     *
+     * @param className   the name of the enum class
+     * @param enumName    the name of the enum constant
+     * @param enumOrdinal the ordinal value of the enum constant
+     * @return a PdxInstance that represents the enum value
+     * @throws IllegalArgumentException if className or enumName are <code>null</code>.
+     * @since GemFire 6.6.2
+     */
+    public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal);
+
+    /**
+     * Return the QueryService for this region service.
+     * For a region service in a client the returned QueryService will
+     * execute queries on the server.
+     * For a region service not in a client the returned QueryService will
+     * execute queries on the local and peer regions.
+     */
+    public QueryService getQueryService();
+
+    /**
+     * Terminates this region service and releases all its resources.
+     * Calls {@link Region#close} on each region in the service.
+     * After this service is closed, any further
+     * method calls on this service or any region object
+     * obtained from the service will throw
+     * {@link CacheClosedException}, unless otherwise noted.
+     *
+     * @throws CacheClosedException if the service is already closed.
+     */
+    public void close();
+
+    /**
+     * Indicates if this region service has been closed.
+     * After a new service is created, this method returns false;
+     * After close is called on this service, this method
+     * returns true. This method does not throw <code>CacheClosedException</code>
+     * if the service is closed.
+     *
+     * @return true, if this service has just been created or has started to close; false, otherwise
+     */
+    public boolean isClosed();
 }

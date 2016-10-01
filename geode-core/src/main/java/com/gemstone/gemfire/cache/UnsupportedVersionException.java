@@ -22,23 +22,23 @@ package com.gemstone.gemfire.cache;
  * @since GemFire 5.7
  */
 public class UnsupportedVersionException extends VersionException {
-private static final long serialVersionUID = 1152280300663399399L;
+    private static final long serialVersionUID = 1152280300663399399L;
 
-  /**
-   * Constructs a new <code>UnsupportedVersionException</code>.
-   * 
-   * @param versionOrdinal The ordinal of the requested <code>Version</code>
-   */
-  public UnsupportedVersionException(short versionOrdinal) {
-    super(String.valueOf(versionOrdinal));
-  }
-  
-  /**
-   * Constructs a new <code>UnsupportedVersionException</code>.
-   * 
-   * @param message The exception message
-   */
-  public UnsupportedVersionException(String message) {
-    super(message);
-  }
+    /**
+     * Constructs a new <code>UnsupportedVersionException</code>.
+     *
+     * @param versionOrdinal The ordinal of the requested <code>Version</code>
+     */
+    public UnsupportedVersionException(short versionOrdinal) {
+        super(String.valueOf(versionOrdinal));
+    }
+
+    /**
+     * Constructs a new <code>UnsupportedVersionException</code>.
+     *
+     * @param message The exception message
+     */
+    public UnsupportedVersionException(String message) {
+        super(message);
+    }
 }

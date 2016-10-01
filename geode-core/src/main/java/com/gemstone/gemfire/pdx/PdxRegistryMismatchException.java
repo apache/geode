@@ -21,17 +21,18 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown when a an attempt is made to reuse a PDX Type. This
  * can occur if the PDX registry files are deleted from the sending
- * side of a WAN Gateway. 
+ * side of a WAN Gateway.
  */
 public class PdxRegistryMismatchException extends GemFireException {
 
-  private static final long serialVersionUID = -2329989020829052537L;
+    private static final long serialVersionUID = -2329989020829052537L;
 
-  /**
-   * Constructs a new exception with the given message
-   * @param message the message of the new exception
-   */
-  public PdxRegistryMismatchException(String message) {
-    super(message);
-  }
+    /**
+     * Constructs a new exception with the given message
+     *
+     * @param message the message of the new exception
+     */
+    public PdxRegistryMismatchException(String message) {
+        super(message);
+    }
 }

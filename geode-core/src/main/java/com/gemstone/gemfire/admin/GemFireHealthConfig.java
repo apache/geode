@@ -20,38 +20,39 @@ package com.gemstone.gemfire.admin;
  * Provides configuration information relating to all of the
  * components of a GemFire distributed system.
  *
- *
  * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
- * */
+ */
 public interface GemFireHealthConfig
-  extends MemberHealthConfig, CacheHealthConfig {
+        extends MemberHealthConfig, CacheHealthConfig {
 
-  /** The default number of seconds between assessments of the health
-   * of the GemFire components. */
-  public static final int DEFAULT_HEALTH_EVALUATION_INTERVAL = 30;
+    /**
+     * The default number of seconds between assessments of the health
+     * of the GemFire components.
+     */
+    public static final int DEFAULT_HEALTH_EVALUATION_INTERVAL = 30;
 
-  //////////////////////  Instance Methods  //////////////////////
+    //////////////////////  Instance Methods  //////////////////////
 
-  /**
-   * Returns the name of the host to which this configuration
-   * applies.  If this is the "default" configuration, then
-   * <code>null</code> is returned.
-   *
-   * @see GemFireHealth#getGemFireHealthConfig
-   */
-  public String getHostName();
+    /**
+     * Returns the name of the host to which this configuration
+     * applies.  If this is the "default" configuration, then
+     * <code>null</code> is returned.
+     *
+     * @see GemFireHealth#getGemFireHealthConfig
+     */
+    public String getHostName();
 
-  /**
-   * Sets the number of seconds between assessments of the health of
-   * the GemFire components.
-   */
-  public void setHealthEvaluationInterval(int interval);
+    /**
+     * Sets the number of seconds between assessments of the health of
+     * the GemFire components.
+     */
+    public void setHealthEvaluationInterval(int interval);
 
-  /**
-   * Returns the number of seconds between assessments of the health of
-   * the GemFire components.
-   */
-  public int getHealthEvaluationInterval();
+    /**
+     * Returns the number of seconds between assessments of the health of
+     * the GemFire components.
+     */
+    public int getHealthEvaluationInterval();
 
 }

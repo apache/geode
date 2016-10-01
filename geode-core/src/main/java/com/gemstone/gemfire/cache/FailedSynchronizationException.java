@@ -21,12 +21,12 @@ import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
-/** Thrown when a cache transaction fails to register with the
+/**
+ * Thrown when a cache transaction fails to register with the
  * <code>UserTransaction</code> (aka JTA transaction), most likely the
  * cause of the <code>UserTransaction</code>'s
  * <code>javax.transaction.Status#STATUS_MARKED_ROLLBACK</code>
  * status.
- *
  *
  * @see UserTransaction#setRollbackOnly
  * @see Transaction#registerSynchronization
@@ -34,25 +34,28 @@ import javax.transaction.UserTransaction;
  * @since GemFire 4.0
  */
 public class FailedSynchronizationException extends CacheRuntimeException {
-private static final long serialVersionUID = -6225053492344591496L;
-  /**
-   * Constructs an instance of
-   * <code>FailedSynchronizationException</code> with the
-   * specified detail message.
-   * @param msg the detail message
-   */
-  public FailedSynchronizationException(String msg) {
-    super(msg);
-  }
-  
-  /**
-   * Constructs an instance of
-   * <code>FailedSynchronizationException</code> with the
-   * specified detail message and cause.
-   * @param msg the detail message
-   * @param cause the causal Throwable
-   */
-  public FailedSynchronizationException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
+    private static final long serialVersionUID = -6225053492344591496L;
+
+    /**
+     * Constructs an instance of
+     * <code>FailedSynchronizationException</code> with the
+     * specified detail message.
+     *
+     * @param msg the detail message
+     */
+    public FailedSynchronizationException(String msg) {
+        super(msg);
+    }
+
+    /**
+     * Constructs an instance of
+     * <code>FailedSynchronizationException</code> with the
+     * specified detail message and cause.
+     *
+     * @param msg   the detail message
+     * @param cause the causal Throwable
+     */
+    public FailedSynchronizationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

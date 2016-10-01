@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-   
+
 package com.gemstone.gemfire;
 
 /**
@@ -22,34 +22,32 @@ package com.gemstone.gemfire;
  * a low level, internal, operation fails due to no fault of
  * the user. The message often contains an operating system
  * error code.
- *
- *
  */
 public class InternalGemFireException extends GemFireException {
-private static final long serialVersionUID = -6912843691545178619L;
+    private static final long serialVersionUID = -6912843691545178619L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  public InternalGemFireException() {
-    super();
-  }
+    public InternalGemFireException() {
+        super();
+    }
 
-  public InternalGemFireException(Throwable cause) {
-    super(cause);
-  }
+    public InternalGemFireException(Throwable cause) {
+        super(cause);
+    }
 
-  /**
-   * Creates a new <code>InternalGemFireException</code>.
-   */
-  public InternalGemFireException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>InternalGemFireException</code>.
+     */
+    public InternalGemFireException(String message) {
+        super(message);
+    }
 
-  /**
-   * Creates a new <code>InternalGemFireException</code> that was
-   * caused by a given exception
-   */
-  public InternalGemFireException(String message, Throwable thr) {
-    super(message, thr);
-  }
+    /**
+     * Creates a new <code>InternalGemFireException</code> that was
+     * caused by a given exception
+     */
+    public InternalGemFireException(String message, Throwable thr) {
+        super(message, thr);
+    }
 }

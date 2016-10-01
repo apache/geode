@@ -21,8 +21,6 @@ package com.gemstone.gemfire.cache;
  * Thrown if statistics are requested when statistics are disabled on the
  * region.
  *
- *
- *
  * @see AttributesFactory#setStatisticsEnabled
  * @see RegionAttributes#getStatisticsEnabled
  * @see Region#getStatistics
@@ -30,38 +28,41 @@ package com.gemstone.gemfire.cache;
  * @since GemFire 3.0
  */
 public class StatisticsDisabledException extends CacheRuntimeException {
-private static final long serialVersionUID = -2987721454129719551L;
-  
-  /**
-   * Creates a new instance of <code>StatisticsDisabledException</code> without detail message.
-   */
-  public StatisticsDisabledException() {
-  }
-  
-  
-  /**
-   * Constructs an instance of <code>StatisticsDisabledException</code> with the specified detail message.
-   * @param msg the detail message
-   */
-  public StatisticsDisabledException(String msg) {
-    super(msg);
-  }
-  
-  /**
-   * Constructs an instance of <code>StatisticsDisabledException</code> with the specified detail message
-   * and cause.
-   * @param msg the detail message
-   * @param cause the causal Throwable
-   */
-  public StatisticsDisabledException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
-  
-  /**
-   * Constructs an instance of <code>StatisticsDisabledException</code> with the specified cause.
-   * @param cause the causal Throwable
-   */
-  public StatisticsDisabledException(Throwable cause) {
-    super(cause);
-  }
+    private static final long serialVersionUID = -2987721454129719551L;
+
+    /**
+     * Creates a new instance of <code>StatisticsDisabledException</code> without detail message.
+     */
+    public StatisticsDisabledException() {
+    }
+
+
+    /**
+     * Constructs an instance of <code>StatisticsDisabledException</code> with the specified detail message.
+     *
+     * @param msg the detail message
+     */
+    public StatisticsDisabledException(String msg) {
+        super(msg);
+    }
+
+    /**
+     * Constructs an instance of <code>StatisticsDisabledException</code> with the specified detail message
+     * and cause.
+     *
+     * @param msg   the detail message
+     * @param cause the causal Throwable
+     */
+    public StatisticsDisabledException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+
+    /**
+     * Constructs an instance of <code>StatisticsDisabledException</code> with the specified cause.
+     *
+     * @param cause the causal Throwable
+     */
+    public StatisticsDisabledException(Throwable cause) {
+        super(cause);
+    }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire.pdx;
 
@@ -29,17 +29,18 @@ import com.gemstone.gemfire.GemFireException;
  * The writeXXX methods on {@link PdxWriter} define the field type.
  * <p>This exception can also be caused by {@link WritablePdxInstance#setField(String, Object) setField}
  * trying to set a value whose type is not compatible with the field.
- * @since GemFire 6.6
  *
+ * @since GemFire 6.6
  */
 public class PdxFieldTypeMismatchException extends GemFireException {
-  private static final long serialVersionUID = -829617162170742740L;
+    private static final long serialVersionUID = -829617162170742740L;
 
-  /**
-   * Constructs a new exception with the given message
-   * @param message the message of the new exception
-   */
-  public PdxFieldTypeMismatchException(String message) {
-    super(message);
-  }
+    /**
+     * Constructs a new exception with the given message
+     *
+     * @param message the message of the new exception
+     */
+    public PdxFieldTypeMismatchException(String message) {
+        super(message);
+    }
 }

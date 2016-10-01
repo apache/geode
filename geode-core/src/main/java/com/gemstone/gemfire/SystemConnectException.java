@@ -25,18 +25,18 @@ package com.gemstone.gemfire;
  * in other processes.
  */
 public class SystemConnectException extends GemFireException {
-private static final long serialVersionUID = -7378174428634468238L;
+    private static final long serialVersionUID = -7378174428634468238L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>SystemConnectException</code>.
-   */
-  public SystemConnectException(String message) {
-    super(message);
-  }
-  
-  public SystemConnectException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * Creates a new <code>SystemConnectException</code>.
+     */
+    public SystemConnectException(String message) {
+        super(message);
+    }
+
+    public SystemConnectException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -20,6 +20,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
+
 import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
 
 
@@ -40,20 +41,20 @@ import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
  */
 public class OQLJavaDemo {
 
-  public static void main(String[] argv) {
+    public static void main(String[] argv) {
 
-    if (argv.length != 1) {
-      System.err.printf("Usage: OQLJavaDemo <locators>\n");
-      return;
+        if (argv.length != 1) {
+            System.err.printf("Usage: OQLJavaDemo <locators>\n");
+            return;
+        }
+
+        SparkConf conf = new SparkConf().setAppName("OQLJavaDemo");
+        conf.set(GeodeLocatorPropKey, argv[0]); // "192.168.1.47[10335]"
+        JavaSparkContext sc = new JavaSparkContext(conf);
+        SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
+        DataFrame df = javaFunctions(sqlContext).geodeOQL("select * from /str_str_region");
+        System.out.println("======= DataFrame =======\n");
+        df.show();
+        sc.stop();
     }
-
-    SparkConf conf = new SparkConf().setAppName("OQLJavaDemo");
-    conf.set(GeodeLocatorPropKey, argv[0]); // "192.168.1.47[10335]"
-    JavaSparkContext sc = new JavaSparkContext(conf);
-    SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
-    DataFrame df = javaFunctions(sqlContext).geodeOQL("select * from /str_str_region");
-    System.out.println("======= DataFrame =======\n");
-    df.show();
-    sc.stop();
-  }
 }

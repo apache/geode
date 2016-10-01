@@ -21,47 +21,51 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Utility methods for managing and using Sets 
+ * Utility methods for managing and using Sets
+ *
  * @since GemFire 59poc
- * 
  */
 public final class SetUtils {
-  public static  <T> boolean intersectsWith(final Set<? extends T> a, final Set<? extends T> b) {
-    if (a == b) {
-      return true;
+    public static <T> boolean intersectsWith(final Set<? extends T> a, final Set<? extends T> b) {
+        if (a == b) {
+            return true;
+        }
+        final Set/*<T>*/ lSet, sSet;
+        if (a.size() >= b.size()) {
+            lSet = a;
+            sSet = b;
+        } else {
+            lSet = b;
+            sSet = a;
+        }
+        for (Iterator i = sSet.iterator(); i.hasNext(); ) {
+            Object item = i.next();
+            if (lSet.contains(item)) {
+                return true;
+            }
+        }
+        return false;
     }
-    final Set/*<T>*/ lSet, sSet;
-    if (a.size() >= b.size()) {
-      lSet = a; sSet = b;
-    } else {
-      lSet = b; sSet = a;
+
+    public static /*T*/ Set/*<T>*/ intersection(final Set/*<T>*/ a, final Set/*<T>*/ b) {
+        if (a == b) {
+            return a;
+        }
+        final Set/*<T>*/ lSet, sSet;
+        if (a.size() >= b.size()) {
+            lSet = a;
+            sSet = b;
+        } else {
+            lSet = b;
+            sSet = a;
+        }
+        HashSet /*<T>*/ ret = new HashSet/*<T>*/();
+        for (Iterator i = sSet.iterator(); i.hasNext(); ) {
+            Object item = i.next();
+            if (lSet.contains(item)) {
+                ret.add(item);
+            }
+        }
+        return ret;
     }
-    for (Iterator i=sSet.iterator(); i.hasNext(); ) {
-      Object item = i.next();
-      if (lSet.contains(item)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  
-  public static /*T*/ Set/*<T>*/ intersection(final Set/*<T>*/ a, final Set/*<T>*/ b) {
-    if (a == b) {
-      return a;
-    }
-    final Set/*<T>*/ lSet, sSet;
-    if (a.size() >= b.size()) {
-      lSet = a; sSet = b;
-    } else {
-      lSet = b; sSet = a;
-    }
-    HashSet /*<T>*/ ret = new HashSet/*<T>*/();
-    for (Iterator i=sSet.iterator(); i.hasNext(); ) {
-      Object item = i.next();
-      if (lSet.contains(item)) {
-        ret.add(item);
-      }
-    }
-    return ret;
-  }
 }

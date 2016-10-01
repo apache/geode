@@ -17,7 +17,8 @@
 
 package com.gemstone.gemfire.cache;
 
-/** Thrown when attempting to create a <code>Region.Entry</code> that already
+/**
+ * Thrown when attempting to create a <code>Region.Entry</code> that already
  * exists in the <code>Region</code>.
  *
  * @see com.gemstone.gemfire.cache.Region#create(Object, Object)
@@ -26,36 +27,37 @@ package com.gemstone.gemfire.cache;
  */
 public class EntryExistsException extends CacheException {
 
-  private static final long serialVersionUID = 2925082493103537925L;
+    private static final long serialVersionUID = 2925082493103537925L;
 
-  private Object oldValue;
+    private Object oldValue;
 
-  /**
-   * Constructs an instance of <code>EntryExistsException</code> with the specified detail message.
-   * @param msg the detail message
-   * @since GemFire 6.5
-   */
-  public EntryExistsException(String msg, Object oldValue) {
-    super(msg);
-    this.oldValue = oldValue;
-  }
+    /**
+     * Constructs an instance of <code>EntryExistsException</code> with the specified detail message.
+     *
+     * @param msg the detail message
+     * @since GemFire 6.5
+     */
+    public EntryExistsException(String msg, Object oldValue) {
+        super(msg);
+        this.oldValue = oldValue;
+    }
 
-  /**
-   * Returns the old existing value that caused this exception.
-   */
-  public Object getOldValue() {
-    return this.oldValue;
-  }
+    /**
+     * Returns the old existing value that caused this exception.
+     */
+    public Object getOldValue() {
+        return this.oldValue;
+    }
 
-  /**
-   * Sets the old existing value that caused this exception.
-   */
-  public void setOldValue(Object oldValue) {
-    this.oldValue = oldValue;
-  }
+    /**
+     * Sets the old existing value that caused this exception.
+     */
+    public void setOldValue(Object oldValue) {
+        this.oldValue = oldValue;
+    }
 
-  @Override
-  public String toString() {
-    return super.toString() + ", with oldValue: " + oldValue;
-  }
+    @Override
+    public String toString() {
+        return super.toString() + ", with oldValue: " + oldValue;
+    }
 }

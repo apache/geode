@@ -20,16 +20,16 @@ import java.lang.Error;
 
 public class TestException extends Error {
 
-  public TestException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    public TestException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-public TestException(String name) {
-   super(name);
-}
+    public TestException(String name) {
+        super(name);
+    }
 
-public TestException(StringBuffer name) {
-   super(name.toString());
-}
+    public TestException(StringBuffer name) {
+        super(name.toString());
+    }
 
 }

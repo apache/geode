@@ -17,12 +17,13 @@
 package com.gemstone.gemfire.admin;
 
 //import com.gemstone.gemfire.cache.CacheException;
+
 import com.gemstone.gemfire.cache.CacheRuntimeException;
 
 /**
  * Thrown by the administration API when the region administered by a
  * {@link SystemMemberRegion} has been closed or destroyed in system
- * member. 
+ * member.
  * <P>Also thrown by {@link com.gemstone.gemfire.DataSerializer#readRegion(java.io.DataInput)}
  * if the named region no longer exists.
  *
@@ -30,10 +31,10 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class RegionNotFoundException extends CacheRuntimeException {
-private static final long serialVersionUID = 1758668137691463909L;
+    private static final long serialVersionUID = 1758668137691463909L;
 
-  public RegionNotFoundException(String message) {
-    super(message);
-  }
-  
+    public RegionNotFoundException(String message) {
+        super(message);
+    }
+
 }

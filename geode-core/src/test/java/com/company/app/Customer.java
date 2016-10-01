@@ -25,12 +25,12 @@ import com.gemstone.gemfire.cache.Declarable;
  */
 public class Customer implements Declarable {
 
-  public Customer() {
+    public Customer() {
 
-  }
+    }
 
-  public void init(java.util.Properties props) {
+    public void init(java.util.Properties props) {
 
-  }
+    }
 
 }

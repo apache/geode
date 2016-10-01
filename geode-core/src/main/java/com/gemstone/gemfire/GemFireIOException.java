@@ -14,27 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-   
+
 package com.gemstone.gemfire;
 
 /**
- * A <code>GemFireIOException</code> is thrown when a 
+ * A <code>GemFireIOException</code> is thrown when a
  * GemFire operation failure is caused by an <code>IOException</code>.
- *
- *
  */
 public class GemFireIOException extends GemFireException {
-private static final long serialVersionUID = 5694009444435264497L;
+    private static final long serialVersionUID = 5694009444435264497L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>GemFireIOException</code>.
-   */
-  public GemFireIOException(String message, Throwable cause) {
-    super(message, cause);
-  }
-  public GemFireIOException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>GemFireIOException</code>.
+     */
+    public GemFireIOException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public GemFireIOException(String message) {
+        super(message);
+    }
 }

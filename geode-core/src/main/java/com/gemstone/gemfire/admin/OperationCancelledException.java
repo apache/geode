@@ -28,21 +28,21 @@ package com.gemstone.gemfire.admin;
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class OperationCancelledException extends RuntimeAdminException {
-   private static final long serialVersionUID = 5474068770227602546L;
-    
+    private static final long serialVersionUID = 5474068770227602546L;
+
     public OperationCancelledException() {
-      super();
+        super();
     }
-    
-    public OperationCancelledException( String message ) {
-        super( message );
+
+    public OperationCancelledException(String message) {
+        super(message);
     }
-    
-    public OperationCancelledException( Throwable cause ){
-      super(cause);
+
+    public OperationCancelledException(Throwable cause) {
+        super(cause);
     }
-    
-    public OperationCancelledException( String message, Throwable cause ) {
-      super(message, cause);
+
+    public OperationCancelledException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

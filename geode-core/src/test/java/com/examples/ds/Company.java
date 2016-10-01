@@ -18,26 +18,30 @@ package com.examples.ds;
 
 public class Company {
 
-  /** The name of this company */
-  private String name;
+    /**
+     * The name of this company
+     */
+    private String name;
 
-  /** The address of this company */
-  private Address address;
+    /**
+     * The address of this company
+     */
+    private Address address;
 
-  /**
-   * Creates a new company
-   */
-  public Company(String name, Address address) {
-    this.name = name;
-    this.address = address;
-  }
+    /**
+     * Creates a new company
+     */
+    public Company(String name, Address address) {
+        this.name = name;
+        this.address = address;
+    }
 
-  public String getName() {
-    return this.name;
-  }
+    public String getName() {
+        return this.name;
+    }
 
-  public Address getAddress() {
-    return this.address;
-  }
+    public Address getAddress() {
+        return this.address;
+    }
 
 }

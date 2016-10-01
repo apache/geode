@@ -19,59 +19,64 @@ package com.examples;
 /**
  * A node in a linked list that is used to test that serializing
  * non-<code>Serializable</code> objects handle back references
- * correctly. 
- *
+ * correctly.
  *
  * @since GemFire 3.5
  */
 public class LinkNode {
 
-  /** The value of this LinkNode */
-  private int value;
+    /**
+     * The value of this LinkNode
+     */
+    private int value;
 
-  /** An object value in this LinkNode */
-  public Object object;
+    /**
+     * An object value in this LinkNode
+     */
+    public Object object;
 
-  /** The next node in the chain */
-  public LinkNode next;
+    /**
+     * The next node in the chain
+     */
+    public LinkNode next;
 
-  /**
-   * Creates a new <code>LinkNode</code> with the given value
-   */
-  public LinkNode(int value) {
-    this.value = value;
-  }
-
-  /**
-   * Two <code>LinkNode</code>s are equal if they have the same
-   * <code>value</code> and their <code>next</code> node have the same
-   * value.
-   */
-  public boolean equals(Object o) {
-    if (!(o instanceof LinkNode)) {
-      return false;
+    /**
+     * Creates a new <code>LinkNode</code> with the given value
+     */
+    public LinkNode(int value) {
+        this.value = value;
     }
 
-    LinkNode other = (LinkNode) o;
-    if (this.value != other.value) {
-      return false;
+    /**
+     * Two <code>LinkNode</code>s are equal if they have the same
+     * <code>value</code> and their <code>next</code> node have the same
+     * value.
+     */
+    public boolean equals(Object o) {
+        if (!(o instanceof LinkNode)) {
+            return false;
+        }
 
-    } else if (this.next == null) {
-      return other.next == null;
+        LinkNode other = (LinkNode) o;
+        if (this.value != other.value) {
+            return false;
 
-    } else if (other.next == null) {
-      return this.next == null;
+        } else if (this.next == null) {
+            return other.next == null;
 
-    } else if (other.next.value != this.next.value) {
-      return false;
+        } else if (other.next == null) {
+            return this.next == null;
 
-    } else if (this.object != null) {
-      return this.object.equals(other.object);
+        } else if (other.next.value != this.next.value) {
+            return false;
 
-    } else {
-      return other.object == null;
+        } else if (this.object != null) {
+            return this.object.equals(other.object);
+
+        } else {
+            return other.object == null;
+        }
+
     }
-
-  }
 
 }

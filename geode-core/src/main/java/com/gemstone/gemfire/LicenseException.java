@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-   
+
 package com.gemstone.gemfire;
 
 /**
@@ -25,30 +25,30 @@ package com.gemstone.gemfire;
  */
 @Deprecated
 public class LicenseException extends GemFireException {
-private static final long serialVersionUID = -1178557127300465801L;
+    private static final long serialVersionUID = -1178557127300465801L;
 
-  //////////////////////  Constructors  //////////////////////
+    //////////////////////  Constructors  //////////////////////
 
-  /**
-   * Creates a new <code>LicenseException</code>.
-   */
-  public LicenseException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new <code>LicenseException</code>.
+     */
+    public LicenseException(String message) {
+        super(message);
+    }
 
-  /**
-   * Creates a new <code>LicenseException</code> that was
-   * caused by a given exception
-   */
-  public LicenseException(String message, Throwable thr) {
-    super(message, thr);
-  }
+    /**
+     * Creates a new <code>LicenseException</code> that was
+     * caused by a given exception
+     */
+    public LicenseException(String message, Throwable thr) {
+        super(message, thr);
+    }
 
-  /**
-   * Creates a new <code>LicenseException</code> that was
-   * caused by a given exception
-   */
-  public LicenseException(Throwable thr) {
-    super(thr.getMessage(), thr);
-  }
+    /**
+     * Creates a new <code>LicenseException</code> that was
+     * caused by a given exception
+     */
+    public LicenseException(Throwable thr) {
+        super(thr.getMessage(), thr);
+    }
 }

@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Support for correctness assertions.
  * "An assertion is a statement containing a boolean expression that the
- *  programmer believes to be true at the time the statement is executed.
+ * programmer believes to be true at the time the statement is executed.
  * For example, after unmarshalling all of the arguments from a data
  * buffer, a programmer might assert that the number of bytes of data
  * remaining in the buffer is zero. The system executes the assertion by
@@ -34,12 +34,12 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * confidence that the program is free of bugs.Assertion checking may be
  * disabled for increased performance. Typically, assertion-checking is enabled
  * during program development and testing, and disabled during deployment."
- *     - from http://java.sun.com/aboutJava/communityprocess/jsr/asrt_prop.html
- *
+ * - from http://java.sun.com/aboutJava/communityprocess/jsr/asrt_prop.html
+ * <p>
  * This class does not provide a way to disable assertions for increased performance,
  * since we cannot prevent the arguments from being evaluated in any case without
  * changes to the Java language itself.
- *
+ * <p>
  * The interface to this class was designed for easy migration to the new assert
  * facility that is currently proposed for the Java language in JSR-000041
  *
@@ -48,131 +48,136 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  */
 
 public class Assert {
-  /**
-   * Assert that a boolean value is true.
-   * @param b the boolean value to check
-   * @throws InternalGemFireError if false
-   */
-  public static void assertTrue(boolean b) {
-    if (!b) {
-      throwError(null);
-    }
-  }
-
-  private static boolean debug = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "haltOnAssertFailure");
-
-  public static boolean waitForDebuggerOnError() { return debug; }
-
-  public static void fail(Object message) {
-    throwError(message);
-  }
-
-  private static void throwError(Object message) {
-    if (debug) { 
-      System.out.flush();
-      System.err.println("Assertion failure: " + message);
-      try {
-        throw new Exception(LocalizedStrings.Assert_GET_STACK_TRACE.toLocalizedString());
-      } catch (Exception ex) {
-        ex.printStackTrace();
-      }
-      System.out.println();
-      System.out.flush();
-      System.err.println("Waiting for debugger to attach"); 
-      System.err.flush();
-      while (true) {
-        try { Thread.sleep(1000); }
-        catch (InterruptedException ignore) { 
-          Thread.currentThread().interrupt();
+    /**
+     * Assert that a boolean value is true.
+     *
+     * @param b the boolean value to check
+     * @throws InternalGemFireError if false
+     */
+    public static void assertTrue(boolean b) {
+        if (!b) {
+            throwError(null);
         }
-      }
-    } else {
-      InternalGemFireError ex = null;
-      if (message != null) {
-        ex = new InternalGemFireError(message);
-      } else {
-        ex = new InternalGemFireError();
-      }
+    }
+
+    private static boolean debug = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "haltOnAssertFailure");
+
+    public static boolean waitForDebuggerOnError() {
+        return debug;
+    }
+
+    public static void fail(Object message) {
+        throwError(message);
+    }
+
+    private static void throwError(Object message) {
+        if (debug) {
+            System.out.flush();
+            System.err.println("Assertion failure: " + message);
+            try {
+                throw new Exception(LocalizedStrings.Assert_GET_STACK_TRACE.toLocalizedString());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            System.out.println();
+            System.out.flush();
+            System.err.println("Waiting for debugger to attach");
+            System.err.flush();
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignore) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        } else {
+            InternalGemFireError ex = null;
+            if (message != null) {
+                ex = new InternalGemFireError(message);
+            } else {
+                ex = new InternalGemFireError();
+            }
 //       com.gemstone.gemfire.internal.cache.GemFireCache gfc
 //         = com.gemstone.gemfire.internal.cache.GemFireCache.getInstance();
 //       if (gfc != null) {
 //         gfc.getLogger().info("DEBUG", ex);
 //       }
-      throw ex;
+            throw ex;
+        }
     }
-  }
 
-  /**
-   * Assert that a boolean value is true.The
-   * message object will be sent toString()
-   * and used for an error message.
-   *
-   * @param b the boolean value to check
-   * @param message used for error message
-   * @throws InternalGemFireError if false
-   */
-  public static void assertTrue(boolean b, Object message) {
-    if (!b) {
-      throwError(message);
+    /**
+     * Assert that a boolean value is true.The
+     * message object will be sent toString()
+     * and used for an error message.
+     *
+     * @param b       the boolean value to check
+     * @param message used for error message
+     * @throws InternalGemFireError if false
+     */
+    public static void assertTrue(boolean b, Object message) {
+        if (!b) {
+            throwError(message);
+        }
     }
-  }
-  
-  public static void assertTrue(boolean b, boolean message) {
-    if (!b) {
-      throwError(Boolean.valueOf(message));
+
+    public static void assertTrue(boolean b, boolean message) {
+        if (!b) {
+            throwError(Boolean.valueOf(message));
+        }
     }
-  }
-  
-  public static void assertTrue(boolean b, char message) {
-    if (!b) {
-      throwError(new Character(message));
+
+    public static void assertTrue(boolean b, char message) {
+        if (!b) {
+            throwError(new Character(message));
+        }
     }
-  }
-  
-  public static void assertTrue(boolean b, int message) {
-    if (!b) {
-      throwError(Integer.valueOf(message));
+
+    public static void assertTrue(boolean b, int message) {
+        if (!b) {
+            throwError(Integer.valueOf(message));
+        }
     }
-  }
-  
-  public static void assertTrue(boolean b, long message) {
-    if (!b) {
-      throwError(Long.valueOf(message));
+
+    public static void assertTrue(boolean b, long message) {
+        if (!b) {
+            throwError(Long.valueOf(message));
+        }
     }
-  }
-  
-  public static void assertTrue(boolean b, float message) {
-    if (!b) {
-      throwError(new Float(message));
+
+    public static void assertTrue(boolean b, float message) {
+        if (!b) {
+            throwError(new Float(message));
+        }
     }
-  }
-  
-  public static void assertTrue(boolean b, double message) {
-    if (!b) {
-      throwError(Double.valueOf(message));
+
+    public static void assertTrue(boolean b, double message) {
+        if (!b) {
+            throwError(Double.valueOf(message));
+        }
     }
-  }
-  
-  /**
-   * This is a workaround for X bug 38288. JRockit can throw a NullPointerException
-   * from Thread.holdsLock, so we catch the NullPointerException if it happens.
-   * 
-   * This method returns true, unless it throws an exception. This is so we can disable
-   * these tests for performance reasons with a java assertion, eg
-   * <code>assert Assert.assertHoldLock(lock, true);</code>
-   * @param lock The lock to test
-   * @param shouldBeHeld true if this thread should hold this lock.
-   * @return true, unless the method throws an exception. 
-   */
-  public static boolean assertHoldsLock(Object lock, boolean shouldBeHeld) {
-    try {
-      if(Thread.holdsLock(lock) != shouldBeHeld) {
-        throwError(null);
-      }
-    } catch (NullPointerException jrockitSucks) {
-      assertTrue(lock != null);
+
+    /**
+     * This is a workaround for X bug 38288. JRockit can throw a NullPointerException
+     * from Thread.holdsLock, so we catch the NullPointerException if it happens.
+     * <p>
+     * This method returns true, unless it throws an exception. This is so we can disable
+     * these tests for performance reasons with a java assertion, eg
+     * <code>assert Assert.assertHoldLock(lock, true);</code>
+     *
+     * @param lock         The lock to test
+     * @param shouldBeHeld true if this thread should hold this lock.
+     * @return true, unless the method throws an exception.
+     */
+    public static boolean assertHoldsLock(Object lock, boolean shouldBeHeld) {
+        try {
+            if (Thread.holdsLock(lock) != shouldBeHeld) {
+                throwError(null);
+            }
+        } catch (NullPointerException jrockitSucks) {
+            assertTrue(lock != null);
+        }
+
+        return true;
     }
-    
-    return true;
-  }
 }

@@ -45,133 +45,131 @@ import static org.junit.Assert.*;
 @Category(IntegrationTest.class)
 public class JtaNoninvolvementJUnitTest {
 
-  private Cache cache;
-  private Region nonTxRegion;
-  private Region txRegion;
+    private Cache cache;
+    private Region nonTxRegion;
+    private Region txRegion;
 
-  private void createCache(boolean copyOnRead) throws CacheException {
-    Properties p = new Properties();
-    p.setProperty(MCAST_PORT, "0"); // loner
-    this.cache = CacheFactory.create(DistributedSystem.connect(p));
+    private void createCache(boolean copyOnRead) throws CacheException {
+        Properties p = new Properties();
+        p.setProperty(MCAST_PORT, "0"); // loner
+        this.cache = CacheFactory.create(DistributedSystem.connect(p));
 
-    AttributesFactory af = new AttributesFactory();
-    af.setScope(Scope.LOCAL);
-    af.setIgnoreJTA(true);
-    this.nonTxRegion = this.cache.createRegion("JtaNoninvolvementJUnitTest", af.create());
-    af.setIgnoreJTA(false);
-    this.txRegion = this.cache.createRegion("JtaInvolvementTest", af.create());
-  }
+        AttributesFactory af = new AttributesFactory();
+        af.setScope(Scope.LOCAL);
+        af.setIgnoreJTA(true);
+        this.nonTxRegion = this.cache.createRegion("JtaNoninvolvementJUnitTest", af.create());
+        af.setIgnoreJTA(false);
+        this.txRegion = this.cache.createRegion("JtaInvolvementTest", af.create());
+    }
 
-  private void closeCache() throws CacheException {
-    if (this.cache != null) {
-      this.txRegion = null;
-      this.nonTxRegion = null;
-      Cache c = this.cache;
-      this.cache = null;
-      c.close();
-    }
-  }
-  
-  @After
-  public void after() {
-    closeCache();
-    InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
-    if (ids != null) {
-      ids.disconnect();
-    }
-  }
-  
-  @Test
-  public void test000Noninvolvement() throws Exception {
-    try {
-      if (cache == null) {
-        createCache(false);
-      }
-      javax.transaction.UserTransaction ut =
-        (javax.transaction.UserTransaction)cache.getJNDIContext()
-          .lookup("java:/UserTransaction");
-      {
-        ut.begin();
-        txRegion.put("transactionalPut", "xxx");
-        assertTrue("expect cache to be in a transaction",
-            cache.getCacheTransactionManager().exists());
-        ut.commit();
-      }
-      assertFalse("ensure there is no transaction before testing non-involvement", 
-          cache.getCacheTransactionManager().exists());
-      {
-        ut.begin();
-        nonTxRegion.put("nontransactionalPut", "xxx");
-        assertFalse("expect cache to not be in a transaction",
-          cache.getCacheTransactionManager().exists());
-        ut.commit();
-      }
-    }
-    
-    finally {
-      closeCache();
-      cache = null;
-    }
-  }
-
-  @Test
-  public void test001NoninvolvementMultipleRegions_bug45541() throws Exception {
-    javax.transaction.UserTransaction ut = null;
-    try {
-      if (cache == null) {
-        createCache(false);
-      }
-      final CountDownLatch l = new CountDownLatch(1);
-      final AtomicBoolean exceptionOccured = new AtomicBoolean(false);
-      ut = 
-          (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
-      ut.begin();
-      txRegion.put("key", "value");
-      nonTxRegion.put("key", "value");
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          if (txRegion.get("key") != null) {
-            exceptionOccured.set(true);
-          }
-          if (nonTxRegion.get("key") != null) {
-            exceptionOccured.set(true);
-          }
-          l.countDown();
+    private void closeCache() throws CacheException {
+        if (this.cache != null) {
+            this.txRegion = null;
+            this.nonTxRegion = null;
+            Cache c = this.cache;
+            this.cache = null;
+            c.close();
         }
-      });
-      t.start();
-      l.await();
-      assertFalse(exceptionOccured.get());
-    } finally {
-      if (ut != null) {
-        ut.commit();
-      }
-      closeCache();
-      cache = null;
     }
-  }
 
-  /**
-   * test for gemfire.ignoreJTA flag
-   */
-  @Test
-  public void test002IgnoreJTASysProp() throws Exception {
-    javax.transaction.UserTransaction ut = null;
-    try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "true");
-      createCache(false);
-      ut = 
-          (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
-      ut.begin();
-      txRegion.put("key", "value");
-      ut.rollback();
-      // operation was applied despite the rollback
-      assertEquals("value", txRegion.get("key"));
-    } finally {
-      closeCache();
-      cache = null;
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "false");
+    @After
+    public void after() {
+        closeCache();
+        InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
+        if (ids != null) {
+            ids.disconnect();
+        }
     }
-  }
+
+    @Test
+    public void test000Noninvolvement() throws Exception {
+        try {
+            if (cache == null) {
+                createCache(false);
+            }
+            javax.transaction.UserTransaction ut =
+                    (javax.transaction.UserTransaction) cache.getJNDIContext()
+                            .lookup("java:/UserTransaction");
+            {
+                ut.begin();
+                txRegion.put("transactionalPut", "xxx");
+                assertTrue("expect cache to be in a transaction",
+                        cache.getCacheTransactionManager().exists());
+                ut.commit();
+            }
+            assertFalse("ensure there is no transaction before testing non-involvement",
+                    cache.getCacheTransactionManager().exists());
+            {
+                ut.begin();
+                nonTxRegion.put("nontransactionalPut", "xxx");
+                assertFalse("expect cache to not be in a transaction",
+                        cache.getCacheTransactionManager().exists());
+                ut.commit();
+            }
+        } finally {
+            closeCache();
+            cache = null;
+        }
+    }
+
+    @Test
+    public void test001NoninvolvementMultipleRegions_bug45541() throws Exception {
+        javax.transaction.UserTransaction ut = null;
+        try {
+            if (cache == null) {
+                createCache(false);
+            }
+            final CountDownLatch l = new CountDownLatch(1);
+            final AtomicBoolean exceptionOccured = new AtomicBoolean(false);
+            ut =
+                    (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
+            ut.begin();
+            txRegion.put("key", "value");
+            nonTxRegion.put("key", "value");
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (txRegion.get("key") != null) {
+                        exceptionOccured.set(true);
+                    }
+                    if (nonTxRegion.get("key") != null) {
+                        exceptionOccured.set(true);
+                    }
+                    l.countDown();
+                }
+            });
+            t.start();
+            l.await();
+            assertFalse(exceptionOccured.get());
+        } finally {
+            if (ut != null) {
+                ut.commit();
+            }
+            closeCache();
+            cache = null;
+        }
+    }
+
+    /**
+     * test for gemfire.ignoreJTA flag
+     */
+    @Test
+    public void test002IgnoreJTASysProp() throws Exception {
+        javax.transaction.UserTransaction ut = null;
+        try {
+            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "true");
+            createCache(false);
+            ut =
+                    (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
+            ut.begin();
+            txRegion.put("key", "value");
+            ut.rollback();
+            // operation was applied despite the rollback
+            assertEquals("value", txRegion.get("key"));
+        } finally {
+            closeCache();
+            cache = null;
+            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "false");
+        }
+    }
 }

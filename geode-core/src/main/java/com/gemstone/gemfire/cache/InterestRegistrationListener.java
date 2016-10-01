@@ -27,57 +27,55 @@ package com.gemstone.gemfire.cache;
  * <code>InterestRegisterationListener</code> are invoked synchronously with the
  * interest event in any <code>CacheServer</code> VM hosting the requesting
  * client's subscriptions.
- *
+ * <p>
  * <p>Shown below is an example implementation.
- *
+ * <p>
  * <pre>
- *import com.gemstone.gemfire.cache.InterestRegistrationEvent;
- *import com.gemstone.gemfire.cache.InterestRegistrationListener;
+ * import com.gemstone.gemfire.cache.InterestRegistrationEvent;
+ * import com.gemstone.gemfire.cache.InterestRegistrationListener;
  *
- *public class TestInterestRegistrationListener implements InterestRegistrationListener {
+ * public class TestInterestRegistrationListener implements InterestRegistrationListener {
  *
  *  public void afterRegisterInterest(InterestRegistrationEvent event) {
  *    System.out.println("afterRegisterInterest: " + event.getRegionName() + " -> " + event.getKeysOfInterest());
  *  }
-
+ *
  *  public void afterUnregisterInterest(InterestRegistrationEvent event) {
  *    System.out.println("afterUnregisterInterest: " + event.getRegionName() + " -> " + event.getKeysOfInterest());
  *  }
  *
  *  public void close() {}
- *}
+ * }
  * </pre>
- *
+ * <p>
  * Shown below is an example registration.
- *
+ * <p>
  * <pre>
- *private void registerInterestRegistrationListener() {
+ * private void registerInterestRegistrationListener() {
  *  Cache cache = ...;
  *  CacheServer cs = cache.getCacheServers().iterator().next();
  *  InterestRegistrationListener listener = new TestInterestRegistrationListener();
  *  cs.registerInterestRegistrationListener(listener);
- *}
+ * }
  * </pre>
  *
- *
- * @since GemFire 6.0
- * 
  * @see com.gemstone.gemfire.cache.server.CacheServer#registerInterestRegistrationListener registerInterestRegistrationListener
  * @see com.gemstone.gemfire.cache.server.CacheServer#unregisterInterestRegistrationListener unregisterInterestRegistrationListener
+ * @since GemFire 6.0
  */
 public interface InterestRegistrationListener extends CacheCallback {
 
-  /**
-   * Handles an after register interest event.
-   *
-   * @param event the InterestRegistrationEvent
-   */
-  public void afterRegisterInterest(InterestRegistrationEvent event);
+    /**
+     * Handles an after register interest event.
+     *
+     * @param event the InterestRegistrationEvent
+     */
+    public void afterRegisterInterest(InterestRegistrationEvent event);
 
-  /**
-   * Handles an after unregister interest event.
-   *
-   * @param event the InterestRegistrationEvent
-   */
-  public void afterUnregisterInterest(InterestRegistrationEvent event);
+    /**
+     * Handles an after unregister interest event.
+     *
+     * @param event the InterestRegistrationEvent
+     */
+    public void afterUnregisterInterest(InterestRegistrationEvent event);
 }

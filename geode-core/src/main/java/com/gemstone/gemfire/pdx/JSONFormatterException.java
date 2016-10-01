@@ -19,29 +19,31 @@ package com.gemstone.gemfire.pdx;
 import com.gemstone.gemfire.GemFireException;
 
 /**
- * This exception will be thrown, when  {link @JSONFormatter} is unable to parse the 
+ * This exception will be thrown, when  {link @JSONFormatter} is unable to parse the
  * JSON document or {link @PdxInstance}.
  */
 
-public class JSONFormatterException extends GemFireException{
+public class JSONFormatterException extends GemFireException {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  /**
-   * Create the exception with the given message.
-   * @param message the message of the new exception
-   */
-  public JSONFormatterException(String message) {
-    super(message);
-  }
+    /**
+     * Create the exception with the given message.
+     *
+     * @param message the message of the new exception
+     */
+    public JSONFormatterException(String message) {
+        super(message);
+    }
 
-  /**
-   * Create the exception with the given message and cause.
-   * @param message the message of the new exception
-   * @param cause the cause of the new exception
-   */
-  public JSONFormatterException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * Create the exception with the given message and cause.
+     *
+     * @param message the message of the new exception
+     * @param cause   the cause of the new exception
+     */
+    public JSONFormatterException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

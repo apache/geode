@@ -51,15 +51,15 @@ public class Lifeline {
     public void addState(LifelineState state) {
         this.states.add(state);
     }
-    
+
     public Lifeline(Comparable diagramName, String name) {
-      this.name = name;
-      this.states = new ArrayList<LifelineState>();
-      this.diagramName = diagramName;
+        this.name = name;
+        this.states = new ArrayList<LifelineState>();
+        this.diagramName = diagramName;
     }
 
     public void resize(int x, int lineWidth, long Ybase, double Yscale) {
-        for(LifelineState state : states) {
+        for (LifelineState state : states) {
             state.resize(Yscale, Ybase);
         }
 
@@ -69,12 +69,12 @@ public class Lifeline {
 
     public void paint(Graphics2D g, StateColorMap colorMap) {
         Rectangle boundary = g.getClipBounds();
-        if(x > boundary.getMaxX() || x + width < boundary.getMinX()) {
+        if (x > boundary.getMaxX() || x + width < boundary.getMinX()) {
             //no need to paint if this line isn't displayed
             return;
         }
         //TODO - we need to clip these to the visible states
-        for(LifelineState state : states) {
+        for (LifelineState state : states) {
             state.paint(g, colorMap);
         }
     }
@@ -84,8 +84,8 @@ public class Lifeline {
     }
 
     public LifelineState getStateAt(int y) {
-        for(LifelineState state : states) {
-            if(state.getStartY() < y && state.getStartY() + state.getHeight() > y) {
+        for (LifelineState state : states) {
+            if (state.getStartY() < y && state.getStartY() + state.getHeight() > y) {
                 return state;
             }
         }
@@ -93,6 +93,6 @@ public class Lifeline {
     }
 
     public Comparable getDiagramName() {
-      return diagramName;
+        return diagramName;
     }
 }

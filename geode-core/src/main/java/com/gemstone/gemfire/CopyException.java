@@ -19,48 +19,46 @@ package com.gemstone.gemfire;
 /**
  * Indicates a failure to copy an object.
  *
- *
- *
  * @see CopyHelper#copy
  * @since GemFire 4.0
  */
 public class CopyException extends GemFireException {
-private static final long serialVersionUID = -1143711608610323585L;
-  
-  /**
-   * Constructs a new <code>CopyException</code>.
-   */
-  public CopyException() {
-    super();
-  }
-  
-  /**
-   * Constructs a new <code>CopyException</code> with a message string.
-   *
-   * @param msg a message string
-   */
-  public CopyException(String msg) {
-    super(msg);
-  }
-  
-  /**
-   * Constructs a new <code>CopyException</code> with a message string
-   * and a cause.
-   *
-   * @param msg the message string
-   * @param cause a causal Throwable
-   */
-  public CopyException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
-  
-  /**
-   * Constructs a new <code>CopyException</code> with a cause.
-   *
-   * @param cause a causal Throwable
-   */
-  public CopyException(Throwable cause) {
-    super(cause);
-  }
+    private static final long serialVersionUID = -1143711608610323585L;
+
+    /**
+     * Constructs a new <code>CopyException</code>.
+     */
+    public CopyException() {
+        super();
+    }
+
+    /**
+     * Constructs a new <code>CopyException</code> with a message string.
+     *
+     * @param msg a message string
+     */
+    public CopyException(String msg) {
+        super(msg);
+    }
+
+    /**
+     * Constructs a new <code>CopyException</code> with a message string
+     * and a cause.
+     *
+     * @param msg   the message string
+     * @param cause a causal Throwable
+     */
+    public CopyException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+
+    /**
+     * Constructs a new <code>CopyException</code> with a cause.
+     *
+     * @param cause a causal Throwable
+     */
+    public CopyException(Throwable cause) {
+        super(cause);
+    }
 }
 

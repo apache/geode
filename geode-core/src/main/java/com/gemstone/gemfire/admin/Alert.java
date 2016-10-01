@@ -21,35 +21,43 @@ package com.gemstone.gemfire.admin;
  * distributed system.  It is similar to a {@linkplain
  * com.gemstone.gemfire.i18n.LogWriterI18n log message}.
  *
- * @see       AlertListener
+ * @see AlertListener
  * @since GemFire     3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface Alert {
-  
-  /** The level at which this alert is issued */
-  public AlertLevel getLevel();
 
-  /**
-   * The member of the distributed system that issued the alert, or
-   * null if the issuer is no longer a member of the distributed system.
-   */
-  public SystemMember getSystemMember();
+    /**
+     * The level at which this alert is issued
+     */
+    public AlertLevel getLevel();
 
-  /** 
-   * The name of the {@linkplain
-   * com.gemstone.gemfire.distributed.DistributedSystem#getName
-   * distributed system}) through which the alert was issued.
-   */
-  public String getConnectionName();
+    /**
+     * The member of the distributed system that issued the alert, or
+     * null if the issuer is no longer a member of the distributed system.
+     */
+    public SystemMember getSystemMember();
 
-  /** The id of the source of the alert (such as a thread in a VM) */
-  public String getSourceId();
+    /**
+     * The name of the {@linkplain
+     * com.gemstone.gemfire.distributed.DistributedSystem#getName
+     * distributed system}) through which the alert was issued.
+     */
+    public String getConnectionName();
 
-  /** The alert's message */
-  public String getMessage();
+    /**
+     * The id of the source of the alert (such as a thread in a VM)
+     */
+    public String getSourceId();
 
-  /** The time at which the alert was issued */
-  public java.util.Date getDate();
+    /**
+     * The alert's message
+     */
+    public String getMessage();
+
+    /**
+     * The time at which the alert was issued
+     */
+    public java.util.Date getDate();
 
 }

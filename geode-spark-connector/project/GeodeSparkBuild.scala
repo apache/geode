@@ -14,27 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import sbt._
 import sbt.Keys._
 import scoverage.ScoverageSbtPlugin._
 import scoverage.ScoverageSbtPlugin
 
 object GeodeSparkConnectorBuild extends Build {
+
   import Settings._
-  import Dependencies._ 
+  import Dependencies._
 
   lazy val root = Project(
-    id = "root", 
-    base =file("."), 
-    aggregate = Seq(geodeFunctions, geodeSparkConnector,demos),
-    settings = commonSettings ++ Seq( 
-     name := "Geode Connector for Apache Spark",
-     publishArtifact :=  false,
-     publishLocal := { },
-     publish := { }
+    id = "root",
+    base = file("."),
+    aggregate = Seq(geodeFunctions, geodeSparkConnector, demos),
+    settings = commonSettings ++ Seq(
+      name := "Geode Connector for Apache Spark",
+      publishArtifact := false,
+      publishLocal := {},
+      publish := {}
     )
   )
- 
+
   lazy val geodeFunctions = Project(
     id = "geode-functions",
     base = file("geode-functions"),
@@ -43,7 +45,7 @@ object GeodeSparkConnectorBuild extends Build {
       description := "Required Geode Functions to be deployed onto the Geode Cluster before using the Geode Spark Connector"
     )
   ).configs(IntegrationTest)
-  
+
   lazy val geodeSparkConnector = Project(
     id = "geode-spark-connector",
     base = file("geode-spark-connector"),
@@ -53,18 +55,18 @@ object GeodeSparkConnectorBuild extends Build {
     )
   ).dependsOn(geodeFunctions).configs(IntegrationTest)
 
- 
-  /******** Demo Project Definitions ********/ 
+
+  /** ****** Demo Project Definitions ********/
   lazy val demoPath = file("geode-spark-demos")
 
-  lazy val demos = Project ( 
+  lazy val demos = Project(
     id = "geode-spark-demos",
     base = demoPath,
     settings = demoSettings,
     aggregate = Seq(basicDemos)
   )
- 
-  lazy val basicDemos = Project (
+
+  lazy val basicDemos = Project(
     id = "basic-demos",
     base = demoPath / "basic-demos",
     settings = demoSettings ++ Seq(libraryDependencies ++= Dependencies.demos,

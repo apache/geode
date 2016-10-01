@@ -36,50 +36,47 @@ import java.io.*;
  * @since GemFire 5.1
  */
 public abstract class CanonicalInstantiator extends Instantiator {
-  /**
-   * Creates a new <code>CanonicalInstantiator</code> that instantiates a given
-   * class.
-   *
-   * @param c
-   *        The <code>DataSerializable</code> class to register.  This
-   *        class must have a static initializer that registers this
-   *        <code>Instantiator</code>. 
-   * @param classId
-   *        A unique id for class <code>c</code>.  The
-   *        <code>classId</code> must not be zero.
-   *        This has been an <code>int</code> since dsPhase1.
-   *
-   * @throws IllegalArgumentException
-   *         If <code>c</code> does not implement
-   *         <code>DataSerializable</code>, <code>classId</code> is
-   *         less than or equal to zero.
-   * @throws NullPointerException
-   *         If <code>c</code> is <code>null</code>
-   */
-  public CanonicalInstantiator(Class<? extends DataSerializable> c, int classId) {
-    super(c, classId);
-  }
-  
-  /**
-   * This method is not supported and if called will
-   * throw UnsupportedOperationException.
-   * Use {@link #newInstance(DataInput)} instead.
-   * 
-   * @throws UnsupportedOperationException in all cases
-   */
-  @Override
-  public final DataSerializable newInstance() {
-    throw new UnsupportedOperationException();
-  }
-  /**
-   * Creates a new "empty" instance of a <Code>DataSerializable</code>
-   * class whose state will be filled in by invoking its 
-   * {@link DataSerializable#fromData fromData} method.
-   * @param in the data input that can be read to decide what instance to create.
-   * @return the new "empty" instance.
-   * @throws IOException if a read from <code>in</code> fails.
-   * @since GemFire 5.1
-   */
-  public abstract DataSerializable newInstance(DataInput in)
-    throws IOException;
+    /**
+     * Creates a new <code>CanonicalInstantiator</code> that instantiates a given
+     * class.
+     *
+     * @param c       The <code>DataSerializable</code> class to register.  This
+     *                class must have a static initializer that registers this
+     *                <code>Instantiator</code>.
+     * @param classId A unique id for class <code>c</code>.  The
+     *                <code>classId</code> must not be zero.
+     *                This has been an <code>int</code> since dsPhase1.
+     * @throws IllegalArgumentException If <code>c</code> does not implement
+     *                                  <code>DataSerializable</code>, <code>classId</code> is
+     *                                  less than or equal to zero.
+     * @throws NullPointerException     If <code>c</code> is <code>null</code>
+     */
+    public CanonicalInstantiator(Class<? extends DataSerializable> c, int classId) {
+        super(c, classId);
+    }
+
+    /**
+     * This method is not supported and if called will
+     * throw UnsupportedOperationException.
+     * Use {@link #newInstance(DataInput)} instead.
+     *
+     * @throws UnsupportedOperationException in all cases
+     */
+    @Override
+    public final DataSerializable newInstance() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Creates a new "empty" instance of a <Code>DataSerializable</code>
+     * class whose state will be filled in by invoking its
+     * {@link DataSerializable#fromData fromData} method.
+     *
+     * @param in the data input that can be read to decide what instance to create.
+     * @return the new "empty" instance.
+     * @throws IOException if a read from <code>in</code> fails.
+     * @since GemFire 5.1
+     */
+    public abstract DataSerializable newInstance(DataInput in)
+            throws IOException;
 }

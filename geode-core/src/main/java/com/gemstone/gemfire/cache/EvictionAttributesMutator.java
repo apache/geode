@@ -19,21 +19,20 @@ package com.gemstone.gemfire.cache;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 
 /**
- * The EvictionAttributesMutator allows changes to be made to a 
+ * The EvictionAttributesMutator allows changes to be made to a
  * {@link com.gemstone.gemfire.cache.EvictionAttributes}. It is returned
  * by {@link com.gemstone.gemfire.cache.AttributesMutator#getEvictionAttributesMutator()}
+ *
  * @since GemFire 5.0
  */
-public interface EvictionAttributesMutator
-{
-  /**
-   * Sets the maximum value on the {@link EvictionAttributesImpl} that the given
-   * {@link EvictionAlgorithm} uses to determine when to perform its
-   * {@link EvictionAction}. The unit of the maximum value is determined by the
-   * {@link EvictionAlgorithm}
-   * 
-   * @param maximum
-   *          value used by the {@link EvictionAlgorithm}
-   */
-  public void setMaximum(int maximum);
+public interface EvictionAttributesMutator {
+    /**
+     * Sets the maximum value on the {@link EvictionAttributesImpl} that the given
+     * {@link EvictionAlgorithm} uses to determine when to perform its
+     * {@link EvictionAction}. The unit of the maximum value is determined by the
+     * {@link EvictionAlgorithm}
+     *
+     * @param maximum value used by the {@link EvictionAlgorithm}
+     */
+    public void setMaximum(int maximum);
 }

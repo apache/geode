@@ -48,69 +48,68 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CQPDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
-  private static byte[] BYTES = {1,0};
+    private static byte[] BYTES = {1, 0};
 
-  @Parameterized.Parameters
-  public static Collection<Object[]> parameters(){
-    Object[][] params = {{true}, {false}};
-    return Arrays.asList(params);
-  }
+    @Parameterized.Parameters
+    public static Collection<Object[]> parameters() {
+        Object[][] params = {{true}, {false}};
+        return Arrays.asList(params);
+    }
 
-  public CQPDXPostProcessorDUnitTest(boolean pdxPersistent){
-    this.postProcessor = PDXPostProcessor.class;
-    this.pdxPersistent = pdxPersistent;
-    this.jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    values = new HashMap();
-  }
+    public CQPDXPostProcessorDUnitTest(boolean pdxPersistent) {
+        this.postProcessor = PDXPostProcessor.class;
+        this.pdxPersistent = pdxPersistent;
+        this.jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+        values = new HashMap();
+    }
 
-  @Test
-  public void testCQ() {
-    String query = "select * from /AuthRegion";
-    client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+    @Test
+    public void testCQ() {
+        String query = "select * from /AuthRegion";
+        client1.invoke(() -> {
+            ClientCache cache = createClientCache("super-user", "1234567", serverPort);
+            Region region = cache.getRegion(REGION_NAME);
 
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
+            Pool pool = PoolManager.find(region);
+            QueryService qs = pool.getQueryService();
 
-      CqAttributesFactory factory = new CqAttributesFactory();
+            CqAttributesFactory factory = new CqAttributesFactory();
 
-      factory.addCqListener(new CqListenerImpl() {
-        @Override
-        public void onEvent(final CqEvent aCqEvent) {
-          Object key = aCqEvent.getKey();
-          Object value = aCqEvent.getNewValue();
-          if(key.equals("key1")) {
-            assertTrue(value instanceof SimpleClass);
-          }
-          else if(key.equals("key2")){
-            assertTrue(Arrays.equals(BYTES, (byte[])value));
-          }
-        }
-      });
+            factory.addCqListener(new CqListenerImpl() {
+                @Override
+                public void onEvent(final CqEvent aCqEvent) {
+                    Object key = aCqEvent.getKey();
+                    Object value = aCqEvent.getNewValue();
+                    if (key.equals("key1")) {
+                        assertTrue(value instanceof SimpleClass);
+                    } else if (key.equals("key2")) {
+                        assertTrue(Arrays.equals(BYTES, (byte[]) value));
+                    }
+                }
+            });
 
-      CqAttributes cqa = factory.create();
+            CqAttributes cqa = factory.create();
 
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
-      CqResults results = cq.executeWithInitialResults();
-    });
+            // Create the CqQuery
+            CqQuery cq = qs.newCq("CQ1", query, cqa);
+            CqResults results = cq.executeWithInitialResults();
+        });
 
-    client2.invoke(() -> {
-      ClientCache cache = createClientCache("authRegionUser", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
-      region.put("key1", new SimpleClass(1, (byte) 1));
-      region.put("key2", BYTES);
-    });
+        client2.invoke(() -> {
+            ClientCache cache = createClientCache("authRegionUser", "1234567", serverPort);
+            Region region = cache.getRegion(REGION_NAME);
+            region.put("key1", new SimpleClass(1, (byte) 1));
+            region.put("key2", BYTES);
+        });
 
-    // wait for events to fire
-    Awaitility.await().atMost(1, TimeUnit.SECONDS);
-    PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
-    assertEquals(pp.getCount(), 2);
-  }
+        // wait for events to fire
+        Awaitility.await().atMost(1, TimeUnit.SECONDS);
+        PDXPostProcessor pp = (PDXPostProcessor) GeodeSecurityUtil.getPostProcessor();
+        assertEquals(pp.getCount(), 2);
+    }
 
 }

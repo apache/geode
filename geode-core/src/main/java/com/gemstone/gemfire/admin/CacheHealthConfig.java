@@ -20,137 +20,144 @@ package com.gemstone.gemfire.admin;
  * Provides configuration information relating to the health of a
  * member of a GemFire distributed system that hosts a GemFire {@link
  * com.gemstone.gemfire.cache.Cache Cache}.
- *
- * <P>
- *
+ * <p>
+ * <p>
+ * <p>
  * If any of the following criteria is true, then a cache member is
  * considered to be in {@link GemFireHealth#OKAY_HEALTH OKAY_HEALTH}.
- *
+ * <p>
  * <UL>
- *
+ * <p>
  * <LI><code>netSearch</code> operations take {@linkplain
  * #getMaxNetSearchTime too long} to complete.</LI>
- *
+ * <p>
  * <LI>Cache <code>load</code> operations take {@linkplain
  * #getMaxLoadTime too long} to complete.</LI>
- *
+ * <p>
  * <LI>The overall cache {@link #getMinHitRatio hitRatio} is too
- * small</LI> 
- *
+ * small</LI>
+ * <p>
  * <LI>The number of entries in the Cache {@link #getMaxEventQueueSize
  * event delivery queue} is too large.</LI>
- * 
+ * <p>
  * <LI>If one of the regions is configured with {@link com.gemstone.gemfire.cache.LossAction#FULL_ACCESS FULL_ACCESS}
  * on role loss.</LI>
- *
+ * <p>
  * </UL>
- *
+ * <p>
  * If any of the following criteria is true, then a cache member is
  * considered to be in {@link GemFireHealth#POOR_HEALTH POOR_HEALTH}.
- * 
+ * <p>
  * <UL>
- * 
+ * <p>
  * <LI>If one of the regions is configured with {@link com.gemstone.gemfire.cache.LossAction#NO_ACCESS NO_ACCESS}
- * on role loss.</LI> 
- * 
+ * on role loss.</LI>
+ * <p>
  * <LI>If one of the regions is configured with {@link com.gemstone.gemfire.cache.LossAction#LIMITED_ACCESS LIMITED_ACCESS}
- * on role loss.</LI> 
- * 
+ * on role loss.</LI>
+ * <p>
  * </UL>
- * 
+ * <p>
  * <UL>
- *
+ * <p>
  * </UL>
- *
  *
  * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
- * */
+ */
 public interface CacheHealthConfig {
 
-  /** The default maximum number of milliseconds a
-   * <code>netSearch</code> operation can take before the cache member
-   * is considered to be unhealthy. */
-  public static final long DEFAULT_MAX_NET_SEARCH_TIME = 60 * 1000;
+    /**
+     * The default maximum number of milliseconds a
+     * <code>netSearch</code> operation can take before the cache member
+     * is considered to be unhealthy.
+     */
+    public static final long DEFAULT_MAX_NET_SEARCH_TIME = 60 * 1000;
 
-  /** The default maximum mumber of milliseconds a cache
-   * <code>load</code> operation can take before the cache member is
-   * considered to be unhealthy. */
-  public static final long DEFAULT_MAX_LOAD_TIME = 60 * 1000;
+    /**
+     * The default maximum mumber of milliseconds a cache
+     * <code>load</code> operation can take before the cache member is
+     * considered to be unhealthy.
+     */
+    public static final long DEFAULT_MAX_LOAD_TIME = 60 * 1000;
 
-  /** The default minimum hit ratio of a healthy cache member. */
-  public static final double DEFAULT_MIN_HIT_RATIO = 0.0;
+    /**
+     * The default minimum hit ratio of a healthy cache member.
+     */
+    public static final double DEFAULT_MIN_HIT_RATIO = 0.0;
 
-  /** The default maximum number of entries in the event delivery queue
-   * of a healthy cache member. */
-  public static final long DEFAULT_MAX_EVENT_QUEUE_SIZE = 1000;
+    /**
+     * The default maximum number of entries in the event delivery queue
+     * of a healthy cache member.
+     */
+    public static final long DEFAULT_MAX_EVENT_QUEUE_SIZE = 1000;
 
-  ///////////////////////  Instance Methods  ///////////////////////
-  
-  /**
-   * Returns the maximum number of milliseconds a
-   * <code>netSearch</code> operation can take before the cache member
-   * is considered to be unhealthy.
-   *
-   * @see #DEFAULT_MAX_NET_SEARCH_TIME
-   */
-  public long getMaxNetSearchTime();
+    ///////////////////////  Instance Methods  ///////////////////////
 
-  /**
-   * Sets the maximum number of milliseconds a
-   * <code>netSearch</code> operation can take before the cache member
-   * is considered to be unhealthy.
-   *
-   * @see #getMaxNetSearchTime
-   */
-  public void setMaxNetSearchTime(long maxNetSearchTime);
+    /**
+     * Returns the maximum number of milliseconds a
+     * <code>netSearch</code> operation can take before the cache member
+     * is considered to be unhealthy.
+     *
+     * @see #DEFAULT_MAX_NET_SEARCH_TIME
+     */
+    public long getMaxNetSearchTime();
 
-  /**
-   * Returns the maximum mumber of milliseconds a cache
-   * <code>load</code> operation can take before the cache member is
-   * considered to be unhealthy.
-   *
-   * @see #DEFAULT_MAX_LOAD_TIME
-   */
-  public long getMaxLoadTime();
+    /**
+     * Sets the maximum number of milliseconds a
+     * <code>netSearch</code> operation can take before the cache member
+     * is considered to be unhealthy.
+     *
+     * @see #getMaxNetSearchTime
+     */
+    public void setMaxNetSearchTime(long maxNetSearchTime);
 
-  /**
-   * Sets the maximum mumber of milliseconds a cache
-   * <code>load</code> operation can take before the cache member is
-   * considered to be unhealthy.
-   *
-   * @see #getMaxLoadTime
-   */
-  public void setMaxLoadTime(long maxLoadTime);
+    /**
+     * Returns the maximum mumber of milliseconds a cache
+     * <code>load</code> operation can take before the cache member is
+     * considered to be unhealthy.
+     *
+     * @see #DEFAULT_MAX_LOAD_TIME
+     */
+    public long getMaxLoadTime();
 
-  /**
-   * Returns the minimum hit ratio of a healthy cache member.
-   *
-   * @see #DEFAULT_MIN_HIT_RATIO
-   */
-  public double getMinHitRatio();
+    /**
+     * Sets the maximum mumber of milliseconds a cache
+     * <code>load</code> operation can take before the cache member is
+     * considered to be unhealthy.
+     *
+     * @see #getMaxLoadTime
+     */
+    public void setMaxLoadTime(long maxLoadTime);
 
-  /**
-   * Sets the minimum hit ratio of a healthy cache member.
-   *
-   * @see #getMinHitRatio
-   */
-  public void setMinHitRatio(double minHitRatio);
+    /**
+     * Returns the minimum hit ratio of a healthy cache member.
+     *
+     * @see #DEFAULT_MIN_HIT_RATIO
+     */
+    public double getMinHitRatio();
 
-  /**
-   * Returns the maximum number of entries in the event delivery queue
-   * of a healthy cache member.
-   *
-   * @see #DEFAULT_MAX_EVENT_QUEUE_SIZE
-   */
-  public long getMaxEventQueueSize();
+    /**
+     * Sets the minimum hit ratio of a healthy cache member.
+     *
+     * @see #getMinHitRatio
+     */
+    public void setMinHitRatio(double minHitRatio);
 
-  /**
-   * Sets the maximum number of entries in the event delivery queue
-   * of a healthy cache member.
-   *
-   * @see #getMaxEventQueueSize
-   */
-  public void setMaxEventQueueSize(long maxEventQueueSize);
+    /**
+     * Returns the maximum number of entries in the event delivery queue
+     * of a healthy cache member.
+     *
+     * @see #DEFAULT_MAX_EVENT_QUEUE_SIZE
+     */
+    public long getMaxEventQueueSize();
+
+    /**
+     * Sets the maximum number of entries in the event delivery queue
+     * of a healthy cache member.
+     *
+     * @see #getMaxEventQueueSize
+     */
+    public void setMaxEventQueueSize(long maxEventQueueSize);
 
 }

@@ -17,37 +17,36 @@
 package com.gemstone.gemfire.cache;
 
 /**
- * A listener that can be implemented to handle region reliability membership 
+ * A listener that can be implemented to handle region reliability membership
  * events.  These are membership events that are specific to loss or gain of
  * required roles as defined by the region's {@link MembershipAttributes}.
  * <p>
  * Instead of implementing this interface it is recommended that you extend
- * the {@link com.gemstone.gemfire.cache.util.RegionRoleListenerAdapter} 
+ * the {@link com.gemstone.gemfire.cache.util.RegionRoleListenerAdapter}
  * class.
- * 
- * 
+ *
  * @see AttributesFactory#setCacheListener
  * @see RegionAttributes#getCacheListener
  * @see AttributesMutator#setCacheListener
  * @deprecated this feature is scheduled to be removed
  */
-public interface RegionRoleListener<K,V> extends CacheListener<K,V> {
+public interface RegionRoleListener<K, V> extends CacheListener<K, V> {
 
-  /**
-   * Invoked when a required role has returned to the distributed system
-   * after being absent.
-   *
-   * @param event describes the member that fills the required role.
-   */
-  public void afterRoleGain(RoleEvent<K,V> event);
-  
-  /**
-   * Invoked when a required role is no longer available in the distributed
-   * system.
-   *
-   * @param event describes the member that last filled the required role.
-   */
-  public void afterRoleLoss(RoleEvent<K,V> event);
-  
+    /**
+     * Invoked when a required role has returned to the distributed system
+     * after being absent.
+     *
+     * @param event describes the member that fills the required role.
+     */
+    public void afterRoleGain(RoleEvent<K, V> event);
+
+    /**
+     * Invoked when a required role is no longer available in the distributed
+     * system.
+     *
+     * @param event describes the member that last filled the required role.
+     */
+    public void afterRoleLoss(RoleEvent<K, V> event);
+
 }
 

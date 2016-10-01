@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.admin;
 
 import com.gemstone.gemfire.cache.Operation;
+
 /**
  * An event that describes an operation on a cache.
  * Instances of this are delivered to a {@link SystemMemberCacheListener} when a
@@ -26,8 +27,8 @@ import com.gemstone.gemfire.cache.Operation;
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberCacheEvent extends SystemMembershipEvent {
-  /**
-   * Returns the actual operation that caused this event.
-   */
-  public Operation getOperation();
+    /**
+     * Returns the actual operation that caused this event.
+     */
+    public Operation getOperation();
 }

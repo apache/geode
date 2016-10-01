@@ -20,7 +20,7 @@ package com.gemstone.gemfire.cache;
  * Thrown when the transactional data host has shutdown or no longer has the data
  * being modified by the transaction.
  * This can be thrown while doing transactional operations or during commit.
- *
+ * <p>
  * <p>This exception only occurs when a transaction
  * is hosted on a member that is not
  * the initiator of the transaction.
@@ -28,14 +28,14 @@ package com.gemstone.gemfire.cache;
  * @since GemFire 6.5
  */
 public class TransactionDataNodeHasDepartedException extends TransactionException {
-  
-  private static final long serialVersionUID = -2217135580436381984L;
 
-  public TransactionDataNodeHasDepartedException(String s) {
-    super(s);
-  }
-  
-  public TransactionDataNodeHasDepartedException(Throwable e) {
-    super(e);
-  }
+    private static final long serialVersionUID = -2217135580436381984L;
+
+    public TransactionDataNodeHasDepartedException(String s) {
+        super(s);
+    }
+
+    public TransactionDataNodeHasDepartedException(Throwable e) {
+        super(e);
+    }
 }

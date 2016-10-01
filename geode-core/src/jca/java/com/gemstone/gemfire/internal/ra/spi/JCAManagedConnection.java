@@ -267,7 +267,6 @@ public class JCAManagedConnection implements ManagedConnection
         connsItr.remove();
       }
     }
-
   }
 
   public void onClose(GFConnectionImpl conn) throws ResourceException

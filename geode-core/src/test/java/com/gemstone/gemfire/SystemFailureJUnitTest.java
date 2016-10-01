@@ -31,33 +31,34 @@ import com.jayway.awaitility.Awaitility;
 @Category(UnitTest.class)
 public class SystemFailureJUnitTest {
 
-  private static final int LONG_WAIT = 30000;
-  private int oldWaitTime;
+    private static final int LONG_WAIT = 30000;
+    private int oldWaitTime;
 
-  @Before
-  public void setWaitTime() {
-    oldWaitTime = SystemFailure.SHUTDOWN_WAIT;
-    SystemFailure.SHUTDOWN_WAIT = LONG_WAIT;
-  }
-  
-  @After
-  public void restoreWaitTime() {
-    SystemFailure.SHUTDOWN_WAIT = oldWaitTime;
-  }
-  @Test
-  public void testStopThreads() {
-    SystemFailure.signalCacheCreate();
-    SystemFailure.startThreads();
-    long start = System.nanoTime();
-    Thread watchDog = SystemFailure.getWatchDogForTest();
-    Thread proctor= SystemFailure.getProctorForTest();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> watchDog.isAlive());
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> proctor.isAlive());
-    SystemFailure.stopThreads();
-    long elapsed = System.nanoTime() - start;
-    assertTrue("Waited too long to shutdown: " + elapsed, elapsed < TimeUnit.MILLISECONDS.toNanos(LONG_WAIT));
-    assertFalse(watchDog.isAlive());
-    assertFalse(proctor.isAlive());
-  }
+    @Before
+    public void setWaitTime() {
+        oldWaitTime = SystemFailure.SHUTDOWN_WAIT;
+        SystemFailure.SHUTDOWN_WAIT = LONG_WAIT;
+    }
+
+    @After
+    public void restoreWaitTime() {
+        SystemFailure.SHUTDOWN_WAIT = oldWaitTime;
+    }
+
+    @Test
+    public void testStopThreads() {
+        SystemFailure.signalCacheCreate();
+        SystemFailure.startThreads();
+        long start = System.nanoTime();
+        Thread watchDog = SystemFailure.getWatchDogForTest();
+        Thread proctor = SystemFailure.getProctorForTest();
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> watchDog.isAlive());
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> proctor.isAlive());
+        SystemFailure.stopThreads();
+        long elapsed = System.nanoTime() - start;
+        assertTrue("Waited too long to shutdown: " + elapsed, elapsed < TimeUnit.MILLISECONDS.toNanos(LONG_WAIT));
+        assertFalse(watchDog.isAlive());
+        assertFalse(proctor.isAlive());
+    }
 
 }

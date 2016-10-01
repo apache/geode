@@ -20,26 +20,26 @@ package com.gemstone.gemfire.cache;
 /**
  * An exception indicating that a gateway configuration
  * will not work with the remote side of the gateway's configuration.
+ *
  * @since GemFire 6.6
  */
 public class GatewayConfigurationException extends GatewayException {
 
-  public GatewayConfigurationException() {
-    super();
-  }
+    public GatewayConfigurationException() {
+        super();
+    }
 
-  public GatewayConfigurationException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
+    public GatewayConfigurationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 
-  public GatewayConfigurationException(String msg) {
-    super(msg);
-  }
+    public GatewayConfigurationException(String msg) {
+        super(msg);
+    }
 
-  public GatewayConfigurationException(Throwable cause) {
-    super(cause);
-  }
+    public GatewayConfigurationException(Throwable cause) {
+        super(cause);
+    }
 
-  
 
 }

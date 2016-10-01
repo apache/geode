@@ -19,14 +19,13 @@ package com.gemstone.gemfire.cache;
 
 import java.io.Externalizable;
 
-/** The TransactionId interface is a "marker" interface that
+/**
+ * The TransactionId interface is a "marker" interface that
  * represents a unique GemFire transaction.
  *
- * 
- * @since GemFire 4.0
- * 
  * @see Cache#getCacheTransactionManager
  * @see CacheTransactionManager#getTransactionId
+ * @since GemFire 4.0
  */
 public interface TransactionId extends Externalizable {
 }

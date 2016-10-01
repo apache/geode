@@ -20,6 +20,7 @@ package com.company.data;
  *
  * @since GemFire 5.0
  */
+
 import java.util.Properties;
 
 import com.gemstone.gemfire.cache.Declarable;
@@ -27,13 +28,13 @@ import com.gemstone.gemfire.cache.util.ObjectSizer;
 
 public class MySizer implements ObjectSizer, Declarable {
 
-  String name;
+    String name;
 
-  public int sizeof( Object o ) {
-    return ObjectSizer.DEFAULT.sizeof(o);
-  }
+    public int sizeof(Object o) {
+        return ObjectSizer.DEFAULT.sizeof(o);
+    }
 
-  public void init(Properties props) {
-      this.name = props.getProperty("name", "defaultName");
-  }
+    public void init(Properties props) {
+        this.name = props.getProperty("name", "defaultName");
+    }
 }

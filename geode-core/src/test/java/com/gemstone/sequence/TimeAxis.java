@@ -78,11 +78,11 @@ public class TimeAxis extends JComponent {
         if (orientation == HORIZONTAL) {
             start = (drawHere.x / increment) * increment;
             end = (((drawHere.x + drawHere.width) / increment) + 1)
-                  * increment;
+                    * increment;
         } else {
             start = (drawHere.y / increment) * increment;
             end = (((drawHere.y + drawHere.height) / increment) + 1)
-                  * increment;
+                    * increment;
         }
 
         // Make a special case of 0 to display the number
@@ -91,10 +91,10 @@ public class TimeAxis extends JComponent {
             text = DATE_FORMAT.format(new Date(minTime));
             tickLength = 10;
             if (orientation == HORIZONTAL) {
-                g.drawLine(0, SIZE-1, 0, SIZE-tickLength-1);
+                g.drawLine(0, SIZE - 1, 0, SIZE - tickLength - 1);
                 g.drawString(text, 2, 21);
             } else {
-                g.drawLine(SIZE-1, 0, SIZE-tickLength-1, 0);
+                g.drawLine(SIZE - 1, 0, SIZE - tickLength - 1, 0);
                 g.drawString(text, 9, 10);
             }
             text = null;
@@ -103,18 +103,18 @@ public class TimeAxis extends JComponent {
 
         // ticks and labels
         for (int i = start; i < end; i += increment) {
-                tickLength = 10;
-                text = DATE_FORMAT.format(new Date((long) (minTime + i  * scale)));
+            tickLength = 10;
+            text = DATE_FORMAT.format(new Date((long) (minTime + i * scale)));
 
             if (tickLength != 0) {
                 if (orientation == HORIZONTAL) {
-                    g.drawLine(i, SIZE-1, i, SIZE-tickLength-1);
+                    g.drawLine(i, SIZE - 1, i, SIZE - tickLength - 1);
                     if (text != null)
-                        g.drawString(text, i-3, 21);
+                        g.drawString(text, i - 3, 21);
                 } else {
-                    g.drawLine(SIZE-1, i, SIZE-tickLength-1, i);
+                    g.drawLine(SIZE - 1, i, SIZE - tickLength - 1, i);
                     if (text != null)
-                        g.drawString(text, 9, i+3);
+                        g.drawString(text, 9, i + 3);
                 }
             }
         }

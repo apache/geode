@@ -37,205 +37,213 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class TXWriterJUnitTest extends TXWriterTestCase {
-  
-  /**
-   *  make sure standard Cache(Listener,Writer)
-   *  are not called during rollback due to transaction writer throw
-   */
-  @Test
-  public void testNoCallbacksOnTransactionWriterThrow() throws Exception {
-    installCacheListenerAndWriter();
 
-    ((CacheTransactionManager)this.txMgr).setWriter(new TransactionWriter() {
-      public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
-        throw new TransactionWriterException("Rollback now!");
-      }
-      public void close() {}
-    });
-    
-    installTransactionListener();
-    
-    this.txMgr.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException cce) {
-      assertNotNull(cce.getCause());
-      assertTrue(cce.getCause() instanceof TransactionWriterException);
+    /**
+     * make sure standard Cache(Listener,Writer)
+     * are not called during rollback due to transaction writer throw
+     */
+    @Test
+    public void testNoCallbacksOnTransactionWriterThrow() throws Exception {
+        installCacheListenerAndWriter();
+
+        ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+            public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
+                throw new TransactionWriterException("Rollback now!");
+            }
+
+            public void close() {
+            }
+        });
+
+        installTransactionListener();
+
+        this.txMgr.begin();
+        this.region.create("key1", "value1");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException cce) {
+            assertNotNull(cce.getCause());
+            assertTrue(cce.getCause() instanceof TransactionWriterException);
+        }
+        assertEquals(0, this.cbCount);
+
+        this.cbCount = 0;
+        this.region.create("key1", "value1");
+        // do a sanity check to make sure callbacks are installed
+        assertEquals(2, this.cbCount); // 2 -> 1writer + 1listener
+
+        this.txMgr.begin();
+        this.region.put("key1", "value2");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() instanceof TransactionWriterException);
+        }
+        assertEquals(0, this.cbCount);
+        this.region.localDestroy("key1");
+
+        this.region.create("key1", "value1");
+        this.txMgr.begin();
+        this.region.localDestroy("key1");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() instanceof TransactionWriterException);
+        }
+        assertEquals(0, this.cbCount);
+
+        this.region.put("key1", "value1");
+        this.txMgr.begin();
+        this.region.destroy("key1");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() instanceof TransactionWriterException);
+        }
+        assertEquals(0, this.cbCount);
+
+        this.region.put("key1", "value1");
+        this.txMgr.begin();
+        this.region.localInvalidate("key1");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() instanceof TransactionWriterException);
+        }
+        assertEquals(0, this.cbCount);
+        this.region.localDestroy("key1");
+
+        this.region.put("key1", "value1");
+        this.txMgr.begin();
+        this.region.invalidate("key1");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() instanceof TransactionWriterException);
+        }
+        assertEquals(0, this.cbCount);
+
+        this.region.localDestroy("key1");
     }
-    assertEquals(0, this.cbCount);
 
-    this.cbCount = 0;
-    this.region.create("key1", "value1");
-    // do a sanity check to make sure callbacks are installed
-    assertEquals(2, this.cbCount); // 2 -> 1writer + 1listener
+    /**
+     * make sure standard Cache(Listener,Writer)
+     * are not called during rollback due to transaction writer throw
+     */
+    @Test
+    public void testAfterCommitFailedOnTransactionWriterThrow() throws Exception {
+        installCacheListenerAndWriter();
 
-    this.txMgr.begin();
-    this.region.put("key1", "value2");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() instanceof TransactionWriterException);
+        ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+            public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
+                throw new TransactionWriterException("Rollback now!");
+            }
+
+            public void close() {
+            }
+        });
+
+        installTransactionListener();
+
+        this.txMgr.begin();
+        this.region.create("key1", "value1");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() instanceof TransactionWriterException);
+        }
+        assertEquals(0, this.cbCount);
+        assertEquals(1, this.failedCommits);
+        assertEquals(0, this.afterCommits);
+        assertEquals(0, this.afterRollbacks);
     }
-    assertEquals(0, this.cbCount);
-    this.region.localDestroy("key1");
 
-    this.region.create("key1", "value1");
-    this.txMgr.begin();
-    this.region.localDestroy("key1");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() instanceof TransactionWriterException);
+    /**
+     * make sure standard Cache(Listener,Writer)
+     * are not called during rollback due to transaction writer throw
+     */
+    @Test
+    public void testAfterCommitFailedOnTransactionWriterThrowWithJTA() throws Exception {
+        installCacheListenerAndWriter();
+
+        ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+            public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
+                throw new TransactionWriterException("Rollback now!");
+            }
+
+            public void close() {
+            }
+        });
+
+        installTransactionListener();
+
+        UserTransaction userTx = (UserTransaction) this.cache.getJNDIContext().lookup("java:/UserTransaction");
+
+        userTx.begin();
+        this.region.create("key1", "value1");
+        this.cbCount = 0;
+        try {
+            userTx.commit();
+            fail("Commit should have thrown RollbackException");
+        } catch (RollbackException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() + " is not a SynchronizationCommitConflictException",
+                    expected.getCause() instanceof SynchronizationCommitConflictException);
+        }
+        assertEquals(0, this.cbCount);
+        assertEquals(1, this.failedCommits);
+        assertEquals(0, this.afterCommits);
+        assertEquals(1, this.afterRollbacks);
     }
-    assertEquals(0, this.cbCount);
 
-    this.region.put("key1", "value1");
-    this.txMgr.begin();
-    this.region.destroy("key1");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() instanceof TransactionWriterException);
+    @Test
+    public void testAfterCommitFailedOnThrowNPE() throws Exception {
+        installCacheListenerAndWriter();
+
+        ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+            public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
+                throw new NullPointerException("this is expected!");
+            }
+
+            public void close() {
+            }
+        });
+
+        installTransactionListener();
+
+        this.txMgr.begin();
+        this.region.create("key1", "value1");
+        this.cbCount = 0;
+        try {
+            this.txMgr.commit();
+            fail("Commit should have thrown CommitConflictException");
+        } catch (CommitConflictException expected) {
+            assertNotNull(expected.getCause());
+            assertTrue(expected.getCause() instanceof NullPointerException);
+        }
+        assertEquals(0, this.cbCount);
+        assertEquals(1, this.failedCommits);
+        assertEquals(0, this.afterCommits);
+        assertEquals(0, this.afterRollbacks);
     }
-    assertEquals(0, this.cbCount);
-
-    this.region.put("key1", "value1");
-    this.txMgr.begin();
-    this.region.localInvalidate("key1");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() instanceof TransactionWriterException);
-    }
-    assertEquals(0, this.cbCount);
-    this.region.localDestroy("key1");
-
-    this.region.put("key1", "value1");
-    this.txMgr.begin();
-    this.region.invalidate("key1");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() instanceof TransactionWriterException);
-    }
-    assertEquals(0, this.cbCount);
-
-    this.region.localDestroy("key1");
-  }
-  
-  /**
-   * make sure standard Cache(Listener,Writer)
-   * are not called during rollback due to transaction writer throw
-   */
-  @Test
-  public void testAfterCommitFailedOnTransactionWriterThrow() throws Exception {
-    installCacheListenerAndWriter();
-
-    ((CacheTransactionManager)this.txMgr).setWriter(new TransactionWriter() {
-      public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
-        throw new TransactionWriterException("Rollback now!");
-      }
-      public void close() {}
-    });
-    
-    installTransactionListener();
-    
-    this.txMgr.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() instanceof TransactionWriterException);
-    }
-    assertEquals(0, this.cbCount);
-    assertEquals(1, this.failedCommits);
-    assertEquals(0, this.afterCommits);
-    assertEquals(0, this.afterRollbacks);
-  }
-  
-  /**
-   * make sure standard Cache(Listener,Writer)
-   * are not called during rollback due to transaction writer throw
-   */
-  @Test
-  public void testAfterCommitFailedOnTransactionWriterThrowWithJTA() throws Exception {
-    installCacheListenerAndWriter();
-
-    ((CacheTransactionManager)this.txMgr).setWriter(new TransactionWriter() {
-      public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
-        throw new TransactionWriterException("Rollback now!");
-      }
-      public void close() {}
-    });
-    
-    installTransactionListener();
-    
-    UserTransaction userTx = (UserTransaction)this.cache.getJNDIContext().lookup("java:/UserTransaction");
-    
-    userTx.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
-    try {
-      userTx.commit();
-      fail("Commit should have thrown RollbackException");
-    } catch(RollbackException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() + " is not a SynchronizationCommitConflictException", 
-          expected.getCause() instanceof SynchronizationCommitConflictException);
-    }
-    assertEquals(0, this.cbCount);
-    assertEquals(1, this.failedCommits);
-    assertEquals(0, this.afterCommits);
-    assertEquals(1, this.afterRollbacks);
-  }
-  
-  @Test
-  public void testAfterCommitFailedOnThrowNPE() throws Exception {
-    installCacheListenerAndWriter();
-
-    ((CacheTransactionManager)this.txMgr).setWriter(new TransactionWriter() {
-      public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
-        throw new NullPointerException("this is expected!");
-      }
-      public void close() {}
-    });
-    
-    installTransactionListener();
-    
-    this.txMgr.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
-    try {
-      this.txMgr.commit();
-      fail("Commit should have thrown CommitConflictException");
-    } catch(CommitConflictException expected) {
-      assertNotNull(expected.getCause());
-      assertTrue(expected.getCause() instanceof NullPointerException);
-    }
-    assertEquals(0, this.cbCount);
-    assertEquals(1, this.failedCommits);
-    assertEquals(0, this.afterCommits);
-    assertEquals(0, this.afterRollbacks);
-  }
 }

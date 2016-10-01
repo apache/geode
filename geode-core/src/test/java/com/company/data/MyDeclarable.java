@@ -25,8 +25,8 @@ import com.gemstone.gemfire.cache.*;
  */
 public class MyDeclarable implements Declarable {
 
-  public void init(java.util.Properties props) {
+    public void init(java.util.Properties props) {
 
-  }
+    }
 
 }

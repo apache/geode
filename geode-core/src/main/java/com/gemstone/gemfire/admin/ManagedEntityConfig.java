@@ -24,76 +24,74 @@ package com.gemstone.gemfire.admin;
  * thrown.
  *
  * @see ManagedEntity
- *
  * @since GemFire 4.0
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface ManagedEntityConfig extends Cloneable {
 
-  /**
-   * Returns the name of the host on which the managed entity runs or
-   * will run.
-   */
-  public String getHost();
+    /**
+     * Returns the name of the host on which the managed entity runs or
+     * will run.
+     */
+    public String getHost();
 
-  /**
-   * Sets the name of the host on which the managed entity will run.
-   */
-  public void setHost(String host);
+    /**
+     * Sets the name of the host on which the managed entity will run.
+     */
+    public void setHost(String host);
 
-  /**
-   * Returns the name of the working directory in which the managed
-   * entity runs or will run.
-   */
-  public String getWorkingDirectory();
+    /**
+     * Returns the name of the working directory in which the managed
+     * entity runs or will run.
+     */
+    public String getWorkingDirectory();
 
-  /**
-   * Sets the name of the working directory in which the managed
-   * entity will run.
-   */
-  public void setWorkingDirectory(String dir);
+    /**
+     * Sets the name of the working directory in which the managed
+     * entity will run.
+     */
+    public void setWorkingDirectory(String dir);
 
-  /**
-   * Returns the name of the GemFire product directory to use when
-   * administering the managed entity.
-   */
-  public String getProductDirectory();
+    /**
+     * Returns the name of the GemFire product directory to use when
+     * administering the managed entity.
+     */
+    public String getProductDirectory();
 
-  /**
-   * Sets the name of the GemFire product directory to use when
-   * administering the managed entity.
-   */
-  public void setProductDirectory(String dir);
+    /**
+     * Sets the name of the GemFire product directory to use when
+     * administering the managed entity.
+     */
+    public void setProductDirectory(String dir);
 
-  /**
-   * Returns the command prefix used to administer a managed entity
-   * that is hosted on a remote machine.  If the remote command is
-   * <code>null</code> (the default value), then the remote command
-   * associated with the {@linkplain
-   * AdminDistributedSystem#getRemoteCommand() distributed system}
-   * will be used.
-   */
-  public String getRemoteCommand();
+    /**
+     * Returns the command prefix used to administer a managed entity
+     * that is hosted on a remote machine.  If the remote command is
+     * <code>null</code> (the default value), then the remote command
+     * associated with the {@linkplain
+     * AdminDistributedSystem#getRemoteCommand() distributed system}
+     * will be used.
+     */
+    public String getRemoteCommand();
 
-  /**
-   * Sets the command prefix used to administer a managed entity that
-   * is hosted on a remote machine.
-   */
-  public void setRemoteCommand(String remoteCommand);
+    /**
+     * Sets the command prefix used to administer a managed entity that
+     * is hosted on a remote machine.
+     */
+    public void setRemoteCommand(String remoteCommand);
 
-  /**
-   * Validates this configuration.
-   *
-   * @throws IllegalStateException
-   *         If a managed entity cannot be administered using this
-   *         configuration 
-   */
-  public void validate();
+    /**
+     * Validates this configuration.
+     *
+     * @throws IllegalStateException If a managed entity cannot be administered using this
+     *                               configuration
+     */
+    public void validate();
 
-  /**
-   * Returns a new <code>ManagedEntityConfig</code> with the same
-   * configuration as this <code>ManagedEntityConfig</code>.
-   */
-  public Object clone() throws CloneNotSupportedException; 
+    /**
+     * Returns a new <code>ManagedEntityConfig</code> with the same
+     * configuration as this <code>ManagedEntityConfig</code>.
+     */
+    public Object clone() throws CloneNotSupportedException;
 
 }

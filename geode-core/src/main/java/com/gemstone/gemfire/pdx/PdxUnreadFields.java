@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire.pdx;
 
@@ -33,9 +33,8 @@ package com.gemstone.gemfire.pdx;
  * or {@link com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxIgnoreUnreadFields(boolean) client setPdxIgnoreUnreadFields})
  * but to reduce the performance and memory overhead of automatic preservation it is recommended
  * that use {@link PdxReader#readUnreadFields() readUnreadFields} if possible.
- * 
- * @since GemFire 6.6
  *
+ * @since GemFire 6.6
  */
 public interface PdxUnreadFields {
 }

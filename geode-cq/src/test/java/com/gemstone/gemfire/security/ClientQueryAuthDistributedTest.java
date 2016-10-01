@@ -32,91 +32,91 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 public class ClientQueryAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
-  @Test
-  public void testQuery(){
-    client1.invoke(()-> {
-      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
-      final Region region = cache.getRegion(REGION_NAME);
+    @Test
+    public void testQuery() {
+        client1.invoke(() -> {
+            ClientCache cache = createClientCache("stranger", "1234567", serverPort);
+            final Region region = cache.getRegion(REGION_NAME);
 
-      String query = "select * from /AuthRegion";
-      assertNotAuthorized(()->region.query(query), "DATA:READ:AuthRegion");
+            String query = "select * from /AuthRegion";
+            assertNotAuthorized(() -> region.query(query), "DATA:READ:AuthRegion");
 
-      Pool pool = PoolManager.find(region);
-      assertNotAuthorized(()->pool.getQueryService().newQuery(query).execute(), "DATA:READ:AuthRegion");
-    });
-  }
+            Pool pool = PoolManager.find(region);
+            assertNotAuthorized(() -> pool.getQueryService().newQuery(query).execute(), "DATA:READ:AuthRegion");
+        });
+    }
 
-  @Test
-  public void testCQ(){
-    String query = "select * from /AuthRegion";
-    client1.invoke(()-> {
-      ClientCache cache =createClientCache("stranger", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
+    @Test
+    public void testCQ() {
+        String query = "select * from /AuthRegion";
+        client1.invoke(() -> {
+            ClientCache cache = createClientCache("stranger", "1234567", serverPort);
+            Region region = cache.getRegion(REGION_NAME);
+            Pool pool = PoolManager.find(region);
+            QueryService qs = pool.getQueryService();
 
-      CqAttributes cqa = new CqAttributesFactory().create();
+            CqAttributes cqa = new CqAttributesFactory().create();
 
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
+            // Create the CqQuery
+            CqQuery cq = qs.newCq("CQ1", query, cqa);
 
-      assertNotAuthorized(()->cq.executeWithInitialResults(), "DATA:READ:AuthRegion");
-      assertNotAuthorized(()->cq.execute(), "DATA:READ:AuthRegion");
+            assertNotAuthorized(() -> cq.executeWithInitialResults(), "DATA:READ:AuthRegion");
+            assertNotAuthorized(() -> cq.execute(), "DATA:READ:AuthRegion");
 
-      assertNotAuthorized(()->cq.close(), "DATA:MANAGE");
-    });
+            assertNotAuthorized(() -> cq.close(), "DATA:MANAGE");
+        });
 
-    client2.invoke(()-> {
-      ClientCache cache =createClientCache("authRegionReader", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
+        client2.invoke(() -> {
+            ClientCache cache = createClientCache("authRegionReader", "1234567", serverPort);
+            Region region = cache.getRegion(REGION_NAME);
+            Pool pool = PoolManager.find(region);
+            QueryService qs = pool.getQueryService();
 
-      CqAttributes cqa = new CqAttributesFactory().create();
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
-      cq.execute();
+            CqAttributes cqa = new CqAttributesFactory().create();
+            // Create the CqQuery
+            CqQuery cq = qs.newCq("CQ1", query, cqa);
+            cq.execute();
 
-      assertNotAuthorized(()->cq.stop(), "DATA:MANAGE");
-      assertNotAuthorized(()->qs.getAllDurableCqsFromServer(), "CLUSTER:READ");
-    });
+            assertNotAuthorized(() -> cq.stop(), "DATA:MANAGE");
+            assertNotAuthorized(() -> qs.getAllDurableCqsFromServer(), "CLUSTER:READ");
+        });
 
-    client3.invoke(()-> {
-      ClientCache cache =createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
+        client3.invoke(() -> {
+            ClientCache cache = createClientCache("super-user", "1234567", serverPort);
+            Region region = cache.getRegion(REGION_NAME);
+            Pool pool = PoolManager.find(region);
+            QueryService qs = pool.getQueryService();
 
-      CqAttributesFactory factory = new CqAttributesFactory();
-      factory.addCqListener(new CqListener() {
-        @Override
-        public void onEvent(final CqEvent aCqEvent) {
-          System.out.println(aCqEvent);
-        }
+            CqAttributesFactory factory = new CqAttributesFactory();
+            factory.addCqListener(new CqListener() {
+                @Override
+                public void onEvent(final CqEvent aCqEvent) {
+                    System.out.println(aCqEvent);
+                }
 
-        @Override
-        public void onError(final CqEvent aCqEvent) {
+                @Override
+                public void onError(final CqEvent aCqEvent) {
 
-        }
+                }
 
-        @Override
-        public void close() {
+                @Override
+                public void close() {
 
-        }
-      });
+                }
+            });
 
 
-      CqAttributes cqa = factory.create();
+            CqAttributes cqa = factory.create();
 
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
-      System.out.println("query result: "+cq.executeWithInitialResults());
+            // Create the CqQuery
+            CqQuery cq = qs.newCq("CQ1", query, cqa);
+            System.out.println("query result: " + cq.executeWithInitialResults());
 
-      cq.stop();
-    });
-  }
+            cq.stop();
+        });
+    }
 
 }

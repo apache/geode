@@ -47,7 +47,7 @@ package com.gemstone.gemfire.cache;
  * &nbsp &nbsp private String tradeID;<br>
  * &nbsp &nbsp private Month month ;<br>
  * &nbsp &nbsp private Year year ;<br>
- * 
+ * <p>
  * &nbsp &nbsp public TradingKey(){ } <br>
  * &nbsp &nbsp public TradingKey(Month month, Year year){<br>
  * &nbsp &nbsp &nbsp &nbsp this.month = month;<br>
@@ -56,32 +56,29 @@ package com.gemstone.gemfire.cache;
  * &nbsp &nbsp public Object getRoutingObject(EntryOperation opDetails){<br>
  * &nbsp &nbsp &nbsp &nbsp return this.month + this.year;<br>
  * &nbsp &nbsp }<br> }<br>
- * 
+ * <p>
  * In the example above, all trade entries with the same month and year are
  * guaranteed to be colocated.
  * </p>
- * 
- * 
+ *
  * @since GemFire 6.0
  */
-public interface PartitionResolver<K,V> extends CacheCallback {
+public interface PartitionResolver<K, V> extends CacheCallback {
 
-  /**
-   * @param opDetails
-   *                the detail of the entry operation e.g.
-   *                {@link Region#get(Object)}
-   * @throws RuntimeException
-   *                 any exception thrown will terminate the operation and the
-   *                 exception will be passed to the calling thread.
-   * @return object associated with entry operation which allows the Partitioned
-   *         Region to store associated data together
-   */
-  public Object getRoutingObject(EntryOperation<K,V> opDetails);
+    /**
+     * @param opDetails the detail of the entry operation e.g.
+     *                  {@link Region#get(Object)}
+     * @return object associated with entry operation which allows the Partitioned
+     * Region to store associated data together
+     * @throws RuntimeException any exception thrown will terminate the operation and the
+     *                          exception will be passed to the calling thread.
+     */
+    public Object getRoutingObject(EntryOperation<K, V> opDetails);
 
-  /**
-   * Returns the name of the PartitionResolver
-   * 
-   * @return String name
-   */
-  public String getName();
+    /**
+     * Returns the name of the PartitionResolver
+     *
+     * @return String name
+     */
+    public String getName();
 }

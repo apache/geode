@@ -26,25 +26,32 @@ import com.gemstone.gemfire.GemFireCheckedException;
  */
 public abstract class VersionException extends GemFireCheckedException {
 
-  /** Constructs a new <code>VersionException</code>. */
-  public VersionException() {
-    super();
-  }
+    /**
+     * Constructs a new <code>VersionException</code>.
+     */
+    public VersionException() {
+        super();
+    }
 
-  /** Constructs a new <code>VersionException</code> with a message string. */
-  public VersionException(String s) {
-    super(s);
-  }
+    /**
+     * Constructs a new <code>VersionException</code> with a message string.
+     */
+    public VersionException(String s) {
+        super(s);
+    }
 
-  /** Constructs a <code>VersionException</code> with a message string and
-   * a base exception
-   */
-  public VersionException(String s, Throwable cause) {
-    super(s, cause);
-  }
+    /**
+     * Constructs a <code>VersionException</code> with a message string and
+     * a base exception
+     */
+    public VersionException(String s, Throwable cause) {
+        super(s, cause);
+    }
 
-  /** Constructs a <code>VersionException</code> with a cause */
-  public VersionException(Throwable cause) {
-    super(cause);
-  }
+    /**
+     * Constructs a <code>VersionException</code> with a cause
+     */
+    public VersionException(Throwable cause) {
+        super(cause);
+    }
 }

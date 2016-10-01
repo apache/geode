@@ -23,73 +23,73 @@ import java.io.Serializable;
  */
 public class Emp implements Serializable {
 
-  private int id;
-  
-  private String lname;
+    private int id;
 
-  private String fname;
+    private String lname;
 
-  private int age;
+    private String fname;
 
-  private String loc;
+    private int age;
 
-  public Emp(int id, String lname, String fname, int age, String loc) {
-    this.id = id;
-    this.lname = lname;
-    this.fname = fname;
-    this.age = age;
-    this.loc = loc;
-  }
+    private String loc;
 
-  public int getId() {
-    return id;
-  }
+    public Emp(int id, String lname, String fname, int age, String loc) {
+        this.id = id;
+        this.lname = lname;
+        this.fname = fname;
+        this.age = age;
+        this.loc = loc;
+    }
 
-  public String getLname() {
-    return lname;
-  }
+    public int getId() {
+        return id;
+    }
 
-  public String getFname() {
-    return fname;
-  }
+    public String getLname() {
+        return lname;
+    }
 
-  public int getAge() {
-    return age;
-  }
+    public String getFname() {
+        return fname;
+    }
 
-  public String getLoc() {
-    return loc;
-  }
+    public int getAge() {
+        return age;
+    }
 
-  @Override
-  public String toString() {
-    return "Emp(" + id + ", " + lname + ", " + fname + ", " + age + ", " + loc + ")";
-  }
+    public String getLoc() {
+        return loc;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    @Override
+    public String toString() {
+        return "Emp(" + id + ", " + lname + ", " + fname + ", " + age + ", " + loc + ")";
+    }
 
-    Emp emp = (Emp) o;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-    if (age != emp.age) return false;
-    if (id != emp.id) return false;
-    if (fname != null ? !fname.equals(emp.fname) : emp.fname != null) return false;
-    if (lname != null ? !lname.equals(emp.lname) : emp.lname != null) return false;
-    if (loc != null ? !loc.equals(emp.loc) : emp.loc != null) return false;
+        Emp emp = (Emp) o;
 
-    return true;
-  }
+        if (age != emp.age) return false;
+        if (id != emp.id) return false;
+        if (fname != null ? !fname.equals(emp.fname) : emp.fname != null) return false;
+        if (lname != null ? !lname.equals(emp.lname) : emp.lname != null) return false;
+        if (loc != null ? !loc.equals(emp.loc) : emp.loc != null) return false;
 
-  @Override
-  public int hashCode() {
-    int result = id;
-    result = 31 * result + (lname != null ? lname.hashCode() : 0);
-    result = 31 * result + (fname != null ? fname.hashCode() : 0);
-    result = 31 * result + age;
-    result = 31 * result + (loc != null ? loc.hashCode() : 0);
-    return result;
-  }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + (lname != null ? lname.hashCode() : 0);
+        result = 31 * result + (fname != null ? fname.hashCode() : 0);
+        result = 31 * result + age;
+        result = 31 * result + (loc != null ? loc.hashCode() : 0);
+        return result;
+    }
 
 }

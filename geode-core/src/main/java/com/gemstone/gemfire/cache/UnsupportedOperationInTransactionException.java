@@ -23,14 +23,14 @@ package com.gemstone.gemfire.cache;
  * @since GemFire 6.5
  */
 public class UnsupportedOperationInTransactionException extends
-    UnsupportedOperationException {
+        UnsupportedOperationException {
 
-  public UnsupportedOperationInTransactionException(String s) {
-    super(s);
-  }
-  
-  public UnsupportedOperationInTransactionException() {
-    super();
-  }
-  
+    public UnsupportedOperationInTransactionException(String s) {
+        super(s);
+    }
+
+    public UnsupportedOperationInTransactionException() {
+        super();
+    }
+
 }

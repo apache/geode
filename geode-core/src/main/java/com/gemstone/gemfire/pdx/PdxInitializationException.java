@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire.pdx;
 
@@ -24,27 +24,29 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown if the PDX system could not be successfully initialized.
  * The cause will give the detailed reason why initialization failed.
- * @since GemFire 6.6
  *
+ * @since GemFire 6.6
  */
 public class PdxInitializationException extends GemFireException {
 
-  private static final long serialVersionUID = 5098737377658808834L;
+    private static final long serialVersionUID = 5098737377658808834L;
 
-  /**
-   * Construct a new exception with the given message
-   * @param message the message of the new exception
-   */
-  public PdxInitializationException(String message) {
-    super(message);
-  }
+    /**
+     * Construct a new exception with the given message
+     *
+     * @param message the message of the new exception
+     */
+    public PdxInitializationException(String message) {
+        super(message);
+    }
 
-  /**
-   * Construct a new exception with the given message and cause
-   * @param message the message of the new exception
-   * @param cause the cause of the new exception
-   */
-  public PdxInitializationException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    /**
+     * Construct a new exception with the given message and cause
+     *
+     * @param message the message of the new exception
+     * @param cause   the cause of the new exception
+     */
+    public PdxInitializationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
