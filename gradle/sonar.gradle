@@ -18,44 +18,44 @@
 apply plugin: 'org.sonarqube'
 
 sonarqube {
-  properties {
-    property "sonar.host.url", "https://analysis.apache.org"
-    property "sonar.projectKey", "org.apache:geode"
-    property "sonar.sourceEncoding", "UTF-8"
-    property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
-    property "sonar.scm.provider", "git"
-    property "sonar.projectName", "Apache Geode"
-    property "sonar.projectVersion", version
-    property "sonar.projectDescription", "Apache Geode (incubating)"
-  }
+    properties {
+        property "sonar.host.url", "https://analysis.apache.org"
+        property "sonar.projectKey", "org.apache:geode"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
+        property "sonar.scm.provider", "git"
+        property "sonar.projectName", "Apache Geode"
+        property "sonar.projectVersion", version
+        property "sonar.projectDescription", "Apache Geode (incubating)"
+    }
 }
 
 project("extensions/geode-modules") {
-  sonarqube {
-    skipProject = true
-  }
+    sonarqube {
+        skipProject = true
+    }
 }
 
 project("extensions/geode-modules-assembly") {
-  sonarqube {
-    skipProject = true
-  }
+    sonarqube {
+        skipProject = true
+    }
 }
 
 project("extensions/geode-modules-hibernate") {
-  sonarqube {
-    skipProject = true
-  }
+    sonarqube {
+        skipProject = true
+    }
 }
 
 project("extensions/geode-modules-session") {
-  sonarqube {
-    skipProject = true
-  }
+    sonarqube {
+        skipProject = true
+    }
 }
 
 project("extensions/geode-modules-tomcat7") {
-  sonarqube {
-    skipProject = true
-  }
+    sonarqube {
+        skipProject = true
+    }
 }

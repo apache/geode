@@ -105,7 +105,7 @@ public class AuthenticateUserOp {
     private Properties securityProperties = null;
     private boolean needsServerLocation = false;
 
-    public AuthenticateUserOpImpl(Connection con, ExecutablePool pool) {
+    AuthenticateUserOpImpl(Connection con, ExecutablePool pool) {
       super(MessageType.USER_CREDENTIAL_MESSAGE, 1);
       byte[] credentialBytes = null;
       DistributedMember server = new InternalDistributedMember(con.getSocket()

@@ -86,24 +86,24 @@ import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
  *  region3 = region1.getSubregion("2nd_level_region/3rd_level_region");
  *  </code>
  *  </pre>
- *
+ * <p>
  * Region entries are identified by their key. Any Object can be used as a key
  * as long as the key Object
  * is region-wide unique and implements both the equals and
  * hashCode methods. For regions with distributed scope, the key must also be Serializable.
- *
+ * <p>
  * Regions and their entries can be locked. The <code>Lock</code>
  * obtained from {@link #getRegionDistributedLock} is a distributed lock on the
  * entire Region, and the <code>Lock</code> obtained from
  * {@link Region#getDistributedLock} is a distributed lock on the individual
  * entry.
- *
+ * <p>
  * <p>If the scope is <code>Scope.GLOBAL</code>, the methods
  * that modify, destroy, or invalidate the entries in this region will also get a
  * distributed lock. See the documentations for {@link #getDistributedLock} and
  * {@link #getRegionDistributedLock} for details on the implicit locking that
  * occurs for regions with <code>Scope.GLOBAL</code>.
- *
+ * <p>
  * Unless otherwise specified, all of these methods throw a
  * <code>CacheClosedException</code> if the Cache is closed at the time of
  * invocation, or a <code>RegionDestroyedException</code> if this region has been
@@ -114,31 +114,31 @@ import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
  * For distributed regions, keys, values and callback parameters have to be serializable
  * Failure to meet these serialization requirements
  * causes API methods to throw IllegalArgumentException.
- *
+ * <p>
  * Implementation of the java.util.concurrent.ConcurrentMap interface was added
  * in version 6.5.  These methods give various levels
  * of concurrency guarantees based on the scope and data policy of the region.
  * They are implemented in the peer cache and client/server cache but are
  * disallowed in peer Regions having NORMAL or EMPTY data policies.
- *
+ * <p>
  * The semantics of the ConcurrentMap methods on a Partitioned Region are
  * consistent with those expected on a ConcurrentMap. In particular
  * multiple writers in different JVMs of the same key in the same
  * Partitioned Region will be done atomically.
- *
+ * <p>
  * The same is true for a region with GLOBAL scope. All operations will be
  * done atomically since a distributed lock will be held while the
  * operation is done.
- *
+ * <p>
  * The same is true for a region with LOCAL scope. All ops will be done
  * atomically since the underlying map is a concurrent hash map and no
  * distribution is involved.
- *
+ * <p>
  * For peer REPLICATE and PRELOADED regions atomicity is limited to
  * threads in the JVM the operation starts in.  There is no coordination with
  * other members of the system unless the operation is performed in a
  * transaction.
- *
+ * <p>
  * For client server regions the atomicity is determined by the scope and
  * data policy of the server region as described above. The operation is
  * actually performed on the server as described above. Clients will
@@ -147,7 +147,6 @@ import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
  * done on the server. Same goes for any CacheListener called on the
  * client. Any local state on the client will be updated to be consistent
  * with the state change made on the server.
- *
  *
  * @see RegionAttributes
  * @see AttributesFactory
@@ -2166,7 +2165,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
      *   else
      *       return map.get(key);</pre>
      * except that the action is performed atomically.
-     *
+     * <p>
      * <p>ConcurrentMap operations are supported on partitioned and replicated regions
      * and in client caches. They are also supported on non-empty local regions.</p>
      * <p>Please read the notes on ConcurrentMap operations in the javadoc for Region.</p>

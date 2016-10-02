@@ -17,41 +17,41 @@
 -->
 
 <!DOCTYPE cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
-  "http://www.gemstone.com/dtd/cache6_5.dtd" >
+        "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+        "http://www.gemstone.com/dtd/cache6_5.dtd" >
 
 <cache>
-  <!-- combinations of key, value types with region types -->
-  <region name="pr_r_obj_obj_region" refid="PARTITION_REDUNDANT" />
-  <region name="pr_obj_obj_region" refid="PARTITION" />
-  <region name="rr_obj_obj_region" refid="REPLICATE" />
-  <region name="rr_p_obj_obj_region" refid="REPLICATE_PERSISTENT" />
+    <!-- combinations of key, value types with region types -->
+    <region name="pr_r_obj_obj_region" refid="PARTITION_REDUNDANT"/>
+    <region name="pr_obj_obj_region" refid="PARTITION"/>
+    <region name="rr_obj_obj_region" refid="REPLICATE"/>
+    <region name="rr_p_obj_obj_region" refid="REPLICATE_PERSISTENT"/>
 
-  <region name="pr_r_str_int_region" refid="PARTITION_REDUNDANT">
-    <region-attributes>
-      <key-constraint>java.lang.String</key-constraint>
-      <value-constraint>java.lang.Integer</value-constraint>
-    </region-attributes>
-  </region>
-  
-  <region name="pr_str_int_region" refid="PARTITION">
-    <region-attributes>
-      <key-constraint>java.lang.String</key-constraint>
-      <value-constraint>java.lang.Integer</value-constraint>
-    </region-attributes>
-  </region>
+    <region name="pr_r_str_int_region" refid="PARTITION_REDUNDANT">
+        <region-attributes>
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>java.lang.Integer</value-constraint>
+        </region-attributes>
+    </region>
 
-  <region name="rr_str_int_region" refid="REPLICATE">
-    <region-attributes>
-      <key-constraint>java.lang.String</key-constraint>
-      <value-constraint>java.lang.Integer</value-constraint>
-    </region-attributes>
-  </region>
-  
-  <region name="rr_p_str_int_region" refid="REPLICATE_PERSISTENT">
-    <region-attributes>
-      <key-constraint>java.lang.String</key-constraint>
-      <value-constraint>java.lang.Integer</value-constraint>
-    </region-attributes>
-  </region>
+    <region name="pr_str_int_region" refid="PARTITION">
+        <region-attributes>
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>java.lang.Integer</value-constraint>
+        </region-attributes>
+    </region>
+
+    <region name="rr_str_int_region" refid="REPLICATE">
+        <region-attributes>
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>java.lang.Integer</value-constraint>
+        </region-attributes>
+    </region>
+
+    <region name="rr_p_str_int_region" refid="REPLICATE_PERSISTENT">
+        <region-attributes>
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>java.lang.Integer</value-constraint>
+        </region-attributes>
+    </region>
 </cache>

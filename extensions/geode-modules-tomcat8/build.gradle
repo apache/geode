@@ -15,44 +15,44 @@
  * limitations under the License.
  */
 
-test  {
-  doFirst {
-    copy {
-      from 'build/resources/test/tomcat'
-      into 'build/test/tomcat/'
+test {
+    doFirst {
+        copy {
+            from 'build/resources/test/tomcat'
+            into 'build/test/tomcat/'
+        }
     }
-  }
 }
 
 dependencies {
-  compile(project(':extensions/geode-modules')) {
-    exclude group: 'org.apache.tomcat'
-  }
-
-  compile ('org.apache.tomcat:tomcat-catalina:' + project.'tomcat8.version') {
-    exclude module: 'tomcat-annotations-api'
-    exclude module: 'tomcat-servlet-api'
-  }
-  compile ('org.apache.tomcat:tomcat-coyote:' + project.'tomcat8.version') {
-    exclude module: 'tomcat-servlet-api'
-  }
-  compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version'
-
-  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-
-  testRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
-  testRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
-  compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
-  testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
-  compile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
-
-  testCompile project(path: ':geode-junit')
-  testCompile files(project(':geode-core').sourceSets.test.output)
-  testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
-
-  eclipse.classpath.file {
-    whenMerged { classpath ->
-      classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}
+    compile(project(':extensions/geode-modules')) {
+        exclude group: 'org.apache.tomcat'
     }
-  }
+
+    compile('org.apache.tomcat:tomcat-catalina:' + project.'tomcat8.version') {
+        exclude module: 'tomcat-annotations-api'
+        exclude module: 'tomcat-servlet-api'
+    }
+    compile('org.apache.tomcat:tomcat-coyote:' + project.'tomcat8.version') {
+        exclude module: 'tomcat-servlet-api'
+    }
+    compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version'
+
+    testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
+
+    testRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
+    testRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
+    compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
+    testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
+    compile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
+
+    testCompile project(path: ':geode-junit')
+    testCompile files(project(':geode-core').sourceSets.test.output)
+    testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
+
+    eclipse.classpath.file {
+        whenMerged { classpath ->
+            classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build') }
+        }
+    }
 }

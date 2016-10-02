@@ -17,33 +17,33 @@
 -->
 
 <!DOCTYPE cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
-  "http://www.gemstone.com/dtd/cache6_5.dtd" >
+        "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+        "http://www.gemstone.com/dtd/cache6_5.dtd" >
 
 <cache>
-  <!-- test region for OQL test -->
-  <region name="obj_obj_region" refid="PARTITION_REDUNDANT" />
+    <!-- test region for OQL test -->
+    <region name="obj_obj_region" refid="PARTITION_REDUNDANT"/>
 
-  <region name="obj_obj_rep_region" refid="REPLICATE" />
+    <region name="obj_obj_rep_region" refid="REPLICATE"/>
 
-  <region name="str_int_region" refid="PARTITION_REDUNDANT">
-    <region-attributes>
-      <key-constraint>java.lang.String</key-constraint>
-      <value-constraint>java.lang.Integer</value-constraint>
-    </region-attributes>
-  </region>
+    <region name="str_int_region" refid="PARTITION_REDUNDANT">
+        <region-attributes>
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>java.lang.Integer</value-constraint>
+        </region-attributes>
+    </region>
 
-  <region name="str_str_region" refid="PARTITION_REDUNDANT">
-    <region-attributes>
-      <key-constraint>java.lang.String</key-constraint>
-      <value-constraint>java.lang.String</value-constraint>
-    </region-attributes>
-  </region>
+    <region name="str_str_region" refid="PARTITION_REDUNDANT">
+        <region-attributes>
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>java.lang.String</value-constraint>
+        </region-attributes>
+    </region>
 
-  <region name="str_str_rep_region" refid="REPLICATE">
-    <region-attributes>
-      <key-constraint>java.lang.String</key-constraint>
-      <value-constraint>java.lang.String</value-constraint>
-    </region-attributes>
-  </region>
+    <region name="str_str_rep_region" refid="REPLICATE">
+        <region-attributes>
+            <key-constraint>java.lang.String</key-constraint>
+            <value-constraint>java.lang.String</value-constraint>
+        </region-attributes>
+    </region>
 </cache>

@@ -400,7 +400,7 @@ public interface Cache extends GemFireCache {
      *
      * @since GemFire 6.6
      */
-    public Set<DistributedMember> getMembers();
+    public Set getMembers();
 
     /**
      * Returns a set of the administrative members in the distributed system.

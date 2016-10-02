@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
  * Ping a server to see if it is still alive.
  * @since GemFire 5.7
  */
-public class PingOp {
+class PingOp {
   /**
    * Ping the specified server to see if it is still alive
    * @param pool the pool to use to communicate with the server.
@@ -48,7 +48,7 @@ public class PingOp {
     /**
      * @throws com.gemstone.gemfire.SerializationException if serialization fails
      */
-    public PingOpImpl() {
+    PingOpImpl() {
       super(MessageType.PING, 0);
     }
 

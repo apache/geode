@@ -12,7 +12,10 @@
       "operationsAllowed": [
         "DATA:READ"
       ],
-      "regions": ["RegionA", "RegionB"]
+      "regions": [
+        "RegionA",
+        "RegionB"
+      ]
     }
   ],
   "users": [

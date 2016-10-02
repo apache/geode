@@ -16,10 +16,10 @@
  */
 
 dependencies {
-  compile project(':extensions/geode-modules')
-  compile project(':geode-core')
+    compile project(':extensions/geode-modules')
+    compile project(':geode-core')
 }
 
 jar {
-  baseName = 'geode-modules-session-internal'
+    baseName = 'geode-modules-session-internal'
 }

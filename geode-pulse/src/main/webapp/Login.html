@@ -18,97 +18,105 @@
 
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta http-equiv="CACHE-CONTROL" content="NO-CACHE,NO-STORE" />
-<meta http-equiv="PRAGMA" content="NO-CACHE" />
-<meta http-equiv="EXPIRES" content="-1">
-<title>Pulse</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="CACHE-CONTROL" content="NO-CACHE,NO-STORE"/>
+    <meta http-equiv="PRAGMA" content="NO-CACHE"/>
+    <meta http-equiv="EXPIRES" content="-1">
+    <title>Pulse</title>
 
-<!--  CSS Files -->
-<link href="css/common.css" rel="stylesheet" type="text/css" />
-<link href="css/style.css" rel="stylesheet" type="text/css" />
-<!-- fix IE Ui issues-->
-<!--[if IE]>
+    <!--  CSS Files -->
+    <link href="css/common.css" rel="stylesheet" type="text/css"/>
+    <link href="css/style.css" rel="stylesheet" type="text/css"/>
+    <!-- fix IE Ui issues-->
+    <!--[if IE]>
     <link href="css/ie/ie.css" type="text/css" rel="stylesheet"/>
- <![endif]-->
-<!--[if IE 7]>
-  <link href="css/ie/ie7.css" type="text/css" rel="stylesheet"/>
- <![endif]-->
-<!--[if IE 8]>
-  <link href="css/ie/ie8.css" type="text/css" rel="stylesheet"/>
- <![endif]-->
-<!--[if IE 9]>
-  <link href="css/ie/ie9.css" type="text/css" rel="stylesheet"/>
- <![endif]-->
-<!--  END CSS FILES -->
+    <![endif]-->
+    <!--[if IE 7]>
+    <link href="css/ie/ie7.css" type="text/css" rel="stylesheet"/>
+    <![endif]-->
+    <!--[if IE 8]>
+    <link href="css/ie/ie8.css" type="text/css" rel="stylesheet"/>
+    <![endif]-->
+    <!--[if IE 9]>
+    <link href="css/ie/ie9.css" type="text/css" rel="stylesheet"/>
+    <![endif]-->
+    <!--  END CSS FILES -->
 
-<!-- JS FILES -->
-<!-- IE Fix for HTML5 Tags -->
-<!--[if lt IE 9]>
-<script src='js/html5.js'></script>
-  <![endif]-->
-<script type="text/javascript" src="scripts/lib/jquery-1.7.2.js"></script>
-<script type="text/javascript" src="scripts/lib/jquery.i18n.properties.js"></script>
-<script type="text/javascript" src="scripts/pulsescript/PulseCallbacks.js"></script>
-<script type="text/javascript" src="scripts/pulsescript/PulseFunctions.js"></script>
-<script type="text/javascript" src="scripts/pulsescript/common.js"></script>
-<script type="text/javascript" src="scripts/pulsescript/pages/Login.js"></script>
+    <!-- JS FILES -->
+    <!-- IE Fix for HTML5 Tags -->
+    <!--[if lt IE 9]>
+    <script src='js/html5.js'></script>
+    <![endif]-->
+    <script type="text/javascript" src="scripts/lib/jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="scripts/lib/jquery.i18n.properties.js"></script>
+    <script type="text/javascript" src="scripts/pulsescript/PulseCallbacks.js"></script>
+    <script type="text/javascript" src="scripts/pulsescript/PulseFunctions.js"></script>
+    <script type="text/javascript" src="scripts/pulsescript/common.js"></script>
+    <script type="text/javascript" src="scripts/pulsescript/pages/Login.js"></script>
 
-<!--Place Holder tag-->
-<script type="text/javascript" src="scripts/lib/jquery.placeholder.js"></script>
-<!-- END JS FILES -->
+    <!--Place Holder tag-->
+    <script type="text/javascript" src="scripts/lib/jquery.placeholder.js"></script>
+    <!-- END JS FILES -->
 
-<script type="text/javascript">
+    <script type="text/javascript">
 $(function(){
   $("#loginForm").submit(function(){
     if(!validate()) 
       return false;
   });
 });
-</script>
+
+    </script>
 </head>
 
 <body onload="pageOnLoad();" class="bodyLoginBg">
-<div id="loginWidth"> 
-  <!-- Header block-->
-  <header>
-    <div class="textbold right logoBlock"><img src="images/apache_geode_logo.png"/><a href="#.">[LOGO]</a></div>
-  </header>
-  <div class="clear"></div>
-  <!-- Middle block-->
-  <div class="loginMasterBlock">
-    <div class="pulseBottomSpace"><img src="images/about-geode.png">
-      <div class="text-center" id="pulseVersion"></div>
+<div id="loginWidth">
+    <!-- Header block-->
+    <header>
+        <div class="textbold right logoBlock"><img src="images/apache_geode_logo.png"/><a href="#.">[LOGO]</a></div>
+    </header>
+    <div class="clear"></div>
+    <!-- Middle block-->
+    <div class="loginMasterBlock">
+        <div class="pulseBottomSpace"><img src="images/about-geode.png">
+
+            <div class="text-center" id="pulseVersion"></div>
+        </div>
+        <!-- error Block-->
+        <div id="errorMasterBlock" class="errorMasterBlock" style="display:none;">
+            <div id="errorText" class="errorInnerIcon"></div>
+        </div>
+        <div class="loginInnerBlock">
+            <form method="POST" action="j_spring_security_check" name="loginForm" id="loginForm" autocomplete="off">
+                <input class="inputUserName" type="text" name="j_username" id="user_name" placeholder="Username"
+                       autofocus="autofocus" autocomplete="off">
+                <input style="display:none;" type="password" id="fool_password" autocomplete="off">
+                <input class="inputPassword" type="password" name="j_password" id="user_password" placeholder="Password"
+                       autocomplete="off">
+                <!-- Locator host and port are removed for a time -->
+                <!-- <input class="inputUserName" type="text" name="locator_host" id="locator_host" placeholder="Host">
+                <input class="inputUserName" type="text" name="locator_port" id="locator_port" placeholder="Port">-->
+                <input type="submit" value="Sign In" class="signInButton">
+            </form>
+        </div>
+        <br>
+
+        <div class="left widthfull-100per copyright">
+            <p>Apache Geode (incubating)<br>
+                Copyright 2016 The Apache Software Foundation.</p>
+
+            <p>&nbsp;</p>
+
+            <p>This product includes software developed at
+                The Apache Software Foundation (http://www.apache.org/).</p>
+        </div>
     </div>
-    <!-- error Block-->
-    <div id="errorMasterBlock" class="errorMasterBlock" style="display:none;">
-      <div id="errorText" class="errorInnerIcon"> </div>
-    </div>
-    <div class="loginInnerBlock">
-    <form method="POST" action="j_spring_security_check" name="loginForm" id="loginForm" autocomplete="off">
-      <input class="inputUserName" type="text" name="j_username" id="user_name"  placeholder="Username" autofocus="autofocus" autocomplete="off">
-      <input style="display:none;" type="password" id="fool_password" autocomplete="off">
-      <input class="inputPassword" type="password" name="j_password" id="user_password" placeholder="Password" autocomplete="off">
-      <!-- Locator host and port are removed for a time -->
-      <!-- <input class="inputUserName" type="text" name="locator_host" id="locator_host" placeholder="Host">
-      <input class="inputUserName" type="text" name="locator_port" id="locator_port" placeholder="Port">-->
-      <input type="submit" value="Sign In" class="signInButton">
-    </form>
-    </div>
-    <br>
-    <div class="left widthfull-100per copyright">
-      <p>Apache Geode (incubating)<br>
-        Copyright 2016 The Apache Software Foundation.</p>
-      <p>&nbsp;</p>
-      <p>This product includes software developed at
-        The Apache Software Foundation (http://www.apache.org/).</p>
-    </div>
-  </div>
 </div>
-<!-- Placeholder--> 
+<!-- Placeholder-->
 <script>
 $('input[placeholder], textarea[placeholder]').placeholder();
+
 </script>
 </body>
 </html>

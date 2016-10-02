@@ -35,7 +35,7 @@ public class AddPDXEnumOp {
                              EnumInfo ei)
   {
     AbstractOp op = new AddPdxEnumOpImpl(id, ei);
-    pool.execute(op);;
+    pool.execute(op);
   }
                                                                
   private AddPDXEnumOp() {
@@ -46,7 +46,7 @@ public class AddPDXEnumOp {
     /**
      * @throws com.gemstone.gemfire.SerializationException if serialization fails
      */
-    public AddPdxEnumOpImpl(int id, EnumInfo ei) {
+    AddPdxEnumOpImpl(int id, EnumInfo ei) {
       super(MessageType.ADD_PDX_ENUM, 2);
       getMessage().addObjPart(ei);
       getMessage().addIntPart(id);

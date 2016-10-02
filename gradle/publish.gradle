@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 subprojects {
-  apply plugin: 'com.bmuschko.nexus'
-  
-  extraArchive {
-    sources = true
-    javadoc = true
-    tests = false
-  }
-  
-  nexus {
-    sign = true
-    repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
-    snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
-  }
+    apply plugin: 'com.bmuschko.nexus'
 
-  
-  modifyPom {
-    withXml {
-      def elem = asElement()
-      def hdr = elem.getOwnerDocument().createComment(
-  '''
+    extraArchive {
+        sources = true
+        javadoc = true
+        tests = false
+    }
+
+    nexus {
+        sign = true
+        repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
+        snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
+    }
+
+
+    modifyPom {
+        withXml {
+            def elem = asElement()
+            def hdr = elem.getOwnerDocument().createComment(
+                    '''
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -51,108 +51,107 @@ subprojects {
   limitations under the License.
   ''')
 
-      elem.insertBefore(hdr, elem.getFirstChild())
+            elem.insertBefore(hdr, elem.getFirstChild())
 
-  
-      //This black magic checks to see if a dependency has the flag ext.optional=true
-      //set on it, and if so marks the dependency as optional in the maven pom
-      def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
-      def runtimeDeps = project.configurations.runtime.dependencies.collectEntries { [it.name, it] }
-      depMap.putAll(runtimeDeps)
-      asNode().dependencies.dependency.findAll {
-        def dep = depMap.get(it.artifactId.text())
-        return dep?.hasProperty('optional') && dep.optional
-      }.each {
-        if (it.optional) {
-            it.optional.value = 'true'
-        } else {
-            it.appendNode('optional', 'true')
-        }
-      }
-    }
-
-    project {
-      name 'Apache Geode (incubating)'
-      description 'Apache Geode (incubating) provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
-      url 'http://geode.incubator.apache.org'
-  
-      scm {
-        url 'https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=tree'
-        connection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
-        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
-      }
-  
-      licenses {
-        license {
-          name 'The Apache Software License, Version 2.0'
-          url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-        }
-      }
-  
-      repositories {
-        repository {
-          id 'libs-release'
-          name 'Spring Maven libs-release Repository'
-          url 'http://repo.spring.io/libs-release'
-        }
-      }
-    }
-  }
-  
-  // The nexus plugin reads authentication from ~/.gradle/gradle.properties but the
-  // jenkins server stores publishing credentials in ~/.m2/settings.xml (maven).
-  // We match on the expected snapshot repository id.
-  afterEvaluate {
-    if (!isReleaseVersion && System.env.USER == 'jenkins') {
-      def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
-      if (settingsXml.exists()) {
-        def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
-          server.id.text() == 'apache.snapshots.https'
-        }
-  
-        if (snapshotCreds != null) {
-          tasks.uploadArchives.doFirst {
-            repositories().withType(MavenDeployer).each { repo ->
-              repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
-              repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+            //This black magic checks to see if a dependency has the flag ext.optional=true
+            //set on it, and if so marks the dependency as optional in the maven pom
+            def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
+            def runtimeDeps = project.configurations.runtime.dependencies.collectEntries { [it.name, it] }
+            depMap.putAll(runtimeDeps)
+            asNode().dependencies.dependency.findAll {
+                def dep = depMap.get(it.artifactId.text())
+                return dep?.hasProperty('optional') && dep.optional
+            }.each {
+                if (it.optional) {
+                    it.optional.value = 'true'
+                } else {
+                    it.appendNode('optional', 'true')
+                }
             }
-          }
         }
-      }
+
+        project {
+            name 'Apache Geode (incubating)'
+            description 'Apache Geode (incubating) provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+            url 'http://geode.incubator.apache.org'
+
+            scm {
+                url 'https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=tree'
+                connection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+                developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+            }
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                }
+            }
+
+            repositories {
+                repository {
+                    id 'libs-release'
+                    name 'Spring Maven libs-release Repository'
+                    url 'http://repo.spring.io/libs-release'
+                }
+            }
+        }
     }
-  }
+
+    // The nexus plugin reads authentication from ~/.gradle/gradle.properties but the
+    // jenkins server stores publishing credentials in ~/.m2/settings.xml (maven).
+    // We match on the expected snapshot repository id.
+    afterEvaluate {
+        if (!isReleaseVersion && System.env.USER == 'jenkins') {
+            def settingsXml = new File(System.getProperty('user.home'), '.m2/settings.xml')
+            if (settingsXml.exists()) {
+                def snapshotCreds = new XmlSlurper().parse(settingsXml).servers.server.find { server ->
+                    server.id.text() == 'apache.snapshots.https'
+                }
+
+                if (snapshotCreds != null) {
+                    tasks.uploadArchives.doFirst {
+                        repositories().withType(MavenDeployer).each { repo ->
+                            repo.snapshotRepository.authentication.userName = snapshotCreds.username.text()
+                            repo.snapshotRepository.authentication.password = snapshotCreds.password.text()
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 //Prompt the user for a password to sign archives or upload artifacts, if requested
 gradle.taskGraph.whenReady { taskGraph ->
-  if (project.hasProperty('askpass')) {
-    if(taskGraph.allTasks.any {it instanceof Sign}) {
-      if(!project.hasProperty('signing.keyId') || !project.hasProperty('signing.secretKeyRingFile')) {
-        println "You must configure your signing.keyId and signing.secretKeyRingFile"
-        println "in ~/.gradle/gradle.properties in order to sign jars\n"
-        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
-        throw new GradleException("Signing key/keyring is missing")
-      }
+    if (project.hasProperty('askpass')) {
+        if (taskGraph.allTasks.any { it instanceof Sign }) {
+            if (!project.hasProperty('signing.keyId') || !project.hasProperty('signing.secretKeyRingFile')) {
+                println "You must configure your signing.keyId and signing.secretKeyRingFile"
+                println "in ~/.gradle/gradle.properties in order to sign jars\n"
+                println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+                throw new GradleException("Signing key/keyring is missing")
+            }
 
-      if(!project.hasProperty('signing.password')) {
-        def password = PasswordDialog.askPassword("Please enter your password to unlock your gpg keyring for signing artifacts")
-        
-        subprojects { ext."signing.password" = password }
-      }
+            if (!project.hasProperty('signing.password')) {
+                def password = PasswordDialog.askPassword("Please enter your password to unlock your gpg keyring for signing artifacts")
+
+                subprojects { ext."signing.password" = password }
+            }
+        }
+
+        if (taskGraph.allTasks.any { it.name == 'uploadArchives' }) {
+            if (!project.hasProperty('nexusUsername')) {
+                println "You must configure your nexusUsername in ~/.gradle/gradle.properties in order to uploadArchives\n"
+                println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+                throw new GradleException("nexusUsername is missing")
+            }
+
+            if (!project.hasProperty('nexusPassword')) {
+                def password = PasswordDialog.askPassword("Please enter your apache password to uploadArchives to nexus")
+
+                subprojects { ext."nexusPassword" = password }
+            }
+        }
     }
-
-    if(taskGraph.allTasks.any {it.name == 'uploadArchives'}) {
-      if(!project.hasProperty('nexusUsername')) {
-        println "You must configure your nexusUsername in ~/.gradle/gradle.properties in order to uploadArchives\n"
-        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
-        throw new GradleException("nexusUsername is missing")
-      }
-
-      if(!project.hasProperty('nexusPassword')) {
-        def password = PasswordDialog.askPassword("Please enter your apache password to uploadArchives to nexus")
-        
-        subprojects { ext."nexusPassword" = password }
-      }
-    }
-  }
 }

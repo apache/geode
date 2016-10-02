@@ -167,9 +167,7 @@ public class GemFireMemcachedServer {
     startGemFire();
     try {
       startMemcachedServer();
-    } catch (IOException e) {
-      throw new RuntimeException("Could not start Server", e);
-    } catch (InterruptedException e) {
+    } catch (IOException | InterruptedException e) {
       throw new RuntimeException("Could not start Server", e);
     }
   }
@@ -270,9 +268,9 @@ public class GemFireMemcachedServer {
   private static int getPort(String[] args) {
     int port = 0;
     if (args != null && args.length > 0) {
-      for (int i=0; i<args.length; i++) {
-        if (args[i].startsWith("-port")) {
-          String p = args[i].substring(args[i].indexOf('='));
+      for (String arg : args) {
+        if (arg.startsWith("-port")) {
+          String p = arg.substring(arg.indexOf('='));
           p = p.trim();
           port = Integer.parseInt(p);
         }

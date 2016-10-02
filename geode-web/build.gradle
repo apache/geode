@@ -18,43 +18,43 @@
 apply plugin: 'war'
 
 dependencies {
-  runtime ('org.springframework:spring-aspects:' + project.'springframework.version') {
-    exclude module: 'aspectjweaver'
-    exclude module: 'aopalliance'
-    exclude module: 'spring-core'
-  }
-  runtime ('org.springframework:spring-oxm:' + project.'springframework.version') {
-    exclude module: 'commons-logging'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-core'
-  }
-  runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
-    exclude module: 'spring-core'
-  }
-  runtime ('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
-    exclude module: 'commons-io'
-  }
+    runtime('org.springframework:spring-aspects:' + project.'springframework.version') {
+        exclude module: 'aspectjweaver'
+        exclude module: 'aopalliance'
+        exclude module: 'spring-core'
+    }
+    runtime('org.springframework:spring-oxm:' + project.'springframework.version') {
+        exclude module: 'commons-logging'
+        exclude module: 'spring-beans'
+        exclude module: 'spring-core'
+    }
+    runtime('org.springframework:spring-webmvc:' + project.'springframework.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'aspectjweaver'
+        exclude module: 'spring-core'
+    }
+    runtime('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
+        exclude module: 'commons-io'
+    }
 
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+    testCompile 'org.springframework:spring-test:' + project.'springframework.version'
 
-  testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-  }
+    testCompile('org.springframework:spring-webmvc:' + project.'springframework.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'spring-aop'
+    }
 
-  provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-   
-  // have to use output since we exclude the dependent classes from jar :(
-  provided project(path: ':geode-core', configuration: 'classesOutput')
-  
-  testCompile project(':geode-junit')
-  testRuntime project(':geode-common')
-  testRuntime project(':geode-core')
-  testCompile files(project(':geode-core').sourceSets.test.output)
+    provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
 
-  testRuntime files(war.destinationDir)
+    // have to use output since we exclude the dependent classes from jar :(
+    provided project(path: ':geode-core', configuration: 'classesOutput')
+
+    testCompile project(':geode-junit')
+    testRuntime project(':geode-common')
+    testRuntime project(':geode-core')
+    testCompile files(project(':geode-core').sourceSets.test.output)
+
+    testRuntime files(war.destinationDir)
 }
 
 //Remove the gradle output directories from the eclipse classpath. These
@@ -63,26 +63,26 @@ dependencies {
 //geode-core project
 eclipse.classpath.file {
     whenMerged { classpath ->
-        classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
+        classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build') }
     }
 }
 idea.module.iml {
-  whenMerged {module ->
-     module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
-  }
+    whenMerged { module ->
+        module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build') }
+    }
 }
 
 distributedTest {
-  dependsOn war
+    dependsOn war
 }
 
 integrationTest {
-  dependsOn war
+    dependsOn war
 }
 
 war {
-  dependsOn ':geode-core:webJar'
+    dependsOn ':geode-core:webJar'
 
-  classpath configurations.runtime
-  classpath project(':geode-core').webJar.archivePath
+    classpath configurations.runtime
+    classpath project(':geode-core').webJar.archivePath
 }

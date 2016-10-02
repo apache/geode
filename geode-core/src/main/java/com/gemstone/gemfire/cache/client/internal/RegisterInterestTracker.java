@@ -394,7 +394,7 @@ public class RegisterInterestTracker {
    *
    *
    */
-  static public class RegionInterestEntry
+  static class RegionInterestEntry
   {
     private final LocalRegion region;
 

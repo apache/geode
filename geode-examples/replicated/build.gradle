@@ -16,5 +16,5 @@
  */
 
 sourceSets.test {
-  resources.srcDirs = ["${projectDir}/scripts"]
+    resources.srcDirs = ["${projectDir}/scripts"]
 }

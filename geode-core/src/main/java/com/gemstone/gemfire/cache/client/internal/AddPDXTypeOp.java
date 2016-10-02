@@ -46,7 +46,7 @@ public class AddPDXTypeOp {
     /**
      * @throws com.gemstone.gemfire.SerializationException if serialization fails
      */
-    public AddPDXTypeOpImpl(int id, PdxType type) {
+    AddPDXTypeOpImpl(int id, PdxType type) {
       super(MessageType.ADD_PDX_TYPE, 2);
       getMessage().addObjPart(type);
       getMessage().addIntPart(id);

@@ -19,66 +19,66 @@ apply plugin: 'war'
 
 dependencies {
 
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile ('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
-    exclude module: 'commons-io'
-  }
-  compile 'com.fasterxml:classmate:' + project.'classmate.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.module:jackson-module-scala_2.10:' + project.'jackson-module-scala_2.10.version'
-  compile 'com.google.guava:guava:' + project.'guava.version'
-  compile ('com.mangofactory:swagger-springmvc:' + project.'swagger-springmvc.version') { 
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'commons-logging'
-    exclude module: 'jackson-jaxrs-json-provider'
-    exclude module: 'jackson-jaxrs-json-provider'
-    exclude module: 'jackson-module-jsonSchema'
-    exclude module: 'joda-convert'
-    exclude module: 'joda-time'
-    exclude module: 'scalap'
-    exclude module: 'slf4j-api'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-context'
-    exclude module: 'spring-core'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-webmvc'
-    exclude module: 'spring-web'
-  }
-  compile 'com.wordnik:swagger-annotations:' + project.'swagger.version'
-  compile 'org.json4s:json4s-ast_2.10:' + project.'json4s.version'
-  compile 'org.scala-lang:scala-library:' + project.'scala.version'
-  compile 'org.scala-lang:scala-reflect:' + project.'scala.version'
-  compile ('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateos.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'commons-logging'
-    exclude module: 'objenesis'
-    exclude module: 'slf4j-api'
-    exclude module: 'spring-core'
-  }
-  compile ('org.springframework:spring-aspects:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
-  }
-  compile ('org.springframework:spring-oxm:' + project.'springframework.version') {
-    exclude module: 'commons-logging'
-    exclude module: 'spring-core'
-    exclude module: 'spring-beans'
-  }
+    compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+    compile('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
+        exclude module: 'commons-io'
+    }
+    compile 'com.fasterxml:classmate:' + project.'classmate.version'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
+    compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
+    compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+    compile 'com.fasterxml.jackson.module:jackson-module-scala_2.10:' + project.'jackson-module-scala_2.10.version'
+    compile 'com.google.guava:guava:' + project.'guava.version'
+    compile('com.mangofactory:swagger-springmvc:' + project.'swagger-springmvc.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'asm'
+        exclude module: 'cglib'
+        exclude module: 'commons-logging'
+        exclude module: 'jackson-jaxrs-json-provider'
+        exclude module: 'jackson-jaxrs-json-provider'
+        exclude module: 'jackson-module-jsonSchema'
+        exclude module: 'joda-convert'
+        exclude module: 'joda-time'
+        exclude module: 'scalap'
+        exclude module: 'slf4j-api'
+        exclude module: 'spring-aop'
+        exclude module: 'spring-beans'
+        exclude module: 'spring-context'
+        exclude module: 'spring-core'
+        exclude module: 'spring-expression'
+        exclude module: 'spring-webmvc'
+        exclude module: 'spring-web'
+    }
+    compile 'com.wordnik:swagger-annotations:' + project.'swagger.version'
+    compile 'org.json4s:json4s-ast_2.10:' + project.'json4s.version'
+    compile 'org.scala-lang:scala-library:' + project.'scala.version'
+    compile 'org.scala-lang:scala-reflect:' + project.'scala.version'
+    compile('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateos.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'commons-logging'
+        exclude module: 'objenesis'
+        exclude module: 'slf4j-api'
+        exclude module: 'spring-core'
+    }
+    compile('org.springframework:spring-aspects:' + project.'springframework.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'aspectjweaver'
+    }
+    compile('org.springframework:spring-oxm:' + project.'springframework.version') {
+        exclude module: 'commons-logging'
+        exclude module: 'spring-core'
+        exclude module: 'spring-beans'
+    }
 
-  provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  provided project(':geode-core')
+    provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+    provided project(':geode-core')
 }
 
 jar {
-  from sourceSets.main.output
+    from sourceSets.main.output
 }
 
 war {
-  classpath configurations.runtime
+    classpath configurations.runtime
 }
 

@@ -15,27 +15,28 @@
  * limitations under the License.
  */
 import groovy.swing.SwingBuilder
+
 class PasswordDialog {
-  static String askPassword(String prompt) {
-    def password = ''
-    new SwingBuilder().edt {
-    dialog(modal: true, 
-        title: 'Password',
-        alwaysOnTop: true, 
-        locationRelativeTo: null,
-        pack: true, 
-        show: true
-    ) {
-      vbox { 
-        label(text: prompt)
-        input = passwordField()
-        button(defaultButton: true, text: 'OK', actionPerformed: {
-          password = input.password.toString(); // Set pass variable to value of input field
-          dispose(); // Close dialog
-        })
-      }
-      }
+    static String askPassword(String prompt) {
+        def password = ''
+        new SwingBuilder().edt {
+            dialog(modal: true,
+                    title: 'Password',
+                    alwaysOnTop: true,
+                    locationRelativeTo: null,
+                    pack: true,
+                    show: true
+            ) {
+                vbox {
+                    label(text: prompt)
+                    input = passwordField()
+                    button(defaultButton: true, text: 'OK', actionPerformed: {
+                        password = input.password.toString(); // Set pass variable to value of input field
+                        dispose(); // Close dialog
+                    })
+                }
+            }
+        }
+        return password
     }
-    return password
-  }
 }

@@ -17,116 +17,114 @@
 apply plugin: 'war'
 
 sourceSets {
-  main {
-    resources {
-      exclude('**/gemfire*.properties')
-      exclude('**/sqlfire.properties')
+    main {
+        resources {
+            exclude('**/gemfire*.properties')
+            exclude('**/sqlfire.properties')
+        }
     }
-  }
 }
 
 dependencies {
 
 
+    compile 'org.springframework:spring-beans:' + project.'springframework.version'
 
+    compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
+    compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
+    compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
+    compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+    compile 'org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version'
+    runtime 'org.springframework:spring-expression:' + project.'springframework.version'
+    compile('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'spring-expression'
+    }
+    compile('org.springframework.security:spring-security-ldap:' + project.'spring-security.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'spring-asm'
+        exclude module: 'spring-expression'
+        exclude module: 'spring-jdbc'
+    }
+    compile('org.springframework.security:spring-security-web:' + project.'spring-security.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'spring-asm'
+        exclude module: 'spring-expression'
+        exclude module: 'spring-jdbc'
+    }
+    runtime('org.springframework:spring-webmvc:' + project.'springframework.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'aspectjweaver'
+    }
+    compile 'org.springframework:spring-tx:' + project.'spring-tx.version'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
+    compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
+    compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
 
-  compile 'org.springframework:spring-beans:' + project.'springframework.version'
-  
-  compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
-  compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
-  compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile 'org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version'
-  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
-  compile ('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-expression'
-  }
-  compile ('org.springframework.security:spring-security-ldap:' + project.'spring-security.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-asm'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-jdbc'
-  }
-  compile ('org.springframework.security:spring-security-web:' + project.'spring-security.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-asm'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-jdbc'
-  }
-  runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
-  }
-  compile 'org.springframework:spring-tx:' + project.'spring-tx.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+    providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
 
-  providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
+    provided 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
+    provided 'com.google.guava:guava:' + project.'guava.version'
 
-  provided 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  provided 'com.google.guava:guava:' + project.'guava.version'
+    testCompile project(':geode-junit')
+    testCompile project(':geode-core')
+    testCompile files(project(':geode-core').sourceSets.test.output)
 
-  testCompile project(':geode-junit')
-  testCompile project(':geode-core')
-  testCompile files(project(':geode-core').sourceSets.test.output)
+    testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:' + project.'selenium.version'
+    testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
+    testCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
+    testCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
+    testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+    testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
 
-  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-  testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-  testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
-
-  testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
-  testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
-  testRuntime 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
+    testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
+    testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
+    testRuntime 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
 
 sourceSets {
-  main {
-    output.dir(generatedResources, builtBy: 'copyGemFireVersionFile')
-  }
-
-  test {
-    resources {
-      srcDir 'src/main/webapp/WEB-INF'
+    main {
+        output.dir(generatedResources, builtBy: 'copyGemFireVersionFile')
     }
-  }
+
+    test {
+        resources {
+            srcDir 'src/main/webapp/WEB-INF'
+        }
+    }
 }
 
 task copyGemFireVersionFile(type: Copy) {
-  from project(':geode-core').createVersionPropertiesFile
-  into generatedResources
+    from project(':geode-core').createVersionPropertiesFile
+    into generatedResources
 }
 
 jar {
-  from sourceSets.main.output
+    from sourceSets.main.output
 }
 
 eclipse.classpath.file {
-  whenMerged { classpath ->
-    classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
-  }
+    whenMerged { classpath ->
+        classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build') }
+    }
 }
 idea.module.iml {
-  whenMerged {module ->
-    module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
-  }
+    whenMerged { module ->
+        module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build') }
+    }
 }
 
 artifacts {
-  archives war
+    archives war
 }
 
 war {
-  classpath configurations.runtime
-  classpath project(':geode-core').webJar.archivePath
+    classpath configurations.runtime
+    classpath project(':geode-core').webJar.archivePath
 }
 
 uiTest.dependsOn war

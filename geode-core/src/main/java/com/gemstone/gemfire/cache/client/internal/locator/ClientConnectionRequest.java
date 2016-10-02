@@ -26,42 +26,41 @@ import com.gemstone.gemfire.internal.DataSerializableFixedID;
 /**
  * A request from a client to the locator asking for a
  * server to connect to for client to server traffic.
- *
  */
 public class ClientConnectionRequest extends ServerLocationRequest {
-  Set/*<ServerLocation>*/ excludedServers;
-  
-  public ClientConnectionRequest() {
-    
-  }
+    Set/*<ServerLocation>*/ excludedServers;
 
-  public ClientConnectionRequest(Set/*<ServerLocation>*/ excludedServers, String serverGroup) {
-    super(serverGroup);
-    this.excludedServers = excludedServers;
-  }
+    public ClientConnectionRequest() {
 
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    this.excludedServers = SerializationHelper.readServerLocationSet(in);
-  }
+    }
 
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    SerializationHelper.writeServerLocationSet(this.excludedServers, out);
-  }
+    public ClientConnectionRequest(Set/*<ServerLocation>*/ excludedServers, String serverGroup) {
+        super(serverGroup);
+        this.excludedServers = excludedServers;
+    }
 
-  public Set getExcludedServers() {
-    return excludedServers;
-  }
-  
-  @Override
-  public String toString() {
-    return "ClientConnectionRequest{group=" + getServerGroup() + ", excluded=" + getExcludedServers() + "}";
-  }
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+        super.fromData(in);
+        this.excludedServers = SerializationHelper.readServerLocationSet(in);
+    }
 
-  public int getDSFID() {
-    return DataSerializableFixedID.CLIENT_CONNECTION_REQUEST;
-  }
+    @Override
+    public void toData(DataOutput out) throws IOException {
+        super.toData(out);
+        SerializationHelper.writeServerLocationSet(this.excludedServers, out);
+    }
+
+    public Set getExcludedServers() {
+        return excludedServers;
+    }
+
+    @Override
+    public String toString() {
+        return "ClientConnectionRequest{group=" + getServerGroup() + ", excluded=" + getExcludedServers() + "}";
+    }
+
+    public int getDSFID() {
+        return DataSerializableFixedID.CLIENT_CONNECTION_REQUEST;
+    }
 }

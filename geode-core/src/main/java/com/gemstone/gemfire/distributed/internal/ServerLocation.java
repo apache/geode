@@ -53,11 +53,11 @@ public class ServerLocation implements DataSerializable, Comparable {
    */
   private final AtomicInteger requiresCredentials = new AtomicInteger(INITIAL_REQUIRES_CREDENTIALS);
 
-  public static final int INITIAL_REQUIRES_CREDENTIALS = 0;
+  private static final int INITIAL_REQUIRES_CREDENTIALS = 0;
 
-  public static final int REQUIRES_CREDENTIALS = 1;
+  private static final int REQUIRES_CREDENTIALS = 1;
 
-  public static final int REQUIRES_NO_CREDENTIALS = 2;
+  private static final int REQUIRES_NO_CREDENTIALS = 2;
 
   /**
    * For DataSerializer
@@ -133,9 +133,7 @@ public class ServerLocation implements DataSerializable, Comparable {
         return false; // fix for bug 42040
       }
     }
-    if (port != other.port)
-      return false;
-    return true;
+    return port == other.port;
   }
   
   @Override
@@ -171,7 +169,7 @@ public class ServerLocation implements DataSerializable, Comparable {
   }
 
   public boolean getRequiresCredentials() {
-    return this.requiresCredentials.get() == REQUIRES_CREDENTIALS ? true : false;
+    return this.requiresCredentials.get() == REQUIRES_CREDENTIALS;
   }
   
 }

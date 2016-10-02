@@ -37,5 +37,5 @@ include 'extensions/geode-modules-session'
 include 'extensions/geode-modules-assembly'
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
-  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+    throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
 }

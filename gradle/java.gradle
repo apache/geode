@@ -15,86 +15,86 @@
  * limitations under the License.
  */
 subprojects {
-  apply plugin: 'java'
-  
-  // apply compiler options
-  gradle.taskGraph.whenReady( { graph ->
-    tasks.withType(JavaCompile).each { javac ->
-      javac.configure {
-        sourceCompatibility '1.8'
-        targetCompatibility '1.8'
+    apply plugin: 'java'
+
+    // apply compiler options
+    gradle.taskGraph.whenReady({ graph ->
+        tasks.withType(JavaCompile).each { javac ->
+            javac.configure {
+                sourceCompatibility '1.8'
+                targetCompatibility '1.8'
+                options.encoding = 'UTF-8'
+            }
+        }
+    })
+
+    // apply default manifest
+    gradle.taskGraph.whenReady({ graph ->
+        tasks.withType(Jar).each { jar ->
+            jar.doFirst {
+                manifest {
+                    attributes(
+                            "Manifest-Version": "1.0",
+                            "Created-By": System.getProperty("user.name"),
+                            "Title": rootProject.name,
+                            "Version": version,
+                            "Organization": productOrg
+                    )
+                }
+
+                metaInf {
+                    from("$rootDir/LICENSE")
+                    if (!jar.source.contains('NOTICE')) {
+                        from("$rootDir/NOTICE")
+                    }
+                }
+            }
+        }
+    })
+
+    configurations {
+        provided {
+            description 'a dependency that is provided externally at runtime'
+            visible true
+        }
+
+        testOutput {
+            extendsFrom testCompile
+            description 'a dependency that exposes test artifacts'
+        }
+    }
+
+    // This ensures that javadoc and source jars also have any prefix paths stripped and will
+    // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
+    tasks.all { task ->
+        if (task instanceof Jar) {
+            baseName = sanitizedName()
+        }
+    }
+
+    task jarTest(type: Jar, dependsOn: testClasses) {
+        description 'Assembles a jar archive of test classes.'
+        from sourceSets.test.output
+        classifier 'test'
+    }
+
+    artifacts {
+        testOutput jarTest
+    }
+
+    sourceSets {
+        main.compileClasspath += configurations.provided
+        main.runtimeClasspath -= configurations.provided
+        test.compileClasspath += configurations.provided
+        test.runtimeClasspath += configurations.provided
+    }
+
+    javadoc.classpath += configurations.provided
+
+    javadoc {
+        options.addStringOption('Xdoclint:none', '-quiet')
         options.encoding = 'UTF-8'
-      }
     }
-  })
-  
-  // apply default manifest
-  gradle.taskGraph.whenReady( { graph ->
-    tasks.withType(Jar).each { jar ->
-      jar.doFirst {
-        manifest {
-          attributes(
-            "Manifest-Version"  : "1.0",
-            "Created-By"        : System.getProperty("user.name"),
-            "Title"             : rootProject.name,
-            "Version"           : version,
-            "Organization"      : productOrg
-          )
-        }
-
-        metaInf {
-          from("$rootDir/LICENSE")
-          if (!jar.source.contains('NOTICE')) {
-            from("$rootDir/NOTICE")
-          }
-        }
-      }
-    }
-  })
-
-  configurations {
-    provided {
-      description 'a dependency that is provided externally at runtime'
-      visible true
-    }
-    
-    testOutput {
-      extendsFrom testCompile
-      description  'a dependency that exposes test artifacts'
-    }
-  }
-
-  // This ensures that javadoc and source jars also have any prefix paths stripped and will
-  // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
-  tasks.all { task ->
-    if (task instanceof Jar) {
-      baseName = sanitizedName()
-    }
-  }
-
-  task jarTest (type: Jar, dependsOn: testClasses) {
-    description 'Assembles a jar archive of test classes.'
-    from sourceSets.test.output
-    classifier 'test'
-  }
-
-  artifacts {
-    testOutput jarTest
-  }
-
-  sourceSets {
-    main.compileClasspath += configurations.provided
-    main.runtimeClasspath -= configurations.provided
-    test.compileClasspath += configurations.provided
-    test.runtimeClasspath += configurations.provided
-  }
-
-  javadoc.classpath += configurations.provided
-
-  javadoc {
-    options.addStringOption('Xdoclint:none', '-quiet')
-    options.encoding='UTF-8'
-  }
 }
 
 

@@ -1,46 +1,50 @@
 <head>
-  <!-- Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
+    <!-- Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing,
-  software distributed under the License is distributed on an
-  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  KIND, either express or implied.  See the License for the
-  specific language governing permissions and limitations
-  under the License. -->
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License. -->
     <meta charset="utf-8">
     <title>Apache Geode (incubating) — <%= @item[:title] %></title>
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"/>
     <meta name="keywords" content="Apache Geode, Geode, GemFire, In-memory, IMDB, IMDG, cache">
-    <meta name="description" content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs." />
-    <meta property="og:title" content="Apache Geode (incubating)" />
-    <meta property="og:description" content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs." />
+    <meta name="description"
+          content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs."/>
+    <meta property="og:title" content="Apache Geode (incubating)"/>
+    <meta property="og:description"
+          content="Apache Geode is a distributed, in-memory database with strong data consistency, built to support transactional applications with low latency and high concurrency needs."/>
     <!-- Loading Typekit -->
     <script type="text/javascript" src="//use.typekit.net/ddl7izx.js"></script>
     <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
     <!-- Enabling Issue collector -->
-    <script type="text/javascript" src="https://issues.apache.org/jira/s/bfe7c1e06d911e53fc96873d31176352-T/en_UK-ugtin9/6332/81/1.4.15/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-UK&collectorId=2e0eeb8d"></script>
+    <script type="text/javascript"
+            src="https://issues.apache.org/jira/s/bfe7c1e06d911e53fc96873d31176352-T/en_UK-ugtin9/6332/81/1.4.15/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-UK&collectorId=2e0eeb8d"></script>
 
     <!-- Place this tag right after the last button or just before your close body tag. -->
     <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
-        <!-- Loading Bootstrap -->
+    <!-- Loading Bootstrap -->
     <link href="/bootstrap/bootstrap.min.css" rel="stylesheet" type='text/css'>
     <link href="/css/bootflat.css" rel="stylesheet" type='text/css'>
     <link href="/css/geode-site.css" rel="stylesheet" type='text/css'>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:200,400,500,300,600,800,700,400italic,600italic,700italic,800italic,300italic" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:200,400,500,300,600,800,700,400italic,600italic,700italic,800italic,300italic"
+          rel="stylesheet" type="text/css">
     <link href="/css/font-awesome.min.css" rel="stylesheet" type='text/css'>
 
-<!-- google analytics -->
- <script>
+    <!-- google analytics -->
+    <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -48,12 +52,13 @@
 
   ga('create', 'UA-63425957-1', 'auto');
   ga('send', 'pageview');
-</script>
-<!-- end google analytics -->
+
+    </script>
+    <!-- end google analytics -->
 
     <% if @community == true %>
     <script type="text/javascript"
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBYSxyIKS22zC4wSLFXZGR8QKXbGWLFwYw&sensor=false">
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBYSxyIKS22zC4wSLFXZGR8QKXbGWLFwYw&sensor=false">
     </script>
     <script type="text/javascript">
 
@@ -219,18 +224,20 @@
                 drop();
             }
         };
+
     </script>
     <% end %>
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
     <!--[if lt IE 9]>
-      <script src="js/html5shiv.js"></script>
-      <script src="js/respond.min.js"></script>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
     <![endif]-->
 </head>
 <body>
 
-    <header class="navbar navbar-inverse navbar-fixed-top bf-docs-nav <%= 'secondary' if @docs or @community or @releases %>" role="banner">
+<header class="navbar navbar-inverse navbar-fixed-top bf-docs-nav <%= 'secondary' if @docs or @community or @releases %>"
+        role="banner">
     <div class="container">
         <div class="navbar-header">
             <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bf-navbar-collapse">
@@ -241,23 +248,28 @@
             </button>
         </div>
         <a href="/" class="navbar-brand">
-                <img id="home-logo" src="/img/apache_geode_logo_white_small.png" />
-            </a>
+            <img id="home-logo" src="/img/apache_geode_logo_white_small.png"/>
+        </a>
         <nav class="collapse navbar-collapse bf-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav navbar-right">
-                <li class="<%= 'active' if @community %>"><a href="/community/"><span class="fa fa-users"></span></a></li>
+                <li class="<%= 'active' if @community %>"><a href="/community/"><span class="fa fa-users"></span></a>
+                </li>
                 <li class="<%= 'active' if @docs %>"><a href="/docs/"><span class="fa fa-book"></span></a></li>
-                <li><a href="http://github.com/apache/incubator-geode" target="_blank"><span class="fa fa-github-square"></span></a></li>
+                <li><a href="http://github.com/apache/incubator-geode" target="_blank"><span
+                        class="fa fa-github-square"></span></a></li>
                 <!--<li><a href="https://trello.com/b/exQmJIOn/usergrid" target="_blank"><span class="icns icon-trello"></span></a></li>-->
                 <li><a href="https://issues.apache.org/jira/browse/GEODE/"
                        target="_blank"><span class="fa fa-bug"></span></a></li>
-                <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank"><span class="fa fa-stack-overflow"></span></a></li>
+                <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank"><span
+                        class="fa fa-stack-overflow"></span></a></li>
                 <li><a href="/community/#mailing-lists"><span class="fa fa-envelope"></span></a></li>
                 <!-- <li><a href="/community/#live"><span class="icns icon-comments"></span></a></li> -->
-                <li><a href="https://twitter.com/apachegeode" target="_blank"><span class="fa fa-twitter"></span></a></li>
-                <li><a href="https://cwiki.apache.org/confluence/display/geode/" target="_blank"><span class="fa fa-pencil-square-o"></span></a></li>
+                <li><a href="https://twitter.com/apachegeode" target="_blank"><span class="fa fa-twitter"></span></a>
+                </li>
+                <li><a href="https://cwiki.apache.org/confluence/display/geode/" target="_blank"><span
+                        class="fa fa-pencil-square-o"></span></a></li>
                 <li><a href="/releases/"><span class="fa fa-arrow-circle-o-down"></span></a></li>
             </ul>
         </nav>
     </div>
-    </header>
+</header>
