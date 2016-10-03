@@ -61,6 +61,7 @@ dependencies {
   archives project(':geode-pulse')
   archives project(':geode-wan')
   archives project(':geode-cq')
+  archives project(':geode-rebalancer')
 
   testCompile project(':geode-junit')
   testCompile files(project(':geode-core').sourceSets.test.output)
@@ -336,6 +337,9 @@ distributions {
         
         from project(":geode-old-client-support").configurations.runtime
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
+
+        from project(":geode-rebalancer").configurations.runtime
+        from project(":geode-rebalancer").configurations.archives.allArtifacts.files
 
         from configurations.bundled
         from configurations.gfshDependencies
