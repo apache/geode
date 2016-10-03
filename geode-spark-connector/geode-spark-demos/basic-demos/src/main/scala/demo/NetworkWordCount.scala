@@ -18,8 +18,8 @@ package demo
 
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import io.pivotal.geode.spark.connector.GeodeLocatorPropKey
-import io.pivotal.geode.spark.connector.streaming._
+import org.apache.geode.spark.connector.GeodeLocatorPropKey
+import org.apache.geode.spark.connector.streaming._
 
 /**
  * Counts words in UTF8 encoded, '\n' delimited text received from the network every second.

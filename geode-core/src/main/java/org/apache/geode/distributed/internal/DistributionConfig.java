@@ -4571,29 +4571,29 @@ public interface DistributionConfig extends Config, LogConfig {
   String SSL_TRUSTSTORE_PASSWORD_NAME = SSL_TRUSTSTORE_PASSWORD;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION}
+   * Returns the value of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeGetter(name = SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION)
-  boolean getSSLHTTPRequireAuthentication();
+  @ConfigAttributeGetter(name = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION)
+  boolean getSSLWebRequireAuthentication();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION}
+   * Sets the value of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}
    * property.
    */
-  @ConfigAttributeSetter(name = SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION)
-  void setSSLHTTPRequireAuthentication(boolean requiresAuthentication);
+  @ConfigAttributeSetter(name = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION)
+  void setSSLWebRequireAuthentication(boolean requiresAuthentication);
 
   /**
-   * The name of the {@link ConfigurationProperties#SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION} property
+   * The name of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION} property
    */
   @ConfigAttribute(type = Boolean.class)
-  String SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION_NAME = SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION;
+  String SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION_NAME = SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 
   /**
    * The default value for http service ssl mutual authentication
    */
-  boolean DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION = false;
+  boolean DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = false;
 
   //*************** Initializers to gather all the annotations in this class ************************
 

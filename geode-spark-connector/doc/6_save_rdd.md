@@ -7,7 +7,7 @@ It is possible to save any RDD to a Geode region. The requirements are:
  - the target region exists.
 
 To save an RDD to an existing Geode region, import 
-`io.pivotal.geode.spark.connector._` and call the `saveToGeode` 
+`org.apache.geode.spark.connector._` and call the `saveToGeode` 
 method on RDD.
 
 ### Save RDD[(K, V)] to Geode

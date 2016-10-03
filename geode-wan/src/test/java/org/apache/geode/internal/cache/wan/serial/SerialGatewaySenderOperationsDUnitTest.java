@@ -16,6 +16,9 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -25,6 +28,10 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -606,9 +613,45 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm1.invoke(check);
     
   }
-  
 
-  
+  @Test
+  public void registeringInstantiatorsInGatewayShouldNotCauseDeadlock() {
+    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
+        "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
+        "createFirstRemoteLocator", new Object[] { 2, lnPort });
+
+    vm2.invoke(() -> createReceiverAndServer( nyPort ));
+    vm3.invoke(() -> createReceiverAndServer( lnPort ));
+
+    vm2.invoke(() -> createSender( "ln", 1, false, 100, 10, false, false, null, false));
+    vm3.invoke(() -> createSender( "ny", 2, false, 100, 10, false, false, null, false ));
+
+    vm4.invoke(() -> createClientWithLocator(nyPort, "localhost"));
+    
+    // Register instantiator
+    vm4.invoke(() -> Instantiator.register(new TestObjectInstantiator()));
+  }
+
+  @Test
+  public void registeringDataSerializableInGatewayShouldNotCauseDeadlock() {
+    Integer lnPort = (Integer)vm0.invoke(WANTestBase.class,
+      "createFirstLocatorWithDSId", new Object[] { 1 });
+    Integer nyPort = (Integer)vm1.invoke(WANTestBase.class,
+      "createFirstRemoteLocator", new Object[] { 2, lnPort });
+
+    vm2.invoke(() -> createReceiverAndServer( nyPort ));
+    vm3.invoke(() -> createReceiverAndServer( lnPort ));
+
+    vm2.invoke(() -> createSender( "ln", 1, false, 100, 10, false, false, null, false));
+    vm3.invoke(() -> createSender( "ny", 2, false, 100, 10, false, false, null, false ));
+
+    vm4.invoke(() -> createClientWithLocator(nyPort, "localhost"));
+
+    // Register instantiator
+    vm4.invoke(() -> DataSerializer.register(TestObjectDataSerializer.class));
+  }
+
   public static void verifySenderPausedState(String senderId) {
     Set<GatewaySender> senders = cache.getGatewaySenders();
     AbstractGatewaySender sender = null;
@@ -661,5 +704,64 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     sender.pause();
     sender.resume();
     sender.stop();
+  }
+  
+  static class TestObjectInstantiator extends Instantiator {
+
+    TestObjectInstantiator(Class<TestObject> c, byte id) {
+      super(c, id);
+    }
+
+    TestObjectInstantiator() {
+      this(TestObject.class, (byte) 99);
+    }
+
+    public DataSerializable newInstance() {
+      return new TestObject();
+    }
+  }
+
+  static class TestObjectDataSerializer extends DataSerializer implements Serializable {
+
+    @Override
+    public Class<?>[] getSupportedClasses() {
+      return new Class<?>[] {TestObject.class};
+    }
+
+    @Override
+    public boolean toData(final Object o, final DataOutput out) throws IOException {
+      return o instanceof TestObject;
+    }
+
+    @Override
+    public Object fromData(final DataInput in) throws IOException, ClassNotFoundException {
+      return new TestObject();
+    }
+
+    @Override
+    public int getId() {
+      return 99;
+    }
+  }
+
+  static class TestObject implements DataSerializable {
+    
+    private static final long serialVersionUID = 1L;
+    
+    protected String id;
+
+    public TestObject() {}
+
+    public TestObject(String id) {
+      this.id = id;
+    }
+
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(this.id, out);
+    }
+
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      this.id = DataSerializer.readString(in);
+    }
   }
 }

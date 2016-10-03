@@ -18,7 +18,7 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -107,9 +107,6 @@ public class ColocationLogger implements Runnable {
           //Terminate the logging thread, recoverycomplete is only true when there are no missing colocated regions
           break;
         }
-        List<String>  existingRegions;
-        Map coloHierarchy = ColocationHelper.getAllColocationRegions(region);
-        missingChildren.removeAll(coloHierarchy.keySet());
         if(missingChildren.isEmpty()) {
           break;
         }
@@ -140,7 +137,20 @@ public class ColocationLogger implements Runnable {
     }
   }
 
-  public List<String> getMissingChildRegions() {
+  /**
+   * Updates the missing colocated child region list and returns a copy of the list.
+   * <p>
+   * The list of missing child regions is normally updated lazily, only when this logger thread periodically wakes up to
+   * log warnings about the colocated regions that are still missing. This method performs an on-demand update of the
+   * list so if called between logging intervals the returned list is current.
+   *
+   * @return missingChildren
+   */
+  public List<String> updateAndGetMissingChildRegions() {
+    synchronized (loggerLock) {
+      Set<String> childRegions = (Set<String>) ColocationHelper.getAllColocationRegions(this.region).keySet();
+      missingChildren.removeAll(childRegions);
+    }
     return new ArrayList<String>(missingChildren);
   }
 

@@ -78,7 +78,7 @@ public class EmbeddedTomcat {
     // create server
     container = new Embedded();
     container.setCatalinaHome(catalinaHome);
-    // Not really necessasry, but let's still do it...
+
     container.setRealm(new MemoryRealm());
 
     // create webapp loader

@@ -171,6 +171,14 @@
       ]
     },
     {
+      "name": "reader",
+      "password": "1234567",
+      "roles": [
+        "data-read",
+        "cluster-read"
+      ]
+    },
+    {
       "name": "data-writer",
       "password": "1234567",
       "roles": [

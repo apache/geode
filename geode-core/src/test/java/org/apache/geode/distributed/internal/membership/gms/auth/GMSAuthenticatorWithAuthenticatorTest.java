@@ -21,11 +21,11 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests GMSAuthenticator using old security.
@@ -41,17 +41,17 @@ public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthentica
   @Test
   public void nullAuthenticatorShouldReturnNull() throws Exception {
     assertThat(securityProps).doesNotContainKey(SECURITY_PEER_AUTHENTICATOR);
-    String result = authenticator.authenticate(member, securityProps, securityProps, member);
+    String result = authenticator.authenticate(member, securityProps, securityProps);
     // assertThat(result).isNull(); NOTE: old security used to return null
-    assertThat(result).contains("Authentication failed");
+    assertThat(result).contains("Security check failed");
   }
 
   @Test
   public void emptyAuthenticatorShouldReturnNull() throws Exception {
     securityProps.setProperty(SECURITY_PEER_AUTHENTICATOR, "");
-    String result = authenticator.authenticate(member, securityProps, securityProps, member);
+    String result = authenticator.authenticate(member, securityProps, securityProps);
     // assertThat(result).isNull(); NOTE: old security used to return null
-    assertThat(result).contains("Authentication failed");
+    assertThat(result).contains("Security check failed");
   }
 
   @Test
@@ -127,7 +127,7 @@ public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthentica
     assertThat(auth.isClosed()).isFalse();
 
     SpyAuthenticator.setAuthenticator(auth);
-    String result = authenticator.authenticate(member, props, props, member);
+    String result = authenticator.authenticate(member, props, props);
 
     assertThat(result).isNull();
     assertThat(auth.isClosed()).isTrue();
@@ -136,51 +136,51 @@ public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthentica
 
   @Test
   public void authenticateShouldReturnNullIfPeerAuthenticatorIsNull() throws Exception {
-    String result = authenticator.authenticate(member, props, props, member);
+    String result = authenticator.authenticate(member, props, props);
     //assertThat(result).isNull(); // NOTE: old security used to return null
-    assertThat(result).contains("Authentication failed. See coordinator [member] logs for details.");
+    assertThat(result).contains("Security check failed. Instance could not be obtained from null");
   }
 
   @Test
   public void authenticateShouldReturnNullIfPeerAuthenticatorIsEmpty() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, "");
-    String result = authenticator.authenticate(member, props, props, member);
+    String result = authenticator.authenticate(member, props, props);
     //assertThat(result).isNull(); // NOTE: old security used to return null
-    assertThat(result).contains("Authentication failed. See coordinator [member] logs for details.");
+    assertThat(result).contains("Security check failed. Instance could not be obtained from");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfPeerAuthenticatorDoesNotExist() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, getClass().getName() + "$NotExistAuth.create");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
+    String result = authenticator.authenticate(member, props, props);
+    assertThat(result).startsWith("Security check failed. Instance could not be obtained from");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfAuthenticateReturnsNull() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorReturnsNulls.class.getName() + ".create");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
+    String result = authenticator.authenticate(member, props, props);
+    assertThat(result).startsWith("Security check failed. Instance could not be obtained");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfNullCredentials() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorReturnsNulls.class.getName() + ".create");
-    String result = authenticator.authenticate(member, null, props, member);
+    String result = authenticator.authenticate(member, null, props);
     assertThat(result).startsWith("Failed to find credentials from");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfAuthenticateInitThrows() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorInitThrows.class.getName() + ".create");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
+    String result = authenticator.authenticate(member, props, props);
+    assertThat(result).startsWith("Security check failed. expected init error");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfAuthenticateThrows() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorAuthenticateThrows.class.getName() + ".create");
-    String result = authenticator.authenticate(member, props, props, member);
-    assertThat(result).startsWith("Authentication failed. See coordinator");
+    String result = authenticator.authenticate(member, props, props);
+    assertThat(result).startsWith("Security check failed. expected authenticate error");
   }
 }

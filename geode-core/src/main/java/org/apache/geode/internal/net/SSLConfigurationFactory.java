@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.springframework.util.StringUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -120,7 +120,7 @@ public class SSLConfigurationFactory {
       case WEB: {
         if (sslEnabledComponents.length > 0) {
           sslConfig = setAliasForComponent(sslConfig, getDistributionConfig().getHTTPServiceSSLAlias());
-          sslConfig.setRequireAuth(getDistributionConfig().getSSLHTTPRequireAuthentication());
+          sslConfig.setRequireAuth(getDistributionConfig().getSSLWebRequireAuthentication());
         } else {
           sslConfig = configureLegacyHttpServiceSSL(sslConfig);
         }

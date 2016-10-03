@@ -55,11 +55,13 @@ dependencies {
   archives project(':geode-json')  
   archives project(':geode-core')
   archives project(':geode-lucene')
+  archives project(':geode-old-client-support')
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-pulse')
   archives project(':geode-wan')
   archives project(':geode-cq')
+  archives project(':geode-rebalancer')
 
   testCompile project(':geode-junit')
   testCompile files(project(':geode-core').sourceSets.test.output)
@@ -332,6 +334,12 @@ distributions {
 
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
+        
+        from project(":geode-old-client-support").configurations.runtime
+        from project(":geode-old-client-support").configurations.archives.allArtifacts.files
+
+        from project(":geode-rebalancer").configurations.runtime
+        from project(":geode-rebalancer").configurations.archives.allArtifacts.files
 
         from configurations.bundled
         from configurations.gfshDependencies
@@ -342,9 +350,6 @@ distributions {
         from { project(":geode-core").raJar }
         from { project(":geode-core").jcaJar }
 
-        // include this jar        
-        from project(":geode-web-api").jar
-        
         // dependency jars
         from depsJar
         from gfshDepsJar
@@ -364,9 +369,7 @@ distributions {
       }
 
       into ('tools/Pulse') {
-        from (project(":geode-pulse").configurations.archives.allArtifacts.files) {
-          exclude '*.jar'
-        }
+        from (project(":geode-pulse").configurations.archives.allArtifacts.files)
       }
 
       into ('tools/Modules') {
@@ -391,6 +394,8 @@ flakyTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
+
+precheckin.dependsOn ':buildExamples'
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 

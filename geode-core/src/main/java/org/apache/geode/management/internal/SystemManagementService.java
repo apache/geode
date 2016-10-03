@@ -37,8 +37,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.CacheServerMXBean;
@@ -67,8 +65,6 @@ import org.apache.geode.management.membership.MembershipListener;
  */
 public final class SystemManagementService extends BaseManagementService {
   private static final Logger logger = LogService.getLogger();
-
-  private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   /**
    * The concrete implementation of DistributedSystem that provides
@@ -154,7 +150,6 @@ public final class SystemManagementService extends BaseManagementService {
     this.jmxAdapter = new MBeanJMXAdapter();      
     this.repo = new ManagementResourceRepo();
 
-    this.securityService.initSecurity(system.getConfig().getSecurityProps());
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {
@@ -274,9 +269,6 @@ public final class SystemManagementService extends BaseManagementService {
       if (this.agent != null && this.agent.isRunning()) {
         this.agent.stopAgent();
       }
-
-      // clean out Shiro's thread local content
-      this.securityService.close();
 
       getGemFireCacheImpl().getJmxManagerAdvisor().broadcastChange();
       instances.remove(cache);

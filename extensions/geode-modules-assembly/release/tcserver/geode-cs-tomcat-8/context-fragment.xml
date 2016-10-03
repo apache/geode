@@ -3,7 +3,7 @@
 
     <remove:Manager className="org.apache.geode.modules.session.catalina.Tomcat6DeltaSessionManager"/>
 
-    <add:Manager className="org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager"
+    <add:Manager className="org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager"
       enableDebugListener="${enable.debug.listener:false}"
       enableGatewayReplication="${enable.gateway.replication:false}"
       enableLocalCache="${enable.local.cache:true}"

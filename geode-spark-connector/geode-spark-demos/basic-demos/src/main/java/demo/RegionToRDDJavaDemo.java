@@ -19,7 +19,7 @@ package demo;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import static io.pivotal.geode.spark.connector.javaapi.GeodeJavaUtil.*;
+import static org.apache.geode.spark.connector.javaapi.GeodeJavaUtil.*;
 
 /**
  * This Spark application demonstrates how to expose a region in Geode as a RDD using Geode

@@ -98,7 +98,7 @@ public class GatewaySenderEventRemoteDispatcher implements
       }
       this.connectionLifeCycleLock.readLock().lock();
       try {
-        if (connection != null) {
+        if (connection != null && !processor.isStopped()) {
           ack = (GatewayAck)sp.receiveAckFromReceiver(connection);
         }
       } finally {

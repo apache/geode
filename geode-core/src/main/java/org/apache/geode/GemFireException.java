@@ -33,6 +33,7 @@ package org.apache.geode;
 // GemFireException to describe an arbitrary error condition (think
 // GsError).
 public abstract class GemFireException extends RuntimeException {
+  public static final long serialVersionUID = -6972360779789402295L;
 
   /** The cause of this <code>GemFireException</code> */
 //  private Throwable cause;

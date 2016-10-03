@@ -16,9 +16,14 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.IndexStatistics;
@@ -110,6 +115,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex
         Object indexKey = mapEntry.getValue();
         this.saveIndexAddition(mapKey, indexKey, value, entry);
       }
+      removeOldMappings(((Map) key).keySet(), entry);
     }
     else {
       for (Object mapKey : mapKeys) {
@@ -121,7 +127,23 @@ public class CompactMapRangeIndex extends AbstractMapIndex
       }
     }
   }
-  
+
+  private void removeOldMappings(Collection presentKeys, RegionEntry entry) throws IMQException {
+    Map oldKeysAndValuesForEntry = entryToMapKeyIndexKeyMap.get(entry);
+     if (oldKeysAndValuesForEntry == null) {
+      oldKeysAndValuesForEntry = Collections.EMPTY_MAP;
+    }
+    Set<Entry> removedKeyValueEntries = oldKeysAndValuesForEntry != null ? oldKeysAndValuesForEntry.entrySet() : Collections.EMPTY_SET;
+     for (Map.Entry<?, ?> keyValue : removedKeyValueEntries) {
+      Object indexKey = keyValue.getKey() == null ? IndexManager.NULL : keyValue.getKey();
+       if (!presentKeys.contains(indexKey)) {
+        CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(keyValue.getKey());
+        rg.removeMapping(keyValue.getValue(), entry);
+      }
+    }
+  }
+
+
   protected void doIndexAddition(Object mapKey, Object indexKey, Object value,
       RegionEntry entry) throws IMQException
   {

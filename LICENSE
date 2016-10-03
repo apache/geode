@@ -327,7 +327,7 @@ Apache Geode bundles the following files under the MIT license:
     Foy, http://damirfoy.com
   - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/), 
     Copyright (c) 2011 Sencha Inc.
-  - jQuery JavaScript Library v.1.7.2 (https://jquery.com), Copyright (c)
+  - jQuery JavaScript Library v1.7.2, v1.8.0 (https://jquery.com), Copyright (c)
     jQuery Foundation and other contributors, http://jquery.org
   - jQuery BBQ v1.2.1 (http://benalman.com/projects/jquery-bbq-plugin/),
     Copyright (c) 2010, "Cowboy" Ben Alman
@@ -355,10 +355,13 @@ Apache Geode bundles the following files under the MIT license:
     Kelvin Luck
   - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
     Copyright (c) 2012 Scott Jehl
+  - MooTools (http://mootools.net), Copyright (c) 2006-2015 Valerio
+    Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
   - Respond.js v1.1.0 (https://github.com/scottjehl/Respond), Copyright (c)
     2012 Scott Jehl
+  - Sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
   - TableDnD v0.5 (https://github.com/isocra/TableDnD), Copyright (c) 2012

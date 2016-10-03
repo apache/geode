@@ -3243,10 +3243,10 @@ public class LocalizedStrings {
   public static final StringId PartitionedRegion_REGION_WITH_PRID_0_FAILED_INITIALIZATION_ON_THIS_NODE = new StringId(5016, "Region with prId= {0}  failed initialization on this node");
   public static final StringId PersistenceAdvisorImpl_MEMBER_REVOKED = new StringId(5017, "The following persistent member has been revoked:\n{0}");
   public static final StringId CreatePersistentRegionProcessor_DONE_WAITING_FOR_BUCKET_MEMBERS = new StringId(5018, "Region {0} has successfully completed waiting for other members to recover the latest data.\nMy persistent member information:{1}");
-  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_OFFLINE_BUCKET_MEMBERS = new StringId(5019, "Region {0} (and any colocated sub-regions) has potentially stale data.  Buckets {1} are waiting for another offline member to recover the latest data.\nMy persistent id is:{2}\nOffline members with potentially new data:\n{3}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_OFFLINE_BUCKET_MEMBERS = new StringId(5019, "Region {0} (and any colocated sub-regions) has potentially stale data.  Buckets {1} are waiting for another offline member to recover the latest data.\nMy persistent id is:{2}\nOffline members with potentially new data:\n{3}\nUse the \"gfsh show missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
   public static final StringId CreatePersistentRegionProcessor_SPLIT_DISTRIBUTED_SYSTEM = new StringId(5020, "Region {0} remote member {1} with persistent data {2} was not part of the same distributed system as the local data from {3}");
   public static final StringId CreatePersistentRegionProcessor_INITIALIZING_FROM_OLD_DATA = new StringId(5021, "Region {0} refusing to initialize from member {1} with persistent data {2} which was offline when the local data from {3} was last online");
-  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_LATEST_MEMBER = new StringId(5022, "Region {0} has potentially stale data. It is waiting for another member to recover the latest data.\nMy persistent id:\n{1}\nMembers with potentially new data:\n{2}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_LATEST_MEMBER = new StringId(5022, "Region {0} has potentially stale data. It is waiting for another member to recover the latest data.\nMy persistent id:\n{1}\nMembers with potentially new data:\n{2}\nUse the \"gfsh show missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
   public static final StringId PersistenceAdvisorImpl_UNABLE_TO_PERSIST_MEMBERSHIP_CHANGE = new StringId(5023, "Unable to persist membership change");
   public static final StringId DistributedRegion_ERROR_CLEANING_UP_FAILED_INITIALIZATION = new StringId(5024, "Error cleaning up after failed region initialization of region {0}");
   public static final StringId PartitionedRegionDataStore_DATA_OFFLINE_MESSAGE = new StringId(5025, "Region {0} bucket {1} has persistent data that is no longer online stored at these locations: {2}");
@@ -3263,7 +3263,7 @@ public class LocalizedStrings {
   public static final StringId FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER = new StringId(5037, "Function attributes at client and server don''t match");
   public static final StringId Region_PutAll_Applied_PartialKeys_0_1 = new StringId(5038, "Region {0} putAll: {1}");
   public static final StringId Region_PutAll_Applied_PartialKeys_At_Server_0 = new StringId(5039, "Region {0} putAll at server applied partial keys due to exception.");
-  public static final StringId BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER = new StringId(5040, "Region {0}, bucket {1} has potentially stale data.  It is waiting for another member to recover the latest data.\nMy persistent id:\n{2}\nMembers with potentially new data:\n{3}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER = new StringId(5040, "Region {0}, bucket {1} has potentially stale data.  It is waiting for another member to recover the latest data.\nMy persistent id:\n{2}\nMembers with potentially new data:\n{3}\nUse the \"gfsh show missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
 
   public static final StringId AgentConfigImpl_TCP_PORT = new StringId(5041, "TCP/IP port number to use in the agent''s distributed system");
 
@@ -3458,7 +3458,7 @@ public class LocalizedStrings {
   public static final StringId PersistenceAdvisorImpl_PERSISTENT_VIEW = new StringId(5233, "The following persistent member has gone offline for region {0}:\n{1}\nRemaining participating members for the region include:\n{2}");
 
   public static final StringId DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_NON_COLOCATED_PARTITIONED_REGION_1 = new StringId(5234, "A query on a Partitioned Region ( {0} ) may not reference any other region except Co-located Partitioned Region. PR region (1) is not collocated with other PR region in the query.");
-  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_ONLINE_BUCKET_MEMBERS = new StringId(5235, "Region {0} (and any colocated sub-regions) has potentially stale data.  Buckets {1} are waiting for another online member to recover the latest data.\nMy persistent id is:{2}\nOnline members with potentially new data:\n{3}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_ONLINE_BUCKET_MEMBERS = new StringId(5235, "Region {0} (and any colocated sub-regions) has potentially stale data.  Buckets {1} are waiting for another online member to recover the latest data.\nMy persistent id is:{2}\nOnline members with potentially new data:\n{3}\nUse the \"gfsh show missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
 
   // Localized Strings for the AbstractLauncher, Locator and Server Launcher classes
   public static final StringId Launcher_ATTACH_API_NOT_FOUND_ERROR_MESSAGE = new StringId(5236, "The Attach API classes could not be found on the classpath.  Please include JDK tools.jar on the classpath or add the JDK tools.jar to the jre/lib/ext directory.");
@@ -3532,7 +3532,7 @@ public class LocalizedStrings {
   public static final StringId CqService_ERROR_SENDING_CQ_CONNECTION_STATUS = new StringId(5401, "Error while sending connection status to cq listeners");
   public static final StringId AbstractGatewaySender_SENDER_0_GOT_REMOTE_LOCATOR_INFORMATION_FOR_SITE_1 = new StringId(5402, "GatewaySender \"{0}\" got remote locator information for remote site \"{1}\" after {2} failures in connecting to remote site.");
 
-  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_ONLINE_LATEST_MEMBER = new StringId(5403, "Region {0} has potentially stale data. It is waiting for another online member to recover the latest data.\nMy persistent id:\n{1}\nMembers with potentially new data:\n{2}\nUse the \"gemfire list-missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
+  public static final StringId CreatePersistentRegionProcessor_WAITING_FOR_ONLINE_LATEST_MEMBER = new StringId(5403, "Region {0} has potentially stale data. It is waiting for another online member to recover the latest data.\nMy persistent id:\n{1}\nMembers with potentially new data:\n{2}\nUse the \"gfsh show missing-disk-stores\" command to see all disk stores that are being waited on by other members.");
   public static final StringId AttributesFactory_CONCURRENCY_CHECKS_MUST_BE_ENABLED = new StringId(5404, "Concurrency checks cannot be disabled for regions that use persistence");
 
   public static final StringId CqService_UNABLE_TO_RETRIEVE_DURABLE_CQS_FOR_CLIENT_PROXY_ID = new StringId(5406, "Unable to retrieve durable CQs for client proxy id {0}");
@@ -3704,8 +3704,8 @@ public class LocalizedStrings {
   public static final StringId Network_partition_detected = new StringId(6607, "Exiting due to possible network partition event due to loss of {0} cache processes: {1}");
 
   // GMSAuthenticator
-  public static final StringId AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION = new StringId(6608, "Authentication failed for [{0}]. {1}");
-  public static final StringId AUTH_PEER_AUTHENTICATION_FAILED = new StringId(6609, "Authentication failed. See coordinator [{0}] logs for details.");
+  public static final StringId AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION = new StringId(6608, "Security check failed for [{0}]. {1}");
+  public static final StringId AUTH_PEER_AUTHENTICATION_FAILED = new StringId(6609, "Security check failed. {0}");
   public static final StringId AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS = new StringId(6610, "Failed to find credentials from [{0}]");
   public static final StringId AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE = new StringId(6611, "AuthInitialize instance could not be obtained");
   public static final StringId AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2 = new StringId(6612, "Failed to obtain credentials using AuthInitialize [{1}]. {2}");
@@ -3749,6 +3749,10 @@ public class LocalizedStrings {
   public static StringId AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0 = new StringId(6642, "SSL locator communications uses this alias when determining the " + "key to use from the keystore for SSL. Defaults to \"{0}\".");
 
   public static StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS = new StringId(6643, "The alias options for the SSL options provided seem to be invalid. Please check that all required aliases are set");
+
+  public static StringId GEMFIRE_CACHE_SECURITY_MISCONFIGURATION = new StringId(6644, "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
+  public static StringId GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2 = new StringId(6645, "A server must use cluster configuration when joining a secured cluster.");
+
 
   /** Testing strings, messageId 90000-99999 **/
 

@@ -7532,7 +7532,7 @@ public class PartitionedRegion extends LocalRegion implements
   public List<String> getMissingColocatedChildren() {
     ColocationLogger regionLogger = missingColocatedRegionLogger;
     if (regionLogger != null) {
-      return regionLogger.getMissingChildRegions();
+      return regionLogger.updateAndGetMissingChildRegions();
     }
     return Collections.emptyList();
   }

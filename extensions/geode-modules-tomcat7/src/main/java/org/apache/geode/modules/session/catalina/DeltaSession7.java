@@ -527,14 +527,15 @@ public class DeltaSession7 extends StandardSession implements DataSerializable, 
 
     // Initialize the transients if necessary
     if (this.listeners == null) {
-      this.listeners = new ArrayList();
+      this.listeners = new ArrayList<>();
     }
 
     if (this.notes == null) {
-      this.notes = new Hashtable();
+      this.notes = new Hashtable<>();
     }
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   protected ConcurrentMap readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
     return DataSerializer.readObject(in);
   }

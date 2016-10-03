@@ -24,13 +24,13 @@ object Settings extends Build {
     organization := "io.pivotal",
     version := "0.5.0",
     scalaVersion := "2.10.4",
-    organization := "io.pivotal.geode.spark",
+    organization := "org.apache.geode.spark",
     organizationHomepage := Some(url("http://www.pivotal.io/"))
   ) 
 
   lazy val gfcResolvers = Seq(
    //"GemStone Official Release" at "http://dist.gemstone.com/maven/release",
-  "Repo for JLine" at "http://repo.springsource.org/libs-release",
+  "Repo for JLine" at "http://repo.spring.io/libs-release",
   "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository",
   "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
   //"Apache Repository" at "https://repository.apache.org/content/repositories/releases/",

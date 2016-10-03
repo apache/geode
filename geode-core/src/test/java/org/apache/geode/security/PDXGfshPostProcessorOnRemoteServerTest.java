@@ -25,6 +25,10 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -48,9 +52,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTestCase {
@@ -89,9 +90,10 @@ public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTes
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, locators);
-      props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
       props.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/management/internal/security/clientServer.json");
+      props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
       props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
+      props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
       // the following are needed for peer-to-peer authentication
       props.setProperty("security-username", "super-user");

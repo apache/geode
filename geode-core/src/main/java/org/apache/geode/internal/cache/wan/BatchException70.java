@@ -49,40 +49,10 @@ private static final long serialVersionUID = -6707074107791305564L;
     this.index = this.exceptions.get(0).getIndex();
   }
   
-  public  BatchException70(String msg, int batchId) {
-    super(msg);
-    this.batchId = batchId;
-  }
-
-  public BatchException70(String msg, int index, int id) {
-    super(msg);
-    this.index = index;
-    this.batchId = id;
-  }
-  
-  /**
-   * Constructor.
-   * Creates an instance of <code>RegionQueueException</code> with the
-   * specified cause.
-   * @param cause the causal Throwable
-   * @param index the index in the batch list where the exception occurred
-   */
-  public BatchException70(Throwable cause, int index) {
-    super(cause);
-    this.index = index;
-  }
-
-  
-  public BatchException70(Throwable cause, int index, int id) {
-    super(cause);
-    this.index = index;
-    this.batchId = id;
-  }
-  
   public BatchException70(String message, Throwable cause, int index, int id) {
-	super(message, cause);
-	this.index = index;
-	this.batchId = id;
+    super(message, cause);
+    this.index = index;
+    this.batchId = id;
   }
   
   /**

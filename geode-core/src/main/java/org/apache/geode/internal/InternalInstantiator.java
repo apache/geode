@@ -88,7 +88,7 @@ public class InternalInstantiator {
    * Registers an <code>Instantiator</code> with the data
    * serialization framework.
    */
-  public static synchronized void register(Instantiator instantiator,
+  public static void register(Instantiator instantiator,
                                            boolean distribute) {
     // [sumedh] Skip the checkForThread() check if the instantiation has not
     // to be distributed. This allows instantiations from ServerConnection
@@ -112,7 +112,7 @@ public class InternalInstantiator {
    * @throws IllegalStateException
    *         The instantiator cannot be registered
    */
-  private static synchronized void _register(Instantiator instantiator, boolean distribute)
+  private static void _register(Instantiator instantiator, boolean distribute)
   {
     if (instantiator == null) {
       throw new NullPointerException(LocalizedStrings.InternalInstantiator_CANNOT_REGISTER_A_NULL_INSTANTIATOR.toLocalizedString());
@@ -130,41 +130,50 @@ public class InternalInstantiator {
       }
     }
     final Integer idx = Integer.valueOf(classId);
-    
-    boolean retry;
-    do {
-      retry = false;
-      Object oldInst = idsToInstantiators.putIfAbsent(idx, instantiator);
-      if (oldInst != null) {
-        if (oldInst instanceof Marker) {
-          retry = !idsToInstantiators.replace(idx, oldInst, instantiator);
-          if (!retry) {
-            dsMap.put(cName, instantiator);
-            ((Marker) oldInst).setInstantiator(instantiator);
+
+    synchronized(InternalInstantiator.class) {
+      boolean retry;
+      do {
+        retry = false;
+        Object oldInst = idsToInstantiators.putIfAbsent(idx, instantiator);
+        if (oldInst != null) {
+          if (oldInst instanceof Marker) {
+            retry = !idsToInstantiators.replace(idx, oldInst, instantiator);
+            if (!retry) {
+              dsMap.put(cName, instantiator);
+              ((Marker) oldInst).setInstantiator(instantiator);
+            }
           }
-        } else {
-          Class oldClass =
-            ((Instantiator) oldInst).getInstantiatedClass();
-          if (!oldClass.getName().equals(cName)) {
-            throw new IllegalStateException(LocalizedStrings.InternalInstantiator_CLASS_ID_0_IS_ALREADY_REGISTERED_FOR_CLASS_1_SO_IT_COULD_NOT_BE_REGISTED_FOR_CLASS_2.toLocalizedString(new Object[] {Integer.valueOf(classId), oldClass.getName(), cName}));
-          } else {
-            return; // it was already registered
+          else {
+            Class oldClass =
+              ((Instantiator) oldInst).getInstantiatedClass();
+            if (!oldClass.getName().equals(cName)) {
+              throw new IllegalStateException(
+                LocalizedStrings.InternalInstantiator_CLASS_ID_0_IS_ALREADY_REGISTERED_FOR_CLASS_1_SO_IT_COULD_NOT_BE_REGISTED_FOR_CLASS_2
+                  .toLocalizedString(new Object[] { Integer.valueOf(classId), oldClass.getName(), cName }));
+            }
+            else {
+              return; // it was already registered
+            }
           }
         }
-      } else {
-        dsMap.put(cName, instantiator);
+        else {
+          dsMap.put(cName, instantiator);
+        }
       }
-    } while (retry);
+      while (retry);
 
-    // if instantiator is getting registered for first time
-    // its EventID will be null, so generate a new event id
-    // the the distributed system is connected
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    if (cache != null && instantiator.getEventId() == null) {
-      instantiator.setEventId(new EventID(cache.getDistributedSystem()));
+      // if instantiator is getting registered for first time
+      // its EventID will be null, so generate a new event id
+      // the the distributed system is connected
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      if (cache != null && instantiator.getEventId() == null) {
+        instantiator.setEventId(new EventID(cache.getDistributedSystem()));
+      }
+
+      logger.info(LocalizedMessage.create(LocalizedStrings.InternalInstantiator_REGISTERED, new Object[] { Integer.valueOf(classId), c.getName()} ));
     }
-    
-    logger.info(LocalizedMessage.create(LocalizedStrings.InternalInstantiator_REGISTERED, new Object[] { Integer.valueOf(classId), c.getName()} ));
+
     if (distribute) { // originated in this VM
       // send a message to other peers telling them about a newly-registered
       // instantiator, it also send event id of the originator along with the

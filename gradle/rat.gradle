@@ -60,6 +60,7 @@ rat {
     '**/*.ipr',
     '**/*.iws',
     '.idea/**',
+    'geode-spark-connector/.idea/**',
     '**/tags',
 
     // text files
@@ -145,10 +146,6 @@ rat {
     '**/META-INF/services/org.springframework.shell.core.CommandMarker',
 
     // --- Other Licenses ---
-
-    // Copied from other ASF projects
-    'geode-core/src/main/resources/org/apache/geode/admin/jmx/internal/doc-files/mbeans-descriptors.dtd',
-    'geode-core/src/main/resources/org/apache/geode/admin/jmx/mbeans-descriptors.xml',
 
     // Public Domain http://meyerweb.com/eric/tools/css/reset/
     'geode-web-api/src/main/webapp/docs/css/reset.css',

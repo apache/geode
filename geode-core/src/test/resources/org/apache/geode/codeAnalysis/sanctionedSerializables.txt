@@ -1,11 +1,11 @@
-org/apache/geode/CancelException,false
+org/apache/geode/CancelException,true,3215578659523282642
 org/apache/geode/CopyException,true,-1143711608610323585
 org/apache/geode/DeltaSerializationException,false
 org/apache/geode/ForcedDisconnectException,true,4977003259880566257
 org/apache/geode/GemFireCacheException,true,-2844020916351682908
 org/apache/geode/GemFireCheckedException,false
 org/apache/geode/GemFireConfigException,true,7791789785331120991
-org/apache/geode/GemFireException,false
+org/apache/geode/GemFireException,true,-6972360779789402295
 org/apache/geode/GemFireIOException,true,5694009444435264497
 org/apache/geode/GemFireRethrowable,true,8349791552668922571
 org/apache/geode/IncompatibleSystemException,true,-6852188720149734350
@@ -53,10 +53,10 @@ org/apache/geode/admin/jmx/internal/RefreshNotificationType,true,437676359239561
 org/apache/geode/admin/jmx/internal/StatisticAttributeInfo,true,28022387514935560,stat:org/apache/geode/admin/Statistic
 org/apache/geode/cache/AttributesFactory$RegionAttributesImpl,true,-3663000883567530374,asyncEventQueueIds:java/util/Set,cacheListeners:java/util/ArrayList,cacheLoader:org/apache/geode/cache/CacheLoader,cacheWriter:org/apache/geode/cache/CacheWriter,compressor:org/apache/geode/compression/Compressor,concurrencyChecksEnabled:boolean,concurrencyLevel:int,customEntryIdleTimeout:org/apache/geode/cache/CustomExpiry,customEntryTimeToLive:org/apache/geode/cache/CustomExpiry,dataPolicy:org/apache/geode/cache/DataPolicy,diskDirs:java/io/File[],diskSizes:int[],diskStoreName:java/lang/String,diskSynchronous:boolean,diskWriteAttributes:org/apache/geode/cache/DiskWriteAttributes,earlyAck:boolean,enableAsyncConflation:boolean,enableSubscriptionConflation:boolean,entryIdleTimeout:int,entryIdleTimeoutExpirationAction:org/apache/geode/cache/ExpirationAction,entryTimeToLive:int,entryTimeToLiveExpirationAction:org/apache/geode/cache/ExpirationAction,evictionAttributes:org/apache/geode/internal/cache/EvictionAttributesImpl,gatewaySenderIds:java/util/Set,ignoreJTA:boolean,indexMaintenanceSynchronous:boolean,initialCapacity:int,isBucketRegion:boolean,isCloningEnabled:boolean,isLockGrantor:boolean,keyConstraint:java/lang/Class,loadFactor:float,membershipAttributes:org/apache/geode/cache/MembershipAttributes,multicastEnabled:boolean,offHeap:boolean,partitionAttributes:org/apache/geode/cache/PartitionAttributes,poolName:java/lang/String,publisher:boolean,regionIdleTimeout:int,regionIdleTimeoutExpirationAction:org/apache/geode/cache/ExpirationAction,regionTimeToLive:int,regionTimeToLiveExpirationAction:org/apache/geode/cache/ExpirationAction,scope:org/apache/geode/cache/Scope,statisticsEnabled:boolean,subscriptionAttributes:org/apache/geode/cache/SubscriptionAttributes,valueConstraint:java/lang/Class
 org/apache/geode/cache/CacheClosedException,true,-6479561694497811262
-org/apache/geode/cache/CacheException,false
+org/apache/geode/cache/CacheException,true,7699432887938858940
 org/apache/geode/cache/CacheExistsException,true,4090002289325418100
 org/apache/geode/cache/CacheLoaderException,true,-3383072059406642140
-org/apache/geode/cache/CacheRuntimeException,false
+org/apache/geode/cache/CacheRuntimeException,true,6750107573015376688
 org/apache/geode/cache/CacheWriterException,true,-2872212342970454458
 org/apache/geode/cache/CacheXmlException,true,-4343870964883131754
 org/apache/geode/cache/CommitConflictException,true,-1491184174802596675
@@ -85,7 +85,7 @@ org/apache/geode/cache/MirrorType,true,-6632651349646672540,ordinal:int
 org/apache/geode/cache/NoQueueServersAvailableException,true,8484086019155762365
 org/apache/geode/cache/NoSubscriptionServersAvailableException,true,8484086019155762365
 org/apache/geode/cache/Operation,true,-7521751729852504238,ordinal:byte
-org/apache/geode/cache/OperationAbortedException,false
+org/apache/geode/cache/OperationAbortedException,true,-8293166225026556949
 org/apache/geode/cache/PartitionedRegionDistributionException,true,-3004093739855972548
 org/apache/geode/cache/PartitionedRegionStorageException,true,5905463619475329732
 org/apache/geode/cache/RegionAccessException,true,3142958723089038406
@@ -276,9 +276,6 @@ org/apache/geode/internal/cache/FilterProfile$interestType,false
 org/apache/geode/internal/cache/FilterProfile$operationType,false
 org/apache/geode/internal/cache/ForceReattemptException,true,-595988965679204903,hasHash:boolean,keyHash:int
 org/apache/geode/internal/cache/ForceableLinkedBlockingQueue,true,-6903933977591709194,capacity:int,count:java/util/concurrent/atomic/AtomicInteger,notEmpty:java/util/concurrent/locks/Condition,notFull:java/util/concurrent/locks/Condition,putLock:java/util/concurrent/locks/ReentrantLock,takeLock:java/util/concurrent/locks/ReentrantLock
-org/apache/geode/internal/cache/GemFireCacheImpl$3,true,1,this$0:org/apache/geode/internal/cache/GemFireCacheImpl
-org/apache/geode/internal/cache/GemFireCacheImpl$4,true,1,this$0:org/apache/geode/internal/cache/GemFireCacheImpl
-org/apache/geode/internal/cache/GemFireCacheImpl$5,true,1,this$0:org/apache/geode/internal/cache/GemFireCacheImpl
 org/apache/geode/internal/cache/IdentityArrayList,true,449125332499184497,size:int,wrapped:boolean
 org/apache/geode/internal/cache/IncomingGatewayStatus,true,-4579815367602658353,_memberId:java/lang/String,_socketAddress:java/net/InetAddress,_socketPort:int
 org/apache/geode/internal/cache/InitialImageOperation$GIIStatus,false
@@ -605,6 +602,7 @@ org/apache/geode/management/internal/cli/functions/RegionFunctionArgs,true,-5158
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs,true,1474255033398008062,action:org/apache/geode/cache/ExpirationAction,time:java/lang/Integer,type:org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$ExpirationAttrs$ExpirationFor,false
 org/apache/geode/management/internal/cli/functions/RegionFunctionArgs$PartitionArgs,true,5907052187323280919,hasPartitionAttributes:boolean,isSetPRLocalMaxMemory:boolean,isSetPRRecoveryDelay:boolean,isSetPRRedundantCopies:boolean,isSetPRStartupRecoveryDelay:boolean,isSetPRTotalMaxMemory:boolean,isSetPRTotalNumBuckets:boolean,prColocatedWith:java/lang/String,prLocalMaxMemory:int,prRecoveryDelay:long,prRedundantCopies:int,prStartupRecoveryDelay:long,prTotalMaxMemory:long,prTotalNumBuckets:int,userSpecifiedPartitionAttributes:java/util/Set
+org/apache/geode/management/internal/cli/functions/ShowMissingDiskStoresFunction,false
 org/apache/geode/management/internal/cli/functions/ShutDownFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1

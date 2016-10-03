@@ -16,6 +16,31 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.internal.membership.gms.ServiceConfig.*;
+import static org.apache.geode.internal.DataSerializableFixedID.*;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
@@ -34,25 +59,19 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import org.apache.geode.distributed.internal.membership.gms.messages.*;
+import org.apache.geode.distributed.internal.membership.gms.messages.HasMemberID;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.net.*;
-import org.apache.geode.security.AuthenticationFailedException;
-
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
-import static org.apache.geode.internal.DataSerializableFixedID.*;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the
@@ -394,7 +413,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           || failReason.contains("15806")) {
         throw new SystemConnectException(failReason);
       }
-      throw new AuthenticationFailedException(failReason);
+      throw new GemFireSecurityException(failReason);
     }
     
     //there is no way we can rech here right now

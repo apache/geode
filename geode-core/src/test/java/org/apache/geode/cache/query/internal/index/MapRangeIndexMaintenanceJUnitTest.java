@@ -362,6 +362,178 @@ public class MapRangeIndexMaintenanceJUnitTest{
     assertEquals(1, result.size());
   }
 
+  @Test
+  public void updatingAMapFieldWithDifferentKeysShouldRemoveOldKeysThatAreNoLongerPresent() throws Exception {
+    //Create Partition Region
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+
+    Portfolio p = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p.positions = map1;
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    region.put(1, p);
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    map2.put("NEW_KEY", 1);
+    region.put(1, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+                                              .execute();
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void updatingAMapFieldSameKeysSameValuesShouldUpdateCorrectly() throws Exception {
+    //Create Partition Region
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+
+    Portfolio p = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p.positions = map1;
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    region.put(1, p);
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    map2.put("SUN", 1);
+    map2.put("IBM", 2);
+    region.put(1, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+                                              .execute();
+    assertEquals(1, results.size());
+  }
+
+  @Test
+  public void updatingAMapFieldWithNoKeysShouldRemoveOldKeysThatAreNoLongerPresent() throws Exception {
+    //Create Partition Region
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+
+    Portfolio p = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p.positions = map1;
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    region.put(1, p);
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    region.put(1, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+                                              .execute();
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void updatingEmptyMapToMapWithKeysShouldIndexNewKeysCorrectly() throws Exception {
+    //Create Partition Region
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+
+    Portfolio p = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    p.positions = map1;
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    region.put(1, p);
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    map2.put("SUN", 1);
+    map2.put("IBM", 2);
+    region.put(1, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+                                              .execute();
+    assertEquals(1, results.size());
+  }
+
+  @Test
+  public void testUpdateWithSameKeysSameValuesShouldRetainIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+
+    Portfolio p = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p.positions = map1;
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    region.put(1, p);
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    region.put(1, p);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+  }
+
+
+  @Test
+  public void updatingWithSameKeysDifferentValuesShouldRetainIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+
+    Portfolio p = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p.positions = map1;
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    region.put(1, p);
+    qs = CacheUtils.getQueryService();
+
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    map2.put("SUN",3);
+    map2.put("IBM",4);
+    region.put(1, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+                                              .execute();
+    assertEquals(1, results.size());
+  }
+
+
+
+
   /**
    * TestObject with wrong comareTo() implementation implementation.
    * Which throws NullPointer while removing mapping from a MapRangeIndex.

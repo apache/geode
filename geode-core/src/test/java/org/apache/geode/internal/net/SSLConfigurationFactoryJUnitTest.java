@@ -30,11 +30,10 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class SSLConfigurationFactoryJUnitTest extends JUnit4DistributedTestCase {
+public class SSLConfigurationFactoryJUnitTest {
 
   @After
   public void tearDownTest() {
@@ -148,7 +147,7 @@ public class SSLConfigurationFactoryJUnitTest extends JUnit4DistributedTestCase 
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
     properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
     properties.setProperty(SSL_WEB_ALIAS, "httpAlias");
-    properties.setProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
@@ -176,8 +175,8 @@ public class SSLConfigurationFactoryJUnitTest extends JUnit4DistributedTestCase 
   }
 
   private boolean requiresAuthentication(final Properties properties, final SecurableCommunicationChannel expectedSecurableComponent) {
-    boolean defaultAuthentication = expectedSecurableComponent.equals(SecurableCommunicationChannel.WEB) ? DistributionConfig.DEFAULT_SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION : DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
-    String httpRequiresAuthentication = properties.getProperty(SSL_HTTP_SERVICE_REQUIRE_AUTHENTICATION);
+    boolean defaultAuthentication = expectedSecurableComponent.equals(SecurableCommunicationChannel.WEB) ? DistributionConfig.DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION : DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+    String httpRequiresAuthentication = properties.getProperty(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION);
 
     return httpRequiresAuthentication == null ? defaultAuthentication : Boolean.parseBoolean(httpRequiresAuthentication);
   }
@@ -208,9 +207,9 @@ public class SSLConfigurationFactoryJUnitTest extends JUnit4DistributedTestCase 
     return !StringUtils.isEmpty(aliasProperty) ? aliasProperty : properties.getProperty(SSL_DEFAULT_ALIAS);
   }
 
-  private boolean isSSLComponentEnabled(final SecurableCommunicationChannel expectedSecurableComponent, final SecurableCommunicationChannel[] SecurableComponents) {
-    for (SecurableCommunicationChannel securableCommunicationChannel : SecurableComponents) {
-      if (securableCommunicationChannel.ALL.equals(securableCommunicationChannel) || securableCommunicationChannel.equals(expectedSecurableComponent)) {
+  private boolean isSSLComponentEnabled(final SecurableCommunicationChannel expectedSecurableComponent, final SecurableCommunicationChannel[] securableComponents) {
+    for (SecurableCommunicationChannel securableCommunicationChannel : securableComponents) {
+      if (SecurableCommunicationChannel.ALL.equals(securableCommunicationChannel) || securableCommunicationChannel.equals(expectedSecurableComponent)) {
         return true;
       }
     }

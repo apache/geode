@@ -28,7 +28,8 @@ import org.apache.geode.GemFireException;
  * @since GemFire 3.0
  */
 public abstract class CacheRuntimeException extends GemFireException {
-  
+  public static final long serialVersionUID = 6750107573015376688L;
+
   /**
    * Creates a new instance of <code>CacheRuntimeException</code> without detail message.
    */

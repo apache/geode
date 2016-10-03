@@ -335,7 +335,7 @@ public class BeanUtilFuncs {
 
     gemFirePropertyData.setSSLCiphers(config.getSSLCiphers());
     gemFirePropertyData.setSecurableCommunicationChannel(config.getSecurableCommunicationChannels());
-    gemFirePropertyData.setSSLHttpServiceRequireAuthentication(config.getSSLHTTPRequireAuthentication());
+    gemFirePropertyData.setSSLWebServiceRequireAuthentication(config.getSSLWebRequireAuthentication());
     gemFirePropertyData.setSSLKeyStore(config.getSSLKeyStore());
     gemFirePropertyData.setSSLKeyStoreType(config.getSSLKeyStoreType());
     gemFirePropertyData.setSSLKeyStorePassword(config.getSSLKeyStorePassword());

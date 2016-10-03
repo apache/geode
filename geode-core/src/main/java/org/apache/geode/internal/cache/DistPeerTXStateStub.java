@@ -176,8 +176,8 @@ public final class DistPeerTXStateStub extends PeerTXStateStub implements
    * (non-Javadoc)
    * 
    * @see
-   * org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(com
-   * .gemstone.gemfire.internal.cache.EntryEventImpl, boolean, boolean,
+   * org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(org
+   * .apache.geode.internal.cache.EntryEventImpl, boolean, boolean,
    * java.lang.Object, boolean, long, boolean)
    */
   @Override

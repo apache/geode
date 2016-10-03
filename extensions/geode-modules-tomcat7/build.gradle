@@ -15,15 +15,6 @@
  * limitations under the License.
  */
 
-test  {
-  doFirst {
-    copy {
-      from 'build/resources/test/tomcat'
-      into 'build/test/tomcat/'
-    }
-  }
-}
-
 dependencies {
   compile(project(':extensions/geode-modules')) {
     // Remove everything related to Tomcat 6.x

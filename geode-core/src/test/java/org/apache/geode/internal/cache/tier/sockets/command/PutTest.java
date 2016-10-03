@@ -33,6 +33,7 @@ import org.mockito.MockitoAnnotations;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.PutOperationContext;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -125,6 +126,7 @@ public class PutTest {
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(this.serverConnection.getReplyMessage()).thenReturn(this.replyMessage);
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
+    when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
 
     when(this.localRegion.basicBridgePut(eq(KEY), eq(VALUE), eq(null), eq(true), eq(CALLBACK_ARG), any(ClientProxyMembershipID.class), eq(true), any(EntryEventImpl.class))).thenReturn(true);
   }

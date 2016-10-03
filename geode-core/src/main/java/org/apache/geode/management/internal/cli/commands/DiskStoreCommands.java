@@ -55,6 +55,9 @@ import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -73,6 +76,7 @@ import org.apache.geode.management.internal.cli.functions.CreateDiskStoreFunctio
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
+import org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -1026,39 +1030,101 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   public Result showMissingDiskStore() {
 
     try {
-      TabularResultData tabularData = ResultBuilder.createTabularResultData();
-      boolean accumulatedData = false;
+      Set<DistributedMember> dataMembers = getNormalMembers(getCache());
 
-      DistributedSystemMXBean dsMXBean = ManagementService.getManagementService(CacheFactory.getAnyInstance())
-          .getDistributedSystemMXBean();
-      PersistentMemberDetails[] allPersistentMemberDetails = dsMXBean.listMissingDiskStores();
-      if (allPersistentMemberDetails != null) {
-        for (PersistentMemberDetails peristentMemberDetails : allPersistentMemberDetails) {
-          tabularData.accumulate("Disk Store ID", peristentMemberDetails.getDiskStoreId());
-          tabularData.accumulate("Host", peristentMemberDetails.getHost());
-          tabularData.accumulate("Directory", peristentMemberDetails.getDirectory());
-          accumulatedData = true;
-        }
+      if (dataMembers.isEmpty()) {
+        return ResultBuilder.createInfoResult(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);
       }
-
-      if (!accumulatedData) {
-        return ResultBuilder.createInfoResult("No missing disk store found");
-     }
-
-      return ResultBuilder.buildResult(tabularData);
+      List<Object> results = getMissingDiskStoresList(dataMembers);
+      return toMissingDiskStoresTabularResult(results);
+    } catch (FunctionInvocationTargetException ignore) {
+      return ResultBuilder.createGemFireErrorResult(CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN,
+          CliStrings.SHOW_MISSING_DISK_STORE));
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    } catch (Throwable th) {
+    } catch (Throwable t) {
       SystemFailure.checkFailure();
-      if (th.getMessage() == null) {
-        return ResultBuilder.createGemFireErrorResult("An error occurred while showing missing disk stores: " + th);
-      }
-      return ResultBuilder.createGemFireErrorResult("An error occurred while showing missing disk stores: " + th.getMessage());
+    if (t.getMessage() == null) {
+      return ResultBuilder.createGemFireErrorResult(String.format(CliStrings.SHOW_MISSING_DISK_STORE__ERROR_MESSAGE, t));
+    }
+    return ResultBuilder.createGemFireErrorResult(String.format(CliStrings.SHOW_MISSING_DISK_STORE__ERROR_MESSAGE, t.getMessage()));
     }
   }
-  
-  
+
+  protected List<Object> getMissingDiskStoresList(Set<DistributedMember> members) {
+    final Execution membersFunctionExecutor = getMembersFunctionExecutor(members);
+    if (membersFunctionExecutor instanceof AbstractExecution) {
+      ((AbstractExecution) membersFunctionExecutor).setIgnoreDepartedMembers(true);
+    }
+
+    final ResultCollector<?, ?> resultCollector = membersFunctionExecutor.execute(new ShowMissingDiskStoresFunction());
+
+    final List<?> results = (List<?>) resultCollector.getResult();
+    final List<Object> distributedPersistentRecoveryDetails = new ArrayList<Object>(results.size());
+    for (final Object result: results) {
+      if (result instanceof Set) { // ignore FunctionInvocationTargetExceptions and other Exceptions...
+        distributedPersistentRecoveryDetails.addAll((Set<Object>) result);
+      }
+    }
+    return distributedPersistentRecoveryDetails;
+  }
+
+  protected Result toMissingDiskStoresTabularResult(final List<Object> resultDetails) throws ResultDataException {
+    CompositeResultData crd = ResultBuilder.createCompositeResultData();
+    List<PersistentMemberPattern> missingDiskStores = new ArrayList<PersistentMemberPattern>();
+    List<ColocatedRegionDetails> missingColocatedRegions = new ArrayList<ColocatedRegionDetails>();
+
+    for (Object detail : resultDetails) {
+      if (detail instanceof PersistentMemberPattern) {
+        missingDiskStores.add((PersistentMemberPattern) detail);
+      } else if (detail instanceof ColocatedRegionDetails) {
+        missingColocatedRegions.add((ColocatedRegionDetails) detail);
+      } else {
+        throw new ResultDataException("Unknown type of PersistentRecoveryFailures result");
+      }
+    }
+
+    boolean hasMissingDiskStores = !missingDiskStores.isEmpty();
+    boolean hasMissingColocatedRegions = !missingColocatedRegions.isEmpty();
+    if (hasMissingDiskStores) {
+      SectionResultData missingDiskStoresSection = crd.addSection();
+      missingDiskStoresSection.setHeader("Missing Disk Stores");
+      TabularResultData missingDiskStoreData = missingDiskStoresSection.addTable();
+
+      for (PersistentMemberPattern peristentMemberDetails : missingDiskStores) {
+        missingDiskStoreData.accumulate("Disk Store ID", peristentMemberDetails.getUUID());
+        missingDiskStoreData.accumulate("Host", peristentMemberDetails.getHost());
+        missingDiskStoreData.accumulate("Directory", peristentMemberDetails.getDirectory());
+      }
+    } else {
+      SectionResultData noMissingDiskStores = crd.addSection();
+      noMissingDiskStores.setHeader("No missing disk store found");
+    }
+    if (hasMissingDiskStores || hasMissingColocatedRegions) {
+      // For clarity, separate disk store and colocated region information
+      crd.addSection().setHeader("\n");
+    }
+
+    if (hasMissingColocatedRegions) {
+      SectionResultData missingRegionsSection = crd.addSection();
+      missingRegionsSection.setHeader("Missing Colocated Regions");
+      TabularResultData missingRegionData = missingRegionsSection.addTable();
+
+      for (ColocatedRegionDetails colocatedRegionDetails:missingColocatedRegions) {
+        missingRegionData.accumulate("Host", colocatedRegionDetails.getHost());
+        missingRegionData.accumulate("Distributed Member", colocatedRegionDetails.getMember());
+        missingRegionData.accumulate("Parent Region", colocatedRegionDetails.getParent());
+        missingRegionData.accumulate("Missing Colocated Region", colocatedRegionDetails.getChild());
+      }
+    } else {
+      SectionResultData noMissingColocatedRegions = crd.addSection();
+      noMissingColocatedRegions.setHeader("No missing colocated region found");
+    }
+
+    return ResultBuilder.buildResult(crd);
+  }
+
   @CliCommand(value=CliStrings.DESCRIBE_OFFLINE_DISK_STORE, help=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE })
   public Result describeOfflineDiskStore(

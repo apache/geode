@@ -26,10 +26,6 @@ sourceSets {
 }
 
 dependencies {
-
-
-
-
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
   
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
@@ -105,10 +101,6 @@ task copyGemFireVersionFile(type: Copy) {
   into generatedResources
 }
 
-jar {
-  from sourceSets.main.output
-}
-
 eclipse.classpath.file {
   whenMerged { classpath ->
     classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
@@ -125,6 +117,7 @@ artifacts {
 }
 
 war {
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   classpath configurations.runtime
   classpath project(':geode-core').webJar.archivePath
 }

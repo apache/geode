@@ -36,6 +36,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntriesMap.Attributes;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
@@ -100,6 +101,7 @@ public class CreateRegionTest {
     when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
     when(this.serverConnection.getReplyMessage()).thenReturn(this.responseMessage);
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
+    when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
   }
 
   @Test

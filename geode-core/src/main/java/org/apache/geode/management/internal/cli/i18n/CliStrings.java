@@ -1433,6 +1433,7 @@ public class CliStrings {
   /* 'show missing-disk-store' command */
   public static final String SHOW_MISSING_DISK_STORE = "show missing-disk-stores";
   public static final String SHOW_MISSING_DISK_STORE__HELP = "Display a summary of the disk stores that are currently missing from a distributed system.";
+  public static final String SHOW_MISSING_DISK_STORE__ERROR_MESSAGE = "An error occurred while showing missing disk stores and missing colocated regions: %1$s";
 
   /* 'shutdown' command */
   public static final String SHUTDOWN = "shutdown";

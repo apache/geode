@@ -14,17 +14,17 @@ application code. In the following examples, we assume you want to provide
 In `<spark dir>/conf/spark-defaults.com`
 ```
 spark.geode.locators=192.168.1.47[10334]
-spark.geode.security-client-auth-init=com.gemstone.geode.security.templates.UserPasswordAuthInit.create
+spark.geode.security-client-auth-init=org.apache.geode.security.templates.UserPasswordAuthInit.create
 spark.geode.security-username=scott
 spark.geode.security-password=tiger
 ```
  
 Or in the Spark application code:
 ```
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 val sparkConf = new SparkConf()
   .set(GeodeLocatorPropKey, "192.168.1.47[10334]")
-  .set("spark.geode.security-client-auth-init", "com.gemstone.geode.security.templates.UserPasswordAuthInit.create")
+  .set("spark.geode.security-client-auth-init", "org.apache.geode.security.templates.UserPasswordAuthInit.create")
   .set("spark.geode.security-username", "scott")
   .set("spark.geode.security-password", "tiger")
 ```
@@ -35,7 +35,7 @@ After this, you can use all connector APIs without providing `GeodeConnectionCon
 Here's the code that creates `GeodeConnectionConf` with the same set of 
 properties as the examples above:
 ```
-val props = Map("security-client-auth-init" -> "com.gemstone.geode.security.templates.UserPasswordAuthInit.create",
+val props = Map("security-client-auth-init" -> "org.apache.geode.security.templates.UserPasswordAuthInit.create",
                 "security-username" -> "scott",
                 "security-password" -> "tiger")
 val connConf = GeodeConnectionConf("192.168.1.47[10334]", props)

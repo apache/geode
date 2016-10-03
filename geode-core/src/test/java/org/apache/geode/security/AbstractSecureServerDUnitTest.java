@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.geode.security.templates.SampleSecurityManager;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Before;
 
@@ -36,9 +35,11 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.*;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -69,6 +70,8 @@ public class AbstractSecureServerDUnitTest extends JUnit4CacheTestCase {
 
   @Before
   public void before() throws Exception {
+    IgnoredException.addIgnoredException("No longer connected to localhost");
+
     final Host host = Host.getHost(0);
     this.client1 = host.getVM(1);
     this.client2 = host.getVM(2);
