@@ -35,8 +35,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.test.junit.categories.UITest;
 import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Locator;
@@ -72,7 +71,7 @@ public class PulseUITest {
     path = getPulseWarPath();
     //System.setProperty("pulse.propMockDataUpdaterClass", "org.apache.geode.tools.pulse.testbed.PropMockDataUpdater");
 
-    jetty = JettyHelper.initJetty(host, port, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+    jetty = JettyHelper.initJetty(host, port, new SSLConfig());
     JettyHelper.addWebApplication(jetty, context, getPulseWarPath());
     jetty.start();
 
