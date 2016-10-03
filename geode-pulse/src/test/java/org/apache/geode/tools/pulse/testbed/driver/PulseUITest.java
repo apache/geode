@@ -16,7 +16,7 @@
  */
 package org.apache.geode.tools.pulse.testbed.driver;
 
-import static org.apache.geode.tools.pulse.tests.PulseAbstractTest.*;
+import static org.apache.geode.tools.pulse.tests.ui.PulseAbstractTest.*;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;

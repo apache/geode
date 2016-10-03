@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+import org.apache.geode.tools.pulse.tests.ui.PulseAbstractTest;
+
 public class DataBrowserResultLoader {
   private static DataBrowserResultLoader dbResultLoader = new DataBrowserResultLoader();
 
