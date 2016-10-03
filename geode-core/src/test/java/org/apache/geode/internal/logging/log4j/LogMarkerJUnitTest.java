@@ -37,27 +37,22 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.custom.BasicAppender;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests with custom log4j2 configuration.
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class LogMarkerJUnitTest {
-
-  private String beforeConfigFileProp;
-  private Level beforeLevel;
-
-  private File customConfigFile;
 
   @Rule
   public SystemErrRule systemErrRule = new SystemErrRule().enableLog();
-
   @Rule
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
-
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private String beforeConfigFileProp;
+  private Level beforeLevel;
 
   @Before
   public void setUp() throws Exception {
@@ -67,9 +62,9 @@ public class LogMarkerJUnitTest {
     this.beforeConfigFileProp = System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
     this.beforeLevel = StatusLogger.getLogger().getLevel();
 
-    this.customConfigFile = createConfigFileIn(this.temporaryFolder.getRoot());
+    final File customConfigFile = createConfigFileIn(this.temporaryFolder.getRoot());
 
-    System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, this.customConfigFile.getAbsolutePath());
+    System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, customConfigFile.getAbsolutePath());
     LogService.reconfigure();
     assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation()).isFalse();
   }
@@ -96,8 +91,7 @@ public class LogMarkerJUnitTest {
    * Test to see that log messages for GEODE_VERBOSE are filtered, based on the log4j2-custom.xml configuration file
    */
   @Test
-  public void testGeodeFilter()
-  {
+  public void testGeodeFilter() {
     Logger logger = LogService.getLogger();
     String msg = "verbose geode line";
     logger.error(LogMarker.GEODE_VERBOSE, msg);
@@ -105,11 +99,11 @@ public class LogMarkerJUnitTest {
   }
 
   /**
-   * Test to see that log messages for GEMFIRE_VERBOSE are not filtered, based on the log4j2-custom.xml configuration file
+   * Test to see that log messages for GEMFIRE_VERBOSE are not filtered, based on the log4j2-custom.xml configuration
+   * file
    */
   @Test
-  public void testGemfireFilter()
-  {
+  public void testGemfireFilter() {
     Logger logger = LogService.getLogger();
     String msg = "verbose gemfire line";
     logger.error(LogMarker.GEMFIRE_VERBOSE, msg);
