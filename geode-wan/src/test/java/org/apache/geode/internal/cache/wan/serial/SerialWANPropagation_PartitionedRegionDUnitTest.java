@@ -368,7 +368,6 @@ public class SerialWANPropagation_PartitionedRegionDUnitTest extends WANTestBase
         getTestMethodName() + "_PR", 1000 ));
   }
 
-  @Category(FlakyTest.class) // GEODE-1147
   @Test
   public void testPartitionedSerialPropagationWithParallelThreads() throws Exception {
 
