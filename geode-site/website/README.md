@@ -77,7 +77,7 @@ Here is one way to accomplish this:
 
 1. On the __develop__ branch
     
-        $ cd geode-site-website
+        $ cd geode-site/website
         $ nanoc compile
         $ cd ../content
         $ tar cvf new-website-content.tar .
