@@ -995,6 +995,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * datastores.
    */
   
+  @Category(FlakyTest.class) // GEODE-1704
   @Test
   public void testPut_ValidateDataOnMember_PrimarySecondary_Datastore() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());

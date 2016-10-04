@@ -273,6 +273,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
    * simultaneously and shows that they find each other and form a single system.
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1931
   @Test
   public void testStartTwoLocators() throws Exception {
     disconnectAllFromDS();

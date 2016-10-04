@@ -40,6 +40,7 @@ import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
@@ -64,6 +65,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
     closeCache();
   }
 
+  @Category(FlakyTest.class) // GEODE-1502
   @Test
   public void testPutPostOpNotifications() throws Exception {
     OperationWithAction[] allOps = allOps();

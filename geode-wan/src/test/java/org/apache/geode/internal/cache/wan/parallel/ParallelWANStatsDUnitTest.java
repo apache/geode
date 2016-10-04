@@ -16,6 +16,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import static org.apache.geode.test.dunit.IgnoredException.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.experimental.categories.Category;
 
@@ -230,24 +232,34 @@ public class ParallelWANStatsDUnitTest extends WANTestBase{
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2);
+
+    createReceiverPR(vm2, 0);
+
     createReceiverInVMs(vm2);
 
-    createSenders(lnPort);
-    
-    createReceiverPR(vm2, 0);
-    
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
     createSenderPRs(3);
+
+    vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
+      true, 100, 10, true, false, null, true ));
+    vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
+      true, 100, 10, true, false, null, true ));
+    vm6.invoke(() -> WANTestBase.createSender( "ln", 2,
+      true, 100, 10, true, false, null, true ));
+    vm7.invoke(() -> WANTestBase.createSender( "ln", 2,
+      true, 100, 10, true, false, null, true ));
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
     AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts( testName, 1000 ));
-    pause(200);
+    vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS).until(() ->
+      assertEquals("Waiting for first batch to be received",true,getRegionSize(testName) > 10)));
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
     inv1.join();
     inv2.join();
     
-    vm2.invoke(() -> WANTestBase.validateRegionSize(
-        testName, 1000 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(testName, 1000 ));
     
     ArrayList<Integer> v5List = (ArrayList<Integer>)vm5.invoke(() -> WANTestBase.getSenderStats( "ln", 0));
     ArrayList<Integer> v6List = (ArrayList<Integer>)vm6.invoke(() -> WANTestBase.getSenderStats( "ln", 0));

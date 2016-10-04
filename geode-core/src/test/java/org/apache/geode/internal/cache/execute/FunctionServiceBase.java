@@ -37,11 +37,12 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 /*
@@ -245,6 +246,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     assertEquals(result, customCollector.getResult());
   }
 
+  @Category(FlakyTest.class) // GEODE-1827
   @Test
   public void customCollectorReturnsResultOfSendFunctionException() {
     ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {

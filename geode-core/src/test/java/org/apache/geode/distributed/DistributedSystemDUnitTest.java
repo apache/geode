@@ -35,7 +35,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.*;
 import org.junit.experimental.categories.Category;
 
@@ -357,6 +357,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     assertTrue(idm.getDirectChannelPort() >= portStartRange);
   }
 
+  @Category(FlakyTest.class) // GEODE-1198
   @Test
   public void testConflictingUDPPort() throws Exception {
     final Properties config = new Properties();

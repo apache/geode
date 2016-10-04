@@ -55,6 +55,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the functionality of the {@linkplain org.apache.geode.internal.admin internal
@@ -178,6 +179,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase imp
     assertTrue("agent should have been disconnected", !agent.isConnected());
   }
 
+  @Category(FlakyTest.class) // GEODE-1688
   @Test
   public void testApplications() throws Exception {
     {

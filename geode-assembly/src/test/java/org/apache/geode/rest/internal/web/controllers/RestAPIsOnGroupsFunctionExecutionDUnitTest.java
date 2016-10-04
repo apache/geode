@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category(DistributedTest.class)
@@ -80,6 +81,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     restURLs.clear();
   }
 
+  @Category(FlakyTest.class) // GEODE-1924
   @Test
   public void testonGroupsExecutionOnAllMembersWithFilter() {
     setupCacheWithGroupsAndFunction();

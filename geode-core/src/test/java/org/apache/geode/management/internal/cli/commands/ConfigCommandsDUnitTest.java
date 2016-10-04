@@ -34,6 +34,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -156,6 +157,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1449
   @Test
   public void testExportConfig() throws Exception {
     Properties localProps = new Properties();
@@ -296,6 +298,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Result result = commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
   }
 
+  @Category(FlakyTest.class) // GEODE-1313
   @Test
   public void testAlterRuntimeConfigRandom() throws Exception {
     final String member1 = "VM1";

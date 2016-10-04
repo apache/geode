@@ -290,6 +290,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1772
   @Test
   public void testParallelPropagationSenderResumeNegativeScenario() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

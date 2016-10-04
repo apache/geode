@@ -558,7 +558,8 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
    
  }
  
-  @Test
+  @Category(FlakyTest.class) // GEODE-1345
+ @Test
   public void testJoinQueryPRWithMultipleIndexes(){
    
    server1.invoke(new CacheSerializableRunnable("Test query with indexes") {

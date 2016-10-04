@@ -45,6 +45,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
@@ -155,6 +156,7 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1581
   @Test
   public void testBug36805()
   {

@@ -24,6 +24,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -79,6 +80,7 @@ public class WanCommandGatewayReceiverStopDUnitTest extends WANCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1418
   @Test
   public void testStopGatewayReceiver() {
 

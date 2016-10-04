@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This test tests the PR query behaviour with respect to cache closure
@@ -99,6 +100,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Category(FlakyTest.class) // GEODE-1689
   @Test
   public void testPRWithCacheCloseInOneDatastoreWithDelay() throws Exception
   {
@@ -233,6 +235,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Category(FlakyTest.class) // GEODE-1239
   @Test
   public void testPRWithCacheCloseInOneDatastoreWithoutDelay() throws Exception
   {

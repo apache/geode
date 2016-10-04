@@ -36,8 +36,6 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * @since GemFire 8.1
@@ -197,7 +195,7 @@ public class JettyHelper {
     if (args.length > 1) {
       System.out.printf("Temporary Directory @ ($1%s)%n", USER_DIR);
 
-      final Server jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+      final Server jetty = JettyHelper.initJetty(null, 8090, new SSLConfig());
 
       for (int index = 0; index < args.length; index += 2) {
         final String webAppContext = args[index];

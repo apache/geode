@@ -50,6 +50,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -179,6 +180,7 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     assertEquals(pp.getCount(), 2);
   }
 
+  @Category(FlakyTest.class) // GEODE-1719
   @Test
   public void testGfshCommand(){
     // have client2 input some domain data into the region

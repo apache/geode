@@ -51,6 +51,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class CompiledInDUnitTest extends JUnit4CacheTestCase {
@@ -135,6 +136,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
   }
 
 
+  @Category(FlakyTest.class) // GEODE-1771
   @Test
   public void whenMultipleEnumBindParametersAreUsedWithInQueryAndMapIndexIsPresentReturnCorrectResults()
     throws CacheException {
@@ -441,6 +443,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(executeQueryWithIndexOnReplicateRegion(numExpectedResults, queryString, bindArguments, "myIndex", "ts.getMapField[*]", regName + " ts"));
   }
 
+  @Category(FlakyTest.class) // GEODE-1765
   @Test
   public void whenInSetCollectionContainsNonUniqueValuesMatchingSetShouldNotBeDuplicated() throws CacheException {
     final int numberOfEntries = 10;

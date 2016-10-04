@@ -783,6 +783,7 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that invalidating a session throws an exception on subsequent access.
    */
+  @Category(FlakyTest.class) // GEODE-1943
   @Test
   public void testInvalidateSession9() throws Exception {
     Callback c_1 = new Callback() {

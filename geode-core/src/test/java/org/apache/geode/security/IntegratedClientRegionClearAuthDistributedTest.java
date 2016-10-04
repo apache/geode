@@ -25,11 +25,13 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class IntegratedClientRegionClearAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
+  @Category(FlakyTest.class) // GEODE-1876
   @Test
   public void testRegionClear() throws InterruptedException {
     // Verify that an unauthorized user can't clear the region

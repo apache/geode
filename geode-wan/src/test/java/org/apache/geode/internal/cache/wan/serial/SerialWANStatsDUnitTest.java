@@ -22,6 +22,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import static org.apache.geode.test.dunit.Wait.*;
 import static org.apache.geode.test.dunit.IgnoredException.*;
@@ -381,6 +382,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class) // GEODE-1353
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
   int numEntries = 20000;

@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -53,6 +53,7 @@ public class CompositeTypeTestDUnitTest extends ManagementTestBase {
   
   private static ObjectName objectName;
 
+  @Category(FlakyTest.class) // GEODE-1492
   @Test
   public void testCompositeTypeGetters() throws Exception{
     

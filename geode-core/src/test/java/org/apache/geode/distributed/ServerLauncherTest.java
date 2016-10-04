@@ -23,6 +23,7 @@ import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.support.DistributedSystemAdapter;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
@@ -248,6 +249,7 @@ public class ServerLauncherTest {
     }
   }
   
+  @Category(FlakyTest.class) // GEODE-1309
   @Test(expected = IllegalArgumentException.class)
   public void testSetServerBindAddressToNonLocalHost() {
     try {
