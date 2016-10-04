@@ -586,7 +586,6 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName(), 1000 ));
   }
   
-  @Category(FlakyTest.class) // GEODE-1731
   @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException(SocketException.class.getName()); // for Connection reset
@@ -594,9 +593,24 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     createCacheInVMs(nyPort, vm2, vm3);
+
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
+
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(
+      getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
 
     vm4.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
         true, 100, 10, false, false, null, true, 6, OrderPolicy.KEY ));
@@ -606,33 +620,25 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         true, 100, 10, false, false, null, true, 6, OrderPolicy.KEY ));
     vm7.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
         true, 100, 10, false, false, null, true, 6, OrderPolicy.KEY ));
-    
-    vm4.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 2, 100, isOffHeap() ));
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-
     AsyncInvocation inv1 = vm7.invokeAsync(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 5000 ));
+
     vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS).until(() ->
       assertEquals("Failure in waiting for at least 10 events to be received by the receiver",
         true, (getRegionSize(getTestMethodName() + "_PR") > 10 ))));
+
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+
     AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 10000 ));
+
     vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS).until(() ->
-      assertEquals("Failure in waiting for additional 2000 events to be received by the receiver ",
-        true,getRegionSize(getTestMethodName() + "_PR") > 7000 )));
+      assertEquals("Failure in waiting for additional 10 events to be received by the receiver ",
+        true,getRegionSize(getTestMethodName() + "_PR") > 5010 )));
+
     AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
+
     inv1.join();
     inv2.join();
     inv3.join();
