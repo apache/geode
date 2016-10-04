@@ -131,6 +131,9 @@ sourceSets {
   main {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
+  test {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
 }
 
 // Creates the version properties file and writes it to the classes dir
