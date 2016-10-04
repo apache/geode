@@ -18,39 +18,77 @@ package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import org.apache.geode.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+
+import org.apache.geode.GemFireException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.NoSystemException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.UncreatedSystemException;
+import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.tcpserver.*;
-import org.apache.geode.internal.statistics.StatArchiveReader;
-import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
-import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.MergeLogFiles;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.statistics.StatArchiveReader;
+import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
+import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
-
-import java.io.*;
-import java.net.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
-
-import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -1540,7 +1578,7 @@ public class SystemAdmin {
                 "This command uses the compaction threshold that each member has " +
                 "configured for its disk stores. The disk store must have allow-force-compaction " +
                 "set to true in order for this command to work.\n" +
-                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
+                    "This command will use the geode.properties file to determine what distributed system to connect to.");
     helpMap.put("modify-disk-store",
                 LocalizedStrings.SystemAdmin_MODIFY_DISK_STORE.toLocalizedString()); 
     helpMap.put("revoke-missing-disk-store",
@@ -1551,24 +1589,24 @@ public class SystemAdmin {
                 "missing disk stores.\n" +
                 "You must pass the in the unique id for the disk store to revoke. The unique id is listed in the output " +
                 "of the list-missing-disk-stores command, for example a63d7d99-f8f8-4907-9eb7-cca965083dbb.\n" +
-                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
+                    "This command will use the geode.properties file to determine what distributed system to connect to.");
     helpMap.put("list-missing-disk-stores",
                 "Prints out a description of the disk stores that are currently missing from a distributed system\n\\n."
-                    + "This command will use the gemfire.properties file to determine what distributed system to connect to.");
+                    + "This command will use the geode.properties file to determine what distributed system to connect to.");
     helpMap.put("export-disk-store", 
                 "Exports an offline disk store.  The persistent data is written to a binary format.\n"
                 + "  -outputDir=<directory> specifies the location of the exported snapshot files.");
     helpMap.put("shut-down-all",
                 "Connects to a running system and asks all its members that have a cache to close the cache and disconnect from system." +
                 "The timeout parameter allows you to specify that the system should be shutdown forcibly after the time has exceeded.\n" +
-                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
+                    "This command will use the geode.properties file to determine what distributed system to connect to.");
     helpMap.put("backup",
                 "Connects to a running system and asks all its members that have persistent data " +
                 "to backup their data to the specified directory. The directory specified must exist " +
                 "on all members, but it can be a local directory on each machine. This command " +
                 "takes care to ensure that the backup files will not be corrupted by concurrent " +
                 "operations. Backing up a running system with filesystem copy is not recommended.\n" +
-                    "This command will use the gemfire.properties file to determine what distributed system to connect to.");
+                    "This command will use the geode.properties file to determine what distributed system to connect to.");
     helpMap.put("print-stacks",
                 "fetches stack dumps of all processes.  By default an attempt" +
                 " is made to remove idle GemFire threads from the dump.  " +
@@ -1672,7 +1710,7 @@ public class SystemAdmin {
     usageMap.put("help", "help [" + join(helpTopics, "|") + "]");
     usageMap.put("stats", "stats ([<instanceId>][:<typeId>][.<statId>])* [-details] [-nofilter|-persec|-persample] [-prunezeros] [-starttime=<time>] [-endtime=<time>] -archive=<statFile>");
     usageMap.put(START_LOCATOR,
-        "start-locator [-port=<port>] [-address=<ipAddr>] [-dir=<locatorDir>] [-properties=<gemfire.properties>] [-peer=<true|false>] [-server=<true|false>] [-hostname-for-clients=<ipAddr>] [-D<system.property>=<value>] [-X<vm-setting>]");
+        "start-locator [-port=<port>] [-address=<ipAddr>] [-dir=<locatorDir>] [-properties=<geode.properties>] [-peer=<true|false>] [-server=<true|false>] [-hostname-for-clients=<ipAddr>] [-D<system.property>=<value>] [-X<vm-setting>]");
     usageMap.put("stop-locator", "stop-locator [-port=<port>] [-address=<ipAddr>] [-dir=<locatorDir>]");
     usageMap.put("status-locator", "status-locator [-dir=<locatorDir>]");
     usageMap.put("info-locator", "info-locator [-dir=<locatorDir>]");

@@ -17,6 +17,20 @@
 
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticsFactory;
@@ -24,7 +38,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
@@ -32,16 +45,6 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.security.GemFireSecurityException;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * A "connection" to a GemFire distributed system.  A
@@ -569,7 +572,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @see #getPropertiesFile()
    * @since Geode 1.0
    */
-  public static final String PROPERTIES_FILE_DEFAULT = DistributionConfig.GEMFIRE_PREFIX + "properties";
+  public static final String PROPERTIES_FILE_DEFAULT = "geode.properties";
 
   /**
    * Returns the current value of {@link #PROPERTIES_FILE_PROPERTY} system 

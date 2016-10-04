@@ -477,7 +477,7 @@ limitations under the License.
             writeable="false"/>
 
     <attribute   name="refreshInterval"
-          description="The interval (in seconds) between auto-refreshes of this application;s configuration attributes, as defined in the gemfire.properties file. To disable the JMX Timer service's auto-refresh feature, set this attribute to zero or less. Effective 6.0, any changes to this parameter wil not affect the current refreshInterval. To change the refreshInterval use AdminDistributedSystem.refreshInterval"
+          description="The interval (in seconds) between auto-refreshes of this application;s configuration attributes, as defined in the geode.properties file. To disable the JMX Timer service's auto-refresh feature, set this attribute to zero or less. Effective 6.0, any changes to this parameter wil not affect the current refreshInterval. To change the refreshInterval use AdminDistributedSystem.refreshInterval"
                  type="int"/>
 
     <attribute    name="version"
@@ -607,13 +607,13 @@ limitations under the License.
     </operation>
     
     <operation   name="refreshConfig"
-          description="Refresh configuration attributes for this application, using the gemfire.properties file."
+          description="Refresh configuration attributes for this application, using the geode.properties file."
                impact="ACTION"
            returnType="void">
     </operation>
     
     <operation   name="getConfiguration"
-          description="Returns the current configuration attributes for this application, using the gemfire.properties file."
+          description="Returns the current configuration attributes for this application, using the geode.properties file."
                impact="ACTION"
            returnType="[Lorg.apache.geode.admin.ConfigurationParameter;">
     </operation>
@@ -1128,7 +1128,7 @@ limitations under the License.
             writeable="false"/>
 
     <attribute   name="refreshInterval"
-          description="The interval (in seconds) between auto-refreshes of this application;s configuration attributes, as defined in the gemfire.properties file. To disable the JMX Timer service's auto-refresh feature, set this attribute to zero or less."
+          description="The interval (in seconds) between auto-refreshes of this application;s configuration attributes, as defined in the geode.properties file. To disable the JMX Timer service's auto-refresh feature, set this attribute to zero or less."
                  type="int"/>
 
     <attribute    name="version"
@@ -1314,13 +1314,13 @@ limitations under the License.
     </operation>
 
     <operation   name="refreshConfig"
-          description="Refresh configuration attributes for this application, using the gemfire.properties file."
+          description="Refresh configuration attributes for this application, using the geode.properties file."
                impact="ACTION"
            returnType="void">
     </operation>
     
     <operation   name="getConfiguration"
-          description="Returns the current configuration attributes for this application, using the gemfire.properties file."
+          description="Returns the current configuration attributes for this application, using the geode.properties file."
                impact="ACTION"
            returnType="[Lorg.apache.geode.admin.ConfigurationParameter;">
     </operation>

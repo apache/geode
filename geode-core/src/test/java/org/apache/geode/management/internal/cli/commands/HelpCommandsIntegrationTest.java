@@ -16,6 +16,20 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.*;
+import static org.junit.Assert.*;
+
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -25,20 +39,6 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-import org.junit.experimental.categories.Category;
-
-import java.util.Map;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.commandResultToString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @Category(IntegrationTest.class)
 public class HelpCommandsIntegrationTest {
@@ -75,7 +75,6 @@ public class HelpCommandsIntegrationTest {
   }
 
   /**
-   * TODO:GEODE-1466: update golden file to geode.properties
    * TODO:GEODE-1566: update golden file to GeodeRedisServer
    */
   @Test
