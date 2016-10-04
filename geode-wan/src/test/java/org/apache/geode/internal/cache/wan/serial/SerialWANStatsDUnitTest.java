@@ -379,19 +379,31 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    * 1 region and sender configured on local site and 1 region and a 
    * receiver configured on remote site. Puts to the local region are in progress.
    * Remote region is destroyed in the middle.
+   *
+   * Better fix : slowed down the receiver after every create event, So a huge number of puts is not required.
+   *
    * 
    * @throws Exception
    */
-  @Category(FlakyTest.class) // GEODE-1353
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
-  int numEntries = 20000;
+  int numEntries = 2000;
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
     //these are part of remote site
     vm2.invoke(() -> WANTestBase.createCache( nyPort ));
+
+    //create one RR (RR_1) on remote site
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      testName + "_RR_1", null, isOffHeap()  ));
+
+
     vm2.invoke(() -> WANTestBase.createReceiver());
+
+    //This slows down the receiver
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, testName + "_RR_1"));
+
 
     //these are part of local site
     vm4.invoke(() -> WANTestBase.createCache( lnPort ));
@@ -399,34 +411,29 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createCache( lnPort ));
     vm7.invoke(() -> WANTestBase.createCache( lnPort ));
 
+    //create one RR (RR_1) on local site
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+      testName + "_RR_1", "ln", isOffHeap()  ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+      testName + "_RR_1", "ln", isOffHeap()  ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+      testName + "_RR_1", "ln", isOffHeap()  ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+      testName + "_RR_1", "ln", isOffHeap()  ));
+
     //senders are created on local site
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 100, false, false, null, true ));
     vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
         false, 100, 100, false, false, null, true ));
 
-    //create one RR (RR_1) on remote site
-    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
-        testName + "_RR_1", null, isOffHeap()  ));
-    //This is to cause a scenario where we have received at least X events and want to slow the receiver
-    vm2.invoke(() -> WANTestBase.longPauseAfterNumEvents(500, 200));
     //start the senders on local site
     startSenderInVMs("ln", vm4, vm5);
-
-    //create one RR (RR_1) on local site
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
-        testName + "_RR_1", "ln", isOffHeap()  ));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-        testName + "_RR_1", "ln", isOffHeap()  ));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-        testName + "_RR_1", "ln", isOffHeap()  ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
-        testName + "_RR_1", "ln", isOffHeap()  ));
 
     //start puts in RR_1 in another thread
     AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.doPuts( testName + "_RR_1", numEntries ));
     //destroy RR_1 in remote site
-    vm2.invoke(() -> WANTestBase.destroyRegion( testName + "_RR_1", 500));
+    vm2.invoke(() -> WANTestBase.destroyRegion( testName + "_RR_1", 5));
 
     try {
       inv1.join();
