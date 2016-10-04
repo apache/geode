@@ -968,7 +968,6 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR_1", 8000));
   }
 
-  @Category(FlakyTest.class) // GEODE-1364, 1478
   @Test
   public void testReplicatedSerialPropagationToTwoWanSites() throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);
