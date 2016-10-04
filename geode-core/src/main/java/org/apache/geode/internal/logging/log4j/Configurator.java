@@ -38,19 +38,11 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class Configurator {
 
-  /*public static void reconfigure() {
-    LoggerContext context = (LoggerContext)LogManager.getContext(false);
-    context.updateLoggers();
-    //context.reconfigure();
-  }*/
-
   public static void shutdown() {
-    //LoggerContext context = (LoggerContext)LogManager.getContext(false);
     final LoggerContext context = ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).getContext();
     context.stop();
     org.apache.logging.log4j.core.config.Configurator.shutdown(context);
   }
-
 
   public static void setLevel(String name, Level level) {
     LoggerContext context = (LoggerContext) LogManager.getContext(false);
@@ -78,9 +70,7 @@ public class Configurator {
       List<AppenderRef> appenderRefs = logConfig.getAppenderRefs();
       Map<Property, Boolean> properties = logConfig.getProperties();
       Set<Property> props = properties == null ? null : properties.keySet();
-      logConfig = LoggerConfig.createLogger(String.valueOf(logConfig.isAdditive()), logConfig.getLevel(), name, String.valueOf(logConfig
-        .isIncludeLocation()), appenderRefs == null ? null : appenderRefs.toArray(new AppenderRef[appenderRefs.size()]), props == null ? null : props
-        .toArray(new Property[props.size()]), config, null);
+      logConfig = LoggerConfig.createLogger(String.valueOf(logConfig.isAdditive()), logConfig.getLevel(), name, String.valueOf(logConfig.isIncludeLocation()), appenderRefs == null ? null : appenderRefs.toArray(new AppenderRef[appenderRefs.size()]), props == null ? null : props.toArray(new Property[props.size()]), config, null);
       config.addLogger(name, logConfig);
       update = true;
     }
@@ -99,9 +89,7 @@ public class Configurator {
       List<AppenderRef> appenderRefs = logConfig.getAppenderRefs();
       Map<Property, Boolean> properties = logConfig.getProperties();
       Set<Property> props = properties == null ? null : properties.keySet();
-      logConfig = LoggerConfig.createLogger(String.valueOf(additive), logConfig.getLevel(), name, String.valueOf(logConfig
-        .isIncludeLocation()), appenderRefs == null ? null : appenderRefs.toArray(new AppenderRef[appenderRefs.size()]), props == null ? null : props
-        .toArray(new Property[props.size()]), config, null);
+      logConfig = LoggerConfig.createLogger(String.valueOf(additive), logConfig.getLevel(), name, String.valueOf(logConfig.isIncludeLocation()), appenderRefs == null ? null : appenderRefs.toArray(new AppenderRef[appenderRefs.size()]), props == null ? null : props.toArray(new Property[props.size()]), config, null);
       config.addLogger(name, logConfig);
       update = true;
     }
@@ -159,9 +147,7 @@ public class Configurator {
       boolean isRoot = loggerConfig.getName().equals("");
       boolean isGemFire = loggerConfig.getName().startsWith(LogService.BASE_LOGGER_NAME);
       boolean hasFilter = loggerConfig.hasFilter();
-      boolean isGemFireVerboseFilter = hasFilter && (LogService.GEODE_VERBOSE_FILTER.equals(loggerConfig.getFilter()
-                                                                                                        .toString()) || LogService.GEMFIRE_VERBOSE_FILTER
-                                                       .equals(loggerConfig.getFilter().toString()));
+      boolean isGemFireVerboseFilter = hasFilter && (LogService.GEODE_VERBOSE_FILTER.equals(loggerConfig.getFilter().toString()) || LogService.GEMFIRE_VERBOSE_FILTER.equals(loggerConfig.getFilter().toString()));
 
       if (isRoot || isGemFire) {
         // check for Logger Filter
