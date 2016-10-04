@@ -16,7 +16,6 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-
 import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -45,14 +44,15 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class LogMarkerJUnitTest {
 
+  private String beforeConfigFileProp;
+  private Level beforeLevel;
+
   @Rule
   public SystemErrRule systemErrRule = new SystemErrRule().enableLog();
   @Rule
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private String beforeConfigFileProp;
-  private Level beforeLevel;
 
   @Before
   public void setUp() throws Exception {
