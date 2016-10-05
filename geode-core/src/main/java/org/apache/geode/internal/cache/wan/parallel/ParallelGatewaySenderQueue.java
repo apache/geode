@@ -993,17 +993,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return null;
   }
 
-  private boolean areLocalBucketQueueRegionsPresent() {
+  protected boolean areLocalBucketQueueRegionsPresent() {
     boolean bucketsAvailable = false;
     for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
       if (prQ.getDataStore().getAllLocalBucketRegions().size() > 0)
         return true;
     }
     return false;
-  }
-  
-  private boolean areLocalBucketQueueRegionsPresent(PartitionedRegion prQ) {
-    return prQ.getDataStore().isLocalBucketRegionPresent();
   }
   
   private int pickBucketId;
@@ -1032,8 +1028,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       while(nTry-- > 0) {
         if(pickBucketId >= thisProcessorBuckets.size())
           pickBucketId = 0;
-        BucketRegionQueue br = (BucketRegionQueue)prQ.getDataStore()
-            .getLocalBucketById(thisProcessorBuckets.get(pickBucketId++));
+        BucketRegionQueue br = getBucketRegionQueueByBucketId(prQ, thisProcessorBuckets.get(pickBucketId++));
         if (br != null && br.isReadyForPeek()) {
           return br.getId();
         }
@@ -1044,7 +1039,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       /*Collections.shuffle(thisProcessorBuckets);
       for (Integer bucketId : thisProcessorBuckets) {
         BucketRegionQueue br = (BucketRegionQueue)prQ.getDataStore()
-            .getLocalBucketById(bucketId);
+            .getBucketRegionQueueByBucketId(bucketId);
         
         if (br != null && br.isReadyForPeek()) {
           return br.getId();
@@ -1119,8 +1114,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId)
         .isPrimary();
     if (isPrimary) {
-      BucketRegionQueue brq = (BucketRegionQueue)prQ.getDataStore()
-          .getLocalBucketById(bucketId);
+      BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
       // TODO : Kishor : Make sure we dont need to initalize a bucket
       // before destroying a key from it
       try {
@@ -1303,6 +1297,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         if (object != null) {
           GatewaySenderEventImpl copy = object.makeHeapCopyIfOffHeap();
           if (copy == null) {
+            if (stats != null) {
+              stats.incEventsNotQueuedConflated();
+            }
             continue;
           }
           object = copy;
@@ -1314,11 +1311,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           }
           batch.add(object);
           peekedEvents.add(object);
-          BucketRegionQueue brq = ((BucketRegionQueue)prQ
-              .getDataStore().getLocalBucketById(bId));
-          
-          //brq.doLockForPrimary(false);
-          
+
         } else {
           // If time to wait is -1 (don't wait) or time interval has elapsed
           long currentTime = System.currentTimeMillis();
@@ -1452,8 +1445,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   protected Object peekAhead(PartitionedRegion prQ, int bucketId) throws CacheException {
     Object object = null;
-    BucketRegionQueue brq = ((BucketRegionQueue)prQ
-        .getDataStore().getLocalBucketById(bucketId));
+    BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Peekahead for the bucket {}",this, bucketId);
@@ -1475,8 +1467,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
     return object; // OFFHEAP: ok since callers are careful to do destroys on region queue after finished with peeked object.
   }
-  
-  
+
+  protected BucketRegionQueue getBucketRegionQueueByBucketId(final PartitionedRegion prQ, final int bucketId) {
+    return (BucketRegionQueue)prQ
+        .getDataStore().getLocalBucketById(bucketId);
+  }
+
+
   public int localSize() {
     int size = 0;
     for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
