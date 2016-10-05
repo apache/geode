@@ -174,7 +174,7 @@ public class ProcessManager {
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
     cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
     if (vmNum >= 0) { // let the locator print a banner
-//      cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
+      cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
     } else {
       // most distributed unit tests were written under the assumption that network partition
       // detection is disabled, so we turn it off in the locator.  Tests for network partition
@@ -184,10 +184,6 @@ public class ProcessManager {
     cmds.add("-D"+LOG_LEVEL+"=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
-    }
-    String jtests = System.getProperty("JTESTS");
-    if (jtests != null) {
-      cmds.add("-DJTESTS="+jtests);
     }
     cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
     cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
