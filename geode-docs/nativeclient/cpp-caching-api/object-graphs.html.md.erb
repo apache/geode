@@ -1,9 +1,0 @@
----
-title:  Serializing Object Graphs
----
-
-If you have a graph of objects where each node can be serializable, the parent node can call `DataOutput::writeObject` to delegate the serialization responsibility to its child nodes. Similarly, your application can call `DataInput::readObject` to deserialize the object graph.
-
-For more information, see the API documentation for `DataOutput` and `DataInput`.
-
-
