@@ -68,7 +68,7 @@ dependencies {
   testCompile project(':geode-core')
   testCompile files(project(':geode-core').sourceSets.test.output)
 
-  testCompile(group: 'com.codeborne', name: 'phantomjsdriver', version: '1.2.1') {
+  testCompile(group: 'com.codeborne', name: 'phantomjsdriver', version: project.'phantomjsdriver.version') {
       exclude module: 'selenium-remote-driver' //by artifact name
       exclude module: 'selenium-java' //by artifact name
   }
