@@ -265,8 +265,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         sendTypeToPool(importedType, typeId, pool);
       } catch (ServerConnectivityException e) {
-        //ignore, try the next pool.
         lastException = e;
+        break;
       }
     }
     if (lastException == null) {
@@ -284,8 +284,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         sendEnumIdToPool(importedInfo, enumId, pool);
       } catch (ServerConnectivityException e) {
-        //ignore, try the next pool.
         lastException = e;
+        break;
       }
     }
     if (lastException == null) {
