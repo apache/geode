@@ -20,55 +20,46 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.domain.RegionInformation;
 
 /**
  * Function that retrieves regions hosted on every member
- *
  */
-public class GetRegionsFunction extends FunctionAdapter implements InternalEntity {
+public class GetRegionsFunction implements Function, InternalEntity {
 
-	/**
-	 * 
-	 */
-	private static final long	serialVersionUID	= 1L;
+  private static final long serialVersionUID = 1L;
 
-	@Override
-	public String getId() {
-		// TODO Auto-generated method stub
-		return GetRegionsFunction.class.toString();
-	}
-	
-	@Override
-	public void execute(FunctionContext functionContext) {
-		try {
-			
-			Cache cache = CacheFactory.getAnyInstance();
-			Set <Region<?,?>> regions = cache.rootRegions();
-			
-			if (regions.isEmpty() || regions == null) {
-				functionContext.getResultSender().lastResult(null);
-			} else {
-				//Set<RegionInformation> regionInformationSet = RegionInformation.getRegionInformation(regions, true);
-				Set<RegionInformation> regionInformationSet = new HashSet<RegionInformation>();
-				
-				for (Region<?,?> region : regions) {
-				  RegionInformation regInfo = new RegionInformation(region, true);
-				  regionInformationSet.add(regInfo);
-				}
-				functionContext.getResultSender().lastResult(regionInformationSet.toArray());
-			}
-		} catch (CacheClosedException e) {
-			functionContext.getResultSender().sendException(e);
-		} catch (Exception e) {
-			functionContext.getResultSender().sendException(e);
-		}
-	}
+  @Override
+  public String getId() {
+    // TODO Auto-generated method stub
+    return GetRegionsFunction.class.toString();
+  }
+
+  @Override
+  public void execute(FunctionContext functionContext) {
+    try {
+      Cache cache = CacheFactory.getAnyInstance();
+      Set<Region<?, ?>> regions = cache.rootRegions(); // should never return a null
+
+      if (regions == null || regions.isEmpty()) {
+        functionContext.getResultSender().lastResult(null);
+      } else {
+        Set<RegionInformation> regionInformationSet = new HashSet<>();
+
+        for (Region<?, ?> region : regions) {
+          RegionInformation regInfo = new RegionInformation(region, true);
+          regionInformationSet.add(regInfo);
+        }
+        functionContext.getResultSender().lastResult(regionInformationSet.toArray());
+      }
+    } catch (Exception e) {
+      functionContext.getResultSender().sendException(e);
+    }
+  }
 
 }
