@@ -1627,13 +1627,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  public void testLoop() throws Exception {
-    for(int i=0; i < 200; i++) {
-      testMultipleLocatorsRestartingAtSameTime();
-      tearDown();
-      setUp();
-    }
-  }
   /**
    * Tests starting multiple locators at the same time and ensuring that the locators
    * end up only have 1 master.

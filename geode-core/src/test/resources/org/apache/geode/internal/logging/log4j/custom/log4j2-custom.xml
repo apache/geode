@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="FATAL" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j.custom">
   <Properties>
-    <Property name="custom-pattern">CUSTOM: level=%level time=%date{yyyy/MM/dd HH:mm:ss.SSS z}
-      message=%message%nthrowable=%throwable%n
+    <Property name="custom-pattern">CUSTOM: level=%level time=%date{yyyy/MM/dd HH:mm:ss.SSS z} message=%message%nthrowable=%throwable%n
     </Property>
   </Properties>
   <Appenders>
