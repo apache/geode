@@ -41,6 +41,16 @@ public class SSLConfigurationFactoryJUnitTest {
   }
 
   @Test
+  public void getNonSSLConfiguration() throws Exception {
+    Properties properties = new Properties();
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+    for (SecurableCommunicationChannel securableComponent : SecurableCommunicationChannel.values()) {
+      assertSSLConfig(properties, SSLConfigurationFactory.getSSLConfigForComponent(securableComponent), securableComponent, distributionConfig);
+    }
+  }
+
+  @Test
   public void getSSLConfigWithCommaDelimitedProtocols() throws Exception {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
@@ -157,21 +167,20 @@ public class SSLConfigurationFactoryJUnitTest {
     }
   }
 
-  private void assertSSLConfig(final Properties properties,
-                               final SSLConfig sslConfig,
-                               final SecurableCommunicationChannel expectedSecurableComponent,
-                               final DistributionConfigImpl distributionConfig) {
+  private void assertSSLConfig(final Properties properties, final SSLConfig sslConfig, final SecurableCommunicationChannel expectedSecurableComponent, final DistributionConfigImpl distributionConfig) {
     assertEquals(isSSLComponentEnabled(expectedSecurableComponent, distributionConfig.getSecurableCommunicationChannels()), sslConfig.isEnabled());
-    assertEquals(properties.getProperty(SSL_KEYSTORE), sslConfig.getKeystore());
-    assertEquals(properties.getProperty(SSL_KEYSTORE_PASSWORD), sslConfig.getKeystorePassword());
-    assertEquals(properties.getProperty(SSL_KEYSTORE_TYPE), sslConfig.getKeystoreType());
-    assertEquals(properties.getProperty(SSL_TRUSTSTORE), sslConfig.getTruststore());
-    assertEquals(properties.getProperty(SSL_TRUSTSTORE_PASSWORD), sslConfig.getTruststorePassword());
-    assertEquals(properties.getProperty(SSL_CIPHERS).replace(","," "), sslConfig.getCiphers());
-    assertEquals(properties.getProperty(SSL_PROTOCOLS).replace(","," "), sslConfig.getProtocols());
-    assertEquals(getCorrectAlias(expectedSecurableComponent, properties), sslConfig.getAlias());
-    assertEquals(requiresAuthentication(properties, expectedSecurableComponent), sslConfig.isRequireAuth());
-    assertEquals(expectedSecurableComponent, sslConfig.getSecuredCommunicationChannel());
+    if (sslConfig.isEnabled()) {
+      assertEquals(properties.getProperty(SSL_KEYSTORE), sslConfig.getKeystore());
+      assertEquals(properties.getProperty(SSL_KEYSTORE_PASSWORD), sslConfig.getKeystorePassword());
+      assertEquals(properties.getProperty(SSL_KEYSTORE_TYPE), sslConfig.getKeystoreType());
+      assertEquals(properties.getProperty(SSL_TRUSTSTORE), sslConfig.getTruststore());
+      assertEquals(properties.getProperty(SSL_TRUSTSTORE_PASSWORD), sslConfig.getTruststorePassword());
+      assertEquals(properties.getProperty(SSL_CIPHERS).replace(",", " "), sslConfig.getCiphers());
+      assertEquals(properties.getProperty(SSL_PROTOCOLS).replace(",", " "), sslConfig.getProtocols());
+      assertEquals(getCorrectAlias(expectedSecurableComponent, properties), sslConfig.getAlias());
+      assertEquals(requiresAuthentication(properties, expectedSecurableComponent), sslConfig.isRequireAuth());
+      assertEquals(expectedSecurableComponent, sslConfig.getSecuredCommunicationChannel());
+    }
   }
 
   private boolean requiresAuthentication(final Properties properties, final SecurableCommunicationChannel expectedSecurableComponent) {
