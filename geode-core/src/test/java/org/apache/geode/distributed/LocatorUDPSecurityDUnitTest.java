@@ -43,14 +43,6 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
   public LocatorUDPSecurityDUnitTest() {
   }
   
-  @Test
-  public void testLoop() throws Exception {
-    for(int i=0; i < 1; i++) {
-      testMultipleLocatorsRestartingAtSameTime();
-      tearDown();
-      setUp();
-    }
-  }
   
   @Override
   protected void addDSProps(Properties p) {

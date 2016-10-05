@@ -19,8 +19,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static com.sun.corba.se.impl.util.RepositoryId.cache;
-
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
@@ -592,9 +590,10 @@ public abstract class BaseCommand implements Command {
   }
   
   private static Throwable getClientException(ServerConnection servConn, Throwable e) {
+    Cache cache = servConn.getCache();
     if (cache instanceof InternalCache) {
-      InternalCache cache = (InternalCache) servConn.getCache();
-      OldClientSupportService svc = cache.getService(OldClientSupportService.class);
+      InternalCache icache = (InternalCache) servConn.getCache();
+      OldClientSupportService svc = icache.getService(OldClientSupportService.class);
       if (svc != null) {
         return svc.getThrowable(e, servConn.getClientVersion());
       }
