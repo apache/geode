@@ -2,6 +2,23 @@
 title:  How Consistency Is Achieved in WAN Deployments
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 When two or more Geode systems are configured to distribute events over a WAN, each system performs local consistency checking before it distributes an event to a configured gateway sender. Discarded events are not distributed across the WAN.
 
 Regions can also be configured to distribute updates to other Geode clusters over a WAN. With a distributed WAN configuration, multiple gateway senders asynchronously queue and send region updates to another Geode cluster. It is possible for multiple sites to send updates to the same region entry at the same time. It is also possible that, due to a slow WAN connection, a cluster might receive region updates after a considerable delay, and after it has applied more recent updates to a region. To ensure that WAN-replicated regions eventually reach a consistent state, Geode first ensures that each cluster performs consistency checking to regions before queuing updates to a gateway sender for WAN distribution. In order words, region conflicts are first detected and resolved in the local cluster, using the techniques described in the previous sections.
