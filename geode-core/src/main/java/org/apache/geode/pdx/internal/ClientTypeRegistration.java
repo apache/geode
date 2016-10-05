@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.Pool;
@@ -39,7 +41,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
 
 public class ClientTypeRegistration implements TypeRegistration {
 
@@ -263,11 +264,13 @@ public class ClientTypeRegistration implements TypeRegistration {
     for (Pool pool : pools) {
       try {
         sendTypeToPool(importedType, typeId, pool);
-        return;
       } catch (ServerConnectivityException e) {
         //ignore, try the next pool.
         lastException = e;
       }
+    }
+    if (lastException == null) {
+      return;
     }
     throw returnCorrectExceptionForFailure(pools, typeId, lastException);
   }
@@ -284,6 +287,9 @@ public class ClientTypeRegistration implements TypeRegistration {
         //ignore, try the next pool.
         lastException = e;
       }
+    }
+    if (lastException == null) {
+      return;
     }
 
     throw returnCorrectExceptionForFailure(pools, enumId, lastException);
