@@ -24,6 +24,7 @@ import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -505,6 +506,15 @@ public class PRHARedundancyProvider
                                     PartitionedRegionException
   {
     final boolean isDebugEnabled = logger.isDebugEnabled();
+
+    if (!prRegion.isRecoveredFromDisk()) {
+      prRegion.getDistributionAdvisor();
+      Set<PersistentID> persistIds = new HashSet(prRegion.getRegionAdvisor().advisePersistentMembers().values());
+      persistIds.removeAll(prRegion.getRegionAdvisor().adviseInitializedPersistentMembers().values());
+      throw new PartitionOfflineException(persistIds, LocalizedStrings.PRHARedundancyProvider_PARTITIONED_REGION_0_OFFLINE_HAS_UNRECOVERED_PERSISTENT_DATA_1
+          .toLocalizedString(new Object[] { prRegion.getFullPath(), persistIds}));
+    }
+
     
     // If there are insufficient stores throw *before* we try acquiring the
     // (very expensive) bucket lock or the (somewhat expensive) monitor on this

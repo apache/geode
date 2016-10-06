@@ -1397,6 +1397,10 @@ public class PartitionedRegion extends LocalRegion implements
     new UpdateAttributesProcessor(this).distribute(false);
   }
 
+  public boolean isRecoveredFromDisk() {
+    return recoveredFromDisk;
+  }
+
   public final void updatePRConfig(PartitionRegionConfig prConfig,
       boolean putOnlyIfUpdated) {
     final Set<Node> nodes = prConfig.getNodes();
@@ -3057,7 +3061,6 @@ public class PartitionedRegion extends LocalRegion implements
       final RetryTimeKeeper snoozer) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
-//    InternalDistributedSystem ids = (InternalDistributedSystem)this.cache.getDistributedSystem();
     RetryTimeKeeper localSnoozer = snoozer;
     // Prevent early access to buckets that are not completely created/formed
     // and

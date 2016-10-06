@@ -50,7 +50,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.jayway.awaitility.core.ConditionTimeoutException;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.AttributesFactory;
@@ -64,6 +63,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -72,11 +72,14 @@ import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.ColocationLogger;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -2088,7 +2091,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     };
     
     //runnable to create PRs
-    SerializableRunnable createPRs = new SerializableRunnable("region1") {
+    SerializableRunnable createPRs = new SerializableRunnable("createPRs") {
       public void run() {
         Cache cache = getCache();
         
@@ -2112,7 +2115,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     };
     
     //runnable to close the cache.
-    SerializableRunnable closeCache = new SerializableRunnable("region1") {
+    SerializableRunnable closeCache = new SerializableRunnable("closeCache") {
       public void run() {
         closeCache();
       }
@@ -2120,7 +2123,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     
     //Runnable to do a bunch of puts handle exceptions
     //due to the fact that member is offline.
-    SerializableRunnable doABunchOfPuts = new SerializableRunnable("region1") {
+    SerializableRunnable doABunchOfPuts = new SerializableRunnable("doABunchOfPuts") {
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(PR_REGION_NAME);
@@ -2200,7 +2203,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
   @Category(FlakyTest.class) // GEODE-506: time sensitive, async actions with 30 sec max
   @Test
   public void testRebalanceWithOfflineChildRegion() throws Throwable {
-    SerializableRunnable createParentPR = new SerializableRunnable() {
+    SerializableRunnable createParentPR = new SerializableRunnable("createParentPR") {
       public void run() {
         Cache cache = getCache();
         
@@ -2220,7 +2223,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
       }
     };
     
-    SerializableRunnable createChildPR = new SerializableRunnable() {
+    SerializableRunnable createChildPR = new SerializableRunnable("createChildPR") {
       public void run() {
         Cache cache = getCache();
         
@@ -2325,7 +2328,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     };
     
     vm1.invoke(addHook);
-//    vm1.invoke(addHook);
     AsyncInvocation async0;
     AsyncInvocation async1;
     AsyncInvocation async2;
@@ -2335,7 +2337,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
       async1 = vm1.invokeAsync(createPRs);
 
       vm1.invoke(waitForHook);
-//      vm1.invoke(waitForHook);
       
       //Now create the parent region on vm-2. vm-2 did not
       //previous host the child region.
@@ -2347,7 +2348,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     
     } finally {
       vm1.invoke(removeHook);
-//      vm1.invoke(removeHook);
     }
     
     async0.getResult(MAX_WAIT);
@@ -2473,6 +2473,188 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     closeCache();
   }
 
+  @Test
+  public void testParentRegionGetWithOfflineChildRegion() throws Throwable {
+
+    SerializableRunnable createParentPR = new SerializableRunnable("createParentPR") {
+      public void run() {
+        String oldRetryTimeout = System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", "10000");
+        try {
+          Cache cache = getCache();
+          DiskStore ds = cache.findDiskStore("disk");
+          if (ds == null) {
+            ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+          }
+          AttributesFactory af = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setRedundantCopies(0);
+          paf.setRecoveryDelay(0);
+          af.setPartitionAttributes(paf.create());
+          af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          af.setDiskStoreName("disk");
+          cache.createRegion(PR_REGION_NAME, af.create());
+        } finally {
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        }
+      }
+    };
+
+    SerializableRunnable createChildPR = new SerializableRunnable("createChildPR") {
+      public void run() throws InterruptedException {
+        String oldRetryTimeout = System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", "10000");
+        try {
+          Cache cache = getCache();
+          AttributesFactory af = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setRedundantCopies(0);
+          paf.setRecoveryDelay(0);
+          paf.setColocatedWith(PR_REGION_NAME);
+          af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          af.setDiskStoreName("disk");
+          af.setPartitionAttributes(paf.create());
+          // delay child region creations to cause a delay in persistent recovery
+          Thread.sleep(100);
+          cache.createRegion("region2", af.create());
+        } finally {
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        }
+      }
+    };
+
+    boolean caughtException = false;
+    try {
+      // Expect a get() on the un-recovered (due to offline child) parent region to fail
+      regionGetWithOfflineChild(createParentPR, createChildPR, false);
+    } catch (Exception e) {
+      caughtException = true;
+      assertTrue(e instanceof RMIException);
+      assertTrue(e.getCause() instanceof PartitionOfflineException);
+    }
+    if (!caughtException) {
+      fail("Expected TimeoutException from remote");
+    }
+  }
+
+  @Test
+  public void testParentRegionGetWithRecoveryInProgress() throws Throwable {
+    SerializableRunnable createParentPR = new SerializableRunnable("createParentPR") {
+      public void run() {
+        String oldRetryTimeout = System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", "10000");
+        try {
+          Cache cache = getCache();
+          DiskStore ds = cache.findDiskStore("disk");
+          if (ds == null) {
+            ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+          }
+          AttributesFactory af = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setRedundantCopies(0);
+          paf.setRecoveryDelay(0);
+          af.setPartitionAttributes(paf.create());
+          af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          af.setDiskStoreName("disk");
+          cache.createRegion(PR_REGION_NAME, af.create());
+        } finally {
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        System.out.println("oldRetryTimeout = " + oldRetryTimeout);        }
+      }
+    };
+
+    SerializableRunnable createChildPR = new SerializableRunnable("createChildPR") {
+      public void run() throws InterruptedException {
+        String oldRetryTimeout = System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", "10000");
+        try {
+          Cache cache = getCache();
+          AttributesFactory af = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setRedundantCopies(0);
+          paf.setRecoveryDelay(0);
+          paf.setColocatedWith(PR_REGION_NAME);
+          af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          af.setDiskStoreName("disk");
+          af.setPartitionAttributes(paf.create());
+          cache.createRegion("region2", af.create());
+        } finally {
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        }
+      }
+    };
+
+    boolean caughtException = false;
+    try {
+      // Expect a get() on the un-recovered (due to offline child) parent region to fail
+      regionGetWithOfflineChild(createParentPR, createChildPR, false);
+    } catch (Exception e) {
+      caughtException = true;
+      assertTrue(e instanceof RMIException);
+      assertTrue(e.getCause() instanceof PartitionOfflineException);
+    }
+    if (!caughtException) {
+      fail("Expected TimeoutException from remote");
+    }
+  }
+
+  @Test
+  public void testParentRegionPutWithRecoveryInProgress() throws Throwable {
+    SerializableRunnable createParentPR = new SerializableRunnable("createParentPR") {
+      public void run() {
+        String oldRetryTimeout = System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", "10000");
+        System.out.println("oldRetryTimeout = " + oldRetryTimeout);
+        try {
+          Cache cache = getCache();
+          DiskStore ds = cache.findDiskStore("disk");
+          if (ds == null) {
+            ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+          }
+          AttributesFactory af = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setRedundantCopies(0);
+          paf.setRecoveryDelay(0);
+          af.setPartitionAttributes(paf.create());
+          af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          af.setDiskStoreName("disk");
+          cache.createRegion(PR_REGION_NAME, af.create());
+        } finally {
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        }
+      }
+    };
+
+    SerializableRunnable createChildPR = new SerializableRunnable("createChildPR") {
+      public void run() throws InterruptedException {
+        String oldRetryTimeout = System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", "10000");
+        try {
+          Cache cache = getCache();
+          AttributesFactory af = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setRedundantCopies(0);
+          paf.setRecoveryDelay(0);
+          paf.setColocatedWith(PR_REGION_NAME);
+          af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          af.setDiskStoreName("disk");
+          af.setPartitionAttributes(paf.create());
+          Thread.sleep(1000);
+          cache.createRegion("region2", af.create());
+        } finally {
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout", String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        }
+      }
+    };
+
+    boolean caughtException = false;
+    try {
+      // Expect a get() on the un-recovered (due to offline child) parent region to fail
+      regionGetWithOfflineChild(createParentPR, createChildPR, false);
+    } catch (Exception e) {
+      caughtException = true;
+      assertTrue(e instanceof RMIException);
+      assertTrue(e.getCause() instanceof PartitionOfflineException);
+    }
+    if (!caughtException) {
+      fail("Expected TimeoutException from remote");
+    }
+  }
+
   /**
    * Create three PRs on a VM, named region1, region2, and region3.
    * The colocated with attribute describes which region region3 
@@ -2523,15 +2705,15 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     vm1.invoke(createParentPR);
     vm0.invoke(createChildPR);
     vm1.invoke(createChildPR);
-    
+
     //Create some buckets.
     createData(vm0, 0, NUM_BUCKETS, "a");
     createData(vm0, 0, NUM_BUCKETS, "a", "region2");
-    
+
     //Close the members
     closeCache(vm1);
     closeCache(vm0);
-    
+
     //Recreate the parent region. Try to make sure that
     //the member with the latest copy of the buckets
     //is the one that decides to throw away it's copy
@@ -2540,18 +2722,17 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     AsyncInvocation async1 = vm1.invokeAsync(createParentPR);
     async0.getResult(MAX_WAIT);
     async1.getResult(MAX_WAIT);
-    
 
     //Now create the parent region on vm-2. vm-2 did not
     //previous host the child region.
     vm2.invoke(createParentPR);
-    
+
     //Rebalance the parent region.
     //This should not move any buckets, because
     //we haven't recovered the child region
     RebalanceResults rebalanceResults = rebalance(vm2);
     assertEquals(0, rebalanceResults.getTotalBucketTransfersCompleted());
-    
+
     //Recreate the child region. 
     async1 = vm1.invokeAsync(createChildPR);
     async0 = vm0.invokeAsync(createChildPR);
@@ -2566,6 +2747,206 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     
     //Make sure we can actually use the buckets in the child region.
     createData(vm0, 0, NUM_BUCKETS, "c", "region2");
+  }
+
+  /**
+   * Create a colocated pair of persistent regions and populate them with data. Shut down the servers and then
+   * restart them and check the data.
+   * <p>
+   * On the restart, try region operations ({@code get()}) on the parent region before or during persistent recovery.
+   * The {@code concurrentCheckData} argument determines whether the operation from the parent region occurs before
+   * or concurrent with the child region creation and recovery.
+   *
+   * @param createParentPR {@link SerializableRunnable} for creating the parent region on one member
+   * @param createChildPR {@link SerializableRunnable} for creating the child region on one member
+   * @param concurrentCheckData
+   * @throws Throwable
+   */
+  public void regionGetWithOfflineChild(
+      SerializableRunnable createParentPR,
+      SerializableRunnable createChildPR,
+      boolean concurrentCheckData) throws Throwable {
+    Host host = Host.getHost(0);
+    final VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+
+    //Create the PRs on two members
+    vm0.invoke(createParentPR);
+    vm1.invoke(createParentPR);
+    vm0.invoke(createChildPR);
+    vm1.invoke(createChildPR);
+
+    //Create some buckets.
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "a", "region2");
+
+    //Close the members
+    closeCache(vm1);
+    closeCache(vm0);
+
+    SerializableRunnable checkDataOnParent = (new SerializableRunnable("checkDataOnParent") {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion(PR_REGION_NAME);
+
+        for (int i = 0; i < NUM_BUCKETS; i++) {
+          assertEquals("For key " + i, "a", region.get(i));
+        }
+      }
+    });
+
+    try {
+      //Recreate the parent region. Try to make sure that
+      //the member with the latest copy of the buckets
+      //is the one that decides to throw away it's copy
+      //by starting it last.
+      AsyncInvocation async0 = vm0.invokeAsync(createParentPR);
+      AsyncInvocation async1 = vm1.invokeAsync(createParentPR);
+      async0.getResult(MAX_WAIT);
+      async1.getResult(MAX_WAIT);
+      //Now create the parent region on vm-2. vm-2 did not
+      //previously host the child region.
+      vm2.invoke(createParentPR);
+
+      AsyncInvocation async2 = null;
+      AsyncInvocation asyncCheck = null;
+      if (concurrentCheckData) {
+        //Recreate the child region.
+        async1 = vm1.invokeAsync(createChildPR);
+        async0 = vm0.invokeAsync(createChildPR);
+        async2 = vm2.invokeAsync(new SerializableRunnable("delay") {
+          @Override
+          public void run() throws InterruptedException {
+            Thread.sleep(100);
+            vm2.invoke(createChildPR);
+          }
+        });
+
+        asyncCheck = vm0.invokeAsync(checkDataOnParent);
+      } else {
+        vm0.invoke(checkDataOnParent);
+      }
+      async0.getResult(MAX_WAIT);
+      async1.getResult(MAX_WAIT);
+      async2.getResult(MAX_WAIT);
+      asyncCheck.getResult(MAX_WAIT);
+      //Validate the data
+      checkData(vm0, 0, NUM_BUCKETS, "a");
+      checkData(vm0, 0, NUM_BUCKETS, "a", "region2");
+      //Make sure we can actually use the buckets in the child region.
+      createData(vm0, 0, NUM_BUCKETS, "c", "region2");
+    } finally {
+      //Close the members
+      closeCache(vm1);
+      closeCache(vm0);
+      closeCache(vm2);
+    }
+  }
+  /**
+   * Create a colocated pair of persistent regions and populate them with data. Shut down the servers and then
+   * restart them.
+   * <p>
+   * On the restart, try region operations ({@code put()}) on the parent region before or during persistent recovery.
+   * The {@code concurrentCreatekData} argument determines whether the operation from the parent region occurs before
+   * or concurrent with the child region creation and recovery.
+   *
+   * @param createParentPR {@link SerializableRunnable} for creating the parent region on one member
+   * @param createChildPR {@link SerializableRunnable} for creating the child region on one member
+   * @param concurrentCreateData
+   * @throws Throwable
+   */
+  public void regionPutWithOfflineChild(
+      SerializableRunnable createParentPR,
+      SerializableRunnable createChildPR,
+      boolean concurrentCreateData) throws Throwable {
+    Host host = Host.getHost(0);
+    final VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+
+    SerializableRunnable checkDataOnParent = (new SerializableRunnable("checkDataOnParent") {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion(PR_REGION_NAME);
+
+        for (int i = 0; i < NUM_BUCKETS; i++) {
+          assertEquals("For key " + i, "a", region.get(i));
+        }
+      }
+    });
+
+    SerializableRunnable createDataOnParent = new SerializableRunnable("createDataOnParent") {
+
+      public void run() {
+        Cache cache = getCache();
+        LogWriterUtils.getLogWriter().info("creating data in " + PR_REGION_NAME);
+        Region region = cache.getRegion(PR_REGION_NAME);
+
+        for (int i = 0; i < NUM_BUCKETS; i++) {
+          region.put(i, "c");
+          assertEquals("For key " + i, "c", region.get(i));
+        }
+      }
+    };
+
+    //Create the PRs on two members
+    vm0.invoke(createParentPR);
+    vm1.invoke(createParentPR);
+    vm0.invoke(createChildPR);
+    vm1.invoke(createChildPR);
+
+    //Create some buckets.
+    createData(vm0, 0, NUM_BUCKETS, "a");
+    createData(vm0, 0, NUM_BUCKETS, "a", "region2");
+
+    //Close the members
+    closeCache(vm1);
+    closeCache(vm0);
+
+    try {
+      //Recreate the parent region. Try to make sure that
+      //the member with the latest copy of the buckets
+      //is the one that decides to throw away it's copy
+      //by starting it last.
+      AsyncInvocation async0 = vm0.invokeAsync(createParentPR);
+      AsyncInvocation async1 = vm1.invokeAsync(createParentPR);
+      async0.getResult(MAX_WAIT);
+      async1.getResult(MAX_WAIT);
+      //Now create the parent region on vm-2. vm-2 did not
+      //previous host the child region.
+      vm2.invoke(createParentPR);
+
+      AsyncInvocation async2 = null;
+      AsyncInvocation asyncPut = null;
+      if (concurrentCreateData) {
+        //Recreate the child region.
+        async1 = vm1.invokeAsync(createChildPR);
+        async0 = vm0.invokeAsync(createChildPR);
+        async2 = vm2.invokeAsync(createChildPR);
+
+        Thread.sleep(100);
+        asyncPut = vm0.invokeAsync(createDataOnParent);
+      } else {
+        vm0.invoke(createDataOnParent);
+      }
+      async0.getResult(MAX_WAIT);
+      async1.getResult(MAX_WAIT);
+      async2.getResult(MAX_WAIT);
+      asyncPut.getResult(MAX_WAIT);
+      //Validate the data
+      checkData(vm0, 0, NUM_BUCKETS, "c");
+      checkData(vm0, 0, NUM_BUCKETS, "a", "region2");
+      //Make sure we can actually use the buckets in the child region.
+      createData(vm0, 0, NUM_BUCKETS, "c", "region2");
+    } finally {
+      //Close the members
+      closeCache(vm1);
+      closeCache(vm0);
+      closeCache(vm2);
+    }
   }
 
   private RebalanceResults rebalance(VM vm) {
