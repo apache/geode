@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -35,6 +36,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
@@ -50,6 +52,7 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
   }
   
   @Override
+  @Category(FlakyTest.class)
   @Test
   public void testStartTwoLocators() throws Exception {
     super.testStartTwoLocators();
