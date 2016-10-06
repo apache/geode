@@ -39,6 +39,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.PartitionAttributes;
@@ -243,6 +244,190 @@ public class PRQueryDUnitHelper implements Serializable {
         assertTrue(
             "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region ref claims to be destroyed",
             !partitionedregion.isDestroyed());
+      }
+    };
+
+    return (CacheSerializableRunnable)createPrRegion;
+  }
+
+  /**
+   * This function creates a colocated pair of PR's given the scope & the
+   * redundancy parameters for the parent *
+   *
+   * @param regionName
+   * @param redundancy
+   * @param constraint
+   * @param makePersistent
+   * @return cacheSerializable object
+   */
+  public CacheSerializableRunnable getCacheSerializableRunnableForColocatedPRCreate(
+    final String regionName, final int redundancy, final Class constraint, boolean makePersistent) {
+
+    final String childRegionName = regionName + "Child";
+    final String diskName = "disk";
+    SerializableRunnable createPrRegion;
+    createPrRegion = new CacheSerializableRunnable(regionName) {
+      @Override
+      public void run2() throws CacheException
+      {
+
+        Cache cache = getCache();
+        Region partitionedregion = null;
+        Region childRegion = null;
+        AttributesFactory attr = new AttributesFactory();
+        attr.setValueConstraint(constraint);
+        if (makePersistent) {
+          DiskStore ds = cache.findDiskStore(diskName);
+          if (ds == null) {
+            ds = cache.createDiskStoreFactory().setDiskDirs(JUnit4CacheTestCase.getDiskDirs())
+                .create(diskName);
+          }
+          attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          attr.setDiskStoreName(diskName);
+        } else {
+          attr.setDataPolicy(DataPolicy.PARTITION);
+          attr.setDiskStoreName(null);
+        }
+
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        paf.setRedundantCopies(redundancy);
+        attr.setPartitionAttributes(paf.create());
+
+        // parent region
+        partitionedregion = cache.createRegion(regionName, attr.create());
+        assertNotNull(
+            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region "
+                + regionName + " not in cache", cache.getRegion(regionName));
+        assertNotNull(
+            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region ref null",
+            partitionedregion);
+        assertTrue(
+            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region ref claims to be destroyed",
+            !partitionedregion.isDestroyed());
+
+        // child region
+        attr.setValueConstraint(constraint);
+        paf.setColocatedWith(regionName);
+        attr.setPartitionAttributes(paf.create());
+        childRegion = cache.createRegion(childRegionName, attr.create());
+      }
+    };
+
+    return (CacheSerializableRunnable)createPrRegion;
+  }
+
+  /**
+   * This function creates the parent region of colocated pair of PR's given the scope & the
+   * redundancy parameters for the parent *
+   *
+   * @param regionName
+   * @param redundancy
+   * @param constraint
+   * @param makePersistent
+   * @return cacheSerializable object
+   */
+  public CacheSerializableRunnable getCacheSerializableRunnableForColocatedParentCreate(
+    final String regionName, final int redundancy, final Class constraint, boolean makePersistent) {
+
+    final String childRegionName = regionName + "Child";
+    final String diskName = "disk";
+    SerializableRunnable createPrRegion;
+    createPrRegion = new CacheSerializableRunnable(regionName + "-NoChildRegion") {
+      @Override
+      public void run2() throws CacheException
+      {
+
+        Cache cache = getCache();
+        Region partitionedregion = null;
+        Region childRegion = null;
+        AttributesFactory attr = new AttributesFactory();
+        attr.setValueConstraint(constraint);
+        if (makePersistent) {
+          DiskStore ds = cache.findDiskStore(diskName);
+          if (ds == null) {
+            ds = cache.createDiskStoreFactory().setDiskDirs(JUnit4CacheTestCase.getDiskDirs())
+                .create(diskName);
+          }
+          attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          attr.setDiskStoreName(diskName);
+        } else {
+          attr.setDataPolicy(DataPolicy.PARTITION);
+          attr.setDiskStoreName(null);
+        }
+
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        paf.setRedundantCopies(redundancy);
+        attr.setPartitionAttributes(paf.create());
+
+        // parent region
+        partitionedregion = cache.createRegion(regionName, attr.create());
+        assertNotNull(
+            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region "
+                + regionName + " not in cache", cache.getRegion(regionName));
+        assertNotNull(
+            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region ref null",
+            partitionedregion);
+        assertTrue(
+            "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region ref claims to be destroyed",
+            !partitionedregion.isDestroyed());
+      }
+    };
+
+    return (CacheSerializableRunnable)createPrRegion;
+  }
+
+  /**
+   * This function creates the parent region of colocated pair of PR's given the scope & the
+   * redundancy parameters for the parent *
+   *
+   * @param regionName
+   * @param redundancy
+   * @param constraint
+   * @param isPersistent
+   * @return cacheSerializable object
+   */
+  public CacheSerializableRunnable getCacheSerializableRunnableForColocatedChildCreate(
+    final String regionName, final int redundancy, final Class constraint, boolean isPersistent) {
+
+    final String childRegionName = regionName + "Child";
+    final String diskName = "disk";
+    SerializableRunnable createPrRegion;
+    createPrRegion = new CacheSerializableRunnable(regionName + "-ChildRegion") {
+      @Override
+      public void run2() throws CacheException
+      {
+
+        Cache cache = getCache();
+        Region partitionedregion = null;
+        Region childRegion = null;
+        AttributesFactory attr = new AttributesFactory();
+        attr.setValueConstraint(constraint);
+        if (isPersistent) {
+          DiskStore ds = cache.findDiskStore(diskName);
+          if (ds == null) {
+//            ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs())
+            ds = cache.createDiskStoreFactory().setDiskDirs(org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase.getDiskDirs())
+                .create(diskName);
+          }
+          attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+          attr.setDiskStoreName(diskName);
+        } else {
+          attr.setDataPolicy(DataPolicy.PARTITION);
+          attr.setDiskStoreName(null);
+        }
+
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        paf.setRedundantCopies(redundancy);
+        attr.setPartitionAttributes(paf.create());
+
+        // skip parent region creation
+        // partitionedregion = cache.createRegion(regionName, attr.create());
+
+        // child region
+        attr.setValueConstraint(constraint);
+        paf.setColocatedWith(regionName);
+        attr.setPartitionAttributes(paf.create());
+        childRegion = cache.createRegion(childRegionName, attr.create());
       }
     };
 

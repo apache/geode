@@ -24,6 +24,7 @@ import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -495,16 +496,20 @@ public class PRHARedundancyProvider
    *           redundancy.
    * @throws PartitionedRegionException
    *           if d-lock can not be acquired to create bucket.
-   * 
+   * @throws PartitionOfflineException
+   *           if persistent data recovery is not complete for a partitioned
+   *           region referred to in the query.
    */
   public InternalDistributedMember
     createBucketAtomically(final int bucketId,
                            final int newBucketSize,
                            final long startTime,
                            final boolean finishIncompleteCreation, String partitionName) throws PartitionedRegionStorageException,
-                                    PartitionedRegionException
+                                    PartitionedRegionException, PartitionOfflineException
   {
     final boolean isDebugEnabled = logger.isDebugEnabled();
+
+    prRegion.checkPROffline();
     
     // If there are insufficient stores throw *before* we try acquiring the
     // (very expensive) bucket lock or the (somewhat expensive) monitor on this

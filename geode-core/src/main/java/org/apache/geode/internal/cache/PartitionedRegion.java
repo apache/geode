@@ -28,6 +28,8 @@ import org.apache.geode.cache.client.internal.*;
 import org.apache.geode.cache.execute.*;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.partition.PartitionNotAvailableException;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.*;
 import org.apache.geode.cache.query.internal.index.*;
@@ -1395,6 +1397,21 @@ public class PartitionedRegion extends LocalRegion implements
   void setRecoveredFromDisk() {
     this.recoveredFromDisk = true;
     new UpdateAttributesProcessor(this).distribute(false);
+  }
+
+  /**
+   * Throw an exception if persistent data recovery from disk is not complete
+   * for this region.
+   *
+   * @throws PartitionOfflineException
+   */
+  public void checkPROffline() throws PartitionOfflineException {
+    if (getDataPolicy().withPersistence() && !recoveredFromDisk) {
+      Set<PersistentID> persistIds = new HashSet(getRegionAdvisor().advisePersistentMembers().values());
+      persistIds.removeAll(getRegionAdvisor().adviseInitializedPersistentMembers().values());
+      throw new PartitionOfflineException(persistIds, LocalizedStrings.PRHARedundancyProvider_PARTITIONED_REGION_0_OFFLINE_HAS_UNRECOVERED_PERSISTENT_DATA_1
+          .toLocalizedString(new Object[] { getFullPath(), persistIds}));
+    }
   }
 
   public final void updatePRConfig(PartitionRegionConfig prConfig,
@@ -3057,7 +3074,6 @@ public class PartitionedRegion extends LocalRegion implements
       final RetryTimeKeeper snoozer) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
-//    InternalDistributedSystem ids = (InternalDistributedSystem)this.cache.getDistributedSystem();
     RetryTimeKeeper localSnoozer = snoozer;
     // Prevent early access to buckets that are not completely created/formed
     // and

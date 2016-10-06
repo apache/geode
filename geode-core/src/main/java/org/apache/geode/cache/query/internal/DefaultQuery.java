@@ -27,11 +27,14 @@ import org.apache.geode.cache.client.internal.UserAttributes;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
@@ -581,7 +584,7 @@ public class DefaultQuery implements Query {
   }
 
 
-  private QueryExecutor checkQueryOnPR(Object[] parameters) throws RegionNotFoundException {
+  private QueryExecutor checkQueryOnPR(Object[] parameters) throws RegionNotFoundException, PartitionOfflineException {
 
     // check for PartititionedRegions. If a PartitionedRegion is referred to in the query,
     // then the following restrictions apply:
@@ -601,6 +604,7 @@ public class DefaultQuery implements Query {
         throw new RegionNotFoundException(LocalizedStrings.DefaultQuery_REGION_NOT_FOUND_0.toLocalizedString(regionPath));
       }
       if (rgn instanceof QueryExecutor) {
+        ((PartitionedRegion)rgn).checkPROffline();
         prs.add((QueryExecutor)rgn);
       }
     }
