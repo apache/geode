@@ -28,6 +28,6 @@ public class PulseAuthTest extends PulseAbstractTest {
 
   @BeforeClass
   public static void beforeClassSetup() throws Exception {
-    setUpServer("pulseUser", "12345", "/pulse-auth.json");
+    setUpServer("pulseUser", "12345", "pulse-auth.json");
   }
 }
