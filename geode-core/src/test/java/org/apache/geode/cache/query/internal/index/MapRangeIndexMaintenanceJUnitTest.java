@@ -82,7 +82,7 @@ public class MapRangeIndexMaintenanceJUnitTest{
     assertEquals(100, region.size());
     qs = CacheUtils.getQueryService();
     
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio p");
     
     assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
 
@@ -531,7 +531,622 @@ public class MapRangeIndexMaintenanceJUnitTest{
     assertEquals(1, results.size());
   }
 
+  @Test
+  public void updatingWithSameKeysDifferentValuesAfterRemovingShouldReinsertIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
 
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    map2.put("GOOG", 1);
+    region.put(1, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",3);
+    map3.put("IBM",4);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+                                .execute();
+    assertEquals(1, results.size());
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
+                                .execute();
+
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    region.destroy(1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",3);
+    map3.put("IBM",4);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(0, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+                                .execute();
+    assertEquals(1, results.size());
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
+                                .execute();
+
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingInplaceModificationShouldReinsertIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+
+
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    map1.remove("SUN");
+    map1.remove("IBM");
+    map1.put("GOOG",1);
+
+    region.put(1,p1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                               .execute();
+    assertEquals(0, results.size());
+
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",3);
+    map3.put("IBM",4);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(0, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+                                .execute();
+    assertEquals(1, results.size());
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
+                                .execute();
+
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void updatingWithSameKeysSameValuesAfterRemovingShouldReinsertIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    map2.put("GOOG", 1);
+    region.put(1, p2);
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",1);
+    map3.put("IBM",2);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+                                .execute();
+    assertEquals(1, results.size());
+
+  }
+
+  @Test
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    region.destroy(1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",1);
+    map3.put("IBM",2);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(1, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+                                .execute();
+    assertEquals(1, results.size());
+
+  }
+
+  @Test
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingInPlaceModificationShouldReinsertIndexMappings() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    map1.remove("SUN");
+    map1.remove("IBM");
+
+    map1.put("GOOG", 2);
+    region.put(1, p1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",1);
+    map3.put("IBM",2);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(1, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+                                .execute();
+    assertEquals(1, results.size());
+
+  }
+
+
+  @Test
+  public void updatingWithSameKeysSameValuesAfterRemovingShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    map2.put("SUN", 1);
+    map2.put("IBM", 2);
+    p2.positions = map1;
+    region.put(2, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(2, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map2.put("GOOG", 1);
+    region.put(1, p3);
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(1, results.size());
+
+    Portfolio p4 = new Portfolio(1, 1);
+    HashMap map4 = new HashMap();
+    p4.positions = map4;
+    map4.put("SUN",1);
+    map4.put("IBM",2);
+    region.put(1, p4);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(2, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+                                .execute();
+    assertEquals(2, results.size());
+
+  }
+
+  @Test
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    map2.put("SUN", 1);
+    map2.put("IBM", 2);
+    p2.positions = map1;
+    region.put(2, p2);
+
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(2, results.size());
+
+    region.destroy(1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(1, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",1);
+    map3.put("IBM",2);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(2, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+                                .execute();
+    assertEquals(2, results.size());
+
+  }
+
+  @Test
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingInPlaceModificationShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    map2.put("SUN", 1);
+    map2.put("IBM", 2);
+    p2.positions = map1;
+    region.put(2, p2);
+
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(2, results.size());
+
+    map1.remove("SUN");
+    map1.remove("IBM");
+
+    map1.put("GOOG", 2);
+    region.put(1, p1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(1, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",1);
+    map3.put("IBM",2);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(2, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
+                                .execute();
+    assertEquals(2, results.size());
+
+  }
+
+  @Test
+  public void updatingWithSameKeysDifferentValuesAfterRemovingShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",5);
+    map3.put("IBM",6);
+    region.put(2, p3);
+
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    p2.positions = map2;
+    map2.put("GOOG", 1);
+    region.put(1, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(0, results.size());
+
+    Portfolio p4 = new Portfolio(1, 1);
+    HashMap map4 = new HashMap();
+    p4.positions = map4;
+    map4.put("SUN",3);
+    map4.put("IBM",4);
+    region.put(1, p4);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(0, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+                                .execute();
+    assertEquals(1, results.size());
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
+                                .execute();
+
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    map2.put("SUN", 5);
+    map2.put("IBM", 6);
+    p2.positions = map2;
+    region.put(2, p2);
+
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    region.destroy(1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(0, results.size());
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",3);
+    map3.put("IBM",4);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(0, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+                                .execute();
+    assertEquals(1, results.size());
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
+                                .execute();
+
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingInplaceModificationShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+    AttributesFactory af = new AttributesFactory();
+    af.setScope(Scope.LOCAL);
+    region = CacheUtils.createRegion("portfolio", af.create(), false);
+    qs = CacheUtils.getQueryService();
+    Index keyIndex1 = qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p1 = new Portfolio(1, 1);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    p1.positions = map1;
+    region.put(1, p1);
+
+
+    Portfolio p2 = new Portfolio(1, 1);
+    HashMap map2 = new HashMap();
+    map2.put("SUN", 5);
+    map2.put("IBM", 6);
+    p2.positions = map2;
+    region.put(2, p2);
+
+    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                              .execute();
+    assertEquals(1, results.size());
+
+    map1.remove("SUN");
+    map1.remove("IBM");
+    map1.put("GOOG",1);
+
+    region.put(1,p1);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(0, results.size());
+
+
+    Portfolio p3 = new Portfolio(1, 1);
+    HashMap map3 = new HashMap();
+    p3.positions = map3;
+    map3.put("SUN",3);
+    map3.put("IBM",4);
+    region.put(1, p3);
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
+                                .execute();
+    assertEquals(0, results.size());
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
+                                .execute();
+    assertEquals(1, results.size());
+
+
+    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
+                                .execute();
+
+    assertEquals(0, results.size());
+  }
 
 
   /**

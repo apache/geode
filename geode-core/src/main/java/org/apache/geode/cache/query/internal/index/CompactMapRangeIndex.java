@@ -134,11 +134,14 @@ public class CompactMapRangeIndex extends AbstractMapIndex
       oldKeysAndValuesForEntry = Collections.EMPTY_MAP;
     }
     Set<Entry> removedKeyValueEntries = oldKeysAndValuesForEntry != null ? oldKeysAndValuesForEntry.entrySet() : Collections.EMPTY_SET;
-     for (Map.Entry<?, ?> keyValue : removedKeyValueEntries) {
+    Iterator<Entry> iterator = removedKeyValueEntries.iterator();
+     while (iterator.hasNext()) {
+       Entry keyValue = iterator.next();
       Object indexKey = keyValue.getKey() == null ? IndexManager.NULL : keyValue.getKey();
        if (!presentKeys.contains(indexKey)) {
-        CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(keyValue.getKey());
-        rg.removeMapping(keyValue.getValue(), entry);
+         CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(keyValue.getKey());
+         rg.removeMapping(keyValue.getValue(), entry);
+         iterator.remove();
       }
     }
   }
