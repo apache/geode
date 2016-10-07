@@ -22,6 +22,8 @@ import static org.apache.geode.internal.i18n.LocalizedStrings.*;
 import java.security.Principal;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -106,7 +108,11 @@ public class GMSAuthenticator implements Authenticator {
    * Method is package protected to be used in testing.
    */
   String authenticate(DistributedMember member, Properties credentials, Properties secProps) throws AuthenticationFailedException {
-    if (!securityService.isPeerSecurityRequired()) {
+    // For older systems, locator might be started without cache, so secureService may not be initialized here. We need to check
+    // if the passed in secProps has peer authenticator or not
+    String authMethod = secProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
+    // at this point,
+    if (!securityService.isPeerSecurityRequired() && StringUtils.isBlank(authMethod)) {
       return null;
     }
 
@@ -141,14 +147,13 @@ public class GMSAuthenticator implements Authenticator {
    * Method is package protected to be used in testing.
    */
   Principal invokeAuthenticator(Properties securityProps, DistributedMember member, Properties credentials) throws AuthenticationFailedException {
-      String authMethod = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
+    String authMethod = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
     org.apache.geode.security.Authenticator auth = null;
     try {
-      auth = SecurityService.getObjectOfTypeFromFactoryMethod(authMethod, org.apache.geode.security.Authenticator.class);
+      auth = SecurityService.getObjectOfType(authMethod, org.apache.geode.security.Authenticator.class);
 
       LogWriter logWriter = this.services.getLogWriter();
       LogWriter securityLogWriter = this.services.getSecurityLogWriter();
-
       auth.init(this.securityProps, logWriter, securityLogWriter); // this.securityProps contains security-ldap-basedn but security-ldap-baseDomainName is expected
       return auth.authenticate(credentials, member);
 
