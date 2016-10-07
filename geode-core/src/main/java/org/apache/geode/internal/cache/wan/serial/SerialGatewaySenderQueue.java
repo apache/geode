@@ -513,6 +513,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     //resetLastPeeked();
     while (batch.size() < size) {
       AsyncEvent object = peekAhead();
+      if (object != null && object instanceof GatewaySenderEventImpl) {
+        GatewaySenderEventImpl copy = ((GatewaySenderEventImpl)object).makeHeapCopyIfOffHeap();
+        if (copy == null) {
+          continue;
+        }
+        object = copy;
+      }
       // Conflate here
       if (object != null) {
         batch.add(object);
@@ -752,42 +759,17 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * 
    * @throws CacheException
    */
-
-  private Long getCurrentKey(){
-    long currentKey;
-    if (this.peekedIds.isEmpty()) {
-      currentKey = getHeadKey();
-    } else {
-      Long lastPeek = this.peekedIds.peekLast();
-      if (lastPeek == null) {
-        return null;
-      }
-      currentKey = lastPeek.longValue() + 1;
-    }
-    return currentKey;
-  }
-
-  private AsyncEvent getObjectInSerialSenderQueue(Long currentKey) {
-    AsyncEvent object = optimalGet(currentKey);
-    if ((null != object) && logger.isDebugEnabled()) {
-      logger.debug("{}: Peeked {}->{}", this, currentKey, object);
-    }
-    if (object != null && object instanceof GatewaySenderEventImpl) {
-      GatewaySenderEventImpl copy = ((GatewaySenderEventImpl)object).makeHeapCopyIfOffHeap();
-      if (copy == null) {
-        logger.debug("Unable to make heap copy and will not be added to peekedIds for object" +
-                     " : {} ",object.toString());
-      }
-      object = copy;
-    }
-    return object;
-  }
-
   private AsyncEvent peekAhead() throws CacheException {
     AsyncEvent object = null;
-    Long currentKey = getCurrentKey();
-    if(currentKey == null ){
-      return null;
+    long currentKey = -1;
+    if (this.peekedIds.isEmpty()) {
+    	currentKey = getHeadKey(); 
+    } else {
+    	Long lastPeek = this.peekedIds.peekLast();
+    	if (lastPeek == null) {
+    		return null;
+    	}
+    	currentKey = lastPeek.longValue() + 1;
     }
     
     
@@ -806,12 +788,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // does not save anything since GatewayBatchOp needs to GatewayEventImpl
     // in object form.
     while (before(currentKey, getTailKey())
-        && (null == (object = getObjectInSerialSenderQueue(currentKey)))) {
+    // use optimalGet here to fix bug 40654
+        && (object = optimalGet(Long.valueOf(currentKey))) == null) {
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Trying head key + offset: {}", this, currentKey);
       }
       currentKey = inc(currentKey);
-      object = getObjectInSerialSenderQueue(currentKey);
       if (this.stats != null) {
         this.stats.incEventsNotQueuedConflated();
       }
@@ -821,7 +803,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.debug("{}: Peeked {}->{}", this, currentKey, object);
     }
     if (object != null) {
-      this.peekedIds.add(currentKey);
+      this.peekedIds.add(Long.valueOf(currentKey));
     }
     return object;
   }
