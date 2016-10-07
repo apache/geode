@@ -19,8 +19,8 @@
 <!-- A sample GemFire declarative caching XML File -->
 
 <!DOCTYPE cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
-  "http://www.gemstone.com/dtd/cache5_1.dtd">
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd">
 <cache search-timeout="60" lock-lease="300" copy-on-read="true">
 
   <region name="root">

@@ -337,7 +337,7 @@ public class JarClassLoaderJUnitTest {
     stringBuffer.append("<?xml version=\"1.0\"?>");
     stringBuffer.append("<!DOCTYPE cache PUBLIC");
     stringBuffer.append("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"");
-    stringBuffer.append("  \"http://www.gemstone.com/dtd/cache6_6.dtd\">");
+    stringBuffer.append("  \"http://www.gemstone.com/dtd/cache7_0.dtd\">");
     stringBuffer.append("<cache>");
     stringBuffer.append("  <function-service>");
     stringBuffer.append("    <function>");
@@ -415,7 +415,7 @@ public class JarClassLoaderJUnitTest {
     stringBuffer.append("<?xml version=\"1.0\"?>");
     stringBuffer.append("<!DOCTYPE cache PUBLIC");
     stringBuffer.append("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"");
-    stringBuffer.append("  \"http://www.gemstone.com/dtd/cache6_6.dtd\">");
+    stringBuffer.append("  \"http://www.gemstone.com/dtd/cache7_0.dtd\">");
     stringBuffer.append("<cache>");
     stringBuffer.append("  <function-service>");
     stringBuffer.append("    <function>");

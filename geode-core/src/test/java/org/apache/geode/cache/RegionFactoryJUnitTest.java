@@ -305,8 +305,8 @@ public class RegionFactoryJUnitTest {
       DistributionConfig.DEFAULT_CACHE_XML_FILE.createNewFile();
       FileWriter f = new FileWriter(DistributionConfig.DEFAULT_CACHE_XML_FILE);
       f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"
-            + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN\"\n"
-            + "  \"http://www.gemstone.com/dtd/cache6_5.dtd\">\n"
+            + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"\n"
+            + "  \"http://www.gemstone.com/dtd/cache7_0.dtd\">\n"
             + "<cache>\n"
             + " <region-attributes id=\""
             + getName()
@@ -380,8 +380,8 @@ public class RegionFactoryJUnitTest {
       FileWriter f = new FileWriter(xmlFile);
       final String attrsId = getName() + "-attrsId"; 
       f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"
-              + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN\"\n"
-              + "  \"http://www.gemstone.com/dtd/cache6_5.dtd\">\n"
+              + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"\n"
+              + "  \"http://www.gemstone.com/dtd/cache7_0.dtd\">\n"
               + "<cache>\n"
               + " <region-attributes id=\""
               + attrsId

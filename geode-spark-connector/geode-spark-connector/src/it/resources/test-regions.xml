@@ -17,8 +17,8 @@
 -->
 
 <!DOCTYPE cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
-  "http://www.gemstone.com/dtd/cache6_5.dtd" >
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd" >
 
 <cache>
   <!-- test region for OQL test -->

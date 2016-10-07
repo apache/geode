@@ -147,8 +147,8 @@ public class PdxSerializableJUnitTest {
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
       pw.println("<!DOCTYPE cache PUBLIC");
-      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN\"");
-      pw.println("  \"http://www.gemstone.com/dtd/cache6_6.dtd\">");
+      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"");
+      pw.println("  \"http://www.gemstone.com/dtd/cache7_0.dtd\">");
       pw.println("<cache>");
       pw.println("  <disk-store name=\"r2DS\"/>");
       pw.println("  <disk-store name=\"pdxDS\"/>");
@@ -224,8 +224,8 @@ public class PdxSerializableJUnitTest {
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
       pw.println("<!DOCTYPE cache PUBLIC");
-      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN\"");
-      pw.println("  \"http://www.gemstone.com/dtd/cache6_6.dtd\">");
+      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"");
+      pw.println("  \"http://www.gemstone.com/dtd/cache7_0.dtd\">");
       pw.println("<cache>");
       pw.println("  <disk-store name=\"r2DS\"/>");
       pw.println("  <pdx persistent=\"true\"/>");
