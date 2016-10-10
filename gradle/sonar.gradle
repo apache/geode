@@ -42,12 +42,6 @@ project("extensions/geode-modules-assembly") {
   }
 }
 
-project("extensions/geode-modules-hibernate") {
-  sonarqube {
-    skipProject = true
-  }
-}
-
 project("extensions/geode-modules-session") {
   sonarqube {
     skipProject = true
