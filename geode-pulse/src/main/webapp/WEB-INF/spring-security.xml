@@ -28,7 +28,6 @@
 		<csrf disabled="true"/>
 		<!-- Can be invoked w/o auth -->
 		<intercept-url pattern="/Login.html" access="permitAll"  />
-		<intercept-url pattern="/pulse/pulseVersion" access="permitAll" />
 		<intercept-url pattern="/pulse/authenticateUser" access="permitAll" />
 		<intercept-url pattern="/pulse/pulseProductSupport" access="permitAll" />
 		<!-- Can be invoked w/o auth -->
