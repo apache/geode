@@ -54,7 +54,7 @@ import org.apache.geode.test.dunit.VM;
  *
  */
 public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
-  protected static final int NUM_BUCKETS = 7;
+  protected static final int NUM_BUCKETS = 10;
 
   @After
   public void cleanupRebalanceCallback() {
