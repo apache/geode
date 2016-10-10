@@ -13,6 +13,8 @@ build/
 build-eclipse/
 /tags
 
+
+
 *.iml
 *.ipr
 *.iws
@@ -25,3 +27,4 @@ build-eclipse/
 *.orig
 geode-spark-connector/**/target/
 geode-spark-connector/project/project/
+geode-pulse/screenshots/
