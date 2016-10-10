@@ -246,6 +246,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating async event queues correctly updates the shared configuration.
    */
+  @Category(FlakyTest.class) // GEODE-1976
   @Test
   public void testCreateUpdatesSharedConfig() throws IOException {
     disconnectAllFromDS();

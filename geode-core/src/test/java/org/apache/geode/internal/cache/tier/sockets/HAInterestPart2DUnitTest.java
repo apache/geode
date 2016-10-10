@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -332,6 +332,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * Tests if failure occurred in Interest recovery thread, then it should select
    * new endpoint to register interest
    */
+  @Category(FlakyTest.class) // GEODE-108
   @Test
   public void testInterestRecoveryFailure() throws Exception {
     IgnoredException.addIgnoredException("Server unreachable");

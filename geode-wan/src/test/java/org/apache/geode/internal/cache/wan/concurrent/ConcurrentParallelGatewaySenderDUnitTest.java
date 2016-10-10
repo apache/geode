@@ -586,6 +586,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName(), 1000 ));
   }
   
+  @Category(FlakyTest.class) // GEODE-1586
   @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException(SocketException.class.getName()); // for Connection reset

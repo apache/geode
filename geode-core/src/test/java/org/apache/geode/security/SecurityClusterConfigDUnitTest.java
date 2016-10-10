@@ -42,6 +42,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
@@ -80,6 +81,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     IgnoredException.removeAllExpectedExceptions();
   }
 
+  @Category(FlakyTest.class) // GEODE-1977
   @Test
   public void testStartServerWithClusterConfig() throws Exception {
     // set up server with security
@@ -134,6 +136,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     assertTrue(secProps.containsKey("security-post-processor"));
   }
 
+  @Category(FlakyTest.class) // GEODE-1975
   @Test
   public void serverWithDifferentSecurityManagerShouldThrowException() {
     // set up server with security
@@ -183,7 +186,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-
+  @Category(FlakyTest.class) // GEODE-1974
   @Test
   public void serverConnectingToSecuredLocatorMustUseClusterConfig() {
     // set up server with security
