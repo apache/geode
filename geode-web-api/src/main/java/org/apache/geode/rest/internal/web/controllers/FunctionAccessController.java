@@ -26,6 +26,23 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -36,21 +53,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * The FunctionsController class serving REST Requests related to the function execution
@@ -98,11 +100,9 @@ public class FunctionAccessController extends AbstractBaseController {
   })
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> list() {
-    securityService.authorizeDataRead();
-    if (logger.isDebugEnabled()) {
-      logger.debug("Listing all registered Functions in GemFire...");
-    }
+    logger.debug("Listing all registered Functions in GemFire...");
 
     final Map<String, Function> registeredFunctions = FunctionService.getRegisteredFunctions();
     String listFunctionsAsJson = JSONUtils.formulateJsonForListFunctionsCall(registeredFunctions.keySet());
@@ -138,6 +138,7 @@ public class FunctionAccessController extends AbstractBaseController {
   })
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
   public ResponseEntity<String> execute(@PathVariable("functionId") String functionId,
       @RequestParam(value = "onRegion", required = false) String region,
       @RequestParam(value = "onMembers", required = false) final String[] members,
@@ -145,15 +146,13 @@ public class FunctionAccessController extends AbstractBaseController {
       @RequestParam(value = "filter", required = false) final String[] filter,
       @RequestBody(required = false) final String argsInBody
   ) {
-    securityService.authorizeDataWrite();
     Execution function = null;
     functionId = decode(functionId);
 
     if (StringUtils.hasText(region)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Function ({}) with arguments ({}) on Region ({})...", functionId,
-            ArrayUtils.toString(argsInBody), region);
-      }
+      logger.debug("Executing Function ({}) with arguments ({}) on Region ({})...", functionId,
+        ArrayUtils.toString(argsInBody), region);
+
 
       region = decode(region);
       try {
@@ -162,20 +161,18 @@ public class FunctionAccessController extends AbstractBaseController {
         throw new GemfireRestException(String.format("The Region identified by name (%1$s) could not found!", region), fe);
       }
     } else if (ArrayUtils.isNotEmpty(members)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Function ({}) with arguments ({}) on Member ({})...", functionId,
+      logger.debug("Executing Function ({}) with arguments ({}) on Member ({})...", functionId,
             ArrayUtils.toString(argsInBody), ArrayUtils.toString(members));
-      }
+
       try {
         function = FunctionService.onMembers(getMembers(members));
       } catch (FunctionException fe) {
         throw new GemfireRestException("Could not found the specified members in distributed system!", fe);
       }
     } else if (ArrayUtils.isNotEmpty(groups)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Function ({}) with arguments ({}) on Groups ({})...", functionId,
+      logger.debug("Executing Function ({}) with arguments ({}) on Groups ({})...", functionId,
             ArrayUtils.toString(argsInBody), ArrayUtils.toString(groups));
-      }
+
       try {
         function = FunctionService.onMembers(groups);
       } catch (FunctionException fe) {
@@ -183,10 +180,8 @@ public class FunctionAccessController extends AbstractBaseController {
       }
     } else {
       //Default case is to execute function on all existing data node in DS, document this.
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Function ({}) with arguments ({}) on all Members...", functionId,
+      logger.debug("Executing Function ({}) with arguments ({}) on all Members...", functionId,
             ArrayUtils.toString(argsInBody));
-      }
 
       try {
         function = FunctionService.onMembers(getAllMembersInDS());
@@ -196,10 +191,9 @@ public class FunctionAccessController extends AbstractBaseController {
     }
 
     if (!ArrayUtils.isEmpty(filter)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing Function ({}) with filter ({})", functionId,
+      logger.debug("Executing Function ({}) with filter ({})", functionId,
             ArrayUtils.toString(filter));
-      }
+
       Set filter1 = ArrayUtils.asSet(filter);
       function = function.withFilter(filter1);
     }

@@ -24,6 +24,17 @@ import java.util.Set;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
@@ -36,15 +47,6 @@ import org.apache.geode.rest.internal.web.controllers.support.RestServersResultC
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 
 /**
@@ -75,11 +77,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> regions() {
-    securityService.authorizeDataRead();
-    if(logger.isDebugEnabled()){
-      logger.debug("Listing all resources (Regions) in GemFire...");
-    }
+    logger.debug("Listing all resources (Regions) in GemFire...");
     final HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri());
     final Set<Region<?, ?>> regions = getCache().rootRegions();
@@ -106,12 +106,10 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "Region does not exist" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception" )   
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> keys(@PathVariable("region") String region){
-    securityService.authorizeRegionRead(region);
-    if(logger.isDebugEnabled()){
-      logger.debug("Reading all Keys in Region ({})...", region);
-    }
-    
+    logger.debug("Reading all Keys in Region ({})...", region);
+
     region = decode(region);
     
     Object[] keys = getKeys(region, null);  
@@ -142,14 +140,11 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "Region or key(s) does not exist" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception" )      
   } )
+  @PreAuthorize("@securityService.authorizeKeys('WRITE', #region, #keys)")
   public ResponseEntity<?> delete(@PathVariable("region") String region,
                                   @PathVariable("keys") final String[] keys){
-    for (String key : keys)
-      securityService.authorizeRegionWrite(region, key);
-    if(logger.isDebugEnabled()){
-      logger.debug("Delete data for key {} on region {}", ArrayUtils.toString((Object[])keys), region);
-    }
-    
+    logger.debug("Delete data for key {} on region {}", ArrayUtils.toString((Object[])keys), region);
+
     region = decode(region);
     
     deleteValues(region, (Object[])keys);
@@ -174,11 +169,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "Region does not exist" ),
     @ApiResponse( code = 500, message = "if GemFire throws an error or exception" )   
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE', #regon)")
   public ResponseEntity<?> delete(@PathVariable("region") String region) {
-    securityService.authorizeRegionWrite(region);
-    if(logger.isDebugEnabled()){
-      logger.debug("Deleting all data in Region ({})...", region);
-    }
+    logger.debug("Deleting all data in Region ({})...", region);
 
     region = decode(region);
     
@@ -216,11 +209,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 500, message = "if GemFire throws an error or exception" )
   } )
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   public ResponseEntity<?> servers() {
-    securityService.authorizeClusterRead();
-    if(logger.isDebugEnabled()){
-      logger.debug("Executing function to get REST enabled gemfire nodes in the DS!");
-    }
+    logger.debug("Executing function to get REST enabled gemfire nodes in the DS!");
 
     Execution function;
     try {

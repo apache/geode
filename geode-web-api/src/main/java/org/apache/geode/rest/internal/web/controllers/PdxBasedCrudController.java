@@ -24,17 +24,12 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
-import org.apache.geode.rest.internal.web.controllers.support.RegionData;
-import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +37,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.RegionData;
+import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
 
 /**
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on region
@@ -93,16 +95,15 @@ public class PdxBasedCrudController extends CommonCrudController {
     @ApiResponse( code = 409, message = "Key already exist in region."),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")   
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE', #region)")
   public ResponseEntity<?> create(@PathVariable("region") String region,
       @RequestParam(value = "key", required = false) String key,
       @RequestBody final String json) {
-    securityService.authorizeRegionWrite(region);
     key = generateKey(key);
-    
-    if(logger.isDebugEnabled()){
-      logger.debug("Posting (creating/putIfAbsent) JSON document ({}) to Region ({}) with Key ({})...",
+
+    logger.debug("Posting (creating/putIfAbsent) JSON document ({}) to Region ({}) with Key ({})...",
           json, region, key);
-    }
+
     region = decode(region);
     Object existingPdxObj = null;
     
@@ -147,12 +148,11 @@ public class PdxBasedCrudController extends CommonCrudController {
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")    
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> read(@PathVariable("region") String region,
       @RequestParam(value = "limit", defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit) {
-    securityService.authorizeRegionRead(region);
-    if(logger.isDebugEnabled()){
-      logger.debug("Reading all data in Region ({})...", region);
-    }
+    logger.debug("Reading all data in Region ({})...", region);
+
     region = decode(region);
       
     Map<Object, Object> valueObjs = null;
@@ -227,17 +227,13 @@ public class PdxBasedCrudController extends CommonCrudController {
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")  
   } )
+  @PreAuthorize("@securityService.authorizeKeys('READ', #region, #keys)")
   public ResponseEntity<?> read(
       @PathVariable("region") String region,
       @PathVariable("keys") final String[] keys,
       @RequestParam(value = "ignoreMissingKey", required = false ) final String ignoreMissingKey) {
-
-    for (String key : keys)
-      securityService.authorizeRegionRead(region, key);
-    if(logger.isDebugEnabled()){
-      logger.debug("Reading data for keys ({}) in Region ({})",
+    logger.debug("Reading data for keys ({}) in Region ({})",
           ArrayUtils.toString(keys), region);
-    }
     
     final HttpHeaders headers = new HttpHeaders();
     region = decode(region);
@@ -315,15 +311,13 @@ public class PdxBasedCrudController extends CommonCrudController {
     @ApiResponse( code = 409, message = "For CAS, @old value does not match to the current value in region" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")
   } )
+  @PreAuthorize("@securityService.authorizeKeys('WRITE', #region, #keys)")
   public ResponseEntity<?> update(@PathVariable("region") String region,
       @PathVariable("keys") final String[] keys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
       @RequestBody final String json) {
-    for (String key : keys)
-      securityService.authorizeRegionWrite(region, key);
-    if(logger.isDebugEnabled()){
-      logger.debug("updating key(s) for region ({}) ", region);
-    }
+    logger.debug("updating key(s) for region ({}) ", region);
+
     region = decode(region);
     
     if(keys.length > 1){
@@ -349,11 +343,10 @@ public class PdxBasedCrudController extends CommonCrudController {
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")    
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> size(@PathVariable("region") String region) {
-    securityService.authorizeRegionRead(region);
-    if(logger.isDebugEnabled()){
-      logger.debug("Determining the number of entries in Region ({})...", region);
-    }
+    logger.debug("Determining the number of entries in Region ({})...", region);
+
     region = decode(region);
       
     final HttpHeaders headers = new HttpHeaders();

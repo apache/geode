@@ -23,6 +23,21 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -38,19 +53,6 @@ import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 
 /**
@@ -103,12 +105,10 @@ public class QueryAccessController extends AbstractBaseController {
   } )
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> list() {
-    securityService.authorizeDataRead();
-    if (logger.isDebugEnabled()) {
-      logger.debug("Listing all parametrized Queries in GemFire...");
-    }
-    
+    logger.debug("Listing all parametrized Queries in GemFire...");
+
     final Region<String, String> parametrizedQueryRegion = getQueryStore(PARAMETERIZED_QUERIES_REGION);
     
     String queryListAsJson =  JSONUtils.formulateJsonForListQueriesCall(parametrizedQueryRegion);
@@ -137,16 +137,14 @@ public class QueryAccessController extends AbstractBaseController {
     @ApiResponse( code = 409, message = "QueryId already assigned to other query." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
   public ResponseEntity<?> create(@RequestParam("id") final String queryId,
                                   @RequestParam(value = "q", required = false) String oqlInUrl,
                                   @RequestBody(required = false) final String oqlInBody)
   {
-    securityService.authorizeDataWrite();
     final String oqlStatement = validateQuery(oqlInUrl, oqlInBody);
-    
-    if (logger.isDebugEnabled()) {
-      logger.debug("Creating a named, parametrized Query ({}) with ID ({})...", oqlStatement, queryId);
-    }
+    logger.debug("Creating a named, parametrized Query ({}) with ID ({})...", oqlStatement, queryId);
+
 
     // store the compiled OQL statement with 'queryId' as the Key into the hidden, ParameterizedQueries Region...
     final String existingOql = createNamedQuery(PARAMETERIZED_QUERIES_REGION, queryId, oqlStatement);
@@ -181,11 +179,10 @@ public class QueryAccessController extends AbstractBaseController {
   } )
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<String> runAdhocQuery(@RequestParam("q") String oql) {
-    securityService.authorizeDataRead();
-    if (logger.isDebugEnabled()) {
-      logger.debug("Running an adhoc Query ({})...", oql);
-    }
+    logger.debug("Running an adhoc Query ({})...", oql);
+
     oql = decode(oql);
     final Query query = getQueryService().newQuery(oql);
     
@@ -237,13 +234,12 @@ public class QueryAccessController extends AbstractBaseController {
   } )
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
   public ResponseEntity<String> runNamedQuery(@PathVariable("query") String queryId,
                                               @RequestBody String arguments)
   {
-    securityService.authorizeDataWrite();
-    if (logger.isDebugEnabled()) {
-      logger.debug("Running named Query with ID ({})...", queryId);
-    }
+    logger.debug("Running named Query with ID ({})...", queryId);
+
     queryId = decode(queryId);
     
     if (arguments != null) {
@@ -314,15 +310,14 @@ public class QueryAccessController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "queryId does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )   
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
   public ResponseEntity<?> update( @PathVariable("query") final String queryId,
                                    @RequestParam(value = "q", required = false) String oqlInUrl,
                                    @RequestBody(required = false) final String oqlInBody) {
-    securityService.authorizeDataWrite();
     final String oqlStatement = validateQuery(oqlInUrl, oqlInBody);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Updating a named, parametrized Query ({}) with ID ({})...", oqlStatement, queryId);
-    }
+    logger.debug("Updating a named, parametrized Query ({}) with ID ({})...", oqlStatement, queryId);
+
 
     // update the OQL statement with 'queryId' as the Key into the hidden, ParameterizedQueries Region...
     checkForQueryIdExist(PARAMETERIZED_QUERIES_REGION, queryId);
@@ -350,12 +345,10 @@ public class QueryAccessController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "queryId does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception" )   
   } )
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
   public ResponseEntity<?> delete(@PathVariable("query") final String queryId) {
-    securityService.authorizeDataWrite();
-    if (logger.isDebugEnabled()) {
-      logger.debug("Deleting a named, parametrized Query with ID ({}).", queryId);
-    }
-    
+    logger.debug("Deleting a named, parametrized Query with ID ({}).", queryId);
+
     //delete the OQL statement with 'queryId' as the Key into the hidden,
     // ParameterizedQueries Region...
     deleteNamedQuery(PARAMETERIZED_QUERIES_REGION, queryId);

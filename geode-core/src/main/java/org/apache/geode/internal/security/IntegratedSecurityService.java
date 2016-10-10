@@ -27,6 +27,18 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.ShiroException;
+import org.apache.shiro.config.Ini.Section;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.support.SubjectThreadState;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.util.ThreadState;
+
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -44,17 +56,6 @@ import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.SecurityManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.ShiroException;
-import org.apache.shiro.config.Ini.Section;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.subject.support.SubjectThreadState;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.util.ThreadState;
 
 public class IntegratedSecurityService implements SecurityService{
 
@@ -270,11 +271,11 @@ public class IntegratedSecurityService implements SecurityService{
     authorize(resource, operation, null);
   }
 
-  private void authorize(String resource, String operation, String regionName){
+  public void authorize(String resource, String operation, String regionName){
     authorize(resource, operation, regionName, null);
   }
 
-  private void authorize(String resource, String operation, String regionName, String key) {
+  public void authorize(String resource, String operation, String regionName, String key) {
     regionName = StringUtils.stripStart(regionName, "/");
     authorize(new ResourcePermission(resource, operation, regionName, key));
   }
