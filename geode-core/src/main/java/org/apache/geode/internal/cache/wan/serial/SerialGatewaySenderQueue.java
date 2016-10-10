@@ -811,7 +811,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         logger.trace("{}: Trying head key + offset: {}", this, currentKey);
       }
       currentKey = inc(currentKey);
-      object = getObjectInSerialSenderQueue(currentKey);
       if (this.stats != null) {
         this.stats.incEventsNotQueuedConflated();
       }
