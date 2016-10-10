@@ -198,7 +198,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     passwordElement.sendKeys(password);
     passwordElement.submit();
 
-    Thread.sleep(3000);
+    driver.get(pulseURL + "/clusterDetail.html");
     WebElement userNameOnPulsePage = (new WebDriverWait(driver, 10)).until(new ExpectedCondition<WebElement>() {
       @Override
       public WebElement apply(WebDriver d) {
@@ -207,7 +207,6 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     });
     assertNotNull(userNameOnPulsePage);
     driver.navigate().refresh();
-    Thread.sleep(7000);
   }
 
   private static void setUpWebDriver() {
@@ -229,6 +228,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
   @Before
   public void setup() throws Exception {
+    driver.get(pulseURL + "/clusterDetail.html");
     // Make sure we go to the home page first
     searchByXPathAndClick(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
   }
@@ -974,5 +974,12 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
     // Assert data regions are displayed
     assertTrue(driver.findElement(By.id("treeDemo_1")).isDisplayed());
+  }
+
+  @Test
+  public void userCannotGetToPulseDetails() {
+    driver.get(pulseURL + "/pulse/pulseVersion");
+
+    assertTrue(driver.getPageSource().contains("sourceRevision"));
   }
 }
