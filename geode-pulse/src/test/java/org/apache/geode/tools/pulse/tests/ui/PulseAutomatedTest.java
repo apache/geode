@@ -1,5 +1,4 @@
 /*
- *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +23,7 @@
  *
  * @since GemFire   2014-04-02
  */
-package org.apache.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests.ui;
 
 import static org.junit.Assert.*;
 
@@ -32,6 +31,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -40,6 +40,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import org.apache.geode.test.junit.categories.UITest;
+import org.apache.geode.tools.pulse.tests.PulseTestData;
+import org.apache.geode.tools.pulse.tests.PulseTestLocators;
 
 @Category(UITest.class)
 public class PulseAutomatedTest extends PulseAbstractTest {
@@ -531,7 +533,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
   @Test
   public void testHotSpotOptPrsntOnTopologyView() {
     navigateToTopologyTreeView();
-    assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));
+    Assert.assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));
   }
 
   @Test

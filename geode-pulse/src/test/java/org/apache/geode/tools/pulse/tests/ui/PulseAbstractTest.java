@@ -1,5 +1,4 @@
 /*
- *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +15,7 @@
  * limitations under the License.
  *
  */
-package org.apache.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests.ui;
 
 import static org.junit.Assert.*;
 
@@ -57,6 +56,9 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.test.junit.rules.RetryRule;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.tests.JMXProperties;
+import org.apache.geode.tools.pulse.tests.PulseTestLocators;
+import org.apache.geode.tools.pulse.tests.Server;
 
 @SuppressWarnings("deprecated")
 public abstract class PulseAbstractTest extends PulseBaseTest {
