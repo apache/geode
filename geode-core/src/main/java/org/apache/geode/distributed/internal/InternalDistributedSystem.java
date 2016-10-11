@@ -98,15 +98,13 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.statistics.DummyStatisticsImpl;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
-import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.internal.util.concurrent.StoppableCondition;
-import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -733,39 +731,45 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
    */
   private void startInitLocator() throws InterruptedException {
     String locatorString = this.originalConfig.getStartLocator();
-    if (locatorString.length() > 0) {
-      // when reconnecting we don't want to join with a colocated locator unless
-      // there is a quorum of the old members available
-      if (attemptingToReconnect && !this.isConnected) {
-        if (this.quorumChecker != null) {
-          logger.info("performing a quorum check to see if location services can be started early");
-          if (!quorumChecker.checkForQuorum(3 * this.config.getMemberTimeout())) {
-            logger.info("quorum check failed - not allowing location services to start early");
-            return;
+    if (locatorString.length()==0) {
+      return;
+    }
+
+    // when reconnecting we don't want to join with a colocated locator unless
+    // there is a quorum of the old members available
+    if (attemptingToReconnect && !this.isConnected) {
+      if (this.quorumChecker != null) {
+        logger.info("performing a quorum check to see if location services can be started early");
+        if (!quorumChecker.checkForQuorum(3 * this.config.getMemberTimeout())) {
+          logger.info("quorum check failed - not allowing location services to start early");
+          return;
+        }
+        logger.info("Quorum check passed - allowing location services to start early");
+      }
+    }
+    DistributionLocatorId locId = new DistributionLocatorId(locatorString);
+    try {
+      this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is after IDS has created LogWriterLoggers and Appenders
+        this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and Appenders
+        locId.getHost(), locId.getHostnameForClients(), this.originalConfig.toProperties(), false);
+
+      // if locator is started this way, cluster config is not enabled, set the flag correctly
+      this.startedLocator.getConfig().setEnableClusterConfiguration(false);
+
+      if (locId.isPeerLocator()) {
+        boolean startedPeerLocation = false;
+        try {
+          this.startedLocator.startPeerLocation(true);
+          startedPeerLocation = true;
+        } finally {
+          if (!startedPeerLocation) {
+            this.startedLocator.stop();
           }
-          logger.info("Quorum check passed - allowing location services to start early");
         }
       }
-      DistributionLocatorId locId = new DistributionLocatorId(locatorString);
-      try {
-        this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is after IDS has created LogWriterLoggers and Appenders
-          this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and Appenders
-          locId.getHost(), locId.getHostnameForClients(), this.originalConfig.toProperties(), false);
-        if (locId.isPeerLocator()) {
-          boolean startedPeerLocation = false;
-          try {
-            this.startedLocator.startPeerLocation(true);
-            startedPeerLocation = true;
-          } finally {
-            if (!startedPeerLocation) {
-              this.startedLocator.stop();
-            }
-          }
-        }
-      } catch (IOException e) {
-        throw new GemFireIOException(LocalizedStrings.
-          InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE.toLocalizedString(), e);
-      }
+    } catch (IOException e) {
+      throw new GemFireIOException(LocalizedStrings.
+        InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE.toLocalizedString(), e);
     }
   }
 
