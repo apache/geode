@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+
+import com.jayway.awaitility.Awaitility;
 
 import org.junit.After;
 import org.junit.Before;
@@ -436,49 +440,31 @@ public class HARegionQueueJUnitTest {
    * tests whether expiry of entry in the regin queue occurs as expected
    */
   @Test
-  public void testExpiryPositive() {
-    try {     
-      HARegionQueueAttributes haa = new HARegionQueueAttributes();
-      haa.setExpiryTime(1);
-      //HARegionQueue regionqueue = new HARegionQueue("testing", cache, haa);      
-      HARegionQueue regionqueue = createHARegionQueue("testing",haa);
-      regionqueue.put(new ConflatableObject("key", "value", new EventID(
-          new byte[] { 1 }, 1, 1), true, "testing"));
-      Map map = (Map)regionqueue.getConflationMapForTesting().get("testing");
-      assertTrue(!map.isEmpty());
-      Thread.sleep(3000);
-      assertTrue(" Expected region size to be zero since expiry time has been exceeded but it is  "
-                  + regionqueue.getRegion().keys().size(), regionqueue
-                  .getRegion().keys().size() == 0);
-
-      assertTrue(map.isEmpty());      
-    }
-    catch (Exception e) {
-      throw new AssertionError(" test failed due to ", e);
-    }
+  public void testExpiryPositive() throws InterruptedException, IOException, ClassNotFoundException {
+    HARegionQueueAttributes haa = new HARegionQueueAttributes();
+    haa.setExpiryTime(1);
+    HARegionQueue regionqueue = createHARegionQueue("testing", haa);
+    long start = System.currentTimeMillis();
+    regionqueue.put(new ConflatableObject("key", "value", new EventID(
+      new byte[] { 1 }, 1, 1), true, "testing"));
+    Map map = (Map) regionqueue.getConflationMapForTesting().get("testing");
+    waitAtLeast(1000, start, () -> {
+      assertEquals(Collections.EMPTY_MAP, map);
+      assertEquals(Collections.EMPTY_SET, regionqueue.getRegion().keys());
+    });
   }
 
   /**
-   * tests whether things are not deleted before expiry
+   * Wait until a given runnable stops throwing exceptions. It should take
+   * at least minimumElapsedTime after the supplied start time to happen.
+   *
+   * This is useful for validating that an entry doesn't expire until
+   * a certain amount of time has passed
    */
-  @Test
-  public void testExpiryNegative() {
-    try {
-      HARegionQueueAttributes haa = new HARegionQueueAttributes();
-      haa.setExpiryTime(100);
-      //RegionQueue regionqueue = new HARegionQueue("testing", cache, haa);
-      HARegionQueue regionqueue = createHARegionQueue("testing",haa);
-      regionqueue.put(new ConflatableObject("key", "value", new EventID(
-          new byte[] { 1 }, 1, 1), false, "testing"));
-      Thread.sleep(1200);
-      assertTrue(" Expected region size to be 2, since expiry time has not been exceeded but it is : "
-                  + regionqueue.getRegion().keys().size(), regionqueue
-                  .getRegion().keys().size() == 2);
-
-    }
-    catch (Exception e) {
-      throw new AssertionError(" test failed due to ", e);
-    }
+  protected void waitAtLeast(final int minimumElapsedTIme, final long start, final Runnable runnable) {
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(runnable);
+    long elapsed = System.currentTimeMillis() - start;
+    assertTrue(elapsed >= minimumElapsedTIme);
   }
 
   /**
@@ -486,82 +472,34 @@ public class HARegionQueueJUnitTest {
    * expected
    */
   @Test
-  public void testExpiryPositiveWithConflation() {
-    try {
-      HARegionQueueAttributes haa = new HARegionQueueAttributes();
-      haa.setExpiryTime(2);
-      //HARegionQueue regionqueue = new HARegionQueue("testing", cache, haa);
-      HARegionQueue regionqueue = createHARegionQueue("testing",haa);
-      regionqueue.put(new ConflatableObject("key", "value", new EventID(
-          new byte[] { 1 }, 1, 1), true, "testing"));
-      regionqueue.put(new ConflatableObject("key", "newValue", new EventID(
-          new byte[] { 1 }, 1, 2), true, "testing"));
-      assertTrue(" Expected region size not to be zero since expiry time has not been exceeded but it is not so ",
-              !(regionqueue.size() == 0));
-      assertTrue(" Expected the available id's size not  to be zero since expiry time has not  been exceeded but it is not so ",
-              !(regionqueue.getAvalaibleIds().size() == 0));
-      assertTrue(" Expected conflation map size not  to be zero since expiry time has not been exceeded but it is not so "
-                  + ((((Map)(regionqueue.getConflationMapForTesting()
-                      .get("testing"))).get("key"))),
-              !((((Map)(regionqueue.getConflationMapForTesting().get("testing")))
-                  .get("key")) == null));
-      assertTrue(" Expected eventID map size not to be zero since expiry time has not been exceeded but it is not so ",
-              !(regionqueue.getEventsMapForTesting().size() == 0));
-      Thread.sleep(5000);
+  public void testExpiryPositiveWithConflation() throws InterruptedException, IOException, ClassNotFoundException {
+    HARegionQueueAttributes haa = new HARegionQueueAttributes();
+    haa.setExpiryTime(1);
+    HARegionQueue regionqueue = createHARegionQueue("testing", haa);
+    long start = System.currentTimeMillis();
+    regionqueue.put(new ConflatableObject("key", "value", new EventID(
+      new byte[] { 1 }, 1, 1), true, "testing"));
+    regionqueue.put(new ConflatableObject("key", "newValue", new EventID(
+      new byte[] { 1 }, 1, 2), true, "testing"));
+    assertTrue(" Expected region size not to be zero since expiry time has not been exceeded but it is not so ",
+      !(regionqueue.size() == 0));
+    assertTrue(
+      " Expected the available id's size not  to be zero since expiry time has not  been exceeded but it is not so ",
+      !(regionqueue.getAvalaibleIds().size() == 0));
+    assertTrue(" Expected conflation map size not  to be zero since expiry time has not been exceeded but it is not so "
+        + ((((Map) (regionqueue.getConflationMapForTesting()
+        .get("testing"))).get("key"))),
+      !((((Map) (regionqueue.getConflationMapForTesting().get("testing")))
+        .get("key")) == null));
+    assertTrue(" Expected eventID map size not to be zero since expiry time has not been exceeded but it is not so ",
+      !(regionqueue.getEventsMapForTesting().size() == 0));
 
-      ThreadIdentifier tid = new ThreadIdentifier(new byte[] { 1 }, 1);
-      System.out.println(" it still contains thread id : "
-          + regionqueue.getRegion().containsKey(tid));
-      assertTrue(" Expected region size to be zero since expiry time has been exceeded but it is not so ",
-              regionqueue.getRegion().keys().size() == 0);
-      assertTrue(" Expected the available id's size to be zero since expiry time has been exceeded but it is not so ",
-              regionqueue.getAvalaibleIds().size() == 0);
-      System.out.println((((Map)(regionqueue.getConflationMapForTesting()
-          .get("testing"))).get("key")));
-      assertTrue(" Expected conflation map size to be zero since expiry time has been exceeded but it is not so ",
-              ((((Map)(regionqueue.getConflationMapForTesting().get("testing")))
-                  .get("key")) == null));
-      assertTrue(" Expected eventID to be zero since expiry time has been exceeded but it is not so ",
-              (regionqueue.getEventsMapForTesting().size() == 0));
-    }
-    catch (Exception e) {
-      throw new AssertionError("test failed due to ", e);
-    }
-  }
-
-  /**
-   * test no expiry of events or data if expiry time not exceeded
-   */
-  @Test
-  public void testExpiryNegativeWithConflation() {
-    try {
-      HARegionQueueAttributes haa = new HARegionQueueAttributes();
-      haa.setExpiryTime(100);
-      //RegionQueue regionqueue = new HARegionQueue("testing", cache, haa);
-      HARegionQueue regionqueue = createHARegionQueue("testing",haa);
-      regionqueue.put(new ConflatableObject("key", "value", new EventID(
-          new byte[] { 1 }, 1, 1), true, "testing"));
-      regionqueue.put(new ConflatableObject("key", "newValue", new EventID(
-          new byte[] { 1 }, 1, 2), true, "testing"));
-      Thread.sleep(1200);
-      assertTrue(
-              " Expected region size not to be zero since expiry time has not been exceeded but it is not so ",
-              !(regionqueue.size() == 0));
-      assertTrue(
-              " Expected the available id's size not  to be zero since expiry time has not  been exceeded but it is not so ",
-              !(regionqueue.getAvalaibleIds().size() == 0));
-      assertTrue(
-              " Expected conflation map size not  to be zero since expiry time has not been exceeded but it is not so ",
-              !(((Map)(regionqueue
-                  .getConflationMapForTesting().get("testing"))).size() == 0));
-      assertTrue(
-              " Expected eventID map size not to be zero since expiry time has not been exceeded but it is not so ",
-              !(regionqueue.getEventsMapForTesting().size() == 0));
-
-    }
-    catch (Exception e) {
-      throw new AssertionError("test failed due to ", e);
-    }
+    waitAtLeast(1000, start, () -> {
+      assertEquals(Collections.EMPTY_SET, regionqueue.getRegion().keys());
+      assertEquals(Collections.EMPTY_SET, regionqueue.getAvalaibleIds());
+      assertEquals(Collections.EMPTY_MAP, regionqueue.getConflationMapForTesting().get("testing"));
+      assertEquals(Collections.EMPTY_MAP, regionqueue.getEventsMapForTesting());
+    });
   }
 
   /**
@@ -571,7 +509,7 @@ public class HARegionQueueJUnitTest {
   public void testNoExpiryOfThreadId() {
     try {
       HARegionQueueAttributes haa = new HARegionQueueAttributes();
-      haa.setExpiryTime(3);
+      haa.setExpiryTime(45);
       //RegionQueue regionqueue = new HARegionQueue("testing", cache, haa);
       HARegionQueue regionqueue = createHARegionQueue("testing",haa);
       EventID ev1 = new EventID(new byte[] { 1 }, 1, 1);
@@ -581,9 +519,11 @@ public class HARegionQueueJUnitTest {
       Conflatable cf2 = new ConflatableObject("key", "value2", ev2, true,
           "testing");
       regionqueue.put(cf1);
-      Thread.sleep(2000);
+      final long tailKey = regionqueue.tailKey.get();
       regionqueue.put(cf2);
-      Thread.sleep(1500);
+      //Invalidate will trigger the expiration of the entry
+      //See HARegionQueue.createCacheListenerForHARegion
+      regionqueue.getRegion().invalidate(tailKey);
       assertTrue(
               " Expected region size not to be zero since expiry time has not been exceeded but it is not so ",
               !(regionqueue.size() == 0));
@@ -637,27 +577,22 @@ public class HARegionQueueJUnitTest {
    * corresponding put comes
    */
   @Test
-  public void testOnlyQRMComing() {
-    try {
-      HARegionQueueAttributes harqAttr = new HARegionQueueAttributes();
-      harqAttr.setExpiryTime(1);
-      //RegionQueue regionqueue = new HARegionQueue("testing", cache, harqAttr);
-      HARegionQueue regionqueue = createHARegionQueue("testing",harqAttr);
-      EventID id = new EventID(new byte[] { 1 }, 1, 1);
-      regionqueue.removeDispatchedEvents(id);
-      assertTrue(
-          " Expected testingID to be present since only QRM achieved ",
-          regionqueue.getRegion().containsKey(
-              new ThreadIdentifier(new byte[] { 1 }, 1)));
-      Thread.sleep(2500);
-      assertTrue(
-              " Expected testingID not to be present since it should have expired after 2.5 seconds",
-              !regionqueue.getRegion().containsKey(
-                  new ThreadIdentifier(new byte[] { 1 }, 1)));
-    }
-    catch (Exception e) {
-      throw new AssertionError("test failed due to ", e);
-    }
+  public void testOnlyQRMComing() throws InterruptedException, IOException, ClassNotFoundException {
+    HARegionQueueAttributes harqAttr = new HARegionQueueAttributes();
+    harqAttr.setExpiryTime(1);
+    //RegionQueue regionqueue = new HARegionQueue("testing", cache, harqAttr);
+    HARegionQueue regionqueue = createHARegionQueue("testing",harqAttr);
+    EventID id = new EventID(new byte[] { 1 }, 1, 1);
+    long start = System.currentTimeMillis();
+    regionqueue.removeDispatchedEvents(id);
+    assertTrue(
+        " Expected testingID to be present since only QRM achieved ",
+        regionqueue.getRegion().containsKey(
+            new ThreadIdentifier(new byte[] { 1 }, 1)));
+    waitAtLeast(1000, start, () ->
+    assertTrue(" Expected testingID not to be present since it should have expired after 2.5 seconds",
+            !regionqueue.getRegion().containsKey(
+                new ThreadIdentifier(new byte[] { 1 }, 1))));
   }
 
   /**
@@ -1821,28 +1756,25 @@ public class HARegionQueueJUnitTest {
    * system property to set expiry
    */
   @Test
-  public void testExpiryUsingSystemProperty() {
-    try {      
-      System.setProperty(HARegionQueue.REGION_ENTRY_EXPIRY_TIME,"1");      
-      
-      HARegionQueueAttributes haa = new HARegionQueueAttributes();            
-      HARegionQueue regionqueue = createHARegionQueue("testing",haa);
-      regionqueue.put(new ConflatableObject("key", "value", new EventID(
-          new byte[] { 1 }, 1, 1), true, "testing"));
-      Map map = (Map)regionqueue.getConflationMapForTesting().get("testing");
-      assertTrue(!map.isEmpty());
-      Thread.sleep(3000);
-      assertTrue(
-              " Expected region size to be zero since expiry time has been exceeded but it is  "
-                  + regionqueue.getRegion().keys().size(), regionqueue
-                  .getRegion().keys().size() == 0);
+  public void testExpiryUsingSystemProperty() throws InterruptedException, IOException, ClassNotFoundException {
+    try {
+      System.setProperty(HARegionQueue.REGION_ENTRY_EXPIRY_TIME, "1");
 
-      assertTrue(map.isEmpty());      
+      HARegionQueueAttributes haa = new HARegionQueueAttributes();
+      HARegionQueue regionqueue = createHARegionQueue("testing", haa);
+      long start = System.currentTimeMillis();
+      regionqueue.put(new ConflatableObject("key", "value", new EventID(
+        new byte[] { 1 }, 1, 1), true, "testing"));
+      Map map = (Map) regionqueue.getConflationMapForTesting().get("testing");
+      assertTrue(!map.isEmpty());
+
+      waitAtLeast(1000, start, () -> {
+        assertEquals(Collections.EMPTY_MAP, map);
+        assertEquals(Collections.EMPTY_SET, regionqueue.getRegion().keys());
+      });
+    } finally {
       // [yogi]system property set to null, to avoid using it in the subsequent tests   
       System.setProperty(HARegionQueue.REGION_ENTRY_EXPIRY_TIME,"");
-    }
-    catch (Exception e) {
-      throw new AssertionError(" test failed due to ", e);
     }
   }
 
@@ -1862,11 +1794,9 @@ public class HARegionQueueJUnitTest {
     int updatedMessageSyncInterval = 10;
     cache.setMessageSyncInterval(updatedMessageSyncInterval);
 
-    // sleep for a time just more the intial messageSyncInterval1 , so that
-    // the value is updated in QRM run loop.
-    Thread.sleep((initialMessageSyncInterval + 1) * 1000);
 
-    assertEquals("messageSyncInterval not updated.",
-        updatedMessageSyncInterval, HARegionQueue.getMessageSyncInterval());
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).until( () ->
+      assertEquals("messageSyncInterval not updated.",
+        updatedMessageSyncInterval, HARegionQueue.getMessageSyncInterval()));
   }
 }
