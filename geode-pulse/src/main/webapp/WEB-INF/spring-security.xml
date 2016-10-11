@@ -47,6 +47,11 @@
 		<form-login login-page="/Login.html"
 			authentication-failure-handler-ref="authenticationFailureHandler"
 			default-target-url="/clusterDetail.html" />
+		<headers>
+			<frame-options policy="DENY" />
+			<content-type-options  />
+			<xss-protection enabled="true" block="true" />
+		</headers>
 		
 		<logout logout-url="/pulse/clusterLogout" success-handler-ref="customLogoutSuccessHandler"/>
 		
