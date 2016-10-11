@@ -16,24 +16,10 @@
  */
 package org.apache.geode.cache.lucene.internal.configuration;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
-import static org.apache.geode.distributed.ConfigurationProperties.DEPLOY_WORKING_DIR;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.AvailablePortHelper.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -256,7 +242,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     if (addGroup) {
       nodeProperties.setProperty(GROUPS, groupName);
     }
-    return ls.getNodeVM(vmIndex, nodeProperties);
+    return ls.getServerVM(vmIndex, nodeProperties);
   }
 
   private VM startLocatorWithClusterConfigurationEnabled() throws Exception {

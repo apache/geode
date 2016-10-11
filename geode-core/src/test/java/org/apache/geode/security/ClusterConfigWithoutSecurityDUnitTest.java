@@ -18,19 +18,21 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.assertj.core.api.Java6Assertions.*;
 import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -40,7 +42,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 
-public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTestCase {
+public class ClusterConfigWithoutSecurityDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
   public LocatorServerConfigurationRule lsRule = new LocatorServerConfigurationRule(this);
@@ -49,35 +51,52 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
   public void before() throws Exception {
     IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
     IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+    lsRule.getLocatorVM(new Properties());
+  }
+
+  @After
+  public void after() {
+    IgnoredException.removeAllExpectedExceptions();
+  }
+
+  // when locator is not secured, a secured server should be allowed to start with its own security manager
+  // if use-cluster-config is false
+  @Test
+  public void serverShouldBeAllowedToStartWithSecurityIfNotUsingClusterConfig() throws Exception {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    lsRule.getLocatorVM(props);
-  }
 
-  @Test
-  // if a secured locator is started without cluster config service, the server is free to use any security manager
-  // or no security manager at all. Currently this is valid, but not recommended.
-  public void testStartServerWithClusterConfig() throws Exception {
-
-    Properties props = new Properties();
-    // the following are needed for peer-to-peer authentication
-    props.setProperty("security-username", "cluster");
-    props.setProperty("security-password", "cluster");
-    props.setProperty("security-manager", SampleSecurityManager.class.getName());
-    props.setProperty("use-cluster-configuration", "true");
+    props.setProperty("use-cluster-configuration", "false");
 
     // initial security properties should only contain initial set of values
     InternalDistributedSystem ds = lsRule.getSystem(props);
-    assertEquals(3, ds.getSecurityProperties().size());
+    assertEquals(2, ds.getSecurityProperties().size());
 
     CacheFactory.create(ds);
 
-    // after cache is created, we got the security props passed in by cluster config
+    // after cache is created, the configuration won't chagne
     Properties secProps = ds.getSecurityProperties();
-    assertEquals(3, secProps.size());
-    assertEquals(SampleSecurityManager.class.getName(), secProps.getProperty("security-manager"));
-    assertFalse(secProps.containsKey("security-post-processor"));
+    assertEquals(2, secProps.size());
+    assertEquals(SimpleSecurityManager.class.getName(), secProps.getProperty("security-manager"));
+    assertEquals(PDXPostProcessor.class.getName(), secProps.getProperty("security-post-processor"));
   }
+
+
+  @Test
+  // when locator is not secured, server should not be secured if use-cluster-config is true
+  public void serverShouldNotBeAllowedToStartWithSecurityIfUsingClusterConfig() {
+    Properties props = new Properties();
+
+    props.setProperty("security-manager", "mySecurityManager");
+    props.setProperty("use-cluster-configuration", "true");
+
+    InternalDistributedSystem ds = lsRule.getSystem(props);
+
+    assertThatThrownBy(() -> CacheFactory.create(ds)).isInstanceOf(GemFireConfigException.class)
+                                                     .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
+                                                       .toLocalizedString());
+
+  }
+
 }
