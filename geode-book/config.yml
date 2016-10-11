@@ -1,0 +1,23 @@
+book_repo: apache/incubator-geode/geode-book
+
+public_host: http://geode.incubator.apache.org/docs/
+
+sections:
+- repository:
+    name: geode-docs
+  directory: docs
+  subnav_template: geode-subnav
+
+template_variables:
+  support_url: http://geode.incubator.apache.org/community
+  product_url: http://geode.incubator.apache.org/
+  book_title: Apache Geode (Incubating) Documentation (Develop)
+  cse_id: 012029519579280034868:3hzywhss5ik
+  support_link: <a href="http://geode.incubator.apache.org/community" target="_blank">Community</a>
+  support_call_to_action: <a href="http://geode.incubator.apache.org/community" target="_blank">Need Help?</a>
+  product_link: <div class="header-item"><a href="http://geode.incubator.apache.org/">Back to Geode Page</a></div>
+  ga_account_id: UA-39702075-1
+  domain_name: apache.org
+  book_title_short: Geode Docs (Develop)
+
+broken_link_exclusions: iefix|using_custom_classes|arrowhead|cppdocs|DotNetDocs
