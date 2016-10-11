@@ -21,8 +21,12 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -44,7 +48,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
@@ -185,6 +191,57 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     });
     vm0.invoke(removeExceptionTag1(expectedExceptions));
     vm1.invoke(removeExceptionTag1(expectedExceptions));
+  }
+
+  private static final AtomicBoolean calledCreateCache = new AtomicBoolean();
+  private static final AtomicBoolean calledCloseCache = new AtomicBoolean();
+  private static CacheLifecycleListener cll;
+
+  @Test
+  public void testShutdownAllInterruptsCacheCreation()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm2 = host.getVM(2);
+    closeAllCache();
+    // in vm0 create the cache in a way that hangs until
+    // it sees that a shutDownAll is in progress
+    AsyncInvocation<?> asyncCreate = vm0.invokeAsync(() -> {
+      cll = new CacheLifecycleListener() {
+        @Override
+        public void cacheCreated(GemFireCacheImpl cache) {
+          calledCreateCache.set(true);
+          Awaitility.await().atMost(90, TimeUnit.SECONDS).until(() -> cache.isCacheAtShutdownAll());
+        }
+
+        @Override
+        public void cacheClosed(GemFireCacheImpl cache) {
+          calledCloseCache.set(true);
+        }
+      };
+      GemFireCacheImpl.addCacheLifecycleListener(cll);
+      getCache();
+    });
+    try {
+      boolean vm0CalledCreateCache = vm0.invoke(() -> {
+        Awaitility.await().atMost(90, TimeUnit.SECONDS).until(() -> calledCreateCache.get());
+        return calledCreateCache.get();
+      });
+      assertTrue(vm0CalledCreateCache);
+      shutDownAllMembers(vm2, 1);
+      asyncCreate.get(60, TimeUnit.SECONDS);
+      boolean vm0CalledCloseCache = vm0.invoke(() -> {
+        Awaitility.await().atMost(90, TimeUnit.SECONDS).until(() -> calledCloseCache.get());
+        return calledCloseCache.get();
+      });
+      assertTrue(vm0CalledCloseCache);
+    } finally {
+      vm0.invoke(() -> {
+        calledCreateCache.set(false);
+        calledCloseCache.set(false);
+        GemFireCacheImpl.removeCacheLifecycleListener(cll);
+      });
+    }
   }
 
   @Test
