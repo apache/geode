@@ -1,5 +1,3 @@
 r301 %r{/releases/latest/javadoc/(.*)}, 'http://geode.incubator.apache.org/releases/latest/javadoc/$1'
-r301 %r{/docs-gemfire/latest/cpp_api/(.*)}, 'http://data-docs-samples.cfapps.io/docs-gemfire/latest/cpp_api/$1'
-r301 %r{/docs-gemfire/latest/net_api/(.*)}, 'http://data-docs-samples.cfapps.io/docs-gemfire/latest/net_api/$1'
 rewrite '/', '/docs/about_geode.html'
 rewrite '/index.html', '/docs/about_geode.html'
