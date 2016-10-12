@@ -569,9 +569,7 @@ public class ExecuteFunctionOp {
               else {
                 DistributedMember memberID = (DistributedMember)((ArrayList)resultResponse)
                     .get(1);
-                synchronized (resultCollector) {
-                  resultCollector.addResult(memberID, result);                    
-                }
+                resultCollector.addResult(memberID, result);
                 FunctionStats.getFunctionStats(this.functionId)
                     .incResultsReceived();
               }

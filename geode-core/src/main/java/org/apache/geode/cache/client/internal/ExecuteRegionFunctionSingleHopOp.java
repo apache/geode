@@ -396,10 +396,8 @@ public class ExecuteRegionFunctionSingleHopOp {
               else {
                 DistributedMember memberID = (DistributedMember)((ArrayList)resultResponse)
                     .get(1);
-                synchronized (this.resultCollector) {
                   this.resultCollector
                       .addResult(memberID, result);
-                }
                 FunctionStats.getFunctionStats(this.functionId,
                     this.executor.getRegion().getSystem()).incResultsReceived();
               }
