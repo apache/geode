@@ -1,0 +1,42 @@
+---
+title:  Transient Region and Entry Statistics
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+For replicated, distributed, and local regions, Geode provides a standard set of statistics for the region and its entries.
+
+Geode gathers these statistics when the `--enable-statistics` parameter of the `create region` command of `gfsh` is set to true or in cache.xml the region attribute `statistics-enabled` is set to true.
+
+**Note:**
+Unlike other Geode statistics, these region and entry statistics are not archived and cannot be charted.
+
+**Note:**
+Enabling these statistics requires extra memory per entry. See [Memory Requirements for Cached Data](../../reference/topics/memory_requirements_for_cache_data.html#calculating_memory_requirements).
+
+These are the transient statistics gathered for all but partitioned regions:
+
+-   **Hit and miss counts**. For the entry, the hit count is the number of times the cached entry was accessed through the `Region.get` method and the miss count is the number of times these hits did not find a valid value. For the region these counts are the totals for all entries in the region. The API provides `get` methods for the hit and miss counts, a convenience method that returns the hit-to-miss ratio, and a method for zeroing the counts.
+-   **Last accessed time**. For the entry, this is the last time a valid value was retrieved from the locally cached entry. For the region, this is the most recent "last accessed time" for all entries contained in the region. This statistic is used for idle timeout expiration activities.
+-   **Last modified time**. For the entry, this is the last time the entry value was updated (directly or through distribution) due to a load, create, or put operation. For the region, this is the most recent "last modified time" for all entries contained in the region. This statistic is used for time to live and idle timeout expiration activities.
+
+The hit and miss counts collected in these statistics can be useful for fine-tuning your system’s caches. If you have a region’s entry expiration enabled, for example, and see a high ratio of misses to hits on the entries, you might choose to increase the expiration times.
+
+Retrieve region and entry statistics through the `getStatistics` methods of the `Region` and `Region.Entry` objects.
+
+

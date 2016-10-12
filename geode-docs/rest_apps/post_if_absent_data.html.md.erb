@@ -1,0 +1,144 @@
+---
+title:  POST /gemfire-api/v1/{region}?key=&lt;key&gt;
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Create (put-if-absent) data in region.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}?key=<key>
+```
+
+## Parameters
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="34%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Example Values</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>key</td>
+<td><strong>Optional.</strong> If you do not specify a key in the URL, a key will automatically be generated for you.</td>
+<td>123
+<p>myOrder</p></td>
+</tr>
+</tbody>
+</table>
+
+## Example Request
+
+``` pre
+Request Payload: application/json
+POST /gemfire-api/v1/orders?key=2
+
+Accept: application/json
+Content-Type: application/json
+{
+    "@type":  "org.apache.geode.web.rest.domain.Order",
+     "purchaseOrderNo": 112,
+     "customerId": 1012,
+     "description":  "Purchase Order for myCompany",
+     "orderDate":  "02/10/2014",
+     "deliveryDate":  "02/20/2014",
+     "contact":  "John Doe",
+     "email":  "John.Doe@example.com",
+     "phone":  "01-2048096",
+     "totalPrice": 225,
+     "items": [
+        {
+             "itemNo": 1,
+             "description":  "Product2, PartA",
+             "quantity": 10,
+             "unitPrice": 5,
+             "totalPrice": 50
+        },
+        {
+             "itemNo": 2,
+             "description":  "Product2, PartB",
+             "quantity": 20,
+             "unitPrice": 20,
+             "totalPrice": 400
+        }
+    ]
+}
+```
+
+## Example Success Response
+
+``` pre
+Response Payload: null
+201 CREATED
+Location: http://localhost:8080/gemfire-api/v1/orders/2
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                                                      |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| 400 BAD REQUEST           | Returned if JSON content is malformed.                                                                                           |
+| 404 NOT FOUND             | Returned if the specified region does not exist.                                                                                 |
+| 409 CONFLICT              | Returned if the provided key already exists in the region.                                                                       |
+| 500 INTERNAL SERVER ERROR | Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. |
+
+## Example Error Response
+
+``` pre
+409 Conflict
+Location:http://localhost:8080/gemfire-api/v1/orders/2
+Content-Type: application/json
+
+{
+     "purchaseOrderNo": 112,
+     "customerId": 1012,
+     "description":  "Purchase Order for myCompany",
+     "orderDate":  "02/10/2014",
+     "deliveryDate":  "02/20/2014",
+     "contact":  "John Doe",
+     "email":  "John.Doe@example.com",
+     "phone":  "01-2048096",
+     "totalPrice": 225,
+     "items": [
+        {
+             "itemNo": 1,
+             "description":  "Product2, PartA",
+             "quantity": 10,
+             "unitPrice": 5,
+             "totalPrice": 50
+        },
+        {
+             "itemNo": 2,
+             "description":  "Product2, PartB",
+             "quantity": 20,
+             "unitPrice": 20,
+             "totalPrice": 400
+        }
+    ]
+}
+```

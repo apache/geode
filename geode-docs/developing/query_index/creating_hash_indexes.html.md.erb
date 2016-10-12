@@ -1,0 +1,68 @@
+---
+title:  Creating Hash Indexes
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode supports the creation of hash indexes for the purposes of performing equality-based queries.
+
+## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_8A927DFB29364DA7856E7FE122FC1654" class="no-quick-link"></a>Why Create a HashIndex
+
+By creating a hash index, you can vastly improve the memory usage of your index. If you are doing equality based queries, your indexing footprint is significantly reduced. As an example, previously when you created an index that contained string fields, copies of the strings were included in the index. By using hash indexes, we ensure that indexed expressions are canonicalized and stored in the index as pointers to the objects lying in the region. In internal test cases we have seen improvements in the 30% range depending on the keys and data being used.
+
+**Note:**
+Your performance results may vary depending on the keys and data being indexed.
+
+## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_2EF23A54378E44FFBF1BEB32E41ABD61" class="no-quick-link"></a>Performance Considerations
+
+The performance of put operations when using a hash index should be comparable to other indexes or slightly slower. Queries themselves are expected to be slightly slower due to the implementation of hash index and the cost of recalculating the key on request, which is the trade-off for the space savings that using a hash index provides.
+
+## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_800401C53E5841269F389329B8A4CDF3" class="no-quick-link"></a>Limitations
+
+The following limitations must be considered when creating hash indexes:
+
+-   You can only use hash indexes with equals and not equals queries.
+-   Hash index maintenance will be slower than the other indexes due to synchronized add methods.
+-   Hash indexes cannot be maintained asynchronously. If you attempt to create a hash index on a region with asynchronous set as the maintenance mode, an exception will be thrown.
+-   You cannot use hash indexes for queries with multiple iterators or nested collections.
+
+## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_CA2476E015D14DE7B522377C931A8492" class="no-quick-link"></a>Examples of Creating a Hash Index
+
+**Using the Java API:**
+
+``` pre
+QueryService qs = cache.getQueryService();
+ qs.createHashIndex("myHashIndex", "mktValue", "/exampleRegion");
+```
+
+**Using gfsh:**
+
+``` pre
+gfsh> create index --name=myHashIndex --expression=mktValue --region=/exampleRegion
+```
+
+**Using cache.xml:**
+
+``` pre
+<region name=exampleRegion>
+ <region-attributes . . . >
+ </region-attributes>
+ <index name="myHashIndex" from-clause="/exampleRegion p" expression="p.mktValue" type="hash"/>
+ ...
+</region>
+```

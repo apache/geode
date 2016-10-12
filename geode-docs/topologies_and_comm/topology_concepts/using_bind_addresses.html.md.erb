@@ -1,0 +1,112 @@
+---
+title:  Using Bind Addresses
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You use a bind address configuration to send network traffic through non-default network cards and to distribute the load of network traffic for Geode across multiple cards. If no bind address setting is found, Geode uses the host machine's default address.
+
+<a id="using_bind_addresses__section_6063D5004787488A90EC03085991F902"></a>
+Host machines transmit data to the network and receive data from the network through one or more network cards, also referred to as network interface cards (NIC) or LAN cards. A host with more than one card is referred to as a multi-homed host. On multi-homed hosts, one network card is used by default. You can use bind addresses to configure your Geode members to use non-default network cards on a multi-homed host.
+
+**Note:**
+When you specify a non-default card address for a process, all processes that connect to it need to use the same address in their connection settings. For example, if you use bind addresses for your server locators, you must use the same addresses to configure the server pools in your clients.
+
+Use IPv4 or IPv6 numeric address specifications for your bind address settings. For information on these specifications, see [Choosing Between IPv4 and IPv6](IPv4_and_IPv6.html). Do not use host names for your address specifications. Host names resolve to default machine addresses.
+
+## <a id="using_bind_addresses__section_63589355AB684F739145E9185806D023" class="no-quick-link"></a>Peer and Server Communication
+
+You can configure peer, and server communication so that each communication type uses its own address or types use the same address. If no setting is found for a specific communication type, Geode uses the host machine's default address.
+
+**Note:**
+Bind addresses set through the APIs, like `CacheServer` and `DistributedSystem`, take precedence over the settings discussed here. If your settings are not working, check to make sure there are no bind address settings being done through API calls.
+
+This table lists the settings used for peer and server communication, ordered by precedence. For example, for server communication, Geode searches first for the cache-server bind address, then the `gfsh start                     server` `server-bind-address` setting, and so on until a setting is found or all possibilities are exhausted.
+
+| Property Setting Ordered by Precedence               | Peer | Server | Gateway Receiver | Syntax                                            |
+|------------------------------------------------------|------|--------|------------------|---------------------------------------------------|
+| cache.xml &lt;cache-server&gt; bind-address          |      | X      |                  | &lt;cache-server&gt;bind-address=*address*        |
+| gfsh start server command-line --server-bind-address |      | X      | X                | gfsh start server --server-bind-address=*address* |
+| gemfire.properties server-bind-address               |      | X      | X                | server-bind-address=*address*                     |
+| gemfire.properties bind-address                      | X    | X      | X                | bind-address=*address*                            |
+
+For example, a member started with these configurations in its `gemfire.properties` and `cache.xml` files will use two separate addresses for peer and server communication:
+
+``` pre
+// gemfire.properties setting for peer communication
+bind-address=192.0.2.0
+```
+
+``` pre
+//cache.xml settings
+<cache>
+
+// Server communication
+  <cache-server bind-address="192.0.2.1" ...
+
+  <region ...
+```
+
+## Gateway Receiver Communication
+
+If you are using multi-site (WAN) topology, you can also configure gateway receiver communication (in addition to peer and server communication) so that each communication type uses its own address.
+
+This table lists the settings used for peer, server, and gateway receiver communication, ordered by precedence. For example, for gateway receiver communication, Geode searches first for a `cache.xml` `<gateway-receiver>` `bind-address` setting. If that is not set, Geode searches for the `gfsh start server` `server-bind-address` setting, and so on until a setting is found or all possibilities are exhausted.
+
+| Property Setting Ordered by Precedence               | Peer | Server | Gateway Receiver | Syntax                                            |
+|------------------------------------------------------|------|--------|------------------|---------------------------------------------------|
+| cache.xml &lt;gateway-receiver&gt; bind-address      |      |        | X                | &lt;gateway-receiver&gt;bind-address=*address*    |
+| cache.xml &lt;cache-server&gt; bind-address          |      | X      |                  | &lt;cache-server&gt;bind-address=*address*        |
+| gfsh start server command-line --server-bind-address |      | X      | X                | gfsh start server --server-bind-address=*address* |
+| gemfire.properties server-bind-address               |      | X      | X                | server-bind-address=*address*                     |
+| gemfire.properties bind-address                      | X    | X      | X                | bind-address=*address*                            |
+
+For example, a member started with these configurations in its `gemfire.properties` and `cache.xml` files will use three separate addresses for peer, server, and gateway receiver communication:
+
+``` pre
+// gemfire.properties setting for peer communication
+bind-address=192.0.2.0
+```
+
+``` pre
+//cache.xml settings
+<cache>
+// Gateway receiver configuration
+  <gateway-receiver start-port="1530" end-port="1551" bind-address="192.0.2.2"/>
+
+// Server communication
+  <cache-server bind-address="192.0.2.1" ...
+
+  <region ...
+```
+
+## <a id="using_bind_addresses__section_B58645AD8C504AF6822315BB94BA2E0B" class="no-quick-link"></a>Locator Communication
+
+Set the locator bind address using one of these methods:
+
+-   On the gfsh command line, specify the bind address when you start the locator, the same as you specify any other address:
+
+    ``` pre
+    gfsh>start locator --name=my_locator --bind-address=ip-address-to-bind --port=portNumber
+    ```
+
+-   Inside a Geode application, take one of the following actions:
+    -   Automatically start a co-located locator using the gemfire property `start-locator`, and specifying the bind address for it in that property setting.
+    -   Use `org.apache.geode.distributed.LocatorLauncher` API to start the locator inside your code. Use the `LocatorLauncher.Builder` class to construct an instance of the `LocatorLauncher`, use the `setBindAddress` method to specify the IP address to use and then use the start() method to start a Locator service embedded in your Java application process.
+
+If your locator uses a bind address, make sure every process that accesses the locator has the address as well. For peer-to-peer access to the locator, use the locator's bind address and the locator's port in your `gemfire.properties` `locators` list. For server discovery in a client/server installation, use the locator's bind address and the locator's port in the locator list you provide to in the client’s server pool configuration.

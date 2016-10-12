@@ -1,0 +1,36 @@
+---
+title:  Advantages of Gemcached over Memcached
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The standard memcached architecture has inherent architectural challenges that make memcached applications difficult to write, maintain, and scale. Using Gemcached with Geode addresses these challenges.
+
+**Data consistency**. Memcached clients must maintain a list of servers where the distributed data is stored. Each client must maintain an identical list, with each list ordered in the same way. It is the responsibility of the application logic to maintain and propagate this list. If some clients do not have the correct list, the client can retrieve stale data. In Geode clusters, all members communicate with each other to maintain data consistency, which eliminates the need to code these behaviors in the memcached clients.
+
+**High availability**. When a memcached server becomes unavailable, memcached clusters are subject to failures or degraded performance because clients must directly query the backend database. Memcached-based applications must be coded to handle these failures, while Geode clusters handle such failures natively.
+
+**Faster cluster startup time**. When a memcached cluster fails and a restart is required, the data must be reloaded and distributed to the cluster members while simultaneously processing requests for data. These startup activities can be time-consuming. When a Geode cluster restarts, data can be reloaded from other in-memory, redundant copies of the data or from disk, without having to query the back end database.
+
+**Better handling of network segmentation**. Large deployments of memcached can use hundreds of servers to manage data. If, due to network segmentation, some clients cannot connect to all nodes of a partition, the clients will have to fetch the data from the backend database to avoid hosting stale data. Geode clusters handle network segmentation to ensure that client responses are consistent.
+
+**Automatic scalability**. If you need to add capacity to a memcached cluster, you must propagate a new server list to all clients. As new clients come on line with the new list, older clients may not have a consistent view of the data in the cluster, which can result in inconsistent data in the servers. Because new Geode cache server members automatically discover each other, memcached clients do not need to maintain a complete server list. You can add capacity simply by adding servers.
+
+**Scalable client connections**. A memcached client may need to access multiple pieces of data stored on multiple servers, which can result in clients having a TCP connection open to every server. When a memcached client accesses a Gemcached server, only a single connection to a Gemcached server instance is required. The Gemcached server manages the distribution of data using Geode's standard features.
+
+

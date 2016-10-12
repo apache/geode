@@ -1,0 +1,77 @@
+---
+title:  How Server Discovery Works
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Apache Geode locators provide reliable and flexible server discovery services for your clients. You can use all servers for all client requests, or group servers according to function, with the locators directing each client request to the right group of servers.
+
+<a id="how_server_discovery_works__section_91AC081D4C48408B9ABA40430F161E73"></a>
+By default, Geode clients and servers discover each other on a predefined port (40404) on the localhost. This works, but is not typically the way you would deploy a client/server configuration. The recommended solution is to use one or more dedicated locators. A locator provides both discovery and load balancing services. With server locators, clients are configured with a locator list and locators maintain a dynamic server list. The locator listens at an address and port for connecting clients and gives the clients server information. The clients are configured with locator information and have no configuration specific to the servers.
+
+## <a id="how_server_discovery_works__section_95B62F09EF954A99ABBDEBC2756812E3" class="no-quick-link"></a>Basic Configuration
+
+In this figure, only one locator is shown, but the recommended configuration uses multiple locators for high availability.
+
+<img src="../../images_svg/server_discovery.svg" alt="Locators track server availability and send clients to the most available servers. Clients send updates and requests to servers. Servers respond and send server events to clients. " id="how_server_discovery_works__image_6DD8320AF78C42F89CFC665F2AF1BEA3" class="image" />
+
+The locator and servers have the same peer discovery configured in their `gemfire.properties`:
+
+``` pre
+locators=lucy[41111] 
+```
+
+The servers, run on their respective hosts, have this `cache-server` configuration in their `cache.xml`:
+
+``` pre
+<cache-server port="40404" ...
+```
+
+The client’s `cache.xml` `pool` configuration and `region-attributes`:
+
+``` pre
+<pool name="PoolA" ...
+  <locator host="lucy" port="41111">
+
+<region ...
+<region-attributes pool-name="PoolA" ...    
+```
+
+## <a id="how_server_discovery_works__section_7C4C60F40936432899CE86619B8D6CBF" class="no-quick-link"></a>Using Member Groups
+
+You can control which servers are used with named member groups. Do this if you want your servers to manage different data sets or to direct specific client traffic to a subset of servers, such as those directly connected to a back-end database.
+
+To split data management between servers, configure some servers to host one set of data regions and some to host another set. Assign the servers to two separate member groups. Then, define two separate server pools on the client side and assign the pools to the proper corresponding client regions.
+
+In this figure, the client use of the regions is also split, but you could have both pools and both regions defined in all of your clients.
+
+<img src="../../images_svg/server_grouping.svg" alt=" " id="how_server_discovery_works__image_AB77DA6DB7EA49FD8864F39C6C64E056" class="image" />
+
+This is the `gemfire.properties` definition for Server 1:
+
+``` pre
+#gemfire.properties
+groups=Portfolios
+```
+
+And the `pool` declaration for Client 1:
+
+``` pre
+<pool name="PortfolioPool" server-group="Portfolios"...
+  <locator host="lucy" port="41111">
+```

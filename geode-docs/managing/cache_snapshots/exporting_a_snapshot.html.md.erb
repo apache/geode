@@ -1,0 +1,74 @@
+---
+title:  Exporting Cache and Region Snapshots
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To save Geode cache or region data to a snapshot that you can later load into another distributed system or region, use the `cache.getSnapshotService.save` API, `region.getSnapshotService.save` API, or the `gfsh` command-line interface (`export data`).
+
+If an error occurs during export, the export halts and the snapshot operation is canceled. Typical errors that halt an export include scenarios such as full disk, problems with file permissions, and network partitioning.
+
+## <a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_98B33450FD95450EAC027384EE82E00C" class="no-quick-link"></a>Exporting Cache Snapshots
+
+When you export an entire cache, it exports all regions in the cache as individual snapshot files into a directory. If no directory is specified, the default is the current directory. A snapshot file is created for each region, and the export operation automatically names each snapshot filename using the following convention:
+
+`snapshot-<region>[-<subregion>]*`
+
+When the export operation writes the snapshot filename, it replaces each forward slash ('/') in the region path with a dash ('-').
+
+**Using Java API:**
+
+``` pre
+File mySnapshotDir = ...
+Cache cache = ...
+
+cache.getSnapshotService().save(mySnapshotDir, SnapshotFormat.GEMFIRE);
+```
+
+Optionally, you can set a filter on the snapshot entries during the export. See [Filtering Entries During Import or Export](filtering_snapshot_entries.html#concept_7E1F89E70A25465EBEBA584FADFEF353) for an example.
+
+## <a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_30C1BBB41C194825A46E49E5756369D6" class="no-quick-link"></a>Exporting a Region Snapshot
+
+You can also export a specific region using the following API or gfsh command:
+
+**Java API:**
+
+``` pre
+File mySnapshot = ...
+Region<String, MyObject> region = ... 
+
+region.getSnapshotService().save(mySnapshot, SnapshotFormat.GEMFIRE);
+```
+
+**gfsh:**
+
+Open a gfsh prompt. After connecting to a Geode distributed system, at the prompt type:
+
+``` pre
+gfsh>export data --region=Region --file=filename.gfd 
+--member=membername
+```
+
+where *Region* corresponds to the name of the region that you want to export, *filename* (must end in .gfd) corresponds to the name of the export file and *membername* corresponds to a member where the region to export is hosted. For example:
+
+``` pre
+gfsh>export data --region=region1 --file=region1_2012_10_10.gfd 
+--member=server1
+```
+
+The snapshot file will be written on the remote member at the location specified by the `--file` argument. For example, in the example command above, the `region1_2012_10_10.gfd` file will be written in the working directory of `server1`. For more information on this command, see [export data](../../tools_modules/gfsh/command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734).

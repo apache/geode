@@ -1,0 +1,66 @@
+---
+title:  Encrypt Credentials with Diffie-Hellman
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+For secure transmission of sensitive information, like passwords, you can encrypt credentials using the Diffie-Hellman key exchange algorithm.
+
+This encryption applies only to client/server authentication - not peer-to-peer authentication.
+
+You need to specify the name of a valid symmetric key cipher supported by the JDK. Valid key names, like DES, DESede, AES, and Blowfish, enable the Diffie-Hellman algorithm with the specified cipher to encrypt the credentials. For valid JDK names, see [http://download.oracle.com/javase/1.5.0/docs/guide/security/CryptoSpec.html#AppA](http://download.oracle.com/javase/1.5.0/docs/guide/security/CryptoSpec.html#AppA).
+
+Before you begin, you need to understand how to use your security algorithm.
+
+## <a id="using_diffie_helman__section_45A9502BDF8E42E1970CEFB132F7424D" class="no-quick-link"></a>Enable Server Authentication of Client with Diffie-Hellman
+
+Set this in property in the client’s `gemfire.properties` (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration):
+
+-   `security-client-dhalgo`. Name of a valid symmetric key cipher supported by the JDK, possibly followed by a key size specification.
+
+This causes the server to authenticate the client using the Diffie-Hellman algorithm.
+
+## <a id="using_diffie_helman__section_D07F68BE8D3140E99244895F4AF2CC80" class="no-quick-link"></a>Enable Client Authentication of Server
+
+This requires server authentication of client with Diffie-Hellman to be enabled. To have your client authenticate its servers, in addition to being authenticated:
+
+1.  In server `gemfire.properties` (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration), set:
+    1.  `security-server-kspath`. Path of the PKCS\#12 keystore containing the private key for the server
+    2.  `security-server-ksalias`. Alias name for the private key in the keystore.
+    3.  `security-server-kspasswd`. Keystore and private key password, which should match.
+
+2.  In client `gemfire.properties` (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration), set:
+    1.  `security-client-kspasswd`. Password for the public key file store on the client
+    2.  `security-client-kspath`. Path to the client public key truststore, the JKS keystore of public keys for all servers the client can use. This keystore should not be password-protected
+
+## <a id="using_diffie_helman__section_5FB4437072AC4B4E93210BEA60B67A27" class="no-quick-link"></a>Set the Key Size for AES and Blowfish Encryption Keys
+
+For algorithms like AES, especially if large key sizes are used, you may need Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files from Sun or equivalent for your JDK. This enables encryption of client credentials in combination with challenge-response from server to client to prevent replay and other types of attacks. It also enables challenge-response from client to server to avoid server-side replay attacks.
+
+For the AES and Blowfish algorithms, you can specify the key size for the `security-client-dhalgo` property by adding a colon and the size after the algorithm specification, like this:
+
+``` pre
+security-client-dhalgo=AES:192
+```
+
+-   For AES, valid key size settings are:
+    -   AES:128
+    -   AES:192
+    -   AES:256
+-   For Blowfish, set the key size between 128 and 448 bits, inclusive.
+

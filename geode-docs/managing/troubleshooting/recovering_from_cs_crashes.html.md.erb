@@ -1,0 +1,54 @@
+---
+title:  Recovering from Crashes with a Client/Server Configuration
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In a client/server configuration, you first make the server available as a member of a distributed system again, and then restart clients as quickly as possible. The client recovers its data from its servers through normal operation.
+
+<a id="rec_app_cs_crash__section_777D28109D6141929297F36681F83249"></a>
+How well a client/server configuration recovers from application or cache server crashes depends on server availability and on client configuration. Typically, the servers are made highly available by running enough servers spread out on enough machines to ensure a minimum of coverage in case of network, machine, or server crashes. The clients are usually configured to connect to a primary and some number of secondary, or redundant, servers. The secondaries act as hot backups to the primary. For high availability of messaging in the case of client crashes, the clients may have durable connections to their servers. If this is the case, some or all of their data and data events remain in server memory and are automatically recovered, providing that you restart the clients within a configured timeout. See [Configuring Client/Server Event Messaging](../../developing/events/configure_client_server_event_messaging.html#receiving_events_from_servers) for information about durable messaging.
+
+## <a id="rec_app_cs_crash__section_2A598C85FAD44CDEA605646BF7BEE388" class="no-quick-link"></a>Recovering from Server Failure
+
+Recovery from server failure has two parts: the server recovers as a member of a distributed system, then its clients recover its services.
+
+When servers fail, their own recovery is carried out as for any member of a distributed system as described in [Recovering from Crashes with a Peer-to-Peer Configuration](recovering_from_p2p_crashes.html#rec_app_p2p_crash).
+
+From the client’s perspective, if the system is configured for high availability, server failure goes undetected unless enough servers fail that the server-to-client ratio drops below a workable level. In any case, your first course of action is to get the servers back up as quickly as possible.
+
+To recover from server failure:
+
+1.  Recover the server and its data as described in [Recovering from Crashes with a Peer-to-Peer Configuration](recovering_from_p2p_crashes.html#rec_app_p2p_crash).
+2.  Once the server is available again, the locators (or client pools if you are using a static server list) automatically detect its presence and add it to the list of viable servers. It might take awhile for the clients to start using the recovered server. The time depends in part on how the clients are configured and how they are programmed. See [Client/Server Configuration](../../topologies_and_comm/cs_configuration/chapter_overview.html).
+
+**If you need to start a server at a new host/port location**
+
+This section is only for systems where the clients’ server pool configurations use static server lists. This is unusual, but might be the case for your system. If the server pools are configured without static server lists, meaning clients use locators to find their servers, starting a server at a new address requires no special action because the new server is automatically detected by the locators. You can determine whether your clients use locator lists or server lists by looking at the client `cache.xml` files. Systems configured with static server lists have &lt;server&gt; elements listed inside the &lt;pool&gt; elements. Those using locator lists have &lt;locator&gt; elements instead. If there are no pools declared in the XML files, the servers or locators will be defined in the application code. Look for the API PoolFactory methods addServer or addLocator.
+
+If the pools are configured with static server lists, the clients only connect to servers at the specific addresses provided in the lists. To move a server or add a server at a new location, you must modify the &lt;server&gt; specifications in the clients’ `cache.xml` file. This change will only affect newly-started clients. To start using the new server information, either restart clients or wait for new clients to start, depending on your system characteristics and how quickly you need the changes to take effect.
+
+## <a id="rec_app_cs_crash__section_24B1898202E64C1E808C59E39417891B" class="no-quick-link"></a>Recovering from Client Failure
+
+When a client crashes, restart it as quickly as possible in the usual way. The client recovers its data from its servers through normal operation. Some of the data may be recovered immediately, and some may be recovered lazily as the client requests it. Additionally, the server may be configured to replay events for some data and for some client queries. These are the different configurations that affect client recovery:
+
+-   **Entries immediately sent to the client**—Entries are immediately sent to the client for entries the client registers interest in, if those entries are present in the server cache.
+-   **Entries sent lazily to the client**—Entries are sent lazily to the client for entries that the client registers interest in that are not initially available in the server cache.
+-   **Events sent immediately to the client**—If the server has been saving events for the client, these are immediately replayed when the client reconnects. Cache modification events for entries in which the client has registered durable interest are saved.
+
+If you have a durable client configured to connect to multiple servers, keep in mind that Geode does not maintain server redundancy while the client is disconnected. If you lose all of its primary and secondary servers, you lose the client’s queued messages. Even if the servers fail one at a time, so that running clients have time to fail over and pick new secondary servers, an off-line durable client cannot do that and thus loses its queued messages.

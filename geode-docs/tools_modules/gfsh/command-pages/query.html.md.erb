@@ -1,0 +1,69 @@
+---
+title:  query
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Run queries against Geode regions.
+
+Run the specified OQL query as a single quoted string and displays results in pages allows to move between pages. If limit is not set in the query, then a default limit of 1000 (derived from GFSH environment variable APP\_FETCH\_SIZE) will be applied. Page size is derived from GFSH environment variable APP\_COLLECTION\_LIMIT (default value=20).
+
+**Note:**
+This command should not be executed from `gfsh` if the objects being queried contain cyclic references.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+query --query=value [--step-name=value] [--interactive=value]
+```
+
+<a id="concept_89A129F729DF4D3B9056C8D9016AA760__table_ocr_gcg_2w"></a>
+
+| Name                                                | Description                                                                                               | Default Value |
+|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------|---------------|
+| <span class="keyword parmname">\\-\\-query </span>      | *Required.* The OQL string.                                                                               |               |
+| <span class="keyword parmname">\\-\\-interactive</span> | Specifies whether or not this query is interactive. If false, then all results will be displayed at once. | true          |
+
+<span class="tablecap">Table 1. Query Parameters</span>
+
+**Example Commands:**
+
+``` pre
+query --query=value [--step-name=value] [--interactive=value]
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>query --query='SELECT * FROM /region2'
+
+Result     : true
+startCount : 0
+endCount   : 20
+Rows       : 1
+
+Result
+-----------------
+('Hello World!!')
+
+NEXT_STEP_NAME : END
+```
+
+

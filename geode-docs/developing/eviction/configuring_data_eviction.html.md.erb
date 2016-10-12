@@ -1,0 +1,88 @@
+---
+title:  Configure Data Eviction
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Use eviction controllers to configure the eviction-attributes region attribute settings to keep your region within a specified limit.
+
+<a id="configuring_data_eviction__section_8515EC9635C342C0916EE9E6120E2AC9"></a>
+Eviction controllers monitor region and memory use and, when the limit is reached, remove older entries to make way for new data. For heap percentage, the controller used is the Geode resource manager, configured in conjunction with the JVM's garbage collector for optimum performance.
+
+Configure data eviction as follows. You do not need to perform these steps in the sequence shown.
+
+1.  Decide whether to evict based on:
+    -   Entry count (useful if your entry sizes are relatively uniform).
+    -   Total bytes used. In partitioned regions, this is set using `local-max-memory`. In non-partitioned, it is set in `eviction-attributes`.
+    -   Percentage of application heap used. This uses the Geode resource manager. When the manager determines that eviction is required, the manager orders the eviction controller to start evicting from all regions where the eviction algorithm is set to `lru-heap-percentage`. Eviction continues until the manager calls a halt. Geode evicts the least recently used entry hosted by the member for the region. See [Managing Heap and Off-heap Memory](../../managing/heap_use/heap_management.html#resource_manager).
+
+2.  Decide what action to take when the limit is reached:
+    -   Locally destroy the entry.
+    -   Overflow the entry data to disk. See [Persistence and Overflow](../storing_data_on_disk/chapter_overview.html).
+
+3.  Decide the maximum amount of data to allow in the member for the eviction measurement indicated. This is the maximum for all storage for the region in the member. For partitioned regions, this is the total for all buckets stored in the member for the region - including any secondary buckets used for redundancy.
+4.  Decide whether to program a custom sizer for your region. If you are able to provide such a class, it might be faster than the standard sizing done by Geode. Your custom class must follow the guidelines for defining custom classes and, additionally, must implement `org.apache.geode.cache.util.ObjectSizer`. See [Requirements for Using Custom Classes in Data Caching](../../basic_config/data_entries_custom_classes/using_custom_classes.html).
+
+**Note:**
+You can also configure Regions using the gfsh command-line interface, however, you cannot configure `eviction-attributes` using gfsh. See [Region Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_EF03119A40EE492984F3B6248596E1DD) and [Disk Store Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_1ACC91B493EE446E89EC7DBFBBAE00EA).
+
+Examples:
+
+``` pre
+// Create an LRU memory eviction controller with max bytes of 1000 MB
+// Use a custom class for measuring the size of each object in the region 
+<region-attributes refid="REPLICATE"> 
+  <eviction-attributes> 
+    <lru-memory-size maximum="1000" action="overflow-to-disk"> 
+      <class-name>com.myLib.MySizer</class-name> 
+      <parameter name="name"> 
+        <string>Super Sizer</string> 
+      </parameter> 
+    </lru-memory-size> 
+  </eviction-attributes> 
+  </region-attributes>
+```
+
+``` pre
+// Create a memory eviction controller on a partitioned region with max bytes of 512 MB
+<region name="demoPR">
+  <region-attributes refid="PARTITION">
+    <partition-attributes local-max-memory="512" total-num-buckets="13"/>
+    <eviction-attributes>
+       <lru-memory-size action="local-destroy"/>
+       <class-name>org.apache.geode.cache.util.ObjectSizer
+       </class-name>
+    </eviction-attributes>
+  </region-attributes>
+</region>
+            
+```
+
+``` pre
+// Configure a partitioned region for heap LRU eviction. The resource manager controls the limits. 
+<region-attributes refid="PARTITION_HEAP_LRU"> 
+</region-attributes>
+```
+
+``` pre
+Region currRegion = cache.createRegionFactory()
+    .setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(EvictionAction.LOCAL_DESTROY))
+    .create("root");
+```
+
+

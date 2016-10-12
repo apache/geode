@@ -1,0 +1,98 @@
+---
+title:  Changing the Default Geode Configuration in the tc Server Module
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+By default, the tc Server HTTP module will run Geode automatically with pre-configured settings. You can change these Geode settings.
+
+Here are the default Geode settings:
+
+-   Geode peer-to-peer members use locators for discovery.
+-   The region name is set to `gemfire_modules_sessions`.
+-   The cache region is replicated for peer-to-peer configurations and partitioned (with redundancy turned on) for client/server configurations.
+-   Geode clients have local caching turned on and when the local cache needs to evict data, it will evict least-recently-used (LRU) data first.
+
+**Note:**
+On the application server side, the default inactive interval for session expiration is set to 30 minutes. To change this value, refer to [Session Expiration](tc_additional_info.html#tc_additional_info__section_C7C4365EA2D84636AE1586F187007EC4).
+
+To change this default configuration, use the `--interactive` command line argument when creating the tc Server instance. Choose the appropriate command for the chosen topology and platform.
+
+``` pre
+In Unix, for a peer-to-peer topology:
+  $ ./tcruntime-instance.sh create my_instance_name --template gemfire-p2p \
+        --interactive
+
+In Unix, for a client/server topology:
+  $ ./tcruntime-instance.sh create my_instance_name --template gemfire-cs \
+         --interactive
+
+In Windows, for a peer-to-peer topology:
+  $ tcruntime-instance.bat create my_instance_name --template gemfire-p2p ^ 
+         --interactive
+
+In Windows, for a client/server topology:
+  $ tcruntime-instance.bat create my_instance_name --template gemfire-cs ^ 
+         --interactive
+```
+
+In interactive mode, you will be prompted to specify a series of property values. Hit &lt;return&gt; for any property that should use the default value.
+
+After responding to approximately 20 prompts, you should see the following line:
+
+``` pre
+Instance created.
+```
+
+**Note:** You cannot override region attributes on the cache server when using the HTTP Session Management Module. You must place all region attribute definitions in the region attributes template that you customize in tc Server. See [Overriding Region Attributes](tc_changing_gf_default_cfg.html#tc_changing_gf_default_cfg__section_38D803A7E8474188898963F456188543) for more information.
+
+For information on setting up your instance for the most common types of configurations, refer to the sections below. For more information about each interactive prompt, refer to [Interactive Mode Reference](interactive_mode_ref.html).
+
+## <a id="tc_changing_gf_default_cfg__use_a_diff_mc_port" class="no-quick-link"></a>Using a Different Locator Port
+
+For a Geode peer-to-peer member to communicate on a different port than the default (10334), answer the following question in the tc Server HTTP module's interactive mode:
+
+``` pre
+Please enter the list of locators used by GemFire members to discover each other. 
+The format is a comma-separated list of host[port]. Default 'localhost[10334]': localhost[10335]
+```
+
+This example changes the locator port to 10335 on localhost.
+
+## <a id="tc_changing_gf_default_cfg__section_38D803A7E8474188898963F456188543" class="no-quick-link"></a>Overriding Region Attributes
+
+When using the HTTP Session Management Module, you cannot override region attributes directly on the cache server. You must place all region attribute definitions in the region attributes template that you customize within tc Server. For example, to specify a different name for the region's disk store, you could add the new disk-store-name specification to the region attributes template and then reference the template on the cache server.
+
+``` pre
+<region-attributes id="MY_SESSIONS" refid="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW" 
+disk-store-name="mystore">
+  ...
+</region-attributes>
+```
+
+Then on the cache server side, reference the modified region attributes template to allow the region to use the disk-store-name attribute:
+
+``` pre
+<region name="gemfire_modules_sessions" refid="MY_SESSIONS"/>
+```
+
+-   **[Interactive Configuration Reference for the tc Server Module](../../tools_modules/http_session_mgmt/interactive_mode_ref.html)**
+
+    This section describes each prompt when entering into interactive configuration mode of the Geode HTTP Session Management Module for tc Server.
+
+

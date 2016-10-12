@@ -1,0 +1,79 @@
+---
+title:  Using Indexes on Equi-Join Queries using Multiple Regions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To query across multiple regions, identify all equi-join conditions. Then, create as few indexes for the equi-join conditions as you can while still joining all regions.
+
+<a id="concept_DB2407C49F064B04AA58BC9D1DBA3666__section_70735ED43C4D47B0A19B910BB7E3A1DA"></a>
+If there are equi-join conditions that redundantly join two regions (in order to more finely filter the data, for example), then creating redundant indexes for these joins will negatively impact performance. Create indexes only on one equi-join condition for each region pair.
+
+In this example query:
+
+``` pre
+SELECT DISTINCT * 
+FROM /investors inv, /securities sc, /orders or, 
+inv.ordersPlaced inv_op, or.securities or_sec 
+    WHERE inv_op.orderID = or.orderID 
+    AND or_sec.secID = sc.secID
+```
+
+All conditions are required to join the regions, so you would create four indexes, two for each equi-join condition:
+
+| FROM clause                              | Indexed expression |
+|------------------------------------------|--------------------|
+| /investors inv, inv.ordersPlaced inv\_op | inv\_op.orderID    |
+| /orders or, or.securities or\_sec        | or.orderID         |
+
+| FROM clause                       | Indexed expression |
+|-----------------------------------|--------------------|
+| /orders or, or.securities or\_sec | or\_sec.secID      |
+| /securities sc                    | sc.secID           |
+
+Adding another condition to the example:
+
+``` pre
+SELECT DISTINCT * 
+FROM /investors inv, /securities sc, /orders or, 
+inv.ordersPlaced inv_op, or.securities or_sec, sc.investors sc_invs 
+    WHERE inv_op.orderID = or.orderID 
+    AND or_sec.secID = sc.secID
+                AND inv.investorID = sc_invs.investorID
+```
+
+You would still only want to use four indexes in all, as that's all you need to join all of the regions. You would need to choose the most performant two of the following three index pairs:
+
+| FROM clause                              | Indexed expression |
+|------------------------------------------|--------------------|
+| /investors inv, inv.ordersPlaced inv\_op | inv\_op.orderID    |
+| /orders or, or.securities or\_sec        | or.orderID         |
+
+| FROM clause                           | Indexed expression |
+|---------------------------------------|--------------------|
+| /orders or, or.securities or\_sec     | or\_sec.secID      |
+| /securities sc, sc.investors sc\_invs | sc.secID           |
+
+| FROM clause                              | Indexed expression  |
+|------------------------------------------|---------------------|
+| /investors inv, inv.ordersPlaced inv\_op | inv.investorID      |
+| /securities sc, sc.investors sc\_invs    | sc\_invs.investorID |
+
+The most performant set is that which narrows the data to the smallest result set possible. Examine your data and experiment with the three index pairs to see which provides the best performance.
+
+

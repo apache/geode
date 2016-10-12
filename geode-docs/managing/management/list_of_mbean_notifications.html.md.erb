@@ -1,0 +1,82 @@
+---
+title: List of JMX MBean Notifications
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="mbean_notifications_list"></a>
+
+
+This topic lists all available JMX notifications emitted by Geode MBeans.
+
+Notifications are emitted by the following MBeans:
+
+-   **[MemberMXBean Notifications](list_of_mbean_notifications.html#reference_czt_hq2_vj)**
+
+-   **[MemberMXBean Gateway Notifications](list_of_mbean_notifications.html#reference_dzt_hq2_vj)**
+
+-   **[CacheServerMXBean Notifications](list_of_mbean_notifications.html#cacheservermxbean_notifications)**
+
+-   **[DistributedSystemMXBean Notifications](list_of_mbean_notifications.html#distributedsystemmxbean_notifications)**
+
+## <a id="reference_czt_hq2_vj" class="no-quick-link"></a>MemberMXBean Notifications
+
+| Notification Type                                   | Notification Source | Message                                                     |
+|-----------------------------------------------------|---------------------|-------------------------------------------------------------|
+| gemfire.distributedsystem.cache.region.created      | Member name or ID   | Region Created with Name &lt;Region Name&gt;                |
+| gemfire.distributedsystem.cache.region.closed       | Member name or ID   | Region Destroyed/Closed with Name &lt;Region Name&gt;       |
+| gemfire.distributedsystem.cache.disk.created        | Member name or ID   | DiskStore Created with Name &lt;DiskStore Name&gt;          |
+| gemfire.distributedsystem.cache.disk.closed         | Member name or ID   | DiskStore Destroyed/Closed with Name &lt;DiskStore Name&gt; |
+| gemfire.distributedsystem.cache.lockservice.created | Member name or ID   | LockService Created with Name &lt;LockService Name&gt;      |
+| gemfire.distributedsystem.cache.lockservice.closed  | Member name or ID   | Lockservice Closed with Name &lt;LockService Name&gt;       |
+| gemfire.distributedsystem.async.event.queue.created | Member name or ID   | Async Event Queue is Created in the VM                      |
+| gemfire.distributedsystem.cache.server.started      | Member name or ID   | Cache Server is Started in the VM                           |
+| gemfire.distributedsystem.cache.server.stopped      | Member name or ID   | Cache Server is stopped in the VM                           |
+| gemfire.distributedsystem.locator.started           | Member name or ID   | Locator is Started in the VM                                |
+
+## <a id="reference_dzt_hq2_vj" class="no-quick-link"></a>MemberMXBean Gateway Notifications
+
+| Notification Type                                  | Notification Source | Message                                           |
+|----------------------------------------------------|---------------------|---------------------------------------------------|
+| gemfire.distributedsystem.gateway.sender.created   | Member name or ID   | GatewaySender Created in the VM                   |
+| gemfire.distributedsystem.gateway.sender.started   | Member name or ID   | GatewaySender Started in the VM &lt;Sender Id&gt; |
+| gemfire.distributedsystem.gateway.sender.stopped   | Member name or ID   | GatewaySender Stopped in the VM &lt;Sender Id&gt; |
+| gemfire.distributedsystem.gateway.sender.paused    | Member name or ID   | GatewaySender Paused in the VM &lt;Sender Id&gt;  |
+| gemfire.distributedsystem.gateway.sender.resumed   | Member name or ID   | GatewaySender Resumed in the VM &lt;Sender Id&gt; |
+| gemfire.distributedsystem.gateway.receiver.created | Member name or ID   | GatewayReceiver Created in the VM                 |
+| gemfire.distributedsystem.gateway.receiver.started | Member name or ID   | GatewayReceiver Started in the VM                 |
+| gemfire.distributedsystem.gateway.receiver.stopped | Member name or ID   | GatewayReceiver Stopped in the VM                 |
+| gemfire.distributedsystem.cache.server.started     | Member name or ID   | Cache Server is Started in the VM                 |
+
+## <a id="cacheservermxbean_notifications" class="no-quick-link"></a>CacheServerMXBean Notifications
+
+| Notification Type                                    | Notification Source    | Message                                  |
+|------------------------------------------------------|------------------------|------------------------------------------|
+| gemfire.distributedsystem.cacheserver.client.joined  | CacheServer MBean Name | Client joined with Id &lt;Client ID&gt;  |
+| gemfire.distributedsystem.cacheserver.client.left    | CacheServer MBean Name | Client crashed with Id &lt;Client ID&gt; |
+| gemfire.distributedsystem.cacheserver.client.crashed | CacheServer MBean name | Client left with Id &lt;Client ID&gt;    |
+
+## <a id="distributedsystemmxbean_notifications" class="no-quick-link"></a>DistributedSystemMXBean Notifications
+
+| Notification Type                               | Notification Source                               | Message                                                                    |
+|-------------------------------------------------|---------------------------------------------------|----------------------------------------------------------------------------|
+| gemfire.distributedsystem.cache.member.joined   | Name or ID of member who joined                   | Member Joined &lt;Member Name or ID&gt;                                    |
+| gemfire.distributedsystem.cache.member.departed | Name or ID of member who departed                 | Member Departed &lt;Member Name or ID&gt; has crashed = &lt;true/false&gt; |
+| gemfire.distributedsystem.cache.member.suspect  | Name or ID of member who is suspected             | Member Suspected &lt;Member Name or ID&gt; By &lt;Who Suspected&gt;        |
+| system.alert.\*                                 | DistributedSystem("&lt;DistributedSystem ID"&gt;) | Alert Message                                                              |
+
+

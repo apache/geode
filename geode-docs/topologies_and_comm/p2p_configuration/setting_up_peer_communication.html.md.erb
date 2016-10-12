@@ -1,0 +1,64 @@
+---
+title:  Configuring Peer Communication
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+By default Apache Geode uses TCP for communication between members of a single distributed system. You can modify this at the member and region levels.
+
+<a id="setting_up_communication__section_34509F5B17A943D8BBF19A3497E32BAE"></a>
+Before you begin, you should have already determined the address and port settings for multicast, including any bind addresses. See [Topology and Communication General Concepts](../topology_concepts/chapter_overview.html).
+
+See the [Reference](../../reference/book_intro.html#reference).
+
+1.  **Configure general messaging to use TCP or UDP unicast**.
+
+    TCP is the default protocol for communication. To use it, just make sure you do not have it disabled in `gemfire.properties`. Either have no entry for `disable-tcp`, or have this entry:
+
+    ``` pre
+    disable-tcp=false
+    ```
+
+    To use UDP unicast for general messaging, add this entry to `gemfire.properties`:
+
+    ``` pre
+    disable-tcp=true
+    ```
+
+    The `disable-tcp` setting has no effect on the use of TCP locators or the TCP connections used to detect failed members.
+
+2.  **Configure any regions you want to distribute using UDP multicast**.
+    1.  Configure UDP multicast for region messaging, set non-default multicast address and port selections in `gemfire.properties`:
+
+        ``` pre
+        mcast-address=<address>
+        mcast-port=<port>
+        ```
+
+    2.  In `cache.xml`, enable multicast for each region that needs multicast messaging:
+
+        ``` pre
+        <region-attributes multicast-enabled="true"/> 
+        ```
+
+        **Note:**
+        Improperly configured multicast can affect production systems. If you intend to use multicast on a shared network, work with your network administrator and system administrator from the planning stage of the project. In addition, you may need to address interrelated setup and tuning issues at the Geode, operating system, and network level.
+
+Once your members establish their connections to each other, they will send distributed data and messages according to your configuration.
+
+

@@ -1,0 +1,70 @@
+---
+title:  Configuring the Number of Buckets for a Partitioned Region
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Decide how many buckets to assign to your partitioned region and set the configuration accordingly.
+
+<a id="configuring_total_buckets__section_DF52B2BF467F4DB4B8B3D16A79EFCA39"></a>
+The total number of buckets for the partitioned region determines the granularity of data storage and thus how evenly the data can be distributed. Geode distributes the buckets as evenly as possible across the data stores. The number of buckets is fixed after region creation.
+
+The partition attribute `total-num-buckets` sets the number for the entire partitioned region across all participating members. Set it using one of the following:
+
+-   XML:
+
+    ``` pre
+    <region name="PR1"> 
+      <region-attributes refid="PARTITION"> 
+        <partition-attributes total-num-buckets="7"/> 
+      </region-attributes> 
+    </region> 
+    ```
+
+-   Java:
+
+    ``` pre
+    RegionFactory rf = 
+        cache.createRegionFactory(RegionShortcut.PARTITION);
+    rf.setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(7).create());
+    custRegion = rf.create("customer");
+    ```
+
+-   gfsh:
+
+    Use the <span class="keyword parmname">--total-num-buckets</span> parameter of the `create region` command. For example:
+
+    ``` pre
+    gfsh>create region --name="PR1" --type=PARTITION --total-num-buckets=7
+    ```
+
+## <a id="configuring_total_buckets__section_C956D9BA41C546F89D07DCFE901E539F" class="no-quick-link"></a>Calculate the Total Number of Buckets for a Partitioned Region
+
+Follow these guidelines to calculate the total number of buckets for the partitioned region:
+
+-   Use a prime number. This provides the most even distribution.
+-   Make it at least four times as large as the number of data stores you expect to have for the region. The larger the ratio of buckets to data stores, the more evenly the load can be spread across the members. Note that there is a trade-off between load balancing and overhead, however. Managing a bucket introduces significant overhead, especially with higher levels of redundancy.
+
+You are trying to avoid the situation where some members have significantly more data entries than others. For example, compare the next two figures. This figure shows a region with three data stores and seven buckets. If all the entries are accessed at about the same rate, this configuration creates a hot spot in member M3, which has about fifty percent more data than the other data stores. M3 is likely to be a slow receiver and potential point of failure.
+
+<img src="../../images_svg/partitioned_data_buckets_1.svg" id="configuring_total_buckets__image_04B05CE3C732430C84D967A062D9EDDA" class="image" />
+
+Configuring more buckets gives you fewer entries in a bucket and a more balanced data distribution. This figure uses the same data as before but increases the number of buckets to 13. Now the data entries are distributed more evenly.
+
+<img src="../../images_svg/partitioned_data_buckets_2.svg" id="configuring_total_buckets__image_326202046D07414391BA5CBA474920CA" class="image" />
+

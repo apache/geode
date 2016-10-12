@@ -1,0 +1,34 @@
+---
+title:  Slow Receivers with TCP/IP
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You have several options for preventing situations that can cause slow receivers of data distributions. The slow receiver options control only peer-to-peer communication using TCP/IP. This discussion does not apply to client/server or multi-site communication, or to communication using the UDP unicast or multicast protocols.
+
+Before you begin, you should understand Geode [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+-   **[Preventing Slow Receivers](../../managing/monitor_tune/slow_receivers_preventing_problems.html)**
+
+    During system integration, you can identify and eliminate potential causes of slow receivers in peer-to-peer communication.
+
+-   **[Managing Slow Receivers](../../managing/monitor_tune/slow_receivers_managing.html)**
+
+    If the receiver fails to receive a message, the sender continues to attempt to deliver the message as long as the receiving member is still in the distributed system.
+
+

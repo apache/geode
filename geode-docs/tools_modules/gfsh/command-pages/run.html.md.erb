@@ -1,0 +1,105 @@
+---
+title:  run
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Execute a set of GFSH commands.
+
+Commands that normally prompt for additional input will instead use default values.
+
+**Availability:** Online or offline.
+
+**Note:**
+Some commands specified in the file require online status.
+
+**Syntax:**
+
+``` pre
+run --file=value [--quiet(=value)?] [--continue-on-error(=value)?]
+```
+
+<a id="concept_970BC9839C8243AF86CAEAAB22FDF40C__table_zyc_clf_2w"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Parameters</span></caption>
+<colgroup>
+<col width="25%" />
+<col width="50%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-file</span></td>
+<td><em>Required.</em> Path of the file scripted with commands that <code class="ph codeph">gfsh</code> recognizes. Path should be relative or absolute.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-quiet</span></td>
+<td>Specifies whether to show command output.
+<div class="note note">
+**Note:**
+<p>All commands in a script are run non-interactively when the <code class="ph codeph">run</code> command is used. This option does not change that functionality.</p>
+</div></td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-continue-on-error</span></td>
+<td>Specifies whether further execution of the script should continue if there is an error while executing one of the commands fails.</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+
+<span class="tablecap">Table 1. Run Parameters</span>
+
+**Example Commands:**
+
+``` pre
+run --file=create-regions.gfsh --quiet=true
+
+(2) From command line:
+prompt> /home/user1/gemfire70/bin/gfsh run ./create-regions.gfsh --quiet=true
+prompt> /home/user1/gemfire70/bin/gfsh run ./create-regions.gfsh 
+--continue-on-error=true
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>run --file=create-regions.gfsh
+1. Executing - create region --name=region4 --type=REPLICATE
+
+Member  | Status
+------- | --------------------------------------
+server2 | Region "/region4" created on "server2"
+server1 | Region "/region4" created on "server1"
+
+2. Executing - create region --name=region1/subregion1 --type=LOCAL
+
+Parent region for "region1/subregion1" doesn't exist. 
+```
+
+

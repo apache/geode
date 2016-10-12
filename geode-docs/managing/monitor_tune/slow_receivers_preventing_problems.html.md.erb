@@ -1,0 +1,45 @@
+---
+title:  Preventing Slow Receivers
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+During system integration, you can identify and eliminate potential causes of slow receivers in peer-to-peer communication.
+
+Work with your network administrator to eliminate any problems you identify.
+
+Slowing is more likely to occur when applications run many threads, send large messages (due to large entry values), or have a mix of region configurations. The problem can also arise from message delivery retries caused by intermittent connection problems.
+
+**Host Resources**
+
+Make sure that the machines that run Geode members have enough CPU available to them. Do not run any other heavyweight processes on the same machine.
+
+The machines that host Geode application and cache server processes should have comparable computing power and memory capacity. Otherwise, members on the less powerful machines tend to have trouble keeping up with the rest of the group.
+
+**Network Capacity**
+
+Eliminate congested areas on the network by rebalancing the traffic load. Work with your network administrator to identify and eliminate traffic bottlenecks, whether caused by the architecture of the distributed Geode system or by contention between the Geode traffic and other traffic on your network. Consider whether more subnets are needed to separate the Geode administrative traffic from Geode data transport and to separate all the Geode traffic from the rest of your network load.
+
+The network connections between hosts need to have equal bandwidth. If not, you can end up with a configuration like the multicast example in the following figure, which creates conflicts among the members. For example, if app1 sends out data at 7Mbps, app3 and app4 would be fine, but app2 would miss some data. In that case, app2 contacts app1 on the TCP channel and sends a log message that it’s dropping data.
+<img src="../../images_svg/unbalanced_network_capacity_probs.svg" id="slow_recv__image_F8C424AB97C444298993294000676150" class="image" />
+
+**Plan for Growth**
+
+Upgrade the infrastructure to the level required for acceptable performance. Analyze the expected Geode traffic in comparison to the network’s capacity. Build in extra capacity for growth and high-traffic spikes. Similarly, evaluate whether the machines that host Geode application and cache server processes can handle the expected load.
+
+

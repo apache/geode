@@ -1,0 +1,47 @@
+---
+title: About Transactions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="topic_jbt_2y4_wk"></a>
+
+
+This section covers the features of Geode transactions.
+
+Geode transactions provide the following features:
+
+-   Basic transaction properties: atomicity, consistency, isolation, and durability
+-   Rollback and commit operations along with standard Geode cache operations
+-   Ability to suspend and resume transactions
+-   High concurrency and high performance
+-   Transaction statistics gathering and archiving
+-   Compatibility with Java Transaction API (JTA) transactions, using either Geode JTA or a third-party implementation
+-   Ability to use Geode as a “last resource” in JTA transactions with multiple data sources to guarantee transactional consistency
+
+## Types of Transactions
+
+Geode supports two kinds of transactions: **Geode cache transactions** and **JTA global transactions**.
+
+Geode cache transactions are used to group the execution of cache operations and to gain the control offered by transactional commit and rollback. Applications create cache transactions by using an instance of the Geode `CacheTransactionManager`. During a transaction, cache operations are performed and distributed through Geode as usual. See [Geode Cache Transactions](cache_transactions.html#topic_e15_mr3_5k) for details on Geode cache transactions and how these transactions work.
+
+JTA global transactions allow you to use the standard JTA interface to coordinate Geode transactions with JDBC transactions. When performing JTA global transactions, you have the option of using Geode’s own implementation of JTA or a third party’s implementation (typically application servers such as WebLogic or JBoss) of JTA. In addition, some third party JTA implementations allow you to set Geode as a “last resource” to ensure transactional consistency across data sources in the event that Geode or another data source becomes unavailable. For global transactions, applications use `java:/UserTransaction` to start and terminate transactions while Geode cache operations are performed in the same manner as regular Geode cache transactions. See [JTA Global Transactions with Geode](JTA_transactions.html) for details on JTA Global transactions.
+
+You can also coordinate a Geode cache transaction with an external database by specifying database operations within cache and transaction application plug-ins (CacheWriters/CacheListeners and TransactionWriters/TransactionListeners.) This is an alternative to using JTA transactions. See [How to Run a Geode Cache Transaction that Coordinates with an External Database](run_a_cache_transaction_with_external_db.html#task_sdn_2qk_2l).
+
+

@@ -1,0 +1,115 @@
+---
+title:  Implementing PdxSerializable in Your Domain Object
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+For a domain object with source that you can modify, implement the `PdxSerializable` interface in the object and use its methods to serialize and deserialize the object's fields.
+
+<a id="use_pdx_serializable__section_7F357A8E56B54BFB9A5778C0F89E034E"></a>
+**Procedure**
+
+1.  In your domain class, implement `PdxSerializable`, importing the required `org.apache.geode.pdx` classes.
+
+    For example:
+
+    ``` pre
+    import org.apache.geode.pdx.PdxReader;
+    import org.apache.geode.pdx.PdxSerializable;
+    import org.apache.geode.pdx.PdxWriter;
+
+    public class PortfolioPdx implements PdxSerializable {
+      ...
+    ```
+
+2.  If your domain class does not have a zero-arg constructor, create one for it.
+
+    For example:
+
+    ``` pre
+    public PortfolioPdx(){}
+    ```
+
+3.  Program `PdxSerializable.toData.`
+    1.  Write each standard Java data field of your domain class using the `PdxWriter` write methods. Geode automatically provides `PdxWriter` to the `toData` method for `PdxSerializable` objects.
+    2.  Call the `PdxWriter` `markIdentifyField` method for each field you want to have Geode use to identify your object. Put this after the field's write method. Geode uses this information to compare objects for operations like distinct queries. If you do not set as least one identity field, then the `equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well. It is important that the fields used by your `equals` and `hashCode` implementations are the same fields that you mark as identity fields.
+    3.  For a particular version of your class, you need to consistently write the same named field each time. The field names or number of fields must not change from one instance to another for the same class version.
+    4.  For best performance, do fixed width fields first and then variable length fields.
+
+        Example `toData` code:
+
+        ``` pre
+        // PortfolioPdx fields
+          private int id;
+          private String pkid;
+          private Map<String, PositionPdx> positions;
+          private String type;
+          private String status;
+          private String[] names;
+          private byte[] newVal;
+          private Date creationDate;
+          ...
+
+          public void toData(PdxWriter writer)
+          {
+            writer.writeInt("id", id)
+        // The markIdentifyField call for a field must 
+        // come after the field's write method 
+            .markIdentityField("id")
+            .writeDate("creationDate", creationDate) //fixed length field
+            .writeString("pkid", pkid)
+            .writeObject("positions", positions)
+            .writeString("type", type)
+            .writeString("status", status)
+            .writeStringArray("names", names)
+            .writeByteArray("newVal", newVal)
+          }
+        ```
+
+4.  Program `PdxSerializable.fromData` to read your data fields from the serialized form into the object's fields using the `PdxReader` read methods.
+
+    Provide the same names that you did in `toData` and call the read operations in the same order as you called the write operations in your `toData` implementation.
+
+    Geode automatically provides `PdxReader` to the `fromData` method for `PdxSerializable` objects.
+
+    Example `fromData` code:
+
+    ``` pre
+      
+    public void fromData(PdxReader reader)
+      {
+        id = reader.readInt("id");
+        creationDate = reader.readDate("creationDate");
+        pkid = reader.readString("pkid");
+        position1 = (PositionPdx)reader.readObject("position1");
+        position2 = (PositionPdx)reader.readObject("position2");
+        positions = (Map<String, PositionPdx>)reader.readObject("positions");
+        type = reader.readString("type");
+        status = reader.readString("status");
+        names = reader.readStringArray("names");
+        newVal = reader.readByteArray("newVal");
+        arrayNull = reader.readByteArray("arrayNull");
+        arrayZeroSize = reader.readByteArray("arrayZeroSize");
+      }
+    ```
+
+**What to do next**
+
+-   As needed, configure and program your Geode applications to use `PdxInstance` for selective object deserialization. See [Programming Your Application to Use PdxInstances](program_application_for_pdx.html).
+
+

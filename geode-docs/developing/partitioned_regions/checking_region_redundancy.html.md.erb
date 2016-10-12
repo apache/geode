@@ -1,0 +1,55 @@
+---
+title:  Checking Redundancy in Partitioned Regions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Under some circumstances, it can be important to verify that your partitioned region data is redundant and that upon member restart, redundancy has been recovered properly across partitioned region members.
+
+You can verify partitioned region redundancy by making sure that the `numBucketsWithoutRedundancy` statistic is **zero** for all your partitioned regions. To check this statistic, use the following `gfsh` command:
+
+``` pre
+gfsh>show metrics --categories=partition --region=region_name
+```
+
+For example:
+
+``` pre
+gfsh>show metrics --categories=partition --region=posts
+
+Cluster-wide Region Metrics
+--------- | --------------------------- | -----
+partition | putLocalRate                | 0
+          | putRemoteRate               | 0
+          | putRemoteLatency            | 0
+          | putRemoteAvgLatency         | 0
+          | bucketCount                 | 1
+          | primaryBucketCount          | 1
+          | numBucketsWithoutRedundancy | 1
+          | minBucketSize               | 1
+          | maxBucketSize               | 0
+          | totalBucketSize             | 1
+          | averageBucketSize           | 1
+      
+```
+
+If you have `start-recovery-delay=-1` configured for your partitioned region, you will need to perform a rebalance on your region after you restart any members in your cluster in order to recover redundancy.
+
+If you have `start-recovery-delay` set to a low number, you may need to wait extra time until the region has recovered redundancy.
+
+

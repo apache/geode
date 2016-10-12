@@ -1,0 +1,51 @@
+---
+title:  Set the Number of Redundant Copies
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Configure in-memory high availability for your partitioned region by specifying the number of secondary copies you want to maintain in the region's data stores.
+
+Specify the number of redundant copies you want for your partitioned region data in the partition attribute `redundant-copies` setting. The default setting is 0. 
+
+For example:
+
+-   XML:
+
+    ``` pre
+    <region name="PR1"> 
+      <region-attributes refid="PARTITION"> 
+        <partition-attributes redundant-copies="1"/> 
+      </region-attributes> 
+    </region> 
+    ```
+
+-   Java:
+
+    ``` pre
+    PartitionAttributes pa = 
+        new PartitionAttributesFactory().setRedundantCopies(1).create(); 
+    ```
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create region --name="PR1" --type=PARTITION --redundant-copies=1
+    ```
+
+

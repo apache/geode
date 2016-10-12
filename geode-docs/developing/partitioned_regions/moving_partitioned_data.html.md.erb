@@ -1,0 +1,76 @@
+---
+title:  Moving Partitioned Region Data to Another Member
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can use the `PartitionRegionHelper` `moveBucketByKey` and `moveData` methods to explicitly move partitioned region data from one member to another.
+
+The `moveBucketByKey` method moves the bucket that contains the specified key from a source member to a destination member. For example, you could use the method to move a popular product item to a new, empty member to reduce load on the source member.
+
+For example:
+
+``` pre
+Object product = ...
+Region r = ...
+DistributedSystem ds = ...
+String memberName = ...
+
+//Find the member that is currently hosting the product.
+Set<DistributedMember> sourceMembers =
+PartitionRegionHelper.getAllMembersForKey(r, product);
+
+//Find the member to move the product to.
+DistributedMember destination = ds.findDistributedMember(memberName);
+
+//In this example we assume there is always at least one source.
+//In practice, you should check that at least one source
+//for the data is available.
+source = sourceMembers.iterator().next();
+
+//Move the bucket to the new node. The bucket will
+//be moved when this method completes. It throws an exception
+//if there is a problem or invalid arguments.
+PartitionRegionHelper.moveBucketByKey(r, source, destination, product);
+```
+
+See the Java API documentation for `org.apache.geode.cache.partition.PartitionRegionHelper.moveBucketByKey` for more details.
+
+The `moveData` method moves data up to a given percentage (measured in bytes) from a source member to a destination member. For example, you could use this method to move a specified percentage of data from an overloaded member to another member to improve distribution.
+
+For example:
+
+``` pre
+Region r = ...
+DistributedSystem ds = ...
+String sourceName = ...
+String destName = ...
+
+//Find the source member.
+DistributedMember source = ds.findDistributedMember(sourceName);
+DistributedMember destination = ds.findDistributedMember(destName);
+
+//Move up to 20% of the data from the source to the destination node.
+PartitionRegionHelper.moveData(r, source, destination, 20);
+```
+
+See the Java API documentation for `org.apache.geode.cache.partition.PartitionRegionHelper.moveData` for more details.
+
+For more information on partitioned regions and rebalancing, see [Partitioned Regions](chapter_overview.html).
+
+

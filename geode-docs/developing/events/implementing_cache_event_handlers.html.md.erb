@@ -1,0 +1,153 @@
+---
+title:  Implementing Cache Event Handlers
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Depending on your installation and configuration, cache events can come from local operations, peers, servers, and remote sites. Event handlers register their interest in one or more events and are notified when the events occur.
+
+<a id="implementing_cache_event_handlers__section_9286E8C6B3C54089888E1680B4F43692"></a>
+For each type of handler, Geode provides a convenience class with empty stubs for the interface callback methods.
+
+**Note:**
+Write-behind cache listeners are created by extending the `AsyncEventListener` interface, and they are configured with an `AsyncEventQueue` that you assign to one or more regions.
+
+**Procedure**
+
+1.  Decide which events your application needs to handle. For each region, decide which events you want to handle. For the cache, decide whether to handle transaction events.
+2.  For each event, decide which handlers to use. The `*Listener` and `*Adapter` classes in `org.apache.geode.cache.util` show the options.
+3.  Program each event handler:
+
+    1.  Extend the handler's adapter class.
+    2.  If you want to declare the handler in the `cache.xml`, implement the `org.apache.geode.cache.Declarable` interface as well.
+    3.  Implement the handler's callback methods as needed by your application.
+
+        **Note:**
+        Improperly programmed event handlers can block your distributed system. Cache events are synchronous. To modify your cache or perform distributed operations based on events, avoid blocking your system by following the guidelines in [How to Safely Modify the Cache from an Event Handler Callback](writing_callbacks_that_modify_the_cache.html#writing_callbacks_that_modify_the_cache).
+
+        Example:
+
+        ``` pre
+        package myPackage;
+        import org.apache.geode.cache.Declarable;
+        import org.apache.geode.cache.EntryEvent;
+        import org.apache.geode.cache.util.CacheListenerAdapter;
+        import java.util.Properties;
+                                
+        public class MyCacheListener extends CacheListenerAdapter implements Declarable {
+        /** Processes an afterCreate event.
+         * @param event The afterCreate EntryEvent received
+        */
+          public void afterCreate(EntryEvent event) {
+            String eKey = event.getKey();
+            String eVal = event.getNewValue();
+              ... do work with event info
+          }
+            ... process other event types                     
+        }
+                                
+        ```
+
+4.  Install the event handlers, either through the API or the `cache.xml`.
+
+    XML Region Event Handler Installation:
+
+    ``` pre
+    <region name="trades">
+      <region-attributes ... >
+        <!-- Cache listener -->
+        <cache-listener>
+          <class-name>myPackage.MyCacheListener</class-name>
+        <cache-listener>
+      </region-attributes>
+    </region>
+    ```
+
+    Java Region Event Handler Installation:
+
+    ``` pre
+    tradesRegion = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .addCacheListener(new MyCacheListener())
+      .create("trades");
+    ```
+
+    XML Transaction Writer and Listener Installation:
+
+    ``` pre
+    <cache search-timeout="60">
+          <cache-transaction-manager>
+            <transaction-listener>
+              <class-name>com.company.data.MyTransactionListener</class-name>
+                    <parameter name="URL">
+                      <string>jdbc:cloudscape:rmi:MyData</string>
+                    </parameter>
+               </transaction-listener> 
+               <transaction-listener>
+                . . . 
+               </transaction-listener> 
+               <transaction-writer>
+                    <class-name>com.company.data.MyTransactionWriter</class-name>
+                    <parameter name="URL">
+                        <string>jdbc:cloudscape:rmi:MyData</string>
+                    </parameter>
+                    <parameter 
+                      ...
+                    </parameter>
+               </transaction-writer> 
+          </cache-transaction-manager>
+          . . . 
+    </cache>
+    ```
+
+The event handlers are initialized automatically during region creation when you start the member.
+
+## <a id="implementing_cache_event_handlers__section_C62E9535C43B4BC5A7AA7B8B4125D1EB" class="no-quick-link"></a>Installing Multiple Listeners on a Region
+
+XML:
+
+``` pre
+<region name="exampleRegion">
+  <region-attributes>
+    . . .
+    <cache-listener>
+      <class-name>myCacheListener1</class-name>
+    </cache-listener>
+    <cache-listener>
+      <class-name>myCacheListener2</class-name>
+    </cache-listener>
+    <cache-listener>
+      <class-name>myCacheListener3</class-name>
+    </cache-listener>
+  </region-attributes>
+</region>
+```
+
+API:
+
+``` pre
+CacheListener listener1 = new myCacheListener1(); 
+CacheListener listener2 = new myCacheListener2(); 
+CacheListener listener3 = new myCacheListener3(); 
+
+Region nr = cache.createRegionFactory()
+  .initCacheListeners(new CacheListener[]
+    {listener1, listener2, listener3})
+  .setScope(Scope.DISTRIBUTED_NO_ACK)
+  .create(name);
+  
+```

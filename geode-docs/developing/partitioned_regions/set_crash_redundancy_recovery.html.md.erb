@@ -1,0 +1,60 @@
+---
+title:  Configure Member Crash Redundancy Recovery for a Partitioned Region
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Configure whether and how redundancy is recovered in a partition region after a member crashes.
+
+<a id="set_crash_redundancy_recovery__section_86CF741758E54DA29519E9CDDF1BC393"></a>
+Use the partition attribute `recovery-delay` to specify member crash redundancy recovery.
+
+| recovery-delay partition attribute | Effect following a member failure                                                    |
+|------------------------------------|--------------------------------------------------------------------------------------|
+| -1                                 | No automatic recovery of redundancy following a member failure. This is the default. |
+| long greater than or equal to 0    | Number of milliseconds to wait after a member failure before recovering redundancy.  |
+
+By default, redundancy is not recovered after a member crashes. If you expect to quickly restart most crashed members, combining this default setting with member join redundancy recovery can help you avoid unnecessary data shuffling while members are down. By waiting for lost members to rejoin, redundancy recovery is done using the newly started members and partitioning is better balanced with less processing.
+
+Set crash redundancy recovery using one of the following:
+
+-   XML:
+
+    ``` pre
+    // Give a crashed member 10 seconds to restart 
+    // before recovering redundancy
+    <region name="PR1"> 
+      <region-attributes refid="PARTITION"> 
+        <partition-attributes recovery-delay="10000"/> 
+      </region-attributes> 
+    </region> 
+    ```
+
+-   Java:
+
+    ``` pre
+    PartitionAttributes pa = new PartitionAttributesFactory().setRecoveryDelay(10000).create(); 
+    ```
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create region --name="PR1" type=PARTITION --recovery-delay=10000
+    ```
+
+

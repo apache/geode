@@ -1,0 +1,38 @@
+---
+title:  Slow distributed-ack Messages
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In systems with distributed-ack regions, a sudden large number of distributed-no-ack operations can cause distributed-ack operations to take a long time to complete.
+
+The `distributed-no-ack` operations can come from anywhere. They may be updates to `distributed-no-ack` regions or they may be other `distributed-no-ack` operations, like destroys, performed on any region in the cache, including the `distributed-ack` regions.
+
+The main reasons why a large number of `distributed-no-ack` messages may delay `distributed-ack` operations are:
+
+-   For any single socket connection, all operations are executed serially. If there are any other operations buffered for transmission when a `distributed-ack` is sent, the `distributed-ack` operation must wait to get to the front of the line before being transmitted. Of course, the operation’s calling process is also left waiting.
+-   The `distributed-no-ack` messages are buffered by their threads before transmission. If many messages are buffered and then sent to the socket at once, the line for transmission might be very long.
+
+You can take these steps to reduce the impact of this problem:
+
+1.  If you’re using TCP, check whether you have socket conservation enabled for your members. It is configured by setting the Geode property `conserve-sockets` to true. If enabled, each application’s threads will share sockets unless you override the setting at the thread level. Work with your application programmers to see whether you might disable sharing entirely or at least for the threads that perform `distributed-ack` operations. These include operations on `distributed-ack` regions and also `netSearches` performed on regions of any distributed scope. (Note: `netSearch` is only performed on regions with a data-policy of empty, normal and preloaded.) If you give each thread that performs `distributed-ack` operations its own socket, you effectively let it scoot to the front of the line ahead of the `distributed-no-ack` operations that are being performed by other threads. The thread-level override is done by calling the `DistributedSystem.setThreadsSocketPolicy(false)` method.
+2.  Reduce your buffer sizes to slow down the distributed-no-ack operations. These changes slow down the threads performing distributed-no-ack operations and allow the thread doing the distributed-ack operations to be sent in a more timely manner.
+    -   If you're using UDP (you either have multicast enabled regions or have set `disable-tcp` to true in gemfire.properties), consider reducing the byteAllowance of mcast-flow-control to something smaller than the default of 3.5 megabytes.
+    -   If you're using TCP/IP, reduce the `socket-buffer-size` in gemfire.properties.
+
+

@@ -1,0 +1,105 @@
+---
+title:  SSL Sample Implementation
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+A simple example demonstrates the configuration and startup of Geode system components with SSL.
+
+## <a id="ssl_example__section_A8817FA8EF654CFB862F2375C0DD6770" class="no-quick-link"></a>Provider-Specific Configuration File
+
+This example uses a keystore created by the Java `keytool` application to provide the proper credentials to the provider. To create the keystore, run the `keytool` utility:
+
+``` pre
+keytool -genkey \ 
+-alias self \ 
+-dname "CN=trusted" \ 
+-validity 3650 \ 
+-keypass password \ 
+-keystore ./trusted.keystore \ 
+-storepass password \ 
+-storetype JKS 
+```
+
+This creates a `./trusted.keystore` file to be used later.
+
+## <a id="ssl_example__section_4D54B2E9045C4E34AE6DFFBECDED9271" class="no-quick-link"></a>gemfire.properties File
+
+You can enable SSL in the `gemfire.properties` file. In this example, SSL is enabled for all
+components.
+
+``` pre
+ssl-enabled-components=all
+mcast-port=0
+locators=<hostaddress>[<port>]
+```
+
+## <a id="ssl_example__section_7B8E0BBF4A4C4B9FB9BC34AC1CDD4D3E" class="no-quick-link"></a>gfsecurity.properties File
+
+You can specify the provider-specific settings in a `gfsecurity.properties` file, which can then be
+secured by restricting access to this file. The following example configures the default JSSE
+provider settings included with the JDK.
+
+``` pre
+ssl-keystore=/path/to/trusted.keystore
+ssl-keystore-password=password
+ssl-truststore=/path/to/trusted.keystore
+ssl-truststore-password=/path/to/trusted.truststore
+security-username=xxxx
+security-userPassword=yyyy 
+```
+
+
+## <a id="ssl_example__section_32E55F2088804667BB448DB577AC2940" class="no-quick-link"></a>Locator Startup
+
+Before starting other system members, we started the locator with the SSL and provider-specific
+configuration settings. After properly configuring `gemfire.properties` and `gfsecurity.properties`,
+start the locator and provide the location of the properties files. If any of the password fields
+are left empty, you will be prompted to enter a password.
+
+``` pre
+gfsh>start locator --name=my_locator --port=12345 \
+--properties-file=/path/to/your/gemfire.properties \
+--security-properties-file=/path/to/your/gfsecurity.properties
+```
+
+## <a id="ssl_example__section_8FCC32091E97422BA45AA76C82D8294D" class="no-quick-link"></a>Other Member Startup
+
+Applications and cache servers can be started similarly to the locator startup, with the appropriate
+`gemfire.properties` file and `gfsecurity.properties` files placed in the current working
+directory. You can also pass in the location of both files as system properties on the command
+line. For example:
+
+``` pre
+gfsh>start server --name=my_server \
+--properties-file=/path/to/your/gemfire.properties \
+--security-properties-file=/path/to/your/gfsecurity.properties
+```
+
+## <a id="ssl_example__section_connect_cluster" class="no-quick-link"></a>Connecting to a Running Cluster
+
+You can use `gfsh` to connect to an SSL-enabled cluster that is already running by specifying the
+`use-ssl` command-line option and providing a path to the security configuration file:
+
+``` pre
+gfsh>connect --locator=localhost[10334] --use-ssl \
+--security-properties-file=/path/to/your/gfsecurity.properties
+```
+
+Once connected, you can then issue `gfsh` commands to perform a variety of operations, including
+listing members and displaying region characteristics.

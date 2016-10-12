@@ -1,0 +1,88 @@
+---
+title:  Implement a Data Loader
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To program a data loader and configure your region to use it:
+
+1. Program your loader.
+
+2. Install your loader in each member region where you need it.
+
+## <a id="implementing_data_loaders__section_88076AF5EC184FE88AAF4C806A0CA9DF" class="no-quick-link"></a>Program your loader
+To program your loader:
+
+1.  Implement `org.apache.geode.cache.CacheLoader`.
+
+2.  If you want to declare the loader in your `cache.xml`, implement the `org.apache.geode.cache.Declarable` interface as well.
+
+3.  Program the single `CacheLoader` `load` method to do whatever your application requires for retrieving the value from outside the cache. If you need to run `Region` API calls from your loader, spawn separate threads for them. Do not make direct calls to `Region` methods from your load method implementation as it could cause the cache loader to block, hurting the performance of the distributed system. For example:
+
+    ``` pre
+    public class SimpleCacheLoader implements CacheLoader, Declarable {
+        public Object load(LoaderHelper helper) {
+            String key = (String) helper.getKey();
+            System.out.println(" Loader called to retrieve value for " + key);
+            // Create a value using the suffix number of the key (key1, key2, etc.)
+            return "LoadedValue" + (Integer.parseInt(key.substring(3)));
+        }
+        public void close() { // do nothing }
+        public void init(Properties props) { // do nothing }
+    }
+    ```
+
+## Install your loader in each member region
+To install your loader in each member region where you need it:
+
+1. In a partitioned region, install the cache loader in every data store for the region (`partition-attributes` `local-max-memory` &gt; 0).
+
+2. In a distributed region, install the loader in the members where it makes sense to do so. Cache loaders are usually defined in only a subset of the members holding the region. You might, for example, assign the job of loading from a database to one or two members for a region hosted by many more members. This can be done to reduce the number of connections when the outside source is a database.
+
+    Use one of these methods to install the loader:
+    -   XML:
+
+        ``` pre
+        <region-attributes>
+            <cache-loader>
+                <class-name>myCacheLoader</class-name>
+            </cache-loader>
+        </region-attributes>
+        ```
+    -   XML with parameters:
+
+        ``` pre
+        <cache-loader>
+            <class-name>com.company.data.DatabaseLoader</class-name>
+            <parameter name="URL">
+                <string>jdbc:cloudscape:rmi:MyData</string>
+            </parameter>
+        </cache-loader>
+        ```
+    -   Java:
+
+        ``` pre
+        RegionFactory<String,Object> rf = cache.createRegionFactory(REPLICATE);
+        rf.setCacheLoader(new QuoteLoader());
+        quotes = rf.create("NASDAQ Quotes");
+        ```
+
+**Note:**
+You can also configure Regions using the gfsh command-line interface, however you cannot configure a `cache-loader` using gfsh. See [Region Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_EF03119A40EE492984F3B6248596E1DD).
+
+
