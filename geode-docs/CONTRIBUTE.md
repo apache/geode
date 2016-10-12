@@ -12,10 +12,10 @@ Project Geode welcomes your contributions to the community's documentation effor
 
 We use the fork-and-pull collaboration method on GitHub:
 
-1. In your GitHub account, fork the gemfire/docs-geode-md repository.
+1. In your GitHub account, fork the `apache/incubator-geode` repository.
 2. Create a local clone of your fork.
-3. Make changes and commit them in your fork.
-4. In the gemfire/docs-geode-md repository, create a pull request.
+3. Make changes in the `geode-docs` directory and commit them in your fork.
+4. In the `apache/incubator-geode` repository, create a pull request.
 
 See [Using Pull Requests](https://help.github.com/articles/using-pull-requests/) on GitHub for more about the fork-and-pull collaboration method.
 
@@ -23,7 +23,7 @@ See [Using Pull Requests](https://help.github.com/articles/using-pull-requests/)
 
 ## Document Source Files and Tools
 
-Project Geode documentation source files are written in markdown. Image files include .gif and .png graphics and editable image files in the open source SVG format.
+Project Geode documentation source files are written in markdown. Image files include .gif and .png graphics and editable image files in the open-source SVG format.
 
 - [Working with Markdown Files](#markdown)
 - [Working with Images and Graphics](#images)
@@ -38,7 +38,7 @@ You can edit markdown files in any text editor. For more, read [Daring Fireball'
 
 ### Working with Images and Graphics
 
-Image files in .gif or .png format are in the `images` directory in the Project Geode docs repo. Images in .svg format are in the `images_svg` directory.
+Image files in .gif or .png format are in the `docs/images` directory in the Project Geode docs repo. Images in .svg format are in the `docs/images_svg` directory.
 
 Most of the Project Geode image files have been converted to the open source SVG format. You can insert SVG images directly into an XML topic and modify images using a SVG editor.
 

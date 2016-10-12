@@ -4,12 +4,11 @@ Apache Geode provides the full source for end-user documentation in markdown for
 
 Bookbinder is a gem that binds  a unified documentation web application from markdown, html, and/or DITA source material. The source material for bookbinder must be stored either in local directories or in GitHub repositories. Bookbinder runs [middleman](http://middlemanapp.com/) to produce a Rackup app that can be deployed locally or as a Web application.
 
-This document contains instructions for building and viewing the Geode documentation locally, as well as for publishing it to the Geode website. It contains the sections:
+This document contains instructions for building and viewing the Geode documentation locally.
 
 - [Prerequisites](#prereq)
 - [Bookbinder Usage](#usage)
 - [Building the Documentation](#building)
-- [Publishing the Documentation](#publishing)
 
 ## Prerequisites
 
@@ -75,9 +74,3 @@ broken_link_exclusions: iefix|using_custom_classes|arrowhead|cppdocs|DotNetDocs
   ```
 
   You can now view the local documentation at <http://localhost:9292>.
-
-## Publishing the Documentation
-
-Because the `final_app` directory contains the full output of the HTML conversion process, you can easily publish this directory as a hosted Web application.
-
-To publish the Geode documentation you built locally to the Geode website, move the contents of the directory `geode-book/final_app/public/docs` to the directory `geode-site/website/content/docs`. Then, follow the instructions for updating the website located at `geode-site/website/README.md`.
