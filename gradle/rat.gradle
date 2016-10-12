@@ -49,8 +49,8 @@ rat {
     'geode-examples/gradle/wrapper/**',
 
     // IDE
-    'etc/eclipseFormatterProfile.xml',
-    'etc/intellijIdeaCodeStyle.xml',
+    'etc/eclipse-java-google-style.xml',
+    'etc/intellij-java-google-style.xml',
     'etc/eclipseOrganizeImports.importorder',
     '**/.project',
     '**/.classpath',
