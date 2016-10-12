@@ -26,6 +26,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -38,8 +40,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   private CacheServerMXBean bean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -50,7 +51,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testDataAdmin() throws Exception {
     bean.removeIndex("foo");
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
@@ -63,7 +64,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
+  @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testClusterAdmin() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
@@ -72,7 +73,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
 
 
   @Test
-  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testDataUser() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     bean.executeContinuousQuery("bar");
@@ -80,7 +81,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());

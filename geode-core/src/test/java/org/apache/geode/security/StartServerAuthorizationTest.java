@@ -30,7 +30,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocatorServerConfigurationRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -38,17 +39,13 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
 
   @Rule
-  public LocatorServerConfigurationRule lsRule = new LocatorServerConfigurationRule(this);
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Before
   public void before() throws Exception {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
-    props.put(JMX_MANAGER, "true");
-    props.put(JMX_MANAGER_START, "true");
-    props.put(JMX_MANAGER_PORT, 0);
-    props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-    lsRule.getLocatorVM(props);
+    lsRule.getLocatorVM(0, props);
   }
 
   @Test
@@ -60,7 +57,8 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
 
     VM server = lsRule.getNodeVM(1);
     server.invoke(()->{
-      assertThatThrownBy(()->lsRule.getSystem(props)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Security check failed. Authentication error. Please check your credentials");
+      ServerStarter serverStarter = new ServerStarter(props);
+      assertThatThrownBy(()->serverStarter.startServer(lsRule.getLocatorPort(0))).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Security check failed. Authentication error. Please check your credentials");
     });
   }
 
@@ -74,7 +72,8 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
 
     VM server = lsRule.getNodeVM(1);
     server.invoke(()->{
-      assertThatThrownBy(()->lsRule.getSystem(props)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("user not authorized for CLUSTER:MANAGE");
+      ServerStarter serverStarter = new ServerStarter(props);
+      assertThatThrownBy(()->serverStarter.startServer(lsRule.getLocatorPort(0))).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("user not authorized for CLUSTER:MANAGE");
     });
 
 

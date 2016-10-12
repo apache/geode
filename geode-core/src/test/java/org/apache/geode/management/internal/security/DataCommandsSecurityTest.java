@@ -27,6 +27,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -38,8 +40,7 @@ public class DataCommandsSecurityTest {
   private MemberMXBean bean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -50,7 +51,7 @@ public class DataCommandsSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "region1-user", password = "1234567")
+  @ConnectionConfiguration(user = "region1-user", password = "1234567")
   public void testDataUser() throws Exception {
     bean.processCommand("locate entry --key=k1 --region=region1");
 
@@ -58,7 +59,7 @@ public class DataCommandsSecurityTest {
     assertThatThrownBy(() -> bean.processCommand("locate entry --key=k1 --region=secureRegion")).isInstanceOf(GemFireSecurityException.class);
   }
 
-  @JMXConnectionConfiguration(user = "secure-user", password = "1234567")
+  @ConnectionConfiguration(user = "secure-user", password = "1234567")
   @Test
   public void testSecureDataUser(){
     // can do all these on both regions
@@ -67,7 +68,7 @@ public class DataCommandsSecurityTest {
   }
 
   // dataUser has all the permissions granted, but not to region2 (only to region1)
-  @JMXConnectionConfiguration(user = "region1-user", password = "1234567")
+  @ConnectionConfiguration(user = "region1-user", password = "1234567")
   @Test
   public void testRegionAccess(){
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(GemFireSecurityException.class)

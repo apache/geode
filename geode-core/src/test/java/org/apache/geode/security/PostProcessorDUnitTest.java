@@ -16,13 +16,14 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
-import org.apache.geode.security.templates.SamplePostProcessor;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,14 +37,17 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
-  public PostProcessorDUnitTest(){
-    this.postProcessor = SamplePostProcessor.class;
+  public Properties getProperties(){
+    Properties  properties = super.getProperties();
+    properties.setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    return properties;
   }
 
   @Test

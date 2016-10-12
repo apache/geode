@@ -17,12 +17,15 @@
 
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
@@ -59,6 +62,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
   private static byte[] BYTES = PDXPostProcessor.BYTES;
+  private int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
   @Parameterized.Parameters
   public static Collection<Object[]> parameters(){
@@ -66,11 +70,19 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     return Arrays.asList(params);
   }
 
+  public Properties getProperties(){
+    Properties  properties = super.getProperties();
+    properties.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
+    properties.setProperty(JMX_MANAGER_PORT, jmxPort+"");
+    properties.setProperty("security-pdx", pdxPersistent+"");
+    return properties;
+  }
+
+  public Map<String, String> getData(){
+    return new HashMap();
+  }
   public PDXPostProcessorDUnitTest(boolean pdxPersistent){
-    this.postProcessor = PDXPostProcessor.class;
     this.pdxPersistent = pdxPersistent;
-    this.jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    values = new HashMap();
   }
 
   @Test

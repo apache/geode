@@ -16,11 +16,13 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,8 +38,10 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({ DistributedTest.class, SecurityTest.class })
 public class NoShowValue1PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
-  public NoShowValue1PostProcessorDUnitTest(){
-    this.postProcessor = NoShowValue1PostProcessor.class;
+  public Properties getProperties(){
+    Properties  properties = super.getProperties();
+    properties.setProperty(SECURITY_POST_PROCESSOR, NoShowValue1PostProcessor.class.getName());
+    return properties;
   }
 
   @Test

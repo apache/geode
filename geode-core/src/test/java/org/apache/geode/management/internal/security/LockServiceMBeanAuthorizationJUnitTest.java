@@ -31,6 +31,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.LockServiceMXBean;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -42,8 +44,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   private LockServiceMXBean lockServiceMBean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -65,7 +66,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     lockServiceMBean.becomeLockGrantor();
     lockServiceMBean.fetchGrantorMember();
@@ -75,14 +76,14 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
+  @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
     assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor());
     lockServiceMBean.getMemberCount();
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
     assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor()).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember()).hasMessageContaining(TestCommand.clusterRead.toString());

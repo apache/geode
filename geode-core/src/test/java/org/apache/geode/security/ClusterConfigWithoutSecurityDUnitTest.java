@@ -30,13 +30,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocatorServerConfigurationRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -45,13 +45,13 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 public class ClusterConfigWithoutSecurityDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
-  public LocatorServerConfigurationRule lsRule = new LocatorServerConfigurationRule(this);
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Before
   public void before() throws Exception {
     IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
     IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
-    lsRule.getLocatorVM(new Properties());
+    lsRule.getLocatorVM(0, new Properties());
   }
 
   @After
@@ -70,10 +70,9 @@ public class ClusterConfigWithoutSecurityDUnitTest extends JUnit4DistributedTest
     props.setProperty("use-cluster-configuration", "false");
 
     // initial security properties should only contain initial set of values
-    InternalDistributedSystem ds = lsRule.getSystem(props);
-    assertEquals(2, ds.getSecurityProperties().size());
-
-    CacheFactory.create(ds);
+    ServerStarter serverStarter = new ServerStarter(props);
+    serverStarter.startServer(lsRule.getLocatorPort(0));
+    DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, the configuration won't chagne
     Properties secProps = ds.getSecurityProperties();
@@ -91,12 +90,11 @@ public class ClusterConfigWithoutSecurityDUnitTest extends JUnit4DistributedTest
     props.setProperty("security-manager", "mySecurityManager");
     props.setProperty("use-cluster-configuration", "true");
 
-    InternalDistributedSystem ds = lsRule.getSystem(props);
+    ServerStarter serverStarter = new ServerStarter(props);
 
-    assertThatThrownBy(() -> CacheFactory.create(ds)).isInstanceOf(GemFireConfigException.class)
-                                                     .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
-                                                       .toLocalizedString());
-
+    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getLocatorPort(0)))
+      .isInstanceOf(GemFireConfigException.class)
+      .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
   }
 
 }

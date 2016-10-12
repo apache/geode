@@ -43,8 +43,10 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({ DistributedTest.class, SecurityTest.class })
 public class CQClientAuthDunitTest extends AbstractSecureServerDUnitTest {
 
-  public CQClientAuthDunitTest(){
-    this.postProcessor = SamplePostProcessor.class;
+  public Properties getProperties(){
+    Properties  properties = super.getProperties();
+    properties.setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    return properties;
   }
 
   @Test

@@ -27,14 +27,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocatorServerConfigurationRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
-  public LocatorServerConfigurationRule lsRule = new LocatorServerConfigurationRule(this);
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Before
   public void before() throws Exception {
@@ -53,7 +53,7 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    lsRule.getLocatorVM(props);
+    lsRule.getLocatorVM(0, props);
   }
 
   @Test
@@ -69,10 +69,10 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    InternalDistributedSystem ds = lsRule.getSystem(props);
+    ServerStarter serverStarter = new ServerStarter(props);
+    serverStarter.startServer(lsRule.getLocatorPort(0));
+    DistributedSystem ds = serverStarter.cache.getDistributedSystem();
     assertEquals(3, ds.getSecurityProperties().size());
-
-    CacheFactory.create(ds);
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();

@@ -107,7 +107,7 @@ public class IntegratedSecurityService implements SecurityService{
       }
     }
 
-    // in other cases like admin rest call or pulse authorization
+    // in other cases like rest call, client operations, we get it from the current thread
     currentUser = SecurityUtils.getSubject();
 
     if (currentUser == null || currentUser.getPrincipal() == null) {

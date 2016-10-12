@@ -16,17 +16,20 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
@@ -34,6 +37,9 @@ import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -44,11 +50,21 @@ public class GfshCommandsSecurityTest {
   protected static int jmxPort = ports[0];
   protected static int httpPort = ports[1];
 
+  static Properties properties = new Properties(){{
+    setProperty(JMX_MANAGER_PORT, jmxPort+"");
+    setProperty(HTTP_SERVICE_PORT, httpPort+"");
+    setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    setProperty("security-json", "org/apache/geode/management/internal/security/cacheServer.json");
+  }};
+
   private HeadlessGfsh gfsh = null;
 
-  @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxPort, httpPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    ServerStarter serverStarter = new ServerStarter(properties);
+    serverStarter.startServer();
+    serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
+  }
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, false);
@@ -59,67 +75,67 @@ public class GfshCommandsSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "wrongPwd")
+  @ConnectionConfiguration(user = "data-admin", password = "wrongPwd")
   public void testInvalidCredentials() throws Exception {
     assertFalse(gfshConnection.isAuthenticated());
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testValidCredentials() throws Exception{
     assertTrue(gfshConnection.isAuthenticated());
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-reader", password = "1234567")
+  @ConnectionConfiguration(user = "cluster-reader", password = "1234567")
   public void testClusterReader() throws Exception{
     runCommandsWithAndWithout("CLUSTER:READ");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-writer", password = "1234567")
+  @ConnectionConfiguration(user = "cluster-writer", password = "1234567")
   public void testClusterWriter() throws Exception{
     runCommandsWithAndWithout("CLUSTER:WRITE");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-manager", password = "1234567")
+  @ConnectionConfiguration(user = "cluster-manager", password = "1234567")
   public void testClusterManager() throws Exception{
     runCommandsWithAndWithout("CLUSTER:MANAGE");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-reader", password = "1234567")
+  @ConnectionConfiguration(user = "data-reader", password = "1234567")
   public void testDataReader() throws Exception{
     runCommandsWithAndWithout("DATA:READ");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-writer", password = "1234567")
+  @ConnectionConfiguration(user = "data-writer", password = "1234567")
   public void testDataWriter() throws Exception{
     runCommandsWithAndWithout("DATA:WRITE");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-manager", password = "1234567")
+  @ConnectionConfiguration(user = "data-manager", password = "1234567")
   public void testDataManager() throws Exception{
     runCommandsWithAndWithout("DATA:MANAGE");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "regionA-reader", password = "1234567")
+  @ConnectionConfiguration(user = "regionA-reader", password = "1234567")
   public void testRegionAReader() throws Exception{
     runCommandsWithAndWithout("DATA:READ:RegionA");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "regionA-writer", password = "1234567")
+  @ConnectionConfiguration(user = "regionA-writer", password = "1234567")
   public void testRegionAWriter() throws Exception{
     runCommandsWithAndWithout("DATA:WRITE:RegionA");
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "regionA-manager", password = "1234567")
+  @ConnectionConfiguration(user = "regionA-manager", password = "1234567")
   public void testRegionAManager() throws Exception{
     runCommandsWithAndWithout("DATA:MANAGE:RegionA");
   }
@@ -168,7 +184,7 @@ public class GfshCommandsSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testGetPostProcess() throws Exception {
     gfsh.executeCommand("put --region=region1 --key=key2 --value=value2");
     gfsh.executeCommand("put --region=region1 --key=key2 --value=value2");

@@ -227,7 +227,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     @ApiResponse( code = 404, message = "Region does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")  
   } )
-  @PreAuthorize("@securityService.authorizeKeys('READ', #region, #keys)")
+  @PreAuthorize("@securityService.authorize('READ', #region, #keys)")
   public ResponseEntity<?> read(
       @PathVariable("region") String region,
       @PathVariable("keys") final String[] keys,
@@ -311,7 +311,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     @ApiResponse( code = 409, message = "For CAS, @old value does not match to the current value in region" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception.")
   } )
-  @PreAuthorize("@securityService.authorizeKeys('WRITE', #region, #keys)")
+  @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> update(@PathVariable("region") String region,
       @PathVariable("keys") final String[] keys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,

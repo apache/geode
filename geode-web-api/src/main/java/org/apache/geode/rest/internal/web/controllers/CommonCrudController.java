@@ -140,7 +140,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "Region or key(s) does not exist" ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception" )      
   } )
-  @PreAuthorize("@securityService.authorizeKeys('WRITE', #region, #keys)")
+  @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> delete(@PathVariable("region") String region,
                                   @PathVariable("keys") final String[] keys){
     logger.debug("Delete data for key {} on region {}", ArrayUtils.toString((Object[])keys), region);
@@ -169,7 +169,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "Region does not exist" ),
     @ApiResponse( code = 500, message = "if GemFire throws an error or exception" )   
   } )
-  @PreAuthorize("@securityService.authorize('DATA', 'WRITE', #regon)")
+  @PreAuthorize("@securityService.authorize('DATA', 'WRITE', #region)")
   public ResponseEntity<?> delete(@PathVariable("region") String region) {
     logger.debug("Deleting all data in Region ({})...", region);
 

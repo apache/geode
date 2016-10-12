@@ -47,7 +47,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerConfigurationRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 
@@ -57,8 +57,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
   private String groupName = "Lucene";
 
   @Rule
-  public LocatorServerConfigurationRule ls = new LocatorServerConfigurationRule(
-      this);
+  public LocatorServerStartupRule ls = new LocatorServerStartupRule();
 
   @Test
   public void indexGetsCreatedUsingClusterConfiguration()
@@ -78,7 +77,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     // configuration.
     VM vm2 = startNodeUsingClusterConfiguration(2, false);
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] { "field1", "field2", "field3" }, index);
@@ -104,7 +103,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     // configuration.
     VM vm2 = startNodeUsingClusterConfiguration(2, false);
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       String[] fields = new String[] { "field1", "field2", "field3" };
@@ -139,7 +138,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // VM2 should have lucene index created using gfsh execution.
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] { "field1", "field2", "field3" }, index);
@@ -147,7 +146,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // The Lucene index is present in vm3.
     vm3.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
     });
@@ -176,7 +175,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // VM2 should have lucene index created using gfsh execution
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] { "field1", "field2", "field3" }, index);
@@ -184,7 +183,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // The Lucene index should not be present in vm3.
     vm3.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNull(index);
     });
@@ -213,7 +212,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // VM2 should have lucene index created using gfsh execution
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] { "field1", "field2", "field3" }, index);
@@ -221,7 +220,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // The Lucene index should not be present in vm3.
     vm3.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNull(index);
     });
@@ -242,7 +241,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     if (addGroup) {
       nodeProperties.setProperty(GROUPS, groupName);
     }
-    return ls.getServerVM(vmIndex, nodeProperties);
+    return ls.getServerVM(vmIndex, nodeProperties, ls.getLocatorPort(0));
   }
 
   private VM startLocatorWithClusterConfigurationEnabled() throws Exception {
@@ -268,7 +267,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
     locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR,
  dir.getCanonicalPath());
-    return ls.getLocatorVM(locatorProps);
+    return ls.getLocatorVM(0, locatorProps);
   }
 
   private void createLuceneIndexUsingGfsh(boolean addGroup) throws Exception {

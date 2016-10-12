@@ -29,13 +29,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocatorServerConfigurationRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
-  public LocatorServerConfigurationRule lsRule = new LocatorServerConfigurationRule(this);
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Before
   public void before() throws Exception {
@@ -55,7 +55,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     props.put(JMX_MANAGER_START, "false");
     props.put(JMX_MANAGER_PORT, 0);
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-    lsRule.getLocatorVM(props);
+    lsRule.getLocatorVM(0, props);
   }
 
   @Test
@@ -67,10 +67,9 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    InternalDistributedSystem ds = lsRule.getSystem(props);
-    assertEquals(2, ds.getSecurityProperties().size());
-
-    CacheFactory.create(ds);
+    ServerStarter serverStarter = new ServerStarter(props);
+    serverStarter.startServer(lsRule.getLocatorPort(0));
+    DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();
@@ -90,9 +89,9 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
 
     // initial security properties should only contain initial set of values
-    InternalDistributedSystem ds = lsRule.getSystem(props);
-
-    CacheFactory.create(ds);
+    ServerStarter serverStarter = new ServerStarter(props);
+    serverStarter.startServer(lsRule.getLocatorPort(0));
+    DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();
@@ -111,11 +110,12 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    InternalDistributedSystem ds = lsRule.getSystem(props);
+    ServerStarter serverStarter = new ServerStarter(props);
 
-    assertThatThrownBy(() -> CacheFactory.create(ds)).isInstanceOf(GemFireConfigException.class)
-                                                     .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
-                                                       .toLocalizedString());
+    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getLocatorPort(0)))
+      .isInstanceOf(GemFireConfigException.class)
+      .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
+        .toLocalizedString());
 
   }
 
@@ -130,10 +130,11 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    InternalDistributedSystem ds = lsRule.getSystem(props);
+    ServerStarter serverStarter = new ServerStarter(props);
 
-    assertThatThrownBy(() -> CacheFactory.create(ds)).isInstanceOf(GemFireConfigException.class)
-                                                     .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
+    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getLocatorPort(0)))
+      .isInstanceOf(GemFireConfigException.class)
+      .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
                                                        .toLocalizedString());
 
   }
@@ -148,10 +149,11 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty("security-manager", "mySecurityManager");
     props.setProperty("use-cluster-configuration", "false");
 
-    InternalDistributedSystem ds = lsRule.getSystem(props);
+    ServerStarter serverStarter = new ServerStarter(props);
 
-    assertThatThrownBy(() -> CacheFactory.create(ds)).isInstanceOf(GemFireConfigException.class)
-                                                     .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2
+    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getLocatorPort(0)))
+      .isInstanceOf(GemFireConfigException.class)
+      .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2
                                                        .toLocalizedString());
 
   }

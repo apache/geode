@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -36,8 +38,7 @@ public class AccessControlMBeanJUnitTest {
   private AccessControlMXBean bean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -51,7 +52,7 @@ public class AccessControlMBeanJUnitTest {
    * Test that any authenticated user can access this method
    */
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testAnyAccess() throws Exception {
     assertThat(bean.authorize("DATA", "READ")).isEqualTo(false);
     assertThat(bean.authorize("CLUSTER", "READ")).isEqualTo(false);

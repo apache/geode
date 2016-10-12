@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.management.internal.security;
+
+package org.apache.geode.test.dunit.rules;
 
 import static org.junit.Assert.*;
 
@@ -36,10 +37,11 @@ import javax.management.remote.JMXServiceURL;
 
 import org.junit.runner.Description;
 
+import org.apache.geode.management.internal.security.AccessControlMXBean;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
 
 /**
- * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
+ * Class which eases the creation of MBeans for security testing. When combined with {@link ConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
  */
 public class MBeanServerConnectionRule extends DescribedExternalResource {
@@ -102,7 +104,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   }
 
   protected void before(Description description) throws Throwable {
-    JMXConnectionConfiguration config = description.getAnnotation(JMXConnectionConfiguration.class);
+    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
     Map<String, String[]> env = new HashMap<>();
     if (config != null) {
       String user = config.user();

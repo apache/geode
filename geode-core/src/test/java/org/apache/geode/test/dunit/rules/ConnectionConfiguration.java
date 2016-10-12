@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.management.internal.security;
+
+package org.apache.geode.test.dunit.rules;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,7 +28,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-public @interface JMXConnectionConfiguration {
+public @interface ConnectionConfiguration {
   String user();
   String password();
 }
