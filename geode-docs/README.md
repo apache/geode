@@ -6,9 +6,9 @@ Bookbinder is a Ruby gem that binds  a unified documentation web application fro
 
 This document contains instructions for building and viewing the Geode documentation locally.
 
-- [Prerequisites](#prereq)
-- [Bookbinder Usage](#usage)
-- [Building the Documentation](#building)
+- [Prerequisites](#prerequisites)
+- [Bookbinder Usage](#bookbinder-usage)
+- [Building the Documentation](#building-the-documentation)
 
 ## Prerequisites
 
@@ -43,7 +43,7 @@ The installed `config.yml` file configures the Geode book for building locally. 
 
   Bookbinder converts the markdown source into HTML, which it puts in the `final_app` directory.
 
-5. To view the local documentation, do the following:
+3. To view the local documentation, do the following:
 
   ```
   $ cd final_app
