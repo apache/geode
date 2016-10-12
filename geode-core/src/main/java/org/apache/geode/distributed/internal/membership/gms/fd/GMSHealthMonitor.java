@@ -374,15 +374,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private void contactedBy(InternalDistributedMember sender, long timeStamp) {
     TimeStamp cTS = new TimeStamp(timeStamp);
-    //TODO Udo: why putIfAbsent. Surely only put is required
     cTS = memberTimeStamps.putIfAbsent(sender, cTS);
     if (cTS != null && cTS.getTime() < timeStamp) {
       cTS.setTime(timeStamp);
     }
     if (suspectedMemberInView.remove(sender) != null) {
       logger.info("No longer suspecting {}", sender);
+      setNextNeighbor(currentView, null);
     }
-    setNextNeighbor(currentView, null);
   }
 
 
@@ -834,7 +833,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     List<InternalDistributedMember> allMembers = newView.getMembers();
-
+    //
     //    Set<InternalDistributedMember> checkAllSuspected = new HashSet<>(allMembers);
     //    checkAllSuspected.removeAll(suspectedMemberInView.keySet());
     //    checkAllSuspected.remove(localAddress);
@@ -1066,10 +1065,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private void processHeartbeat(HeartbeatMessage m) {
     this.stats.incHeartbeatsReceived();
-    if (m.getRequestId() < 0) {
-      // a periodic heartbeat
-      contactedBy(m.getSender(), System.currentTimeMillis());
-    } else {
+    if (m.getRequestId() >= 0) {
       Response resp = requestIdVsResponse.get(m.getRequestId());
       logger.trace("Got heartbeat from member {}. {}", m.getSender(), (resp != null ? "Check thread still waiting" : "Check thread is not waiting"));
       if (resp != null) {
@@ -1078,9 +1074,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           resp.notify();
         }
       }
-      //we got heartbeat lets update timestamp
-      contactedBy(m.getSender(), System.currentTimeMillis());
+
     }
+    //we got heartbeat lets update timestamp
+    contactedBy(m.getSender(), System.currentTimeMillis());
   }
 
   /**
