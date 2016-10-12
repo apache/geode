@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -52,22 +50,22 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
   private static final int NUM_BUCKETS = 15;
   private static final int MAX_WAIT = 30 * 1000;
   static Object lockObject = new Object();
-  
+
   /**
    * do a put/modify/destroy while closing disk store
    * 
-   * to turn on debug, add following parameter in local.conf:
-   * hydra.VmPrms-extraVMArgs += "-Ddisk.KRF_DEBUG=true";
+   * to turn on debug, add following parameter in local.conf: hydra.VmPrms-extraVMArgs +=
+   * "-Ddisk.KRF_DEBUG=true";
    */
   @Test
   public void testCloseDiskStoreWhenPut() {
     final String title = "testCloseDiskStoreWhenPut:";
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-   
+
     createPR(vm0, 0);
     createData(vm0, 0, 10, "a");
-    vm0.invoke(new CacheSerializableRunnable(title+"server add writer") {
+    vm0.invoke(new CacheSerializableRunnable(title + "server add writer") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
         // let the region to hold on the put until diskstore is closed
@@ -76,9 +74,9 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
         }
       }
     });
-    
+
     // create test
-    AsyncInvocation async1 = vm0.invokeAsync(new CacheSerializableRunnable(title+"async create") {
+    AsyncInvocation async1 = vm0.invokeAsync(new CacheSerializableRunnable(title + "async create") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
         IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
@@ -86,7 +84,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
           region.put(10, "b");
           fail("Expect CacheClosedException here");
         } catch (CacheClosedException cce) {
-          System.out.println(title+cce.getMessage());
+          System.out.println(title + cce.getMessage());
           if (DiskStoreImpl.KRF_DEBUG) {
             assert cce.getMessage().contains("The disk store is closed.");
           } else {
@@ -97,22 +95,22 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
         }
       }
     });
-    vm0.invoke(new CacheSerializableRunnable(title+"close disk store") {
+    vm0.invoke(new CacheSerializableRunnable(title + "close disk store") {
       public void run2() throws CacheException {
-        GemFireCacheImpl gfc = (GemFireCacheImpl)getCache();
+        GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
         Wait.pause(500);
         gfc.closeDiskStores();
-        synchronized(lockObject) {
+        synchronized (lockObject) {
           lockObject.notify();
         }
       }
     });
     ThreadUtils.join(async1, MAX_WAIT);
     closeCache(vm0);
-    
+
     // update
     createPR(vm0, 0);
-    vm0.invoke(new CacheSerializableRunnable(title+"server add writer") {
+    vm0.invoke(new CacheSerializableRunnable(title + "server add writer") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
         // let the region to hold on the put until diskstore is closed
@@ -121,7 +119,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
         }
       }
     });
-    async1 = vm0.invokeAsync(new CacheSerializableRunnable(title+"async update") {
+    async1 = vm0.invokeAsync(new CacheSerializableRunnable(title + "async update") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
         IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
@@ -129,7 +127,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
           region.put(1, "b");
           fail("Expect CacheClosedException here");
         } catch (CacheClosedException cce) {
-          System.out.println(title+cce.getMessage());
+          System.out.println(title + cce.getMessage());
           if (DiskStoreImpl.KRF_DEBUG) {
             assert cce.getMessage().contains("The disk store is closed.");
           } else {
@@ -140,12 +138,12 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
         }
       }
     });
-    vm0.invoke(new CacheSerializableRunnable(title+"close disk store") {
+    vm0.invoke(new CacheSerializableRunnable(title + "close disk store") {
       public void run2() throws CacheException {
-        GemFireCacheImpl gfc = (GemFireCacheImpl)getCache();
+        GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
         Wait.pause(500);
         gfc.closeDiskStores();
-        synchronized(lockObject) {
+        synchronized (lockObject) {
           lockObject.notify();
         }
       }
@@ -155,7 +153,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
 
     // destroy
     createPR(vm0, 0);
-    vm0.invoke(new CacheSerializableRunnable(title+"server add writer") {
+    vm0.invoke(new CacheSerializableRunnable(title + "server add writer") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
         // let the region to hold on the put until diskstore is closed
@@ -164,7 +162,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
         }
       }
     });
-    async1 = vm0.invokeAsync(new CacheSerializableRunnable(title+"async destroy") {
+    async1 = vm0.invokeAsync(new CacheSerializableRunnable(title + "async destroy") {
       public void run2() throws CacheException {
         Region region = getRootRegion(PR_REGION_NAME);
         IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
@@ -172,7 +170,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
           region.destroy(2, "b");
           fail("Expect CacheClosedException here");
         } catch (CacheClosedException cce) {
-          System.out.println(title+cce.getMessage());
+          System.out.println(title + cce.getMessage());
           if (DiskStoreImpl.KRF_DEBUG) {
             assert cce.getMessage().contains("The disk store is closed.");
           } else {
@@ -183,33 +181,31 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
         }
       }
     });
-    vm0.invoke(new CacheSerializableRunnable(title+"close disk store") {
+    vm0.invoke(new CacheSerializableRunnable(title + "close disk store") {
       public void run2() throws CacheException {
-        GemFireCacheImpl gfc = (GemFireCacheImpl)getCache();
+        GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
         Wait.pause(500);
         gfc.closeDiskStores();
-        synchronized(lockObject) {
+        synchronized (lockObject) {
           lockObject.notify();
         }
       }
     });
     ThreadUtils.join(async1, MAX_WAIT);
-    
+
     checkData(vm0, 0, 10, "a");
     checkData(vm0, 10, 11, null);
     closeCache(vm0);
   }
 
   private static class MyWriter extends CacheWriterAdapter implements Declarable {
-    public MyWriter() {
-    }
+    public MyWriter() {}
 
-    public void init(Properties props) {
-    }
+    public void init(Properties props) {}
 
     public void beforeCreate(EntryEvent event) {
       try {
-        synchronized(lockObject) {
+        synchronized (lockObject) {
           lockObject.wait();
         }
       } catch (InterruptedException e) {
@@ -219,7 +215,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
 
     public void beforeUpdate(EntryEvent event) {
       try {
-        synchronized(lockObject) {
+        synchronized (lockObject) {
           lockObject.wait();
         }
       } catch (InterruptedException e) {
@@ -229,7 +225,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
 
     public void beforeDestroy(EntryEvent event) {
       try {
-        synchronized(lockObject) {
+        synchronized (lockObject) {
           lockObject.wait();
         }
       } catch (InterruptedException e) {

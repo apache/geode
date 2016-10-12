@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.locks;
@@ -34,17 +32,17 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * Provides processing of DLockRecoverGrantorProcessor. Reply will not be
- * sent until all locks are released.
+ * Provides processing of DLockRecoverGrantorProcessor. Reply will not be sent until all locks are
+ * released.
  *
  */
 public class TXRecoverGrantorMessageProcessor
-implements DLockRecoverGrantorProcessor.MessageProcessor {
-  
+    implements DLockRecoverGrantorProcessor.MessageProcessor {
+
   private static final Logger logger = LogService.getLogger();
-  
-  public void process(final DM dm, 
-                      final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
+
+  public void process(final DM dm,
+      final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
 
     try {
       dm.getWaitingThreadPool().execute(new Runnable() {
@@ -52,16 +50,14 @@ implements DLockRecoverGrantorProcessor.MessageProcessor {
           processDLockRecoverGrantorMessage(dm, msg);
         }
       });
-    }
-    catch (RejectedExecutionException e) {
+    } catch (RejectedExecutionException e) {
       logger.debug("Rejected processing of {}", msg, e);
     }
   }
 
-  protected void processDLockRecoverGrantorMessage(
-      final DM dm, 
+  protected void processDLockRecoverGrantorMessage(final DM dm,
       final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
-        
+
     ReplyException replyException = null;
     int replyCode = DLockRecoverGrantorProcessor.DLockRecoverGrantorReplyMessage.OK;
     DLockRemoteToken[] heldLocks = new DLockRemoteToken[0];
@@ -72,17 +68,15 @@ implements DLockRecoverGrantorProcessor.MessageProcessor {
     boolean gotRecoveryLock = false;
     TXLockServiceImpl dtls = null;
     try {
-      Assert.assertTrue(
-        msg.getServiceName().startsWith(DLockService.DTLS),
-        "TXRecoverGrantorMessageProcessor cannot handle service " + msg.getServiceName());
-      
+      Assert.assertTrue(msg.getServiceName().startsWith(DLockService.DTLS),
+          "TXRecoverGrantorMessageProcessor cannot handle service " + msg.getServiceName());
+
       // get the service from the name
-      DLockService svc =
-        DLockService.getInternalServiceNamed(msg.getServiceName());
-      
+      DLockService svc = DLockService.getInternalServiceNamed(msg.getServiceName());
+
       if (svc != null) {
-        dtls = (TXLockServiceImpl)TXLockService.getDTLS();
-        if (dtls != null) { 
+        dtls = (TXLockServiceImpl) TXLockService.getDTLS();
+        if (dtls != null) {
           // use TXLockServiceImpl recoveryLock to delay reply...
           dtls.acquireRecoveryWriteLock();
           gotRecoveryLock = true;
@@ -91,44 +85,49 @@ implements DLockRecoverGrantorProcessor.MessageProcessor {
           TXCommitMessage.getTracker().waitForAllToProcess();
         }
       }
-    }
-    catch (InterruptedException t) {
+    } catch (InterruptedException t) {
       Thread.currentThread().interrupt();
-      logger.warn(LocalizedMessage.create(LocalizedStrings.TXRecoverGrantorMessageProcessor_TXRECOVERGRANTORMESSAGEPROCESSORPROCESS_THROWABLE), t);
+      logger.warn(
+          LocalizedMessage.create(
+              LocalizedStrings.TXRecoverGrantorMessageProcessor_TXRECOVERGRANTORMESSAGEPROCESSORPROCESS_THROWABLE),
+          t);
       replyException = new ReplyException(t);
-    }
-    catch (RuntimeException t) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.TXRecoverGrantorMessageProcessor_TXRECOVERGRANTORMESSAGEPROCESSORPROCESS_THROWABLE), t);
+    } catch (RuntimeException t) {
+      logger.warn(
+          LocalizedMessage.create(
+              LocalizedStrings.TXRecoverGrantorMessageProcessor_TXRECOVERGRANTORMESSAGEPROCESSORPROCESS_THROWABLE),
+          t);
       if (replyException == null) {
         replyException = new ReplyException(t);
-      }
-      else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.TXRecoverGrantorMessageProcessor_MORE_THAN_ONE_EXCEPTION_THROWN_IN__0, this), t);
+      } else {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.TXRecoverGrantorMessageProcessor_MORE_THAN_ONE_EXCEPTION_THROWN_IN__0,
+            this), t);
       }
     }
-//    catch (VirtualMachineError err) {
-//      SystemFailure.initiateFailure(err);
-//      // If this ever returns, rethrow the error.  We're poisoned
-//      // now, so don't let this thread continue.
-//      throw err;
-//    }
-//    catch (Throwable t) {
-//      // Whenever you catch Error or Throwable, you must also
-//      // catch VirtualMachineError (see above).  However, there is
-//      // _still_ a possibility that you are dealing with a cascading
-//      // error condition, so you also need to check to see if the JVM
-//      // is still usable:
-//      SystemFailure.checkFailure();
-//      if (replyException == null) {
-//        replyException = new ReplyException(t);
-//      }
-//    }
+    // catch (VirtualMachineError err) {
+    // SystemFailure.initiateFailure(err);
+    // // If this ever returns, rethrow the error. We're poisoned
+    // // now, so don't let this thread continue.
+    // throw err;
+    // }
+    // catch (Throwable t) {
+    // // Whenever you catch Error or Throwable, you must also
+    // // catch VirtualMachineError (see above). However, there is
+    // // _still_ a possibility that you are dealing with a cascading
+    // // error condition, so you also need to check to see if the JVM
+    // // is still usable:
+    // SystemFailure.checkFailure();
+    // if (replyException == null) {
+    // replyException = new ReplyException(t);
+    // }
+    // }
     finally {
       if (gotRecoveryLock && dtls != null) {
         dtls.releaseRecoveryWriteLock();
       }
 
-      DLockRecoverGrantorProcessor.DLockRecoverGrantorReplyMessage replyMsg = 
+      DLockRecoverGrantorProcessor.DLockRecoverGrantorReplyMessage replyMsg =
           new DLockRecoverGrantorProcessor.DLockRecoverGrantorReplyMessage();
       replyMsg.setReplyCode(replyCode);
       replyMsg.setHeldLocks(heldLocks);
@@ -141,9 +140,8 @@ implements DLockRecoverGrantorProcessor.MessageProcessor {
           logger.debug("[TXRecoverGrantorMessageProcessor.process] locally process reply");
         }
         replyMsg.setSender(dm.getId());
-        replyMsg.dmProcess((DistributionManager)dm);
-      }
-      else {
+        replyMsg.dmProcess((DistributionManager) dm);
+      } else {
         if (logger.isDebugEnabled()) {
           logger.debug("[TXRecoverGrantorMessageProcessor.process] send reply");
         }
@@ -151,6 +149,6 @@ implements DLockRecoverGrantorProcessor.MessageProcessor {
       }
     }
   }
-  
+
 }
 

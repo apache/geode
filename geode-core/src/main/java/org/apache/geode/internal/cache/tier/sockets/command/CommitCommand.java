@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -37,8 +35,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.io.IOException;
 
 /**
- * This is the base command which read the parts for the
- * MessageType.COMMIT.<br>
+ * This is the base command which read the parts for the MessageType.COMMIT.<br>
  * 
  * @since GemFire 6.6
  */
@@ -50,15 +47,14 @@ public class CommitCommand extends BaseCommand {
     return singleton;
   }
 
-  private CommitCommand() {
-  }
+  private CommitCommand() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
     servConn.setAsTrue(REQUIRES_RESPONSE);
-    TXManagerImpl txMgr = (TXManagerImpl)servConn.getCache().getCacheTransactionManager();
-    InternalDistributedMember client = (InternalDistributedMember) servConn.getProxyID().getDistributedMember();
+    TXManagerImpl txMgr = (TXManagerImpl) servConn.getCache().getCacheTransactionManager();
+    InternalDistributedMember client =
+        (InternalDistributedMember) servConn.getProxyID().getDistributedMember();
     int uniqId = msg.getTransactionId();
     TXId txId = new TXId(client, uniqId);
     TXCommitMessage commitMsg = null;
@@ -69,7 +65,7 @@ public class CommitCommand extends BaseCommand {
       }
       if (!txMgr.isExceptionToken(commitMsg)) {
         writeCommitResponse(commitMsg, msg, servConn);
-        commitMsg.setClientVersion(null);  // fixes bug 46529
+        commitMsg.setClientVersion(null); // fixes bug 46529
         servConn.setAsTrue(RESPONDED);
       } else {
         sendException(msg, servConn, txMgr.getExceptionForToken(commitMsg, txId));
@@ -93,49 +89,48 @@ public class CommitCommand extends BaseCommand {
       commitMsg = txProxy.getCommitMessage();
       writeCommitResponse(commitMsg, msg, servConn);
       servConn.setAsTrue(RESPONDED);
-    }
-    catch (Exception e) {
-      sendException(msg, servConn,e);
+    } catch (Exception e) {
+      sendException(msg, servConn, e);
     } finally {
-      if(txId!=null) {
+      if (txId != null) {
         txMgr.removeHostedTXState(txId);
       }
       if (!wasInProgress) {
         txMgr.setInProgress(false);
       }
       if (commitMsg != null) {
-        commitMsg.setClientVersion(null);  // fixes bug 46529
+        commitMsg.setClientVersion(null); // fixes bug 46529
       }
     }
   }
 
-  
-  
-  protected static void writeCommitResponse(TXCommitMessage response,
-      Message origMsg, ServerConnection servConn)
-      throws IOException {
+
+
+  protected static void writeCommitResponse(TXCommitMessage response, Message origMsg,
+      ServerConnection servConn) throws IOException {
     Message responseMsg = servConn.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setTransactionId(origMsg.getTransactionId());
     responseMsg.setNumberOfParts(1);
-    if( response != null ) {
-    	response.setClientVersion(servConn.getClientVersion());
+    if (response != null) {
+      response.setClientVersion(servConn.getClientVersion());
     }
     responseMsg.addObjPart(response, zipValues);
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     if (logger.isDebugEnabled()) {
-      logger.debug("TX: sending a nonNull response for transaction: {}", new TXId((InternalDistributedMember) servConn.getProxyID().getDistributedMember(), origMsg.getTransactionId()));
+      logger.debug("TX: sending a nonNull response for transaction: {}",
+          new TXId((InternalDistributedMember) servConn.getProxyID().getDistributedMember(),
+              origMsg.getTransactionId()));
     }
     responseMsg.send(servConn);
     origMsg.clearParts();
   }
-  
-  private void sendException(Message msg,
-      ServerConnection servConn, Throwable e) throws IOException {
-      writeException(msg, MessageType.EXCEPTION,
-          e, false,servConn);
-      servConn.setAsTrue(RESPONDED);
+
+  private void sendException(Message msg, ServerConnection servConn, Throwable e)
+      throws IOException {
+    writeException(msg, MessageType.EXCEPTION, e, false, servConn);
+    servConn.setAsTrue(RESPONDED);
   }
-  
-  
+
+
 }

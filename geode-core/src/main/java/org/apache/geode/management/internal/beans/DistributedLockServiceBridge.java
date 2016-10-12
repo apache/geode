@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -30,14 +28,14 @@ import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.management.internal.ManagementConstants;
 
 /**
- * Bridge for the Distributed lock service. It provides an aggregated view of a
- * lock service which might be present in multiple members.
+ * Bridge for the Distributed lock service. It provides an aggregated view of a lock service which
+ * might be present in multiple members.
  * 
  * Proxies are added as and when proxies are received by Federation framework.
  * 
- * Each method which access all the proxies to gather data from them creates an
- * Iterator. Iterates over them and gather data. Creating multiple iterator on
- * each method call is a concern and a better way needs to be introduced.
+ * Each method which access all the proxies to gather data from them creates an Iterator. Iterates
+ * over them and gather data. Creating multiple iterator on each method call is a concern and a
+ * better way needs to be introduced.
  * 
  * 
  */
@@ -49,8 +47,7 @@ public class DistributedLockServiceBridge {
   private Map<ObjectName, LockServiceMXBean> mapOfProxy;
 
   /**
-   * List of locks. keeping it member level to avoid object creation cost during
-   * each call.
+   * List of locks. keeping it member level to avoid object creation cost during each call.
    */
   private List<String> listHeldLock;
 
@@ -67,13 +64,11 @@ public class DistributedLockServiceBridge {
   /**
    * Public constructor
    * 
-   * @param objectName
-   *          name of the MBean
-   * @param proxy
-   *          reference to the proxy
+   * @param objectName name of the MBean
+   * @param proxy reference to the proxy
    */
-  public DistributedLockServiceBridge(ObjectName objectName,
-      LockServiceMXBean proxy, FederationComponent newState) {
+  public DistributedLockServiceBridge(ObjectName objectName, LockServiceMXBean proxy,
+      FederationComponent newState) {
     this.mapOfProxy = new ConcurrentHashMap<ObjectName, LockServiceMXBean>();
     this.listHeldLock = new ArrayList<String>();
     this.threadsHoldingLock = new HashMap<String, String>();
@@ -84,10 +79,8 @@ public class DistributedLockServiceBridge {
   /**
    * Add a proxy to the proxy map
    * 
-   * @param objectName
-   *          name of the MBean
-   * @param proxy
-   *          reference to the proxy
+   * @param objectName name of the MBean
+   * @param proxy reference to the proxy
    */
   public void addProxyToMap(ObjectName objectName, LockServiceMXBean proxy) {
     if (mapOfProxy != null) {
@@ -98,14 +91,11 @@ public class DistributedLockServiceBridge {
 
   /**
    * 
-   * @param objectName
-   *          name of the MBean
-   * @param proxy
-   *          reference to the proxy
+   * @param objectName name of the MBean
+   * @param proxy reference to the proxy
    * @return true if no proxies left for this aggregator to work on
    */
-  public boolean removeProxyFromMap(ObjectName objectName,
-      LockServiceMXBean proxy) {
+  public boolean removeProxyFromMap(ObjectName objectName, LockServiceMXBean proxy) {
     if (mapOfProxy != null) {
       mapOfProxy.remove(objectName);
       setSize = mapOfProxy.values().size();
@@ -118,7 +108,7 @@ public class DistributedLockServiceBridge {
     return false;
   }
 
-  
+
 
   /**
    * 
@@ -202,16 +192,14 @@ public class DistributedLockServiceBridge {
 
   /**
    * 
-   * @return a map of object name and thread name if this member holds lock or
-   *         null/none
+   * @return a map of object name and thread name if this member holds lock or null/none
    */
   public Map<String, String> listThreadsHoldingLock() {
     Iterator<LockServiceMXBean> it = mapOfProxy.values().iterator();
     threadsHoldingLock.clear();
     if (it != null) {
       while (it.hasNext()) {
-        Map<String, String> threadLockMap = it.next()
-            .listThreadsHoldingLock();
+        Map<String, String> threadLockMap = it.next().listThreadsHoldingLock();
         if (threadLockMap != null) {
           threadsHoldingLock.putAll(threadLockMap);
         }

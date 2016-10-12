@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.xml;
@@ -56,15 +52,15 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
 
   @Rule
   public TestName name = new TestName();
-  
+
   @After
   public void tearDown() {
     Cache cache = GemFireCacheImpl.getInstance();
-    if(cache != null) {
+    if (cache != null) {
       cache.close();
     }
   }
-  
+
   /**
    * Test that we parse the index fields correctly
    */
@@ -87,8 +83,8 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     validateExpectedIndexes(region, expectedIndexes);
 
     // Validate expected analyzers
-    Map<String, Map<String,Class<? extends Analyzer>>> expectedIndexAnalyzers = new HashMap<>();
-    Map<String,Class<? extends Analyzer>> expectedFieldAnalyzers = new HashMap<>();
+    Map<String, Map<String, Class<? extends Analyzer>>> expectedIndexAnalyzers = new HashMap<>();
+    Map<String, Class<? extends Analyzer>> expectedFieldAnalyzers = new HashMap<>();
     expectedFieldAnalyzers.put("a", KeywordAnalyzer.class);
     expectedFieldAnalyzers.put("b", SimpleAnalyzer.class);
     expectedFieldAnalyzers.put("c", ClassicAnalyzer.class);
@@ -102,26 +98,28 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     return (RegionCreation) cache.getRegion(regionName);
   }
 
-  private void validateExpectedIndexes(RegionCreation region, Map<String, String[]> expectedIndexes) {
-    for(Extension extension : region.getExtensionPoint().getExtensions()) {
+  private void validateExpectedIndexes(RegionCreation region,
+      Map<String, String[]> expectedIndexes) {
+    for (Extension extension : region.getExtensionPoint().getExtensions()) {
       LuceneIndexCreation index = (LuceneIndexCreation) extension;
       assertEquals("/region", index.getRegionPath());
       assertArrayEquals(expectedIndexes.remove(index.getName()), index.getFieldNames());
     }
-    assertEquals(Collections.emptyMap(),expectedIndexes);
+    assertEquals(Collections.emptyMap(), expectedIndexes);
   }
 
-  private void validateExpectedAnalyzers(RegionCreation region, Map<String, Map<String,Class<? extends Analyzer>>> expectedIndexAnalyzers) {
-    for(Extension extension : region.getExtensionPoint().getExtensions()) {
+  private void validateExpectedAnalyzers(RegionCreation region,
+      Map<String, Map<String, Class<? extends Analyzer>>> expectedIndexAnalyzers) {
+    for (Extension extension : region.getExtensionPoint().getExtensions()) {
       LuceneIndexCreation index = (LuceneIndexCreation) extension;
       expectedIndexAnalyzers.remove(index.getName());
     }
-    assertEquals(Collections.emptyMap(),expectedIndexAnalyzers);
+    assertEquals(Collections.emptyMap(), expectedIndexAnalyzers);
   }
 
   /**
-   * Test that the Index creation objects get appropriately translated
-   * into a real index.
+   * Test that the Index creation objects get appropriately translated into a real index.
+   * 
    * @throws FileNotFoundException
    */
   @Test
@@ -137,12 +135,13 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     LuceneIndex index2 = service.getIndex("index2", "/region");
     LuceneIndex index3 = service.getIndex("index3", "/region");
     assertArrayEquals(index1.getFieldNames(), new String[] {"a", "b", "c", "d"});
-    assertArrayEquals(index2.getFieldNames(), new String[] { "f", "g"});
-    assertArrayEquals(index3.getFieldNames(), new String[] { "h", "i", "j"});
+    assertArrayEquals(index2.getFieldNames(), new String[] {"f", "g"});
+    assertArrayEquals(index3.getFieldNames(), new String[] {"h", "i", "j"});
   }
 
   private String getXmlFileForTest() {
-    return TestUtil.getResourcePath(getClass(), getClass().getSimpleName() + "." + name.getMethodName() + ".cache.xml");
+    return TestUtil.getResourcePath(getClass(),
+        getClass().getSimpleName() + "." + name.getMethodName() + ".cache.xml");
   }
 
 }

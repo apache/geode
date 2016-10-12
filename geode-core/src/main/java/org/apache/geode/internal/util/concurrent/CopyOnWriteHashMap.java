@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util.concurrent;
 
@@ -28,22 +26,23 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * A copy on write hash map.
  * 
- * Note that the entryKey and keySet of this map are unmodifable.
- * Should be easy to make them modifiable at a future time.
+ * Note that the entryKey and keySet of this map are unmodifable. Should be easy to make them
+ * modifiable at a future time.
  * 
  *
  */
-public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> , Serializable {
-  private volatile Map<K,V> map = Collections.<K,V>emptyMap();
+public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>
+    implements ConcurrentMap<K, V>, Serializable {
+  private volatile Map<K, V> map = Collections.<K, V>emptyMap();
 
   public CopyOnWriteHashMap() {
-    
+
   }
-  
+
   public CopyOnWriteHashMap(Map map) {
     this.putAll(map);
   }
-  
+
 
   @Override
   public V get(Object key) {
@@ -78,7 +77,7 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements Concur
     map = Collections.unmodifiableMap(tmp);
     return result;
   }
-  
+
 
 
   @Override
@@ -122,7 +121,6 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements Concur
 
 
 
-
   @Override
   public Set<K> keySet() {
     return map.keySet();
@@ -160,7 +158,7 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements Concur
 
   @Override
   protected Object clone() throws CloneNotSupportedException {
-    CopyOnWriteHashMap<K, V>clone = new CopyOnWriteHashMap<K, V>();
+    CopyOnWriteHashMap<K, V> clone = new CopyOnWriteHashMap<K, V>();
     clone.map = map;
     return clone;
   }
@@ -168,7 +166,7 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements Concur
   @Override
   public synchronized V putIfAbsent(K key, V value) {
     V oldValue = map.get(key);
-    if(oldValue == null) {
+    if (oldValue == null) {
       put(key, value);
       return null;
     } else {
@@ -179,18 +177,18 @@ public class CopyOnWriteHashMap<K,V> extends AbstractMap<K, V> implements Concur
   @Override
   public synchronized boolean remove(Object key, Object value) {
     V oldValue = map.get(key);
-    if(oldValue != null && oldValue.equals(value)) {
+    if (oldValue != null && oldValue.equals(value)) {
       remove(key);
       return true;
     }
-    
+
     return false;
   }
 
   @Override
   public synchronized boolean replace(K key, V oldValue, V newValue) {
     V existingValue = map.get(key);
-    if(existingValue != null && existingValue.equals(oldValue)) {
+    if (existingValue != null && existingValue.equals(oldValue)) {
       put(key, newValue);
       return true;
     }

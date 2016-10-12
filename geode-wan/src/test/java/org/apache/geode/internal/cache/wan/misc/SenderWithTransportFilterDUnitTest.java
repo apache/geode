@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan.misc;
 
@@ -51,62 +49,59 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
   @Test
   public void testSerialSenderWithTransportFilter() {
-    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-    vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters( nyPort ));
-    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", null, isOffHeap() ));
+    vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters(nyPort));
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
-    vm3.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm3.invoke(() -> WANTestBase.createCache(lnPort));
 
-    vm3.invoke(() -> SenderWithTransportFilterDUnitTest.createSenderWithTransportFilter( "ln", 2, false, 100,
-            1, false, false, true ));
+    vm3.invoke(() -> SenderWithTransportFilterDUnitTest.createSenderWithTransportFilter("ln", 2,
+        false, 100, 1, false, false, true));
 
-    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm3.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    vm3.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm3.invoke(() -> WANTestBase.startSender("ln"));
 
-    vm3.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_RR", 100 ));
+    vm3.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 100));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 100 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 100));
   }
 
   @Test
   public void testParallelSenderWithTransportFilter() {
-    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
-    vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters( nyPort ));
-    vm2.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", null, 0, 10, isOffHeap() ));
+    vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters(nyPort));
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10,
+        isOffHeap()));
 
-    vm3.invoke(() -> WANTestBase.createCache( lnPort ));
+    vm3.invoke(() -> WANTestBase.createCache(lnPort));
 
-    vm3.invoke(() -> SenderWithTransportFilterDUnitTest.createSenderWithTransportFilter( "ln", 2, true, 100,
-            1, false, false, true ));
+    vm3.invoke(() -> SenderWithTransportFilterDUnitTest.createSenderWithTransportFilter("ln", 2,
+        true, 100, 1, false, false, true));
 
-    vm3.invoke(() -> WANTestBase.createPartitionedRegion(
-        getTestMethodName() + "_PR", "ln", 0, 10, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 0, 10,
+        isOffHeap()));
 
-    vm3.invoke(() -> WANTestBase.startSender( "ln" ));
+    vm3.invoke(() -> WANTestBase.startSender("ln"));
 
-    vm3.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 100 ));
+    vm3.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_PR", 100 ));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
   }
-  
+
   public static int createReceiverWithTransportFilters(int locPort) {
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
@@ -124,29 +119,27 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     GatewayReceiver receiver = fact.create();
     try {
       receiver.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + port, e);
     }
     return port;
   }
 
-  public static void createSenderWithTransportFilter(String dsName,
-      int remoteDsId, boolean isParallel, Integer maxMemory, Integer batchSize,
-      boolean isConflation, boolean isPersistent, boolean isManualStart) {
-    File persistentDirectory = new File(dsName + "_disk_"
-        + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
+  public static void createSenderWithTransportFilter(String dsName, int remoteDsId,
+      boolean isParallel, Integer maxMemory, Integer batchSize, boolean isConflation,
+      boolean isPersistent, boolean isManualStart) {
+    File persistentDirectory =
+        new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
     persistentDirectory.mkdir();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
-    File[] dirs1 = new File[] { persistentDirectory };
+    File[] dirs1 = new File[] {persistentDirectory};
 
     if (isParallel) {
-      GatewaySenderFactory gateway = cache
-          .createGatewaySenderFactory();
+      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
       gateway.setParallel(true);
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      ((InternalGatewaySenderFactory)gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
+      ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
       ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
@@ -156,25 +149,20 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       }
       if (isPersistent) {
         gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-            .getName());
-      }
-      else {
+        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName).getName());
+      } else {
         DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
         gateway.setDiskStoreName(store.getName());
       }
       gateway.setBatchConflationEnabled(isConflation);
       gateway.create(dsName, remoteDsId);
 
-    }
-    else {
-      GatewaySenderFactory gateway = cache
-          .createGatewaySenderFactory();
+    } else {
+      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
       gateway.setManualStart(isManualStart);
-      ((InternalGatewaySenderFactory)gateway)
-          .setLocatorDiscoveryCallback(new MyLocatorCallback());
+      ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
       ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
@@ -185,10 +173,8 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setBatchConflationEnabled(isConflation);
       if (isPersistent) {
         gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName)
-            .getName());
-      }
-      else {
+        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName).getName());
+      } else {
         DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
         gateway.setDiskStoreName(store.getName());
       }
@@ -199,15 +185,15 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
   static class CheckSumTransportFilter implements GatewayTransportFilter {
 
     Adler32 checker = new Adler32();
-    
+
     private String name;
-    
-    public CheckSumTransportFilter(String name){
+
+    public CheckSumTransportFilter(String name) {
       this.name = name;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
       return this.name;
     }
 
@@ -222,7 +208,6 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
   }
 }

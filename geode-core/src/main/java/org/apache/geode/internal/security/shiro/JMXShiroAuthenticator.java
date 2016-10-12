@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.security.shiro;
 
@@ -48,29 +46,26 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
     if (credentials instanceof Properties) {
       credProps = (Properties) credentials;
       username = credProps.getProperty(ResourceConstants.USER_NAME);
-    }
-    else if (credentials instanceof String[]) {
+    } else if (credentials instanceof String[]) {
       final String[] aCredentials = (String[]) credentials;
       username = aCredentials[0];
       credProps.setProperty(ResourceConstants.USER_NAME, aCredentials[0]);
       credProps.setProperty(ResourceConstants.PASSWORD, aCredentials[1]);
-    }
-    else {
+    } else {
       throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
     }
 
     org.apache.shiro.subject.Subject shiroSubject = this.securityService.login(credProps);
     Principal principal;
 
-    if(shiroSubject==null){
+    if (shiroSubject == null) {
       principal = new JMXPrincipal(username);
-    }
-    else{
+    } else {
       principal = new ShiroPrincipal(shiroSubject);
     }
 
     return new Subject(true, Collections.singleton(principal), Collections.EMPTY_SET,
-      Collections.EMPTY_SET);
+        Collections.EMPTY_SET);
   }
 
   @Override

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security;
 
@@ -41,22 +39,22 @@ import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
-  public Properties getProperties(){
-    Properties  properties = super.getProperties();
+  public Properties getProperties() {
+    Properties properties = super.getProperties();
     properties.setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
     return properties;
   }
 
   @Test
-  public void testPostProcessRegionGet(){
+  public void testPostProcessRegionGet() {
     List<String> keys = new ArrayList<>();
     keys.add("key1");
     keys.add("key2");
 
-    client1.invoke(()->{
+    client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
 
@@ -73,8 +71,8 @@ public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
   }
 
   @Test
-  public void testPostProcessQuery(){
-    client1.invoke(()->{
+  public void testPostProcessQuery() {
+    client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
 
@@ -90,7 +88,7 @@ public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
       assertTrue(result.contains("super-user/null/null/value4"));
 
       Pool pool = PoolManager.find(region);
-      result =  (SelectResults)pool.getQueryService().newQuery(query).execute();
+      result = (SelectResults) pool.getQueryService().newQuery(query).execute();
       assertTrue(result.contains("super-user/null/null/value0"));
       assertTrue(result.contains("super-user/null/null/value1"));
       assertTrue(result.contains("super-user/null/null/value2"));
@@ -100,18 +98,17 @@ public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
   }
 
   @Test
-  public void testRegisterInterestPostProcess(){
-    client1.invoke(()->{
+  public void testRegisterInterestPostProcess() {
+    client1.invoke(() -> {
       ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+          .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
 
-      ClientRegionFactory factory =  cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      ClientRegionFactory factory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       factory.addCacheListener(new CacheListenerAdapter() {
         @Override
         public void afterUpdate(EntryEvent event) {
-          assertEquals("super-user/AuthRegion/key1/value2", event.getSerializedNewValue().getDeserializedValue());
+          assertEquals("super-user/AuthRegion/key1/value2",
+              event.getSerializedNewValue().getDeserializedValue());
         }
       });
 
@@ -120,7 +117,7 @@ public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
       region.registerInterest("key1");
     });
 
-    client2.invoke(()->{
+    client2.invoke(() -> {
       ClientCache cache = createClientCache("dataUser", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
       region.put("key1", "value2");

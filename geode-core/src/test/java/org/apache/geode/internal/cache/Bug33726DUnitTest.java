@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -40,12 +38,12 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class Bug33726DUnitTest extends JUnit4DistributedTestCase {
-  
+
   static boolean[] flags = new boolean[2];
   static Cache cache = null;
   static DistributedSystem ds = null;
   static boolean isOK = false;
-  
+
   @Override
   public final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
@@ -54,16 +52,16 @@ public class Bug33726DUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(() -> Bug33726DUnitTest.closeCache());
     vm1.invoke(() -> Bug33726DUnitTest.closeCache());
   }
-  
-  public static void closeCache(){
-  try{
-	cache.close();
-	cache = null;
-	ds.disconnect();
-	}catch (Exception ex){
-	ex.printStackTrace();
-	}
-   }
+
+  public static void closeCache() {
+    try {
+      cache.close();
+      cache = null;
+      ds.disconnect();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
 
   @Test
   public void testAfterRegionCreate() {
@@ -74,9 +72,9 @@ public class Bug33726DUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(() -> Bug33726DUnitTest.createCacheAndRegion2());
     boolean pass = vm1.invoke(() -> Bug33726DUnitTest.testFlag());
     assertTrue("The test failed", pass);
-  
+
   }
-  
+
   public static void createCacheAndPopulateRegion1() {
     try {
       ds = (new Bug33726DUnitTest()).getSystem(new Properties());
@@ -86,14 +84,13 @@ public class Bug33726DUnitTest extends JUnit4DistributedTestCase {
       factory.setDataPolicy(DataPolicy.REPLICATE);
       RegionAttributes attr = factory.create();
       Region region = cache.createRegion("testRegion", attr);
-      Region subRegion = region.createSubregion("testSubRegion",attr);
-      for(int i=1; i < 100; i++){
-        region.put(new Integer(i), new Integer(i));      
+      Region subRegion = region.createSubregion("testSubRegion", attr);
+      for (int i = 1; i < 100; i++) {
+        region.put(new Integer(i), new Integer(i));
         subRegion.put(new Integer(i), new Integer(i));
       }
-     }
-    catch (Exception ex) {
-      fail("Creation of cache failed due to "+ex);
+    } catch (Exception ex) {
+      fail("Creation of cache failed due to " + ex);
       ex.printStackTrace();
     }
   }
@@ -108,28 +105,24 @@ public class Bug33726DUnitTest extends JUnit4DistributedTestCase {
       factory.setDataPolicy(DataPolicy.REPLICATE);
       RegionAttributes attr = factory.create();
       Region region = cache.createRegion("testRegion", attr);
-      region.createSubregion("testSubRegion",attr);
-	  }
-    catch (Exception ex) {
-        fail("failed due to "+ex);
+      region.createSubregion("testSubRegion", attr);
+    } catch (Exception ex) {
+      fail("failed due to " + ex);
       ex.printStackTrace();
     }
   }
-  
+
   public static boolean testFlag() {
     if (isOK) {
       return isOK;
-    }
-    else {
+    } else {
       synchronized (Bug33726DUnitTest.class) {
         if (isOK) {
           return isOK;
-        }
-        else {
+        } else {
           try {
             Bug33726DUnitTest.class.wait(120000);
-          }
-          catch (InterruptedException ie) {
+          } catch (InterruptedException ie) {
             fail("interrupted");
           }
         }
@@ -146,19 +139,18 @@ public class Bug33726DUnitTest extends JUnit4DistributedTestCase {
         String regionPath = event.getRegion().getFullPath();
         if (regionPath.indexOf("/testRegion/testSubRegion") >= 0) {
           flags[1] = true;
-        }
-        else if (regionPath.indexOf("/testRegion") >= 0) {
+        } else if (regionPath.indexOf("/testRegion") >= 0) {
           flags[0] = true;
         }
-      
+
       }
-      if(flags[0] && flags[1]){
+      if (flags[0] && flags[1]) {
         isOK = true;
-        synchronized(Bug33726DUnitTest.class){
-        Bug33726DUnitTest.class.notify();
+        synchronized (Bug33726DUnitTest.class) {
+          Bug33726DUnitTest.class.notify();
         }
       }
     }
   }
-  
+
 }

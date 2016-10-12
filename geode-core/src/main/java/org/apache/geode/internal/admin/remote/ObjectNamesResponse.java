@@ -1,27 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
-   
+
+
 package org.apache.geode.internal.admin.remote;
 
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
-//import org.apache.geode.internal.*;
-//import org.apache.geode.internal.admin.*;
+// import org.apache.geode.internal.*;
+// import org.apache.geode.internal.admin.*;
 import org.apache.geode.distributed.internal.*;
 import java.io.*;
 import java.util.*;
@@ -36,25 +34,29 @@ public final class ObjectNamesResponse extends AdminResponse implements Cancella
   private transient boolean cancelled;
 
   /**
-   * Returns a <code>ObjectNamesResponse</code> that will be returned to the
-   * specified recipient. The message will contains a copy of the local manager's
-   * system config.
+   * Returns a <code>ObjectNamesResponse</code> that will be returned to the specified recipient.
+   * The message will contains a copy of the local manager's system config.
    */
-  public static ObjectNamesResponse create(DistributionManager dm, InternalDistributedMember recipient) {
+  public static ObjectNamesResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     ObjectNamesResponse m = new ObjectNamesResponse();
     m.setRecipient(recipient);
     return m;
   }
 
   public void buildNames(Region r) {
-    if (cancelled) { return; }
+    if (cancelled) {
+      return;
+    }
 
     Set nameSet = r.keys();
     Iterator it = nameSet.iterator();
     objectNames = new HashSet();
-    synchronized(r) {
-      while(it.hasNext()) {
-        if (cancelled) { break; }
+    synchronized (r) {
+      while (it.hasNext()) {
+        if (cancelled) {
+          break;
+        }
         Object name = it.next();
         if (name instanceof String || name instanceof Number) {
           objectNames.add(name);
@@ -73,7 +75,7 @@ public final class ObjectNamesResponse extends AdminResponse implements Cancella
   public Set getNameSet() {
     return new HashSet(this.objectNames);
   }
-  
+
   public int getDSFID() {
     return OBJECT_NAMES_RESPONSE;
   }
@@ -85,10 +87,9 @@ public final class ObjectNamesResponse extends AdminResponse implements Cancella
   }
 
   @Override
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.objectNames = (HashSet)DataSerializer.readObject(in);
+    this.objectNames = (HashSet) DataSerializer.readObject(in);
   }
 
   @Override

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan;
 
@@ -58,7 +56,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 public class CacheClientNotifierDUnitTest extends WANTestBase {
 
   private static final int NUM_KEYS = 10;
-  
+
   private int createCacheServerWithCSC(VM vm, final boolean withCSC, final int capacity,
       final String policy, final String diskStoreName) {
     final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -66,12 +64,12 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     SerializableRunnable createCacheServer = new SerializableRunnable() {
       @Override
       public void run() throws Exception {
-        CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
+        CacheServerImpl server = (CacheServerImpl) cache.addCacheServer();
         server.setPort(serverPort);
         if (withCSC) {
           if (diskStoreName != null) {
             DiskStore ds = cache.findDiskStore(diskStoreName);
-            if(ds == null) {
+            if (ds == null) {
               ds = cache.createDiskStoreFactory().create(diskStoreName);
             }
           }
@@ -80,7 +78,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
           csc.setEvictionPolicy(policy);
           csc.setDiskStoreName(diskStoreName);
           server.setHostnameForClients("localhost");
-          //server.setGroups(new String[]{"serv"});
+          // server.setGroups(new String[]{"serv"});
         }
         try {
           server.start();
@@ -93,22 +91,24 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     return serverPort;
   }
 
-  private void checkCacheServer(VM vm, final int serverPort, final boolean withCSC, final int capacity) {
+  private void checkCacheServer(VM vm, final int serverPort, final boolean withCSC,
+      final int capacity) {
     SerializableRunnable checkCacheServer = new SerializableRunnable() {
 
       @Override
       public void run() throws Exception {
-        List<CacheServer> cacheServers = ((GemFireCacheImpl)cache).getCacheServersAndGatewayReceiver();
+        List<CacheServer> cacheServers =
+            ((GemFireCacheImpl) cache).getCacheServersAndGatewayReceiver();
         CacheServerImpl server = null;
-        for (CacheServer cs:cacheServers) {
+        for (CacheServer cs : cacheServers) {
           if (cs.getPort() == serverPort) {
-            server = (CacheServerImpl)cs;
+            server = (CacheServerImpl) cs;
             break;
           }
         }
         assertNotNull(server);
         CacheClientNotifier ccn = server.getAcceptor().getCacheClientNotifier();
-        HAContainerRegion haContainer = (HAContainerRegion)ccn.getHaContainer();
+        HAContainerRegion haContainer = (HAContainerRegion) ccn.getHaContainer();
         if (server.getAcceptor().isGatewayReceiver()) {
           assertNull(haContainer);
           return;
@@ -131,9 +131,9 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
   public static void closeACacheServer(final int serverPort) {
     List<CacheServer> cacheServers = cache.getCacheServers();
     CacheServerImpl server = null;
-    for (CacheServer cs:cacheServers) {
+    for (CacheServer cs : cacheServers) {
       if (cs.getPort() == serverPort) {
-        server = (CacheServerImpl)cs;
+        server = (CacheServerImpl) cs;
         break;
       }
     }
@@ -149,8 +149,9 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
 
         Wait.waitForCriterion(new WaitCriterion() {
           public boolean done() {
-            return region.size() == expect; 
+            return region.size() == expect;
           }
+
           public String description() {
             return null;
           }
@@ -160,10 +161,10 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     };
     vm.invoke(verifyRegionSize);
   }
-  
+
   /**
-   * The test will start several cache servers, including gateway receivers.
-   * Shutdown them and verify the CacheClientNotifier for each server is correct
+   * The test will start several cache servers, including gateway receivers. Shutdown them and
+   * verify the CacheClientNotifier for each server is correct
    */
   @Test
   public void testNormalClient2MultipleCacheServer() throws Exception {
@@ -179,39 +180,44 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     /* create 1 cache client1 on vm2 to register interest on cache server1 */
     /* create 1 cache client2 on vm3 to register interest on cache server1 */
     /* do some puts to GatewaySender on vm0 */
-    
+
     // create sender at ln
-    Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
-    
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+
     // create receiver and cache servers will be at ny
-    Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
-    vm1.invoke(() -> WANTestBase.createCache( nyPort ));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    vm1.invoke(() -> WANTestBase.createCache(nyPort));
     int receiverPort = vm1.invoke(() -> WANTestBase.createReceiver());
     checkCacheServer(vm1, receiverPort, false, 0);
-    
+
     // create PR for receiver
-    vm1.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", null, 1, 100, isOffHeap() ));
-    
+    vm1.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
+        null, 1, 100, isOffHeap()));
+
     // create cache server1 with overflow
     int serverPort = createCacheServerWithCSC(vm1, true, 3, "entry", "DEFAULT");
     checkCacheServer(vm1, serverPort, true, 3);
-    
+
     // create cache server 2
     final int serverPort2 = createCacheServerWithCSC(vm1, false, 0, null, null);
     // Currently, only the first cache server's overflow attributes will take effect
     // It will be enhanced in GEODE-1102
     checkCacheServer(vm1, serverPort2, true, 3);
-    LogService.getLogger().info("receiverPort="+receiverPort+",serverPort="+serverPort+",serverPort2="+serverPort2);
-    
-    vm2.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR", "123", durable));
-    vm3.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR", "124", durable));
+    LogService.getLogger().info("receiverPort=" + receiverPort + ",serverPort=" + serverPort
+        + ",serverPort2=" + serverPort2);
 
-    vm0.invoke(() -> WANTestBase.createCache( lnPort ));
-    vm0.invoke(() -> WANTestBase.createSender( "ln", 2, false, 100, 400, false, false, null, true ));
-    vm0.invoke(() -> WANTestBase.createPersistentPartitionedRegion( getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap() ));
-    vm0.invoke(() -> WANTestBase.startSender( "ln" ));
-    vm0.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", NUM_KEYS ));
-    
+    vm2.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR",
+        "123", durable));
+    vm3.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR",
+        "124", durable));
+
+    vm0.invoke(() -> WANTestBase.createCache(lnPort));
+    vm0.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 400, false, false, null, true));
+    vm0.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
+        "ln", 1, 100, isOffHeap()));
+    vm0.invoke(() -> WANTestBase.startSender("ln"));
+    vm0.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS));
+
     /* verify */
     verifyRegionSize(vm0, NUM_KEYS);
     verifyRegionSize(vm1, NUM_KEYS);
@@ -221,19 +227,19 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     // close a cache server, then re-test
     vm1.invoke(() -> closeACacheServer(serverPort2));
 
-    vm0.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", NUM_KEYS*2 ));
+    vm0.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS * 2));
 
     /* verify */
-    verifyRegionSize(vm0, NUM_KEYS*2);
-    verifyRegionSize(vm1, NUM_KEYS*2);
-    verifyRegionSize(vm3, NUM_KEYS*2);
-    verifyRegionSize(vm2, NUM_KEYS*2);
-    
+    verifyRegionSize(vm0, NUM_KEYS * 2);
+    verifyRegionSize(vm1, NUM_KEYS * 2);
+    verifyRegionSize(vm3, NUM_KEYS * 2);
+    verifyRegionSize(vm2, NUM_KEYS * 2);
+
     disconnectAllFromDS();
   }
 
-  public static void createClientWithLocator(int port0,String host,
-      String regionName, String clientId, boolean isDurable) {
+  public static void createClientWithLocator(int port0, String host, String regionName,
+      String clientId, boolean isDurable) {
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -250,11 +256,10 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
-      p = PoolManager.createFactory().addLocator(host, port0)
-          .setPingInterval(250).setSubscriptionEnabled(true)
-          .setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
-          .setRetryAttempts(3).create(regionName);
+      p = PoolManager.createFactory().addLocator(host, port0).setPingInterval(250)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
+          .create(regionName);
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
@@ -269,8 +274,8 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     if (isDurable) {
       cache.readyForEvents();
     }
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region " + regionName + " created Successfully :"
-            + region.toString() + " in a "+(isDurable?"durable":"")+" client");
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region " + regionName + " created Successfully :" + region.toString()
+            + " in a " + (isDurable ? "durable" : "") + " client");
   }
 }

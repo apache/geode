@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.persistence;
 
@@ -27,12 +25,10 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
- * Implementation of the public PersistentID. It holds the region,
- * host, directory, and timestamp.
+ * Implementation of the public PersistentID. It holds the region, host, directory, and timestamp.
  * 
- * This class also is also used to describe members that the user
- * has revoked. Any fields that are null will be considered a wildcard
- * matching any members.
+ * This class also is also used to describe members that the user has revoked. Any fields that are
+ * null will be considered a wildcard matching any members.
  * 
  * @since GemFire prPersistSprint1
  */
@@ -41,73 +37,68 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
   protected String directory;
   protected UUID diskStoreID;
   protected long revokedTime;
-  
+
   public PersistentMemberPattern(PersistentMemberID id) {
     this(id.host, id.directory, id.diskStoreId.toUUID(), -1);
   }
-  
-  public PersistentMemberPattern(InetAddress host,
-      String directory) {
+
+  public PersistentMemberPattern(InetAddress host, String directory) {
     this(host, directory, null, -1);
   }
-  
-  public PersistentMemberPattern(InetAddress host,
-      String directory, long revokedTime) {
+
+  public PersistentMemberPattern(InetAddress host, String directory, long revokedTime) {
     this(host, directory, null, revokedTime);
   }
-  
+
   public PersistentMemberPattern(UUID id) {
     this(null, null, id, -1);
   }
-  
-  public PersistentMemberPattern(InetAddress host,
-      String directory, UUID diskStoreID, long revokedTime) {
+
+  public PersistentMemberPattern(InetAddress host, String directory, UUID diskStoreID,
+      long revokedTime) {
     this.host = host;
     this.directory = directory;
     this.revokedTime = revokedTime;
     this.diskStoreID = diskStoreID;
   }
 
-  //Used for deserialization only
-  public PersistentMemberPattern() {
-  }
+  // Used for deserialization only
+  public PersistentMemberPattern() {}
 
   public boolean matches(PersistentMemberID id) {
     boolean matches = true;
-    if(id == null) {
+    if (id == null) {
       return false;
     }
     matches &= host == null || host.equals(id.host);
     matches &= directory == null || directory.equals(id.directory);
     matches &= diskStoreID == null
-        || id.diskStoreId.getMostSignificantBits() == diskStoreID
-            .getMostSignificantBits()
-        && id.diskStoreId.getLeastSignificantBits() == diskStoreID
-            .getLeastSignificantBits();
-    
-    //Safety measure. Id's which are generated after this pattern was revoked
-    //should not be revoked. For example, if someone loses the disk for server A
-    //They may revoke the pattern host==A. But A will start and generate a new ID
-    //if they then close the region everywhere and then reopen it, we don't want
-    //the new pattern to be revoked.
-    if(diskStoreID == null) {
+        || id.diskStoreId.getMostSignificantBits() == diskStoreID.getMostSignificantBits()
+            && id.diskStoreId.getLeastSignificantBits() == diskStoreID.getLeastSignificantBits();
+
+    // Safety measure. Id's which are generated after this pattern was revoked
+    // should not be revoked. For example, if someone loses the disk for server A
+    // They may revoke the pattern host==A. But A will start and generate a new ID
+    // if they then close the region everywhere and then reopen it, we don't want
+    // the new pattern to be revoked.
+    if (diskStoreID == null) {
       matches &= revokedTime > id.timeStamp;
     }
     return matches;
   }
-  
+
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append(diskStoreID);
-    if(host != null) {
+    if (host != null) {
       result.append(" [");
       result.append(SocketCreator.getHostName(host));
       result.append(":");
       result.append(directory);
       result.append("]");
     }
-    
+
     return result.toString();
   }
 
@@ -116,8 +107,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     final int prime = 31;
     int result = 1;
     result = prime * result + ((directory == null) ? 0 : directory.hashCode());
-    result = prime * result
-        + ((diskStoreID == null) ? 0 : diskStoreID.hashCode());
+    result = prime * result + ((diskStoreID == null) ? 0 : diskStoreID.hashCode());
     result = prime * result + ((host == null) ? 0 : host.hashCode());
     result = prime * result + (int) (revokedTime ^ (revokedTime >>> 32));
     return result;
@@ -159,18 +149,18 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
   public String getDirectory() {
     return directory;
   }
-  
+
   public UUID getUUID() {
     return diskStoreID;
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     boolean hasHost = in.readBoolean();
-    if(hasHost) {
+    if (hasHost) {
       host = DataSerializer.readInetAddress(in);
     }
     boolean hasDirectory = in.readBoolean();
-    if(hasDirectory) {
+    if (hasDirectory) {
       directory = DataSerializer.readString(in);
     }
     diskStoreID = DataSerializer.readObject(in);
@@ -179,50 +169,50 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
 
   public void toData(DataOutput out) throws IOException {
     out.writeBoolean(host != null);
-    if(host != null) {
+    if (host != null) {
       DataSerializer.writeInetAddress(host, out);
     }
     out.writeBoolean(directory != null);
-    if(directory != null) {
+    if (directory != null) {
       DataSerializer.writeString(directory, out);
     }
-      
+
     DataSerializer.writeObject(diskStoreID, out);
     out.writeLong(revokedTime);
   }
 
   public int compareTo(PersistentMemberPattern o) {
     int result = compare(diskStoreID, o.diskStoreID);
-    if(result != 0) {
+    if (result != 0) {
       return result;
     }
     result = compare(host == null ? null : host.getCanonicalHostName(),
         o.host == null ? null : o.host.getCanonicalHostName());
-    if(result != 0) {
+    if (result != 0) {
       return result;
     }
     result = compare(directory, o.directory);
-    if(result != 0) {
+    if (result != 0) {
       return result;
     }
-    
+
     result = Long.signum(revokedTime - o.revokedTime);
-    
+
     return result;
   }
-  
+
   private <X> int compare(Comparable<X> a, X b) {
-    if(a == null) {
-      if(b == null) {
+    if (a == null) {
+      if (b == null) {
         return 0;
       } else {
         return -1;
       }
     }
-    if(b == null) {
+    if (b == null) {
       return 1;
     }
-    
+
     return a.compareTo(b);
   }
 }

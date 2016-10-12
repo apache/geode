@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
@@ -31,22 +29,23 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 public class FindCoordinatorRequest extends HighPriorityDistributionMessage
-  implements PeerLocatorRequest {
+    implements PeerLocatorRequest {
 
   private InternalDistributedMember memberID;
   private Collection<InternalDistributedMember> rejectedCoordinators;
   private int lastViewId;
   private byte[] myPublicKey;
-  private int requestId;   
+  private int requestId;
   private String dhalgo;
 
   public FindCoordinatorRequest(InternalDistributedMember myId) {
     this.memberID = myId;
     this.dhalgo = "";
   }
-  
-  public FindCoordinatorRequest(InternalDistributedMember myId, Collection<InternalDistributedMember> rejectedCoordinators, 
-      int lastViewId, byte[] pk, int requestId, String dhalgo) {
+
+  public FindCoordinatorRequest(InternalDistributedMember myId,
+      Collection<InternalDistributedMember> rejectedCoordinators, int lastViewId, byte[] pk,
+      int requestId, String dhalgo) {
     this.memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
     this.lastViewId = lastViewId;
@@ -54,7 +53,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     this.requestId = requestId;
     this.dhalgo = dhalgo;
   }
-  
+
   public FindCoordinatorRequest() {
     // no-arg constructor for serialization
   }
@@ -62,11 +61,11 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   public InternalDistributedMember getMemberID() {
     return memberID;
   }
-  
+
   public byte[] getMyPublicKey() {
     return myPublicKey;
   }
-  
+
   public String getDHAlgo() {
     return dhalgo;
   }
@@ -74,18 +73,18 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   public Collection<InternalDistributedMember> getRejectedCoordinators() {
     return rejectedCoordinators;
   }
-  
+
   public int getLastViewId() {
     return this.lastViewId;
   }
-  
+
   @Override
   public String toString() {
     if (rejectedCoordinators != null) {
-      return "FindCoordinatorRequest(memberID="+memberID
-          +", rejected="+rejectedCoordinators+", lastViewId="+lastViewId+")";
+      return "FindCoordinatorRequest(memberID=" + memberID + ", rejected=" + rejectedCoordinators
+          + ", lastViewId=" + lastViewId + ")";
     } else {
-      return "FindCoordinatorRequest(memberID="+memberID+")";
+      return "FindCoordinatorRequest(memberID=" + memberID + ")";
     }
   }
 
@@ -98,7 +97,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   public int getDSFID() {
     return FIND_COORDINATOR_REQ;
   }
-  
+
   public int getRequestId() {
     return requestId;
   }
@@ -108,7 +107,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     DataSerializer.writeObject(this.memberID, out);
     if (this.rejectedCoordinators != null) {
       out.writeInt(this.rejectedCoordinators.size());
-      for (InternalDistributedMember mbr: this.rejectedCoordinators) {
+      for (InternalDistributedMember mbr : this.rejectedCoordinators) {
         DataSerializer.writeObject(mbr, out);
       }
     } else {
@@ -125,8 +124,8 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     this.memberID = DataSerializer.readObject(in);
     int size = in.readInt();
     this.rejectedCoordinators = new ArrayList<InternalDistributedMember>(size);
-    for (int i=0; i<size; i++) {
-      this.rejectedCoordinators.add((InternalDistributedMember)DataSerializer.readObject(in));
+    for (int i = 0; i < size; i++) {
+      this.rejectedCoordinators.add((InternalDistributedMember) DataSerializer.readObject(in));
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();
@@ -146,7 +145,8 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     result = prime * result + lastViewId;
     result = prime * result + ((dhalgo == null) ? 0 : dhalgo.hashCode());
     result = prime * result + ((memberID == null) ? 0 : memberID.hashCode());
-    result = prime * result + ((rejectedCoordinators == null) ? 0 : rejectedCoordinators.hashCode());
+    result =
+        prime * result + ((rejectedCoordinators == null) ? 0 : rejectedCoordinators.hashCode());
     return result;
   }
 
@@ -161,7 +161,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     FindCoordinatorRequest other = (FindCoordinatorRequest) obj;
     if (lastViewId != other.lastViewId)
       return false;
-    if(!dhalgo.equals(other.dhalgo)) {
+    if (!dhalgo.equals(other.dhalgo)) {
       return false;
     }
     if (memberID == null) {
@@ -175,5 +175,5 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     } else if (!rejectedCoordinators.equals(other.rejectedCoordinators))
       return false;
     return true;
-  }  
+  }
 }

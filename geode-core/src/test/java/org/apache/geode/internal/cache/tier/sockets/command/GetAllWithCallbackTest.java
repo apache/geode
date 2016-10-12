@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -50,7 +48,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class GetAllWithCallbackTest {
   private static final String REGION_NAME = "region1";
-  private static final Object[] KEYS = new Object[] { "key1", "key2", "key3" };
+  private static final Object[] KEYS = new Object[] {"key1", "key2", "key3"};
 
   @Mock
   private SecurityService securityService;
@@ -83,7 +81,8 @@ public class GetAllWithCallbackTest {
     this.getAll70 = new GetAll70();
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.getAuthorize(any(), any(), any())).thenReturn(mock(GetOperationContext.class));
+    when(this.authzRequest.getAuthorize(any(), any(), any()))
+        .thenReturn(mock(GetOperationContext.class));
 
     when(this.cache.getRegion(isA(String.class))).thenReturn(this.region);
 
@@ -99,7 +98,7 @@ public class GetAllWithCallbackTest {
 
     when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
 
-    when (this.requestSerializableValuesPart.getInt()).thenReturn(0);
+    when(this.requestSerializableValuesPart.getInt()).thenReturn(0);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
@@ -126,7 +125,7 @@ public class GetAllWithCallbackTest {
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
-    for(Object key : argument.getValue().getKeys()) {
+    for (Object key : argument.getValue().getKeys()) {
       assertThat(key).isIn(KEYS);
     }
     for (Object key : KEYS) {
@@ -142,7 +141,8 @@ public class GetAllWithCallbackTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
+      doThrow(new NotAuthorizedException("")).when(this.securityService)
+          .authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
     }
 
     this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
@@ -155,7 +155,7 @@ public class GetAllWithCallbackTest {
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
-    for(Object key : argument.getValue().getObjects()){
+    for (Object key : argument.getValue().getObjects()) {
       assertThat(key).isExactlyInstanceOf(NotAuthorizedException.class);
     }
 
@@ -173,11 +173,11 @@ public class GetAllWithCallbackTest {
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
-    for(Object key : argument.getValue().getKeys()) {
+    for (Object key : argument.getValue().getKeys()) {
       assertThat(key).isIn(KEYS);
     }
 
-    for (Object key: KEYS) {
+    for (Object key : KEYS) {
       verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
     }
 
@@ -190,7 +190,8 @@ public class GetAllWithCallbackTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
+      doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
+          eq(key.toString()), eq(null));
     }
 
     this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
@@ -199,11 +200,11 @@ public class GetAllWithCallbackTest {
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
-    for(Object o : argument.getValue().getObjects()){
+    for (Object o : argument.getValue().getObjects()) {
       assertThat(o).isExactlyInstanceOf(NotAuthorizedException.class);
     }
 
-    for (Object key: KEYS) {
+    for (Object key : KEYS) {
       verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
     }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -31,8 +29,8 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.management.ManagementException;
 
 /**
- * This class acts as a central point hub for collecting all notifications
- * originated from VM and sending across to Managing Node
+ * This class acts as a central point hub for collecting all notifications originated from VM and
+ * sending across to Managing Node
  * 
  * 
  */
@@ -52,26 +50,25 @@ public class NotificationHub {
    * Platform MBean Server
    */
   private MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-  
-  private Map<ObjectName , NotificationHubListener> listenerObjectMap;
- 
-  
+
+  private Map<ObjectName, NotificationHubListener> listenerObjectMap;
+
+
   /** Member Name **/
   private String memberSource;
 
   /**
    * public constructor
    * 
-   * @param repo
-   *          Resource repo for this member
+   * @param repo Resource repo for this member
    */
   public NotificationHub(ManagementResourceRepo repo) {
     this.repo = repo;
     logger = InternalDistributedSystem.getLoggerI18n();
     this.listenerObjectMap = new HashMap<ObjectName, NotificationHubListener>();
-    memberSource = MBeanJMXAdapter.getMemberNameOrId(InternalDistributedSystem
-        .getConnectedInstance().getDistributedMember());
-   
+    memberSource = MBeanJMXAdapter
+        .getMemberNameOrId(InternalDistributedSystem.getConnectedInstance().getDistributedMember());
+
 
   }
 
@@ -80,8 +77,7 @@ public class NotificationHub {
    * 
    * @param objectName
    */
-  public void addHubNotificationListener(String memberName,
-      ObjectName objectName) {
+  public void addHubNotificationListener(String memberName, ObjectName objectName) {
 
     try {
       synchronized (listenerObjectMap) {
@@ -126,10 +122,10 @@ public class NotificationHub {
       // No op
     }
   }
-  
+
   /**
-   * This method is basically to cleanup resources which might cause leaks if
-   * the same VM is used again for cache creation.
+   * This method is basically to cleanup resources which might cause leaks if the same VM is used
+   * again for cache creation.
    */
   public void cleanUpListeners() {
     synchronized (listenerObjectMap) {
@@ -159,8 +155,8 @@ public class NotificationHub {
   }
 
   /**
-   * This class is the managed node counterpart to listen to notifications from
-   * MBeans for which it is resistered
+   * This class is the managed node counterpart to listen to notifications from MBeans for which it
+   * is resistered
    * 
    * 
    */
@@ -169,7 +165,7 @@ public class NotificationHub {
      * MBean for which this listener is added
      */
     private ObjectName name;
-    
+
     /**
      * Counter to indicate how many listener are attached to this MBean
      */
@@ -178,20 +174,20 @@ public class NotificationHub {
 
     protected NotificationHubListener(ObjectName name) {
       this.name = name;
-    }   
+    }
 
     public int incNumCounter() {
-       return ++numCounter;
+      return ++numCounter;
     }
 
     public int decNumCounter() {
-       return --numCounter;
+      return --numCounter;
     }
-    
-    public int getNumCounter(){
+
+    public int getNumCounter() {
       return this.numCounter;
     }
-    
+
     @Override
     public void handleNotification(Notification notification, Object handback) {
       NotificationKey key = new NotificationKey(name);

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode;
 
@@ -71,7 +69,7 @@ public class JtaNoninvolvementJUnitTest {
       c.close();
     }
   }
-  
+
   @After
   public void after() {
     closeCache();
@@ -80,16 +78,15 @@ public class JtaNoninvolvementJUnitTest {
       ids.disconnect();
     }
   }
-  
+
   @Test
   public void test000Noninvolvement() throws Exception {
     try {
       if (cache == null) {
         createCache(false);
       }
-      javax.transaction.UserTransaction ut =
-        (javax.transaction.UserTransaction)cache.getJNDIContext()
-          .lookup("java:/UserTransaction");
+      javax.transaction.UserTransaction ut = (javax.transaction.UserTransaction) cache
+          .getJNDIContext().lookup("java:/UserTransaction");
       {
         ut.begin();
         txRegion.put("transactionalPut", "xxx");
@@ -97,17 +94,17 @@ public class JtaNoninvolvementJUnitTest {
             cache.getCacheTransactionManager().exists());
         ut.commit();
       }
-      assertFalse("ensure there is no transaction before testing non-involvement", 
+      assertFalse("ensure there is no transaction before testing non-involvement",
           cache.getCacheTransactionManager().exists());
       {
         ut.begin();
         nonTxRegion.put("nontransactionalPut", "xxx");
         assertFalse("expect cache to not be in a transaction",
-          cache.getCacheTransactionManager().exists());
+            cache.getCacheTransactionManager().exists());
         ut.commit();
       }
     }
-    
+
     finally {
       closeCache();
       cache = null;
@@ -123,8 +120,7 @@ public class JtaNoninvolvementJUnitTest {
       }
       final CountDownLatch l = new CountDownLatch(1);
       final AtomicBoolean exceptionOccured = new AtomicBoolean(false);
-      ut = 
-          (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
+      ut = (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
       ut.begin();
       txRegion.put("key", "value");
       nonTxRegion.put("key", "value");
@@ -161,8 +157,7 @@ public class JtaNoninvolvementJUnitTest {
     try {
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "true");
       createCache(false);
-      ut = 
-          (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
+      ut = (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
       ut.begin();
       txRegion.put("key", "value");
       ut.rollback();

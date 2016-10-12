@@ -1,51 +1,50 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache;
 
 /**
- * Interface <code>InterestRegisterationListener</code> provides the ability for
- * applications to be notified of interest registration and unregistration
- * events. Instances must be implemented by applications and registered in
- * <code>CacheServer</code> VMs using the
+ * Interface <code>InterestRegisterationListener</code> provides the ability for applications to be
+ * notified of interest registration and unregistration events. Instances must be implemented by
+ * applications and registered in <code>CacheServer</code> VMs using the
  * {@link org.apache.geode.cache.server.CacheServer#registerInterestRegistrationListener
  * registerInterestRegistrationListener} API. The methods on an
- * <code>InterestRegisterationListener</code> are invoked synchronously with the
- * interest event in any <code>CacheServer</code> VM hosting the requesting
- * client's subscriptions.
+ * <code>InterestRegisterationListener</code> are invoked synchronously with the interest event in
+ * any <code>CacheServer</code> VM hosting the requesting client's subscriptions.
  *
- * <p>Shown below is an example implementation.
+ * <p>
+ * Shown below is an example implementation.
  *
  * <pre>
- *import org.apache.geode.cache.InterestRegistrationEvent;
- *import org.apache.geode.cache.InterestRegistrationListener;
+ * import org.apache.geode.cache.InterestRegistrationEvent;
+ * import org.apache.geode.cache.InterestRegistrationListener;
  *
- *public class TestInterestRegistrationListener implements InterestRegistrationListener {
+ * public class TestInterestRegistrationListener implements InterestRegistrationListener {
  *
- *  public void afterRegisterInterest(InterestRegistrationEvent event) {
- *    System.out.println("afterRegisterInterest: " + event.getRegionName() + " -> " + event.getKeysOfInterest());
- *  }
-
- *  public void afterUnregisterInterest(InterestRegistrationEvent event) {
- *    System.out.println("afterUnregisterInterest: " + event.getRegionName() + " -> " + event.getKeysOfInterest());
- *  }
+ *   public void afterRegisterInterest(InterestRegistrationEvent event) {
+ *     System.out.println(
+ *         "afterRegisterInterest: " + event.getRegionName() + " -> " + event.getKeysOfInterest());
+ *   }
+ * 
+ *   public void afterUnregisterInterest(InterestRegistrationEvent event) {
+ *     System.out.println("afterUnregisterInterest: " + event.getRegionName() + " -> "
+ *         + event.getKeysOfInterest());
+ *   }
  *
- *  public void close() {}
- *}
+ *   public void close() {}
+ * }
  * </pre>
  *
  * Shown below is an example registration.
@@ -62,8 +61,10 @@ package org.apache.geode.cache;
  *
  * @since GemFire 6.0
  * 
- * @see org.apache.geode.cache.server.CacheServer#registerInterestRegistrationListener registerInterestRegistrationListener
- * @see org.apache.geode.cache.server.CacheServer#unregisterInterestRegistrationListener unregisterInterestRegistrationListener
+ * @see org.apache.geode.cache.server.CacheServer#registerInterestRegistrationListener
+ *      registerInterestRegistrationListener
+ * @see org.apache.geode.cache.server.CacheServer#unregisterInterestRegistrationListener
+ *      unregisterInterestRegistrationListener
  */
 public interface InterestRegistrationListener extends CacheCallback {
 

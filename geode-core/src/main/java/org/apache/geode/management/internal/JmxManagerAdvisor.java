@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -48,20 +46,21 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 public class JmxManagerAdvisor extends DistributionAdvisor {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private JmxManagerAdvisor(DistributionAdvisee advisee) {
     super(advisee);
-    JmxManagerProfile p = new JmxManagerProfile(getDistributionManager().getId(), incrementAndGetVersion());
+    JmxManagerProfile p =
+        new JmxManagerProfile(getDistributionManager().getId(), incrementAndGetVersion());
     advisee.fillInProfile(p);
-    ((JmxManagerAdvisee)advisee).initProfile(p);
+    ((JmxManagerAdvisee) advisee).initProfile(p);
   }
-  
+
   public static JmxManagerAdvisor createJmxManagerAdvisor(DistributionAdvisee advisee) {
     JmxManagerAdvisor advisor = new JmxManagerAdvisor(advisee);
     advisor.initialize();
     return advisor;
   }
-  
+
   @Override
   public String toString() {
     return new StringBuilder().append("JmxManagerAdvisor for " + getAdvisee()).toString();
@@ -70,7 +69,8 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
   public void broadcastChange() {
     try {
       Set<InternalDistributedMember> recips = adviseGeneric(); // for now just tell everyone
-      JmxManagerProfile p = new JmxManagerProfile(getDistributionManager().getId(), incrementAndGetVersion());
+      JmxManagerProfile p =
+          new JmxManagerProfile(getDistributionManager().getId(), incrementAndGetVersion());
       getAdvisee().fillInProfile(p);
       JmxManagerProfileMessage.send(getAdvisee().getSystem().getDistributionManager(), recips, p);
     } catch (CancelException ignore) {
@@ -87,6 +87,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       }
     });
   }
+
   @SuppressWarnings("unchecked")
   public List<JmxManagerProfile> adviseWillingToManage() {
     return fetchProfiles(new Filter() {
@@ -99,17 +100,15 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
   }
 
   @Override
-  protected Profile instantiateProfile(InternalDistributedMember memberId,
-      int version) {
+  protected Profile instantiateProfile(InternalDistributedMember memberId, int version) {
     return new JmxManagerProfile(memberId, version);
   }
 
   @Override
   /**
-   * Overridden to also include our profile.
-   * If our profile is included it will always be first.
+   * Overridden to also include our profile. If our profile is included it will always be first.
    */
-  protected List/*<Profile>*/ fetchProfiles(Filter f) {
+  protected List/* <Profile> */ fetchProfiles(Filter f) {
     initializationGate();
     List result = null;
     {
@@ -139,11 +138,11 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
     return result;
   }
+
   /**
    * Message used to push event updates to remote VMs
    */
-  public static class JmxManagerProfileMessage extends
-      HighPriorityDistributionMessage {
+  public static class JmxManagerProfileMessage extends HighPriorityDistributionMessage {
     private volatile JmxManagerProfile profile;
     private volatile int processorId;
 
@@ -151,7 +150,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
      * Default constructor used for de-serialization (used during receipt)
      */
     public JmxManagerProfileMessage() {}
-    
+
     @Override
     public boolean sendViaUDP() {
       return true;
@@ -159,6 +158,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
 
     /**
      * Constructor used to send
+     * 
      * @param recips
      * @param p
      */
@@ -169,8 +169,11 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       this.profile = p;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.internal.DistributionManager)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.
+     * distributed.internal.DistributionManager)
      */
     @Override
     protected void process(DistributionManager dm) {
@@ -195,12 +198,12 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
-        // If this ever returns, rethrow the error.  We're poisoned
+        // If this ever returns, rethrow the error. We're poisoned
         // now, so don't let this thread continue.
         throw err;
       } catch (Throwable t) {
         // Whenever you catch Error or Throwable, you must also
-        // catch VirtualMachineError (see above).  However, there is
+        // catch VirtualMachineError (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
@@ -209,13 +212,16 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       } finally {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
-          logger.info(LocalizedMessage.create(LocalizedStrings.ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE,
+          logger.info(LocalizedMessage.create(
+              LocalizedStrings.ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE,
               new Object[] {p, toString()}, thr));
         }
       }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
      */
     public int getDSFID() {
@@ -223,11 +229,10 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.processorId = in.readInt();
-      this.profile = (JmxManagerProfile)DataSerializer.readObject(in);
+      this.profile = (JmxManagerProfile) DataSerializer.readObject(in);
     }
 
     @Override
@@ -239,6 +244,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
 
     /**
      * Send profile to the provided members
+     * 
      * @param recips The recipients of the message
      * @throws ReplyException
      */
@@ -256,22 +262,21 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append(getShortClassName())
-      .append(" (processorId=").append(this.processorId)
-      .append("; profile=").append(this.profile);
+      sb.append(getShortClassName()).append(" (processorId=").append(this.processorId)
+          .append("; profile=").append(this.profile);
       sb.append(")");
       return sb.toString();
     }
   }
 
   public static class JmxManagerProfile extends Profile {
-    
+
     private boolean jmxManager;
     private String host;
     private int port;
     private boolean ssl;
     private boolean started;
-    
+
     // Constructor for de-serialization
     public JmxManagerProfile() {}
 
@@ -283,32 +288,32 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       return this.started;
     }
 
-    public void setInfo(boolean jmxManager2, String host2, int port2, boolean ssl2, boolean started2) {
+    public void setInfo(boolean jmxManager2, String host2, int port2, boolean ssl2,
+        boolean started2) {
       this.jmxManager = jmxManager2;
       this.host = host2;
       this.port = port2;
       this.ssl = ssl2;
       this.started = started2;
     }
-    
+
     public String getHost() {
       return this.host;
     }
-    
+
     public int getPort() {
       return this.port;
     }
-    
+
     public boolean getSsl() {
       return this.ssl;
     }
 
     // Constructor for sending purposes
-    public JmxManagerProfile(InternalDistributedMember memberId,
-        int version) {
+    public JmxManagerProfile(InternalDistributedMember memberId, int version) {
       super(memberId, version);
     }
-    
+
     public StringBuilder getToStringHeader() {
       return new StringBuilder("JmxManagerAdvisor.JmxManagerProfile");
     }
@@ -320,8 +325,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         if (this.jmxManager) {
           sb.append("; jmxManager");
         }
-        sb.append("; host=").append(this.host)
-        .append("; port=").append(this.port);
+        sb.append("; host=").append(this.host).append("; port=").append(this.port);
         if (this.ssl) {
           sb.append("; ssl");
         }
@@ -330,11 +334,10 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         }
       }
     }
-    
+
     @Override
-    public void processIncoming(DistributionManager dm, String adviseePath,
-        boolean removeProfile, boolean exchangeProfiles,
-        final List<Profile> replyProfiles) {
+    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
+        boolean exchangeProfiles, final List<Profile> replyProfiles) {
       final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
       if (cache != null && !cache.isClosed()) {
         handleDistributionAdvisee(cache.getJmxManagerAdvisor().getAdvisee(), removeProfile,
@@ -359,7 +362,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       int tmpPort;
       boolean tmpSsl;
       boolean tmpStarted;
-      synchronized(this) {
+      synchronized (this) {
         tmpJmxManager = this.jmxManager;
         tmpHost = this.host;
         tmpPort = this.port;
@@ -373,10 +376,10 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       DataSerializer.writePrimitiveBoolean(tmpSsl, out);
       DataSerializer.writePrimitiveBoolean(tmpStarted, out);
     }
-    
+
     @Override
     public int getDSFID() {
-      return JMX_MANAGER_PROFILE; 
+      return JMX_MANAGER_PROFILE;
     }
   }
 

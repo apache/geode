@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.operations.internal;
 
@@ -39,11 +37,12 @@ public class GetOperationContextImplJUnitTest {
   @Test
   public void testGetSerializedValue() throws IOException {
     {
-      byte[] byteArrayValue = new byte[]{1,2,3,4};
+      byte[] byteArrayValue = new byte[] {1, 2, 3, 4};
       GetOperationContextImpl poc = new GetOperationContextImpl("key", true);
       poc.setObject(byteArrayValue, false);
       Assert.assertFalse(poc.isObject());
-      Assert.assertNull("value is an actual byte array which is not a serialized blob", poc.getSerializedValue());
+      Assert.assertNull("value is an actual byte array which is not a serialized blob",
+          poc.getSerializedValue());
     }
 
     {
@@ -57,7 +56,8 @@ public class GetOperationContextImplJUnitTest {
       GetOperationContextImpl poc = new GetOperationContextImpl("key", true);
       poc.setObject("value", true);
       Assert.assertTrue(poc.isObject());
-      Assert.assertNull("value is a String which is not a serialized blob", poc.getSerializedValue());
+      Assert.assertNull("value is a String which is not a serialized blob",
+          poc.getSerializedValue());
     }
 
     {
@@ -74,8 +74,8 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set(LOCATORS, "")
-          .set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0")
+          .setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -95,7 +95,7 @@ public class GetOperationContextImplJUnitTest {
   @Test
   public void testGetDeserializedValue() throws IOException {
     {
-      byte[] byteArrayValue = new byte[]{1,2,3,4};
+      byte[] byteArrayValue = new byte[] {1, 2, 3, 4};
       GetOperationContextImpl poc = new GetOperationContextImpl("key", true);
       poc.setObject(byteArrayValue, false);
       Assert.assertFalse(poc.isObject());
@@ -130,7 +130,8 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0")
+          .setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -151,7 +152,7 @@ public class GetOperationContextImplJUnitTest {
   @Test
   public void testGetValue() throws IOException {
     {
-      byte[] byteArrayValue = new byte[]{1,2,3,4};
+      byte[] byteArrayValue = new byte[] {1, 2, 3, 4};
       GetOperationContextImpl poc = new GetOperationContextImpl("key", true);
       poc.setObject(byteArrayValue, false);
       Assert.assertFalse(poc.isObject());
@@ -186,7 +187,8 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0")
+          .setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -206,7 +208,7 @@ public class GetOperationContextImplJUnitTest {
   @Test
   public void testGetObject() throws IOException {
     {
-      byte[] byteArrayValue = new byte[]{1,2,3,4};
+      byte[] byteArrayValue = new byte[] {1, 2, 3, 4};
       GetOperationContextImpl poc = new GetOperationContextImpl("key", true);
       poc.setObject(byteArrayValue, false);
       Assert.assertFalse(poc.isObject());
@@ -241,7 +243,8 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0")
+          .setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);

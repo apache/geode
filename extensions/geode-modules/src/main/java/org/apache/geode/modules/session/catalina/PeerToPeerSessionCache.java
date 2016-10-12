@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.session.catalina;
 
 import org.apache.geode.cache.Cache;
@@ -60,7 +58,8 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     // If local cache is enabled, create the local region fronting the session region
     // and set it as the operating region; otherwise, use the session region directly
     // as the operating region.
-    this.operatingRegion = getSessionManager().getEnableLocalCache() ? createOrRetrieveLocalRegion() : this.sessionRegion;
+    this.operatingRegion = getSessionManager().getEnableLocalCache() ? createOrRetrieveLocalRegion()
+        : this.sessionRegion;
 
     // Create or retrieve the statistics
     createStatistics();
@@ -92,7 +91,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     } else {
       // Execute the member touch function on all the server(s)
       Execution execution = FunctionService.onMembers(getCache().getDistributedSystem())
-          .withArgs(new Object[]{this.sessionRegion.getFullPath(), sessionIds});
+          .withArgs(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
       collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID, true, false, false);
     }
 
@@ -186,7 +185,8 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     Region<String, HttpSession> frontingRegion = this.cache.getRegion(frontingRegionName);
     if (frontingRegion == null) {
       // Create the region factory
-      RegionFactory<String, HttpSession> factory = this.cache.createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
+      RegionFactory<String, HttpSession> factory =
+          this.cache.createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
 
       // Add the cache loader and writer
       factory.setCacheLoader(new LocalSessionCacheLoader(this.sessionRegion));
@@ -203,13 +203,15 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
       // Create the region
       frontingRegion = factory.create(frontingRegionName);
       if (getSessionManager().getLogger().isDebugEnabled()) {
-        getSessionManager().getLogger().debug("Created new local session region: " + frontingRegion);
+        getSessionManager().getLogger()
+            .debug("Created new local session region: " + frontingRegion);
       }
     } else {
       if (getSessionManager().getLogger().isDebugEnabled()) {
-        getSessionManager().getLogger().debug("Retrieved existing local session region: " + frontingRegion);
+        getSessionManager().getLogger()
+            .debug("Retrieved existing local session region: " + frontingRegion);
       }
     }
     return frontingRegion;
   }
-}  
+}

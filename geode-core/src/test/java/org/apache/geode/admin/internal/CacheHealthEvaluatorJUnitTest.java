@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -44,8 +42,8 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
   public TestName testName = new TestName();
 
   /**
-   * Tests that we are in {@link GemFireHealth#OKAY_HEALTH okay}
-   * health if cache loads take too long.
+   * Tests that we are in {@link GemFireHealth#OKAY_HEALTH okay} health if cache loads take too
+   * long.
    *
    * @see CacheHealthEvaluator#checkLoadTime
    */
@@ -57,23 +55,22 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setCacheLoader(new CacheLoader() {
-        public Object load(LoaderHelper helper)
-          throws CacheLoaderException {
+      public Object load(LoaderHelper helper) throws CacheLoaderException {
 
-          return "Loaded";
-        }
+        return "Loaded";
+      }
 
-        public void close() { }
-      });
+      public void close() {}
+    });
 
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(getName(), attrs);
-    
+
     GemFireHealthConfig config = new GemFireHealthConfigImpl(null);
     config.setMaxLoadTime(100);
-    
+
     CacheHealthEvaluator eval =
-      new CacheHealthEvaluator(config, this.system.getDistributionManager());
+        new CacheHealthEvaluator(config, this.system.getDistributionManager());
     for (int i = 0; i < 10; i++) {
       region.get("Test1 " + i);
     }
@@ -89,8 +86,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
 
     config = new GemFireHealthConfigImpl(null);
     config.setMaxLoadTime(10);
-    eval = new CacheHealthEvaluator(config,
-                                    this.system.getDistributionManager());
+    eval = new CacheHealthEvaluator(config, this.system.getDistributionManager());
     eval.evaluate(status);
 
     long start = System.currentTimeMillis();
@@ -100,7 +96,8 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     assertTrue(System.currentTimeMillis() - start < 1000);
     long secondLoadTime = stats.getLoadTime();
     long secondLoadsCompleted = stats.getLoadsCompleted();
-    assertTrue("firstLoadTime=" + firstLoadTime + ", secondLoadTime=" + secondLoadTime, secondLoadTime >= firstLoadTime);
+    assertTrue("firstLoadTime=" + firstLoadTime + ", secondLoadTime=" + secondLoadTime,
+        secondLoadTime >= firstLoadTime);
     assertTrue(secondLoadsCompleted > firstLoadsCompleted);
 
     // Averge should be less than 10 milliseconds
@@ -109,21 +106,20 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     assertEquals(0, status.size());
 
     region.getAttributesMutator().setCacheLoader(new CacheLoader() {
-        public Object load(LoaderHelper helper)
-          throws CacheLoaderException {
+      public Object load(LoaderHelper helper) throws CacheLoaderException {
 
-          try {
-            Thread.sleep(20);
+        try {
+          Thread.sleep(20);
 
-          } catch (InterruptedException ex) {
-            fail("Why was I interrupted?");
-          }
-          return "Loaded";
+        } catch (InterruptedException ex) {
+          fail("Why was I interrupted?");
         }
+        return "Loaded";
+      }
 
-        public void close() { }
+      public void close() {}
 
-      });
+    });
 
     for (int i = 0; i < 50; i++) {
       region.get("Test3 " + i);
@@ -137,44 +133,41 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     status = new ArrayList();
     eval.evaluate(status);
     assertEquals(1, status.size());
-    
-    AbstractHealthEvaluator.HealthStatus ill =
-      (AbstractHealthEvaluator.HealthStatus) status.get(0);
+
+    AbstractHealthEvaluator.HealthStatus ill = (AbstractHealthEvaluator.HealthStatus) status.get(0);
     assertEquals(GemFireHealth.OKAY_HEALTH, ill.getHealthCode());
     String s = "The average duration of a Cache load";
     assertTrue(ill.getDiagnosis().indexOf(s) != -1);
   }
 
   /**
-   * Tests that we are in {@link GemFireHealth#OKAY_HEALTH okay}
-   * health if the hit ratio dips below the threshold.
+   * Tests that we are in {@link GemFireHealth#OKAY_HEALTH okay} health if the hit ratio dips below
+   * the threshold.
    */
   @Test
   public void testCheckHitRatio() throws CacheException {
     Cache cache = CacheFactory.create(this.system);
-//    CachePerfStats stats = ((GemFireCache) cache).getCachePerfStats();
+    // CachePerfStats stats = ((GemFireCache) cache).getCachePerfStats();
 
-        AttributesFactory factory = new AttributesFactory();
+    AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setCacheLoader(new CacheLoader() {
-        public Object load(LoaderHelper helper)
-          throws CacheLoaderException {
+      public Object load(LoaderHelper helper) throws CacheLoaderException {
 
-          return "Loaded";
-        }
+        return "Loaded";
+      }
 
-        public void close() { }
-      });
+      public void close() {}
+    });
 
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(getName(), attrs);
-    
+
     GemFireHealthConfig config = new GemFireHealthConfigImpl(null);
     config.setMinHitRatio(0.5);
 
     CacheHealthEvaluator eval =
-      new CacheHealthEvaluator(config,
-                               this.system.getDistributionManager());
+        new CacheHealthEvaluator(config, this.system.getDistributionManager());
     List status = new ArrayList();
     eval.evaluate(status);
     assertEquals(0, status.size());
@@ -193,15 +186,14 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
 
     status = new ArrayList();
     eval.evaluate(status);
-    
-    AbstractHealthEvaluator.HealthStatus ill =
-      (AbstractHealthEvaluator.HealthStatus) status.get(0);
+
+    AbstractHealthEvaluator.HealthStatus ill = (AbstractHealthEvaluator.HealthStatus) status.get(0);
     assertEquals(GemFireHealth.OKAY_HEALTH, ill.getHealthCode());
     String s = "The hit ratio of this Cache";
     assertTrue(ill.getDiagnosis().indexOf(s) != -1);
   }
 
   private String getName() {
-    return getClass().getSimpleName()+"_"+testName.getMethodName();
+    return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
 }

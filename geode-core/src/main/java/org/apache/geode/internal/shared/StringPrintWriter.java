@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.shared;
@@ -23,8 +21,8 @@ import java.io.Writer;
 import java.security.PrivilegedAction;
 
 /**
- * A {@link PrintWriter} that collects its output in a string builder, which can
- * then be used to construct a string. This completely avoids any locking etc.
+ * A {@link PrintWriter} that collects its output in a string builder, which can then be used to
+ * construct a string. This completely avoids any locking etc.
  * 
  */
 public class StringPrintWriter extends PrintWriter {
@@ -45,37 +43,33 @@ public class StringPrintWriter extends PrintWriter {
   /**
    * Create a new string writer using the specified string-builder.
    * 
-   * @param sb
-   *          the {@link StringBuilder} to use as the internal buffer
+   * @param sb the {@link StringBuilder} to use as the internal buffer
    */
   public StringPrintWriter(StringBuilder sb) {
     this(sb, null);
   }
 
   /**
-   * Create a new string writer using the specified string-builder and line
-   * separator.
+   * Create a new string writer using the specified string-builder and line separator.
    * 
-   * @param sb
-   *          the {@link StringBuilder} to use as the internal buffer
-   * @param lineSep
-   *          the line separator to use, or null to use the default from system
-   *          "line.separator" property
+   * @param sb the {@link StringBuilder} to use as the internal buffer
+   * @param lineSep the line separator to use, or null to use the default from system
+   *        "line.separator" property
    */
   public StringPrintWriter(StringBuilder sb, String lineSep) {
     super(dummyLock, false);
     this.sb = sb;
-    this.lineSep = lineSep != null ? lineSep : java.security.AccessController
-      .doPrivileged(new PrivilegedAction<String>() {
-        public String run() {
-          return System.getProperty("line.separator");
-        }
-      });
+    this.lineSep = lineSep != null ? lineSep
+        : java.security.AccessController.doPrivileged(new PrivilegedAction<String>() {
+          public String run() {
+            return System.getProperty("line.separator");
+          }
+        });
   }
 
   @Override
   public void write(int c) {
-    this.sb.append((char)c);
+    this.sb.append((char) c);
   }
 
   @Override
@@ -85,11 +79,10 @@ public class StringPrintWriter extends PrintWriter {
 
   @Override
   public void write(char[] cbuf, int off, int len) {
-    if ((off < 0) || (off > cbuf.length) || (len < 0)
-        || ((off + len) > cbuf.length) || ((off + len) < 0)) {
+    if ((off < 0) || (off > cbuf.length) || (len < 0) || ((off + len) > cbuf.length)
+        || ((off + len) < 0)) {
       throw new IndexOutOfBoundsException();
-    }
-    else if (len == 0) {
+    } else if (len == 0) {
       return;
     }
     this.sb.append(cbuf, off, len);

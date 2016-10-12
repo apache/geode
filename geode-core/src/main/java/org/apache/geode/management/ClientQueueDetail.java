@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
 /**
  * 
- * @since GemFire  8.0
+ * @since GemFire 8.0
  */
 public class ClientQueueDetail {
 
@@ -26,11 +24,11 @@ public class ClientQueueDetail {
    * Client ID
    */
   private String clientId;
-  
+
   /**
    * Current queue size of client which is derived by the formula queueSize = eventsEnqued -
-   * eventsRemoved - eventsConflated - markerEventsConflated - eventsExpired -
-   * eventsRemovedByQrm - eventsTaken - numVoidRemovals
+   * eventsRemoved - eventsConflated - markerEventsConflated - eventsExpired - eventsRemovedByQrm -
+   * eventsTaken - numVoidRemovals
    */
   private long queueSize;
   /**
@@ -155,10 +153,13 @@ public class ClientQueueDetail {
 
   @Override
   public String toString() {
-    return "ClientQueueDetail [clientId=" + clientId + ", queueSize=" + queueSize + ", eventsEnqued=" + eventsEnqued + ", eventsRemoved=" + eventsRemoved
-        + ", eventsConflated=" + eventsConflated + ", markerEventsConflated=" + markerEventsConflated + ", eventsExpired=" + eventsExpired
-        + ", eventsRemovedByQrm=" + eventsRemovedByQrm + ", eventsTaken=" + eventsTaken + ", numVoidRemovals=" + numVoidRemovals + "]";
+    return "ClientQueueDetail [clientId=" + clientId + ", queueSize=" + queueSize
+        + ", eventsEnqued=" + eventsEnqued + ", eventsRemoved=" + eventsRemoved
+        + ", eventsConflated=" + eventsConflated + ", markerEventsConflated="
+        + markerEventsConflated + ", eventsExpired=" + eventsExpired + ", eventsRemovedByQrm="
+        + eventsRemovedByQrm + ", eventsTaken=" + eventsTaken + ", numVoidRemovals="
+        + numVoidRemovals + "]";
   }
-  
+
 
 }

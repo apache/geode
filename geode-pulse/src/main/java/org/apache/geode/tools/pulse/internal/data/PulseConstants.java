@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -47,11 +45,9 @@ public class PulseConstants {
 
   // DEFAULT CONFIGUARTION VALUES FOR PULSE LOGGER
   // Log File
-  public static final String PULSE_QUERY_HISTORY_FILE_NAME = APP_NAME
-      + "_QueryHistory.json";
+  public static final String PULSE_QUERY_HISTORY_FILE_NAME = APP_NAME + "_QueryHistory.json";
   // Log File location
-  public static final String PULSE_QUERY_HISTORY_FILE_LOCATION = System
-      .getProperty("user.home");
+  public static final String PULSE_QUERY_HISTORY_FILE_LOCATION = System.getProperty("user.home");
   // Date pattern to be used in log messages
   public static final String PULSE_QUERY_HISTORY_DATE_PATTERN = "EEE, MMM dd yyyy, HH:mm:ss z";
 
@@ -67,8 +63,7 @@ public class PulseConstants {
   // Log File
   public static final String PULSE_LOG_FILE_NAME = APP_NAME;
   // Log File location
-  public static final String PULSE_LOG_FILE_LOCATION = System
-      .getProperty("user.home");
+  public static final String PULSE_LOG_FILE_LOCATION = System.getProperty("user.home");
   // Date pattern to be used in log messages
   public static final String PULSE_LOG_MESSAGE_DATE_PATTERN = "yyyy/MM/dd HH:mm:ss.SSS z";
   // Log file size - 1MB.
@@ -101,9 +96,12 @@ public class PulseConstants {
   public static final String APPLICATION_PROPERTY_PULSE_LOGLEVEL = "pulse.Log-Level";
   public static final String APPLICATION_PROPERTY_PULSE_LOGAPPEND = "pulse.Log-Append";
   public static final String APPLICATION_PROPERTY_PULSE_PRODUCTSUPPORT = "pulse.product";
-  public static final String APPLICATION_PROPERTY_PULSE_SEC_PROFILE_GEMFIRE = "pulse.authentication.gemfire";
-  public static final String APPLICATION_PROPERTY_PULSE_SEC_PROFILE_DEFAULT = "pulse.authentication.default";
-  public static final String APPLICATION_PROPERTY_PULSE_SPRING_PROFILE_KEY = "spring.profiles.default";
+  public static final String APPLICATION_PROPERTY_PULSE_SEC_PROFILE_GEMFIRE =
+      "pulse.authentication.gemfire";
+  public static final String APPLICATION_PROPERTY_PULSE_SEC_PROFILE_DEFAULT =
+      "pulse.authentication.default";
+  public static final String APPLICATION_PROPERTY_PULSE_SPRING_PROFILE_KEY =
+      "spring.profiles.default";
 
   // STRING FLAGS
   public static final String STRING_FLAG_TRUE = "true";
@@ -117,17 +115,27 @@ public class PulseConstants {
   public static final String OBJECT_DOMAIN_NAME_GEMFIRE = "GemFire";
   public static final String OBJECT_DOMAIN_NAME_SQLFIRE = "GemFireXD";
   public static final String OBJECT_NAME_MEMBER = OBJECT_DOMAIN_NAME_GEMFIRE + ":type=Member,*";
-  public static final String OBJECT_NAME_MEMBER_MANAGER = OBJECT_DOMAIN_NAME_GEMFIRE + ":service=Manager,type=Member,*";
-  public static final String OBJECT_NAME_SYSTEM_DISTRIBUTED = OBJECT_DOMAIN_NAME_GEMFIRE + ":service=System,type=Distributed";
-  public static final String OBJECT_NAME_REGION_DISTRIBUTED = OBJECT_DOMAIN_NAME_GEMFIRE + ":service=Region,type=Distributed,*";
-  public static final String OBJECT_NAME_STATEMENT_DISTRIBUTED = OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Statement,type=Aggregate,*";
-  public static final String OBJECT_NAME_SF_CLUSTER = OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Cluster";
-  public static final String OBJECT_NAME_SF_MEMBER_PATTERN = OBJECT_DOMAIN_NAME_SQLFIRE + ":group=*,type=Member,member=";
-  public static final String OBJECT_NAME_TABLE_AGGREGATE = OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Table,type=Aggregate,table=*";
-  public static final String OBJECT_NAME_TABLE_AGGREGATE_PATTERN = OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Table,type=Aggregate,table=";
-  public static final String OBJECT_NAME_REGION_ON_MEMBER_REGION = OBJECT_DOMAIN_NAME_GEMFIRE + ":service=Region,name=";
+  public static final String OBJECT_NAME_MEMBER_MANAGER =
+      OBJECT_DOMAIN_NAME_GEMFIRE + ":service=Manager,type=Member,*";
+  public static final String OBJECT_NAME_SYSTEM_DISTRIBUTED =
+      OBJECT_DOMAIN_NAME_GEMFIRE + ":service=System,type=Distributed";
+  public static final String OBJECT_NAME_REGION_DISTRIBUTED =
+      OBJECT_DOMAIN_NAME_GEMFIRE + ":service=Region,type=Distributed,*";
+  public static final String OBJECT_NAME_STATEMENT_DISTRIBUTED =
+      OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Statement,type=Aggregate,*";
+  public static final String OBJECT_NAME_SF_CLUSTER =
+      OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Cluster";
+  public static final String OBJECT_NAME_SF_MEMBER_PATTERN =
+      OBJECT_DOMAIN_NAME_SQLFIRE + ":group=*,type=Member,member=";
+  public static final String OBJECT_NAME_TABLE_AGGREGATE =
+      OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Table,type=Aggregate,table=*";
+  public static final String OBJECT_NAME_TABLE_AGGREGATE_PATTERN =
+      OBJECT_DOMAIN_NAME_SQLFIRE + ":service=Table,type=Aggregate,table=";
+  public static final String OBJECT_NAME_REGION_ON_MEMBER_REGION =
+      OBJECT_DOMAIN_NAME_GEMFIRE + ":service=Region,name=";
   public static final String OBJECT_NAME_REGION_ON_MEMBER_MEMBER = ",type=Member,member=";
-  public static final String OBJECT_NAME_ACCESSCONTROL_MBEAN = "GemFire:service=AccessControl,type=Distributed";
+  public static final String OBJECT_NAME_ACCESSCONTROL_MBEAN =
+      "GemFire:service=AccessControl,type=Distributed";
 
   public static final String MBEAN_KEY_PROPERTY_SERVICE = "service";
   public static final String MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION = "Region";
@@ -153,7 +161,8 @@ public class PulseConstants {
   public static final String MBEAN_ATTRIBUTE_GEMFIREVERSION = "Version";
   public static final String MBEAN_ATTRIBUTE_MEMBERCOUNT = "MemberCount";
   public static final String MBEAN_ATTRIBUTE_NUMCLIENTS = "NumClients";
-  public static final String MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS = "NetworkServerClientConnectionStats";
+  public static final String MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS =
+      "NetworkServerClientConnectionStats";
   public static final String MBEAN_ATTRIBUTE_DISTRIBUTEDSYSTEMID = "DistributedSystemId";
   public static final String MBEAN_ATTRIBUTE_LOCATORCOUNT = "LocatorCount";
   public static final String MBEAN_ATTRIBUTE_TOTALREGIONCOUNT = "TotalRegionCount";
@@ -183,7 +192,8 @@ public class PulseConstants {
   public static final String MBEAN_ATTRIBUTE_BINDADDRESS = "BindAddress";
   public static final String MBEAN_ATTRIBUTE_PORT = "Port";
   public static final String MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE = "EventsReceivedRate";
-  public static final String MBEAN_ATTRIBUTE_AVEARGEBATCHPROCESSINGTIME = "AverageBatchProcessingTime";
+  public static final String MBEAN_ATTRIBUTE_AVEARGEBATCHPROCESSINGTIME =
+      "AverageBatchProcessingTime";
   public static final String MBEAN_ATTRIBUTE_RUNNING = "Running";
   public static final String MBEAN_ATTRIBUTE_BATCHSIZE = "BatchSize";
   public static final String MBEAN_ATTRIBUTE_SENDERID = "SenderId";
@@ -192,7 +202,8 @@ public class PulseConstants {
   public static final String MBEAN_ATTRIBUTE_PERSISTENCEENABLED = "PersistenceEnabled";
   public static final String MBEAN_ATTRIBUTE_PARALLEL = "Parallel";
   public static final String MBEAN_ATTRIBUTE_REMOTE_DS_ID = "RemoteDSId";
-  public static final String MBEAN_ATTRIBUTE_EVENTS_EXCEEDING_ALERT_THRESHOLD = "EventsExceedingAlertThreshold";
+  public static final String MBEAN_ATTRIBUTE_EVENTS_EXCEEDING_ALERT_THRESHOLD =
+      "EventsExceedingAlertThreshold";
   public static final String MBEAN_ATTRIBUTE_FULLPATH = "FullPath";
   public static final String MBEAN_ATTRIBUTE_EMPTYNODES = "EmptyNodes";
   public static final String MBEAN_ATTRIBUTE_GETSRATE = "GetsRate";
@@ -207,9 +218,11 @@ public class PulseConstants {
   public static final String MBEAN_ATTRIBUTE_DISKUSAGE = "DiskUsage";
   public static final String MBEAN_ATTRIBUTE_TOTALFILEDESCRIPTOROPEN = "TotalFileDescriptorOpen";
   public static final String MBEAN_ATTRIBUTE_LOADAVERAGE = "LoadAverage";
-  public static final String MBEAN_ATTRIBUTE_CURRENTHEAPSIZE = "CurrentHeapSize"; // deprecated in Gemfire8.1
+  public static final String MBEAN_ATTRIBUTE_CURRENTHEAPSIZE = "CurrentHeapSize"; // deprecated in
+                                                                                  // Gemfire8.1
   public static final String MBEAN_ATTRIBUTE_USEDMEMORY = "UsedMemory";
-  public static final String MBEAN_ATTRIBUTE_MAXIMUMHEAPSIZE = "MaximumHeapSize"; // deprecated in Gemfire8.1
+  public static final String MBEAN_ATTRIBUTE_MAXIMUMHEAPSIZE = "MaximumHeapSize"; // deprecated in
+                                                                                  // Gemfire8.1
   public static final String MBEAN_ATTRIBUTE_MAXMEMORY = "MaxMemory";
   public static final String MBEAN_ATTRIBUTE_NUMTHREADS = "NumThreads";
   public static final String MBEAN_ATTRIBUTE_MEMBERUPTIME = "MemberUpTime";
@@ -223,7 +236,8 @@ public class PulseConstants {
   public static final String MBEAN_ATTRIBUTE_NUMTIMESCOMPILED = "NumTimesCompiled";
   public static final String MBEAN_ATTRIBUTE_NUMEXECUTION = "NumExecution";
   public static final String MBEAN_ATTRIBUTE_NUMEXECUTIONSINPROGRESS = "NumExecutionsInProgress";
-  public static final String MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP = "NumTimesGlobalIndexLookup";
+  public static final String MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP =
+      "NumTimesGlobalIndexLookup";
   public static final String MBEAN_ATTRIBUTE_NUMROWSMODIFIED = "NumRowsModified";
   public static final String MBEAN_ATTRIBUTE_PARSETIME = "ParseTime";
   public static final String MBEAN_ATTRIBUTE_BINDTIME = "BindTime";
@@ -246,7 +260,8 @@ public class PulseConstants {
   public static final String MBEAN_ATTRIBUTE_AEQ_PARALLEL = "Parallel";
   public static final String MBEAN_ATTRIBUTE_AEQ_BATCH_SIZE = "BatchSize";
   public static final String MBEAN_ATTRIBUTE_AEQ_BATCH_TIME_INTERVAL = "BatchTimeInterval";
-  public static final String MBEAN_ATTRIBUTE_AEQ_BATCH_CONFLATION_ENABLED = "BatchConflationEnabled";
+  public static final String MBEAN_ATTRIBUTE_AEQ_BATCH_CONFLATION_ENABLED =
+      "BatchConflationEnabled";
   public static final String MBEAN_ATTRIBUTE_AEQ_ASYNC_EVENT_LISTENER = "AsyncEventListener";
   public static final String MBEAN_ATTRIBUTE_AEQ_EVENT_QUEUE_SIZE = "EventQueueSize";
 
@@ -295,8 +310,8 @@ public class PulseConstants {
   public static final String COMPOSITE_DATA_KEY_NUMOFGETS = "numOfGets";
   public static final String COMPOSITE_DATA_KEY_NUMOFPUTS = "numOfPuts";
   public static final String COMPOSITE_DATA_KEY_CPUS = "cpus";
-  public static final String COMPOSITE_DATA_KEY_CLIENTCQCOUNT = "clientCQCount"; 
-  public static final String COMPOSITE_DATA_KEY_SUBSCRIPTIONENABLED = "subscriptionEnabled"; 
+  public static final String COMPOSITE_DATA_KEY_CLIENTCQCOUNT = "clientCQCount";
+  public static final String COMPOSITE_DATA_KEY_SUBSCRIPTIONENABLED = "subscriptionEnabled";
   public static final String COMPOSITE_DATA_KEY_SCOPE = "scope";
   public static final String COMPOSITE_DATA_KEY_DISKSTORENAME = "diskStoreName";
   public static final String COMPOSITE_DATA_KEY_DISKSYNCHRONOUS = "diskSynchronous";
@@ -306,116 +321,98 @@ public class PulseConstants {
   public static final String COMPOSITE_DATA_KEY_CONNECTED = "connected";
 
   public static final String ALERT_DESC_SEVERE = "Severe Alert! The cluster is on fire !";
-  public static final String ALERT_DESC_ERROR = "Error Alert! There is a problem with your cluster ! Better fix it !";
-  public static final String ALERT_DESC_WARNING = "Warning Alert! Look at this cluster after you finish your coffee !";
+  public static final String ALERT_DESC_ERROR =
+      "Error Alert! There is a problem with your cluster ! Better fix it !";
+  public static final String ALERT_DESC_WARNING =
+      "Warning Alert! Look at this cluster after you finish your coffee !";
   public static final String ALERT_DESC_INFO = "Info Alert! For your kind information !";
 
   public static final String NOTIFICATION_TYPE_SYSTEM_ALERT = "system.alert";
-  public static final String NOTIFICATION_TYPE_CACHE_MEMBER_DEPARTED = "gemfire.distributedsystem.cache.member.departed";
-  public static final String NOTIFICATION_TYPE_REGION_DESTROYED = "gemfire.distributedsystem.cache.region.closed";
+  public static final String NOTIFICATION_TYPE_CACHE_MEMBER_DEPARTED =
+      "gemfire.distributedsystem.cache.member.departed";
+  public static final String NOTIFICATION_TYPE_REGION_DESTROYED =
+      "gemfire.distributedsystem.cache.region.closed";
 
   public static final String PRODUCT_NAME_GEMFIRE = "gemfire"; // For GemFire
   public static final String PRODUCT_NAME_SQLFIRE = "gemfirexd"; // For SQLFire
 
-  //Following attributes are not present in 9.0
-  //"Members"
-  //"EmptyNodes"
-  //"SystemRegionEntryCount"
-  //"MemberCount"
-  public static final String[] REGION_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_MEMBERS, MBEAN_ATTRIBUTE_FULLPATH,
-      MBEAN_ATTRIBUTE_DISKREADSRATE, MBEAN_ATTRIBUTE_DISKWRITESRATE,
-      MBEAN_ATTRIBUTE_EMPTYNODES, MBEAN_ATTRIBUTE_GETSRATE,
-      MBEAN_ATTRIBUTE_LRUEVICTIONRATE, MBEAN_ATTRIBUTE_PUTSRATE,
-      MBEAN_ATTRIBUTE_REGIONTYPE, MBEAN_ATTRIBUTE_ENTRYSIZE,
+  // Following attributes are not present in 9.0
+  // "Members"
+  // "EmptyNodes"
+  // "SystemRegionEntryCount"
+  // "MemberCount"
+  public static final String[] REGION_MBEAN_ATTRIBUTES = {MBEAN_ATTRIBUTE_MEMBERS,
+      MBEAN_ATTRIBUTE_FULLPATH, MBEAN_ATTRIBUTE_DISKREADSRATE, MBEAN_ATTRIBUTE_DISKWRITESRATE,
+      MBEAN_ATTRIBUTE_EMPTYNODES, MBEAN_ATTRIBUTE_GETSRATE, MBEAN_ATTRIBUTE_LRUEVICTIONRATE,
+      MBEAN_ATTRIBUTE_PUTSRATE, MBEAN_ATTRIBUTE_REGIONTYPE, MBEAN_ATTRIBUTE_ENTRYSIZE,
       MBEAN_ATTRIBUTE_ENTRYCOUNT, MBEAN_ATTRIBUTE_SYSTEMREGIONENTRYCOUNT,
-      MBEAN_ATTRIBUTE_MEMBERCOUNT, MBEAN_ATTRIBUTE_PERSISTENTENABLED,
-      MBEAN_ATTRIBUTE_NAME, MBEAN_ATTRIBUTE_GATEWAYENABLED,
-      MBEAN_ATTRIBUTE_DISKUSAGE, MBEAN_ATTRIBUTE_LOCALMAXMEMORY };
+      MBEAN_ATTRIBUTE_MEMBERCOUNT, MBEAN_ATTRIBUTE_PERSISTENTENABLED, MBEAN_ATTRIBUTE_NAME,
+      MBEAN_ATTRIBUTE_GATEWAYENABLED, MBEAN_ATTRIBUTE_DISKUSAGE, MBEAN_ATTRIBUTE_LOCALMAXMEMORY};
 
-  public static final String[] CLUSTER_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_MEMBERCOUNT, MBEAN_ATTRIBUTE_NUMCLIENTS,
-      MBEAN_ATTRIBUTE_DISTRIBUTEDSYSTEMID, MBEAN_ATTRIBUTE_LOCATORCOUNT,
+  public static final String[] CLUSTER_MBEAN_ATTRIBUTES = {MBEAN_ATTRIBUTE_MEMBERCOUNT,
+      MBEAN_ATTRIBUTE_NUMCLIENTS, MBEAN_ATTRIBUTE_DISTRIBUTEDSYSTEMID, MBEAN_ATTRIBUTE_LOCATORCOUNT,
       MBEAN_ATTRIBUTE_TOTALREGIONCOUNT, MBEAN_ATTRIBUTE_NUMRUNNIGFUNCTION,
       MBEAN_ATTRIBUTE_REGISTEREDCQCOUNT, MBEAN_ATTRIBUTE_NUMSUBSCRIPTIONS,
       MBEAN_ATTRIBUTE_NUMTXNCOMMITTED, MBEAN_ATTRIBUTE_NUMTXNROLLBACK,
       MBEAN_ATTRIBUTE_TOTALHEAPSIZE, MBEAN_ATTRIBUTE_USEDHEAPSIZE,
       MBEAN_ATTRIBUTE_TOTALREGIONENTRYCOUNT, MBEAN_ATTRIBUTE_CURRENTENTRYCOUNT,
-      MBEAN_ATTRIBUTE_TOTALDISKUSAGE, MBEAN_ATTRIBUTE_DISKWRITESRATE,
-      MBEAN_ATTRIBUTE_AVERAGEWRITES, MBEAN_ATTRIBUTE_AVERAGEREADS,
-      MBEAN_ATTRIBUTE_QUERYREQUESTRATE, MBEAN_ATTRIBUTE_DISKREADSRATE,
-      MBEAN_ATTRIBUTE_JVMPAUSES };
+      MBEAN_ATTRIBUTE_TOTALDISKUSAGE, MBEAN_ATTRIBUTE_DISKWRITESRATE, MBEAN_ATTRIBUTE_AVERAGEWRITES,
+      MBEAN_ATTRIBUTE_AVERAGEREADS, MBEAN_ATTRIBUTE_QUERYREQUESTRATE, MBEAN_ATTRIBUTE_DISKREADSRATE,
+      MBEAN_ATTRIBUTE_JVMPAUSES};
 
-  public static final String[] GATEWAY_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_PORT, MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE,
-      MBEAN_ATTRIBUTE_AVEARGEBATCHPROCESSINGTIME, MBEAN_ATTRIBUTE_RUNNING };
+  public static final String[] GATEWAY_MBEAN_ATTRIBUTES =
+      {MBEAN_ATTRIBUTE_PORT, MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE,
+          MBEAN_ATTRIBUTE_AVEARGEBATCHPROCESSINGTIME, MBEAN_ATTRIBUTE_RUNNING};
 
-  public static final String[] GATEWAYSENDER_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE, MBEAN_ATTRIBUTE_BATCHSIZE,
-      MBEAN_ATTRIBUTE_SENDERID, MBEAN_ATTRIBUTE_EVENTQUEUESIZE,
-      MBEAN_ATTRIBUTE_RUNNING, MBEAN_ATTRIBUTE_PRIMARY,
-      MBEAN_ATTRIBUTE_PERSISTENCEENABLED, MBEAN_ATTRIBUTE_PARALLEL,
-      MBEAN_ATTRIBUTE_REMOTE_DS_ID, MBEAN_ATTRIBUTE_EVENTS_EXCEEDING_ALERT_THRESHOLD};
+  public static final String[] GATEWAYSENDER_MBEAN_ATTRIBUTES =
+      {MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE, MBEAN_ATTRIBUTE_BATCHSIZE, MBEAN_ATTRIBUTE_SENDERID,
+          MBEAN_ATTRIBUTE_EVENTQUEUESIZE, MBEAN_ATTRIBUTE_RUNNING, MBEAN_ATTRIBUTE_PRIMARY,
+          MBEAN_ATTRIBUTE_PERSISTENCEENABLED, MBEAN_ATTRIBUTE_PARALLEL,
+          MBEAN_ATTRIBUTE_REMOTE_DS_ID, MBEAN_ATTRIBUTE_EVENTS_EXCEEDING_ALERT_THRESHOLD};
 
-  public static final String[] ASYNC_EVENT_QUEUE_MBEAN_ATTRIBUTES = {
-    MBEAN_ATTRIBUTE_AEQ_ASYNCEVENTID, MBEAN_ATTRIBUTE_AEQ_PRIMARY,
-    MBEAN_ATTRIBUTE_AEQ_PARALLEL, MBEAN_ATTRIBUTE_AEQ_BATCH_SIZE,
-    MBEAN_ATTRIBUTE_AEQ_BATCH_TIME_INTERVAL, MBEAN_ATTRIBUTE_AEQ_BATCH_CONFLATION_ENABLED,
-    MBEAN_ATTRIBUTE_AEQ_ASYNC_EVENT_LISTENER, MBEAN_ATTRIBUTE_AEQ_EVENT_QUEUE_SIZE};
+  public static final String[] ASYNC_EVENT_QUEUE_MBEAN_ATTRIBUTES =
+      {MBEAN_ATTRIBUTE_AEQ_ASYNCEVENTID, MBEAN_ATTRIBUTE_AEQ_PRIMARY, MBEAN_ATTRIBUTE_AEQ_PARALLEL,
+          MBEAN_ATTRIBUTE_AEQ_BATCH_SIZE, MBEAN_ATTRIBUTE_AEQ_BATCH_TIME_INTERVAL,
+          MBEAN_ATTRIBUTE_AEQ_BATCH_CONFLATION_ENABLED, MBEAN_ATTRIBUTE_AEQ_ASYNC_EVENT_LISTENER,
+          MBEAN_ATTRIBUTE_AEQ_EVENT_QUEUE_SIZE};
 
-  public static final String[] MEMBER_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_MANAGER, MBEAN_ATTRIBUTE_TOTALREGIONCOUNT,
-      MBEAN_ATTRIBUTE_LOCATOR, MBEAN_ATTRIBUTE_TOTALDISKUSAGE,
-      MBEAN_ATTRIBUTE_SERVER, MBEAN_ATTRIBUTE_TOTALFILEDESCRIPTOROPEN,
-      MBEAN_ATTRIBUTE_LOADAVERAGE, MBEAN_ATTRIBUTE_DISKWRITESRATE,
-      MBEAN_ATTRIBUTE_DISKREADSRATE, MBEAN_ATTRIBUTE_JVMPAUSES,
-      MBEAN_ATTRIBUTE_USEDMEMORY, MBEAN_ATTRIBUTE_MAXMEMORY,
-      MBEAN_ATTRIBUTE_NUMTHREADS, MBEAN_ATTRIBUTE_MEMBERUPTIME,
-      MBEAN_ATTRIBUTE_HOST, MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS,
-      MBEAN_ATTRIBUTE_BINDADDRESS, MBEAN_ATTRIBUTE_TOTALBYTESONDISK,
-      MBEAN_ATTRIBUTE_CPUUSAGE, MBEAN_ATTRIBUTE_HOSTCPUUSAGE,
-      MBEAN_ATTRIBUTE_MEMBER, MBEAN_ATTRIBUTE_ID, MBEAN_ATTRIBUTE_AVERAGEREADS,
-      MBEAN_ATTRIBUTE_AVERAGEWRITES, MBEAN_ATTRIBUTE_OFFHEAPFREESIZE,
+  public static final String[] MEMBER_MBEAN_ATTRIBUTES = {MBEAN_ATTRIBUTE_MANAGER,
+      MBEAN_ATTRIBUTE_TOTALREGIONCOUNT, MBEAN_ATTRIBUTE_LOCATOR, MBEAN_ATTRIBUTE_TOTALDISKUSAGE,
+      MBEAN_ATTRIBUTE_SERVER, MBEAN_ATTRIBUTE_TOTALFILEDESCRIPTOROPEN, MBEAN_ATTRIBUTE_LOADAVERAGE,
+      MBEAN_ATTRIBUTE_DISKWRITESRATE, MBEAN_ATTRIBUTE_DISKREADSRATE, MBEAN_ATTRIBUTE_JVMPAUSES,
+      MBEAN_ATTRIBUTE_USEDMEMORY, MBEAN_ATTRIBUTE_MAXMEMORY, MBEAN_ATTRIBUTE_NUMTHREADS,
+      MBEAN_ATTRIBUTE_MEMBERUPTIME, MBEAN_ATTRIBUTE_HOST, MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS,
+      MBEAN_ATTRIBUTE_BINDADDRESS, MBEAN_ATTRIBUTE_TOTALBYTESONDISK, MBEAN_ATTRIBUTE_CPUUSAGE,
+      MBEAN_ATTRIBUTE_HOSTCPUUSAGE, MBEAN_ATTRIBUTE_MEMBER, MBEAN_ATTRIBUTE_ID,
+      MBEAN_ATTRIBUTE_AVERAGEREADS, MBEAN_ATTRIBUTE_AVERAGEWRITES, MBEAN_ATTRIBUTE_OFFHEAPFREESIZE,
       MBEAN_ATTRIBUTE_OFFHEAPUSEDSIZE, MBEAN_ATTRIBUTE_SERVERGROUPS,
-      MBEAN_ATTRIBUTE_REDUNDANCYZONES, MBEAN_ATTRIBUTE_GEMFIREVERSION };
+      MBEAN_ATTRIBUTE_REDUNDANCYZONES, MBEAN_ATTRIBUTE_GEMFIREVERSION};
 
-  public static final String[] STATEMENT_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_NAME, MBEAN_ATTRIBUTE_NUMTIMESCOMPILED,
-      MBEAN_ATTRIBUTE_NUMEXECUTION, MBEAN_ATTRIBUTE_NUMEXECUTIONSINPROGRESS,
-      MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP,
-      MBEAN_ATTRIBUTE_NUMROWSMODIFIED, MBEAN_ATTRIBUTE_PARSETIME,
-      MBEAN_ATTRIBUTE_BINDTIME, MBEAN_ATTRIBUTE_OPTIMIZETIME,
-      MBEAN_ATTRIBUTE_ROUTINGINFOTIME, MBEAN_ATTRIBUTE_GENERATETIME,
+  public static final String[] STATEMENT_MBEAN_ATTRIBUTES = {MBEAN_ATTRIBUTE_NAME,
+      MBEAN_ATTRIBUTE_NUMTIMESCOMPILED, MBEAN_ATTRIBUTE_NUMEXECUTION,
+      MBEAN_ATTRIBUTE_NUMEXECUTIONSINPROGRESS, MBEAN_ATTRIBUTE_NUMTIMESGLOBALINDEXLOOKUP,
+      MBEAN_ATTRIBUTE_NUMROWSMODIFIED, MBEAN_ATTRIBUTE_PARSETIME, MBEAN_ATTRIBUTE_BINDTIME,
+      MBEAN_ATTRIBUTE_OPTIMIZETIME, MBEAN_ATTRIBUTE_ROUTINGINFOTIME, MBEAN_ATTRIBUTE_GENERATETIME,
       MBEAN_ATTRIBUTE_TOTALCOMPILATIONTIME, MBEAN_ATTRIBUTE_EXECUTIONTIME,
       MBEAN_ATTRIBUTE_PROJECTIONTIME, MBEAN_ATTRIBUTE_TOTALEXECUTIONTIME,
       MBEAN_ATTRIBUTE_ROWSMODIFICATIONTIME, MBEAN_ATTRIBUTE_QNNUMROWSSEEN,
-      MBEAN_ATTRIBUTE_QNMSGSENDTIME, MBEAN_ATTRIBUTE_QNMSGSERTIME };
+      MBEAN_ATTRIBUTE_QNMSGSENDTIME, MBEAN_ATTRIBUTE_QNMSGSERTIME};
 
-  public static final String[] REGION_ON_MEMBER_MBEAN_ATTRIBUTES = {
-    MBEAN_ATTRIBUTE_ENTRYSIZE,
-    MBEAN_ATTRIBUTE_ENTRYCOUNT,
-    MBEAN_ATTRIBUTE_PUTSRATE,
-    MBEAN_ATTRIBUTE_GETSRATE,
-    MBEAN_ATTRIBUTE_DISKREADSRATE,
-    MBEAN_ATTRIBUTE_DISKWRITESRATE,
-    MBEAN_ATTRIBUTE_LOCALMAXMEMORY
-    };
+  public static final String[] REGION_ON_MEMBER_MBEAN_ATTRIBUTES =
+      {MBEAN_ATTRIBUTE_ENTRYSIZE, MBEAN_ATTRIBUTE_ENTRYCOUNT, MBEAN_ATTRIBUTE_PUTSRATE,
+          MBEAN_ATTRIBUTE_GETSRATE, MBEAN_ATTRIBUTE_DISKREADSRATE, MBEAN_ATTRIBUTE_DISKWRITESRATE,
+          MBEAN_ATTRIBUTE_LOCALMAXMEMORY};
 
   public static final String[] SF_CLUSTER_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_PROCEDURECALLSINPROGRESS,
-      MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS };
+      MBEAN_ATTRIBUTE_PROCEDURECALLSINPROGRESS, MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS};
 
-  public static final String[] SF_MEMBER_MBEAN_ATTRIBUTES = {
-    MBEAN_ATTRIBUTE_DATASTORE,
-    MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS };
+  public static final String[] SF_MEMBER_MBEAN_ATTRIBUTES =
+      {MBEAN_ATTRIBUTE_DATASTORE, MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS};
 
-  public static final String[] SF_TABLE_MBEAN_ATTRIBUTES = {
-      MBEAN_ATTRIBUTE_ENTRYSIZE, MBEAN_ATTRIBUTE_NUMBEROFROWS };
-  
-  public static final String PULSE_ROLES[] = {
-    "CLUSTER:READ",
-    "DATA:READ"
-  };
+  public static final String[] SF_TABLE_MBEAN_ATTRIBUTES =
+      {MBEAN_ATTRIBUTE_ENTRYSIZE, MBEAN_ATTRIBUTE_NUMBEROFROWS};
+
+  public static final String PULSE_ROLES[] = {"CLUSTER:READ", "DATA:READ"};
 
   // SSL Related attributes
 

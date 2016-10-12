@@ -24,6 +24,7 @@ buildscript {
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.0.1'
+    classpath "com.diffplug.gradle.spotless:spotless:2.2.0"
   }
 }
 
@@ -45,7 +46,7 @@ allprojects {
   // We want to see all test results.  This is equivalatent to setting --continue
   // on the command line.
   gradle.startParameter.continueOnFailure = true
-  
+
   repositories {
     mavenCentral()
     maven { url "http://repo.spring.io/release" }
@@ -63,7 +64,7 @@ task cleanAll(type: Delete) {
   delete rootProject.buildDir
   if (!buildRoot.isEmpty()) {
     delete buildRoot
-  }  
+  }
 }
 
 // allow external projects to override include location
@@ -84,6 +85,13 @@ apply from: "${scriptDir}/rat.gradle"
 subprojects {
   // Make sure clean task for rootProject runs last
   clean.finalizedBy rootProject.cleanAll
+
+  apply plugin: "com.diffplug.gradle.spotless"
+  spotless {
+    java {
+      eclipseFormatFile "${rootProject.projectDir}/etc/eclipse-java-google-style.xml"
+    }
+  }
 }
 
 task cleanExamples(type: GradleBuild) {

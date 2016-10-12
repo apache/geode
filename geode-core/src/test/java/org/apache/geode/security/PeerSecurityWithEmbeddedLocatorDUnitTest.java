@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.security;
@@ -36,7 +34,7 @@ import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
@@ -44,12 +42,12 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedT
 
 
   @Test
-  public void testPeerSecurityManager() throws Exception{
+  public void testPeerSecurityManager() throws Exception {
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties server0Props = new Properties();
     server0Props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
-    server0Props.setProperty("start-locator", "localhost["+locatorPort+"]");
+    server0Props.setProperty("start-locator", "localhost[" + locatorPort + "]");
     lsRule.getServerVM(0, server0Props);
 
 
@@ -63,21 +61,21 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedT
     server2Props.setProperty("security-password", "wrongPwd");
 
     VM server2 = lsRule.getNodeVM(2);
-    server2.invoke(()->{
+    server2.invoke(() -> {
       ServerStarter serverStarter = new ServerStarter(server2Props);
-      assertThatThrownBy(()->serverStarter.startServer(locatorPort))
-        .isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("Security check failed. Authentication error");
+      assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
+          .isInstanceOf(GemFireSecurityException.class)
+          .hasMessageContaining("Security check failed. Authentication error");
     });
   }
 
   @Test
-  public void testPeerAuthenticator() throws Exception{
+  public void testPeerAuthenticator() throws Exception {
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties server0Props = new Properties();
     server0Props.setProperty(SECURITY_PEER_AUTHENTICATOR, DummyAuthenticator.class.getName());
-    server0Props.setProperty("start-locator", "localhost["+locatorPort+"]");
+    server0Props.setProperty("start-locator", "localhost[" + locatorPort + "]");
     lsRule.getServerVM(0, server0Props);
 
 
@@ -91,11 +89,10 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedT
     server2Props.setProperty("security-password", "user");
 
     VM server2 = lsRule.getNodeVM(2);
-    server2.invoke(()->{
+    server2.invoke(() -> {
       ServerStarter serverStarter = new ServerStarter(server2Props);
-      assertThatThrownBy(()->serverStarter.startServer(locatorPort))
-        .isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("Invalid user name");
+      assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
+          .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
     });
   }
 

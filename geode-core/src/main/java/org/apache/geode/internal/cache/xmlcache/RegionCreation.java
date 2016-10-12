@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.xmlcache;
 
@@ -29,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
-
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -57,33 +54,35 @@ import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * Represents a {@link Region} that is created declaratively.  Notice
- * that it implements the {@link Region} interface so that this class
- * must be updated when {@link Region} is modified.  This class is
- * public for testing purposes.
+ * Represents a {@link Region} that is created declaratively. Notice that it implements the
+ * {@link Region} interface so that this class must be updated when {@link Region} is modified. This
+ * class is public for testing purposes.
  *
  *
  * @since GemFire 3.0
  */
-public class RegionCreation implements Region, Extensible<Region<?,?>> {
+public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
-//  /** An <code>AttributesFactory</code> for creating default
-//   * <code>RegionAttribute</code>s */
-//  private static final AttributesFactory defaultFactory =
-//    new AttributesFactory();
+  // /** An <code>AttributesFactory</code> for creating default
+  // * <code>RegionAttribute</code>s */
+  // private static final AttributesFactory defaultFactory =
+  // new AttributesFactory();
 
-  ///////////////////////  Instance Fields  ///////////////////////
+  /////////////////////// Instance Fields ///////////////////////
 
   /** The name of this region */
   private final String name;
 
-  /** The id of the region-attributes this regions uses by default.
+  /**
+   * The id of the region-attributes this regions uses by default.
    *
-   * @since GemFire 6.5 */
+   * @since GemFire 6.5
+   */
   private String refid;
 
   /**
    * If true then someone explicitly added region attributes to this region
+   * 
    * @since GemFire 6.5
    */
   private boolean hasAttributes;
@@ -100,28 +99,29 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   /** The key/value pairs in this region */
   private Map values = new HashMap();
 
-  /** List of IndexCreationData objects. A region can contain
-   * multiple indexes defined */
+  /**
+   * List of IndexCreationData objects. A region can contain multiple indexes defined
+   */
   private List indexes = new ArrayList();
 
   /** The cache in which this region will reside */
   private final CacheCreation cache;
-  
+
   /**
    * {@link ExtensionPoint} to {@link Region}.
    * 
    * @since GemFire 8.1
    */
-  private final SimpleExtensionPoint<Region<?, ?>> extensionPoint = new SimpleExtensionPoint<Region<?,?>>(this, this);
+  private final SimpleExtensionPoint<Region<?, ?>> extensionPoint =
+      new SimpleExtensionPoint<Region<?, ?>>(this, this);
 
-  ///////////////////////  Constructors  ///////////////////////
+  /////////////////////// Constructors ///////////////////////
 
   /**
-   * Creates a new <code>RegionCreation</code> with the given name and
-   * with the default <code>RegionAttributes</code>.
+   * Creates a new <code>RegionCreation</code> with the given name and with the default
+   * <code>RegionAttributes</code>.
    */
-  public RegionCreation(CacheCreation cache, RegionCreation parent,
-                        String name, String refid) {
+  public RegionCreation(CacheCreation cache, RegionCreation parent, String name, String refid) {
     this.cache = cache;
     if (parent != null) {
       this.fullPath = parent.getFullPath() + SEPARATOR + name;
@@ -146,29 +146,24 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     this(cache, null, name, null);
   }
 
-  //////////////////////  Instance Methods  //////////////////////
+  ////////////////////// Instance Methods //////////////////////
 
-  public Object put(Object key, Object value)
-    throws TimeoutException, CacheWriterException
-  {
+  public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
     return this.values.put(key, value);
   }
 
   /**
-   * Fills in the state (that is, adds entries and creates subregions)
-   * of a given <code>Region</code> based on the description provided
-   * by this <code>RegionCreation</code>.
+   * Fills in the state (that is, adds entries and creates subregions) of a given
+   * <code>Region</code> based on the description provided by this <code>RegionCreation</code>.
    *
    * @throws TimeoutException
    * @throws CacheWriterException
    * @throws RegionExistsException
    */
   private void fillIn(Region region)
-    throws TimeoutException, CacheWriterException,
-           RegionExistsException {
-    
-    for (Iterator iter = this.values.entrySet().iterator();
-         iter.hasNext(); ) {
+      throws TimeoutException, CacheWriterException, RegionExistsException {
+
+    for (Iterator iter = this.values.entrySet().iterator(); iter.hasNext();) {
       Map.Entry entry = (Map.Entry) iter.next();
       region.put(entry.getKey(), entry.getValue());
     }
@@ -179,19 +174,17 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
       final Extensible<Region<?, ?>> extensible = (Extensible<Region<?, ?>>) region;
       extensionPoint.fireCreate(extensible);
     }
-    
-    for (Iterator iter = this.subregions.values().iterator();
-         iter.hasNext(); ) {
+
+    for (Iterator iter = this.subregions.values().iterator(); iter.hasNext();) {
       RegionCreation sub = (RegionCreation) iter.next();
       sub.create(region);
     }
   }
 
   /**
-   * Sets the mutable attributes of the given region based on the
-   * attributes of this <code>RegionCreation</code>.  This allows us
-   * to modify the attributes of an existing region using a cache.xml
-   * file.
+   * Sets the mutable attributes of the given region based on the attributes of this
+   * <code>RegionCreation</code>. This allows us to modify the attributes of an existing region
+   * using a cache.xml file.
    *
    * @see AttributesMutator
    */
@@ -233,24 +226,22 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     if (attrs.hasRegionTimeToLive()) {
       mutator.setRegionTimeToLive(attrs.getRegionTimeToLive());
     }
-    
-    if(attrs.hasCloningEnabled()){
+
+    if (attrs.hasCloningEnabled()) {
       mutator.setCloningEnabled(attrs.getCloningEnabled());
     }
   }
 
   /**
-   * Creates a root {@link Region} in a given <code>Cache</code>
-   * based on the description provided by this
-   * <code>RegionCreation</code>.
+   * Creates a root {@link Region} in a given <code>Cache</code> based on the description provided
+   * by this <code>RegionCreation</code>.
    *
    * @throws TimeoutException
    * @throws CacheWriterException
    * @throws RegionExistsException
    */
   void createRoot(Cache cache)
-    throws TimeoutException, CacheWriterException,
-           RegionExistsException {
+      throws TimeoutException, CacheWriterException, RegionExistsException {
     Region root = null;
 
     // Validate the attributes before creating the root region
@@ -261,22 +252,26 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     extensionPoint.beforeCreate(cache);
 
     try {
-      root = ((GemFireCacheImpl)cache).basicCreateRegion(this.name, new AttributesFactory(this.attrs).create());
+      root = ((GemFireCacheImpl) cache).basicCreateRegion(this.name,
+          new AttributesFactory(this.attrs).create());
     } catch (RegionExistsException ex) {
       root = ex.getRegion();
       setMutableAttributes(root);
     } catch (RegionDestroyedException ex) {
-      //Region was concurrently destroyed.
-      cache.getLoggerI18n().warning(LocalizedStrings.RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION, this.name);
-      //do nothing
+      // Region was concurrently destroyed.
+      cache.getLoggerI18n().warning(
+          LocalizedStrings.RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION, this.name);
+      // do nothing
     }
-    if(root != null) {
+    if (root != null) {
       fillIn(root);
     }
   }
+
   /**
-   * Called by CacheXmlParser to add the IndexCreationData object
-   * to the list. It is called when functional element is encounetered
+   * Called by CacheXmlParser to add the IndexCreationData object to the list. It is called when
+   * functional element is encounetered
+   * 
    * @param icd
    */
   void addIndexData(IndexCreationData icd) {
@@ -284,17 +279,15 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   }
 
   /**
-   * Creates a {@link Region} with the given parent using the
-   * description provided by this <code>RegionCreation</code>.
+   * Creates a {@link Region} with the given parent using the description provided by this
+   * <code>RegionCreation</code>.
    *
    * @throws TimeoutException
    * @throws CacheWriterException
    * @throws RegionExistsException
    * @throws IllegalStateException
    */
-  void create(Region parent)
-    throws TimeoutException, CacheWriterException,
-           RegionExistsException {
+  void create(Region parent) throws TimeoutException, CacheWriterException, RegionExistsException {
 
     // Validate the attributes before creating the sub-region
     this.attrs.inheritAttributes(parent.getCache());
@@ -307,13 +300,14 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     } catch (RegionExistsException ex) {
       me = ex.getRegion();
       setMutableAttributes(me);
-    }  catch (RegionDestroyedException ex) {
-      //Region was concurrently destroyed.
-      cache.getLoggerI18n().warning(LocalizedStrings.RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION, this.name);
-      //do nothing
+    } catch (RegionDestroyedException ex) {
+      // Region was concurrently destroyed.
+      cache.getLoggerI18n().warning(
+          LocalizedStrings.RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION, this.name);
+      // do nothing
     }
 
-    if(me != null) {
+    if (me != null) {
       // Register named region attributes
       String id = this.attrs.getId();
       if (id != null) {
@@ -326,8 +320,8 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   }
 
   /**
-   * Returns whether or not this <code>RegionCreation</code> is
-   * equivalent to another <code>Region</code>.
+   * Returns whether or not this <code>RegionCreation</code> is equivalent to another
+   * <code>Region</code>.
    */
   public boolean sameAs(Region other) {
     if (other == null) {
@@ -335,20 +329,23 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     }
 
     if (!this.getName().equals(other.getName())) {
-      throw new RuntimeException(LocalizedStrings.RegionCreation_REGION_NAMES_DIFFER_THIS_0_OTHER_1.toLocalizedString(new Object[] {this.getName(), other.getName()}));
+      throw new RuntimeException(LocalizedStrings.RegionCreation_REGION_NAMES_DIFFER_THIS_0_OTHER_1
+          .toLocalizedString(new Object[] {this.getName(), other.getName()}));
     }
 
     if (!this.attrs.sameAs(other.getAttributes())) {
-      throw new RuntimeException(LocalizedStrings.RegionCreation_REGION_ATTRIBUTES_DIFFER_THIS_0_OTHER_1.toLocalizedString(new Object[] {this.attrs, other.getAttributes()}));
+      throw new RuntimeException(
+          LocalizedStrings.RegionCreation_REGION_ATTRIBUTES_DIFFER_THIS_0_OTHER_1
+              .toLocalizedString(new Object[] {this.attrs, other.getAttributes()}));
     }
 
     Collection myEntries = this.basicEntries(false);
-    Collection otherEntries = ((LocalRegion)other).basicEntries(false);
+    Collection otherEntries = ((LocalRegion) other).basicEntries(false);
     if (myEntries.size() != otherEntries.size()) {
       return false;
     }
 
-    for (Iterator iter = myEntries.iterator(); iter.hasNext(); ) {
+    for (Iterator iter = myEntries.iterator(); iter.hasNext();) {
       Region.Entry myEntry = (Region.Entry) iter.next();
       Region.Entry otherEntry = other.getEntry(myEntry.getKey());
       if (otherEntry == null) {
@@ -386,22 +383,17 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     if ((setRefid && (this.attrs.getRefid() == null))) {
       this.attrs.setRefid(getRefid());
     }
-    if (attrs.getPartitionAttributes() != null
-        && attrs.getEvictionAttributes() != null
+    if (attrs.getPartitionAttributes() != null && attrs.getEvictionAttributes() != null
         && attrs.getEvictionAttributes().getAlgorithm().isLRUMemory()
-        && attrs.getPartitionAttributes().getLocalMaxMemory() != 0
-        && attrs.getEvictionAttributes().getMaximum() != attrs
-            .getPartitionAttributes().getLocalMaxMemory()) {
-      getCache().getLoggerI18n().warning(
-          LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
-          new Object[] { this.getName(),
-              attrs.getEvictionAttributes().getMaximum(),
-              attrs.getPartitionAttributes().getLocalMaxMemory() });
-      this.attrs.setEvictionAttributes(attrs.getEvictionAttributes()
-          .createLRUMemoryAttributes(
-              attrs.getPartitionAttributes().getLocalMaxMemory(),
-              attrs.getEvictionAttributes().getObjectSizer(),
-              attrs.getEvictionAttributes().getAction()));
+        && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && attrs.getEvictionAttributes()
+            .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
+      getCache().getLoggerI18n().warning(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
+          new Object[] {this.getName(), attrs.getEvictionAttributes().getMaximum(),
+              attrs.getPartitionAttributes().getLocalMaxMemory()});
+      this.attrs.setEvictionAttributes(attrs.getEvictionAttributes().createLRUMemoryAttributes(
+          attrs.getPartitionAttributes().getLocalMaxMemory(),
+          attrs.getEvictionAttributes().getObjectSizer(),
+          attrs.getEvictionAttributes().getAction()));
     }
   }
 
@@ -411,7 +403,7 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
 
 
 
-  public Region getSubregion(String regionName){
+  public Region getSubregion(String regionName) {
     return (Region) this.subregions.get(regionName);
   }
 
@@ -419,15 +411,12 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
    * Adds a subregion with the given name to this region
    *
    *
-   * @throws RegionExistsException
-   *         If a subregion with <code>name</code> already exists
+   * @throws RegionExistsException If a subregion with <code>name</code> already exists
    */
-  void addSubregion(String name, RegionCreation region)
-    throws RegionExistsException {
-    
+  void addSubregion(String name, RegionCreation region) throws RegionExistsException {
+
     if (this.subregions.containsKey(name)) {
-      RegionCreation existing =
-        (RegionCreation) this.subregions.get(name);
+      RegionCreation existing = (RegionCreation) this.subregions.get(name);
       throw new RegionExistsException(existing);
 
     } else {
@@ -437,115 +426,133 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
 
   public Set subregions(boolean recursive) {
     if (recursive) {
-      throw new UnsupportedOperationException(LocalizedStrings.RegionCreation_GETTING_SUBREGIONS_RECURSIVELY_IS_NOT_SUPPORTED.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.RegionCreation_GETTING_SUBREGIONS_RECURSIVELY_IS_NOT_SUPPORTED
+              .toLocalizedString());
     }
 
     return new HashSet(this.subregions.values());
   }
 
   public void writeToDisk() {
-    throw new UnsupportedOperationException(LocalizedStrings.RegionCreation_WRITING_A_REGIONCREATION_TO_DISK_IS_NOT_SUPPORTED.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.RegionCreation_WRITING_A_REGIONCREATION_TO_DISK_IS_NOT_SUPPORTED
+            .toLocalizedString());
   }
 
   public void registerInterest(Object key) throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
-  
+
   public void registerInterest(Object key, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
-  
-  public void registerInterest(Object key, boolean isDurable,
-      boolean receiveValues) throws CacheWriterException {
+
+  public void registerInterest(Object key, boolean isDurable, boolean receiveValues)
+      throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   public void registerInterestRegex(String regex) throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
-  
+
   public void registerInterestRegex(String regex, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
-  
-  public void registerInterestRegex(String regex, boolean isDurable,
+
+  public void registerInterestRegex(String regex, boolean isDurable, boolean receiveValues)
+      throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  }
+
+  public void registerInterest(Object key, InterestResultPolicy policy)
+      throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  }
+
+  public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable)
+      throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  }
+
+  public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
-  }
-
-  public void registerInterest(Object key, InterestResultPolicy policy) throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
-  }
-  
-  public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable) throws CacheWriterException {
-    throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
-  }
-  
-  public void registerInterest(Object key, InterestResultPolicy policy,
-      boolean isDurable, boolean receiveValues) throws CacheWriterException {
-    throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
 
-  public void registerInterestRegex(String regex, InterestResultPolicy policy) throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+  public void registerInterestRegex(String regex, InterestResultPolicy policy)
+      throws CacheWriterException {
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
-  public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable) throws CacheWriterException {
+  public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable)
+      throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
-  
-  public void registerInterestRegex(String regex, InterestResultPolicy policy,
-      boolean isDurable, boolean receiveValues) throws CacheWriterException {
+
+  public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable,
+      boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   public void unregisterInterest(Object key) throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
-  
+
   public void unregisterInterest(Object key, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   public void unregisterInterestRegex(String regex) throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
-  
+
   public void unregisterInterestRegex(String regex, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
 
   public List getInterestList() throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   public List getDurableInterestList() throws CacheWriterException {
     throw new UnsupportedOperationException(
-      LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   public List getInterestListRegex() throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   public Set keySetOnServer() throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   public boolean containsKeyOnServer(Object key) throws CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
   }
 
   static class Entry implements Region.Entry {
@@ -556,7 +563,7 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
       this.key = key;
       this.value = value;
     }
-    
+
     public boolean isLocal() {
       return false;
     }
@@ -607,15 +614,16 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   public Set entries(boolean recursive) {
     return basicEntries(recursive);
   }
-  
+
   public Set basicEntries(boolean recursive) {
     if (recursive) {
-      throw new UnsupportedOperationException(LocalizedStrings.RegionCreation_GETTING_ENTRIES_RECURSIVELY_IS_NOT_SUPPORTED.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.RegionCreation_GETTING_ENTRIES_RECURSIVELY_IS_NOT_SUPPORTED
+              .toLocalizedString());
     }
 
     Set set = new HashSet();
-    for (Iterator iter = this.values.entrySet().iterator();
-         iter.hasNext(); ) {
+    for (Iterator iter = this.values.entrySet().iterator(); iter.hasNext();) {
       final Map.Entry entry = (Map.Entry) iter.next();
       set.add(new Entry(entry.getKey(), entry.getValue()));
     }
@@ -627,30 +635,29 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     return this.fullPath;
   }
 
-  //////////  Inherited methods that don't do anything  //////////
+  ////////// Inherited methods that don't do anything //////////
 
   public Region getParentRegion() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public AttributesMutator getAttributesMutator(){
+  public AttributesMutator getAttributesMutator() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public CacheStatistics getStatistics(){
+  public CacheStatistics getStatistics() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void invalidateRegion() throws TimeoutException{
+  public void invalidateRegion() throws TimeoutException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void invalidateRegion(Object aCallbackArgument)
-    throws TimeoutException {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  public void invalidateRegion(Object aCallbackArgument) throws TimeoutException {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void localInvalidateRegion(){
+  public void localInvalidateRegion() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -659,21 +666,20 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   }
 
 
-  public void destroyRegion()
-    throws CacheWriterException, TimeoutException {
+  public void destroyRegion() throws CacheWriterException, TimeoutException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public void destroyRegion(Object aCacheWriterParam)
-    throws CacheWriterException, TimeoutException {
+      throws CacheWriterException, TimeoutException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void localDestroyRegion(){
+  public void localDestroyRegion() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void localDestroyRegion(Object aCallbackArgument){
+  public void localDestroyRegion(Object aCallbackArgument) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -681,75 +687,63 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public Region createSubregion(String subregionName,
-                                RegionAttributes attrs)
-    throws RegionExistsException, TimeoutException {
-    RegionCreation subregion =
-      new RegionCreation(this.cache, this, subregionName, null);
+  public Region createSubregion(String subregionName, RegionAttributes attrs)
+      throws RegionExistsException, TimeoutException {
+    RegionCreation subregion = new RegionCreation(this.cache, this, subregionName, null);
     subregion.setAttributes(attrs);
     this.addSubregion(subregionName, subregion);
     return subregion;
   }
 
-  public Object get(Object key)
-    throws CacheLoaderException, TimeoutException {
+  public Object get(Object key) throws CacheLoaderException, TimeoutException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public Object get(Object key, Object aCallbackArgument)
-    throws TimeoutException, CacheLoaderException {
+      throws TimeoutException, CacheLoaderException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public Object put(Object key, Object value, Object aCacheWriterParam)
-    throws TimeoutException, CacheWriterException
-  {
+      throws TimeoutException, CacheWriterException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public void create(Object key, Object value)
-    throws TimeoutException, EntryExistsException,
-    CacheWriterException {
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void create(Object key, Object value,
-                     Object aCacheWriterParam)
-    throws TimeoutException, EntryExistsException,
-    CacheWriterException {
+  public void create(Object key, Object value, Object aCacheWriterParam)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void invalidate(Object key)
-    throws TimeoutException, EntryNotFoundException {
+  public void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public void invalidate(Object key, Object callbackArgument)
-    throws TimeoutException, EntryNotFoundException {
+      throws TimeoutException, EntryNotFoundException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void localInvalidate(Object key)
-    throws EntryNotFoundException {
+  public void localInvalidate(Object key) throws EntryNotFoundException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void localInvalidate(Object key,Object callbackArgument)
-    throws EntryNotFoundException {
+  public void localInvalidate(Object key, Object callbackArgument) throws EntryNotFoundException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
 
   public Object destroy(Object key)
-    throws TimeoutException, EntryNotFoundException,
-    CacheWriterException {
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public Object destroy(Object key, Object aCacheWriterParam)
-    throws TimeoutException, EntryNotFoundException,
-    CacheWriterException {
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -757,8 +751,7 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  public void localDestroy(Object key,Object callbackArgument)
-    throws EntryNotFoundException {
+  public void localDestroy(Object key, Object callbackArgument) throws EntryNotFoundException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
 
   }
@@ -820,61 +813,73 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   }
 
   public void loadSnapshot(InputStream inputStream)
-  throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException {
+      throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public void saveSnapshot(OutputStream outputStream) throws IOException {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public void becomeLockGrantor() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public int size() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public void clear() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-    
+
   }
+
   public boolean isEmpty() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public boolean containsValue(Object arg0) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public void putAll(Map arg0) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString()); 
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   @Override
   public void putAll(Map arg0, Object callbackArg) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString()); 
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public Map getAll(Collection keys) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public Map getAll(Collection keys, Object callback) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public Set entrySet() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
   public Set keySet() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
- 
+
   public Object remove(Object arg0) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public Set entrySet(boolean recursive) {
     if (recursive) {
-      throw new UnsupportedOperationException(LocalizedStrings.RegionCreation_GETTING_ENTRIES_RECURSIVELY_IS_NOT_SUPPORTED.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.RegionCreation_GETTING_ENTRIES_RECURSIVELY_IS_NOT_SUPPORTED
+              .toLocalizedString());
     }
 
     Set set = new HashSet();
-    for (Iterator iter = this.values.entrySet().iterator();
-         iter.hasNext(); ) {
+    for (Iterator iter = this.values.entrySet().iterator(); iter.hasNext();) {
       final Map.Entry entry = (Map.Entry) iter.next();
       set.add(new Entry(entry.getKey(), entry.getValue()));
     }
@@ -883,40 +888,49 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   }
 
   public void localClear() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());    
-  }    
-  
-  public void forceRolling(){
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
-  
-  public boolean forceCompaction(){
+
+  public void forceRolling() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  public boolean forceCompaction() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
    */
   public Object putIfAbsent(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
    */
   public boolean remove(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
    */
   public Object replace(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object, java.lang.Object)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
+   * java.lang.Object)
    */
   public boolean replace(Object key, Object oldValue, Object newValue) {
     throw new UnsupportedOperationException();
@@ -939,27 +953,28 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   public String getRefid() {
     return this.refid;
   }
+
   /**
    * Returns true if someone explicitly added region attributes to this region.
    */
   public boolean hasAttributes() {
     return this.hasAttributes;
   }
-  
+
   public RegionSnapshotService<?, ?> getSnapshotService() {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void removeAll(Collection keys) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString()); 
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
   public void removeAll(Collection keys, Object aCallbackArgument) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString()); 
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
-  
+
   /**
    * @since GemFire 8.1
    */

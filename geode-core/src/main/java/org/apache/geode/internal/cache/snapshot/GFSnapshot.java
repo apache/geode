@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.snapshot;
 
@@ -60,43 +58,42 @@ public class GFSnapshot {
      * @param entry the cache entry
      */
     void snapshotEntry(SnapshotRecord entry) throws IOException;
-    
+
     /**
      * Invoked to indicate that all entries have been written to the snapshot.
      */
     void snapshotComplete() throws IOException;
   }
-  
+
   /** the snapshot format version 1 */
-  public static final int SNAP_VER_1   = 1;
-  
+  public static final int SNAP_VER_1 = 1;
+
   /** the snapshot format version 2 */
-  public static final int SNAP_VER_2   = 2;
+  public static final int SNAP_VER_2 = 2;
 
   /** the snapshot file format */
-  private static final byte[] SNAP_FMT = { 0x47, 0x46, 0x53 };
-  
-  private GFSnapshot() {
-  }
+  private static final byte[] SNAP_FMT = {0x47, 0x46, 0x53};
+
+  private GFSnapshot() {}
 
   public static void main(String[] args) throws Exception {
     if (args.length != 1) {
       System.out.println("Usage: GFSnapshot <file>");
       System.exit(1);
     }
-    
+
     GFSnapshotImporter imp = new GFSnapshotImporter(new File(args[0]));
     try {
       System.out.println("Snapshot format is version " + imp.getVersion());
       System.out.println("Snapshot region is " + imp.getRegionName());
-      
+
       ExportedRegistry reg = imp.getPdxTypes();
       Map<Integer, PdxType> types = reg.types();
       System.out.println("Found " + types.size() + " PDX types:");
       for (Entry<Integer, PdxType> entry : types.entrySet()) {
         System.out.println("\t" + entry.getKey() + " = " + entry.getValue());
       }
-      
+
       Map<Integer, EnumInfo> enums = reg.enums();
       System.out.println("Found " + enums.size() + " PDX enums: ");
       for (Entry<Integer, EnumInfo> entry : enums.entrySet()) {
@@ -112,7 +109,7 @@ public class GFSnapshot {
       imp.close();
     }
   }
-  
+
   /**
    * Creates a snapshot file and provides a serializer to write entries to the snapshot.
    * 
@@ -121,8 +118,7 @@ public class GFSnapshot {
    * @return the callback to allow the invoker to provide the snapshot entries
    * @throws IOException error writing the snapshot file
    */
-  public static SnapshotWriter create(File snapshot, String region) 
-      throws IOException {
+  public static SnapshotWriter create(File snapshot, String region) throws IOException {
     final GFSnapshotExporter out = new GFSnapshotExporter(snapshot, region);
     return new SnapshotWriter() {
       @Override
@@ -136,7 +132,7 @@ public class GFSnapshot {
       }
     };
   }
-  
+
   /**
    * Reads a snapshot file.
    * 
@@ -148,7 +144,8 @@ public class GFSnapshot {
    * @throws IOException error reading the snapshot file
    * @throws ClassNotFoundException unable to deserialize entry
    */
-  public static <K, V> SnapshotIterator<K, V> read(final File snapshot) throws IOException, ClassNotFoundException {
+  public static <K, V> SnapshotIterator<K, V> read(final File snapshot)
+      throws IOException, ClassNotFoundException {
     return new SnapshotIterator<K, V>() {
       GFSnapshotImporter in = new GFSnapshotImporter(snapshot);
 
@@ -169,13 +166,13 @@ public class GFSnapshot {
           throw new NoSuchElementException();
         }
         Entry<K, V> result = next;
-        
+
         foundNext = false;
         next = null;
-        
+
         return result;
       }
-      
+
       @Override
       public void close() throws IOException {
         in.close();
@@ -185,18 +182,29 @@ public class GFSnapshot {
         SnapshotRecord record;
         while ((record = in.readSnapshotRecord()) != null) {
           foundNext = true;
-          
+
           final K key = record.getKeyObject();
           final V value = record.getValueObject();
-          
+
           next = new Entry<K, V>() {
-            @Override public K getKey() { return key; }
-            @Override public V getValue() { return value; }
-            @Override public V setValue(V value) { throw new UnsupportedOperationException(); }
+            @Override
+            public K getKey() {
+              return key;
+            }
+
+            @Override
+            public V getValue() {
+              return value;
+            }
+
+            @Override
+            public V setValue(V value) {
+              throw new UnsupportedOperationException();
+            }
           };
           return true;
         }
-        
+
         close();
         return false;
       }
@@ -209,29 +217,29 @@ public class GFSnapshot {
   static class GFSnapshotExporter {
     /** the file channel, used for random access */
     private final FileChannel fc;
-    
+
     /** the output stream */
     private final DataOutputStream dos;
-    
+
     public GFSnapshotExporter(File out, String region) throws IOException {
       FileOutputStream fos = new FileOutputStream(out);
       fc = fos.getChannel();
-      
+
       dos = new DataOutputStream(new BufferedOutputStream(fos));
-      
+
       // write snapshot version
       dos.writeByte(SNAP_VER_2);
-      
+
       // write format type
       dos.write(SNAP_FMT);
-      
+
       // write temporary pdx location in bytes 4-11
       dos.writeLong(-1);
 
       // write region name
       dos.writeUTF(region);
     }
-    
+
     /**
      * Writes an entry in the snapshot.
      * 
@@ -241,55 +249,56 @@ public class GFSnapshot {
     public void writeSnapshotEntry(SnapshotRecord entry) throws IOException {
       InternalDataSerializer.invokeToData(entry, dos);
     }
-    
+
     public void close() throws IOException {
       // write entry terminator entry
       DataSerializer.writeByteArray(null, dos);
-      
+
       // grab the pdx start location
       dos.flush();
       long registryPosition = fc.position();
 
       // write pdx types
       try {
-        GemFireCacheImpl cache = GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.");
+        GemFireCacheImpl cache = GemFireCacheImpl
+            .getForPdx("PDX registry is unavailable because the Cache has been closed.");
         new ExportedRegistry(cache.getPdxRegistry()).toData(dos);
       } catch (CacheClosedException e) {
         // ignore pdx types
         new ExportedRegistry().toData(dos);
       }
-      
+
       // write the pdx position
       dos.flush();
       fc.position(4);
       dos.writeLong(registryPosition);
-      
+
       dos.close();
     }
   }
-  
+
   /**
-   * Reads a snapshot file.  
+   * Reads a snapshot file.
    */
   static class GFSnapshotImporter {
     /** the snapshot file version */
     private final byte version;
-    
+
     /** the region name */
     private final String region;
-    
+
     /** the internal pdx registry (not the system-wide pdx registry) */
     private final ExportedRegistry pdx;
-    
+
     /** the input stream */
     private final DataInputStream dis;
-    
+
     public GFSnapshotImporter(File in) throws IOException, ClassNotFoundException {
       pdx = new ExportedRegistry();
 
       // read header and pdx registry
       long entryPosition;
-      
+
       FileInputStream fis = new FileInputStream(in);
       FileChannel fc = fis.getChannel();
       DataInputStream tmp = new DataInputStream(fis);
@@ -297,48 +306,54 @@ public class GFSnapshot {
         // read the snapshot file header
         version = tmp.readByte();
         if (version == SNAP_VER_1) {
-          throw new IOException(LocalizedStrings.Snapshot_UNSUPPORTED_SNAPSHOT_VERSION_0.toLocalizedString(SNAP_VER_1) + ": " + in);
-          
+          throw new IOException(
+              LocalizedStrings.Snapshot_UNSUPPORTED_SNAPSHOT_VERSION_0.toLocalizedString(SNAP_VER_1)
+                  + ": " + in);
+
         } else if (version == SNAP_VER_2) {
           // read format
           byte[] format = new byte[3];
           tmp.readFully(format);
           if (!Arrays.equals(format, SNAP_FMT)) {
-            throw new IOException(LocalizedStrings.Snapshot_UNRECOGNIZED_FILE_TYPE_0.toLocalizedString(Arrays.toString(format)) + ": " + in);
+            throw new IOException(LocalizedStrings.Snapshot_UNRECOGNIZED_FILE_TYPE_0
+                .toLocalizedString(Arrays.toString(format)) + ": " + in);
           }
-          
+
           // read pdx location
           long registryPosition = tmp.readLong();
-          
+
           // read region
           region = tmp.readUTF();
           entryPosition = fc.position();
-          
+
           // read pdx
           if (registryPosition != -1) {
             fc.position(registryPosition);
             pdx.fromData(tmp);
           }
         } else {
-          throw new IOException(LocalizedStrings.Snapshot_UNRECOGNIZED_FILE_VERSION_0.toLocalizedString(version) + ": " + in);
+          throw new IOException(
+              LocalizedStrings.Snapshot_UNRECOGNIZED_FILE_VERSION_0.toLocalizedString(version)
+                  + ": " + in);
         }
       } finally {
         tmp.close();
       }
-      
-      // check compatibility with the existing pdx types so we don't have to 
+
+      // check compatibility with the existing pdx types so we don't have to
       // do any translation...preexisting types or concurrent put ops may cause
       // this check to fail
       checkPdxTypeCompatibility();
       checkPdxEnumCompatibility();
-      
+
       // open new stream with buffering for reading entries
       dis = new DataInputStream(new BufferedInputStream(new FileInputStream(in)));
       dis.skip(entryPosition);
     }
-    
+
     /**
      * Returns the snapshot file version.
+     * 
      * @return the version
      */
     public byte getVersion() {
@@ -347,23 +362,24 @@ public class GFSnapshot {
 
     /**
      * Returns the original pathname of the region used to create the snapshot.
+     * 
      * @return the region name (full pathname)
      */
     public String getRegionName() {
       return region;
     }
-    
+
     /**
      * Returns the pdx types defined in the snapshot file.
+     * 
      * @return the pdx types
      */
     public ExportedRegistry getPdxTypes() {
       return pdx;
     }
-    
+
     /**
-     * Reads a snapshot entry.  If the last entry has been read, a null value
-     * will be returned.
+     * Reads a snapshot entry. If the last entry has been read, a null value will be returned.
      * 
      * @return the entry or null
      * @throws IOException unable to read entry
@@ -374,15 +390,15 @@ public class GFSnapshot {
       if (key == null) {
         return null;
       }
-      
+
       byte[] value = DataSerializer.readByteArray(dis);
       return new SnapshotRecord(key, value);
     }
-    
+
     public void close() throws IOException {
       dis.close();
     }
-    
+
     private TypeRegistry getRegistry() {
       GemFireCacheImpl gfc = GemFireCacheImpl.getInstance();
       if (gfc != null) {
@@ -390,24 +406,24 @@ public class GFSnapshot {
       }
       return null;
     }
-    
+
     private void checkPdxTypeCompatibility() {
       TypeRegistry tr = getRegistry();
       if (tr == null) {
         return;
       }
-      
+
       for (Map.Entry<Integer, PdxType> entry : pdx.types().entrySet()) {
         tr.addImportedType(entry.getKey(), entry.getValue());
       }
     }
-    
+
     private void checkPdxEnumCompatibility() {
       TypeRegistry tr = getRegistry();
       if (tr == null) {
         return;
       }
-      
+
       for (Map.Entry<Integer, EnumInfo> entry : pdx.enums().entrySet()) {
         tr.addImportedEnum(entry.getKey(), entry.getValue());
       }

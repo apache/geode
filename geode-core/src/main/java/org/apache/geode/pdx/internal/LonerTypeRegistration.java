@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal;
 
@@ -23,19 +21,17 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
- * A type registration that is used for loners. In the 
- * loner case, we'll try to be helpful and not decide
- * what type registration to give the user until they actually 
- * use it.
+ * A type registration that is used for loners. In the loner case, we'll try to be helpful and not
+ * decide what type registration to give the user until they actually use it.
  *
  */
 public class LonerTypeRegistration implements TypeRegistration {
-  
+
   private volatile TypeRegistration delegate = null;
-  
+
   private final GemFireCacheImpl cache;
-  
-  
+
+
   public LonerTypeRegistration(GemFireCacheImpl cache) {
     this.cache = cache;
   }
@@ -61,16 +57,16 @@ public class LonerTypeRegistration implements TypeRegistration {
   }
 
   public void initialize() {
-    //do nothing. This type registry is initialized lazily.
+    // do nothing. This type registry is initialized lazily.
   }
 
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
     initializeRegistry(false);
     delegate.gatewaySenderStarted(gatewaySender);
   }
-  
+
   public void creatingPersistentRegion() {
-    if(delegate != null) {
+    if (delegate != null) {
       delegate.creatingPersistentRegion();
     }
 
@@ -80,22 +76,21 @@ public class LonerTypeRegistration implements TypeRegistration {
     initializeRegistry(true);
     delegate.creatingPool();
   }
-  
+
   /**
-   * Actually initialize the delegate. This is method
-   * is called when the type registry is used. At that time,
-   * it creates the registry.
+   * Actually initialize the delegate. This is method is called when the type registry is used. At
+   * that time, it creates the registry.
    */
   private synchronized void initializeRegistry() {
     initializeRegistry(cache.hasPool());
   }
-  
+
   private synchronized void initializeRegistry(boolean client) {
-    if(delegate != null) {
+    if (delegate != null) {
       return;
     }
     TypeRegistration delegateTmp;
-    
+
     if (client) {
       delegateTmp = new ClientTypeRegistration(cache);
     } else {
@@ -106,16 +101,16 @@ public class LonerTypeRegistration implements TypeRegistration {
   }
 
   /**
-   * Check to see if the current member is a loner and we can't tell
-   * if the user wants a peer or a client type registry.
+   * Check to see if the current member is a loner and we can't tell if the user wants a peer or a
+   * client type registry.
+   * 
    * @param cache
-   * @return true if this member is a loner and we can't determine what
-   * type of registry they want.
+   * @return true if this member is a loner and we can't determine what type of registry they want.
    */
   public static boolean isIndeterminateLoner(GemFireCacheImpl cache) {
     boolean isLoner = cache.getDistributedSystem().isLoner();
     boolean pdxConfigured = cache.getPdxPersistent();
-    return isLoner && !pdxConfigured/* && !hasGateways*/;
+    return isLoner && !pdxConfigured/* && !hasGateways */;
   }
 
   public int getEnumId(Enum<?> v) {
@@ -156,9 +151,8 @@ public class LonerTypeRegistration implements TypeRegistration {
   }
 
   @Override
-  public void testClearRegistry() {
-  }
-  
+  public void testClearRegistry() {}
+
   @Override
   public boolean isClient() {
     return delegate.isClient();
@@ -175,7 +169,7 @@ public class LonerTypeRegistration implements TypeRegistration {
     initializeRegistry();
     this.delegate.addImportedEnum(enumId, importedInfo);
   }
-  
+
   @Override
   public int getLocalSize() {
     return delegate.getLocalSize();

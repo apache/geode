@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.functions;
 
@@ -58,21 +56,22 @@ public class ShowMissingDiskStoresFunction extends FunctionAdapter implements In
         final DistributedMember member = gemfireCache.getMyId();
 
         GemFireCacheImpl gfci = GemFireCacheImpl.getInstance();
-        if(gfci != null && !gfci.isClosed()) {
+        if (gfci != null && !gfci.isClosed()) {
           // Missing DiskStores
           PersistentMemberManager mm = gfci.getPersistentMemberManager();
           Map<String, Set<PersistentMemberID>> waitingRegions = mm.getWaitingRegions();
           for (Map.Entry<String, Set<PersistentMemberID>> entry : waitingRegions.entrySet()) {
-            for(PersistentMemberID id : entry.getValue()) {
+            for (PersistentMemberID id : entry.getValue()) {
               memberMissingIDs.add(new PersistentMemberPattern(id));
             }
           }
           // Missing colocated regions
           Set<PartitionedRegion> prs = gfci.getPartitionedRegions();
-          for (PartitionedRegion pr: prs) {
+          for (PartitionedRegion pr : prs) {
             List<String> missingChildRegions = pr.getMissingColocatedChildren();
-            for (String child:missingChildRegions) {
-              missingColocatedRegions.add(new ColocatedRegionDetails(member.getHost(), member.getName(),pr.getFullPath(), child));
+            for (String child : missingChildRegions) {
+              missingColocatedRegions.add(new ColocatedRegionDetails(member.getHost(),
+                  member.getName(), pr.getFullPath(), child));
             }
           }
         }
@@ -93,8 +92,7 @@ public class ShowMissingDiskStoresFunction extends FunctionAdapter implements In
           context.getResultSender().lastResult(missingColocatedRegions);
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       context.getResultSender().sendException(e);
     }
   }

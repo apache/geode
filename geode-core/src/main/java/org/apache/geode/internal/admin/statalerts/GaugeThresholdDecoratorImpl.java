@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.statalerts;
 
@@ -28,12 +26,11 @@ import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
- * Implementation of {@link StatAlertDefinition}, represents threshold as data
- * range
+ * Implementation of {@link StatAlertDefinition}, represents threshold as data range
  * 
  */
-public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl 
-  implements DataSerializableFixedID {
+public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
+    implements DataSerializableFixedID {
 
   private static final long serialVersionUID = -8555077820685711783L;
 
@@ -41,14 +38,13 @@ public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
 
   protected Number upperLimit;
 
-  public GaugeThresholdDecoratorImpl() {
-  }
+  public GaugeThresholdDecoratorImpl() {}
 
   /**
    * @param definition
    */
-  public GaugeThresholdDecoratorImpl(StatAlertDefinition definition,
-      Number lowerLimit, Number upperLimit) {
+  public GaugeThresholdDecoratorImpl(StatAlertDefinition definition, Number lowerLimit,
+      Number upperLimit) {
     super(definition);
     this.lowerLimit = lowerLimit;
     this.upperLimit = upperLimit;
@@ -79,8 +75,7 @@ public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   public String toString() {
 
     StringBuffer buffer = new StringBuffer(super.toString());
-    buffer
-        .append("Threshold Limit: " + lowerLimit + " to " + upperLimit + "\n");
+    buffer.append("Threshold Limit: " + lowerLimit + " to " + upperLimit + "\n");
 
     return buffer.toString();
   }
@@ -91,8 +86,7 @@ public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   @Override
   public boolean evaluate(Number[] params) {
     return super.evaluate(params)
-        && (isGreaterThan(params[0], upperLimit) || isLessThan(params[0],
-            lowerLimit));
+        && (isGreaterThan(params[0], upperLimit) || isLessThan(params[0], lowerLimit));
   }
 
   @Override
@@ -127,8 +121,7 @@ public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
 
   @Override
   public StatAlertDefinition getDecorator(String decoratorID) {
-    return ID.equalsIgnoreCase(decoratorID) ? this : super
-        .getDecorator(decoratorID);
+    return ID.equalsIgnoreCase(decoratorID) ? this : super.getDecorator(decoratorID);
   }
 
   @Override
@@ -139,8 +132,7 @@ public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   }
 
   @Override
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.lowerLimit = (Number) DataSerializer.readObject(in);
     this.upperLimit = (Number) DataSerializer.readObject(in);
@@ -150,6 +142,6 @@ public final class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
 
   @Override
   public Version[] getSerializationVersions() {
-     return null;
+    return null;
   }
 }

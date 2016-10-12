@@ -1,29 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.execute;
 
 /**
- * Provides methods to send results back to the ResultCollector. A ResultSender
- * adds the ability for an execute method to send a single result back, or break
- * its result into multiple pieces and send each piece back to the calling
- * thread's {@link ResultCollector}. For each result sent using this method,
- * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)} is called,
- * making that result available to the calling thread immediately.
+ * Provides methods to send results back to the ResultCollector. A ResultSender adds the ability for
+ * an execute method to send a single result back, or break its result into multiple pieces and send
+ * each piece back to the calling thread's {@link ResultCollector}. For each result sent using this
+ * method, {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)}
+ * is called, making that result available to the calling thread immediately.
  * 
  * <p>
  * Example:
@@ -62,26 +59,23 @@ public interface ResultSender<T> {
 
   /**
    * Sends a result back to the FunctionService calling thread and invokes
-   * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)} and then
-   * {@link ResultCollector#endResults()} if it is the last instance of the
-   * Function to report results. The ResultCollector will keep waiting for
-   * results until it receives last result. Therefore, it is very important to
-   * use this method to indicate end of function execution.
+   * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)} and
+   * then {@link ResultCollector#endResults()} if it is the last instance of the Function to report
+   * results. The ResultCollector will keep waiting for results until it receives last result.
+   * Therefore, it is very important to use this method to indicate end of function execution.
    * 
-   * @throws IllegalStateException
-   *                 if called more than once
+   * @throws IllegalStateException if called more than once
    * 
    * @see ResultCollector#endResults()
    */
   public void lastResult(T lastResult);
 
   /**
-   * Sends an Exception back to the FunctionService calling thread.
-   * sendException adds exception to ResultCollector as a result. If
-   * sendException is called then {@link ResultCollector#getResult} will not
-   * throw exception but will have exception as a part of results received.
-   * Calling sendException will act as a lastResult.
-   *  
+   * Sends an Exception back to the FunctionService calling thread. sendException adds exception to
+   * ResultCollector as a result. If sendException is called then {@link ResultCollector#getResult}
+   * will not throw exception but will have exception as a part of results received. Calling
+   * sendException will act as a lastResult.
+   * 
    * @param t
    * 
    * @see #lastResult(Object)

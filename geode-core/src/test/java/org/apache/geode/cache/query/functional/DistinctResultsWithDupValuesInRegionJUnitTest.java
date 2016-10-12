@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  *
@@ -45,8 +43,7 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
   private static String regionName = "test";
   private int numElem = 100;
 
-  public DistinctResultsWithDupValuesInRegionJUnitTest() {
-  }
+  public DistinctResultsWithDupValuesInRegionJUnitTest() {}
 
   @Before
   public void setUp() throws Exception {
@@ -66,10 +63,9 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
       "select DISTINCT * from /test p, p.positions.values pos where p.ID> 0 order by p.ID",
       "select DISTINCT p.ID, p.status, pos.secId from /test p, p.positions.values pos where p.ID> 0 OR p.status = 'active' OR pos.secId = 'IBM' order by p.ID",
       "select DISTINCT p.ID, p.status, pos.secId, pos.secType from /test p, p.positions.values pos where p.ID> 0 OR p.status = 'active' OR pos.secId = 'IBM' order by p.ID",};
-  
+
   private static String[] moreQueries = new String[] {
-    "select DISTINCT p.ID, p.status from /test p, p.positions.values pos where p.ID> 0 OR p.status = 'active' order by p.ID",
-  };
+      "select DISTINCT p.ID, p.status from /test p, p.positions.values pos where p.ID> 0 OR p.status = 'active' order by p.ID",};
 
   /**
    * Test on Local Region data
@@ -275,7 +271,8 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
 
         SelectResults result1 = (SelectResults) query1.execute();
         cache.getLogger().fine(result1.asList().toString());
-        assertEquals(queryStr, numElem+5 /*Check createPartitionedRegionWithNullValues()*/, result1.size());
+        assertEquals(queryStr, numElem + 5 /* Check createPartitionedRegionWithNullValues() */,
+            result1.size());
         verifyDistinctResults(result1);
       }
     } catch (Exception e) {
@@ -385,10 +382,10 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
   private void verifyDistinctResults(SelectResults result1) {
     List results = result1.asList();
     int size = results.size();
-    for (int i=0; i<size; i++) {
+    for (int i = 0; i < size; i++) {
       Object obj = results.remove(0);
       if (results.contains(obj)) {
-        fail("Non-distinct values found in the resultset for object: "+obj);
+        fail("Non-distinct values found in the resultset for object: " + obj);
       }
     }
   }
@@ -434,7 +431,8 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
     for (int i = 1; i <= numElem; i++) {
       Portfolio obj = new Portfolio(i);
       region.put(i, obj);
-      if (i%(numElem/5) == 0) obj.status = null;
+      if (i % (numElem / 5) == 0)
+        obj.status = null;
       region.put(i + numElem, obj);
       CacheUtils.log(obj);
     }
@@ -451,11 +449,13 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
     for (int i = 1; i <= numElem; i++) {
       Portfolio obj = new Portfolio(i);
       region.put(i, obj);
-      if (i%(numElem/5) == 0) obj.status = null;
+      if (i % (numElem / 5) == 0)
+        obj.status = null;
       region.put(i + numElem, obj);
       CacheUtils.log(obj);
     }
   }
+
   private void createReplicatedRegion() {
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();

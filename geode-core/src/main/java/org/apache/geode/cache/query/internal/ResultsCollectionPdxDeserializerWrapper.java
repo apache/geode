@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -32,14 +30,14 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
-public class ResultsCollectionPdxDeserializerWrapper implements
-    SelectResults {
+public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
   SelectResults results;
   private boolean copyOnRead = false;
+
   public ResultsCollectionPdxDeserializerWrapper() {
-    
+
   }
-  
+
   public ResultsCollectionPdxDeserializerWrapper(SelectResults results, boolean copyOnRead) {
     this.results = results;
     this.copyOnRead = copyOnRead;
@@ -76,9 +74,9 @@ public class ResultsCollectionPdxDeserializerWrapper implements
           } else if (values[i] instanceof PdxString) {
             newValues[i] = ((PdxString) values[i]).toString();
           } else if (copyOnRead) {
-          //due to bug #50650 When query results are fed back through the query engine
-	  //we could end up copying a java object but due to serialization
-	  //end up getting a pdx value.  So extract the actual value if needed
+            // due to bug #50650 When query results are fed back through the query engine
+            // we could end up copying a java object but due to serialization
+            // end up getting a pdx value. So extract the actual value if needed
             newValues[i] = extractPdxIfNeeded(CopyHelper.copy(values[i]));
           } else {
             newValues[i] = values[i];
@@ -91,9 +89,9 @@ public class ResultsCollectionPdxDeserializerWrapper implements
         } else if (object instanceof PdxString) {
           object = ((PdxString) object).toString();
         } else if (copyOnRead) {
-          //due to bug #50650 When query results are fed back through the query engine
-	  //we could end up copying a java object but due to serialization
-	  //end up getting a pdx value.  So extract the actual value if needed
+          // due to bug #50650 When query results are fed back through the query engine
+          // we could end up copying a java object but due to serialization
+          // end up getting a pdx value. So extract the actual value if needed
           object = extractPdxIfNeeded(CopyHelper.copy(object));
         }
         return object;
@@ -106,16 +104,16 @@ public class ResultsCollectionPdxDeserializerWrapper implements
     }
   }
 
-  //Extracts the java object from the pdx instance
+  // Extracts the java object from the pdx instance
   private Object extractPdxIfNeeded(Object object) {
     if (object instanceof PdxInstance) {
       object = ((PdxInstance) object).getObject();
     } else if (object instanceof PdxString) {
       object = ((PdxString) object).toString();
-    } 
+    }
     return object;
   }
-  
+
   @Override
   public boolean add(Object e) {
     return results.add(e);

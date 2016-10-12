@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -34,26 +32,25 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * Contains the logic for evaluating the health of a GemFire
- * <code>Cache</code> instance according to the thresholds provided in
- * a {@link CacheHealthConfig}.
+ * Contains the logic for evaluating the health of a GemFire <code>Cache</code> instance according
+ * to the thresholds provided in a {@link CacheHealthConfig}.
  *
  *
  * @since GemFire 3.5
  */
-class CacheHealthEvaluator extends AbstractHealthEvaluator 
-  implements CacheLifecycleListener {
+class CacheHealthEvaluator extends AbstractHealthEvaluator implements CacheLifecycleListener {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   /** The config from which we get the evaulation criteria */
   private CacheHealthConfig config;
 
   /** The description of the cache being evaluated */
   private String description;
 
-  /** Statistics about the <code>Cache</code> instance.  If no cache
-   * has been created in this VM, this field will be <code>null</code>
+  /**
+   * Statistics about the <code>Cache</code> instance. If no cache has been created in this VM, this
+   * field will be <code>null</code>
    */
   private CachePerfStats cacheStats;
 
@@ -72,13 +69,12 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
   /** The previous value of the gets stat */
   private long prevGets;
 
-  //////////////////////  Constructors  //////////////////////
+  ////////////////////// Constructors //////////////////////
 
   /**
    * Creates a new <code>CacheHealthEvaluator</code>
    */
-  CacheHealthEvaluator(GemFireHealthConfig config,
-                       DM dm) {
+  CacheHealthEvaluator(GemFireHealthConfig config, DM dm) {
     super(config, dm);
 
     this.config = config;
@@ -96,7 +92,7 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
     GemFireCacheImpl.addCacheLifecycleListener(this);
   }
 
-  ////////////////////  Instance Methods  ////////////////////
+  //////////////////// Instance Methods ////////////////////
 
   @Override
   protected String getDescription() {
@@ -104,8 +100,7 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
   }
 
   /**
-   * Initializes the state of this evaluator based on the given cache
-   * instance. 
+   * Initializes the state of this evaluator based on the given cache instance.
    */
   private void initialize(GemFireCacheImpl cache, DM dm) {
     StringBuffer sb = new StringBuffer();
@@ -131,66 +126,58 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
   }
 
   public void cacheCreated(GemFireCacheImpl cache) {
-    InternalDistributedSystem system =
-      (InternalDistributedSystem) cache.getDistributedSystem();
+    InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
     DM dm = system.getDistributionManager();
     initialize(cache, dm);
   }
 
   /**
-   * Checks to make sure that the average <code>netSearch</code> time
-   * during the previous health check interval is less than the
-   * {@linkplain CacheHealthConfig#getMaxNetSearchTime threshold}.  If
-   * not, the status is "okay" health.
+   * Checks to make sure that the average <code>netSearch</code> time during the previous health
+   * check interval is less than the {@linkplain CacheHealthConfig#getMaxNetSearchTime threshold}.
+   * If not, the status is "okay" health.
    *
    * @see CachePerfStats#getNetsearchTime
    * @see CachePerfStats#getNetsearchesCompleted
    */
   void checkNetSearchTime(List status) {
-    if (this.cacheStats == null || isFirstEvaluation() ||
-        this.cacheStats.isClosed()) {
+    if (this.cacheStats == null || isFirstEvaluation() || this.cacheStats.isClosed()) {
       return;
     }
 
-    long deltaNetsearchTime =
-      this.cacheStats.getNetsearchTime() - this.prevNetsearchTime;
+    long deltaNetsearchTime = this.cacheStats.getNetsearchTime() - this.prevNetsearchTime;
     long deltaNetsearchesCompleted =
-      this.cacheStats.getNetsearchesCompleted() -
-      this.prevNetsearchesCompleted;
+        this.cacheStats.getNetsearchesCompleted() - this.prevNetsearchesCompleted;
 
     if (deltaNetsearchesCompleted != 0) {
       long ratio = deltaNetsearchTime / deltaNetsearchesCompleted;
       ratio /= 1000000;
       long threshold = this.config.getMaxNetSearchTime();
-        
+
       if (ratio > threshold) {
-        String s = LocalizedStrings.CacheHealthEvaluator_THE_AVERAGE_DURATION_OF_A_CACHE_NETSEARCH_0_MS_EXCEEDS_THE_THRESHOLD_1_MS.toLocalizedString(new Object[] { ratio, threshold });
+        String s =
+            LocalizedStrings.CacheHealthEvaluator_THE_AVERAGE_DURATION_OF_A_CACHE_NETSEARCH_0_MS_EXCEEDS_THE_THRESHOLD_1_MS
+                .toLocalizedString(new Object[] {ratio, threshold});
         status.add(okayHealth(s));
       }
     }
   }
 
   /**
-   * Checks to make sure that the average <code>load</code> time
-   * during the previous health check interval is less than the
-   * {@linkplain CacheHealthConfig#getMaxLoadTime threshold}.  If
-   * not, the status is "okay" health.
+   * Checks to make sure that the average <code>load</code> time during the previous health check
+   * interval is less than the {@linkplain CacheHealthConfig#getMaxLoadTime threshold}. If not, the
+   * status is "okay" health.
    *
    * @see CachePerfStats#getLoadTime
    * @see CachePerfStats#getLoadsCompleted
    */
   void checkLoadTime(List status) {
-    if (this.cacheStats == null || isFirstEvaluation() ||
-        this.cacheStats.isClosed()) {
+    if (this.cacheStats == null || isFirstEvaluation() || this.cacheStats.isClosed()) {
       return;
     }
 
     if (!isFirstEvaluation()) {
-      long deltaLoadTime =
-        this.cacheStats.getLoadTime() - this.prevLoadTime;
-      long deltaLoadsCompleted =
-        this.cacheStats.getLoadsCompleted() -
-        this.prevLoadsCompleted;
+      long deltaLoadTime = this.cacheStats.getLoadTime() - this.prevLoadTime;
+      long deltaLoadsCompleted = this.cacheStats.getLoadsCompleted() - this.prevLoadsCompleted;
 
       if (logger.isDebugEnabled()) {
         logger.debug("Completed {} loads in {} ms", deltaLoadsCompleted, (deltaLoadTime / 1000000));
@@ -200,9 +187,11 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
         long ratio = deltaLoadTime / deltaLoadsCompleted;
         ratio /= 1000000;
         long threshold = this.config.getMaxLoadTime();
-        
+
         if (ratio > threshold) {
-          String s = LocalizedStrings.CacheHealthEvaluator_THE_AVERAGE_DURATION_OF_A_CACHE_LOAD_0_MS_EXCEEDS_THE_THRESHOLD_1_MS.toLocalizedString(new Object[] { ratio, threshold });
+          String s =
+              LocalizedStrings.CacheHealthEvaluator_THE_AVERAGE_DURATION_OF_A_CACHE_LOAD_0_MS_EXCEEDS_THE_THRESHOLD_1_MS
+                  .toLocalizedString(new Object[] {ratio, threshold});
           if (logger.isDebugEnabled()) {
             logger.debug(s);
           }
@@ -213,10 +202,9 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
   }
 
   /**
-   * Checks to make sure that the cache hit ratio during the previous
-   * health check interval is less than the {@linkplain
-   * CacheHealthConfig#getMinHitRatio threshold}.  If not, the status
-   * is "okay" health.
+   * Checks to make sure that the cache hit ratio during the previous health check interval is less
+   * than the {@linkplain CacheHealthConfig#getMinHitRatio threshold}. If not, the status is "okay"
+   * health.
    *
    * <P>
    *
@@ -232,48 +220,44 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
    * @see CachePerfStats#getNetsearchesCompleted
    */
   void checkHitRatio(List status) {
-    if (this.cacheStats == null || isFirstEvaluation() ||
-        this.cacheStats.isClosed()) {
+    if (this.cacheStats == null || isFirstEvaluation() || this.cacheStats.isClosed()) {
       return;
     }
 
     long deltaGets = this.cacheStats.getGets() - this.prevGets;
     if (deltaGets != 0) {
-      long deltaLoadsCompleted =
-        this.cacheStats.getLoadsCompleted() - this.prevLoadsCompleted;
+      long deltaLoadsCompleted = this.cacheStats.getLoadsCompleted() - this.prevLoadsCompleted;
       long deltaNetsearchesCompleted =
-        this.cacheStats.getNetsearchesCompleted() -
-        this.prevNetsearchesCompleted;
+          this.cacheStats.getNetsearchesCompleted() - this.prevNetsearchesCompleted;
 
-      double hits =
-        (deltaGets -
-                (deltaLoadsCompleted + deltaNetsearchesCompleted));
+      double hits = (deltaGets - (deltaLoadsCompleted + deltaNetsearchesCompleted));
       double hitRatio = hits / deltaGets;
       double threshold = this.config.getMinHitRatio();
       if (hitRatio < threshold) {
-        String s = "The hit ratio of this Cache (" + hitRatio +
-          ") is below the threshold (" + threshold + ")";
+        String s = "The hit ratio of this Cache (" + hitRatio + ") is below the threshold ("
+            + threshold + ")";
         status.add(okayHealth(s));
       }
     }
   }
 
   /**
-   * Checks to make sure that the {@linkplain
-   * CachePerfStats#getEventQueueSize cache event queue size} does
-   * not exceed the {@linkplain CacheHealthConfig#getMaxEventQueueSize
-   * threshold}.  If it does, the status is "okay" health.
+   * Checks to make sure that the {@linkplain CachePerfStats#getEventQueueSize cache event queue
+   * size} does not exceed the {@linkplain CacheHealthConfig#getMaxEventQueueSize threshold}. If it
+   * does, the status is "okay" health.
    */
   void checkEventQueueSize(List status) {
-    if (this.cacheStats == null || isFirstEvaluation() ||
-        this.cacheStats.isClosed()) {
+    if (this.cacheStats == null || isFirstEvaluation() || this.cacheStats.isClosed()) {
       return;
     }
 
     long eventQueueSize = this.cacheStats.getEventQueueSize();
     long threshold = this.config.getMaxEventQueueSize();
     if (eventQueueSize > threshold) {
-      String s = LocalizedStrings.CacheHealthEvaluator_THE_SIZE_OF_THE_CACHE_EVENT_QUEUE_0_MS_EXCEEDS_THE_THRESHOLD_1_MS.toLocalizedString(new Object[] { Long.valueOf(eventQueueSize), Long.valueOf(threshold) });
+      String s =
+          LocalizedStrings.CacheHealthEvaluator_THE_SIZE_OF_THE_CACHE_EVENT_QUEUE_0_MS_EXCEEDS_THE_THRESHOLD_1_MS
+              .toLocalizedString(
+                  new Object[] {Long.valueOf(eventQueueSize), Long.valueOf(threshold)});
       status.add(okayHealth(s));
     }
   }
@@ -287,8 +271,7 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator
       this.prevLoadTime = this.cacheStats.getLoadTime();
       this.prevLoadsCompleted = this.cacheStats.getLoadsCompleted();
       this.prevNetsearchTime = this.cacheStats.getNetsearchTime();
-      this.prevNetsearchesCompleted =
-        this.cacheStats.getNetsearchesCompleted();
+      this.prevNetsearchesCompleted = this.cacheStats.getNetsearchesCompleted();
       this.prevGets = this.cacheStats.getGets();
 
     } else {

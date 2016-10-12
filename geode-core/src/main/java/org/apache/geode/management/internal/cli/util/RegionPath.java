@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.util;
 
@@ -24,7 +22,7 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 
 /**
- * Class to handle Region path. 
+ * Class to handle Region path.
  * 
  * @since GemFire 7.0
  */
@@ -37,14 +35,14 @@ public class RegionPath {
   public RegionPath(String pathName) {
     regionPath = pathName;
     String[] regions = pathName.split(Region.SEPARATOR);
-    
+
     LinkedList<String> regionsNames = new LinkedList<String>();
     for (String region : regions) {
       if (!region.isEmpty()) {
         regionsNames.add(region);
       }
     }
-    
+
     regionName = regionsNames.removeLast();
     StringBuilder parentPathBuilder = new StringBuilder();
     while (!regionsNames.isEmpty()) {
@@ -53,7 +51,7 @@ public class RegionPath {
 
     regionParentPath = parentPathBuilder.length() != 0 ? parentPathBuilder.toString() : null;
   }
-  
+
   public String getName() {
     return regionName;
   }
@@ -68,7 +66,7 @@ public class RegionPath {
   public String getParent() {
     return regionParentPath;
   }
-  
+
   /**
    * @return Parent RegionPath of this RegionPath. null if this is a root region
    */
@@ -78,7 +76,7 @@ public class RegionPath {
     }
     return new RegionPath(getParent());
   }
-  
+
   public boolean isRootRegion() {
     return regionParentPath == null;
   }
@@ -93,7 +91,8 @@ public class RegionPath {
     if (cache != null) {
       ManagementService managementService = ManagementService.getExistingManagementService(cache);
       if (managementService.isManager()) {
-        existsInCluster = managementService != null && managementService.getDistributedRegionMXBean(regionPath) != null;
+        existsInCluster = managementService != null
+            && managementService.getDistributedRegionMXBean(regionPath) != null;
       } else {
         throw new ManagementException("Not a cache from Manager member.");
       }
@@ -101,7 +100,7 @@ public class RegionPath {
 
     return existsInCluster;
   }
-  
+
   @Override
   public String toString() {
     return "RegionPath [regionPath=" + regionPath + "]";
@@ -109,19 +108,19 @@ public class RegionPath {
 
   public static void main(String[] args) {
     RegionPath rp = new RegionPath("/region1/region11/region111/region1112");
-    
-    System.out.println("name :: "+rp.getName());
-    System.out.println("regionpath :: "+rp.getRegionPath());
-    System.out.println("parent :: "+rp.getParent());
-    System.out.println("parent region path :: "+rp.getParentRegionPath());
-    
+
+    System.out.println("name :: " + rp.getName());
+    System.out.println("regionpath :: " + rp.getRegionPath());
+    System.out.println("parent :: " + rp.getParent());
+    System.out.println("parent region path :: " + rp.getParentRegionPath());
+
     System.out.println("---------------------------------------------------");
-    
+
     rp = new RegionPath("/region1");
-    
-    System.out.println("name :: "+rp.getName());
-    System.out.println("regionpath :: "+rp.getRegionPath());
-    System.out.println("parent :: "+rp.getParent());
-    System.out.println("parent region path :: "+rp.getParentRegionPath());
+
+    System.out.println("name :: " + rp.getName());
+    System.out.println("regionpath :: " + rp.getRegionPath());
+    System.out.println("parent :: " + rp.getParent());
+    System.out.println("parent region path :: " + rp.getParentRegionPath());
   }
 }

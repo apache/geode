@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -40,24 +38,21 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * This class uniquely identifies any Region Operation like create, update
- * destroy etc. It is composed of three parts , namely :- 1)
- * DistributedMembershipID 2) ThreadID 3) SequenceID This helps in sequencing
- * the events belonging to a unique producer.
+ * This class uniquely identifies any Region Operation like create, update destroy etc. It is
+ * composed of three parts , namely :- 1) DistributedMembershipID 2) ThreadID 3) SequenceID This
+ * helps in sequencing the events belonging to a unique producer.
  * 
- *  
+ * 
  */
-public final class EventID
-  implements DataSerializableFixedID, Serializable, Externalizable
-{
+public final class EventID implements DataSerializableFixedID, Serializable, Externalizable {
   private static final Logger logger = LogService.getLogger();
-  
+
   /** turns on very verbose logging ove membership id bytes */
-  private static boolean LOG_ID_BYTES = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "log-event-member-id-bytes");
-  
+  private static boolean LOG_ID_BYTES =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "log-event-member-id-bytes");
+
   /**
-   * Uniquely identifies the distributed member VM in which the Event is
-   * produced
+   * Uniquely identifies the distributed member VM in which the Event is produced
    */
   private byte[] membershipID;
 
@@ -70,24 +65,22 @@ public final class EventID
    * Uniquely identifies individual event produced by a given thread
    */
   private long sequenceID;
-  
+
   private int bucketID;
-  
+
   private byte breadcrumbCounter = 0x0;
-  
+
   public void incBreadcrumbCounter() {
     this.breadcrumbCounter++;
   }
-  
+
   /** The versions in which this message was modified */
-  private static final Version[] dsfidVersions = new Version[] {
-        Version.GFE_80 };
-  
+  private static final Version[] dsfidVersions = new Version[] {Version.GFE_80};
+
 
   private static ThreadLocal threadIDLocal = new ThreadLocal() {
     @Override
-    protected Object initialValue()
-    {
+    protected Object initialValue() {
       return new ThreadAndSequenceIDWrapper();
     }
   };
@@ -100,32 +93,30 @@ public final class EventID
   private volatile static DistributedSystem system = null;
 
   /**
-   * the membership id of the distributed system in this client (if running in a
-   * client) that is reflected in client_side_event_identity
+   * the membership id of the distributed system in this client (if running in a client) that is
+   * reflected in client_side_event_identity
    */
   private static DistributedMember systemMemberId;
 
   /**
-   * this form of client ID is used in event identifiers to reduce the size
-   * of the ID
+   * this form of client ID is used in event identifiers to reduce the size of the ID
    */
   private volatile static byte[] client_side_event_identity = null;
 
   /**
-   * An array containing the helper class objects which are used to create
-   * optimized byte array for an eventID , which can be sent on the network
+   * An array containing the helper class objects which are used to create optimized byte array for
+   * an eventID , which can be sent on the network
    */
   static AbstractEventIDByteArrayFiller[] fillerArray = new AbstractEventIDByteArrayFiller[] {
       new ByteEventIDByteArrayFiller(), new ShortEventIDByteArrayFiller(),
-      new IntegerEventIDByteArrayFiller(), new LongEventIDByteArrayFiller() };
-  
+      new IntegerEventIDByteArrayFiller(), new LongEventIDByteArrayFiller()};
+
   /**
-   * Constructor used for creating EventID object at the actual source of
-   * creation of Event. The thread identification & sequence ID of the event is
-   * done using ThreadLocal object.  The membershipId must be created with
-   * EventID.getMembershipId() and not the methods or byte array stored in
-   * a ClientProxyMembershipID as those are heavyweight identifiers and
-   * they will cause serialization and comparison problems when used in EventIDs
+   * Constructor used for creating EventID object at the actual source of creation of Event. The
+   * thread identification & sequence ID of the event is done using ThreadLocal object. The
+   * membershipId must be created with EventID.getMembershipId() and not the methods or byte array
+   * stored in a ClientProxyMembershipID as those are heavyweight identifiers and they will cause
+   * serialization and comparison problems when used in EventIDs
    */
   private EventID(final byte[] membershipId) {
     // Assert.assertTrue(membershipId.length <= Short.MAX_VALUE);
@@ -134,78 +125,83 @@ public final class EventID
     // existing Thread ID & Sequenec ID. Should not be an issue.
     // But we should not cache membershipID as for the same thread it can
     // differ.Hence it should be passed as parameter in the constructor
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal
-        .get();
+    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
     this.threadID = wrapper.threadID;
     this.sequenceID = wrapper.getAndIncrementSequenceID();
     this.bucketID = -1;
   }
-  
+
   /**
    * constructor for creating an event ID originating in the local cache
+   * 
    * @param sys the local distributed system
    */
   public EventID(DistributedSystem sys) {
     this(initializeAndGetDSEventIdentity(sys));
   }
-  
+
   public static byte[] getMembershipId(DistributedSystem sys) {
     return EventID.initializeAndGetDSEventIdentity(sys);
   }
-  
+
   public static void unsetDS() {
     system = null;
   }
-  
+
   /**
-   * Convert a ClientProxyMembershipID distribted member ID array into one
-   * usable by EventIDs 
+   * Convert a ClientProxyMembershipID distribted member ID array into one usable by EventIDs
+   * 
    * @param client the client's ID
    * @return a byte array that may be used in EventID formation
    */
   public static byte[] getMembershipId(ClientProxyMembershipID client) {
     try {
       HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
-      ((InternalDistributedMember)client.getDistributedMember()).writeEssentialData(hdos);
+      ((InternalDistributedMember) client.getDistributedMember()).writeEssentialData(hdos);
       return hdos.toByteArray();
-    }
-    catch (IOException ioe) {
-      throw new InternalGemFireException(LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_SERIALIZE_IDENTITY.toLocalizedString(), ioe);
+    } catch (IOException ioe) {
+      throw new InternalGemFireException(
+          LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_SERIALIZE_IDENTITY.toLocalizedString(),
+          ioe);
     }
   }
 
   /**
    * Returns the thread id used by the calling thread for its event ids
+   * 
    * @since GemFire 5.7
    */
   public static long getThreadId() {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
     return wrapper.threadID;
   }
+
   /**
-   * Returns the next reservable sequence id used by the calling thread for its event ids.
-   * Note that the returned id is not yet reserved by the calling thread.
+   * Returns the next reservable sequence id used by the calling thread for its event ids. Note that
+   * the returned id is not yet reserved by the calling thread.
+   * 
    * @since GemFire 5.7
    */
   public static long getSequenceId() {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
     return wrapper.sequenceID;
   }
+
   /**
-   * Reserves and returns a sequence id for the calling thread to be used
-   * for an event id.
+   * Reserves and returns a sequence id for the calling thread to be used for an event id.
+   * 
    * @since GemFire 5.7
    */
   public static long reserveSequenceId() {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
     return wrapper.getAndIncrementSequenceID();
   }
-  
+
   public void reserveSequenceId(int count) {
-    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
+    ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper) threadIDLocal.get();
     wrapper.reserveSequenceID(count);
   }
-  
+
   /**
    * Constructor used for creating an EventID with specified sequenceID for putAll
    */
@@ -216,20 +212,16 @@ public final class EventID
     this.sequenceID = eventId.getSequenceID() + offset;
     this.bucketID = -1;
   }
-  
+
   /**
-   * Constructor which explicitly sets all the fields and by-passes
-   * auto-generation of thread and seq. ids. This is used by the QRM thread
-   * and by ServerConnection threads that have cached their client ID
-   * byte arrays.  It is also used by many unit test methods to create
-   * fake event identifiers.
+   * Constructor which explicitly sets all the fields and by-passes auto-generation of thread and
+   * seq. ids. This is used by the QRM thread and by ServerConnection threads that have cached their
+   * client ID byte arrays. It is also used by many unit test methods to create fake event
+   * identifiers.
    * 
-   * @param memId -
-   *          membership id for this entry - must be created by EventID.getMembershipID()
-   * @param threadId -
-   *          thread id for this entry
-   * @param seqId -
-   *          sequence id for this entry
+   * @param memId - membership id for this entry - must be created by EventID.getMembershipID()
+   * @param threadId - thread id for this entry
+   * @param seqId - sequence id for this entry
    */
   public EventID(byte[] memId, long threadId, long seqId) {
     this.membershipID = memId;
@@ -244,31 +236,30 @@ public final class EventID
     this.sequenceID = seqId;
     this.bucketID = bucketId;
   }
-  
+
   /** support for migrating across threads for Hydra */
   public static Object getThreadLocalDataForHydra() {
     Object result = threadIDLocal.get();
     threadIDLocal.set(null);
     return result;
   }
-  
+
   /** support for migrating across threads for Hydra */
   public static void setThreadLocalDataForHydra(Object wrapper) {
-    if ( ! (wrapper instanceof ThreadAndSequenceIDWrapper) ) {
-      throw new IllegalArgumentException("Expected a ThreadAndSequenceIdWrapper but received " + wrapper);
+    if (!(wrapper instanceof ThreadAndSequenceIDWrapper)) {
+      throw new IllegalArgumentException(
+          "Expected a ThreadAndSequenceIdWrapper but received " + wrapper);
     }
     threadIDLocal.set(wrapper);
   }
 
   /**
    * Default constructor used for deserialization of EventID object
-   *  
+   * 
    */
-  public EventID() {
-  }
+  public EventID() {}
 
-  public long getThreadID()
-  {
+  public long getThreadID() {
     return this.threadID;
   }
 
@@ -276,19 +267,19 @@ public final class EventID
     this.threadID = threadID;
   }
 
-  public byte[] getMembershipID()
-  {
+  public byte[] getMembershipID() {
     return this.membershipID;
   }
 
   public int getBucketID() {
     return this.bucketID;
   }
-  
+
   /**
-   * starting in v6.5 this method returns a somewhat crippled Identifier.
-   * It is missing any durable attributes and roles information but contains
-   * all other info about the member.  This fixes bug #39361.
+   * starting in v6.5 this method returns a somewhat crippled Identifier. It is missing any durable
+   * attributes and roles information but contains all other info about the member. This fixes bug
+   * #39361.
+   * 
    * @return the member that initiated this event
    */
   public InternalDistributedMember getDistributedMember() {
@@ -305,39 +296,39 @@ public final class EventID
     return result;
   }
 
-  public long getSequenceID()
-  {
+  public long getSequenceID() {
     return this.sequenceID;
   }
 
   /**
-   * Returns a byte[] whose contents are calculated by
-   * calling {@link #getOptimizedByteArrayForEventID}
+   * Returns a byte[] whose contents are calculated by calling
+   * {@link #getOptimizedByteArrayForEventID}
+   * 
    * @since GemFire 5.7
    */
   public byte[] calcBytes() {
     return getOptimizedByteArrayForEventID(getThreadID(), getSequenceID());
   }
-  
+
   public int getDSFID() {
     return EVENT_ID;
   }
 
-  public void toData(DataOutput dop) throws IOException
-  {
+  public void toData(DataOutput dop) throws IOException {
     DataSerializer.writeByteArray(this.membershipID, dop);
-    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),dop);
+    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
+        dop);
     dop.writeInt(this.bucketID);
     dop.writeByte(this.breadcrumbCounter);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput dop) throws IOException{
+  public void toDataPre_GFE_8_0_0_0(DataOutput dop) throws IOException {
     DataSerializer.writeByteArray(this.membershipID, dop);
-    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),dop);
+    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
+        dop);
   }
-  
-  public void fromData(DataInput di) throws IOException, ClassNotFoundException
-  {
+
+  public void fromData(DataInput di) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
     this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
@@ -346,24 +337,21 @@ public final class EventID
     this.breadcrumbCounter = di.readByte();
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput di) throws IOException, ClassNotFoundException
-  {
+  public void fromDataPre_GFE_8_0_0_0(DataInput di) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
     this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
     this.sequenceID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
   }
-  
-  public void writeExternal(ObjectOutput out) throws IOException
-  {
+
+  public void writeExternal(ObjectOutput out) throws IOException {
     DataSerializer.writeByteArray(this.membershipID, out);
-    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),out);
+    DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
+        out);
     out.writeInt(this.bucketID);
   }
 
-  public void readExternal(ObjectInput in) throws IOException,
-      ClassNotFoundException
-  {
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(in);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(in));
     this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
@@ -389,10 +377,10 @@ public final class EventID
     return true;
   }
 
-  
+
   @Override
   public int hashCode() {
-    if(hashCode == 0) {
+    if (hashCode == 0) {
       final int prime = 31;
       int result = 1;
       result = prime * result + Arrays.hashCode(membershipID);
@@ -405,22 +393,20 @@ public final class EventID
 
   String getShortClassName() {
     String cname = getClass().getName();
-    return cname.substring(getClass().getPackage().getName().length()+1);
+    return cname.substring(getClass().getPackage().getName().length() + 1);
   }
 
   public String expensiveToString() {
     Object mbr;
     try {
-      mbr = InternalDistributedMember.readEssentialData(
-          new DataInputStream(new ByteArrayInputStream(membershipID)));
+      mbr = InternalDistributedMember
+          .readEssentialData(new DataInputStream(new ByteArrayInputStream(membershipID)));
+    } catch (Exception e) {
+      mbr = membershipID; // punt and use the bytes
     }
-    catch (Exception e) {
-      mbr = membershipID;  // punt and use the bytes
-    }
-    return "EventID[" + mbr + ";threadID=" + ThreadIdentifier.toDisplayString(threadID) + ";sequenceID=" + sequenceID
-      + (Breadcrumbs.ENABLED? ";bcrumb=" + breadcrumbCounter : "")
-      + (bucketID>=0? (";bucketID=" + bucketID) : "")
-      + "]";
+    return "EventID[" + mbr + ";threadID=" + ThreadIdentifier.toDisplayString(threadID)
+        + ";sequenceID=" + sequenceID + (Breadcrumbs.ENABLED ? ";bcrumb=" + breadcrumbCounter : "")
+        + (bucketID >= 0 ? (";bucketID=" + bucketID) : "") + "]";
   }
 
   @Override
@@ -431,34 +417,33 @@ public final class EventID
       return cheapToString();
     }
   }
-  
-  
+
+
   public String cheapToString() {
     final StringBuffer buf = new StringBuffer();
     buf.append(getShortClassName());
     if (LOG_ID_BYTES) {
       buf.append("[membershipID=");
-      for (int i=0; i<membershipID.length; i++) {
+      for (int i = 0; i < membershipID.length; i++) {
         buf.append(membershipID[i]);
-        if (i < membershipID.length-1) {
+        if (i < membershipID.length - 1) {
           buf.append(',');
         }
       }
       buf.append(";");
-    }
-    else {
+    } else {
       buf.append("[");
     }
-//    buf.append(this.membershipID.toString());
+    // buf.append(this.membershipID.toString());
     buf.append("threadID=");
     buf.append(ThreadIdentifier.toDisplayString(threadID));
     buf.append(";sequenceID=");
     buf.append(this.sequenceID);
-    
-    if (Breadcrumbs.ENABLED){ 
+
+    if (Breadcrumbs.ENABLED) {
       buf.append(";bcrumb=").append(this.breadcrumbCounter);
     }
-    
+
     if (this.bucketID >= 0) {
       buf.append(";bucketId=");
       buf.append(this.bucketID);
@@ -466,54 +451,51 @@ public final class EventID
     buf.append("]");
     return buf.toString();
   }
-  
-  private static byte[] initializeAndGetDSEventIdentity(DistributedSystem sys)
-  {
+
+  private static byte[] initializeAndGetDSEventIdentity(DistributedSystem sys) {
     if (sys == null) {
       // DistributedSystem is required now before handshaking -Kirk
-      throw new IllegalStateException(LocalizedStrings.ClientProxyMembershipID_ATTEMPTING_TO_HANDSHAKE_WITH_CACHESERVER_BEFORE_CREATING_DISTRIBUTEDSYSTEM_AND_CACHE.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.ClientProxyMembershipID_ATTEMPTING_TO_HANDSHAKE_WITH_CACHESERVER_BEFORE_CREATING_DISTRIBUTEDSYSTEM_AND_CACHE
+              .toLocalizedString());
     }
     if (EventID.system != sys) {
       // DS already exists... make sure it's for current DS connection
       EventID.systemMemberId = sys.getDistributedMember();
       try {
         HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
-        ((InternalDistributedMember)EventID.systemMemberId).writeEssentialData(hdos);
+        ((InternalDistributedMember) EventID.systemMemberId).writeEssentialData(hdos);
         client_side_event_identity = hdos.toByteArray();
-      }
-      catch (IOException ioe) {
-        throw new InternalGemFireException(LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_SERIALIZE_IDENTITY.toLocalizedString(), ioe);
+      } catch (IOException ioe) {
+        throw new InternalGemFireException(
+            LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_SERIALIZE_IDENTITY
+                .toLocalizedString(),
+            ioe);
       }
       EventID.system = sys;
     }
     return EventID.client_side_event_identity;
-  
+
   }
 
   /**
-   * Returns the number of bytes needed to store the given value. This
-   * calculation is needed to create the optimized byte-array for an eventId,
-   * which will be sent across the network
+   * Returns the number of bytes needed to store the given value. This calculation is needed to
+   * create the optimized byte-array for an eventId, which will be sent across the network
    * 
-   * @param id -
-   *          the long value ( threadId or sequenceId in this context)
+   * @param id - the long value ( threadId or sequenceId in this context)
    * @return - the number of byte taken by this value
    */
-  public static int getByteSizeForValue(long id)
-  {
+  public static int getByteSizeForValue(long id) {
     int length = 0;
 
     // compare threadId to find its range
     if (id <= Byte.MAX_VALUE) {
       length = 1;
-    }
-    else if (id <= Short.MAX_VALUE) {
+    } else if (id <= Short.MAX_VALUE) {
       length = 2;
-    }
-    else if (id <= Integer.MAX_VALUE) {
+    } else if (id <= Integer.MAX_VALUE) {
       length = 4;
-    }
-    else {
+    } else {
       length = 8;
     }
 
@@ -521,30 +503,24 @@ public final class EventID
   }
 
   /**
-   * Gets the optmized byte-array representation of an eventId which can be sent
-   * across the network. For client to server messages, the membership id part
-   * of event-id is not need to be sent with each event. Also, the threadId and
-   * sequenceId need not be sent as long if their value is small. This function
-   * returns the optimal byte-array for the eventId.
+   * Gets the optmized byte-array representation of an eventId which can be sent across the network.
+   * For client to server messages, the membership id part of event-id is not need to be sent with
+   * each event. Also, the threadId and sequenceId need not be sent as long if their value is small.
+   * This function returns the optimal byte-array for the eventId.
    * <p>
    * This is public for unit testing purposes only
    * 
-   * @param threadId -
-   *          the long value of threadId
-   * @param sequenceId -
-   *          the long value of sequenceId
+   * @param threadId - the long value of threadId
+   * @param sequenceId - the long value of sequenceId
    * @return - the optimized byte-array representing the eventId
    */
-  public static byte[] getOptimizedByteArrayForEventID(long threadId,
-      long sequenceId)
-  {
+  public static byte[] getOptimizedByteArrayForEventID(long threadId, long sequenceId) {
 
     int threadIdLength = getByteSizeForValue(threadId);
     int threadIdIndex = (threadIdLength == 1) ? 0 : ((threadIdLength / 4) + 1);
 
     int sequenceIdLength = getByteSizeForValue(sequenceId);
-    int sequenceIdIndex = (sequenceIdLength == 1) ? 0
-        : ((sequenceIdLength / 4) + 1);
+    int sequenceIdIndex = (sequenceIdLength == 1) ? 0 : ((sequenceIdLength / 4) + 1);
 
     int byteBufferLength = 2 + threadIdLength + sequenceIdLength;
     ByteBuffer buffer = ByteBuffer.allocate(byteBufferLength);
@@ -555,16 +531,14 @@ public final class EventID
   }
 
   /**
-   * Reads the optimized byte-array representation of an eventId and returns the
-   * long value of threadId or sequenceId ( the first invocation of this method
-   * on bytebuffer returns the threadId and the second returns the sequenceId.
+   * Reads the optimized byte-array representation of an eventId and returns the long value of
+   * threadId or sequenceId ( the first invocation of this method on bytebuffer returns the threadId
+   * and the second returns the sequenceId.
    * 
-   * @param buffer -
-   *          the byte-buffer wrapping the optimized byte-array for the eventId
+   * @param buffer - the byte-buffer wrapping the optimized byte-array for the eventId
    * @return - long value of threadId or sequenceId
    */
-  public static long readEventIdPartsFromOptmizedByteArray(ByteBuffer buffer)
-  {
+  public static long readEventIdPartsFromOptmizedByteArray(ByteBuffer buffer) {
     byte byteType = buffer.get();
     long id = fillerArray[byteType].read(buffer);
 
@@ -572,180 +546,145 @@ public final class EventID
   }
 
   /**
-   * Abstract helper class used to create optimized byte-array for the eventid,
-   * which will be sent across the network.
+   * Abstract helper class used to create optimized byte-array for the eventid, which will be sent
+   * across the network.
    * 
    */
-  protected static abstract class AbstractEventIDByteArrayFiller
-  {
+  protected static abstract class AbstractEventIDByteArrayFiller {
     /**
-     * This method adds to the byte-buffer, the token indicating the type of the
-     * passed 'id' (threadId or sequenceId) and the optimal byte array
-     * representing the id depending on the value of the 'id'.
+     * This method adds to the byte-buffer, the token indicating the type of the passed 'id'
+     * (threadId or sequenceId) and the optimal byte array representing the id depending on the
+     * value of the 'id'.
      * 
-     * @param buffer -
-     *          the byte buffer wrapping the byte array for the event id
-     * @param id -
-     *          the long value of threadId or sequenceId
+     * @param buffer - the byte buffer wrapping the byte array for the event id
+     * @param id - the long value of threadId or sequenceId
      */
     public abstract void fill(ByteBuffer buffer, long id);
 
     /**
      * Reads the given buffer and returns the value as long.
      * 
-     * @param buffer -
-     *          the byte-buffer containing the eventId parts which needs to be
-     *          read
+     * @param buffer - the byte-buffer containing the eventId parts which needs to be read
      * @return - the long value of id (threadId or sequenceId).
      */
     public abstract long read(ByteBuffer buffer);
   }
 
-  protected static class ByteEventIDByteArrayFiller extends
-      AbstractEventIDByteArrayFiller
-  {
+  protected static class ByteEventIDByteArrayFiller extends AbstractEventIDByteArrayFiller {
     /**
-     * The token to indicate that given id ( threadId or sequenceId) is of type
-     * <code>Byte</code>
+     * The token to indicate that given id ( threadId or sequenceId) is of type <code>Byte</code>
      */
     static private final byte EVENTID_BYTE = 0;
 
     /**
-     * Writes the given 'id' to the given buffer as 'byte' preceeded by a token
-     * indicating that it is written as 'byte' type.
+     * Writes the given 'id' to the given buffer as 'byte' preceeded by a token indicating that it
+     * is written as 'byte' type.
      * 
-     * @param buffer -
-     *          the buffer in which id is to be written
-     * @param id -
-     *          the threadId or sequenceId to be written
+     * @param buffer - the buffer in which id is to be written
+     * @param id - the threadId or sequenceId to be written
      */
     @Override
-    public void fill(ByteBuffer buffer, long id)
-    {
+    public void fill(ByteBuffer buffer, long id) {
       buffer.put(EVENTID_BYTE);
-      buffer.put((byte)id);
+      buffer.put((byte) id);
     }
 
     /**
      * Reads the byte value of id from the buffer and returns it as long.
      * 
-     * @param buffer -
-     *          the buffer from which 'id'(threadId or sequenceId) is to be read
+     * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
      * 
      */
     @Override
-    public long read(ByteBuffer buffer)
-    {
+    public long read(ByteBuffer buffer) {
       long value = buffer.get();
       return value;
     }
 
   }
 
-  protected static class ShortEventIDByteArrayFiller extends
-      AbstractEventIDByteArrayFiller
-  {
+  protected static class ShortEventIDByteArrayFiller extends AbstractEventIDByteArrayFiller {
     /**
-     * The token to indicate that given id ( threadId or sequenceId) is of type
-     * <code>Short</code>
+     * The token to indicate that given id ( threadId or sequenceId) is of type <code>Short</code>
      */
     static private final byte EVENTID_SHORT = 1;
 
     /**
-     * Writes the given 'id' to the given buffer as 'short' preceeded by a token
-     * indicating that it is written as 'short' type.
+     * Writes the given 'id' to the given buffer as 'short' preceeded by a token indicating that it
+     * is written as 'short' type.
      * 
-     * @param buffer -
-     *          the buffer in which id is to be written
-     * @param id -
-     *          the threadId or sequenceId to be written
+     * @param buffer - the buffer in which id is to be written
+     * @param id - the threadId or sequenceId to be written
      */
     @Override
-    public void fill(ByteBuffer buffer, long id)
-    {
+    public void fill(ByteBuffer buffer, long id) {
       buffer.put(EVENTID_SHORT);
-      buffer.putShort((short)id);
+      buffer.putShort((short) id);
     }
 
     /**
      * Reads the short value of id from the buffer and returns it as long.
      * 
-     * @param buffer -
-     *          the buffer from which 'id'(threadId or sequenceId) is to be read
+     * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
      * 
      */
     @Override
-    public long read(ByteBuffer buffer)
-    {
+    public long read(ByteBuffer buffer) {
       long value = buffer.getShort();
       return value;
     }
   }
 
-  protected static class IntegerEventIDByteArrayFiller extends
-      AbstractEventIDByteArrayFiller
-  {
+  protected static class IntegerEventIDByteArrayFiller extends AbstractEventIDByteArrayFiller {
     /**
-     * The token to indicate that given id ( threadId or sequenceId) is of type
-     * <code>Integer</code>
+     * The token to indicate that given id ( threadId or sequenceId) is of type <code>Integer</code>
      */
     static private final byte EVENTID_INT = 2;
 
     /**
-     * Writes the given 'id' to the given buffer as 'int' preceeded by a token
-     * indicating that it is written as 'int' type.
+     * Writes the given 'id' to the given buffer as 'int' preceeded by a token indicating that it is
+     * written as 'int' type.
      * 
-     * @param buffer -
-     *          the buffer in which id is to be written
-     * @param id -
-     *          the threadId or sequenceId to be written
+     * @param buffer - the buffer in which id is to be written
+     * @param id - the threadId or sequenceId to be written
      */
     @Override
-    public void fill(ByteBuffer buffer, long id)
-    {
+    public void fill(ByteBuffer buffer, long id) {
       buffer.put(EVENTID_INT);
-      buffer.putInt((int)id);
+      buffer.putInt((int) id);
     }
 
     /**
      * Reads the int value of id from the buffer and returns it as long.
      * 
-     * @param buffer -
-     *          the buffer from which 'id'(threadId or sequenceId) is to be read
+     * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
      * 
      */
     @Override
-    public long read(ByteBuffer buffer)
-    {
+    public long read(ByteBuffer buffer) {
       long value = buffer.getInt();
       return value;
     }
   }
 
-  protected static class LongEventIDByteArrayFiller extends
-      AbstractEventIDByteArrayFiller
-  {
+  protected static class LongEventIDByteArrayFiller extends AbstractEventIDByteArrayFiller {
     /**
-     * The token to indicate that given id ( threadId or sequenceId) is of type
-     * <code>Long</code>
+     * The token to indicate that given id ( threadId or sequenceId) is of type <code>Long</code>
      */
     static private final byte EVENTID_LONG = 3;
 
     /**
-     * Writes the given 'id' to the given buffer as 'long' preceeded by a token
-     * indicating that it is written as 'long' type.
+     * Writes the given 'id' to the given buffer as 'long' preceeded by a token indicating that it
+     * is written as 'long' type.
      * 
-     * @param buffer -
-     *          the buffer in which id is to be written
-     * @param id -
-     *          the threadId or sequenceId to be written
+     * @param buffer - the buffer in which id is to be written
+     * @param id - the threadId or sequenceId to be written
      */
     @Override
-    public void fill(ByteBuffer buffer, long id)
-    {
+    public void fill(ByteBuffer buffer, long id) {
       buffer.put(EVENTID_LONG);
       buffer.putLong(id);
     }
@@ -753,19 +692,17 @@ public final class EventID
     /**
      * Reads the long value of id from the buffer and returns it.
      * 
-     * @param buffer -
-     *          the buffer from which 'id'(threadId or sequenceId) is to be read
+     * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
      * 
      */
     @Override
-    public long read(ByteBuffer buffer)
-    {
+    public long read(ByteBuffer buffer) {
       long value = buffer.getLong();
       return value;
     }
   }
-  
+
   static class ThreadAndSequenceIDWrapper {
     final long threadID;
 
@@ -777,13 +714,11 @@ public final class EventID
       threadID = atmLong.incrementAndGet();
     }
 
-    long getAndIncrementSequenceID()
-    {
+    long getAndIncrementSequenceID() {
       return this.sequenceID++;
     }
 
-    void reserveSequenceID(int size)
-    {
+    void reserveSequenceID(int size) {
       this.sequenceID += size;
     }
   }

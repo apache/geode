@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.logging;
 
@@ -40,34 +38,29 @@ public class LogWriterFactory {
   }
 
   /**
-   * Creates the log writer for a distributed system based on the system's
-   * parsed configuration. The initial banner and messages are also entered into
-   * the log by this method.
-   * @param isLoner
-   *                Whether the distributed system is a loner or not
-   * @param isSecure
-   *                Whether a logger for security related messages has to be
-   *                created
-   * @param config
-   *                The DistributionConfig for the target distributed system
+   * Creates the log writer for a distributed system based on the system's parsed configuration. The
+   * initial banner and messages are also entered into the log by this method.
+   * 
+   * @param isLoner Whether the distributed system is a loner or not
+   * @param isSecure Whether a logger for security related messages has to be created
+   * @param config The DistributionConfig for the target distributed system
    * @param logConfig if true log the configuration
    */
   public static InternalLogWriter createLogWriterLogger(final boolean isLoner,
-                                                        final boolean isSecure,
-                                                        final LogConfig config,
-                                                        final boolean logConfig) {
+      final boolean isSecure, final LogConfig config, final boolean logConfig) {
 
     // if isSecurity then use "org.apache.geode.security" else use "org.apache.geode"
     String name = null;
-    if (isSecure){
+    if (isSecure) {
       name = LogService.SECURITY_LOGGER_NAME;
     } else {
       name = LogService.MAIN_LOGGER_NAME;
     }
-    
+
     // create the LogWriterLogger
-    final LogWriterLogger logger = LogService.createLogWriterLogger(name, config.getName(), isSecure);
-    
+    final LogWriterLogger logger =
+        LogService.createLogWriterLogger(name, config.getName(), isSecure);
+
     if (isSecure) {
       logger.setLogWriterLevel(((DistributionConfig) config).getSecurityLogLevel());
     } else {
@@ -81,15 +74,16 @@ public class LogWriterFactory {
       if (!defaultSource) {
         // LOG: fix bug #51709 by not setting if log-level was not specified
         // LOG: let log4j2.xml specify log level which defaults to INFO
-        logger.setLogWriterLevel(config.getLogLevel()); 
+        logger.setLogWriterLevel(config.getLogLevel());
       }
     }
-    
+
     // log the banner
     if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
-      if (InternalDistributedSystem.getReconnectAttemptCounter() == 0 // avoid filling up logs during auto-reconnect
-          && !isSecure //&& !isLoner /* do this on a loner to fix bug 35602 */
-          ) {
+      if (InternalDistributedSystem.getReconnectAttemptCounter() == 0 // avoid filling up logs
+                                                                      // during auto-reconnect
+          && !isSecure // && !isLoner /* do this on a loner to fix bug 35602 */
+      ) {
         // LOG:CONFIG:
         logger.info(LogMarker.CONFIG, Banner.getString(null));
       }
@@ -101,7 +95,10 @@ public class LogWriterFactory {
     if (logConfig) {
       if (!isLoner) {
         // LOG:CONFIG: changed from config to info
-        logger.info(LogMarker.CONFIG, LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0, config.toLoggerString()));
+        logger.info(LogMarker.CONFIG,
+            LocalizedMessage.create(
+                LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
+                config.toLoggerString()));
       }
     }
 

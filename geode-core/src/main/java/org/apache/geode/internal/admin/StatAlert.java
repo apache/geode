@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin;
 
@@ -20,10 +18,9 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * This class defines the Alert sent by the AlertManager to the Alert
- * Aggregator. This class includes the information about the
- * <code>AlertDefinition<code> for which this alert being raised 
- * & the value of the statistic. 
+ * This class defines the Alert sent by the AlertManager to the Alert Aggregator. This class
+ * includes the information about the <code>AlertDefinition<code> for which this alert being raised
+ * & the value of the statistic.
  * 
  */
 
@@ -42,7 +39,7 @@ public class StatAlert implements Serializable {
     sb.append("StatAlert[");
     sb.append("def=" + definitionId);
     sb.append("; values (" + values.length + ") = [");
-    for (int i = 0; i < values.length; i ++) {
+    for (int i = 0; i < values.length; i++) {
       sb.append(values[i].toString());
       if (i != values.length - 1) {
         sb.append(", ");
@@ -52,6 +49,7 @@ public class StatAlert implements Serializable {
     sb.append("]");
     return sb.toString();
   }
+
   /**
    * The default constructor.
    */
@@ -65,10 +63,8 @@ public class StatAlert implements Serializable {
   /**
    * The non default constructor.
    * 
-   * @param definitionId
-   *                StatAlertDefinition identifer value
-   * @param values
-   *                actual value of the statistic.
+   * @param definitionId StatAlertDefinition identifer value
+   * @param values actual value of the statistic.
    */
   public StatAlert(int definitionId, Number[] values) {
     this.definitionId = definitionId;
@@ -87,17 +83,15 @@ public class StatAlert implements Serializable {
   /**
    * This function sets the definition identifier for this alert.
    * 
-   * @param definitionId
-   *                StatAlertDefinition identifier.
+   * @param definitionId StatAlertDefinition identifier.
    */
   public void setDefinitionId(int definitionId) {
     this.definitionId = definitionId;
   }
 
   /**
-   * This method returns the statistic value for this alert. This can either be
-   * the latest value for the statistic or the delta between the last two
-   * readings, depending on the alert definition.
+   * This method returns the statistic value for this alert. This can either be the latest value for
+   * the statistic or the delta between the last two readings, depending on the alert definition.
    * 
    * @return the value.
    */
@@ -106,12 +100,11 @@ public class StatAlert implements Serializable {
   }
 
   /**
-   * This method sets the value of the statistic for this alert. This can either
-   * be the latest value for the statistic or the delta between the last two
-   * readings, depending on the alert definition.
+   * This method sets the value of the statistic for this alert. This can either be the latest value
+   * for the statistic or the delta between the last two readings, depending on the alert
+   * definition.
    * 
-   * @param values
-   *                value to be set.
+   * @param values value to be set.
    */
   public void setValues(Number[] values) {
     this.values = values;
@@ -129,8 +122,7 @@ public class StatAlert implements Serializable {
   /**
    * This method sets the timestamp when this alert was created.
    * 
-   * @param time
-   *                timestamp when this alert was created.
+   * @param time timestamp when this alert was created.
    */
   public void setTime(Date time) {
     this.time = time;

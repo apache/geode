@@ -1,27 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.memcached;
 
 /**
- * Represents the reply messages sent to the client.
- * All reply types override toString to send "\r\n"
+ * Represents the reply messages sent to the client. All reply types override toString to send
+ * "\r\n"
  */
 public enum Reply {
-  
+
   /**
    * to indicate success
    */
@@ -31,10 +29,9 @@ public enum Reply {
       return "STORED\r\n";
     }
   },
-  
+
   /**
-   * to indicate the data was not stored, but not
-   * because of an error. This normally means that the
+   * to indicate the data was not stored, but not because of an error. This normally means that the
    * condition for an "add" or a "replace" command wasn't met.
    */
   NOT_STORED {
@@ -43,10 +40,10 @@ public enum Reply {
       return "NOT_STORED\r\n";
     }
   },
-  
+
   /**
-   * to indicate that the item you are trying to store with
-   * a "cas" command has been modified since you last fetched it.
+   * to indicate that the item you are trying to store with a "cas" command has been modified since
+   * you last fetched it.
    */
   EXISTS {
     @Override
@@ -54,11 +51,10 @@ public enum Reply {
       return "EXISTS\r\n";
     }
   },
-  
+
   /**
-   * to indicate that the item you are trying to store
-   * with a "cas" command did not exist.
-   * Also used by delete.
+   * to indicate that the item you are trying to store with a "cas" command did not exist. Also used
+   * by delete.
    */
   NOT_FOUND {
     @Override
@@ -66,7 +62,7 @@ public enum Reply {
       return "NOT_FOUND\r\n";
     }
   },
-  
+
   /**
    * to indicate that get/gets operation has completed
    */
@@ -76,7 +72,7 @@ public enum Reply {
       return "END\r\n";
     }
   },
-  
+
   /**
    * to indicate that flush_all has completed
    */
@@ -86,7 +82,7 @@ public enum Reply {
       return "OK\r\n";
     }
   },
-  
+
   /**
    * to indicate success on delete
    */

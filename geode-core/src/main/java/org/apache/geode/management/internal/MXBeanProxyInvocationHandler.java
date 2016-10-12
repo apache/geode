@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -29,9 +27,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 
 /**
- * This proxy handler handles all the method call invoked on an MXBean It
- * follows same route as MBeanProxyInvocationHandler Only difference is after
- * obtaining the result it transforms the open type to the actual java type
+ * This proxy handler handles all the method call invoked on an MXBean It follows same route as
+ * MBeanProxyInvocationHandler Only difference is after obtaining the result it transforms the open
+ * type to the actual java type
  * 
  * 
  */
@@ -41,14 +39,12 @@ public class MXBeanProxyInvocationHandler {
 
   private MBeanProxyInvocationHandler proxyHandler;
 
-  private final Map<Method, MethodHandler> methodHandlerMap = OpenTypeUtil
-      .newMap();
+  private final Map<Method, MethodHandler> methodHandlerMap = OpenTypeUtil.newMap();
 
   private LogWriterI18n logger;
 
-  public MXBeanProxyInvocationHandler(ObjectName objectName,
-      Class<?> mxbeanInterface, MBeanProxyInvocationHandler proxyHandler)
-      throws Exception {
+  public MXBeanProxyInvocationHandler(ObjectName objectName, Class<?> mxbeanInterface,
+      MBeanProxyInvocationHandler proxyHandler) throws Exception {
 
     if (mxbeanInterface == null)
       throw new IllegalArgumentException("Null parameter");
@@ -81,13 +77,10 @@ public class MXBeanProxyInvocationHandler {
       if (attrName.length() != 0 && m.getParameterTypes().length == 0
           && m.getReturnType() != void.class) { // For Getters
 
-        methodHandlerMap
-            .put(m, new GetterHandler(attrName, OpenMethod.from(m)));
-      } else if (name.startsWith("set") && name.length() > 3
-          && m.getParameterTypes().length == 1
+        methodHandlerMap.put(m, new GetterHandler(attrName, OpenMethod.from(m)));
+      } else if (name.startsWith("set") && name.length() > 3 && m.getParameterTypes().length == 1
           && m.getReturnType() == void.class) { // For Setteres
-        methodHandlerMap
-            .put(m, new SetterHandler(attrName, OpenMethod.from(m)));
+        methodHandlerMap.put(m, new SetterHandler(attrName, OpenMethod.from(m)));
       } else {
         methodHandlerMap.put(m, new OpHandler(attrName, OpenMethod.from(m)));
       }
@@ -95,9 +88,8 @@ public class MXBeanProxyInvocationHandler {
   }
 
   /**
-   * Eliminate methods that are overridden with a covariant return type.
-   * Reflection will return both the original and the overriding method but we
-   * need only the overriding one is of interest
+   * Eliminate methods that are overridden with a covariant return type. Reflection will return both
+   * the original and the overriding method but we need only the overriding one is of interest
    * 
    * @param methodArray
    * @return the method after eliminating covariant menthods
@@ -120,20 +112,18 @@ public class MXBeanProxyInvocationHandler {
       }
     }
 
-    final List<Method> methods = OpenTypeUtil.newList(Arrays
-        .asList(methodArray));
+    final List<Method> methods = OpenTypeUtil.newList(Arrays.asList(methodArray));
     methods.removeAll(overridden);
     return methods;
   }
 
   /**
-   * A comparator that defines a total order so that methods have the same name
-   * and identical signatures appear next to each others. The methods are sorted
-   * in such a way that methods which override each other will sit next to each
-   * other, with the overridden method first - e.g. Object getFoo() is placed
-   * before Integer getFoo(). This makes it possible to determine whether a
-   * method overrides another one simply by looking at the method(s) that
-   * precedes it in the list. (see eliminateCovariantMethods).
+   * A comparator that defines a total order so that methods have the same name and identical
+   * signatures appear next to each others. The methods are sorted in such a way that methods which
+   * override each other will sit next to each other, with the overridden method first - e.g. Object
+   * getFoo() is placed before Integer getFoo(). This makes it possible to determine whether a
+   * method overrides another one simply by looking at the method(s) that precedes it in the list.
+   * (see eliminateCovariantMethods).
    **/
   private static class MethodOrder implements Comparator<Method> {
     public int compare(Method a, Method b) {
@@ -179,8 +169,7 @@ public class MXBeanProxyInvocationHandler {
       return convertingMethod;
     }
 
-    abstract Object invoke(Object proxy, Method method, Object[] args)
-        throws Throwable;
+    abstract Object invoke(Object proxy, Method method, Object[] args) throws Throwable;
 
     private final String name;
     private final OpenMethod convertingMethod;
@@ -198,8 +187,7 @@ public class MXBeanProxyInvocationHandler {
       String attrName = "";
       if (methodName.startsWith("get")) {
         attrName = methodName.substring(3);
-      } else if (methodName.startsWith("is")
-          && method.getReturnType() == boolean.class) {
+      } else if (methodName.startsWith("is") && method.getReturnType() == boolean.class) {
         attrName = methodName.substring(2);
 
       }
@@ -219,8 +207,7 @@ public class MXBeanProxyInvocationHandler {
       final String[] signature = new String[paramTypes.length];
       for (int i = 0; i < paramTypes.length; i++)
         signature[i] = paramTypes[i].getName();
-      return proxyHandler.delegateToFucntionService(objectName, methodName,
-          args, signature);
+      return proxyHandler.delegateToFucntionService(objectName, methodName, args, signature);
 
     }
   }
@@ -238,14 +225,12 @@ public class MXBeanProxyInvocationHandler {
       final String[] signature = new String[paramTypes.length];
       for (int i = 0; i < paramTypes.length; i++)
         signature[i] = paramTypes[i].getName();
-      return proxyHandler.delegateToFucntionService(objectName, methodName,
-          args, signature);
+      return proxyHandler.delegateToFucntionService(objectName, methodName, args, signature);
     }
 
   }
 
-  public Object invoke(Object proxy, Method method, Object[] args)
-      throws Throwable {
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
     MethodHandler handler = methodHandlerMap.get(method);
     OpenMethod cm = handler.getConvertingMethod();

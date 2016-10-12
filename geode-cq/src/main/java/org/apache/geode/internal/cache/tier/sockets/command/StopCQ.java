@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -43,12 +41,10 @@ public class StopCQ extends BaseCQCommand {
     return singleton;
   }
 
-  private StopCQ() {
-  }
+  private StopCQ() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     ClientProxyMembershipID id = servConn.getProxyID();
     CacheServerStats stats = servConn.getCacheServerStats();
@@ -63,14 +59,15 @@ public class StopCQ extends BaseCQCommand {
     String cqName = msg.getPart(0).getString();
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received stop CQ request from {} cqName: {}", servConn.getName(), servConn.getSocketString(), cqName);
+      logger.debug("{}: Received stop CQ request from {} cqName: {}", servConn.getName(),
+          servConn.getSocketString(), cqName);
     }
 
     // Process the query request
     if (cqName == null) {
-      String err = LocalizedStrings.StopCQ_THE_CQNAME_FOR_THE_CQ_STOP_REQUEST_IS_NULL.toLocalizedString();
-      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg
-          .getTransactionId(), null, servConn);
+      String err =
+          LocalizedStrings.StopCQ_THE_CQNAME_FOR_THE_CQ_STOP_REQUEST_IS_NULL.toLocalizedString();
+      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg.getTransactionId(), null, servConn);
       return;
     }
 
@@ -93,34 +90,31 @@ public class StopCQ extends BaseCQCommand {
       if (authzRequest != null) {
         String queryStr = null;
         Set cqRegionNames = null;
-        
+
         if (cqQuery != null) {
           queryStr = cqQuery.getQueryString();
           cqRegionNames = new HashSet();
-          cqRegionNames.add(((CqQueryImpl)cqQuery).getRegionName());
+          cqRegionNames.add(((CqQueryImpl) cqQuery).getRegionName());
         }
         authzRequest.stopCQAuthorize(cqName, queryStr, cqRegionNames);
       }
       cqService.stopCq(cqName, id);
-      if(cqQuery != null)
+      if (cqQuery != null)
         servConn.removeCq(cqName, cqQuery.isDurable());
-    }
-    catch (CqException cqe) {
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(),
-          cqe, servConn);
+    } catch (CqException cqe) {
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(), cqe, servConn);
       return;
-    }
-    catch (Exception e) {
-      String err = LocalizedStrings.StopCQ_EXCEPTION_WHILE_STOPPING_CQ_NAMED_0
-        .toLocalizedString(cqName);
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err,
-          msg.getTransactionId(), e, servConn);
+    } catch (Exception e) {
+      String err =
+          LocalizedStrings.StopCQ_EXCEPTION_WHILE_STOPPING_CQ_NAMED_0.toLocalizedString(cqName);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, msg.getTransactionId(), e, servConn);
       return;
     }
 
     // Send OK to client
-    sendCqResponse(MessageType.REPLY, LocalizedStrings.StopCQ_CQ_STOPPED_SUCCESSFULLY.toLocalizedString(), msg
-        .getTransactionId(), null, servConn);
+    sendCqResponse(MessageType.REPLY,
+        LocalizedStrings.StopCQ_CQ_STOPPED_SUCCESSFULLY.toLocalizedString(), msg.getTransactionId(),
+        null, servConn);
 
     servConn.setAsTrue(RESPONDED);
 

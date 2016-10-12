@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -54,13 +52,11 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * The test creates two datastores with a partitioned region, and also running a
- * cache server each. A publisher client is connected to one server while a
- * subscriber client is connected to both the servers. The partitioned region
- * has entry expiry set with ttl of 3 seconds and action as DESTROY. The test
- * ensures that the EXPIRE_DESTROY events are propagated to the subscriber
- * client and the secondary server does process the QRMs for the EXPIRE_DESTROY
- * events.
+ * The test creates two datastores with a partitioned region, and also running a cache server each.
+ * A publisher client is connected to one server while a subscriber client is connected to both the
+ * servers. The partitioned region has entry expiry set with ttl of 3 seconds and action as DESTROY.
+ * The test ensures that the EXPIRE_DESTROY events are propagated to the subscriber client and the
+ * secondary server does process the QRMs for the EXPIRE_DESTROY events.
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
@@ -86,15 +82,14 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
     vm2 = host.getVM(2); // durable client with subscription
     vm3 = host.getVM(3); // durable client without subscription
 
-    //int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-    int port0 = (Integer) vm0.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore( ));
-    int port1 = (Integer) vm1.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore( ));
+    // int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+    int port0 = (Integer) vm0.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore());
+    int port1 = (Integer) vm1.invoke(() -> Bug47388DUnitTest.createCacheServerWithPRDatastore());
 
     vm2.invoke(Bug47388DUnitTest.class, "createClientCache",
-        new Object[] { vm2.getHost(), new Integer[] { port0, port1 },
-            Boolean.TRUE });
+        new Object[] {vm2.getHost(), new Integer[] {port0, port1}, Boolean.TRUE});
     vm3.invoke(Bug47388DUnitTest.class, "createClientCache",
-        new Object[] { vm3.getHost(), new Integer[] { port0 }, Boolean.FALSE });
+        new Object[] {vm3.getHost(), new Integer[] {port0}, Boolean.FALSE});
 
   }
 
@@ -122,15 +117,13 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
     Bug47388DUnitTest test = new Bug47388DUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
-    cache = (GemFireCacheImpl)CacheFactory.create(test.getSystem());
+    cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
 
-    RegionFactory<String, String> rf = cache
-        .createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.PARTITION);
 
     rf.setEntryTimeToLive(new ExpirationAttributes(3, ExpirationAction.DESTROY))
-        .setPartitionAttributes(
-            new PartitionAttributesFactory<String, String>()
-                .setRedundantCopies(1).setTotalNumBuckets(4).create())
+        .setPartitionAttributes(new PartitionAttributesFactory<String, String>()
+            .setRedundantCopies(1).setTotalNumBuckets(4).create())
         .setConcurrencyChecksEnabled(false);
 
     rf.create(REGION_NAME);
@@ -144,8 +137,7 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
   @SuppressWarnings("deprecation")
   public static void createClientCache(Host host, Integer[] ports, Boolean doRI) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DURABLE_CLIENT_ID,
-        "my-durable-client-" + ports.length);
+    props.setProperty(DURABLE_CLIENT_ID, "my-durable-client-" + ports.length);
     props.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
 
     DistributedSystem ds = new Bug47388DUnitTest().getSystem(props);
@@ -159,8 +151,8 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
     }
     cache = (GemFireCacheImpl) ccf.create();
 
-    ClientRegionFactory<String, String> crf = cache
-        .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
+    ClientRegionFactory<String, String> crf =
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
 
     if (doRI) {
       crf.addCacheListener(new CacheListenerAdapter<String, String>() {
@@ -194,11 +186,12 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Boolean isPrimaryServer() {
-    return ((CacheClientProxy) CacheClientNotifier.getInstance()
-        .getClientProxies().toArray()[0]).isPrimary();
+    return ((CacheClientProxy) CacheClientNotifier.getInstance().getClientProxies().toArray()[0])
+        .isPrimary();
   }
 
-  public static void verifyClientSubscriptionStats(final Boolean isPrimary, final Integer events) throws Exception {
+  public static void verifyClientSubscriptionStats(final Boolean isPrimary, final Integer events)
+      throws Exception {
 
     WaitCriterion wc = new WaitCriterion() {
       private long dispatched;
@@ -206,9 +199,9 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public boolean done() {
-        HARegionQueueStats stats = ((CacheClientProxy) CacheClientNotifier
-            .getInstance().getClientProxies().toArray()[0]).getHARegionQueue()
-            .getStatistics();
+        HARegionQueueStats stats =
+            ((CacheClientProxy) CacheClientNotifier.getInstance().getClientProxies().toArray()[0])
+                .getHARegionQueue().getStatistics();
 
         final int numOfEvents;
         if (!isPrimary) {
@@ -231,11 +224,11 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public String description() {
-        return "Expected events: " + events + " but actual eventsDispatched: "
-            + this.dispatched + " and actual eventsRemovedByQrm: " + this.qrmed;
+        return "Expected events: " + events + " but actual eventsDispatched: " + this.dispatched
+            + " and actual eventsRemovedByQrm: " + this.qrmed;
       }
     };
-    
+
     Wait.waitForCriterion(wc, 60 * 1000, 500, true);
   }
 
@@ -263,14 +256,13 @@ public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
     int totalEvents = 23; // = (numOfSets * numOfPuts) * 2 [eviction-destroys] +
                           // 2 [last key's put and eviction-destroy] + 1 [marker
                           // message]
-    vm3.invoke(() -> Bug47388DUnitTest.doPuts( numOfSets,
-        numOfPuts ));
+    vm3.invoke(() -> Bug47388DUnitTest.doPuts(numOfSets, numOfPuts));
 
     boolean isvm0Primary = (Boolean) vm0.invoke(() -> Bug47388DUnitTest.isPrimaryServer());
 
     vm2.invoke(() -> Bug47388DUnitTest.waitForLastKeyDestroyed());
 
-    vm0.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats( isvm0Primary, totalEvents ));
-    vm1.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats( !isvm0Primary, totalEvents ));
+    vm0.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats(isvm0Primary, totalEvents));
+    vm1.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats(!isvm0Primary, totalEvents));
   }
 }

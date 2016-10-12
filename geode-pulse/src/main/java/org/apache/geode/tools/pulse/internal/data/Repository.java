@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -49,15 +47,15 @@ public class Repository {
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
   private boolean useGemFireCredentials = false;
-  
+
 
   private String pulseWebAppUrl;
 
-  Locale locale = new Locale(PulseConstants.APPLICATION_LANGUAGE,
-      PulseConstants.APPLICATION_COUNTRY);
+  Locale locale =
+      new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
 
-  private ResourceBundle resourceBundle = ResourceBundle.getBundle(
-      PulseConstants.LOG_MESSAGES_FILE, locale);
+  private ResourceBundle resourceBundle =
+      ResourceBundle.getBundle(PulseConstants.LOG_MESSAGES_FILE, locale);
 
   private PulseConfig pulseConfig = new PulseConfig();
 
@@ -150,26 +148,25 @@ public class Repository {
   }
 
   /**
-   * we're maintaining a 1:1 mapping between webapp and cluster, there is no need for a map of clusters based on the host and port
-   * We are using this clusterMap to maintain cluster for different users now.
-   * For a single-user connection to gemfire JMX, we will use the default username/password in the pulse.properties
-   * (# JMX User Properties )
-   * pulse.jmxUserName=admin
+   * we're maintaining a 1:1 mapping between webapp and cluster, there is no need for a map of
+   * clusters based on the host and port We are using this clusterMap to maintain cluster for
+   * different users now. For a single-user connection to gemfire JMX, we will use the default
+   * username/password in the pulse.properties (# JMX User Properties ) pulse.jmxUserName=admin
    * pulse.jmxUserPassword=admin
    *
-   * But for multi-user connections to gemfireJMX, i.e pulse that uses gemfire integrated security, we will need to get the username form the context
+   * But for multi-user connections to gemfireJMX, i.e pulse that uses gemfire integrated security,
+   * we will need to get the username form the context
    */
   public Cluster getCluster() {
     String username = null;
     String password = null;
-    if(useGemFireCredentials) {
+    if (useGemFireCredentials) {
       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-      if(auth!=null) {
+      if (auth != null) {
         username = auth.getName();
         password = (String) auth.getCredentials();
       }
-    }
-    else{
+    } else {
       username = this.jmxUserName;
       password = this.jmxUserPassword;
     }
@@ -186,12 +183,12 @@ public class Repository {
       if (data == null) {
         try {
           if (LOGGER.infoEnabled()) {
-            LOGGER.info(resourceBundle.getString("LOG_MSG_CREATE_NEW_THREAD")
-                + " : " + key);
+            LOGGER.info(resourceBundle.getString("LOG_MSG_CREATE_NEW_THREAD") + " : " + key);
           }
           data = new Cluster(this.jmxHost, this.jmxPort, username, password);
           // Assign name to thread created
-          data.setName(PulseConstants.APP_NAME + "-" + this.jmxHost + ":" + this.jmxPort + ":" + username);
+          data.setName(
+              PulseConstants.APP_NAME + "-" + this.jmxHost + ":" + this.jmxPort + ":" + username);
           // Start Thread
           data.start();
           this.clusterMap.put(key, data);
@@ -213,8 +210,7 @@ public class Repository {
   // This method is used to remove all cluster threads
   public void removeAllClusters() {
 
-    Iterator<Map.Entry<String, Cluster>> iter = clusterMap.entrySet()
-        .iterator();
+    Iterator<Map.Entry<String, Cluster>> iter = clusterMap.entrySet().iterator();
 
     while (iter.hasNext()) {
       Map.Entry<String, Cluster> entry = iter.next();
@@ -223,8 +219,8 @@ public class Repository {
       c.stopThread();
       iter.remove();
       if (LOGGER.infoEnabled()) {
-        LOGGER.info(resourceBundle.getString("LOG_MSG_REMOVE_THREAD") + " : "
-            + clusterKey.toString());
+        LOGGER.info(
+            resourceBundle.getString("LOG_MSG_REMOVE_THREAD") + " : " + clusterKey.toString());
       }
     }
   }
@@ -240,7 +236,7 @@ public class Repository {
   public void setUseGemFireCredentials(boolean useGemFireCredentials) {
     this.useGemFireCredentials = useGemFireCredentials;
   }
-  
-  
+
+
 
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal;
 
@@ -27,29 +25,26 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
- * Represents the location of a bridge server. This class is 
- * preferable to InetSocketAddress because it doesn't do
- * any name resolution.
+ * Represents the location of a bridge server. This class is preferable to InetSocketAddress because
+ * it doesn't do any name resolution.
  * 
  *
  */
 public class ServerLocation implements DataSerializable, Comparable {
   private static final long serialVersionUID = -5850116974987640560L;
-  
+
   private String hostName;
   private int port;
   /**
-   * Used exclusively in case of single user authentication mode. Client sends
-   * this userId to the server with each operation to identify itself at the
-   * server.
+   * Used exclusively in case of single user authentication mode. Client sends this userId to the
+   * server with each operation to identify itself at the server.
    */
   private long userId = -1;
 
   /**
-   * If its value is two, it lets the client know that it need not send the
-   * security part (connection-id, user-id) with each operation to the server.
-   * Also, that the client should not expect the security part in the server's
-   * response.
+   * If its value is two, it lets the client know that it need not send the security part
+   * (connection-id, user-id) with each operation to the server. Also, that the client should not
+   * expect the security part in the server's response.
    */
   private final AtomicInteger requiresCredentials = new AtomicInteger(INITIAL_REQUIRES_CREDENTIALS);
 
@@ -63,9 +58,9 @@ public class ServerLocation implements DataSerializable, Comparable {
    * For DataSerializer
    */
   public ServerLocation() {
-    
+
   }
-  
+
   public ServerLocation(String hostName, int port) {
     this.hostName = hostName;
     this.port = port;
@@ -93,7 +88,7 @@ public class ServerLocation implements DataSerializable, Comparable {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    //result = prime * result + ((hostName == null) ? 0 : hostName.hashCode());
+    // result = prime * result + ((hostName == null) ? 0 : hostName.hashCode());
     result = prime * result + port;
     return result;
   }
@@ -112,13 +107,11 @@ public class ServerLocation implements DataSerializable, Comparable {
         return false;
     } else if (other.hostName == null) {
       return false;
-    }
-    else if (!hostName.equals(other.hostName)) {
+    } else if (!hostName.equals(other.hostName)) {
       String canonicalHostName;
       try {
         canonicalHostName = SocketCreator.getLocalHost().getCanonicalHostName();
-      }
-      catch (UnknownHostException e) {
+      } catch (UnknownHostException e) {
         throw new IllegalStateException("getLocalHost failed with " + e);
       }
       if ("localhost".equals(hostName)) {
@@ -137,7 +130,7 @@ public class ServerLocation implements DataSerializable, Comparable {
       return false;
     return true;
   }
-  
+
   @Override
   public String toString() {
     return hostName + ":" + port;
@@ -146,12 +139,12 @@ public class ServerLocation implements DataSerializable, Comparable {
   public int compareTo(Object o) {
     ServerLocation other = (ServerLocation) o;
     int difference = hostName.compareTo(other.hostName);
-    if(difference != 0) {
+    if (difference != 0) {
       return difference;
     }
     return port - other.getPort();
   }
-  
+
   public void setUserId(long id) {
     this.userId = id;
   }
@@ -173,5 +166,5 @@ public class ServerLocation implements DataSerializable, Comparable {
   public boolean getRequiresCredentials() {
     return this.requiresCredentials.get() == REQUIRES_CREDENTIALS ? true : false;
   }
-  
+
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
@@ -43,7 +41,8 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 4) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.ZREMRANGEBYRANK));
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.ZREMRANGEBYRANK));
       return;
     }
 
@@ -83,7 +82,7 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
     int numRemoved = 0;
     List<?> removeList = null;
     try {
-      if (startRank == 0 && stopRank == sSetSize- 1) {
+      if (startRank == 0 && stopRank == sSetSize - 1) {
         numRemoved = keyRegion.size();
         context.getRegionProvider().removeKey(key);
       } else {
@@ -94,7 +93,7 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
     }
 
     if (removeList != null) {
-      for (Object entry: removeList) {
+      for (Object entry : removeList) {
         ByteArrayWrapper removeKey;
         if (entry instanceof Entry)
           removeKey = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
@@ -110,7 +109,8 @@ public class ZRemRangeByRankExecutor extends SortedSetExecutor {
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }
 
-  private List<?> getRemoveKeys(ExecutionHandlerContext context, ByteArrayWrapper key, int startRank, int stopRank) throws Exception {
+  private List<?> getRemoveKeys(ExecutionHandlerContext context, ByteArrayWrapper key,
+      int startRank, int stopRank) throws Exception {
     Query query = getQuery(key, SortedSetQuery.ZREMRANGEBYRANK, context);
     Object[] params = {stopRank + 1};
 

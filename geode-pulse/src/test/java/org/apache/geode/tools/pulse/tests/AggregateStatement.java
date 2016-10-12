@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 package org.apache.geode.tools.pulse.tests;
@@ -28,13 +26,13 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
   protected String getKey(String propName) {
     return "aggregatestatement." + name + "." + propName;
   }
-  
+
   /**
    * Query definition
    * 
    * @return
    */
-  public String getQueryDefinition(){
+  public String getQueryDefinition() {
     return getString("queryDefinition");
   }
 
@@ -44,7 +42,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * @return
    */
   @Override
-  public long getNumTimesCompiled(){
+  public long getNumTimesCompiled() {
     return getLong("numTimesCompiled");
   }
 
@@ -54,7 +52,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * @return
    */
   @Override
-  public long getNumExecution(){
+  public long getNumExecution() {
     return getLong("numExecution");
   }
 
@@ -63,7 +61,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getNumExecutionsInProgress(){
+  public long getNumExecutionsInProgress() {
     return getLong("numExecutionsInProgress");
   }
 
@@ -72,7 +70,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getNumTimesGlobalIndexLookup(){
+  public long getNumTimesGlobalIndexLookup() {
     return getLong("numTimesGlobalIndexLookup");
   }
 
@@ -81,7 +79,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getNumRowsModified(){
+  public long getNumRowsModified() {
     return getLong("numRowsModified");
   }
 
@@ -90,7 +88,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getParseTime(){
+  public long getParseTime() {
     return getLong("parseTime");
   }
 
@@ -99,17 +97,16 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getBindTime(){
+  public long getBindTime() {
     return getLong("bindTime");
   }
 
   /**
-   * Time spent (in milliseconds) determining the best execution path for this statement
-   * (optimize)
+   * Time spent (in milliseconds) determining the best execution path for this statement (optimize)
    * 
    * @return
    */
-  public long getOptimizeTime(){
+  public long getOptimizeTime() {
     return getLong("optimizeTime");
   }
 
@@ -119,7 +116,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getRoutingInfoTime(){
+  public long getRoutingInfoTime() {
     return getLong("routingInfoTime");
   }
 
@@ -128,7 +125,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getGenerateTime(){
+  public long getGenerateTime() {
     return getLong("generateTime");
   }
 
@@ -137,7 +134,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getTotalCompilationTime(){
+  public long getTotalCompilationTime() {
     return getLong("totalCompilationTime");
   }
 
@@ -146,7 +143,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getExecutionTime(){
+  public long getExecutionTime() {
     return getLong("executionTime");
   }
 
@@ -155,7 +152,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getProjectionTime(){
+  public long getProjectionTime() {
     return getLong("projectionTime");
   }
 
@@ -165,7 +162,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getTotalExecutionTime(){
+  public long getTotalExecutionTime() {
     return getLong("totalExecutionTime");
   }
 
@@ -174,7 +171,7 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getRowsModificationTime(){
+  public long getRowsModificationTime() {
     return getLong("rowsModificationTime");
   }
 
@@ -183,17 +180,17 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getQNNumRowsSeen(){
+  public long getQNNumRowsSeen() {
     return getLong("qnNumRowsSeen");
   }
 
   /**
-   * TCP send time (in nanoseconds) of all the messages including serialization time and queue
-   * wait time
+   * TCP send time (in nanoseconds) of all the messages including serialization time and queue wait
+   * time
    * 
    * @return
    */
-  public long getQNMsgSendTime(){
+  public long getQNMsgSendTime() {
     return getLong("qnMsgSendTime");
   }
 
@@ -202,16 +199,16 @@ public class AggregateStatement extends JMXBaseBean implements AggregateStatemen
    * 
    * @return
    */
-  public long getQNMsgSerTime(){
+  public long getQNMsgSerTime() {
     return getLong("qnMsgSerTime");
   }
-  
+
   /**
    * 
    * 
    * @return
    */
-  public long getQNRespDeSerTime(){
+  public long getQNRespDeSerTime() {
     return getLong("qnRespDeSerTime");
   }
 }

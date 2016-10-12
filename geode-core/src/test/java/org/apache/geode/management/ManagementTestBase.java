@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -118,8 +116,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     postSetUpManagementTestBase();
   }
 
-  protected void postSetUpManagementTestBase() throws Exception {
-  }
+  protected void postSetUpManagementTestBase() throws Exception {}
 
   @Override
   public final void preTearDown() throws Exception {
@@ -135,11 +132,9 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     postTearDownManagementTestBase();
   }
 
-  protected void preTearDownManagementTestBase() throws Exception {
-  }
+  protected void preTearDownManagementTestBase() throws Exception {}
 
-  protected void postTearDownManagementTestBase() throws Exception {
-  }
+  protected void postTearDownManagementTestBase() throws Exception {}
 
   public void closeAllCache() throws Exception {
     closeCache(managingNode);
@@ -174,8 +169,8 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
   }
 
   /**
-   * managingNodeFirst variable tests for two different test cases where
-   * Managing & Managed Node creation time lines are reversed.
+   * managingNodeFirst variable tests for two different test cases where Managing & Managed Node
+   * creation time lines are reversed.
    */
   public void initManagement(boolean managingNodeFirst) throws Exception {
 
@@ -267,8 +262,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
         if (existingInstance != null) {
           existingInstance.close();
         }
-        InternalDistributedSystem ds = InternalDistributedSystem
-            .getConnectedInstance();
+        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
         if (ds != null) {
           ds.disconnect();
         }
@@ -282,8 +276,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     if (existingInstance != null) {
       existingInstance.close();
     }
-    InternalDistributedSystem ds = InternalDistributedSystem
-        .getConnectedInstance();
+    InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
     if (ds != null) {
       ds.disconnect();
     }
@@ -299,8 +292,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     return (String) vm.invoke(getMember);
   }
 
-  protected static void waitForProxy(final ObjectName objectName,
-      final Class interfaceClass) {
+  protected static void waitForProxy(final ObjectName objectName, final Class interfaceClass) {
 
     Wait.waitForCriterion(new WaitCriterion() {
       public String description() {
@@ -360,8 +352,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
       public void run() {
         Cache existingCache = GemFireCacheImpl.getInstance();
         if (existingCache != null && !existingCache.isClosed()) {
-          managementService = ManagementService
-              .getManagementService(existingCache);
+          managementService = ManagementService.getManagementService(existingCache);
           managementService.startManager();
         }
 
@@ -392,9 +383,9 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Check various resources clean up Once a VM stops being managable it should
-   * remove all the artifacts of management namely a) Notification region b)
-   * Monitoring Region c) Management task should stop
+   * Check various resources clean up Once a VM stops being managable it should remove all the
+   * artifacts of management namely a) Notification region b) Monitoring Region c) Management task
+   * should stop
    */
   public void checkManagedNodeCleanup(VM vm) throws Exception {
     vm.invoke(new SerializableRunnable("Managing Node Clean up") {
@@ -405,15 +396,15 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
           // Cache is closed
           assertEquals(true, existingCache.isClosed());
           // ManagementService should throw exception
-          LocalManager localManager = ((SystemManagementService) managementService)
-              .getLocalManager();
+          LocalManager localManager =
+              ((SystemManagementService) managementService).getLocalManager();
           // Check Monitoring region destroyed
-          Region monitoringRegion = localManager.getManagementResourceRepo()
-              .getLocalMonitoringRegion();
+          Region monitoringRegion =
+              localManager.getManagementResourceRepo().getLocalMonitoringRegion();
           assertEquals(null, monitoringRegion);
           // check Notification region is destroyed
-          Region notifRegion = localManager.getManagementResourceRepo()
-              .getLocalNotificationRegion();
+          Region notifRegion =
+              localManager.getManagementResourceRepo().getLocalNotificationRegion();
           assertEquals(null, notifRegion);
           // check ManagementTask is stopped
           assertEquals(true, localManager.getFederationSheduler().isShutdown());
@@ -426,9 +417,8 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
   }
 
   /**
-   * Check various resources clean up Once a VM stops being Managing.It should
-   * remove all the artifacts of management namely a) proxies b) Monitoring
-   * Region c) Management task should stop
+   * Check various resources clean up Once a VM stops being Managing.It should remove all the
+   * artifacts of management namely a) proxies b) Monitoring Region c) Management task should stop
    */
 
   public void checkProxyCleanup(VM vm) throws Exception {
@@ -446,20 +436,19 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
           assertEquals(false, existingCache.isClosed());
           // ManagementService should not be closed
 
-          Set<DistributedMember> otherMemberSet = existingCache
-              .getDistributionManager().getOtherDistributionManagerIds();
+          Set<DistributedMember> otherMemberSet =
+              existingCache.getDistributionManager().getOtherDistributionManagerIds();
 
           Iterator<DistributedMember> it = otherMemberSet.iterator();
-          FederatingManager federatingManager = ((SystemManagementService) managementService)
-              .getFederatingManager();
+          FederatingManager federatingManager =
+              ((SystemManagementService) managementService).getFederatingManager();
 
           // check Proxy factory. There should not be any proxies left
           DistributedMember member;
           while (it.hasNext()) {
             member = it.next();
 
-            assertNull(federatingManager.getProxyFactory().findAllProxies(
-                member));
+            assertNull(federatingManager.getProxyFactory().findAllProxies(member));
           }
 
         } catch (ManagementException e) {
@@ -478,30 +467,21 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
    */
   public boolean checkManagementExceptions(ManagementException e) {
 
-    if (e.getMessage()
-        .equals(ManagementStrings.Management_Service_CLOSED_CACHE)
+    if (e.getMessage().equals(ManagementStrings.Management_Service_CLOSED_CACHE)
         || e.getMessage().equals(
-        ManagementStrings.Management_Service_MANAGEMENT_SERVICE_IS_CLOSED
-            .toLocalizedString())
-        || e
-        .getMessage()
-        .equals(
-            ManagementStrings.Management_Service_MANAGEMENT_SERVICE_NOT_STARTED_YET
+            ManagementStrings.Management_Service_MANAGEMENT_SERVICE_IS_CLOSED.toLocalizedString())
+        || e.getMessage()
+            .equals(ManagementStrings.Management_Service_MANAGEMENT_SERVICE_NOT_STARTED_YET
                 .toLocalizedString())
         || e.getMessage().equals(
-        ManagementStrings.Management_Service_NOT_A_GEMFIRE_DOMAIN_MBEAN
-            .toLocalizedString())
+            ManagementStrings.Management_Service_NOT_A_GEMFIRE_DOMAIN_MBEAN.toLocalizedString())
         || e.getMessage().equals(
-        ManagementStrings.Management_Service_NOT_A_MANAGING_NODE_YET
-            .toLocalizedString())
-        || e
-        .getMessage()
-        .equals(
-            ManagementStrings.Management_Service_OPERATION_NOT_ALLOWED_FOR_CLIENT_CACHE
+            ManagementStrings.Management_Service_NOT_A_MANAGING_NODE_YET.toLocalizedString())
+        || e.getMessage()
+            .equals(ManagementStrings.Management_Service_OPERATION_NOT_ALLOWED_FOR_CLIENT_CACHE
                 .toLocalizedString())
-        || e.getMessage().equals(
-        ManagementStrings.Management_Service_PROXY_NOT_AVAILABLE
-            .toLocalizedString())) {
+        || e.getMessage()
+            .equals(ManagementStrings.Management_Service_PROXY_NOT_AVAILABLE.toLocalizedString())) {
 
       return false;
     }
@@ -523,11 +503,10 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
   /**
    * Creates a Distributed region
    *
-   * @param vm         reference to VM
+   * @param vm reference to VM
    * @param regionName name of the distributed region
    */
-  protected void createDistributedRegion(VM vm, final String regionName)
-      throws Exception {
+  protected void createDistributedRegion(VM vm, final String regionName) throws Exception {
     AsyncInvocation future = createDistributedRegionAsync(vm, regionName);
     future.join(MAX_WAIT);
     if (future.isAlive()) {
@@ -541,18 +520,15 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
   /**
    * Creates a Local region
    *
-   * @param vm              reference to VM
+   * @param vm reference to VM
    * @param localRegionName name of the local region
    */
-  protected void createLocalRegion(VM vm, final String localRegionName)
-      throws Exception {
-    SerializableRunnable createLocalRegion = new SerializableRunnable(
-        "Create Local region") {
+  protected void createLocalRegion(VM vm, final String localRegionName) throws Exception {
+    SerializableRunnable createLocalRegion = new SerializableRunnable("Create Local region") {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         SystemManagementService service = (SystemManagementService) getManagementService();
-        RegionFactory rf = cache
-            .createRegionFactory(RegionShortcut.LOCAL);
+        RegionFactory rf = cache.createRegionFactory(RegionShortcut.LOCAL);
 
         org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Local Region");
         rf.create(localRegionName);
@@ -569,8 +545,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
    */
   protected void createSubRegion(VM vm, final String parentRegionPath, final String subregionName)
       throws Exception {
-    SerializableRunnable createSubRegion = new SerializableRunnable(
-        "Create Sub region") {
+    SerializableRunnable createSubRegion = new SerializableRunnable("Create Sub region") {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         SystemManagementService service = (SystemManagementService) getManagementService();
@@ -589,10 +564,9 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
    *
    * @param vm
    */
-  protected void putInDistributedRegion(final VM vm, final String key,
-      final String value, final String regionPath) {
-    SerializableRunnable put = new SerializableRunnable(
-        "Put In Distributed Region") {
+  protected void putInDistributedRegion(final VM vm, final String key, final String value,
+      final String regionPath) {
+    SerializableRunnable put = new SerializableRunnable("Put In Distributed Region") {
       public void run() {
 
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -609,10 +583,8 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
    *
    * @param vm
    */
-  protected AsyncInvocation createDistributedRegionAsync(final VM vm,
-      final String regionName) {
-    SerializableRunnable createRegion = new SerializableRunnable(
-        "Create Distributed region") {
+  protected AsyncInvocation createDistributedRegionAsync(final VM vm, final String regionName) {
+    SerializableRunnable createRegion = new SerializableRunnable("Create Distributed region") {
       public void run() {
 
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -632,15 +604,12 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
    *
    * @param vm
    */
-  protected void createPartitionRegion(final VM vm,
-      final String partitionRegionName) {
-    SerializableRunnable createParRegion = new SerializableRunnable(
-        "Create Partitioned region") {
+  protected void createPartitionRegion(final VM vm, final String partitionRegionName) {
+    SerializableRunnable createParRegion = new SerializableRunnable("Create Partitioned region") {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         SystemManagementService service = (SystemManagementService) getManagementService();
-        RegionFactory rf = cache
-            .createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
+        RegionFactory rf = cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
         org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Par Region");
         rf.create(partitionRegionName);
 
@@ -655,8 +624,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
    * @param vm
    */
   protected void closeRegion(final VM vm, final String regionPath) {
-    SerializableRunnable closeRegion = new SerializableRunnable(
-        "Close Distributed region") {
+    SerializableRunnable closeRegion = new SerializableRunnable("Close Distributed region") {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
@@ -683,8 +651,8 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
       public boolean done() {
         if (bean.listMemberObjectNames() != null) {
 
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
-              "Member Length " + bean.listMemberObjectNames().length);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              .info("Member Length " + bean.listMemberObjectNames().length);
 
         }
 
@@ -701,8 +669,7 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     assertNotNull(bean.getManagerObjectName());
   }
 
-  public static void waitForRefresh(final int expectedRefreshCount,
-      final ObjectName objectName) {
+  public static void waitForRefresh(final int expectedRefreshCount, final ObjectName objectName) {
     final ManagementService service = getManagementService();
 
     final long currentTime = System.currentTimeMillis();

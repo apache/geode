@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
  * Created on Feb 15, 2006
  * 
- * TODO To change the template for this generated file go to Window -
- * Preferences - Java - Code Style - Code Templates
+ * TODO To change the template for this generated file go to Window - Preferences - Java - Code
+ * Style - Code Templates
  */
 package org.apache.geode.internal.cache;
 
@@ -54,19 +52,15 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   /*
-   * Test method for
-   * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicClose()'
+   * Test method for 'org.apache.geode.internal.cache.SimpleDiskRegion.basicClose()'
    */
   @Test
-  public void testBasicClose()
-  {
+  public void testBasicClose() {
     {
       deleteFiles();
       try {
-        region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(
-            cache, diskProps);
-      }
-      catch (Exception e) {
+        region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, diskProps);
+      } catch (Exception e) {
         logWriter.error("Exception occured", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
@@ -77,10 +71,8 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
     {
       deleteFiles();
       try {
-        region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
-            diskProps);
-      }
-      catch (Exception e) {
+        region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
+      } catch (Exception e) {
         logWriter.error("Exception occured", e);
         fail(" Exception in createOverflowOnly due to " + e);
       }
@@ -91,10 +83,8 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
     {
       deleteFiles();
       try {
-        region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
-            diskProps);
-      }
-      catch (Exception e) {
+        region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
+      } catch (Exception e) {
         logWriter.error("Exception occured", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
@@ -102,30 +92,27 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       closeDiskStores();
       checkIfContainsFileWithExt("lk");
     }
-    //Asif: Recreate the region so that it will be destroyed
+    // Asif: Recreate the region so that it will be destroyed
     try {
-      region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
-          diskProps);
-    }
-    catch (Exception e) {
+      region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
+    } catch (Exception e) {
       logWriter.error("Exception occured", e);
       fail(" Exception in createOverflowandPersist due to " + e);
     }
 
   }
 
-  void checkIfContainsFileWithSubstring(String substr)
-  {
+  void checkIfContainsFileWithSubstring(String substr) {
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
       for (int j = 0; j < files.length; j++) {
         if (files[j].getAbsolutePath().contains(substr)) {
-          fail("file \"" + files[j].getAbsolutePath()
-               + "\" still exists");
+          fail("file \"" + files[j].getAbsolutePath() + "\" still exists");
         }
       }
     }
   }
+
   void expectContainsFileWithSubstring(String substr) {
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
@@ -135,36 +122,30 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
         }
       }
     }
-    fail("did not find a file with the substring " + substr); 
+    fail("did not find a file with the substring " + substr);
   }
 
-  void checkIfContainsFileWithExt(String fileExtension)
-  {
+  void checkIfContainsFileWithExt(String fileExtension) {
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
       for (int j = 0; j < files.length; j++) {
         if (files[j].getAbsolutePath().endsWith(fileExtension)) {
-          fail("file \"" + files[j].getAbsolutePath()
-               + "\" still exists");
+          fail("file \"" + files[j].getAbsolutePath() + "\" still exists");
         }
       }
     }
   }
 
   /*
-   * Test method for
-   * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicDestroy()'
+   * Test method for 'org.apache.geode.internal.cache.SimpleDiskRegion.basicDestroy()'
    */
   @Test
-  public void testBasicDestroy()
-  {
+  public void testBasicDestroy() {
     {
       deleteFiles();
       try {
-        region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(
-            cache, diskProps);
-      }
-      catch (Exception e) {
+        region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, diskProps);
+      } catch (Exception e) {
         logWriter.error("Exception occured", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
@@ -179,10 +160,8 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
     {
       deleteFiles();
       try {
-        region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
-            diskProps);
-      }
-      catch (Exception e) {
+        region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
+      } catch (Exception e) {
         logWriter.error("Exception occured", e);
         fail(" Exception in createOverflowOnly due to " + e);
       }
@@ -197,10 +176,8 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
     {
       deleteFiles();
       try {
-        region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
-            diskProps);
-      }
-      catch (Exception e) {
+        region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
+      } catch (Exception e) {
         logWriter.error("Exception occured", e);
         fail(" Exception in createOverflowandPersist due to " + e);
       }
@@ -215,62 +192,59 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   }
 
-//   /*
-//    * Test method for
-//    * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicInitializeOwner()'
-//    */
-//   @Test
-//  public void testBasicInitializeOwner()
-//   {
-//     deleteFiles();
-//     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps);
-//     DiskRegion dr = ((LocalRegion)region).getDiskRegion();
-//     put100Int();
-//     assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
-//     Oplog oplog = dr.getChild();
-//     int id = oplog.getOplogId();
-//     StatisticsFactory factory = dr.getOwner().getCache().getDistributedSystem();
-//     Oplog newOplog = new Oplog(id + 1, dr.getDiskStore(), new DirectoryHolder(factory,
-//         dirs[0], 1000000, 0));    
-//     dr.setChild(newOplog);
-//     region.clear();
-//     newOplog = dr.getChild();
-//     assertIndexDetailsEquals(null, region.get(new Integer(1)));
-//     try {
-//       dr.addToOplogSet(id, new File(oplog.getOplogFile()
-//           .getPath()), dr.getNextDir());
-//     }
-//     catch (Exception e) {
-//       logWriter
-//           .error(
-//               "Exception in synching data present in the buffers of RandomAccessFile of Oplog, to the disk",
-//               e);
-//       fail("Test failed because synching of data present in buffer of RandomAccesFile ");
-//     }
-//     oplog.close();
-//     dr.setIsRecovering(true);
-//     dr.basicInitializeOwner();
-//     assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
-//     closeDown();
-//   }
+  // /*
+  // * Test method for
+  // * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicInitializeOwner()'
+  // */
+  // @Test
+  // public void testBasicInitializeOwner()
+  // {
+  // deleteFiles();
+  // region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps);
+  // DiskRegion dr = ((LocalRegion)region).getDiskRegion();
+  // put100Int();
+  // assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
+  // Oplog oplog = dr.getChild();
+  // int id = oplog.getOplogId();
+  // StatisticsFactory factory = dr.getOwner().getCache().getDistributedSystem();
+  // Oplog newOplog = new Oplog(id + 1, dr.getDiskStore(), new DirectoryHolder(factory,
+  // dirs[0], 1000000, 0));
+  // dr.setChild(newOplog);
+  // region.clear();
+  // newOplog = dr.getChild();
+  // assertIndexDetailsEquals(null, region.get(new Integer(1)));
+  // try {
+  // dr.addToOplogSet(id, new File(oplog.getOplogFile()
+  // .getPath()), dr.getNextDir());
+  // }
+  // catch (Exception e) {
+  // logWriter
+  // .error(
+  // "Exception in synching data present in the buffers of RandomAccessFile of Oplog, to the disk",
+  // e);
+  // fail("Test failed because synching of data present in buffer of RandomAccesFile ");
+  // }
+  // oplog.close();
+  // dr.setIsRecovering(true);
+  // dr.basicInitializeOwner();
+  // assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
+  // closeDown();
+  // }
 
   /*
-   * Test method for
-   * 'org.apache.geode.internal.cache.SimpleDiskRegion.getChild()'
+   * Test method for 'org.apache.geode.internal.cache.SimpleDiskRegion.getChild()'
    */
   @Test
-  public void testGetChild()
-  {
+  public void testGetChild() {
     deleteFiles();
-    region = DiskRegionHelperFactory
-        .getAsyncPersistOnlyRegion(cache, diskProps);
-    DiskRegion dr = ((LocalRegion)region).getDiskRegion();
+    region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
+    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     Oplog oplog = dr.testHook_getChild();
     long id = oplog.getOplogId();
 
     StatisticsFactory factory = region.getCache().getDistributedSystem();
-    Oplog newOplog = new Oplog(id, dr.getOplogSet(), new DirectoryHolder(factory, dirs[0],
-        1000000, 0));
+    Oplog newOplog =
+        new Oplog(id, dr.getOplogSet(), new DirectoryHolder(factory, dirs[0], 1000000, 0));
     dr.getDiskStore().persistentOplogs.setChild(newOplog);
     assertEquals(newOplog, dr.testHook_getChild());
     dr.setChild(oplog);
@@ -281,12 +255,10 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   /*
-   * Test method for
-   * 'org.apache.geode.internal.cache.SimpleDiskRegion.getNextDir()'
+   * Test method for 'org.apache.geode.internal.cache.SimpleDiskRegion.getNextDir()'
    */
   @Test
-  public void testGetNextDir()
-  {
+  public void testGetNextDir() {
     deleteFiles();
 
     File file1 = new File("SimpleDiskRegionJUnitTestDir1");
@@ -316,9 +288,8 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
     DiskRegionProperties diskProps = new DiskRegionProperties();
     diskProps.setDiskDirs(dirs);
 
-    region = DiskRegionHelperFactory
-        .getAsyncPersistOnlyRegion(cache, diskProps);
-    DiskRegion dr = ((LocalRegion)region).getDiskRegion();
+    region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
+    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     assertEquals(file2, dr.getNextDir().getDir());
     assertEquals(file3, dr.getNextDir().getDir());
     assertEquals(file4, dr.getNextDir().getDir());
@@ -329,15 +300,12 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   /*
-   * Test method for
-   * 'org.apache.geode.internal.cache.SimpleDiskRegion.newDiskId()'
+   * Test method for 'org.apache.geode.internal.cache.SimpleDiskRegion.newDiskId()'
    */
   @Test
-  public void testNewDiskId()
-  {
+  public void testNewDiskId() {
     deleteFiles();
-    region = DiskRegionHelperFactory
-        .getAsyncPersistOnlyRegion(cache, diskProps);
+    region = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskProps);
 
     TestNewDiskId newDiskId = new TestNewDiskId();
     Thread thread1 = new Thread(newDiskId);
@@ -371,13 +339,11 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
     closeDown();
   }
 
-  class TestNewDiskId implements Runnable
-  {
-    public void run()
-    {
+  class TestNewDiskId implements Runnable {
+    public void run() {
       long keyId = 0;
       for (int i = 0; i < 10000; i++) {
-        keyId = ((LocalRegion)region).getDiskRegion().newOplogEntryId();
+        keyId = ((LocalRegion) region).getDiskRegion().newOplogEntryId();
         keyIds.add(new Long(keyId));
       }
     }

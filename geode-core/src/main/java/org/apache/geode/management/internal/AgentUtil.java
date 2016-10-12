@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management.internal;
@@ -35,7 +33,8 @@ public class AgentUtil {
 
   private static final Logger logger = LogService.getLogger();
 
-  public static final String ERROR_VARIABLE_NOT_SET = "The GEMFIRE environment variable must be set!";
+  public static final String ERROR_VARIABLE_NOT_SET =
+      "The GEMFIRE environment variable must be set!";
 
   private String gemfireVersion = null;
 
@@ -44,25 +43,24 @@ public class AgentUtil {
   }
 
   /**
-   * this method will try to find the named war files in the following order:
-   * 1. if GEMFIRE is defined, it will look under tools/Extensions, tools/Pulse and lib folder (in this order) to find
-   *    either the name-version.war or the name.war file
-   * 2. If GEMFIRE is not defined, it will try to find either the name-version.war/name.war (in that order) on the
-   *    classpath
+   * this method will try to find the named war files in the following order: 1. if GEMFIRE is
+   * defined, it will look under tools/Extensions, tools/Pulse and lib folder (in this order) to
+   * find either the name-version.war or the name.war file 2. If GEMFIRE is not defined, it will try
+   * to find either the name-version.war/name.war (in that order) on the classpath
    *
-   * @param warFilePrefix : the prefix of the war file, e.g. geode-web, geode-pulse, or geode-web-api
-     */
+   * @param warFilePrefix : the prefix of the war file, e.g. geode-web, geode-pulse, or
+   *        geode-web-api
+   */
   public String findWarLocation(String warFilePrefix) {
     String gemfireHome = getGemFireHome();
-    if(!StringUtils.isBlank(gemfireHome)) {
-      String[] possibleFiles = {
-              gemfireHome + "/tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
+    if (!StringUtils.isBlank(gemfireHome)) {
+      String[] possibleFiles =
+          {gemfireHome + "/tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
               gemfireHome + "/tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
               gemfireHome + "/lib/" + warFilePrefix + "-" + gemfireVersion + ".war",
               gemfireHome + "/tools/Extensions/" + warFilePrefix + ".war",
               gemfireHome + "/tools/Pulse/" + warFilePrefix + ".war",
-              gemfireHome + "/lib/" + warFilePrefix + ".war"
-      };
+              gemfireHome + "/lib/" + warFilePrefix + ".war"};
       for (String possibleFile : possibleFiles) {
         if (new File(possibleFile).isFile()) {
           logger.info(warFilePrefix + " war found: {}", possibleFile);
@@ -71,18 +69,16 @@ public class AgentUtil {
       }
     }
 
-    // if $GEMFIRE is not set or we are not able to find it in all the possible locations under $GEMFIRE, try to
+    // if $GEMFIRE is not set or we are not able to find it in all the possible locations under
+    // $GEMFIRE, try to
     // find in the classpath
-    String[] possibleFiles = {
-            warFilePrefix + "-" + gemfireVersion + ".war",
-            "tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
-            "tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
-            "lib/" + warFilePrefix + "-" + gemfireVersion + ".war",
-            warFilePrefix + ".war"
-    };
-    for(String possibleFile:possibleFiles){
+    String[] possibleFiles = {warFilePrefix + "-" + gemfireVersion + ".war",
+        "tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
+        "tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
+        "lib/" + warFilePrefix + "-" + gemfireVersion + ".war", warFilePrefix + ".war"};
+    for (String possibleFile : possibleFiles) {
       URL url = this.getClass().getClassLoader().getResource(possibleFile);
-      if(url!=null){
+      if (url != null) {
         // found the war file
         logger.info(warFilePrefix + " war found: {}", possibleFile);
         return url.getPath();
@@ -90,7 +86,7 @@ public class AgentUtil {
     }
 
     // we still couldn't find the war file
-    logger.warn(warFilePrefix+" war file was not found");
+    logger.warn(warFilePrefix + " war file was not found");
     return null;
   }
 

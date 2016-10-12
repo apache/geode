@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.list;
 
@@ -58,7 +56,8 @@ public class LTrimExecutor extends ListExecutor {
     Region keyRegion = getRegion(context, key);
 
     if (keyRegion == null) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_KEY_NOT_EXISTS));
+      command
+          .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_KEY_NOT_EXISTS));
       return;
     }
 
@@ -70,7 +69,7 @@ public class LTrimExecutor extends ListExecutor {
 
     try {
       redisStart = Coder.bytesToInt(startArray);
-      redisStop =  Coder.bytesToInt(stopArray);
+      redisStop = Coder.bytesToInt(stopArray);
     } catch (NumberFormatException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
       return;
@@ -96,23 +95,24 @@ public class LTrimExecutor extends ListExecutor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    
-    for (Object keyElement: keyRegion.keySet()) {
+
+    for (Object keyElement : keyRegion.keySet()) {
       if (!keepList.contains(keyElement) && keyElement instanceof Integer)
         keyRegion.remove(keyElement);
     }
-    
+
     // Reset indexes in meta data region
     keyRegion.put("head", keepList.get(0));
     keyRegion.put("tail", keepList.get(keepList.size() - 1));
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
   }
 
-  private List<Integer> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start, int stop, Region r) throws Exception {
+  private List<Integer> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start,
+      int stop, Region r) throws Exception {
     Query query = getQuery(key, ListQuery.LTRIM, context);
 
     Object[] params = {Integer.valueOf(stop + 1)};
-    
+
     SelectResults<Integer> results = (SelectResults<Integer>) query.execute(params);
     if (results == null || results.size() <= start) {
       return null;

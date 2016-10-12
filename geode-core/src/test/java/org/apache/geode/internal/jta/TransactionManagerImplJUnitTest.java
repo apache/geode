@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.jta;
 
@@ -39,17 +37,17 @@ public class TransactionManagerImplJUnitTest {
 
   private static DistributedSystem ds;
   private static TransactionManagerImpl tm;
-  
+
   protected UserTransaction utx;
-  
+
   @BeforeClass
-  public static void beforeClass() throws Exception{
+  public static void beforeClass() throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
     tm = TransactionManagerImpl.getTransactionManager();
   }
-  
+
   @AfterClass
   public static void afterClass() {
     ds.disconnect();
@@ -63,8 +61,7 @@ public class TransactionManagerImplJUnitTest {
   }
 
   @After
-  public void tearDown() {
-  }
+  public void tearDown() {}
 
   @Test
   public void testGetTransaction() throws Exception {
@@ -96,13 +93,14 @@ public class TransactionManagerImplJUnitTest {
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
     GlobalTransaction gTxn1 = (GlobalTransaction) tm.getGlobalTransactionMap().get(txn);
     GlobalTransaction gTxn2 = tm.getGlobalTransaction();
-    assertTrue("Get Global Transaction not returning the correct global transaction", gTxn1 == gTxn2);
+    assertTrue("Get Global Transaction not returning the correct global transaction",
+        gTxn1 == gTxn2);
     utx.commit();
   }
 
   @Test
   public void testNotifyBeforeCompletionException() throws Exception {
-    //Asif : Test Notify BeforeCompletion Exception handling
+    // Asif : Test Notify BeforeCompletion Exception handling
     utx.begin();
     Thread thread = Thread.currentThread();
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
@@ -127,7 +125,7 @@ public class TransactionManagerImplJUnitTest {
 
   @Test
   public void testSetRollBackOnly() throws Exception {
-    //    Asif : Test Exception when marking transaction for rollbackonly
+    // Asif : Test Exception when marking transaction for rollbackonly
     utx.begin();
     Thread thread = Thread.currentThread();
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
@@ -161,8 +159,7 @@ public class TransactionManagerImplJUnitTest {
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
     txn.registerSynchronization(new Synchronization() {
 
-      public void beforeCompletion() {
-      }
+      public void beforeCompletion() {}
 
       public void afterCompletion(int status) {
         assertTrue(status == Status.STATUS_ROLLEDBACK);
@@ -204,8 +201,7 @@ public class TransactionManagerImplJUnitTest {
     });
     txn.enlistResource(new XAResourceAdaptor() {
 
-      public void commit(Xid arg0, boolean arg1) throws XAException {
-      }
+      public void commit(Xid arg0, boolean arg1) throws XAException {}
 
       public void rollback(Xid arg0) throws XAException {
         throw new XAException(6);
@@ -221,7 +217,7 @@ public class TransactionManagerImplJUnitTest {
   }
 
   @Test
-  public void testRollback() throws Exception{
+  public void testRollback() throws Exception {
     utx.begin();
     Thread thread = Thread.currentThread();
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
@@ -235,15 +231,15 @@ public class TransactionManagerImplJUnitTest {
         assertTrue(status == Status.STATUS_ROLLEDBACK);
       }
     });
-    txn.enlistResource(new XAResourceAdaptor() {
-    });
+    txn.enlistResource(new XAResourceAdaptor() {});
     utx.rollback();
     assertTrue(tm.getGlobalTransactionMap().isEmpty());
     System.out.println("RolledBack successfully");
   }
 }
 
-//Asif :Added helper class to test XAException situations while
+
+// Asif :Added helper class to test XAException situations while
 // commit/rollback etc
 class XAResourceAdaptor implements XAResource {
 
@@ -267,18 +263,13 @@ class XAResourceAdaptor implements XAResource {
     return 0;
   }
 
-  public void forget(Xid arg0) throws XAException {
-  }
+  public void forget(Xid arg0) throws XAException {}
 
-  public void rollback(Xid arg0) throws XAException {
-  }
+  public void rollback(Xid arg0) throws XAException {}
 
-  public void end(Xid arg0, int arg1) throws XAException {
-  }
+  public void end(Xid arg0, int arg1) throws XAException {}
 
-  public void start(Xid arg0, int arg1) throws XAException {
-  }
+  public void start(Xid arg0, int arg1) throws XAException {}
 
-  public void commit(Xid arg0, boolean arg1) throws XAException {
-  }
+  public void commit(Xid arg0, boolean arg1) throws XAException {}
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -40,16 +38,14 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 
 /**
- * Bug37377 DUNIT Test: The Clear operation during a GII in progress can leave a
- * Entry in the Oplog due to a race condition wherein the clearFlag getting set
- * after the entry gets written to the disk, The Test verifies the existence of
- * the scenario.
+ * Bug37377 DUNIT Test: The Clear operation during a GII in progress can leave a Entry in the Oplog
+ * due to a race condition wherein the clearFlag getting set after the entry gets written to the
+ * disk, The Test verifies the existence of the scenario.
  * 
  */
 
 @Category(DistributedTest.class)
-public class Bug37377DUnitTest extends JUnit4CacheTestCase
-{
+public class Bug37377DUnitTest extends JUnit4CacheTestCase {
 
   protected static String regionName = "TestRegion";
 
@@ -103,8 +99,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
   private void createCacheForVM0() {
     try {
 
-      distributedSystem = (new Bug37377DUnitTest())
-          .getSystem(props);
+      distributedSystem = (new Bug37377DUnitTest()).getSystem(props);
       assertTrue(distributedSystem != null);
       cache = CacheFactory.create(distributedSystem);
       assertTrue(cache != null);
@@ -112,14 +107,11 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
       factory.setDiskSynchronous(false);
-      factory.setDiskStoreName(cache.createDiskStoreFactory()
-          .setDiskDirs(dirs)
-          .create("Bug37377DUnitTest")
-          .getName());
+      factory.setDiskStoreName(
+          cache.createDiskStoreFactory().setDiskDirs(dirs).create("Bug37377DUnitTest").getName());
       RegionAttributes attr = factory.create();
       cache.createRegion(regionName, attr);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       fail("Error Creating cache / region ");
     }
@@ -131,8 +123,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
   @SuppressWarnings("deprecation")
   private void createCacheForVM1() {
     try {
-      distributedSystem = (new Bug37377DUnitTest())
-          .getSystem(props);
+      distributedSystem = (new Bug37377DUnitTest()).getSystem(props);
       assertTrue(distributedSystem != null);
       cache = CacheFactory.create(distributedSystem);
       assertTrue("cache found null", cache != null);
@@ -141,33 +132,28 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
       factory.setDiskSynchronous(false);
-      factory.setDiskStoreName(cache.createDiskStoreFactory()
-          .setDiskDirs(dirs)
-          .create("Bug37377DUnitTest")
-          .getName());
+      factory.setDiskStoreName(
+          cache.createDiskStoreFactory().setDiskDirs(dirs).create("Bug37377DUnitTest").getName());
       RegionAttributes attr = factory.create();
-      DistributedRegion distRegion = new DistributedRegion(regionName,
-          attr, null, (GemFireCacheImpl)cache, new InternalRegionArguments()
-          .setDestroyLockFlag(true).setRecreateFlag(false)
-          .setSnapshotInputStream(null).setImageTarget(null));
-      //      assertTrue("Distributed Region is null", distRegion != null); (cannot be null)
+      DistributedRegion distRegion = new DistributedRegion(regionName, attr, null,
+          (GemFireCacheImpl) cache, new InternalRegionArguments().setDestroyLockFlag(true)
+              .setRecreateFlag(false).setSnapshotInputStream(null).setImageTarget(null));
+      // assertTrue("Distributed Region is null", distRegion != null); (cannot be null)
 
-      TestAbstractDiskRegionEntry.setMembers(vm1, vm0);    // vm1 is thisVM, vm0 is otherVM
+      TestAbstractDiskRegionEntry.setMembers(vm1, vm0); // vm1 is thisVM, vm0 is otherVM
 
-      ((AbstractRegionMap)distRegion.entries)
-      .setEntryFactory(TestAbstractDiskRegionEntry.getEntryFactory());
+      ((AbstractRegionMap) distRegion.entries)
+          .setEntryFactory(TestAbstractDiskRegionEntry.getEntryFactory());
 
-      LocalRegion region = (LocalRegion)((GemFireCacheImpl)cache)
-          .createVMRegion(regionName, attr, new InternalRegionArguments()
-              .setInternalMetaRegion(distRegion).setDestroyLockFlag(true)
+      LocalRegion region = (LocalRegion) ((GemFireCacheImpl) cache).createVMRegion(regionName, attr,
+          new InternalRegionArguments().setInternalMetaRegion(distRegion).setDestroyLockFlag(true)
               .setSnapshotInputStream(null).setImageTarget(null));
       assertTrue("Local Region is null", region != null);
 
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       fail("Error Creating cache / region " + ex);
-    }  
+    }
   }
 
   /**
@@ -182,10 +168,9 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
   }
 
   /**
-   * This method clears the region and 
-   * notifies the other member when complete
+   * This method clears the region and notifies the other member when complete
    * 
-   * @throws InterruptedException 
+   * @throws InterruptedException
    */
   private static void invokeRemoteClearAndWait(VM remoteVM, VM thisVM) {
     remoteVM.invoke(() -> clearRegionAndNotify(thisVM));
@@ -197,8 +182,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
   }
 
   /**
-   * This method clears the region and 
-   * notifies the other member when complete
+   * This method clears the region and notifies the other member when complete
    */
   private static void clearRegionAndNotify(VM otherVM) {
     assertTrue("Cache is found as null ", cache != null);
@@ -208,7 +192,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
   }
 
   /**
-   * Decrement countdown latch to notify clear complete 
+   * Decrement countdown latch to notify clear complete
    */
   private static void notifyClearComplete() {
     clearLatch.countDown();
@@ -223,8 +207,8 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
       Region rgn = cache.getRegion(regionName);
       rgn.localDestroyRegion();
       cache.close();
+    } catch (Exception ex) {
     }
-    catch (Exception ex) {}
   }
 
   /**
@@ -237,7 +221,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
     assertTrue("Cache is found as null ", cache != null);
     cache.close();
   }
- 
+
   /**
    * This method verifies that the reintialized region size is zero
    */
@@ -249,9 +233,9 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
   }
 
   /**
-   * The Clear operation during a GII in progress can leave a Entry in the Oplog
-   * due to a race condition wherein the clearFlag getting set after the entry
-   * gets written to the disk, The Test verifies the existence of the scenario.
+   * The Clear operation during a GII in progress can leave a Entry in the Oplog due to a race
+   * condition wherein the clearFlag getting set after the entry gets written to the disk, The Test
+   * verifies the existence of the scenario.
    * 
    */
 
@@ -282,7 +266,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
     }
 
     private static RegionEntryFactory factory = new RegionEntryFactory() {
-      
+
       public final RegionEntry createEntry(RegionEntryContext r, Object key, Object value) {
         return new TestAbstractDiskRegionEntry(r, key, value);
       }
@@ -301,19 +285,14 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
     };
 
     /**
-     * Overridden setValue method to call clear Region before actually writing the
-     * entry
+     * Overridden setValue method to call clear Region before actually writing the entry
      */
     @Override
-    public boolean initialImageInit(final LocalRegion r,
-        final long lastModifiedTime,
-        final Object newValue,
-        final boolean create,
-        final boolean wasRecovered,
-        final boolean versionTagAccepted) throws RegionClearedException
-    {
-      synchronized(clearOccured) {
-        if(!clearOccured) {
+    public boolean initialImageInit(final LocalRegion r, final long lastModifiedTime,
+        final Object newValue, final boolean create, final boolean wasRecovered,
+        final boolean versionTagAccepted) throws RegionClearedException {
+      synchronized (clearOccured) {
+        if (!clearOccured) {
           // Force other member to perform a clear during our GII
           invokeRemoteClearAndWait(otherVM, thisVM);
           clearOccured = true;
@@ -322,11 +301,12 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase
 
       // Continue GII processing, which should throw RegionClearedException after the clear
       try {
-        boolean result = super.initialImageInit(r, lastModifiedTime, newValue, create, wasRecovered, versionTagAccepted);
+        boolean result = super.initialImageInit(r, lastModifiedTime, newValue, create, wasRecovered,
+            versionTagAccepted);
       } catch (RegionClearedException rce) {
         throw rce;
       } catch (Exception ex) {
-        fail("Caught exception during initialImageInit: " + ex );
+        fail("Caught exception during initialImageInit: " + ex);
       }
 
       return true;

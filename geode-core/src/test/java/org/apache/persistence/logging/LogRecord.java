@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.persistence.logging;
 
@@ -35,8 +33,7 @@ public class LogRecord {
   private Throwable thrown;
 
   /**
-   * Creates a new <code>LogRecord</code> with the given level and
-   * message.
+   * Creates a new <code>LogRecord</code> with the given level and message.
    */
   public LogRecord(Level level, String message) {
     this.level = level;
@@ -56,7 +53,7 @@ public class LogRecord {
    * Returns the level that the message should be logged at
    */
   public Level getLevel() {
-    return(this.level);
+    return (this.level);
   }
 
   /**
@@ -70,7 +67,7 @@ public class LogRecord {
    * Returns the name of the logger to which this log record belongs
    */
   public String getLoggerName() {
-    return(this.loggerName);
+    return (this.loggerName);
   }
 
   /**
@@ -84,7 +81,7 @@ public class LogRecord {
    * Returns the message for this log entry
    */
   public String getMessage() {
-    return(this.message);
+    return (this.message);
   }
 
   /**
@@ -98,7 +95,7 @@ public class LogRecord {
    * Returns the event time in milliseconds since 1970
    */
   public long getMillis() {
-    return(this.millis);
+    return (this.millis);
   }
 
   /**
@@ -112,7 +109,7 @@ public class LogRecord {
    * Returns the parameters to this log entry
    */
   public Object[] getParameters() {
-    return(this.parameters);
+    return (this.parameters);
   }
 
   /**
@@ -126,39 +123,35 @@ public class LogRecord {
    * Returns the sequence number of this log entry
    */
   public long getSequenceNumber() {
-    return(this.sequenceNumber);
+    return (this.sequenceNumber);
   }
 
   /**
-   * Sets the name of the source class from which this log entry was
-   * issued
+   * Sets the name of the source class from which this log entry was issued
    */
   public void setSourceClassName(String sourceClassName) {
     this.sourceClassName = sourceClassName;
   }
 
   /**
-   * Returns the name of the source class from which this log entry
-   * was issued
+   * Returns the name of the source class from which this log entry was issued
    */
   public String getSourceClassName() {
-    return(this.sourceClassName);
+    return (this.sourceClassName);
   }
 
   /**
-   * Sets the name of the source method from which this log entry was
-   * issued
+   * Sets the name of the source method from which this log entry was issued
    */
   public void setSourceMethodName(String sourceMethodName) {
     this.sourceMethodName = sourceMethodName;
   }
 
   /**
-   * Returns the name of the source method from which this log entry
-   * was issued
+   * Returns the name of the source method from which this log entry was issued
    */
   public String getSourceMethodName() {
-    return(this.sourceMethodName);
+    return (this.sourceMethodName);
   }
 
   /**
@@ -172,14 +165,13 @@ public class LogRecord {
    * Returns the throwable associated with this log entry
    */
   public Throwable getThrown() {
-    return(this.thrown);
+    return (this.thrown);
   }
 
   /**
-   * Returns a brief textual description of this
-   * <code>LogRecord</code>
+   * Returns a brief textual description of this <code>LogRecord</code>
    */
   public String toString() {
-    return(this.message + " at " + this.level);
+    return (this.message + " at " + this.level);
   }
 }

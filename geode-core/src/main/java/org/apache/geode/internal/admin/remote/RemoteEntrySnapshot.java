@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.admin.remote;
@@ -21,7 +19,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.admin.*;
-//import java.util.*;
+// import java.util.*;
 import java.io.*;
 
 public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
@@ -57,6 +55,7 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
       this.stats = new RemoteCacheStatistics();
     }
   }
+
   /**
    * This constructor is only for use by the DataSerializable mechanism
    */
@@ -96,14 +95,15 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
 
   @Override
   public boolean equals(Object other) {
-    if (other == this) return true;
+    if (other == this)
+      return true;
     if (other instanceof RemoteEntrySnapshot) {
-      RemoteEntrySnapshot snap = (RemoteEntrySnapshot)other;
+      RemoteEntrySnapshot snap = (RemoteEntrySnapshot) other;
       return this.name.equals(snap.name);
     }
-    return false;    
+    return false;
   }
-  
+
   @Override
   public int hashCode() {
     return this.name.hashCode();
@@ -113,19 +113,18 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
   public String toString() {
     return getName().toString();
   }
-  
+
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.name, out);  
+    DataSerializer.writeObject(this.name, out);
     DataSerializer.writeObject(this.value, out);
     DataSerializer.writeObject(this.stats, out);
     DataSerializer.writeObject(this.userAttribute, out);
   }
 
-  public void fromData(DataInput in) throws IOException, 
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readObject(in);
     this.value = DataSerializer.readObject(in);
-    this.stats = (RemoteCacheStatistics)DataSerializer.readObject(in);
+    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
     this.userAttribute = DataSerializer.readObject(in);
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal;
@@ -27,14 +25,12 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataStream;
 
 /**
- * A reusable {@link DataInput} implementation that wraps a given byte array. It
- * also implements {@link VersionedDataStream} for a stream coming from a
- * different product version.
+ * A reusable {@link DataInput} implementation that wraps a given byte array. It also implements
+ * {@link VersionedDataStream} for a stream coming from a different product version.
  * 
  * @since GemFire 7.1
  */
-public class ByteArrayDataInput extends InputStream implements DataInput,
-    VersionedDataStream {
+public class ByteArrayDataInput extends InputStream implements DataInput, VersionedDataStream {
 
   private byte[] bytes;
   private int nBytes;
@@ -46,18 +42,14 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   /**
    * Create a {@link DataInput} whose contents are empty.
    */
-  public ByteArrayDataInput() {
-  }
+  public ByteArrayDataInput() {}
 
   /**
    * Initialize this byte array stream with given byte array and version.
    * 
-   * @param bytes
-   *          the content of this stream. Note that this byte array will be read
-   *          by this class (a copy is not made) so it should not be changed
-   *          externally.
-   * @param version
-   *          the product version that serialized the object on given bytes
+   * @param bytes the content of this stream. Note that this byte array will be read by this class
+   *        (a copy is not made) so it should not be changed externally.
+   * @param version the product version that serialized the object on given bytes
    */
   public final void initialize(byte[] bytes, Version version) {
     this.bytes = bytes;
@@ -77,10 +69,9 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   private final int skipOver(long n) {
     final int capacity = (this.nBytes - this.pos);
     if (n <= capacity) {
-      this.pos += (int)n;
-      return (int)n;
-    }
-    else {
+      this.pos += (int) n;
+      return (int) n;
+    } else {
       this.pos += capacity;
       return capacity;
     }
@@ -93,8 +84,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   public final int read() throws IOException {
     if (this.pos < this.nBytes) {
       return (this.bytes[this.pos++] & 0xff);
-    }
-    else {
+    } else {
       throw new EOFException();
     }
   }
@@ -106,8 +96,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   public final int read(byte[] b, int off, int len) {
     if (b == null) {
       throw new NullPointerException();
-    }
-    else if (off < 0 || len < 0 || b.length < (off + len)) {
+    } else if (off < 0 || len < 0 || b.length < (off + len)) {
       throw new IndexOutOfBoundsException();
     }
 
@@ -119,8 +108,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
       System.arraycopy(this.bytes, this.pos, b, off, len);
       this.pos += len;
       return len;
-    }
-    else {
+    } else {
       return 0;
     }
   }
@@ -174,12 +162,10 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
       if ((this.nBytes - this.pos) >= len) {
         System.arraycopy(this.bytes, this.pos, b, off, len);
         this.pos += len;
-      }
-      else {
+      } else {
         throw new EOFException();
       }
-    }
-    else if (len < 0) {
+    } else if (len < 0) {
       throw new IndexOutOfBoundsException();
     }
   }
@@ -199,8 +185,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   public final boolean readBoolean() throws IOException {
     if (this.pos < this.nBytes) {
       return (this.bytes[this.pos++] != 0);
-    }
-    else {
+    } else {
       throw new EOFException();
     }
   }
@@ -212,8 +197,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   public final byte readByte() throws IOException {
     if (this.pos < this.nBytes) {
       return this.bytes[this.pos++];
-    }
-    else {
+    } else {
       throw new EOFException();
     }
   }
@@ -233,9 +217,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   public final short readShort() throws IOException {
     if ((this.pos + 1) < this.nBytes) {
       int result = (this.bytes[this.pos++] & 0xff);
-      return (short)((result << 8) | (this.bytes[this.pos++] & 0xff));
-    }
-    else {
+      return (short) ((result << 8) | (this.bytes[this.pos++] & 0xff));
+    } else {
       throw new EOFException();
     }
   }
@@ -248,8 +231,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
     if ((this.pos + 1) < this.nBytes) {
       int result = (this.bytes[this.pos++] & 0xff);
       return ((result << 8) | (this.bytes[this.pos++] & 0xff));
-    }
-    else {
+    } else {
       throw new EOFException();
     }
   }
@@ -261,9 +243,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
   public char readChar() throws IOException {
     if ((this.pos + 1) < this.nBytes) {
       int result = this.bytes[this.pos++] << 8;
-      return (char)(result | (this.bytes[this.pos++] & 0xff));
-    }
-    else {
+      return (char) (result | (this.bytes[this.pos++] & 0xff));
+    } else {
       throw new EOFException();
     }
   }
@@ -278,8 +259,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
       result = (result << 8) | (this.bytes[this.pos++] & 0xff);
       result = (result << 8) | (this.bytes[this.pos++] & 0xff);
       return ((result << 8) | (this.bytes[this.pos++] & 0xff));
-    }
-    else {
+    } else {
       throw new EOFException();
     }
   }
@@ -298,8 +278,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
       result = (result << 8) | (this.bytes[this.pos++] & 0xff);
       result = (result << 8) | (this.bytes[this.pos++] & 0xff);
       return ((result << 8) | (this.bytes[this.pos++] & 0xff));
-    }
-    else {
+    } else {
       throw new EOFException();
     }
   }
@@ -344,10 +323,9 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
       for (; index < limit; index++, nChars++) {
         char1 = (bytes[index] & 0xff);
         if (char1 < 128) {
-          chars[nChars] = (char)char1;
+          chars[nChars] = (char) char1;
           continue;
-        }
-        else {
+        } else {
           break;
         }
       }
@@ -365,13 +343,11 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
               char2 = bytes[++index];
               if ((char2 & 0xc0) == 0x80) {
                 // 00000yyy yyxxxxxx
-                chars[nChars] = (char)((char1 & 0x1f) << 6 | (char2 & 0x3f));
-              }
-              else {
+                chars[nChars] = (char) ((char1 & 0x1f) << 6 | (char2 & 0x3f));
+              } else {
                 throwUTFEncodingError(index, char1, char2, null, 2);
               }
-            }
-            else {
+            } else {
               throw new UTFDataFormatException(
                   "partial 2-byte character at end (char1=" + char1 + ')');
             }
@@ -389,18 +365,15 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
                 char3 = bytes[++index];
                 if ((char3 & 0xc0) == 0x80) {
                   // zzzzyyyy yyxxxxxx
-                  chars[nChars] = (char)(((char1 & 0x0f) << 12)
-                      | ((char2 & 0x3f) << 6) | (char3 & 0x3f));
-                }
-                else {
+                  chars[nChars] =
+                      (char) (((char1 & 0x0f) << 12) | ((char2 & 0x3f) << 6) | (char3 & 0x3f));
+                } else {
                   throwUTFEncodingError(index, char1, char2, char3, 3);
                 }
-              }
-              else {
+              } else {
                 throwUTFEncodingError(index, char1, char2, null, 3);
               }
-            }
-            else {
+            } else {
               throw new UTFDataFormatException(
                   "partial 3-byte character at end (char1=" + char1 + ')');
             }
@@ -408,14 +381,13 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
           default:
             // one byte encoding
             // 0xxxxxxx
-            chars[nChars] = (char)char1;
+            chars[nChars] = (char) char1;
             break;
         }
       }
       this.pos = limit;
       return new String(chars, 0, nChars);
-    }
-    else {
+    } else {
       throw new EOFException();
     }
   }
@@ -444,14 +416,13 @@ public class ByteArrayDataInput extends InputStream implements DataInput,
    */
   @Override
   public String toString() {
-    return this.version == null ? super.toString() : (super.toString() + " ("
-        + this.version + ')');
+    return this.version == null ? super.toString() : (super.toString() + " (" + this.version + ')');
   }
 
-  private void throwUTFEncodingError(int index, int char1, int char2,
-      Integer char3, int enc) throws UTFDataFormatException {
-    throw new UTFDataFormatException("malformed input for " + enc
-        + "-byte encoding at " + index + " (char1=" + char1 + " char2=" + char2
-        + (char3 == null ? ")" : (" char3=" + char3 + ')')));
+  private void throwUTFEncodingError(int index, int char1, int char2, Integer char3, int enc)
+      throws UTFDataFormatException {
+    throw new UTFDataFormatException(
+        "malformed input for " + enc + "-byte encoding at " + index + " (char1=" + char1 + " char2="
+            + char2 + (char3 == null ? ")" : (" char3=" + char3 + ')')));
   }
 }

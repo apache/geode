@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.remote;
 
@@ -32,7 +30,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
-//import org.apache.geode.internal.*;
+// import org.apache.geode.internal.*;
 
 /**
  * This class is an implementation of the {@link CacheInfo} interface.
@@ -77,12 +75,12 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
         } else {
           roots = c.rootRegions(true);
         }
-        
+
         String[] rootNames = new String[roots.size()];
         int idx = 0;
         Iterator it = roots.iterator();
         while (it.hasNext()) {
-          Region r = (Region)it.next();
+          Region r = (Region) it.next();
           rootNames[idx] = r.getName();
           idx++;
         }
@@ -125,7 +123,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     DataSerializer.writeIntArray(this.bridgeServerIds, out);
     out.writeBoolean(this.isServer);
   }
-  
+
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this.id = in.readInt();
@@ -135,7 +133,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     this.searchTimeout = in.readInt();
     this.upTime = in.readInt();
     this.rootRegionNames = DataSerializer.readStringArray(in);
-    this.perfStats = (RemoteStatResource)DataSerializer.readObject(in);
+    this.perfStats = (RemoteStatResource) DataSerializer.readObject(in);
     this.bridgeServerIds = DataSerializer.readIntArray(in);
     this.isServer = in.readBoolean();
   }
@@ -144,24 +142,31 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
   public String getName() {
     return this.name;
   }
+
   public int getId() {
     return this.id;
   }
+
   public boolean isClosed() {
     return this.closed;
   }
+
   public int getLockTimeout() {
     return this.lockTimeout;
   }
+
   public int getLockLease() {
     return this.lockLease;
   }
+
   public int getSearchTimeout() {
     return this.searchTimeout;
   }
+
   public int getUpTime() {
     return this.upTime;
   }
+
   public synchronized Set getRootRegionNames() {
     if (this.rootRegionNames == null) {
       return null;
@@ -169,23 +174,27 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
       return new TreeSet(Arrays.asList(this.rootRegionNames));
     }
   }
+
   public StatResource getPerfStats() {
     return this.perfStats;
   }
+
   public synchronized void setClosed() {
     this.closed = true;
     this.rootRegionNames = null;
   }
+
   public int[] getBridgeServerIds() {
     return this.bridgeServerIds;
   }
+
   public boolean isServer() {
     return this.isServer;
   }
 
   // other instance methods
 
-  void setGemFireVM( RemoteGemFireVM vm ){
+  void setGemFireVM(RemoteGemFireVM vm) {
     if (this.perfStats != null) {
       this.perfStats.setGemFireVM(vm);
     }
@@ -193,6 +202,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
 
   @Override
   public String toString() {
-    return LocalizedStrings.RemoteCacheInfo_INFORMATION_ABOUT_THE_CACHE_0_WITH_1_BRIDGE_SERVERS.toLocalizedString(new Object[] { this.name, Integer.valueOf(this.bridgeServerIds.length)});
+    return LocalizedStrings.RemoteCacheInfo_INFORMATION_ABOUT_THE_CACHE_0_WITH_1_BRIDGE_SERVERS
+        .toLocalizedString(new Object[] {this.name, Integer.valueOf(this.bridgeServerIds.length)});
   }
 }

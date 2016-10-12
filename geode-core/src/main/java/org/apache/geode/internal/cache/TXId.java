@@ -1,21 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
+
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
@@ -24,9 +23,9 @@ import org.apache.geode.internal.DSFIDFactory;
 import java.io.*;
 import org.apache.geode.distributed.internal.membership.*;
 
-/** The implementation of the {@link TransactionId} interface stored
- * in the transaction state and used, amoung other things, to uniquely
- * identify a transaction in a confederation of transaction
+/**
+ * The implementation of the {@link TransactionId} interface stored in the transaction state and
+ * used, amoung other things, to uniquely identify a transaction in a confederation of transaction
  * participants (currently VM in a Distributed System).
  *
  * 
@@ -35,24 +34,22 @@ import org.apache.geode.distributed.internal.membership.*;
  * @see TXManagerImpl#begin
  * @see org.apache.geode.cache.CacheTransactionManager#getTransactionId
  */
-public final class TXId
-  extends ExternalizableDSFID
-  implements TransactionId {
+public final class TXId extends ExternalizableDSFID implements TransactionId {
   /** The domain of a transaction, currently the VM's unique identifier */
   private InternalDistributedMember memberId;
   /** Per unique identifier within the transactions memberId */
   private int uniqId;
 
-  /** Default constructor meant for the Externalizable
+  /**
+   * Default constructor meant for the Externalizable
    */
-  public TXId() {
-  }
-  
-  /** Constructor for the Transation Manager, the birth place of
-   * TXId objects.  The object is Serializable mainly because of
-   * the identifier type provided by JGroups.
+  public TXId() {}
+
+  /**
+   * Constructor for the Transation Manager, the birth place of TXId objects. The object is
+   * Serializable mainly because of the identifier type provided by JGroups.
    */
-  public TXId(InternalDistributedMember memberId, int uniqId)  {
+  public TXId(InternalDistributedMember memberId, int uniqId) {
     this.memberId = memberId;
     this.uniqId = uniqId;
   }
@@ -77,15 +74,14 @@ public final class TXId
     }
 
     TXId otx = (TXId) o;
-    return (otx.uniqId == this.uniqId &&
-        ((otx.memberId==null && this.memberId==null) || 
-         (otx.memberId!=null && this.memberId!=null && otx.memberId.equals(this.memberId))));
-            
+    return (otx.uniqId == this.uniqId && ((otx.memberId == null && this.memberId == null)
+        || (otx.memberId != null && this.memberId != null && otx.memberId.equals(this.memberId))));
+
   }
 
   @Override
   public int hashCode() {
-    int retval=this.uniqId;
+    int retval = this.uniqId;
     if (this.memberId != null)
       retval = retval * 37 + this.memberId.hashCode();
     return retval;
@@ -103,20 +99,17 @@ public final class TXId
   }
 
   @Override
-  public void fromData(DataInput in) 
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.uniqId = in.readInt();
     this.memberId = DSFIDFactory.readInternalDistributedMember(in);
   }
 
-  public static final TXId createFromData(DataInput in) 
-    throws IOException, ClassNotFoundException
-  {
+  public static final TXId createFromData(DataInput in) throws IOException, ClassNotFoundException {
     TXId result = new TXId();
     InternalDataSerializer.invokeFromData(result, in);
     return result;
   }
-  
+
   public int getUniqId() {
     return this.uniqId;
   }
@@ -125,5 +118,5 @@ public final class TXId
   public Version[] getSerializationVersions() {
     return null;
   }
-  
+
 }

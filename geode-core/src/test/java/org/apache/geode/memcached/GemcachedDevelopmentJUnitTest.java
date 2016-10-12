@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.memcached;
 
@@ -45,12 +43,13 @@ import static org.junit.Assert.*;
 @Category(IntegrationTest.class)
 public class GemcachedDevelopmentJUnitTest {
 
-  private static final Logger logger = Logger.getLogger(GemcachedDevelopmentJUnitTest.class.getCanonicalName());
-  
+  private static final Logger logger =
+      Logger.getLogger(GemcachedDevelopmentJUnitTest.class.getCanonicalName());
+
   protected static int PORT = 0;
-  
+
   private GemFireMemcachedServer server;
-  
+
   @Before
   public void setUp() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
@@ -59,7 +58,7 @@ public class GemcachedDevelopmentJUnitTest {
     server.start();
     logger.addHandler(new StreamHandler());
   }
-  
+
   @After
   public void tearDown() throws Exception {
     System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
@@ -92,7 +91,7 @@ public class GemcachedDevelopmentJUnitTest {
     Future<Boolean> f = client.set("key", 10, "myStringValue");
     assertTrue(f.get());
   }
-  
+
   @Test
   public void testAdd() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -110,7 +109,7 @@ public class GemcachedDevelopmentJUnitTest {
     b = client.replace("key", 10, "myStringValue");
     assertTrue(b.get());
   }
-  
+
   @Test
   public void testMultiGet() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -122,7 +121,7 @@ public class GemcachedDevelopmentJUnitTest {
     Thread.sleep(1100);
     assertEquals("World", client.get("Hello"));
   }
-  
+
   @Test
   public void testDelete() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -131,7 +130,7 @@ public class GemcachedDevelopmentJUnitTest {
     b = client.delete("nonExistentkey");
     assertFalse(b.get());
   }
-  
+
   @Test
   public void testFlush() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -148,7 +147,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertTrue(b.get());
     assertNotNull(client.get("key"));
     assertNotNull(client.get("key1"));
-    Thread.sleep(8*1000);
+    Thread.sleep(8 * 1000);
     assertNull(client.get("key"));
     assertNull(client.get("key1"));
   }
@@ -157,18 +156,18 @@ public class GemcachedDevelopmentJUnitTest {
   @Test
   public void testExpiration() throws Exception {
     MemcachedClient client = bootstrapClient();
-    Thread.sleep(15*1000); // we add with expiration 10 seconds
+    Thread.sleep(15 * 1000); // we add with expiration 10 seconds
     assertNull(client.get("key"));
   }
-  
+
   @Test
   public void testLongExpiration() throws Exception {
     MemcachedClient client = bootstrapClient();
-    client.add("newKey", (int)System.currentTimeMillis() - 60 *1000, "newValue");
-    Thread.sleep(15 *1000);
+    client.add("newKey", (int) System.currentTimeMillis() - 60 * 1000, "newValue");
+    Thread.sleep(15 * 1000);
     assertEquals("newValue", client.get("newKey"));
   }
-  
+
   @Test
   public void testAppend() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -179,7 +178,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertFalse(b.get());
     assertNull(client.get("appendkey"));
   }
-  
+
   @Test
   public void testPrepend() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -190,7 +189,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertFalse(b.get());
     assertNull(client.get("prependkey"));
   }
-  
+
   @Test
   public void testIncr() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -199,7 +198,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertEquals(105, client.incr("incrkey", 1));
     assertEquals(-1, client.incr("inckey1", 10));
   }
-  
+
   @Test
   public void testDecr() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -208,7 +207,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertEquals(94, client.decr("decrkey", 1));
     assertEquals(-1, client.decr("decrkey1", 77));
   }
-  
+
   @Test
   public void testGets() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -221,7 +220,7 @@ public class GemcachedDevelopmentJUnitTest {
     assertEquals(oldCas + 1, val.getCas());
     assertEquals("myNewVal", val.getValue());
   }
-  
+
   @Test
   public void testCas() throws Exception {
     MemcachedClient client = bootstrapClient();
@@ -238,14 +237,14 @@ public class GemcachedDevelopmentJUnitTest {
   public void testStats() throws Exception {
     MemcachedClient client = bootstrapClient();
     Map stats = client.getStats();
-    logger.info("stats:"+stats+" val:"+stats.values().toArray()[0]);
+    logger.info("stats:" + stats + " val:" + stats.values().toArray()[0]);
     assertEquals(1, stats.size());
-    assertTrue(((Map)stats.values().toArray()[0]).isEmpty());
+    assertTrue(((Map) stats.values().toArray()[0]).isEmpty());
     assertTrue(client.add("keystats", 1, "stats").get());
   }
-  
-  private MemcachedClient bootstrapClient() throws IOException,
-      UnknownHostException, InterruptedException, ExecutionException {
+
+  private MemcachedClient bootstrapClient()
+      throws IOException, UnknownHostException, InterruptedException, ExecutionException {
     MemcachedClient client = createMemcachedClient();
     Future<Boolean> f = client.add("key", 10, "myStringValue");
     f.get();
@@ -254,10 +253,9 @@ public class GemcachedDevelopmentJUnitTest {
     return client;
   }
 
-  protected MemcachedClient createMemcachedClient() throws IOException,
-      UnknownHostException {
-    MemcachedClient client = new MemcachedClient(new InetSocketAddress(
-        InetAddress.getLocalHost(), PORT));
+  protected MemcachedClient createMemcachedClient() throws IOException, UnknownHostException {
+    MemcachedClient client =
+        new MemcachedClient(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
     return client;
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -60,7 +58,7 @@ import org.apache.geode.cache.execute.Function;
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
-@PrepareForTest({ FunctionService.class })
+@PrepareForTest({FunctionService.class})
 public class ExecuteFunctionTest {
   private static final String FUNCTION = "function";
   private static final String FUNCTION_ID = "function_id";
@@ -118,7 +116,8 @@ public class ExecuteFunctionTest {
     this.executeFunction = new ExecuteFunction();
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.executeFunctionAuthorize(eq(FUNCTION_ID), eq(null), eq(null), eq(null), eq(OPTIMIZE_FOR_WRITE))).thenReturn(this.executeFunctionOperationContext);
+    when(this.authzRequest.executeFunctionAuthorize(eq(FUNCTION_ID), eq(null), eq(null), eq(null),
+        eq(OPTIMIZE_FOR_WRITE))).thenReturn(this.executeFunctionOperationContext);
 
     when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     when(this.cache.getDistributedSystem()).thenReturn(mock(InternalDistributedSystem.class));
@@ -143,7 +142,8 @@ public class ExecuteFunctionTest {
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getFunctionResponseMessage()).thenReturn(this.functionResponseMessage);
+    when(this.serverConnection.getFunctionResponseMessage())
+        .thenReturn(this.functionResponseMessage);
     when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
     when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
     when(this.serverConnection.getHandshake()).thenReturn(this.handShake);
@@ -158,7 +158,8 @@ public class ExecuteFunctionTest {
 
     this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
 
-//    verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none of the reply message types get sent?
+    // verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none
+    // of the reply message types get sent?
   }
 
   @Test
@@ -169,7 +170,8 @@ public class ExecuteFunctionTest {
     this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
 
     verify(this.securityService).authorizeDataWrite();
-    //verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message types get sent?
+    // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
+    // types get sent?
   }
 
   @Test
@@ -191,15 +193,18 @@ public class ExecuteFunctionTest {
 
     this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
 
-    verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
-    //verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message types get sent?
+    verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
+        eq(false));
+    // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
+    // types get sent?
   }
 
   @Test
   public void withOldSecurityShouldThrowIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
+    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+        .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
     this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
 

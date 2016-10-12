@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.xmlcache;
 
@@ -51,21 +49,20 @@ import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * Represents {@link RegionAttributes} that are created declaratively.
- * Notice that it implements the {@link RegionAttributes} interface so
- * that this class must be updated when {@link RegionAttributes} is
- * modified.  This class is public for testing purposes.
+ * Represents {@link RegionAttributes} that are created declaratively. Notice that it implements the
+ * {@link RegionAttributes} interface so that this class must be updated when
+ * {@link RegionAttributes} is modified. This class is public for testing purposes.
  *
  *
  * @since GemFire 3.0
  */
-public class RegionAttributesCreation extends UserSpecifiedRegionAttributes implements Serializable {
+public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
+    implements Serializable {
   private static final long serialVersionUID = 2241078661206355376L;
 
-  private static final RegionAttributes defaultAttributes =
-    new AttributesFactory().create();
+  private static final RegionAttributes defaultAttributes = new AttributesFactory().create();
 
-  ///////////////////////  Instance Fields  ///////////////////////
+  /////////////////////// Instance Fields ///////////////////////
 
   /** The attributes' cache listener */
   private ArrayList cacheListeners;
@@ -105,7 +102,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   private boolean ignoreJTA;
   /** The attributes' become lock grantor setting */
   private boolean isLockGrantor;
-  /** The attributes' concurrency level  */
+  /** The attributes' concurrency level */
   private int concurrencyLevel;
   /** whether versioning is enabled */
   private boolean concurrencyChecksEnabled = true;
@@ -118,25 +115,31 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /** The attributes' disk directories */
   private File[] diskDirs;
   private int[] diskSizes;
-  /** disk store name of the region
-  * @since GemFire prPersistPrint2
-  * */
+  /**
+   * disk store name of the region
+   * 
+   * @since GemFire prPersistPrint2
+   */
   private String diskStoreName;
   private boolean isDiskSynchronous = AttributesFactory.DEFAULT_DISK_SYNCHRONOUS;
-  
+
   private boolean cloningEnabled = false;
 
   /** The DataPolicy attribute */
   private DataPolicy dataPolicy;
   private boolean indexMaintenanceSynchronous;
-  /** The attributes's id
+  /**
+   * The attributes's id
    *
-   * @since GemFire 4.1 */
+   * @since GemFire 4.1
+   */
   private String id;
 
-  /** The id of the attributes that this attributes "inherits"
+  /**
+   * The id of the attributes that this attributes "inherits"
    *
-   * @since GemFire 4.1 */
+   * @since GemFire 4.1
+   */
   private String refid;
 
   /** The partitioning attributes */
@@ -146,7 +149,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /** The subscription attributes */
   private SubscriptionAttributes subscriptionAttributes;
   private EvictionAttributesImpl evictionAttributes;
-    
+
   /**
    * Whether to mark this region as a publisher
    *
@@ -167,23 +170,24 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
    * @since GemFire 4.2.3
    */
   private boolean enableAsyncConflation;
-  
+
   /**
    * The client to server Connection Pool
    * 
    * @since GemFire 5.7
    */
   private String poolName;
-  
+
   /**
    * The region compressor.
    * 
    * @since GemFire 8.0
    */
   private Compressor compressor;
-  
+
   /**
    * True if usage of off-heap memory is enabled for this region.
+   * 
    * @since Geode 1.0
    */
   private boolean offHeap;
@@ -195,9 +199,9 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
       return defaultAttributes;
     }
   }
+
   /**
-   * Creates a new <code>RegionAttributesCreation</code> with the
-   * default region attributes.
+   * Creates a new <code>RegionAttributesCreation</code> with the default region attributes.
    */
   public RegionAttributesCreation(CacheCreation cc) {
     this(cc, getDefaultAttributes(cc), true);
@@ -210,12 +214,13 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public RegionAttributesCreation(RegionAttributes attrs, boolean defaults) {
     this(null, attrs, defaults);
   }
+
   /**
-   * Creates a new <code>RegionAttributesCreation</code> with the
-   * given region attributes.
-   * NOTE: Currently attrs will not be an instance of RegionAttributesCreation.
-   *  If it could be then this code should be changed to use attrs' hasXXX methods
-   *  to initialize the has booleans when defaults is false.
+   * Creates a new <code>RegionAttributesCreation</code> with the given region attributes. NOTE:
+   * Currently attrs will not be an instance of RegionAttributesCreation. If it could be then this
+   * code should be changed to use attrs' hasXXX methods to initialize the has booleans when
+   * defaults is false.
+   * 
    * @param attrs the attributes to initialize this guy with.
    * @param defaults true if <code>attrs</code> are defaults; false if they are not
    */
@@ -272,8 +277,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     if (attrs instanceof UserSpecifiedRegionAttributes) {
       UserSpecifiedRegionAttributes nonDefault = (UserSpecifiedRegionAttributes) attrs;
       this.requiresPoolName = nonDefault.requiresPoolName;
-      if (! defaults) {
-        // Selectively set has* fields to true, propagating those non-default 
+      if (!defaults) {
+        // Selectively set has* fields to true, propagating those non-default
         // (aka user specified) fields as such
         initHasFields(nonDefault);
       }
@@ -283,11 +288,11 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     }
   }
 
-  //////////////////////  Instance Methods  //////////////////////
+  ////////////////////// Instance Methods //////////////////////
 
   /**
-   * Returns whether or not two objects are {@linkplain Object#equals
-   * equals} taking <code>null</code> into account.
+   * Returns whether or not two objects are {@linkplain Object#equals equals} taking
+   * <code>null</code> into account.
    */
   static boolean equal(Object o1, Object o2) {
     if (o1 == null) {
@@ -315,12 +320,14 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
       return false;
     }
     for (int i = 0; i < array1.length; i++) {
-      if (array1[i] != array2[i]) { return false; }
+      if (array1[i] != array2[i]) {
+        return false;
+      }
     }
     return true;
   }
-  
-  
+
+
   /**
    * returns true if two int[] are equal
    * 
@@ -333,14 +340,15 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
       return false;
     }
     for (int i = 0; i < array1.length; i++) {
-      if (array1[i] != array2[i]) { return false; }
+      if (array1[i] != array2[i]) {
+        return false;
+      }
     }
     return true;
   }
-  
+
   /**
-   * Returns whether or not two <code>File</code> arrays specify the
-   * same files.
+   * Returns whether or not two <code>File</code> arrays specify the same files.
    */
   private boolean equal(File[] array1, File[] array2) {
     if (array1.length != array2.length) {
@@ -350,8 +358,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     for (int i = 0; i < array1.length; i++) {
       boolean found = false;
       for (int j = 0; j < array2.length; j++) {
-        if (equal(array1[i].getAbsoluteFile(),
-                  array2[j].getAbsoluteFile())) {
+        if (equal(array1[i].getAbsoluteFile(), array2[j].getAbsoluteFile())) {
           found = true;
           break;
         }
@@ -375,130 +382,193 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   }
 
   /**
-   * Returns whether or not this <code>RegionAttributesCreation</code>
-   * is equivalent to another <code>RegionAttributes</code>.
+   * Returns whether or not this <code>RegionAttributesCreation</code> is equivalent to another
+   * <code>RegionAttributes</code>.
    */
   public boolean sameAs(RegionAttributes other) {
-//     if (!equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
-//       throw new RuntimeException("cacheListeners not equal "
-//                                  + this.cacheListeners
-//                                  + " and "
-//                                  + Arrays.asList(other.getCacheListeners())
-//                                  + " this=" + this
-//                                  + " other=" + other);
-//     }
-    if (! equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME.toLocalizedString());
+    // if (!equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
+    // throw new RuntimeException("cacheListeners not equal "
+    // + this.cacheListeners
+    // + " and "
+    // + Arrays.asList(other.getCacheListeners())
+    // + " this=" + this
+    // + " other=" + other);
+    // }
+    if (!equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.entryIdleTimeout, other.getEntryIdleTimeout())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_ENTRYIDLETIMEOUT_IS_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.entryIdleTimeout, other.getEntryIdleTimeout())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_ENTRYIDLETIMEOUT_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.customEntryIdleTimeout, other.getCustomEntryIdleTimeout())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_CUSTOMENTRYIDLETIMEOUT_IS_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.customEntryIdleTimeout, other.getCustomEntryIdleTimeout())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_CUSTOMENTRYIDLETIMEOUT_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if(! equal(this.entryTimeToLive, other.getEntryTimeToLive())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_ENTRYTIMETOLIVE_IS_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.entryTimeToLive, other.getEntryTimeToLive())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_ENTRYTIMETOLIVE_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.customEntryTimeToLive, other.getCustomEntryTimeToLive())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_CUSTOMENTRYTIMETOLIVE_IS_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.customEntryTimeToLive, other.getCustomEntryTimeToLive())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_CUSTOMENTRYTIMETOLIVE_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.partitionAttributes, other.getPartitionAttributes())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_PARTITIONATTRIBUTES_ARE_NOT_THE_SAME_0_1.toLocalizedString(new Object[] {this, other.getPartitionAttributes()}));
+    if (!equal(this.partitionAttributes, other.getPartitionAttributes())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_PARTITIONATTRIBUTES_ARE_NOT_THE_SAME_0_1
+              .toLocalizedString(new Object[] {this, other.getPartitionAttributes()}));
     }
-    if (! equal(this.membershipAttributes, other.getMembershipAttributes())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_MEMBERSHIP_ATTRIBUTES_ARE_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.membershipAttributes, other.getMembershipAttributes())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_MEMBERSHIP_ATTRIBUTES_ARE_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.subscriptionAttributes, other.getSubscriptionAttributes())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_SUBSCRIPTION_ATTRIBUTES_ARE_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.subscriptionAttributes, other.getSubscriptionAttributes())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_SUBSCRIPTION_ATTRIBUTES_ARE_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.evictionAttributes, other.getEvictionAttributes())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_EVICTION_ATTRIBUTES_ARE_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {this.evictionAttributes, other.getEvictionAttributes()}));
+    if (!equal(this.evictionAttributes, other.getEvictionAttributes())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_EVICTION_ATTRIBUTES_ARE_NOT_THE_SAME_THIS_0_OTHER_1
+              .toLocalizedString(
+                  new Object[] {this.evictionAttributes, other.getEvictionAttributes()}));
     }
     if (this.diskStoreName == null) {
       // only compare the DWA, diskDirs and diskSizes when disk store is not configured
-      if (! equal(this.diskWriteAttributes, other.getDiskWriteAttributes())) {
-        throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_DISTWRITEATTRIBUTES_ARE_NOT_THE_SAME.toLocalizedString());
+      if (!equal(this.diskWriteAttributes, other.getDiskWriteAttributes())) {
+        throw new RuntimeException(
+            LocalizedStrings.RegionAttributesCreation_DISTWRITEATTRIBUTES_ARE_NOT_THE_SAME
+                .toLocalizedString());
       }
-      if (! equal(this.diskDirs, other.getDiskDirs())) {
-        throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_DISK_DIRS_ARE_NOT_THE_SAME.toLocalizedString());
+      if (!equal(this.diskDirs, other.getDiskDirs())) {
+        throw new RuntimeException(
+            LocalizedStrings.RegionAttributesCreation_DISK_DIRS_ARE_NOT_THE_SAME
+                .toLocalizedString());
       }
-      if (! equal(this.diskSizes, other.getDiskDirSizes())) {
-        throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_DISK_DIR_SIZES_ARE_NOT_THE_SAME.toLocalizedString());
+      if (!equal(this.diskSizes, other.getDiskDirSizes())) {
+        throw new RuntimeException(
+            LocalizedStrings.RegionAttributesCreation_DISK_DIR_SIZES_ARE_NOT_THE_SAME
+                .toLocalizedString());
       }
     }
-    if (! equal(this.diskStoreName, other.getDiskStoreName())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_DISKSTORE_IS_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {this.diskStoreName, other.getDiskStoreName()}));
+    if (!equal(this.diskStoreName, other.getDiskStoreName())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_DISKSTORE_IS_NOT_THE_SAME_THIS_0_OTHER_1
+              .toLocalizedString(new Object[] {this.diskStoreName, other.getDiskStoreName()}));
     }
     if (this.isDiskSynchronous != other.isDiskSynchronous()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_DISKSYNCHRONOUS_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_DISKSYNCHRONOUS_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
     if (this.dataPolicy != other.getDataPolicy()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_DATA_POLICIES_ARE_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {this.getDataPolicy(), other.getDataPolicy()}));
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_DATA_POLICIES_ARE_NOT_THE_SAME_THIS_0_OTHER_1
+              .toLocalizedString(new Object[] {this.getDataPolicy(), other.getDataPolicy()}));
     }
     if (this.earlyAck != other.getEarlyAck()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_EARLY_ACK_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_EARLY_ACK_IS_NOT_THE_SAME.toLocalizedString());
     }
     if (this.enableSubscriptionConflation != other.getEnableSubscriptionConflation()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_ENABLE_SUBSCRIPTION_CONFLATION_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_ENABLE_SUBSCRIPTION_CONFLATION_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
     if (this.enableAsyncConflation != other.getEnableAsyncConflation()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_ENABLE_ASYNC_CONFLATION_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_ENABLE_ASYNC_CONFLATION_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
     if (this.initialCapacity != other.getInitialCapacity()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_INITIAL_CAPACITY_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_INITIAL_CAPACITY_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.keyConstraint, other.getKeyConstraint())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_KEY_CONSTRAINTS_ARE_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.keyConstraint, other.getKeyConstraint())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_KEY_CONSTRAINTS_ARE_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.valueConstraint, other.getValueConstraint())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_VALUE_CONSTRAINTS_ARE_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.valueConstraint, other.getValueConstraint())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_VALUE_CONSTRAINTS_ARE_NOT_THE_SAME
+              .toLocalizedString());
     }
     if (this.loadFactor != other.getLoadFactor()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_LOAD_FACTORS_ARE_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_LOAD_FACTORS_ARE_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.regionIdleTimeout, other.getRegionIdleTimeout())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_REGION_IDLE_TIMEOUT_IS_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.regionIdleTimeout, other.getRegionIdleTimeout())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_REGION_IDLE_TIMEOUT_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
-    if (! equal(this.scope, this.getScope())) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_SCOPE_IS_NOT_THE_SAME.toLocalizedString());
+    if (!equal(this.scope, this.getScope())) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_SCOPE_IS_NOT_THE_SAME.toLocalizedString());
     }
     if (this.statisticsEnabled != other.getStatisticsEnabled()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_STATISTICS_ENABLED_IS_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {Boolean.valueOf(this.statisticsEnabled), Boolean.valueOf(other.getStatisticsEnabled())}));
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_STATISTICS_ENABLED_IS_NOT_THE_SAME_THIS_0_OTHER_1
+              .toLocalizedString(new Object[] {Boolean.valueOf(this.statisticsEnabled),
+                  Boolean.valueOf(other.getStatisticsEnabled())}));
     }
     if (this.ignoreJTA != other.getIgnoreJTA()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_IGNORE_JTA_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_IGNORE_JTA_IS_NOT_THE_SAME.toLocalizedString());
     }
     if (this.concurrencyLevel != other.getConcurrencyLevel()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_CONCURRENCYLEVEL_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_CONCURRENCYLEVEL_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
     if (this.concurrencyChecksEnabled != other.getConcurrencyChecksEnabled()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_CONCURRENCYCHECKSENABLED_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_CONCURRENCYCHECKSENABLED_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
     if (this.indexMaintenanceSynchronous != other.getIndexMaintenanceSynchronous()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_INDEX_MAINTENANCE_SYNCHRONOUS_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_INDEX_MAINTENANCE_SYNCHRONOUS_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
     if (!equal(this.poolName, other.getPoolName())) {
-      throw new RuntimeException("poolName is not the same: " + this.poolName + " != " + other.getPoolName());
+      throw new RuntimeException(
+          "poolName is not the same: " + this.poolName + " != " + other.getPoolName());
     }
-    if (! equal(this.cacheLoader, other.getCacheLoader())) {
+    if (!equal(this.cacheLoader, other.getCacheLoader())) {
       throw new RuntimeException("CacheLoader are not the same");
     }
-    if(! equal(this.cacheWriter, other.getCacheWriter())) {
+    if (!equal(this.cacheWriter, other.getCacheWriter())) {
       throw new RuntimeException("CacheWriter is not the same");
     }
     if (this.multicastEnabled != other.getMulticastEnabled()) {
-      String s = "MulticastEnabled is not the same: "   
-        + this.multicastEnabled + "!=" + other.getMulticastEnabled();
+      String s = "MulticastEnabled is not the same: " + this.multicastEnabled + "!="
+          + other.getMulticastEnabled();
       throw new RuntimeException(s);
     }
-    if(this.cloningEnabled != other.getCloningEnabled()){
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation__CLONING_ENABLE_IS_NOT_THE_SAME_THIS_0_OTHER_1.toLocalizedString(new Object[] {Boolean.valueOf(this.cloningEnabled), Boolean.valueOf(other.getCloningEnabled())}));
+    if (this.cloningEnabled != other.getCloningEnabled()) {
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation__CLONING_ENABLE_IS_NOT_THE_SAME_THIS_0_OTHER_1
+              .toLocalizedString(new Object[] {Boolean.valueOf(this.cloningEnabled),
+                  Boolean.valueOf(other.getCloningEnabled())}));
     }
-    if(! equal(this.compressor, other.getCompressor())) {
+    if (!equal(this.compressor, other.getCompressor())) {
       throw new RuntimeException("Compressors are not the same.");
     }
     if (this.offHeap != other.getOffHeap()) {
-      throw new RuntimeException(LocalizedStrings.RegionAttributesCreation_ENABLE_OFF_HEAP_MEMORY_IS_NOT_THE_SAME.toLocalizedString());
+      throw new RuntimeException(
+          LocalizedStrings.RegionAttributesCreation_ENABLE_OFF_HEAP_MEMORY_IS_NOT_THE_SAME
+              .toLocalizedString());
     }
     return true;
   }
@@ -547,8 +617,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     return this.regionTimeToLive;
   }
 
-  public ExpirationAttributes setRegionTimeToLive(ExpirationAttributes
-                                                  timeToLive) {
+  public ExpirationAttributes setRegionTimeToLive(ExpirationAttributes timeToLive) {
     ExpirationAttributes old = this.regionTimeToLive;
     this.regionTimeToLive = timeToLive;
     setHasRegionTimeToLive(true);
@@ -559,8 +628,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     return this.regionIdleTimeout;
   }
 
-  public ExpirationAttributes
-    setRegionIdleTimeout(ExpirationAttributes idleTimeout) {
+  public ExpirationAttributes setRegionIdleTimeout(ExpirationAttributes idleTimeout) {
     ExpirationAttributes old = this.regionIdleTimeout;
     this.regionIdleTimeout = idleTimeout;
     setHasRegionIdleTimeout(true);
@@ -570,19 +638,18 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public ExpirationAttributes getEntryTimeToLive() {
     return this.entryTimeToLive;
   }
-  
+
   public CustomExpiry getCustomEntryTimeToLive() {
     return this.customEntryTimeToLive;
   }
 
-  public ExpirationAttributes setEntryTimeToLive(
-      ExpirationAttributes timeToLive) {
+  public ExpirationAttributes setEntryTimeToLive(ExpirationAttributes timeToLive) {
     ExpirationAttributes old = this.entryTimeToLive;
     this.entryTimeToLive = timeToLive;
     setHasEntryTimeToLive(true);
     return old;
   }
-  
+
   public CustomExpiry setCustomEntryTimeToLive(CustomExpiry custom) {
     CustomExpiry old = this.customEntryTimeToLive;
     this.customEntryTimeToLive = custom;
@@ -593,19 +660,18 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public ExpirationAttributes getEntryIdleTimeout() {
     return this.entryIdleTimeout;
   }
-  
+
   public CustomExpiry getCustomEntryIdleTimeout() {
     return this.customEntryIdleTimeout;
   }
 
-  public ExpirationAttributes setEntryIdleTimeout(
-      ExpirationAttributes idleTimeout) {
+  public ExpirationAttributes setEntryIdleTimeout(ExpirationAttributes idleTimeout) {
     ExpirationAttributes old = this.entryIdleTimeout;
     this.entryIdleTimeout = idleTimeout;
     setHasEntryIdleTimeout(true);
     return old;
   }
-  
+
   public CustomExpiry setCustomEntryIdleTimeout(CustomExpiry custom) {
     CustomExpiry old = this.customEntryIdleTimeout;
     this.customEntryIdleTimeout = custom;
@@ -614,13 +680,15 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   }
 
   public MirrorType getMirrorType() {
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded()
-        || this.dataPolicy.isEmpty() || this.dataPolicy.withPartitioning()) {
+    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
+        || this.dataPolicy.withPartitioning()) {
       return MirrorType.NONE;
     } else if (this.dataPolicy.withReplication()) {
       return MirrorType.KEYS_VALUES;
     } else {
-      throw new IllegalStateException(LocalizedStrings.RegionAttributesCreation_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0.toLocalizedString(this.dataPolicy));
+      throw new IllegalStateException(
+          LocalizedStrings.RegionAttributesCreation_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
+              .toLocalizedString(this.dataPolicy));
     }
   }
 
@@ -672,13 +740,16 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this.cacheListeners.toArray(result);
     return result;
   }
+
   public CacheListener getCacheListener() {
     if (this.cacheListeners.isEmpty()) {
       return null;
     } else if (this.cacheListeners.size() == 1) {
-      return (CacheListener)this.cacheListeners.get(0);
+      return (CacheListener) this.cacheListeners.get(0);
     } else {
-      throw new IllegalStateException(LocalizedStrings.RegionAttributesCreation_MORE_THAN_ONE_CACHE_LISTENER_EXISTS.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.RegionAttributesCreation_MORE_THAN_ONE_CACHE_LISTENER_EXISTS
+              .toLocalizedString());
     }
   }
 
@@ -686,36 +757,38 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this.cacheListeners = new ArrayList(Arrays.asList(listeners));
     setHasCacheListeners(true);
   }
+
   public void addCacheListener(CacheListener listener) {
     this.cacheListeners.add(listener);
     setHasCacheListeners(true);
   }
+
   public void setCacheListener(CacheListener listener) {
     this.cacheListeners = new ArrayList(1);
     this.cacheListeners.add(listener);
     setHasCacheListeners(true);
   }
-  
+
   public void initGatewaySenders(Set<String> gatewaySenderIds) {
     this.gatewaySenderIds = new HashSet<String>(gatewaySenderIds);
     setHasGatewaySenderIds(true);
   }
-  
+
   public void initAsyncEventQueues(Set<String> asyncEventQueues) {
     this.asyncEventQueueIds = new HashSet<String>(asyncEventQueues);
     setHasAsyncEventListeners(true);
   }
-  
+
   public void addGatewaySenderId(String gatewaySenderId) {
     this.gatewaySenderIds.add(gatewaySenderId);
     setHasGatewaySenderIds(true);
   }
-  
+
   public void addAsyncEventQueueId(String asyncEventQueueId) {
     this.asyncEventQueueIds.add(asyncEventQueueId);
     setHasAsyncEventListeners(true);
   }
-  
+
   public int getInitialCapacity() {
     return this.initialCapacity;
   }
@@ -737,7 +810,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public int getConcurrencyLevel() {
     return this.concurrencyLevel;
   }
-  
+
   public boolean getConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
   }
@@ -746,7 +819,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this.concurrencyLevel = concurrencyLevel;
     setHasConcurrencyLevel(true);
   }
-  
+
   public void setConcurrencyChecksEnabled(boolean enabled) {
     this.concurrencyChecksEnabled = enabled;
     setHasConcurrencyChecksEnabled(true);
@@ -835,17 +908,18 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
    */
   @Deprecated
   public void setPublisher(boolean v) {
-//    this.publisher = v;
-//    setHasPublisher(true);
+    // this.publisher = v;
+    // setHasPublisher(true);
   }
 
   public boolean getEnableConflation() { // deprecated in 5.0
     return getEnableSubscriptionConflation();
   }
-  
+
   public boolean getEnableBridgeConflation() { // deprecated in 5.7
     return getEnableSubscriptionConflation();
   }
+
   public boolean getEnableSubscriptionConflation() {
     return this.enableSubscriptionConflation;
   }
@@ -887,8 +961,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public void setDiskWriteAttributes(DiskWriteAttributes attrs) {
     // not throw exception for mixed API, since it's internal
     this.diskWriteAttributes = attrs;
-    //Asif: Take the value of isSynchronous from it;
-    //Asif : Is this correct?
+    // Asif: Take the value of isSynchronous from it;
+    // Asif : Is this correct?
     this.isDiskSynchronous = attrs.isSynchronous();
     setHasDiskWriteAttributes(true);
   }
@@ -912,8 +986,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * @deprecated as of prPersistSprint2
    */
-  public void setDiskDirs(File[] diskDirs)
-  {
+  public void setDiskDirs(File[] diskDirs) {
     // not throw exception for mixed API, since it's internal
     checkIfDirectoriesExist(diskDirs);
     this.diskDirs = diskDirs;
@@ -927,20 +1000,22 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public String getDiskStoreName() {
     return this.diskStoreName;
   }
+
   public void setDiskStoreName(String diskStoreName) {
     this.diskStoreName = diskStoreName;
     setHasDiskStoreName(true);
   }
+
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
-   //Asif: If DiskWriteAttributes is set, the flag needs to be checked from DiskWriteAttribs
-    //TODO: Should we set the correct value in the flag isDiskSynchronous
-    /*if(hasDiskWriteAttributes()) {
-      return this.diskWriteAttributes.isSynchronous();
-    }else {
-      return this.isDiskSynchronous;
-    }*/
+    // Asif: If DiskWriteAttributes is set, the flag needs to be checked from DiskWriteAttribs
+    // TODO: Should we set the correct value in the flag isDiskSynchronous
+    /*
+     * if(hasDiskWriteAttributes()) { return this.diskWriteAttributes.isSynchronous(); }else {
+     * return this.isDiskSynchronous; }
+     */
   }
+
   public void setDiskSynchronous(boolean isDiskSynchronous) {
     this.isDiskSynchronous = isDiskSynchronous;
     setHasDiskSynchronous(true);
@@ -951,16 +1026,17 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
    * 
    * @param diskDirs
    */
-  private void checkIfDirectoriesExist(File[] diskDirs)
-  {
-    for (int i=0; i < diskDirs.length; i++) {
-      if (! diskDirs[i].isDirectory()) {
-        throw new IllegalArgumentException(LocalizedStrings.RegionAttributesCreation__0_WAS_NOT_AN_EXISTING_DIRECTORY.toLocalizedString(diskDirs[i]));
+  private void checkIfDirectoriesExist(File[] diskDirs) {
+    for (int i = 0; i < diskDirs.length; i++) {
+      if (!diskDirs[i].isDirectory()) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.RegionAttributesCreation__0_WAS_NOT_AN_EXISTING_DIRECTORY
+                .toLocalizedString(diskDirs[i]));
       }
     }
   }
 
-  
+
   /**
    * @deprecated as of prPersistSprint2
    */
@@ -968,23 +1044,28 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     // not throw exception for mixed API, since it's internal
     checkIfDirectoriesExist(diskDirs);
     this.diskDirs = diskDirs;
-    if(sizes.length != this.diskDirs.length) {
-      throw new IllegalArgumentException(LocalizedStrings.RegionAttributesCreation_NUMBER_OF_DISKSIZES_IS_0_WHICH_IS_NOT_EQUAL_TO_NUMBER_OF_DISK_DIRS_WHICH_IS_1.toLocalizedString(new Object[] {Integer.valueOf(sizes.length), Integer.valueOf(diskDirs.length)}));
+    if (sizes.length != this.diskDirs.length) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.RegionAttributesCreation_NUMBER_OF_DISKSIZES_IS_0_WHICH_IS_NOT_EQUAL_TO_NUMBER_OF_DISK_DIRS_WHICH_IS_1
+              .toLocalizedString(
+                  new Object[] {Integer.valueOf(sizes.length), Integer.valueOf(diskDirs.length)}));
     }
     verifyNonNegativeDirSize(sizes);
     this.diskSizes = sizes;
     this.setHasDiskDirs(true);
   }
 
- 
- private void verifyNonNegativeDirSize(int[] sizes){
-   for(int i=0; i< sizes.length; i++){
-     if(sizes[i]<0){
-       throw new IllegalArgumentException(LocalizedStrings.RegionAttributesCreation_DIR_SIZE_CANNOT_BE_NEGATIVE_0.toLocalizedString(Integer.valueOf(sizes[i])));
-     }
-   }
- }
- 
+
+  private void verifyNonNegativeDirSize(int[] sizes) {
+    for (int i = 0; i < sizes.length; i++) {
+      if (sizes[i] < 0) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.RegionAttributesCreation_DIR_SIZE_CANNOT_BE_NEGATIVE_0
+                .toLocalizedString(Integer.valueOf(sizes[i])));
+      }
+    }
+  }
+
   public boolean getIndexMaintenanceSynchronous() {
     return this.indexMaintenanceSynchronous;
   }
@@ -1026,32 +1107,31 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   }
 
   /**
-   * Causes this region attributes to inherit all of the attributes of
-   * its "parent" attributes specified by its <code>refid</code>.
+   * Causes this region attributes to inherit all of the attributes of its "parent" attributes
+   * specified by its <code>refid</code>.
    *
-   * @param cache
-   *        Used to look up named region attributes
+   * @param cache Used to look up named region attributes
    *
-   * @throws IllegalStateException
-   *         If no region attributes named <code>refid</code> exist.
+   * @throws IllegalStateException If no region attributes named <code>refid</code> exist.
    *
    * @since GemFire 4.1
    */
   void inheritAttributes(Cache cache) {
     inheritAttributes(cache, true);
   }
+
   void inheritAttributes(Cache cache, boolean setDefaultPool) {
     if (this.refid == null) {
       // No attributes to inherit
       if (setDefaultPool && this.requiresPoolName && !hasPoolName()) {
         String defaultPoolName = null;
         if (cache instanceof GemFireCacheImpl) {
-          GemFireCacheImpl gfc = (GemFireCacheImpl)cache;
+          GemFireCacheImpl gfc = (GemFireCacheImpl) cache;
           if (gfc.getDefaultPool() != null) {
             defaultPoolName = gfc.getDefaultPool().getName();
           }
         } else if (cache instanceof ClientCacheCreation) {
-          ClientCacheCreation ccc = (ClientCacheCreation)cache;
+          ClientCacheCreation ccc = (ClientCacheCreation) cache;
           defaultPoolName = ccc.getDefaultPoolName();
         }
 
@@ -1063,9 +1143,11 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     }
     RegionAttributes parent = cache.getRegionAttributes(this.refid);
     if (parent == null) {
-      throw new IllegalStateException(LocalizedStrings.RegionAttributesCreation_CANNOT_REFERENCE_NONEXISTING_REGION_ATTRIBUTES_NAMED_0.toLocalizedString(this.refid));
+      throw new IllegalStateException(
+          LocalizedStrings.RegionAttributesCreation_CANNOT_REFERENCE_NONEXISTING_REGION_ATTRIBUTES_NAMED_0
+              .toLocalizedString(this.refid));
     }
-    
+
     final boolean parentIsUserSpecified = parent instanceof UserSpecifiedRegionAttributes;
     final UserSpecifiedRegionAttributes parentWithHas;
     if (parentIsUserSpecified) {
@@ -1080,12 +1162,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         if (!hasPoolName()) {
           String defaultPoolName = null;
           if (cache instanceof GemFireCacheImpl) {
-            GemFireCacheImpl gfc = (GemFireCacheImpl)cache;
+            GemFireCacheImpl gfc = (GemFireCacheImpl) cache;
             if (gfc.getDefaultPool() != null) {
               defaultPoolName = gfc.getDefaultPool().getName();
             }
           } else if (cache instanceof ClientCacheCreation) {
-            ClientCacheCreation ccc = (ClientCacheCreation)cache;
+            ClientCacheCreation ccc = (ClientCacheCreation) cache;
             defaultPoolName = ccc.getDefaultPoolName();
           }
 
@@ -1112,8 +1194,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         if (parentWithHas.hasGatewaySenderId()) {
           initGatewaySenders(parent.getGatewaySenderIds());
         }
-      }
-      else {
+      } else {
         initGatewaySenders(parent.getGatewaySenderIds());
       }
     }
@@ -1123,16 +1204,15 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         if (parentWithHas.hasAsyncEventListeners()) {
           initAsyncEventQueues(parent.getAsyncEventQueueIds());
         }
-      }
-      else {
+      } else {
         initAsyncEventQueues(parent.getAsyncEventQueueIds());
       }
     }
-    
+
     if (!hasCacheLoader()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasCacheLoader()) {
-          setCacheLoader(parent.getCacheLoader());  
+          setCacheLoader(parent.getCacheLoader());
         }
       } else {
         setCacheLoader(parent.getCacheLoader());
@@ -1142,7 +1222,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     if (!hasCacheWriter()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasCacheWriter()) {
-          setCacheWriter(parent.getCacheWriter());  
+          setCacheWriter(parent.getCacheWriter());
         }
       } else {
         setCacheWriter(parent.getCacheWriter());
@@ -1165,7 +1245,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     if (!hasEntryTimeToLive()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasEntryTimeToLive()) {
-          setEntryTimeToLive(parent.getEntryTimeToLive());  
+          setEntryTimeToLive(parent.getEntryTimeToLive());
         }
       } else {
         setEntryTimeToLive(parent.getEntryTimeToLive());
@@ -1284,7 +1364,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setConcurrencyLevel(parent.getConcurrencyLevel());
       }
     }
-    
+
     if (!hasConcurrencyChecksEnabled()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasConcurrencyChecksEnabled()) {
@@ -1386,7 +1466,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setPartitionAttributes(parent.getPartitionAttributes());
       }
     }
-    
+
     if (!hasSubscriptionAttributes()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasSubscriptionAttributes()) {
@@ -1406,7 +1486,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setDataPolicy(parent.getDataPolicy());
       }
     }
-    
+
     if (!hasEvictionAttributes()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasEvictionAttributes()) {
@@ -1439,7 +1519,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
       }
     }
 
-    if(!hasCompressor()) {
+    if (!hasCompressor()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasCompressor()) {
           setCompressor(parent.getCompressor());
@@ -1457,7 +1537,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setConcurrencyChecksEnabled(parent.getConcurrencyChecksEnabled());
       }
     }
-    
+
     if (!hasMulticastEnabled()) { // bug #38836 - inherit multicast setting
       if (parentIsUserSpecified) {
         if (parentWithHas.hasMulticastEnabled()) {
@@ -1467,7 +1547,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         setMulticastEnabled(parent.getMulticastEnabled());
       }
     }
-    
+
   }
 
   public PartitionAttributes getPartitionAttributes() {
@@ -1521,8 +1601,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     setHasEvictionAttributes(true);
   }
 
-  public EvictionAttributes getEvictionAttributes()
-  {
+  public EvictionAttributes getEvictionAttributes() {
     return this.evictionAttributes;
   }
 
@@ -1533,16 +1612,16 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this.poolName = poolName;
     setHasPoolName(true);
   }
-  
+
   public String getPoolName() {
     return this.poolName;
   }
-  
+
   public void setCloningEnable(boolean val) {
     this.cloningEnabled = val;
     setHasCloningEnabled(true);
   }
-  
+
   public boolean getCloningEnabled() {
     return this.cloningEnabled;
   }
@@ -1550,37 +1629,33 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   public void setCompressor(Compressor compressor) {
     this.compressor = compressor;
     setHasCompressor(true);
-    
+
     // Cloning must be enabled when a compressor is set
     if (compressor != null) {
       setCloningEnable(true);
     }
   }
-  
+
   public Compressor getCompressor() {
     return this.compressor;
   }
-  
+
   public void setOffHeap(boolean offHeap) {
     this.offHeap = offHeap;
     setHasOffHeap(true);
   }
-  
+
   public boolean getOffHeap() {
     return this.offHeap;
   }
-  
+
   public void prepareForValidation() {
     // As of 6.5 we automatically enable stats if expiration is used.
     {
-      if (!hasStatisticsEnabled() && !getStatisticsEnabled() &&
-          (getRegionTimeToLive().getTimeout() != 0 ||
-           getRegionIdleTimeout().getTimeout() != 0 ||
-           getEntryTimeToLive().getTimeout() != 0 ||
-           getEntryIdleTimeout().getTimeout() != 0 ||
-           getCustomEntryIdleTimeout() != null ||
-           getCustomEntryTimeToLive() != null)
-          ) {
+      if (!hasStatisticsEnabled() && !getStatisticsEnabled()
+          && (getRegionTimeToLive().getTimeout() != 0 || getRegionIdleTimeout().getTimeout() != 0
+              || getEntryTimeToLive().getTimeout() != 0 || getEntryIdleTimeout().getTimeout() != 0
+              || getCustomEntryIdleTimeout() != null || getCustomEntryTimeToLive() != null)) {
         // @todo we could do some more implementation work so that we would
         // not need to enable stats unless entryIdleTimeout is enabled.
         // We need the stats in that case because we need a new type of RegionEntry
@@ -1590,8 +1665,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
         // on statisticsEnabled.
         setStatisticsEnabled(true);
       }
-      if (getDataPolicy().withReplication()
-          && !getDataPolicy().withPersistence()
+      if (getDataPolicy().withReplication() && !getDataPolicy().withPersistence()
           && getScope().isDistributed()) {
         if (getEvictionAttributes().getAction().isLocalDestroy()
             || getEntryIdleTimeout().getAction().isLocal()
@@ -1610,11 +1684,11 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
       }
     }
   }
-  
+
   public Set<String> getAsyncEventQueueIds() {
     return this.asyncEventQueueIds;
   }
-  
+
   public Set<String> getGatewaySenderIds() {
     return this.gatewaySenderIds;
   }

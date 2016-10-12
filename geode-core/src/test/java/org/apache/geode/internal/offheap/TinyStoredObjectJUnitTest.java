@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.offheap;
 
@@ -66,30 +64,34 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     } else {
       valueInByteArray = (byte[]) value;
     }
-    //encode a non-serialized entry value to address
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInByteArray, false, false);
+    // encode a non-serialized entry value to address
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInByteArray, false, false);
     return new TinyStoredObject(encodedAddress);
   }
 
   @Override
   public TinyStoredObject createValueAsSerializedStoredObject(Object value) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
-    //encode a serialized entry value to address
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
+    // encode a serialized entry value to address
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
     return new TinyStoredObject(encodedAddress);
   }
 
   public TinyStoredObject createValueAsCompressedStoredObject(Object value) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
-    //encode a serialized, compressed entry value to address
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, true);
+    // encode a serialized, compressed entry value to address
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, true);
     return new TinyStoredObject(encodedAddress);
   }
 
   public TinyStoredObject createValueAsUncompressedStoredObject(Object value) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
-    //encode a serialized, uncompressed entry value to address
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
+    // encode a serialized, uncompressed entry value to address
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInSerializedByteArray, true, false);
     return new TinyStoredObject(encodedAddress);
   }
 
@@ -110,7 +112,8 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     TinyStoredObject address1 = new TinyStoredObject(10001L);
     TinyStoredObject address2 = new TinyStoredObject(10001L);
 
-    assertEquals("Two addresses are equal if encoding address is same", true, address1.equals(address2));
+    assertEquals("Two addresses are equal if encoding address is same", true,
+        address1.equals(address2));
   }
 
   @Test
@@ -118,7 +121,8 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     TinyStoredObject address1 = new TinyStoredObject(10001L);
     TinyStoredObject address2 = new TinyStoredObject(10002L);
 
-    assertEquals("Two addresses are not equal if encoding address is not same", false, address1.equals(address2));
+    assertEquals("Two addresses are not equal if encoding address is not same", false,
+        address1.equals(address2));
   }
 
   @Test
@@ -126,7 +130,8 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     TinyStoredObject address1 = new TinyStoredObject(10001L);
     Long address2 = new Long(10002L);
 
-    assertEquals("Two addresses are not equal if encoding address is not same", false, address1.equals(address2));
+    assertEquals("Two addresses are not equal if encoding address is not same", false,
+        address1.equals(address2));
   }
 
   @Test
@@ -194,8 +199,10 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     Object regionEntryValue = getValue();
     byte[] regionEntryValueAsBytes = convertValueToByteArray(regionEntryValue);
 
-    //encode a non-serialized and compressed entry value to address - last argument is to let that it is compressed
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, true);
+    // encode a non-serialized and compressed entry value to address - last argument is to let that
+    // it is compressed
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, true);
     TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
@@ -204,16 +211,16 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
     long startTime = 10000L;
 
-    //mock required things
+    // mock required things
     when(regionContext.getCompressor()).thenReturn(compressor);
     when(compressor.decompress(regionEntryValueAsBytes)).thenReturn(regionEntryValueAsBytes);
     when(regionContext.getCachePerfStats()).thenReturn(cacheStats);
     when(cacheStats.startDecompression()).thenReturn(startTime);
 
-    //invoke the thing
+    // invoke the thing
     byte[] bytes = offheapAddress.getDecompressedBytes(regionContext);
 
-    //verify the thing happened
+    // verify the thing happened
     verify(cacheStats, atLeastOnce()).startDecompression();
     verify(compressor, times(1)).decompress(regionEntryValueAsBytes);
     verify(cacheStats, atLeastOnce()).endDecompression(startTime);
@@ -227,18 +234,18 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
     TinyStoredObject offheapAddress = createValueAsUncompressedStoredObject(regionEntryValue);
 
-    //mock the thing
+    // mock the thing
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
     Compressor compressor = mock(Compressor.class);
     when(regionContext.getCompressor()).thenReturn(compressor);
 
-    //invoke the thing
+    // invoke the thing
     byte[] actualValueInBytes = offheapAddress.getDecompressedBytes(regionContext);
 
-    //createValueAsUncompressedStoredObject does uses a serialized value - so convert it to object
+    // createValueAsUncompressedStoredObject does uses a serialized value - so convert it to object
     Object actualRegionValue = convertSerializedByteArrayToObject(actualValueInBytes);
 
-    //verify the thing happened
+    // verify the thing happened
     verify(regionContext, never()).getCompressor();
     assertEquals(regionEntryValue, actualRegionValue);
   }
@@ -247,7 +254,8 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   public void getRawBytesShouldReturnAByteArray() {
     byte[] regionEntryValueAsBytes = getValueAsByteArray();
 
-    TinyStoredObject offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
+    TinyStoredObject offheapAddress =
+        createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
     byte[] actual = offheapAddress.getRawBytes();
 
     assertArrayEquals(regionEntryValueAsBytes, actual);
@@ -281,7 +289,8 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   public void getDeserializedObjectShouldReturnAByteArrayAsIsIfNotSerialized() {
     byte[] regionEntryValueAsBytes = getValueAsByteArray();
 
-    TinyStoredObject offheapAddress = createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
+    TinyStoredObject offheapAddress =
+        createValueAsUnserializedStoredObject(regionEntryValueAsBytes);
 
     byte[] deserializeValue = (byte[]) offheapAddress.getDeserializedValue(null, null);
 
@@ -293,18 +302,20 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     Object regionEntryValue = getValue();
     byte[] serializedRegionEntryValue = EntryEventImpl.serialize(regionEntryValue);
 
-    //encode a serialized entry value to address
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
+    // encode a serialized entry value to address
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(serializedRegionEntryValue, true, false);
 
     TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 
-    //mock the things
+    // mock the things
     BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
 
     byte userBits = 1;
     offheapAddress.fillSerializedValue(wrapper, userBits);
 
-    verify(wrapper, times(1)).setData(serializedRegionEntryValue, userBits, serializedRegionEntryValue.length, true);
+    verify(wrapper, times(1)).setData(serializedRegionEntryValue, userBits,
+        serializedRegionEntryValue.length, true);
   }
 
   @Test
@@ -312,18 +323,20 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     Object regionEntryValue = getValue();
     byte[] regionEntryValueAsBytes = convertValueToByteArray(regionEntryValue);
 
-    //encode a un serialized entry value to address
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
+    // encode a un serialized entry value to address
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(regionEntryValueAsBytes, false, false);
 
     TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 
-    //mock the things
+    // mock the things
     BytesAndBitsForCompactor wrapper = mock(BytesAndBitsForCompactor.class);
 
     byte userBits = 1;
     offheapAddress.fillSerializedValue(wrapper, userBits);
 
-    verify(wrapper, times(1)).setData(regionEntryValueAsBytes, userBits, regionEntryValueAsBytes.length, true);
+    verify(wrapper, times(1)).setData(regionEntryValueAsBytes, userBits,
+        regionEntryValueAsBytes.length, true);
   }
 
   @Test
@@ -332,11 +345,12 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
     byte[] serializedValue = EntryEventImpl.serialize(regionEntryValueAsBytes);
 
-    //store -127 (DSCODE.ILLEGAL) - in order the deserialize to throw exception
+    // store -127 (DSCODE.ILLEGAL) - in order the deserialize to throw exception
     serializedValue[0] = -127;
 
-    //encode a un serialized entry value to address
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedValue, true, false);
+    // encode a un serialized entry value to address
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(serializedValue, true, false);
 
     TinyStoredObject offheapAddress = new TinyStoredObject(encodedAddress);
 

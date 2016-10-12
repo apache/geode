@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis;
 
@@ -48,7 +46,7 @@ public class StringsJunitTest {
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    //cf.set("log-file", "redis.log");
+    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -85,9 +83,9 @@ public class StringsJunitTest {
     String key3 = randString();
     int num1 = 100;
     int num2 = -100;
-    jedis.set(key1, ""+num1);
-    //jedis.set(key3, "-100");
-    jedis.set(key2, ""+num2);
+    jedis.set(key1, "" + num1);
+    // jedis.set(key3, "-100");
+    jedis.set(key2, "" + num2);
 
     jedis.decr(key1);
     jedis.decr(key3);
@@ -104,9 +102,9 @@ public class StringsJunitTest {
     String key3 = randString();
     int num1 = 100;
     int num2 = -100;
-    jedis.set(key1, ""+num1);
-    //jedis.set(key3, "-100");
-    jedis.set(key2, ""+num2);
+    jedis.set(key1, "" + num1);
+    // jedis.set(key3, "-100");
+    jedis.set(key2, "" + num2);
 
     jedis.incr(key1);
     jedis.incr(key3);
@@ -124,28 +122,28 @@ public class StringsJunitTest {
     String key3 = randString();
     int decr1 = rand.nextInt(100);
     int decr2 = rand.nextInt(100);
-    Long decr3 = Long.MAX_VALUE/2;
+    Long decr3 = Long.MAX_VALUE / 2;
     int num1 = 100;
     int num2 = -100;
-    jedis.set(key1, ""+num1);
-    jedis.set(key2, ""+num2);
-    jedis.set(key3, ""+Long.MIN_VALUE);
+    jedis.set(key1, "" + num1);
+    jedis.set(key2, "" + num2);
+    jedis.set(key3, "" + Long.MIN_VALUE);
 
     jedis.decrBy(key1, decr1);
     jedis.decrBy(key2, decr2);
 
-    assertTrue(jedis.get(key1).equals("" + (num1 - decr1*1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 - decr2*1)));
+    assertTrue(jedis.get(key1).equals("" + (num1 - decr1 * 1)));
+    assertTrue(jedis.get(key2).equals("" + (num2 - decr2 * 1)));
 
-    Exception ex= null;
+    Exception ex = null;
     try {
       jedis.decrBy(key3, decr3);
-    } catch(Exception e) {
+    } catch (Exception e) {
       ex = e;
     }
     assertNotNull(ex);
 
-  }  
+  }
 
   @Test
   public void testIncrBy() {
@@ -154,22 +152,22 @@ public class StringsJunitTest {
     String key3 = randString();
     int incr1 = rand.nextInt(100);
     int incr2 = rand.nextInt(100);
-    Long incr3 = Long.MAX_VALUE/2;
+    Long incr3 = Long.MAX_VALUE / 2;
     int num1 = 100;
     int num2 = -100;
-    jedis.set(key1, ""+num1);
-    jedis.set(key2, ""+num2);
-    jedis.set(key3, ""+Long.MAX_VALUE);
+    jedis.set(key1, "" + num1);
+    jedis.set(key2, "" + num2);
+    jedis.set(key3, "" + Long.MAX_VALUE);
 
     jedis.incrBy(key1, incr1);
     jedis.incrBy(key2, incr2);
-    assertTrue(jedis.get(key1).equals("" + (num1 + incr1*1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 + incr2*1)));
+    assertTrue(jedis.get(key1).equals("" + (num1 + incr1 * 1)));
+    assertTrue(jedis.get(key2).equals("" + (num2 + incr2 * 1)));
 
-    Exception ex= null;
+    Exception ex = null;
     try {
       jedis.incrBy(key3, incr3);
-    } catch(Exception e) {
+    } catch (Exception e) {
       ex = e;
     }
     assertNotNull(ex);
@@ -184,7 +182,7 @@ public class StringsJunitTest {
       String range = jedis.getrange(sent, i, -1);
       assertTrue(contents.substring(i).equals(range));
     }
-    assertNull(jedis.getrange(sent, 2,0));
+    assertNull(jedis.getrange(sent, 2, 0));
   }
 
   @Test
@@ -201,14 +199,14 @@ public class StringsJunitTest {
   @Test
   public void testMSetAndGet() {
     int r = 5;
-    String[] keyvals = new String[(r*2)];
+    String[] keyvals = new String[(r * 2)];
     String[] keys = new String[r];
     String[] vals = new String[r];
-    for(int i = 0; i < r; i++) {
+    for (int i = 0; i < r; i++) {
       String key = randString();
       String val = randString();
-      keyvals[2*i] = key;
-      keyvals[2*i+1] = val;
+      keyvals[2 * i] = key;
+      keyvals[2 * i + 1] = val;
       keys[i] = key;
       vals[i] = val;
     }
@@ -216,7 +214,7 @@ public class StringsJunitTest {
     jedis.mset(keyvals);
 
     List<String> ret = jedis.mget(keys);
-    Object[] retArray =  ret.toArray();
+    Object[] retArray = ret.toArray();
 
     assertTrue(Arrays.equals(vals, retArray));
   }
@@ -224,7 +222,7 @@ public class StringsJunitTest {
   @Test
   public void testMSetNX() {
     Set<String> strings = new HashSet<String>();
-    for(int i = 0; i < 2 * 5; i++)
+    for (int i = 0; i < 2 * 5; i++)
       strings.add(randString());
     String[] array = strings.toArray(new String[0]);
     long response = jedis.msetnx(array);
@@ -263,12 +261,12 @@ public class StringsJunitTest {
     String key = randString();
     jedis.setex(key, setex, randString());
     try {
-      Thread.sleep((setex  + 5) * 1000);
+      Thread.sleep((setex + 5) * 1000);
     } catch (InterruptedException e) {
       return;
     }
     String result = jedis.get(key);
-    //System.out.println(result);
+    // System.out.println(result);
     assertNull(result);
 
     int psetex = r.nextInt(5000);

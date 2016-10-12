@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -43,10 +41,8 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     Lock activeWriteLock = primaryMoveLock.readLock();
     when(ba.getActiveWriteLock()).thenReturn(activeWriteLock);
     when(ba.isPrimary()).thenReturn(true);
-    
-    ira.setPartitionedRegion(pr)
-      .setPartitionedRegionBucketRedundancy(1)
-      .setBucketAdvisor(ba);
+
+    ira.setPartitionedRegion(pr).setPartitionedRegionBucketRedundancy(1).setBucketAdvisor(ba);
   }
 
   @Override
@@ -57,7 +53,7 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     // since br is a real bucket region object, we need to tell mockito to monitor it
     br = spy(br);
 
-//    doNothing().when(dm).addMembershipListener(any());
+    // doNothing().when(dm).addMembershipListener(any());
     doNothing().when(br).distributeUpdateOperation(any(), anyLong());
     doNothing().when(br).distributeDestroyOperation(any());
     doNothing().when(br).distributeInvalidateOperation(any());
@@ -65,14 +61,14 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     doNothing().when(br).checkForPrimary();
     doNothing().when(br).handleWANEvent(any());
     doReturn(false).when(br).needWriteLock(any());
-    
+
     return br;
   }
 
   @Override
   protected void verifyDistributeUpdate(DistributedRegion region, EntryEventImpl event, int cnt) {
     assertTrue(region instanceof BucketRegion);
-    BucketRegion br = (BucketRegion)region;
+    BucketRegion br = (BucketRegion) region;
     br.virtualPut(event, false, false, null, false, 12345L, false);
     // verify the result
     if (cnt > 0) {
@@ -85,7 +81,7 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   @Override
   protected void verifyDistributeDestroy(DistributedRegion region, EntryEventImpl event, int cnt) {
     assertTrue(region instanceof BucketRegion);
-    BucketRegion br = (BucketRegion)region;
+    BucketRegion br = (BucketRegion) region;
     br.basicDestroy(event, false, null);
     // verify the result
     if (cnt > 0) {
@@ -96,9 +92,10 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   }
 
   @Override
-  protected void verifyDistributeInvalidate(DistributedRegion region, EntryEventImpl event, int cnt) {
+  protected void verifyDistributeInvalidate(DistributedRegion region, EntryEventImpl event,
+      int cnt) {
     assertTrue(region instanceof BucketRegion);
-    BucketRegion br = (BucketRegion)region;
+    BucketRegion br = (BucketRegion) region;
     br.basicInvalidate(event);
     // verify the result
     if (cnt > 0) {
@@ -109,9 +106,10 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   }
 
   @Override
-  protected void verifyDistributeUpdateEntryVersion(DistributedRegion region, EntryEventImpl event, int cnt) {
+  protected void verifyDistributeUpdateEntryVersion(DistributedRegion region, EntryEventImpl event,
+      int cnt) {
     assertTrue(region instanceof BucketRegion);
-    BucketRegion br = (BucketRegion)region;
+    BucketRegion br = (BucketRegion) region;
     br.basicUpdateEntryVersion(event);
     // verify the result
     if (cnt > 0) {
@@ -120,6 +118,6 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
       verify(br, never()).distributeUpdateEntryVersionOperation(eq(event));
     }
   }
-  
+
 }
 

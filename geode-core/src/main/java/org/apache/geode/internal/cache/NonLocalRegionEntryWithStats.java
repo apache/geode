@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -31,7 +29,7 @@ public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
   private long hitCount;
   private long missCount;
   private long lastAccessed;
-  
+
   public NonLocalRegionEntryWithStats(RegionEntry re, LocalRegion br, boolean allowTombstones) {
     super(re, br, allowTombstones);
     try {
@@ -39,10 +37,10 @@ public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
       this.hitCount = re.getHitCount();
       this.missCount = re.getMissCount();
     } catch (InternalStatisticsDisabledException unexpected) {
-      Assert.assertTrue(false, "Unexpected " + unexpected); 
+      Assert.assertTrue(false, "Unexpected " + unexpected);
     }
   }
-  
+
   @Override
   public boolean hasStats() {
     return true;
@@ -76,8 +74,7 @@ public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.lastAccessed = in.readLong();
     this.hitCount = in.readLong();

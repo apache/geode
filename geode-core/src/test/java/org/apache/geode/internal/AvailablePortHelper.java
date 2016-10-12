@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -25,15 +23,14 @@ import java.util.Set;
 import org.apache.geode.internal.AvailablePort.Keeper;
 
 /**
- * Provides helper methods for acquiring a set of unique available ports. It
- * is not safe to simply call AvailablePort.getRandomAvailablePort several
- * times in a row without doing something to ensure that they are unique.
- * Although they are random, it is possible for subsequent calls to
- * getRandomAvailablePort to return the same integer, unless that port is put
- * into use before further calls to getRandomAvailablePort.
+ * Provides helper methods for acquiring a set of unique available ports. It is not safe to simply
+ * call AvailablePort.getRandomAvailablePort several times in a row without doing something to
+ * ensure that they are unique. Although they are random, it is possible for subsequent calls to
+ * getRandomAvailablePort to return the same integer, unless that port is put into use before
+ * further calls to getRandomAvailablePort.
  */
 public class AvailablePortHelper {
-  
+
   /**
    * Returns array of unique randomly available tcp ports of specified count.
    */
@@ -52,7 +49,7 @@ public class AvailablePortHelper {
     List<Keeper> list = getRandomAvailableTCPPortKeepers(count, useMembershipPortRange);
     int[] ports = new int[list.size()];
     int i = 0;
-    for (Keeper k: list) {
+    for (Keeper k : list) {
       ports[i] = k.getPort();
       k.release();
       i++;
@@ -63,29 +60,30 @@ public class AvailablePortHelper {
   public static List<Keeper> getRandomAvailableTCPPortKeepers(int count) {
     return getRandomAvailableTCPPortKeepers(count, false);
   }
-  
-  public static List<Keeper> getRandomAvailableTCPPortKeepers(int count, boolean useMembershipPortRange) {
+
+  public static List<Keeper> getRandomAvailableTCPPortKeepers(int count,
+      boolean useMembershipPortRange) {
     List<Keeper> result = new ArrayList<Keeper>();
     while (result.size() < count) {
-      result.add(AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET, 
-        AvailablePort.getAddress(AvailablePort.SOCKET), useMembershipPortRange));
+      result.add(AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET,
+          AvailablePort.getAddress(AvailablePort.SOCKET), useMembershipPortRange));
     }
     return result;
   }
-  
+
   /**
    * Returns array of unique randomly available tcp ports of specified count.
    */
   public static int[] getRandomAvailableTCPPortsForDUnitSite(int count) {
     int site = 1;
     String hostName = System.getProperty("hostName");
-    if(hostName != null && hostName.startsWith("host") && hostName.length() > 4) {
+    if (hostName != null && hostName.startsWith("host") && hostName.length() > 4) {
       site = Integer.parseInt(hostName.substring(4));
     }
-    
+
     Set set = new HashSet();
     while (set.size() < count) {
-      int port = AvailablePort.getRandomAvailablePortWithMod(AvailablePort.SOCKET,site);
+      int port = AvailablePort.getRandomAvailablePortWithMod(AvailablePort.SOCKET, site);
       set.add(new Integer(port));
     }
     int[] ports = new int[set.size()];
@@ -96,31 +94,31 @@ public class AvailablePortHelper {
     }
     return ports;
   }
-  
-  
+
+
   /**
    * Returns array of unique randomly available tcp ports of specified count.
    */
   public static int getRandomAvailablePortForDUnitSite() {
     int site = 1;
     String hostName = System.getProperty("hostName");
-    if(hostName != null && hostName.startsWith("host")) {
+    if (hostName != null && hostName.startsWith("host")) {
       if (hostName.length() > 4) {
         site = Integer.parseInt(hostName.substring(4));
       }
     }
-      int port = AvailablePort.getRandomAvailablePortWithMod(AvailablePort.SOCKET,site);
-      return port;
+    int port = AvailablePort.getRandomAvailablePortWithMod(AvailablePort.SOCKET, site);
+    return port;
   }
-  
-  
+
+
   /**
    * Returns randomly available tcp port.
    */
   public static int getRandomAvailableTCPPort() {
     return getRandomAvailableTCPPorts(1)[0];
   }
-  
+
   /**
    * Returns array of unique randomly available udp ports of specified count.
    */
@@ -138,13 +136,13 @@ public class AvailablePortHelper {
     }
     return ports;
   }
-  
+
   /**
    * Returns randomly available udp port.
    */
- public static int getRandomAvailableUDPPort() {
+  public static int getRandomAvailableUDPPort() {
     return getRandomAvailableUDPPorts(1)[0];
   }
-  
+
 }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene;
 
@@ -46,23 +44,25 @@ import org.junit.experimental.categories.Category;
 @Category(DistributedTest.class)
 public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase {
 
-  @Override protected void initDataStore(final SerializableRunnableIF createIndex) throws Exception {
+  @Override
+  protected void initDataStore(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
     Region region = getCache().createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
-      .setPartitionAttributes(getPartitionAttributes())
-      .create(REGION_NAME);
+        .setPartitionAttributes(getPartitionAttributes()).create(REGION_NAME);
   }
 
-  @Override protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {
+  @Override
+  protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
     Region region = getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY_REDUNDANT)
-        .setPartitionAttributes(getPartitionAttributes())
-        .create(REGION_NAME);
+        .setPartitionAttributes(getPartitionAttributes()).create(REGION_NAME);
   }
 
   @Test
-  public void returnCorrectResultsWhenMovePrimaryHappensOnIndexUpdate() throws InterruptedException {
-    final DistributedMember member2 = dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
+  public void returnCorrectResultsWhenMovePrimaryHappensOnIndexUpdate()
+      throws InterruptedException {
+    final DistributedMember member2 =
+        dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMovePrimary(dataStore1, member2);
 
     putEntriesAndValidateResultsWithRedundancy();
@@ -79,22 +79,26 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
 
     putEntriesAndValidateResultsWithRedundancy();
 
-    //Wait until the cache is closed in datastore1
-    dataStore1.invoke(() -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
+    // Wait until the cache is closed in datastore1
+    dataStore1.invoke(
+        () -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
   }
 
   @Category(FlakyTest.class) // GEODE-1824
   @Test
-  public void returnCorrectResultsWhenCloseCacheHappensOnPartialIndexWrite() throws InterruptedException {
-    final DistributedMember member2 = dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
+  public void returnCorrectResultsWhenCloseCacheHappensOnPartialIndexWrite()
+      throws InterruptedException {
+    final DistributedMember member2 =
+        dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     dataStore1.invoke(() -> {
       IndexRegionSpy.beforeWrite(getCache(), doAfterN(key -> getCache().close(), 100));
     });
 
     putEntriesAndValidateResultsWithRedundancy();
 
-    //Wait until the cache is closed in datastore1
-    dataStore1.invoke(() -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
+    // Wait until the cache is closed in datastore1
+    dataStore1.invoke(
+        () -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
   }
 
   private void putEntriesAndValidateResultsWithRedundancy() {
@@ -131,8 +135,9 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
   private void moveBucket(final DistributedMember destination, final Object key) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(REGION_NAME);
 
-    BecomePrimaryBucketResponse response = BecomePrimaryBucketMessage.send(
-      (InternalDistributedMember) destination, region, region.getKeyInfo(key).getBucketId(), true);
+    BecomePrimaryBucketResponse response =
+        BecomePrimaryBucketMessage.send((InternalDistributedMember) destination, region,
+            region.getKeyInfo(key).getBucketId(), true);
     assertNotNull(response);
     assertTrue(response.waitForResponse());
   }

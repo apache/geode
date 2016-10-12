@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -90,6 +88,7 @@ public class PutAllOperationContextJUnitTest {
       }
     }
   }
+
   /**
    * Make sure that we do not expose the internal Token.INVALID to customers
    */
@@ -141,7 +140,8 @@ public class PutAllOperationContextJUnitTest {
     assertEquals(v, me.getValue());
     assertEquals(cd, m.get("cd"));
     String opMapStr = opMap.toString();
-    assertEquals("expected " + opMapStr + " to not contain CachedDeserializable", false, opMapStr.contains("CachedDeserializable"));
+    assertEquals("expected " + opMapStr + " to not contain CachedDeserializable", false,
+        opMapStr.contains("CachedDeserializable"));
     HashMap<String, Object> hm = new HashMap<>(opMap);
     assertEquals(hm, opMap);
     assertEquals(opMap, hm);
@@ -157,7 +157,7 @@ public class PutAllOperationContextJUnitTest {
     PutAllOperationContext paoc = new PutAllOperationContext(m);
     Map<String, String> opMap = paoc.getMap();
     assertEquals(m, opMap);
-    
+
     { // change order and make sure paoc map order is unchanged
       LinkedHashMap<String, String> m2 = new LinkedHashMap<>();
       m2.put("3", "3");
@@ -184,19 +184,19 @@ public class PutAllOperationContextJUnitTest {
     m.put("2", "2c");
     paoc.setMap(m);
     assertEquals(m, opMap);
-    for (Map.Entry<String, String> me: opMap.entrySet()) {
+    for (Map.Entry<String, String> me : opMap.entrySet()) {
       if (me.getKey().equals("1")) {
         me.setValue("1d");
       }
     }
     m.put("1", "1d");
     assertEquals(m, opMap);
-    
+
     paoc.setMap(opMap);
-    
+
     // check that none of updates changed to key order
     assertEquals(Arrays.asList("1", "2", "3"), new ArrayList<>(opMap.keySet()));
-    
+
     opMap.toString();
   }
 

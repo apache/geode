@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode;
 
@@ -34,8 +32,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**
- * Tests the functionality of the {@link CopyHelper#copy} method
- * and the builtin copy-on-get Cache functions.
+ * Tests the functionality of the {@link CopyHelper#copy} method and the builtin copy-on-get Cache
+ * functions.
  *
  * @since GemFire 4.0
  *
@@ -48,7 +46,7 @@ public class CopyJUnitTest {
 
   protected Object oldValue;
   protected Object newValue;
-  
+
   private void createCache(boolean copyOnRead) throws CacheException {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
@@ -58,35 +56,42 @@ public class CopyJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     af.setCacheListener(new CacheListenerAdapter() {
-        public void afterCreate(EntryEvent event) {
-          oldValue = event.getOldValue();
-          newValue = event.getNewValue();
-        }
-        public void afterUpdate(EntryEvent event) {
-          oldValue = event.getOldValue();
-          newValue = event.getNewValue();
-        }
-        public void afterInvalidate(EntryEvent event) {
-          oldValue = event.getOldValue();
-          newValue = event.getNewValue();
-        }
-        public void afterDestroy(EntryEvent event) {
-          oldValue = event.getOldValue();
-          newValue = event.getNewValue();
-        }
-        public void afterRegionInvalidate(RegionEvent event) {
-          // ignore
-        }
-        public void afterRegionDestroy(RegionEvent event) {
-          // ignore
-        }
-        public void close() {
-          oldValue = null;
-          newValue = null;
-        }
-      });
+      public void afterCreate(EntryEvent event) {
+        oldValue = event.getOldValue();
+        newValue = event.getNewValue();
+      }
+
+      public void afterUpdate(EntryEvent event) {
+        oldValue = event.getOldValue();
+        newValue = event.getNewValue();
+      }
+
+      public void afterInvalidate(EntryEvent event) {
+        oldValue = event.getOldValue();
+        newValue = event.getNewValue();
+      }
+
+      public void afterDestroy(EntryEvent event) {
+        oldValue = event.getOldValue();
+        newValue = event.getNewValue();
+      }
+
+      public void afterRegionInvalidate(RegionEvent event) {
+        // ignore
+      }
+
+      public void afterRegionDestroy(RegionEvent event) {
+        // ignore
+      }
+
+      public void close() {
+        oldValue = null;
+        newValue = null;
+      }
+    });
     this.region = this.cache.createRegion("CopyJUnitTest", af.create());
   }
+
   private void closeCache() {
     if (this.cache != null) {
       this.region = null;
@@ -95,7 +100,7 @@ public class CopyJUnitTest {
       c.close();
     }
   }
-  
+
   @Test
   public void testSimpleCopies() {
     assertTrue(null == CopyHelper.copy(null));
@@ -106,12 +111,13 @@ public class CopyJUnitTest {
     }
     CopyHelper.copy(new CloneImpl());
   }
+
   protected static class CloneImpl implements Cloneable {
     public Object clone() {
       return this;
     }
   }
-  
+
   @Test
   public void testReferences() throws Exception {
     createCache(false);
@@ -128,18 +134,21 @@ public class CopyJUnitTest {
       Collection c = this.region.values();
       Object[] cArray = c.toArray();
       assertTrue("expected values().toArray() to return reference to v", cArray[0] == v);
-      assertTrue("expected values().iterator().next() to return reference to v", c.iterator().next() == v);
+      assertTrue("expected values().iterator().next() to return reference to v",
+          c.iterator().next() == v);
     } finally {
       closeCache();
     }
   }
-  
+
   public static class ModifiableInteger implements Serializable {
     private static final long serialVersionUID = 9085003409748155613L;
     private final int v;
+
     public ModifiableInteger(int v) {
       this.v = v;
     }
+
     @Override
     public int hashCode() {
       final int prime = 31;
@@ -147,6 +156,7 @@ public class CopyJUnitTest {
       result = prime * result + v;
       return result;
     }
+
     @Override
     public boolean equals(Object obj) {
       if (this == obj)
@@ -183,13 +193,15 @@ public class CopyJUnitTest {
       Object[] cArray = c.toArray();
       assertTrue("expected values().toArray() to return copy of v", cArray[0] != v);
       assertEquals(v, cArray[0]);
-      
-      assertTrue("expected values().iterator().next() to return copy of v", c.iterator().next() != v);
+
+      assertTrue("expected values().iterator().next() to return copy of v",
+          c.iterator().next() != v);
       assertEquals(v, c.iterator().next());
     } finally {
       closeCache();
     }
   }
+
   @Test
   public void testImmutable() throws Exception {
     createCache(true);
@@ -207,17 +219,17 @@ public class CopyJUnitTest {
       Collection c = this.region.values();
       Object[] cArray = c.toArray();
       assertSame(v, cArray[0]);
-      
+
       assertSame(v, c.iterator().next());
     } finally {
       closeCache();
     }
   }
-  
+
   @Test
   public void testPrimitiveArrays() {
     {
-      byte[] ba1 = new byte[]{1,2,3};
+      byte[] ba1 = new byte[] {1, 2, 3};
       byte[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -227,7 +239,7 @@ public class CopyJUnitTest {
       }
     }
     {
-      boolean[] ba1 = new boolean[]{true, false, true};
+      boolean[] ba1 = new boolean[] {true, false, true};
       boolean[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -237,7 +249,7 @@ public class CopyJUnitTest {
       }
     }
     {
-      char[] ba1 = new char[]{1,2,3};
+      char[] ba1 = new char[] {1, 2, 3};
       char[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -247,7 +259,7 @@ public class CopyJUnitTest {
       }
     }
     {
-      short[] ba1 = new short[]{1,2,3};
+      short[] ba1 = new short[] {1, 2, 3};
       short[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -257,7 +269,7 @@ public class CopyJUnitTest {
       }
     }
     {
-      int[] ba1 = new int[]{1,2,3};
+      int[] ba1 = new int[] {1, 2, 3};
       int[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -267,7 +279,7 @@ public class CopyJUnitTest {
       }
     }
     {
-      long[] ba1 = new long[]{1,2,3};
+      long[] ba1 = new long[] {1, 2, 3};
       long[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -277,7 +289,7 @@ public class CopyJUnitTest {
       }
     }
     {
-      float[] ba1 = new float[]{1,2,3};
+      float[] ba1 = new float[] {1, 2, 3};
       float[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -287,7 +299,7 @@ public class CopyJUnitTest {
       }
     }
     {
-      double[] ba1 = new double[]{1,2,3};
+      double[] ba1 = new double[] {1, 2, 3};
       double[] ba2 = CopyHelper.copy(ba1);
       if (ba1 == ba2) {
         fail("expected new instance of primitive array");
@@ -297,9 +309,10 @@ public class CopyJUnitTest {
       }
     }
   }
+
   @Test
   public void testObjectArray() {
-    Object[] oa1 = new Object[]{1,2,3};
+    Object[] oa1 = new Object[] {1, 2, 3};
     Object[] oa2 = CopyHelper.copy(oa1);
     if (oa1 == oa2) {
       fail("expected new instance of object array");
@@ -308,7 +321,7 @@ public class CopyJUnitTest {
       fail("expected contents of arrays to be equal");
     }
   }
-  
+
   @Test
   public void testIsWellKnownImmutableInstance() {
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance("abc"));
@@ -326,27 +339,35 @@ public class CopyJUnitTest {
       public Object getObject() {
         return null;
       }
+
       public Object getObject(Object pdxObject) {
         return null;
       }
+
       public boolean hasField(String fieldName) {
         return false;
       }
+
       public List<String> getFieldNames() {
         return null;
       }
+
       public boolean isIdentityField(String fieldName) {
         return false;
       }
+
       public Object getField(String fieldName) {
         return null;
       }
+
       public WritablePdxInstance createWriter() {
         return null;
       }
+
       public String getClassName() {
         return null;
       }
+
       public boolean isEnum() {
         return false;
       }
@@ -355,29 +376,37 @@ public class CopyJUnitTest {
       public Object getObject() {
         return null;
       }
+
       public Object getObject(Object pdxObject) {
         return null;
       }
+
       public boolean hasField(String fieldName) {
         return false;
       }
+
       public List<String> getFieldNames() {
         return null;
       }
+
       public boolean isIdentityField(String fieldName) {
         return false;
       }
+
       public Object getField(String fieldName) {
         return null;
       }
+
       public WritablePdxInstance createWriter() {
         return null;
       }
-      public void setField(String fieldName, Object value) {
-      }
+
+      public void setField(String fieldName, Object value) {}
+
       public String getClassName() {
         return null;
       }
+
       public boolean isEnum() {
         return false;
       }
@@ -481,14 +510,12 @@ public class CopyJUnitTest {
     try {
       NonSerializable m = CopyHelper.deepCopy(n);
       fail("expected a CopyException for a non serializable");
-    } catch (final CopyException ok) {}
+    } catch (final CopyException ok) {
+    }
   }
-  
+
   static enum Season {
-    SPRING,
-    SUMMER,
-    FALL,
-    WINTER
+    SPRING, SUMMER, FALL, WINTER
   }
 
   static class NonSerializable {
@@ -540,8 +567,7 @@ public class CopyJUnitTest {
       final int prime = 31;
       int result = 1;
       result = prime * result + id;
-      result = prime * result
-          + ((innerList == null) ? 0 : innerList.hashCode());
+      result = prime * result + ((innerList == null) ? 0 : innerList.hashCode());
       result = prime * result + ((str == null) ? 0 : str.hashCode());
       return result;
     }

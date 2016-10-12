@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.compression;
@@ -35,15 +33,14 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 
 /**
- * An abstract implementation of {@link CachedDeserializable} that prefers serialization and compresses
- * the internal serialized value.
+ * An abstract implementation of {@link CachedDeserializable} that prefers serialization and
+ * compresses the internal serialized value.
  * 
  */
-public abstract class CompressedCachedDeserializable implements
-    CachedDeserializable, DataSerializableFixedID {
+public abstract class CompressedCachedDeserializable
+    implements CachedDeserializable, DataSerializableFixedID {
   /**
-   * +PER_OBJECT_OVERHEAD for CompressedCachedDeserializable object
-   * +4 for value field
+   * +PER_OBJECT_OVERHEAD for CompressedCachedDeserializable object +4 for value field
    */
   static final int BASE_MEM_OVERHEAD = PER_OBJECT_OVERHEAD + 4;
 
@@ -51,23 +48,22 @@ public abstract class CompressedCachedDeserializable implements
    * Compressed region entry value.
    */
   protected byte[] value = null;
-  
+
   /**
    * Empty constructor for serialization.
    */
-  public CompressedCachedDeserializable() {
-  }
+  public CompressedCachedDeserializable() {}
 
   /**
    * @return A {@link Compressor} for compressing/decompressing the region entry value.
    */
   protected abstract Compressor getCompressor();
-  
+
   /**
    * @return the memory overhead for this implementation CompressedCachedDeserializable.
    */
   protected abstract int getMemoryOverhead();
-  
+
   /**
    * @see DataSerializableFixedID#getDSFID()
    */
@@ -76,27 +72,33 @@ public abstract class CompressedCachedDeserializable implements
 
   /**
    * Creates a new {@link CompressedCachedDeserializable} with a serialized value.
+   * 
    * @param serializedValue a region entry value that has already been serialized.
    */
-  public CompressedCachedDeserializable(final byte[] serializedValue) {    
+  public CompressedCachedDeserializable(final byte[] serializedValue) {
     if (serializedValue == null) {
-      throw new NullPointerException(LocalizedStrings.PreferBytesCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.PreferBytesCachedDeserializable_VALUE_MUST_NOT_BE_NULL
+              .toLocalizedString());
     }
-    
+
     this.value = getCompressor().compress(serializedValue);
   }
-  
+
   /**
    * Creates a new {@link CompressedCachedDeserializable} with an unserialized value.
+   * 
    * @param obj a region entry value.
    */
   public CompressedCachedDeserializable(final Object obj) {
     if (obj == null)
-      throw new NullPointerException(LocalizedStrings.PreferBytesCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
-    
+      throw new NullPointerException(
+          LocalizedStrings.PreferBytesCachedDeserializable_VALUE_MUST_NOT_BE_NULL
+              .toLocalizedString());
+
     this.value = getCompressor().compress(EntryEventImpl.serialize(obj));
   }
-  
+
   /**
    * @see Sizeable#getSizeInBytes()
    */
@@ -120,10 +122,11 @@ public abstract class CompressedCachedDeserializable implements
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.value = getCompressor().compress(DataSerializer.readByteArray(in));
   }
-  
+
   /**
-   * Returns the serialized value of the region entry contained by this CompressedCachedDeserializable.  This value 
-   * is the uncompressed value.
+   * Returns the serialized value of the region entry contained by this
+   * CompressedCachedDeserializable. This value is the uncompressed value.
+   * 
    * @see CachedDeserializable#getSerializedValue()
    */
   @Override
@@ -132,13 +135,13 @@ public abstract class CompressedCachedDeserializable implements
   }
 
   /**
-   * Returns the deserialized value.  However, unlike the specification of this method as described in
-   * {@link CachedDeserializable#getDeserializedForReading()} this method does not 
-   * optimize for future calls leaving the value serialized and compressed.
+   * Returns the deserialized value. However, unlike the specification of this method as described
+   * in {@link CachedDeserializable#getDeserializedForReading()} this method does not optimize for
+   * future calls leaving the value serialized and compressed.
    */
   @Override
   public Object getDeserializedForReading() {
-    return getDeserializedValue(null,null);
+    return getDeserializedValue(null, null);
   }
 
   /**
@@ -158,7 +161,7 @@ public abstract class CompressedCachedDeserializable implements
    */
   @Override
   public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
-    return getDeserializedValue(r,re);
+    return getDeserializedValue(r, re);
   }
 
   /**
@@ -183,8 +186,7 @@ public abstract class CompressedCachedDeserializable implements
   }
 
   @Override
-  public void fillSerializedValue(BytesAndBitsForCompactor wrapper,
-      byte userBits) {
+  public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
     byte[] uncompressed = getCompressor().decompress(this.value);
     wrapper.setData(uncompressed, userBits, uncompressed.length, false);
   }

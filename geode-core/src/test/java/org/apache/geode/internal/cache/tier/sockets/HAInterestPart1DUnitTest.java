@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -55,8 +53,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests whether interest is registered on both primary and secondaries and
-   * verify their responses
+   * Tests whether interest is registered on both primary and secondaries and verify their responses
    */
   @Test
   public void testInterestRegistrationResponseOnBothPrimaryAndSecondary() throws Exception {
@@ -70,8 +67,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests whether re-registration of interest causes duplicates on server side
-   * interest map
+   * Tests whether re-registration of interest causes duplicates on server side interest map
    */
   @Test
   public void testRERegistrationWillNotCreateDuplicateKeysOnServerInterstMaps() throws Exception {
@@ -89,9 +85,8 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if Primary fails during interest registration should initiate
-   * failover and should pick new primary and get server keys in response of
-   * registerInterest
+   * Tests if Primary fails during interest registration should initiate failover and should pick
+   * new primary and get server keys in response of registerInterest
    */
   @Test
   public void testPrimaryFailureInRegisterInterest() throws Exception {
@@ -112,8 +107,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if Secondary fails during interest registration should add to dead Ep
-   * list
+   * Tests if Secondary fails during interest registration should add to dead Ep list
    */
   @Test
   public void testSecondaryFailureInRegisterInterest() throws Exception {
@@ -133,10 +127,9 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if Primary and next primary candidate fails during interest
-   * registration it should pick new primary from ep list and add these two
-   * server to dead ep list and expect serverKeys as a response from
-   * registration on newly selected primary
+   * Tests if Primary and next primary candidate fails during interest registration it should pick
+   * new primary from ep list and add these two server to dead ep list and expect serverKeys as a
+   * response from registration on newly selected primary
    */
   @Test
   public void testBothPrimaryAndSecondaryFailureInRegisterInterest() throws Exception {
@@ -156,11 +149,10 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if Primary fails during interest registration , it selects new
-   * primary from the ep list after making this ep as primary it fails , so
-   * interest registration will initiate failover on this ep as well it should
-   * pick new primary from ep list and these two server to dead ep list and
-   * expect serverKeys as a response from registration on newly selected primary
+   * Tests if Primary fails during interest registration , it selects new primary from the ep list
+   * after making this ep as primary it fails , so interest registration will initiate failover on
+   * this ep as well it should pick new primary from ep list and these two server to dead ep list
+   * and expect serverKeys as a response from registration on newly selected primary
    *
    */
   @Test
@@ -181,8 +173,8 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if DeadServerMonitor on detecting an EP as alive should register
-   * client ( create CCP) as welll as register IL
+   * Tests if DeadServerMonitor on detecting an EP as alive should register client ( create CCP) as
+   * welll as register IL
    */
   @Test
   public void testInterstRegistrationOnRecoveredEPbyDSM() throws Exception {

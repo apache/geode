@@ -1,21 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
-   
+
+
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
@@ -35,13 +33,13 @@ import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * A message that is sent to a particular distribution manager to let
- * it know that the sender is an administation console that just disconnected.
+ * A message that is sent to a particular distribution manager to let it know that the sender is an
+ * administation console that just disconnected.
  */
 public final class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
   private static final Logger logger = LogService.getLogger();
-  
-  //instance variables
+
+  // instance variables
   private boolean alertListenerExpected;
   private transient boolean ignoreAlertListenerRemovalFailure;
   private boolean crashed;
@@ -54,8 +52,8 @@ public final class AdminConsoleDisconnectMessage extends PooledDistributionMessa
   }
 
   /**
-   * This is called by a dm when it sends this message to itself as a result
-   * of the console dropping out of the view (ie. crashing)
+   * This is called by a dm when it sends this message to itself as a result of the console dropping
+   * out of the view (ie. crashing)
    */
   public void setCrashed(boolean crashed) {
     this.crashed = crashed;
@@ -64,7 +62,7 @@ public final class AdminConsoleDisconnectMessage extends PooledDistributionMessa
   public void setAlertListenerExpected(boolean alertListenerExpected) {
     this.alertListenerExpected = alertListenerExpected;
   }
-  
+
   public void setIgnoreAlertListenerRemovalFailure(boolean ignore) {
     this.ignoreAlertListenerRemovalFailure = ignore;
   }
@@ -81,20 +79,23 @@ public final class AdminConsoleDisconnectMessage extends PooledDistributionMessa
   @Override
   public void process(DistributionManager dm) {
     InternalDistributedSystem sys = dm.getSystem();
-//    DistributionConfig config = sys.getConfig();
-    if (alertListenerExpected) {  
-      if (!AlertAppender.getInstance().removeAlertListener(this.getSender()) && !this.ignoreAlertListenerRemovalFailure) {
+    // DistributionConfig config = sys.getConfig();
+    if (alertListenerExpected) {
+      if (!AlertAppender.getInstance().removeAlertListener(this.getSender())
+          && !this.ignoreAlertListenerRemovalFailure) {
         logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ManagerLogWriter_UNABLE_TO_REMOVE_CONSOLE_WITH_ID_0_FROM_ALERT_LISTENERS,
-          this.getSender()));
+            LocalizedStrings.ManagerLogWriter_UNABLE_TO_REMOVE_CONSOLE_WITH_ID_0_FROM_ALERT_LISTENERS,
+            this.getSender()));
       }
-    } 
+    }
     GemFireStatSampler sampler = sys.getStatSampler();
     if (sampler != null) {
       sampler.removeListenersByRecipient(this.getSender());
     }
-    dm.handleConsoleShutdown(this.getSender(), crashed, LocalizedStrings.AdminConsoleDisconnectMessage_AUTOMATIC_ADMIN_DISCONNECT_0.toLocalizedString(reason));
-//     AppCacheSnapshotMessage.flushSnapshots(this.getSender());
+    dm.handleConsoleShutdown(this.getSender(), crashed,
+        LocalizedStrings.AdminConsoleDisconnectMessage_AUTOMATIC_ADMIN_DISCONNECT_0
+            .toLocalizedString(reason));
+    // AppCacheSnapshotMessage.flushSnapshots(this.getSender());
   }
 
   public int getDSFID() {
@@ -110,8 +111,7 @@ public final class AdminConsoleDisconnectMessage extends PooledDistributionMessa
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.alertListenerExpected = in.readBoolean();
     this.crashed = in.readBoolean();
@@ -119,7 +119,7 @@ public final class AdminConsoleDisconnectMessage extends PooledDistributionMessa
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     return "AdminConsoleDisconnectMessage from " + this.getSender();
   }
 }

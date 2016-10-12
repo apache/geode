@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.persistence;
 
@@ -49,7 +47,8 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    Invoke.invokeInEveryVM(PersistentReplicatedTestBase.class,"setRegionName", new Object[]{getUniqueName()});
+    Invoke.invokeInEveryVM(PersistentReplicatedTestBase.class, "setRegionName",
+        new Object[] {getUniqueName()});
     setRegionName(getUniqueName());
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
     org.apache.geode.internal.FileUtil.delete(diskDir);
@@ -60,26 +59,25 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   public static void setRegionName(String testName) {
     REGION_NAME = testName + "Region";
   }
-  
+
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     org.apache.geode.internal.FileUtil.delete(diskDir);
     postTearDownPersistentReplicatedTestBase();
   }
-  
-  protected void postTearDownPersistentReplicatedTestBase() throws Exception {
-  }
+
+  protected void postTearDownPersistentReplicatedTestBase() throws Exception {}
 
   protected void waitForBlockedInitialization(VM vm) {
     vm.invoke(new SerializableRunnable() {
-  
+
       public void run() {
         Wait.waitForCriterion(new WaitCriterion() {
-  
+
           public String description() {
             return "Waiting for another persistent member to come online";
           }
-          
+
           public boolean done() {
             GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
             PersistentMemberManager mm = cache.getPersistentMemberManager();
@@ -87,11 +85,11 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
             boolean done = !regions.isEmpty();
             return done;
           }
-          
+
         }, MAX_WAIT, 100, true);
-        
+
       }
-      
+
     });
   }
 
@@ -148,7 +146,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
         cache.close();
       }
     };
-    
+
     return vm0.invokeAsync(close);
   }
 
@@ -168,20 +166,22 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   protected AsyncInvocation createPersistentRegionWithWait(VM vm) throws Exception {
     return _createPersistentRegion(vm, true);
   }
+
   protected void createPersistentRegion(VM vm) throws Exception {
     _createPersistentRegion(vm, false);
   }
+
   private AsyncInvocation _createPersistentRegion(VM vm, boolean wait) throws Exception {
     AsyncInvocation future = createPersistentRegionAsync(vm);
     long waitTime = wait ? 500 : MAX_WAIT;
     future.join(waitTime);
-    if(future.isAlive() && !wait) {
+    if (future.isAlive() && !wait) {
       fail("Region not created within" + MAX_WAIT);
     }
     if (!future.isAlive() && wait) {
       fail("Did not expecte region creation to complete");
     }
-    if(!wait && future.exceptionOccurred()) {
+    if (!wait && future.exceptionOccurred()) {
       throw new RuntimeException(future.getException());
     }
     return future;
@@ -222,7 +222,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   protected void restoreBackup(VM vm) throws IOException {
     File dirForVM = getDiskDirForVM(vm);
     File backFile = new File(dirForVM.getParent(), dirForVM.getName() + ".bk");
-    if(!backFile.renameTo(dirForVM)) {
+    if (!backFile.renameTo(dirForVM)) {
       FileUtil.delete(dirForVM);
       FileUtil.copy(backFile, dirForVM);
       FileUtil.delete(backFile);

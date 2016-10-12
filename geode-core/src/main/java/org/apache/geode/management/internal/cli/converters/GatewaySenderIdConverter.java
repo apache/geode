@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.converters;
 
@@ -42,33 +40,32 @@ public class GatewaySenderIdConverter implements Converter<String> {
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType,
-      String optionContext) {
+  public String convertFromText(String value, Class<?> targetType, String optionContext) {
     return value;
   }
 
   @Override
-  public boolean getAllPossibleValues(List<Completion> completions,
-      Class<?> targetType, String existingData, String optionContext,
-      MethodTarget target) {
+  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
+      String existingData, String optionContext, MethodTarget target) {
     if (String.class.equals(targetType) && ConverterHint.GATEWAY_SENDER_ID.equals(optionContext)) {
       Set<String> gatewaySenderIds = getGatewaySenderIds();
-      
+
       for (String gatewaySenderId : gatewaySenderIds) {
         completions.add(new Completion(gatewaySenderId));
       }
     }
-    
+
     return !completions.isEmpty();
   }
-  
+
   public Set<String> getGatewaySenderIds() {
     Set<String> gatewaySenderIds = Collections.emptySet();
-    
+
     Gfsh gfsh = Gfsh.getCurrentInstance();
     if (gfsh != null && gfsh.isConnectedAndReady()) {
       final String[] gatewaySenderIdArray = (String[]) gfsh.getOperationInvoker().invoke(
-        ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "listGatwaySenders", new Object[0], new String[0]);
+          ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "listGatwaySenders",
+          new Object[0], new String[0]);
       if (gatewaySenderIdArray != null && gatewaySenderIdArray.length != 0) {
         gatewaySenderIds = new TreeSet<String>(Arrays.asList(gatewaySenderIdArray));
       }

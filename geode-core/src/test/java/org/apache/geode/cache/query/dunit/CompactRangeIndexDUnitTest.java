@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.dunit;
 
@@ -46,7 +44,7 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   QueryTestUtils utils;
   VM vm0;
-  
+
   @Override
   public final void postSetUp() throws Exception {
     getSystem();
@@ -59,9 +57,10 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     utils = new QueryTestUtils();
     utils.initializeQueryMap();
-    utils.createServer(vm0, DistributedTestUtils.getAllDistributedSystemProperties(new Properties()));
+    utils.createServer(vm0,
+        DistributedTestUtils.getAllDistributedSystemProperties(new Properties()));
     utils.createReplicateRegion("exampleRegion", vm0);
-    utils.createIndex(vm0,"type", "\"type\"", "/exampleRegion");
+    utils.createIndex(vm0, "type", "\"type\"", "/exampleRegion");
   }
 
   /*
@@ -78,18 +77,18 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
       }
     });
     try {
-      utils.createIndex(vm0,"partitionedIndex", "\"albs\"", "/examplePartitionedRegion");
-    }
-    catch (Exception e) {
-      //expected
+      utils.createIndex(vm0, "partitionedIndex", "\"albs\"", "/examplePartitionedRegion");
+    } catch (Exception e) {
+      // expected
       assertTrue(e.getCause().toString().contains("albs"));
     }
   }
-  
+
 
   @Test
-  public void testCompactRangeIndexForIndexElemArray() throws Exception{
-    doPut(200);// around 66 entries for a key in the index (< 100 so does not create a ConcurrentHashSet)
+  public void testCompactRangeIndexForIndexElemArray() throws Exception {
+    doPut(200);// around 66 entries for a key in the index (< 100 so does not create a
+               // ConcurrentHashSet)
     doQuery();
     doUpdate(10);
     doQuery();
@@ -97,10 +96,10 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
     doQuery();
     Thread.sleep(5000);
   }
-  
+
   @Test
-  public void testCompactRangeIndexForConcurrentHashSet() throws Exception{
-    doPut(333); //111 entries for a key in the index (> 100 so creates a ConcurrentHashSet)
+  public void testCompactRangeIndexForConcurrentHashSet() throws Exception {
+    doPut(333); // 111 entries for a key in the index (> 100 so creates a ConcurrentHashSet)
     doQuery();
     doUpdate(10);
     doQuery();
@@ -109,15 +108,15 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testNoSuchElemException() throws Exception{
+  public void testNoSuchElemException() throws Exception {
     setHook();
     doPutSync(300);
     doDestroy(298);
     doQuery();
   }
-  
+
   public void doPut(final int entries) {
-     vm0.invokeAsync(new CacheSerializableRunnable("Putting values") {
+    vm0.invokeAsync(new CacheSerializableRunnable("Putting values") {
       public void run2() {
         putPortfolios("exampleRegion", entries);
       }
@@ -126,19 +125,19 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   public void doPutSync(final int entries) {
     vm0.invoke(new CacheSerializableRunnable("Putting values") {
-     public void run2() {
-       putPortfolios("exampleRegion", entries);
-     }
-   });
- }
-  
+      public void run2() {
+        putPortfolios("exampleRegion", entries);
+      }
+    });
+  }
+
   public void doUpdate(final int entries) {
     vm0.invokeAsync(new CacheSerializableRunnable("Updating values") {
-     public void run2() {
-       putOffsetPortfolios("exampleRegion", entries);
-     }
-   });
- }
+      public void run2() {
+        putOffsetPortfolios("exampleRegion", entries);
+      }
+    });
+  }
 
   public void doQuery() throws InterruptedException {
     final String[] qarr = {"1", "519", "181"};
@@ -148,17 +147,16 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
           try {
             utils.executeQueries(qarr);
           } catch (Exception e) {
-            throw new CacheException(e) {
-            };
-          } 
+            throw new CacheException(e) {};
+          }
         }
       }
     });
     as0.join();
-    if(as0.exceptionOccurred()){
-        Assert.fail("Query execution failed.", as0.getException());
+    if (as0.exceptionOccurred()) {
+      Assert.fail("Query execution failed.", as0.getException());
     }
-   
+
   }
 
   public void doDestroy(final int entries) throws Exception {
@@ -166,11 +164,11 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
       public void run2() {
         try {
           Thread.sleep(500);
-          //destroy entries
+          // destroy entries
           Region region = utils.getRegion("exampleRegion");
           for (int i = 1; i <= entries; i++) {
             try {
-              region.destroy("KEY-"+ i);
+              region.destroy("KEY-" + i);
             } catch (Exception e) {
               throw new Exception(e);
             }
@@ -180,9 +178,9 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     });
-   
+
   }
-  
+
   @Override
   public final void preTearDown() throws Exception {
     Thread.sleep(5000);
@@ -190,44 +188,44 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
     utils.closeServer(vm0);
   }
 
-  public void setHook(){
+  public void setHook() {
     vm0.invoke(new CacheSerializableRunnable("Setting hook") {
       public void run2() {
         IndexManager.testHook = new CompactRangeIndexTestHook();
       }
     });
   }
-  
-  public void removeHook(){
+
+  public void removeHook() {
     vm0.invoke(new CacheSerializableRunnable("Removing hook") {
       public void run2() {
         IndexManager.testHook = null;
       }
     });
   }
-  
+
   private void putPortfolios(String regionName, int size) {
     Region region = utils.getRegion(regionName);
     for (int i = 1; i <= size; i++) {
-      region.put("KEY-"+ i, new Portfolio(i));
+      region.put("KEY-" + i, new Portfolio(i));
     }
   }
-  
+
   private void putOffsetPortfolios(String regionName, int size) {
     Region region = utils.getRegion(regionName);
     for (int i = 1; i <= size; i++) {
-      region.put("KEY-"+ i, new Portfolio(i + 1));
+      region.put("KEY-" + i, new Portfolio(i + 1));
     }
   }
-  
-  
-  private static class CompactRangeIndexTestHook implements TestHook{
+
+
+  private static class CompactRangeIndexTestHook implements TestHook {
     @Override
     public void hook(int spot) throws RuntimeException {
-     if(spot == 11){
-         Wait.pause(10);
-     }
-   }
+      if (spot == 11) {
+        Wait.pause(10);
+      }
+    }
   }
-  
+
 }

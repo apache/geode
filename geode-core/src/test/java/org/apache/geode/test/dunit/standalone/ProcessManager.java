@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.dunit.standalone;
 
@@ -69,8 +67,8 @@ public class ProcessManager {
     try {
       FileUtil.delete(workingDir);
     } catch (IOException e) {
-      //This delete is occasionally failing on some platforms, maybe due to a lingering
-      //process. Allow the process to be launched anyway.
+      // This delete is occasionally failing on some platforms, maybe due to a lingering
+      // process. Allow the process to be launched anyway.
       System.err.println("Unable to delete " + workingDir + ". Currently contains "
           + Arrays.asList(workingDir.list()));
     }
@@ -79,7 +77,7 @@ public class ProcessManager {
       FileUtils.copyFileToDirectory(log4jConfig, workingDir);
     }
 
-    //TODO - delete directory contents, preferably with commons io FileUtils
+    // TODO - delete directory contents, preferably with commons io FileUtils
     Process process = Runtime.getRuntime().exec(cmd, null, workingDir);
     pendingVMs++;
     ProcessHolder holder = new ProcessHolder(process);
@@ -123,7 +121,8 @@ public class ProcessManager {
     }
   }
 
-  private void linkStreams(final int vmNum, final ProcessHolder holder, final InputStream in, final PrintStream out) {
+  private void linkStreams(final int vmNum, final ProcessHolder holder, final InputStream in,
+      final PrintStream out) {
     Thread ioTransport = new Thread() {
       public void run() {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -155,7 +154,7 @@ public class ProcessManager {
   private String[] buildJavaCommand(int vmNum, int namingPort) {
     String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
     String classPath = System.getProperty("java.class.path");
-    //String tmpDir = System.getProperty("java.io.tmpdir");
+    // String tmpDir = System.getProperty("java.io.tmpdir");
     String agent = getAgentString();
 
     String jdkDebug = "";
@@ -177,11 +176,12 @@ public class ProcessManager {
       cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
     } else {
       // most distributed unit tests were written under the assumption that network partition
-      // detection is disabled, so we turn it off in the locator.  Tests for network partition
+      // detection is disabled, so we turn it off in the locator. Tests for network partition
       // detection should create a separate locator that has it enabled
-      cmds.add("-D"+DistributionConfig.GEMFIRE_PREFIX+ENABLE_NETWORK_PARTITION_DETECTION+"=false");
+      cmds.add(
+          "-D" + DistributionConfig.GEMFIRE_PREFIX + ENABLE_NETWORK_PARTITION_DETECTION + "=false");
     }
-    cmds.add("-D"+LOG_LEVEL+"=" + DUnitLauncher.logLevel);
+    cmds.add("-D" + LOG_LEVEL + "=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
@@ -204,13 +204,13 @@ public class ProcessManager {
 
     return rst;
   }
-  
+
   private String removeJREJars(String classpath) {
     String[] jars = classpath.split(File.pathSeparator);
     StringBuilder sb = new StringBuilder(classpath.length());
     String jreLib = File.separator + "jre" + File.separator + "lib" + File.separator;
     Boolean firstjar = true;
-    for (String jar: jars) {
+    for (String jar : jars) {
       if (!jar.contains(jreLib)) {
         if (!firstjar) {
           sb.append(File.pathSeparator);
@@ -223,19 +223,21 @@ public class ProcessManager {
   }
 
   /**
-   * Get the java agent passed to this process and pass it to the child VMs.
-   * This was added to support jacoco code coverage reports
+   * Get the java agent passed to this process and pass it to the child VMs. This was added to
+   * support jacoco code coverage reports
    */
   private String getAgentString() {
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
     if (runtimeBean != null) {
       for (String arg : runtimeBean.getInputArguments()) {
         if (arg.contains("-javaagent:")) {
-          //HACK for gradle bug  GRADLE-2859. Jacoco is passing a relative path
-          //That won't work when we pass this to dunit VMs in a different 
-          //directory
-          arg = arg.replace("-javaagent:..", "-javaagent:" + System.getProperty("user.dir") + File.separator + "..");
-          arg = arg.replace("destfile=..", "destfile=" + System.getProperty("user.dir") + File.separator + "..");
+          // HACK for gradle bug GRADLE-2859. Jacoco is passing a relative path
+          // That won't work when we pass this to dunit VMs in a different
+          // directory
+          arg = arg.replace("-javaagent:..",
+              "-javaagent:" + System.getProperty("user.dir") + File.separator + "..");
+          arg = arg.replace("destfile=..",
+              "destfile=" + System.getProperty("user.dir") + File.separator + "..");
           return arg;
         }
       }
@@ -289,7 +291,8 @@ public class ProcessManager {
     }
   }
 
-  public RemoteDUnitVMIF getStub(int i) throws AccessException, RemoteException, NotBoundException, InterruptedException {
+  public RemoteDUnitVMIF getStub(int i)
+      throws AccessException, RemoteException, NotBoundException, InterruptedException {
     waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
     return (RemoteDUnitVMIF) registry.lookup("vm" + i);
   }

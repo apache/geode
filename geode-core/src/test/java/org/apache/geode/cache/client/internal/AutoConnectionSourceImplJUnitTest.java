@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -71,7 +69,7 @@ import static org.junit.Assert.fail;
 @SuppressWarnings("deprecation")
 @Category(IntegrationTest.class)
 public class AutoConnectionSourceImplJUnitTest {
-  
+
   private Cache cache;
   private int port;
   private FakeHandler handler;
@@ -80,7 +78,7 @@ public class AutoConnectionSourceImplJUnitTest {
   private TcpServer server;
   private ScheduledExecutorService background;
   private PoolStats poolStats;
-  
+
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
@@ -91,24 +89,24 @@ public class AutoConnectionSourceImplJUnitTest {
     cache = CacheFactory.create(ds);
     poolStats = new PoolStats(ds, "pool");
     port = AvailablePortHelper.getRandomAvailableTCPPort();
-    
+
     handler = new FakeHandler();
     ArrayList responseLocators = new ArrayList();
     responseLocators.add(new ServerLocation(InetAddress.getLocalHost().getHostName(), port));
     handler.nextLocatorListResponse = new LocatorListResponse(responseLocators, false);
-    
-    //very irritating, the SystemTimer requires having a distributed system
+
+    // very irritating, the SystemTimer requires having a distributed system
     Properties properties = new Properties();
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
-    background = Executors.newSingleThreadScheduledExecutor(); 
-    
-    List/*<InetSocketAddress>*/ locators = new ArrayList();
+    background = Executors.newSingleThreadScheduledExecutor();
+
+    List/* <InetSocketAddress> */ locators = new ArrayList();
     locators.add(new InetSocketAddress(InetAddress.getLocalHost(), port));
     source = new AutoConnectionSourceImpl(locators, "", 60 * 1000);
     source.start(pool);
   }
-  
+
   @After
   public void tearDown() {
     background.shutdownNow();
@@ -118,61 +116,61 @@ public class AutoConnectionSourceImplJUnitTest {
       // do nothing
     }
     try {
-      if(server != null && server.isAlive()) {
+      if (server != null && server.isAlive()) {
         try {
           new TcpClient().stop(InetAddress.getLocalHost(), port);
-        } catch ( ConnectException ignore ) {
+        } catch (ConnectException ignore) {
           // must not be running
         }
         server.join(60 * 1000);
       }
-    } catch(Exception e) {
-      //do nothing
+    } catch (Exception e) {
+      // do nothing
     }
-    
+
     try {
       InternalDistributedSystem.getAnyInstance().disconnect();
-    } catch(Exception e) {
-      //do nothing
+    } catch (Exception e) {
+      // do nothing
     }
   }
-  
+
   @Test
   public void testNoRespondingLocators() {
     try {
       source.findServer(null);
       fail("Should have gotten a NoAvailableLocatorsException");
-    } catch(NoAvailableLocatorsException expected) {
-      //do nothing
+    } catch (NoAvailableLocatorsException expected) {
+      // do nothing
     }
   }
-  
+
   @Test
   public void testClientMembershipListenerHostAtClient() throws IOException {
     String fakeHost = "fake.com";
     InternalDistributedMember member = new InternalDistributedMember("localhost", 54638);
     ServerLocation sl = new ServerLocation(fakeHost, 420);
-    
-    HeapDataOutputStream dos = new HeapDataOutputStream( Version.CURRENT);
+
+    HeapDataOutputStream dos = new HeapDataOutputStream(Version.CURRENT);
     HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(member, hdos);
     DataSerializer.writeByteArray(hdos.toByteArray(), dos);
     hdos.close();
-    
+
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(dos.toByteArray()));
-    
-    DistributedMember ret = (DistributedMember)HandShake.readServerMember(dis, sl);
-    
+
+    DistributedMember ret = (DistributedMember) HandShake.readServerMember(dis, sl);
+
     assertEquals(fakeHost, ret.getHost());
   }
-  
+
   @Test
   public void testNoServers() throws Exception {
     startFakeLocator();
     handler.nextConnectionResponse = new ClientConnectionResponse(null);
     assertEquals(null, source.findServer(null));
   }
-  
+
   @Test
   public void testDiscoverServers() throws Exception {
     startFakeLocator();
@@ -180,82 +178,85 @@ public class AutoConnectionSourceImplJUnitTest {
     handler.nextConnectionResponse = new ClientConnectionResponse(loc1);
     assertEquals(loc1, source.findServer(null));
   }
-  
+
   @Test
   public void testDiscoverLocators() throws Exception {
     startFakeLocator();
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    TcpServer server2 = new TcpServer(secondPort, InetAddress.getLocalHost(), null, null, handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server");
+    TcpServer server2 = new TcpServer(secondPort, InetAddress.getLocalHost(), null, null, handler,
+        new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server");
     server2.start();
-    
+
     try {
       ArrayList locators = new ArrayList();
       locators.add(new ServerLocation(InetAddress.getLocalHost().getHostName(), secondPort));
-      handler.nextLocatorListResponse = new LocatorListResponse(locators,false);
+      handler.nextLocatorListResponse = new LocatorListResponse(locators, false);
       Thread.sleep(500);
       try {
         new TcpClient().stop(InetAddress.getLocalHost(), port);
-      } catch ( ConnectException ignore ) {
+      } catch (ConnectException ignore) {
         // must not be running
       }
       server.join(1000);
-      
-      ServerLocation server1 = new ServerLocation("localhost", 10); 
+
+      ServerLocation server1 = new ServerLocation("localhost", 10);
       handler.nextConnectionResponse = new ClientConnectionResponse(server1);
       assertEquals(server1, source.findServer(null));
     } finally {
       try {
         new TcpClient().stop(InetAddress.getLocalHost(), secondPort);
-      } catch ( ConnectException ignore ) {
+      } catch (ConnectException ignore) {
         // must not be running
       }
       server.join(60 * 1000);
     }
   }
-  
+
   private void startFakeLocator() throws UnknownHostException, IOException, InterruptedException {
-    server = new TcpServer(port, InetAddress.getLocalHost(), null, null, handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "Tcp Server" );
+    server = new TcpServer(port, InetAddress.getLocalHost(), null, null, handler, new FakeHelper(),
+        Thread.currentThread().getThreadGroup(), "Tcp Server");
     server.start();
     Thread.sleep(500);
   }
-  
+
   protected static class FakeHandler implements TcpHandler {
     protected volatile ClientConnectionResponse nextConnectionResponse;
     protected volatile LocatorListResponse nextLocatorListResponse;;
 
-    
-    public void init(TcpServer tcpServer) {
-    }
+
+    public void init(TcpServer tcpServer) {}
 
     public Object processRequest(Object request) throws IOException {
-      if(request instanceof ClientConnectionRequest) {
+      if (request instanceof ClientConnectionRequest) {
         return nextConnectionResponse;
-      }
-      else {
+      } else {
         return nextLocatorListResponse;
       }
     }
 
-    public void shutDown() {
-    }
-    public void endRequest(Object request,long startTime) { }
-    public void endResponse(Object request,long startTime) { }
-    public void restarting(DistributedSystem ds, GemFireCache cache, SharedConfiguration sharedConfig) { }
+    public void shutDown() {}
+
+    public void endRequest(Object request, long startTime) {}
+
+    public void endResponse(Object request, long startTime) {}
+
+    public void restarting(DistributedSystem ds, GemFireCache cache,
+        SharedConfiguration sharedConfig) {}
 
   }
-  
+
   public static class FakeHelper implements PoolStatHelper {
 
-    public void endJob() {
-    }
+    public void endJob() {}
 
-    public void startJob() {
-    }
-    
+    public void startJob() {}
+
   }
-  
+
   public class FakePool implements InternalPool {
-      public String getPoolOrCacheCancelInProgress() {return null; }
+    public String getPoolOrCacheCancelInProgress() {
+      return null;
+    }
 
     @Override
     public boolean getKeepAlive() {
@@ -263,51 +264,97 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     public EndpointManager getEndpointManager() {
-        return null;
-      }
+      return null;
+    }
 
-      public String getName() {
-        return null;
-      }
-      
-      public PoolStats getStats() {
-        return poolStats;
-      }
+    public String getName() {
+      return null;
+    }
 
-      public void destroy() {
-        
-      }
+    public PoolStats getStats() {
+      return poolStats;
+    }
 
-      public void detach() {
-      }
-      
-      public void destroy(boolean keepAlive) {
-        
-      }
-      
-      public boolean isDurableClient() {
-        return false;
-      }
-      
-      public boolean isDestroyed() { 
-        return false;
-      }
-    public int getFreeConnectionTimeout() {return 0;}
-    public int getLoadConditioningInterval() {return 0;}
-    public int getSocketBufferSize() {return 0;}
-    public int getReadTimeout() {return 0;}
-    public int getConnectionsPerServer() {return 0;}
-    public boolean getThreadLocalConnections() {return false;}
-    public boolean getSubscriptionEnabled() {return false;}
-    public boolean getPRSingleHopEnabled() {return false;}
-    public int getSubscriptionRedundancy() {return 0;}
-    public int getSubscriptionMessageTrackingTimeout() {return 0;}
-    public String getServerGroup() {return "";}
-    public List/*<InetSocketAddress>*/ getLocators() {return new ArrayList();}
-    public List/*<InetSocketAddress>*/ getServers() {return new ArrayList();}
+    public void destroy() {
+
+    }
+
+    public void detach() {}
+
+    public void destroy(boolean keepAlive) {
+
+    }
+
+    public boolean isDurableClient() {
+      return false;
+    }
+
+    public boolean isDestroyed() {
+      return false;
+    }
+
+    public int getFreeConnectionTimeout() {
+      return 0;
+    }
+
+    public int getLoadConditioningInterval() {
+      return 0;
+    }
+
+    public int getSocketBufferSize() {
+      return 0;
+    }
+
+    public int getReadTimeout() {
+      return 0;
+    }
+
+    public int getConnectionsPerServer() {
+      return 0;
+    }
+
+    public boolean getThreadLocalConnections() {
+      return false;
+    }
+
+    public boolean getSubscriptionEnabled() {
+      return false;
+    }
+
+    public boolean getPRSingleHopEnabled() {
+      return false;
+    }
+
+    public int getSubscriptionRedundancy() {
+      return 0;
+    }
+
+    public int getSubscriptionMessageTrackingTimeout() {
+      return 0;
+    }
+
+    public String getServerGroup() {
+      return "";
+    }
+
+    public List/* <InetSocketAddress> */ getLocators() {
+      return new ArrayList();
+    }
+
+    public List/* <InetSocketAddress> */ getServers() {
+      return new ArrayList();
+    }
+
     public void releaseThreadLocalConnection() {}
-    public ConnectionStats getStats(ServerLocation location) { return null; }
-    public boolean getMultiuserAuthentication() {return false;}
+
+    public ConnectionStats getStats(ServerLocation location) {
+      return null;
+    }
+
+    public boolean getMultiuserAuthentication() {
+      return false;
+    }
+
     public long getIdleTimeout() {
       return 0;
     }
@@ -339,7 +386,9 @@ public class AutoConnectionSourceImplJUnitTest {
     public Object executeOn(ServerLocation server, Op op) {
       return null;
     }
-    public Object executeOn(ServerLocation server, Op op, boolean accessed,boolean onlyUseExistingCnx) {
+
+    public Object executeOn(ServerLocation server, Op op, boolean accessed,
+        boolean onlyUseExistingCnx) {
       return null;
     }
 
@@ -358,6 +407,7 @@ public class AutoConnectionSourceImplJUnitTest {
     public Object executeOn(Connection con, Op op) {
       return null;
     }
+
     public Object executeOn(Connection con, Op op, boolean timeoutFatal) {
       return null;
     }
@@ -384,38 +434,39 @@ public class AutoConnectionSourceImplJUnitTest {
         public RuntimeException generateCancelledException(Throwable e) {
           return null;
         }
-        
+
       };
     }
 
     public void executeOnAllQueueServers(Op op)
         throws NoSubscriptionServersAvailableException, SubscriptionNotEnabledException {
-      
+
     }
 
     public Object execute(Op op, int retryAttempts) {
       return null;
     }
-    
+
     public QueryService getQueryService() {
       return null;
     }
-    
+
     public int getPendingEventCount() {
       return 0;
     }
-    
-    public RegionService createAuthenticatedCacheView(Properties properties){
+
+    public RegionService createAuthenticatedCacheView(Properties properties) {
       return null;
     }
-    public void setupServerAffinity(boolean allowFailover) {
-    }
-    public void releaseServerAffinity() {
-    }
+
+    public void setupServerAffinity(boolean allowFailover) {}
+
+    public void releaseServerAffinity() {}
+
     public ServerLocation getServerAffinityLocation() {
       return null;
     }
-    public void setServerAffinityLocation(ServerLocation serverLocation) {
-    }
+
+    public void setServerAffinityLocation(ServerLocation serverLocation) {}
   }
 }

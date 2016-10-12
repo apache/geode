@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management.internal.security;
@@ -38,15 +36,16 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
   private ServerStarter serverStarter;
 
   public static CacheServerStartupRule withDefaultSecurityJson(int jmxManagerPort) {
-    return new CacheServerStartupRule(jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+    return new CacheServerStartupRule(jmxManagerPort,
+        "org/apache/geode/management/internal/security/cacheServer.json");
   }
 
   public CacheServerStartupRule(int jmxManagerPort, String jsonFile) {
     Properties properties = new Properties();
-    if(jmxManagerPort>0){
+    if (jmxManagerPort > 0) {
       properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
     }
-    if(jsonFile!=null){
+    if (jsonFile != null) {
       properties.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
       properties.put(SampleSecurityManager.SECURITY_JSON, jsonFile);
     }
@@ -60,7 +59,7 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
   }
 
   @After
-  public void after(){
+  public void after() {
     serverStarter.after();
   }
 
@@ -68,7 +67,7 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
     return serverStarter.cache;
   }
 
-  public int getServerPort(){
+  public int getServerPort() {
     return serverStarter.server.getPort();
   }
 }

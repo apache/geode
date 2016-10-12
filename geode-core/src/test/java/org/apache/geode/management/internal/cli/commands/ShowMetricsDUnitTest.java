@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -57,7 +55,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     localProps.setProperty(NAME, "Controller");
     getSystem(localProps);
     Cache cache = getCache();
-    RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory<Integer, Integer> dataRegionFactory =
+        cache.createRegionFactory(RegionShortcut.REPLICATE);
     Region region1 = dataRegionFactory.create("REGION1");
     Region region2 = dataRegionFactory.create("REGION2");
   }
@@ -79,7 +78,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         getSystem(localProps);
 
         Cache cache = getCache();
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create("REGION1");
       }
     });
@@ -91,7 +91,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         WaitCriterion wc = createMBeanWaitCriterion(1, "", null, 0);
         waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor.createCommandStatement("show metrics", Collections.EMPTY_MAP).process();
+        Result result = commandProcessor
+            .createCommandStatement("show metrics", Collections.EMPTY_MAP).process();
         String resultStr = commandResultToString((CommandResult) result);
         getLogWriter().info(resultStr);
         assertEquals(resultStr, true, result.getStatus().equals(Status.OK));
@@ -99,7 +100,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       }
     };
 
-    //Invoke the command in the Manager VM
+    // Invoke the command in the Manager VM
     final VM managerVm = Host.getHost(0).getVM(0);
     Object managerResultObj = managerVm.invoke(showMetricCmd);
 
@@ -122,7 +123,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         getSystem(localProps);
 
         Cache cache = getCache();
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create("REGION1");
       }
     });
@@ -139,15 +141,16 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         WaitCriterion wc = createMBeanWaitCriterion(2, regionName, null, 0);
         waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor.createCommandStatement("show metrics --region=REGION1",
-            Collections.EMPTY_MAP).process();
+        Result result = commandProcessor
+            .createCommandStatement("show metrics --region=REGION1", Collections.EMPTY_MAP)
+            .process();
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
         return resultAsString;
       }
     };
 
-    //Invoke the command in the Manager VM
+    // Invoke the command in the Manager VM
     final VM managerVm = Host.getHost(0).getVM(0);
     Object managerResultObj = managerVm.invoke(showMetricCmd);
 
@@ -172,23 +175,33 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         ManagementService mgmtService = ManagementService.getManagementService(cache);
         if (beanType == 1) {
           DistributedSystemMXBean dsMxBean = mgmtService.getDistributedSystemMXBean();
-          if (dsMxBean != null) done = true;
+          if (dsMxBean != null)
+            done = true;
         } else if (beanType == 2) {
-          DistributedRegionMXBean dsRegionMxBean = mgmtService.getDistributedRegionMXBean("/" + regionName);
-          if (dsRegionMxBean != null) done = true;
+          DistributedRegionMXBean dsRegionMxBean =
+              mgmtService.getDistributedRegionMXBean("/" + regionName);
+          if (dsRegionMxBean != null)
+            done = true;
         } else if (beanType == 3) {
           ObjectName memberMBeanName = mgmtService.getMemberMBeanName(distributedMember);
-          MemberMXBean memberMxBean = mgmtService.getMBeanInstance(memberMBeanName, MemberMXBean.class);
+          MemberMXBean memberMxBean =
+              mgmtService.getMBeanInstance(memberMBeanName, MemberMXBean.class);
 
-          if (memberMxBean != null) done = true;
+          if (memberMxBean != null)
+            done = true;
         } else if (beanType == 4) {
-          ObjectName regionMBeanName = mgmtService.getRegionMBeanName(distributedMember, "/" + regionName);
-          RegionMXBean regionMxBean = mgmtService.getMBeanInstance(regionMBeanName, RegionMXBean.class);
+          ObjectName regionMBeanName =
+              mgmtService.getRegionMBeanName(distributedMember, "/" + regionName);
+          RegionMXBean regionMxBean =
+              mgmtService.getMBeanInstance(regionMBeanName, RegionMXBean.class);
 
-          if (regionMxBean != null) done = true;
+          if (regionMxBean != null)
+            done = true;
         } else if (beanType == 5) {
-          ObjectName csMxBeanName = mgmtService.getCacheServerMBeanName(cacheServerPort, distributedMember);
-          CacheServerMXBean csMxBean = mgmtService.getMBeanInstance(csMxBeanName, CacheServerMXBean.class);
+          ObjectName csMxBeanName =
+              mgmtService.getCacheServerMBeanName(cacheServerPort, distributedMember);
+          CacheServerMXBean csMxBean =
+              mgmtService.getMBeanInstance(csMxBeanName, CacheServerMXBean.class);
 
           if (csMxBean != null) {
             done = true;
@@ -209,7 +222,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
   @Category(FlakyTest.class) // GEODE-1764
   @Test
-  public void testShowMetricsMember() throws ClassNotFoundException, IOException, InterruptedException {
+  public void testShowMetricsMember()
+      throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();
     Cache cache = getCache();
     final DistributedMember distributedMember = cache.getDistributedSystem().getDistributedMember();
@@ -230,10 +244,13 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         wc = createMBeanWaitCriterion(5, "", distributedMember, cacheServerPort);
         waitForCriterion(wc, 10000, 500, true);
 
-        final String command = CliStrings.SHOW_METRICS + " --" + CliStrings.SHOW_METRICS__MEMBER + "=" + distributedMember.getId() + " --" + CliStrings.SHOW_METRICS__CACHESERVER__PORT + "=" + cacheServerPort + " --" + CliStrings.SHOW_METRICS__FILE + "=" + exportFileName;
+        final String command = CliStrings.SHOW_METRICS + " --" + CliStrings.SHOW_METRICS__MEMBER
+            + "=" + distributedMember.getId() + " --" + CliStrings.SHOW_METRICS__CACHESERVER__PORT
+            + "=" + cacheServerPort + " --" + CliStrings.SHOW_METRICS__FILE + "=" + exportFileName;
 
         CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor.createCommandStatement(command, Collections.EMPTY_MAP).process();
+        Result result =
+            commandProcessor.createCommandStatement(command, Collections.EMPTY_MAP).process();
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
         assertTrue(result.hasIncomingFiles());
@@ -247,7 +264,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       }
     };
 
-    //Invoke the command in the Manager VM
+    // Invoke the command in the Manager VM
     final VM managerVm = Host.getHost(0).getVM(0);
     Object managerResultObj = managerVm.invoke(showMetricCmd);
 
@@ -259,7 +276,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void testShowMetricsRegionFromMember() throws ClassNotFoundException, IOException, InterruptedException {
+  public void testShowMetricsRegionFromMember()
+      throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();
     Cache cache = getCache();
     final DistributedMember distributedMember = cache.getDistributedSystem().getDistributedMember();
@@ -274,9 +292,10 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         WaitCriterion wc = createMBeanWaitCriterion(4, regionName, distributedMember, 0);
         waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor.createCommandStatement(
-            "show metrics --region=" + regionName + " --member=" + distributedMember.getName() + " --file=" + exportFileName,
-            Collections.EMPTY_MAP).process();
+        Result result = commandProcessor
+            .createCommandStatement("show metrics --region=" + regionName + " --member="
+                + distributedMember.getName() + " --file=" + exportFileName, Collections.EMPTY_MAP)
+            .process();
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
         assertTrue(result.hasIncomingFiles());
@@ -289,7 +308,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       }
     };
 
-    //Invoke the command in the Manager VM
+    // Invoke the command in the Manager VM
     final VM managerVm = Host.getHost(0).getVM(0);
     Object managerResultObj = managerVm.invoke(showMetricCmd);
 
@@ -300,7 +319,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void testShowMetricsRegionFromMemberWithCategories() throws ClassNotFoundException, IOException, InterruptedException {
+  public void testShowMetricsRegionFromMemberWithCategories()
+      throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();
     Cache cache = getCache();
     final DistributedMember distributedMember = cache.getDistributedSystem().getDistributedMember();
@@ -316,7 +336,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         waitForCriterion(wc, 5000, 500, true);
         CommandProcessor commandProcessor = new CommandProcessor();
         Result result = commandProcessor.createCommandStatement(
-            "show metrics --region=" + regionName + " --member=" + distributedMember.getName() + " --file=" + exportFileName + " --categories=region,eviction",
+            "show metrics --region=" + regionName + " --member=" + distributedMember.getName()
+                + " --file=" + exportFileName + " --categories=region,eviction",
             Collections.EMPTY_MAP).process();
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
@@ -330,7 +351,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       }
     };
 
-    //Invoke the command in the Manager VM
+    // Invoke the command in the Manager VM
     final VM managerVm = Host.getHost(0).getVM(0);
     Object managerResultObj = managerVm.invoke(showMetricCmd);
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.configuration;
 
@@ -143,8 +141,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     final String orderPolicy = OrderPolicy.KEY.toString();
     final String parallel = "true";
     final String rmDsId = "250";
-    final String socketBufferSize = String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000);
-    final String socketReadTimeout = String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT+200);
+    final String socketBufferSize =
+        String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000);
+    final String socketReadTimeout =
+        String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 200);
     final String DESTROY_REGION = "regionToBeDestroyed";
 
     createRegion(REPLICATE_REGION, RegionShortcut.REPLICATE, null);
@@ -157,21 +157,25 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     createAndDeployJar(workingDir + JAR2, null);
     createAndDeployJar(workingDir + JAR3, null);
 
-    createAsyncEventQueue(AsyncEventQueue1, "false", null, "1000", "1000",  null);
+    createAsyncEventQueue(AsyncEventQueue1, "false", null, "1000", "1000", null);
     destroyRegion(DESTROY_REGION);
     destroyIndex(INDEX2, PARTITION_REGION, null);
 
     undeployJar(JAR3, null);
 
     alterRuntime("true", "", "", "");
-    createGatewayReceiver(receiverManualStart, "", gatewayReceiverStartPort, gatewayReceiverEndPort, "20", "");
-    createGatewaySender(gsId, batchSize, alertThreshold, batchTimeInterval, dispatcherThreads, enableConflation, manualStart, maxQueueMemory, orderPolicy, parallel, rmDsId, socketBufferSize, socketReadTimeout);
+    createGatewayReceiver(receiverManualStart, "", gatewayReceiverStartPort, gatewayReceiverEndPort,
+        "20", "");
+    createGatewaySender(gsId, batchSize, alertThreshold, batchTimeInterval, dispatcherThreads,
+        enableConflation, manualStart, maxQueueMemory, orderPolicy, parallel, rmDsId,
+        socketBufferSize, socketReadTimeout);
 
-    //alterRegion(PARTITION_REGION, "false", AsyncEventQueue1, "", "", "", "", "", "", gsId);
-    //Start a new member which receives the shared configuration
-    //Verify the config creation on this member
+    // alterRegion(PARTITION_REGION, "false", AsyncEventQueue1, "", "", "", "", "", "", gsId);
+    // Start a new member which receives the shared configuration
+    // Verify the config creation on this member
 
-    final String newMemberWorkingDir = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
+    final String newMemberWorkingDir =
+        this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
 
     VM newMember = getHost(0).getVM(2);
     newMember.invoke(new SerializableCallable() {
@@ -183,7 +187,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -202,12 +206,13 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         Region region3 = cache.getRegion(DESTROY_REGION);
         assertNull(region3);
 
-        //Index verification
+        // Index verification
         Index index1 = cache.getQueryService().getIndex(region1, INDEX1);
         assertNotNull(index1);
         assertNull(cache.getQueryService().getIndex(region2, INDEX2));
 
-        final JarDeployer jarDeployer = new JarDeployer(((GemFireCacheImpl) cache).getDistributedSystem().getConfig().getDeployWorkingDir());
+        final JarDeployer jarDeployer = new JarDeployer(
+            ((GemFireCacheImpl) cache).getDistributedSystem().getConfig().getDeployWorkingDir());
 
         final List<JarClassLoader> jarClassLoaders = jarDeployer.findJarClassLoaders();
 
@@ -221,19 +226,19 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         assertTrue(jarNames.contains(JAR2));
         assertFalse(jarNames.contains(JAR3));
 
-        //ASYNC-EVENT-QUEUE verification
+        // ASYNC-EVENT-QUEUE verification
         AsyncEventQueue aeq = cache.getAsyncEventQueue(AsyncEventQueue1);
         assertNotNull(aeq);
         assertFalse(aeq.isPersistent());
         assertTrue(aeq.getBatchSize() == 1000);
         assertTrue(aeq.getMaximumQueueMemory() == 1000);
 
-        //GatewayReceiver verification
+        // GatewayReceiver verification
         Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
         assertFalse(gatewayReceivers.isEmpty());
         assertTrue(gatewayReceivers.size() == 1);
 
-        //Gateway Sender verification
+        // Gateway Sender verification
         GatewaySender gs = cache.getGatewaySender(gsId);
         assertNotNull(gs);
         assertTrue(alertThreshold.equals(Integer.toString(gs.getAlertThreshold())));
@@ -256,9 +261,9 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   }
 
   /**
-   * Tests for {@link Extension}, {@link Extensible}, {@link XmlParser},
-   * {@link XmlGenerator}, {@link XmlEntity} as it applies to Extensions.
-   * Asserts that Mock Extension is created and altered on region and cache.
+   * Tests for {@link Extension}, {@link Extensible}, {@link XmlParser}, {@link XmlGenerator},
+   * {@link XmlEntity} as it applies to Extensions. Asserts that Mock Extension is created and
+   * altered on region and cache.
    * 
    * @since GemFire 8.1
    */
@@ -273,10 +278,11 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     createMockCacheExtension("value1");
     alterMockCacheExtension("value2");
 
-    //Start a new member which receives the shared configuration
-    //Verify the config creation on this member
+    // Start a new member which receives the shared configuration
+    // Verify the config creation on this member
 
-    final String newMemberWorkDir = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
+    final String newMemberWorkDir =
+        this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
 
     VM newMember = getHost(0).getVM(2);
     newMember.invoke(new SerializableCallable() {
@@ -290,7 +296,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -303,19 +309,23 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         Region<?, ?> region1 = cache.getRegion(REPLICATE_REGION);
         assertNotNull(region1);
 
-        //MockRegionExtension verification
+        // MockRegionExtension verification
         @SuppressWarnings("unchecked")
         // should only be one region extension
-        final MockRegionExtension mockRegionExtension = (MockRegionExtension) ((Extensible<Region<?,?>>) region1).getExtensionPoint().getExtensions().iterator().next();
+        final MockRegionExtension mockRegionExtension =
+            (MockRegionExtension) ((Extensible<Region<?, ?>>) region1).getExtensionPoint()
+                .getExtensions().iterator().next();
         assertNotNull(mockRegionExtension);
         assertEquals(1, mockRegionExtension.beforeCreateCounter.get());
         assertEquals(1, mockRegionExtension.onCreateCounter.get());
         assertEquals("value2", mockRegionExtension.getValue());
 
-        //MockCacheExtension verification
+        // MockCacheExtension verification
         @SuppressWarnings("unchecked")
         // should only be one cache extension
-        final MockCacheExtension mockCacheExtension = (MockCacheExtension) ((Extensible<Cache>) cache).getExtensionPoint().getExtensions().iterator().next();
+        final MockCacheExtension mockCacheExtension =
+            (MockCacheExtension) ((Extensible<Cache>) cache).getExtensionPoint().getExtensions()
+                .iterator().next();
         assertNotNull(mockCacheExtension);
         assertEquals(1, mockCacheExtension.beforeCreateCounter.get());
         assertEquals(1, mockCacheExtension.onCreateCounter.get());
@@ -327,9 +337,9 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   }
 
   /**
-   * Tests for {@link Extension}, {@link Extensible}, {@link XmlParser},
-   * {@link XmlGenerator}, {@link XmlEntity} as it applies to Extensions.
-   * Asserts that Mock Extension is created and destroyed on region and cache.
+   * Tests for {@link Extension}, {@link Extensible}, {@link XmlParser}, {@link XmlGenerator},
+   * {@link XmlEntity} as it applies to Extensions. Asserts that Mock Extension is created and
+   * destroyed on region and cache.
    * 
    * @since GemFire 8.1
    */
@@ -344,10 +354,11 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     createMockCacheExtension("value1");
     destroyMockCacheExtension();
 
-    //Start a new member which receives the shared configuration
-    //Verify the config creation on this member
+    // Start a new member which receives the shared configuration
+    // Verify the config creation on this member
 
-    final String newMemberWorkingDir = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
+    final String newMemberWorkingDir =
+        this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
 
     VM newMember = getHost(0).getVM(2);
     newMember.invoke(new SerializableCallable() {
@@ -360,7 +371,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -373,13 +384,13 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         Region<?, ?> region1 = cache.getRegion(REPLICATE_REGION);
         assertNotNull(region1);
 
-        //MockRegionExtension verification
+        // MockRegionExtension verification
         @SuppressWarnings("unchecked")
-        final Extensible<Region<?, ?>> extensibleRegion = (Extensible<Region<?,?>>) region1;
+        final Extensible<Region<?, ?>> extensibleRegion = (Extensible<Region<?, ?>>) region1;
         // Should not be any region extensions
         assertTrue(!extensibleRegion.getExtensionPoint().getExtensions().iterator().hasNext());
 
-        //MockCacheExtension verification
+        // MockCacheExtension verification
         @SuppressWarnings("unchecked")
         final Extensible<Cache> extensibleCache = (Extensible<Cache>) cache;
         // Should not be any cache extensions
@@ -392,7 +403,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Ignore("disabled for unknown reason") // this passes when @Ignore is removed
   @Test
-  public void testCreateDiskStore () throws Exception {
+  public void testCreateDiskStore() throws Exception {
     Object[] result = setup();
     final int locatorPort = (Integer) result[0];
     final String jmxHost = (String) result[1];
@@ -403,8 +414,8 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     final String diskStoreName = "clusterConfigTestDiskStore";
     final String diskDirs = "dir1";
 
-    //final String
-    //createPersistentRegion(peersRegion, RegionShortcut.PARTITION_PERSISTENT, "", diskStoreName);
+    // final String
+    // createPersistentRegion(peersRegion, RegionShortcut.PARTITION_PERSISTENT, "", diskStoreName);
 
     final String autoCompact = "true";
     final String allowForceCompaction = "true";
@@ -414,20 +425,21 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     final String maxOplogSize = "1000";
     final String queueSize = "300";
     final String timeInterval = "10";
-    final String writeBufferSize="100";
+    final String writeBufferSize = "100";
 
-    createDiskStore(diskStoreName, diskDirs, autoCompact, allowForceCompaction, compactionThreshold, duCritical, duWarning, maxOplogSize, queueSize, timeInterval, writeBufferSize);
+    createDiskStore(diskStoreName, diskDirs, autoCompact, allowForceCompaction, compactionThreshold,
+        duCritical, duWarning, maxOplogSize, queueSize, timeInterval, writeBufferSize);
 
-    //createAsyncEventQueue(id, persistent, diskStoreName, batchSize, maxQueueMemory, group)
+    // createAsyncEventQueue(id, persistent, diskStoreName, batchSize, maxQueueMemory, group)
 
-    //Stop the existing data member
+    // Stop the existing data member
     VM dataMember = getHost(0).getVM(1);
     dataMember.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
 
         CacheFactory cf = new CacheFactory();
-        GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
+        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         File[] diskDirs = null;
         Collection<DiskStoreImpl> diskStoreList = cache.listDiskStores();
 
@@ -442,10 +454,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         assertNotNull(diskDirs);
         assertTrue(diskDirs.length > 0);
 
-        //close the cache
+        // close the cache
         cache.close();
 
-        //Delete the disk-store files
+        // Delete the disk-store files
         for (File diskDir : diskDirs) {
           deleteDirectory(diskDir);
         }
@@ -453,9 +465,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
       }
     });
 
-    final String newMemberWorkingDir = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
+    final String newMemberWorkingDir =
+        this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + newMember;
 
-    //Now start the new data member and it should create all the disk-store artifacts
+    // Now start the new data member and it should create all the disk-store artifacts
     VM newMember = getHost(0).getVM(2);
     newMember.invoke(new SerializableCallable() {
       @Override
@@ -466,13 +479,13 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
         getSystem(localProps);
-        GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
+        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         assertNotNull(cache);
 
 
@@ -484,8 +497,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         for (DiskStoreImpl diskStore : diskStoreList) {
           assertTrue(diskStore.getName().equals(diskStoreName));
           assertTrue(Boolean.toString(diskStore.getAutoCompact()).equals(autoCompact));
-          assertTrue(Boolean.toString(diskStore.getAllowForceCompaction()).equals(allowForceCompaction));
-          assertTrue(Integer.toString(diskStore.getCompactionThreshold()).equals(compactionThreshold));
+          assertTrue(
+              Boolean.toString(diskStore.getAllowForceCompaction()).equals(allowForceCompaction));
+          assertTrue(
+              Integer.toString(diskStore.getCompactionThreshold()).equals(compactionThreshold));
           assertTrue(Long.toString(diskStore.getMaxOplogSize()).equals(maxOplogSize));
           assertTrue(Integer.toString(diskStore.getQueueSize()).equals(queueSize));
           assertTrue(Integer.toString(diskStore.getWriteBufferSize()).equals(writeBufferSize));
@@ -514,7 +529,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     dataMember.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
-        GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
+        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         assertTrue(cache.getPdxReadSerialized());
         assertTrue(cache.getPdxIgnoreUnreadFields());
         assertTrue(cache.getPdxPersistent());
@@ -522,15 +537,17 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
       }
     });
   }
-  
+
   @Test
   public void testClusterConfigDir() throws Exception {
-    final int [] ports = getRandomAvailableTCPPorts(3);
+    final int[] ports = getRandomAvailableTCPPorts(3);
     final int locator1Port = ports[0];
     final String locator1Name = "locator1-" + locator1Port;
 
-    final String locatorLogPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "locator-" + locator1Port + ".log";
-    final String clusterConfigPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "userSpecifiedDir";
+    final String locatorLogPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator
+        + "locator-" + locator1Port + ".log";
+    final String clusterConfigPath =
+        this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "userSpecifiedDir";
 
     VM locatorAndMgr = getHost(0).getVM(3);
     Object[] result = (Object[]) locatorAndMgr.invoke(new SerializableCallable() {
@@ -539,7 +556,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         int httpPort;
         int jmxPort;
         String jmxHost;
-        
+
         try {
           jmxHost = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException ignore) {
@@ -550,7 +567,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
 
         jmxPort = ports[0];
         httpPort = ports[1];
-        
+
         final File locatorLogFile = new File(locatorLogPath);
 
         final Properties locatorProps = new Properties();
@@ -562,20 +579,22 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         locatorProps.setProperty(JMX_MANAGER_START, "true");
         locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
         locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-        
+
         File clusterConfigDir = new File(clusterConfigPath);
         assertTrue(clusterConfigDir.mkdir());
-        
+
         locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, clusterConfigDir.getCanonicalPath());
         locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
-        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
+        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port,
+            locatorLogFile, null, locatorProps);
 
         WaitCriterion wc = new WaitCriterion() {
           @Override
           public boolean done() {
             return locator.isSharedConfigurationRunning();
           }
+
           @Override
           public String description() {
             return "Waiting for shared configuration to be started";
@@ -594,12 +613,13 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
       }
     });
   }
-  
+
   private Object[] setup() throws IOException {
-    final int [] ports = getRandomAvailableTCPPorts(3);
+    final int[] ports = getRandomAvailableTCPPorts(3);
     final int locator1Port = ports[0];
     final String locator1Name = "locator1-" + locator1Port;
-    final String locatorLogPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "locator-" + locator1Port + ".log";
+    final String locatorLogPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator
+        + "locator-" + locator1Port + ".log";
 
     VM locatorAndMgr = getHost(0).getVM(3);
     Object[] result = (Object[]) locatorAndMgr.invoke(new SerializableCallable() {
@@ -608,7 +628,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         int httpPort;
         int jmxPort;
         String jmxHost;
-        
+
         try {
           jmxHost = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException ignore) {
@@ -619,7 +639,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
 
         jmxPort = ports[0];
         httpPort = ports[1];
-        
+
         final File locatorLogFile = new File(locatorLogPath);
 
         final Properties locatorProps = new Properties();
@@ -633,13 +653,15 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
         locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
-        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
+        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port,
+            locatorLogFile, null, locatorProps);
 
         WaitCriterion wc = new WaitCriterion() {
           @Override
           public boolean done() {
             return locator.isSharedConfigurationRunning();
           }
+
           @Override
           public String description() {
             return "Waiting for shared configuration to be started";
@@ -657,13 +679,14 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     });
 
     HeadlessGfsh gfsh = getDefaultShell();
-    String jmxHost = (String)result[1];
-    int jmxPort = (Integer)result[2];
-    int httpPort = (Integer)result[3];
-    
+    String jmxHost = (String) result[1];
+    int jmxPort = (Integer) result[2];
+    int httpPort = (Integer) result[3];
+
     connect(jmxHost, jmxPort, httpPort, gfsh);
 
-    final String dataMemberWorkingDir = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + dataMember;
+    final String dataMemberWorkingDir =
+        this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + dataMember;
 
     // Create a cache in VM 1
     VM dataMember = getHost(0).getVM(1);
@@ -675,7 +698,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locator1Port + "]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.dataMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -689,7 +712,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     return result;
   }
-  
+
   private void createRegion(String regionName, RegionShortcut regionShortCut, String group) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
@@ -699,43 +722,50 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   }
 
   private void createMockRegionExtension(final String regionName, final String value) {
-    CommandStringBuilder csb = new CommandStringBuilder(MockExtensionCommands.CREATE_MOCK_REGION_EXTENSION);
+    CommandStringBuilder csb =
+        new CommandStringBuilder(MockExtensionCommands.CREATE_MOCK_REGION_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_REGION_NAME, regionName);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
     executeAndVerifyCommand(csb.toString());
   }
 
   private void alterMockRegionExtension(final String regionName, final String value) {
-    CommandStringBuilder csb = new CommandStringBuilder(MockExtensionCommands.ALTER_MOCK_REGION_EXTENSION);
+    CommandStringBuilder csb =
+        new CommandStringBuilder(MockExtensionCommands.ALTER_MOCK_REGION_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_REGION_NAME, regionName);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
     executeAndVerifyCommand(csb.toString());
   }
 
   private void destroyMockRegionExtension(final String regionName) {
-    CommandStringBuilder csb = new CommandStringBuilder(MockExtensionCommands.DESTROY_MOCK_REGION_EXTENSION);
+    CommandStringBuilder csb =
+        new CommandStringBuilder(MockExtensionCommands.DESTROY_MOCK_REGION_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_REGION_NAME, regionName);
     executeAndVerifyCommand(csb.toString());
   }
 
   private void createMockCacheExtension(final String value) {
-    CommandStringBuilder csb = new CommandStringBuilder(MockExtensionCommands.CREATE_MOCK_CACHE_EXTENSION);
+    CommandStringBuilder csb =
+        new CommandStringBuilder(MockExtensionCommands.CREATE_MOCK_CACHE_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
     executeAndVerifyCommand(csb.toString());
   }
 
   private void alterMockCacheExtension(final String value) {
-    CommandStringBuilder csb = new CommandStringBuilder(MockExtensionCommands.ALTER_MOCK_CACHE_EXTENSION);
+    CommandStringBuilder csb =
+        new CommandStringBuilder(MockExtensionCommands.ALTER_MOCK_CACHE_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
     executeAndVerifyCommand(csb.toString());
   }
 
   private void destroyMockCacheExtension() {
-    CommandStringBuilder csb = new CommandStringBuilder(MockExtensionCommands.DESTROY_MOCK_CACHE_EXTENSION);
+    CommandStringBuilder csb =
+        new CommandStringBuilder(MockExtensionCommands.DESTROY_MOCK_CACHE_EXTENSION);
     executeAndVerifyCommand(csb.toString());
   }
 
-  private void createPersistentRegion(String regionName, RegionShortcut regionShortCut, String group, String diskStoreName) {
+  private void createPersistentRegion(String regionName, RegionShortcut regionShortCut,
+      String group, String diskStoreName) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOptionWithValueCheck(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOptionWithValueCheck(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
@@ -743,23 +773,16 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     csb.addOptionWithValueCheck(CliStrings.CREATE_REGION__GROUP, group);
     executeAndVerifyCommand(csb.getCommandString());
   }
-  
+
   private void destroyRegion(String regionName) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_REGION);
     csb.addOption(CliStrings.DESTROY_REGION__REGION, regionName);
     executeAndVerifyCommand(csb.getCommandString());
   }
-  
-  private void alterRegion(String regionName,
-                           String cloningEnabled,
-                           String aeqId,
-                           String cacheListener,
-                           String cacheWriter,
-                           String cacheLoader,
-                           String entryExpIdleTime,
-                           String entryExpIdleTimeAction,
-                           String evictionMax,
-                           String gsId) {
+
+  private void alterRegion(String regionName, String cloningEnabled, String aeqId,
+      String cacheListener, String cacheWriter, String cacheLoader, String entryExpIdleTime,
+      String entryExpIdleTimeAction, String evictionMax, String gsId) {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
     csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__CLONINGENABLED, "false");
@@ -769,7 +792,8 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__CACHELOADER, cacheLoader);
     csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__CLONINGENABLED, cloningEnabled);
     csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME, entryExpIdleTime);
-    csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION, entryExpIdleTimeAction);
+    csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
+        entryExpIdleTimeAction);
     csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__EVICTIONMAX, evictionMax);
     csb.addOptionWithValueCheck(CliStrings.ALTER_REGION__GATEWAYSENDERID, gsId);
 
@@ -779,11 +803,12 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
   private void executeAndVerifyCommand(String commandString) {
     CommandResult cmdResult = executeCommand(commandString);
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Command : " + commandString);
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Command Result : " + commandResultToString(cmdResult));
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+        .info("Command Result : " + commandResultToString(cmdResult));
     assertEquals(Status.OK, cmdResult.getStatus());
     assertFalse(cmdResult.failedToPersist());
   }
-  
+
   private void createIndex(String indexName, String expression, String regionName, String group) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
@@ -802,25 +827,19 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     csb.addOptionWithValueCheck(CliStrings.DESTROY_INDEX__GROUP, group);
     executeAndVerifyCommand(csb.getCommandString());
   }
-  
-  private void createDiskStore(String diskStoreName,
-                               String diskDirs,
-                               String autoCompact,
-                               String allowForceCompaction,
-                               String compactionThreshold,
-                               String duCritical,
-                               String duWarning,
-                               String maxOplogSize,
-                               String queueSize,
-                               String timeInterval,
-                               String writeBufferSize) {
+
+  private void createDiskStore(String diskStoreName, String diskDirs, String autoCompact,
+      String allowForceCompaction, String compactionThreshold, String duCritical, String duWarning,
+      String maxOplogSize, String queueSize, String timeInterval, String writeBufferSize) {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     csb.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStoreName);
     csb.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, diskDirs);
     csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__AUTO_COMPACT, autoCompact);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION, allowForceCompaction);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__COMPACTION_THRESHOLD, compactionThreshold);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION,
+        allowForceCompaction);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__COMPACTION_THRESHOLD,
+        compactionThreshold);
     csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT, duCritical);
     csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT, duWarning);
     csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__MAX_OPLOG_SIZE, maxOplogSize);
@@ -829,101 +848,107 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     csb.addOptionWithValueCheck(CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE, writeBufferSize);
     executeAndVerifyCommand(csb.getCommandString());
   }
-  
+
   private void destroyDiskStore(String diskStoreName, String group) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     csb.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStoreName);
     csb.addOptionWithValueCheck(CliStrings.DESTROY_DISK_STORE__GROUP, group);
     executeAndVerifyCommand(csb.toString());
   }
-  
-  private void createGatewayReceiver(String manualStart, String bindAddress, String startPort, String endPort, String maxTimeBetweenPings, String group) {
+
+  private void createGatewayReceiver(String manualStart, String bindAddress, String startPort,
+      String endPort, String maxTimeBetweenPings, String group) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYRECEIVER);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART, manualStart);
     csb.addOption(CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT, startPort);
     csb.addOption(CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT, endPort);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS, bindAddress);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYRECEIVER__GROUP, group);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS, maxTimeBetweenPings);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS,
+        maxTimeBetweenPings);
     executeAndVerifyCommand(csb.getCommandString());
   }
-  
-  private void createGatewaySender(String id, 
-                                   String batchSize,
-                                   String alertThreshold,
-                                   String batchTimeInterval,
-                                   String dispatcherThreads,
-                                   String enableConflation,
-                                   String manualStart,
-                                   String maxQueueMemory,
-                                   String orderPolicy,
-                                   String parallel,
-                                   String rmDsId,
-                                   String socketBufferSize,
-                                   String socketReadTimeout) {
-    
+
+  private void createGatewaySender(String id, String batchSize, String alertThreshold,
+      String batchTimeInterval, String dispatcherThreads, String enableConflation,
+      String manualStart, String maxQueueMemory, String orderPolicy, String parallel, String rmDsId,
+      String socketBufferSize, String socketReadTimeout) {
+
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ID, id);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE, batchSize);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD, alertThreshold);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL, batchTimeInterval);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS, dispatcherThreads);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION, enableConflation);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL,
+        batchTimeInterval);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
+        dispatcherThreads);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION,
+        enableConflation);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__MANUALSTART, manualStart);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY, maxQueueMemory);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY, orderPolicy);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, parallel);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, rmDsId);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE, socketBufferSize);
-    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT, socketReadTimeout);
-    
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE,
+        socketBufferSize);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
+        socketReadTimeout);
+
     executeAndVerifyCommand(csb.getCommandString());
   }
-  
-  private void createAsyncEventQueue(String id, String persistent , String diskStoreName, String batchSize, String maxQueueMemory, String group) throws IOException {
-    String queueCommandsJarName = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "testEndToEndSC-QueueCommands.jar";
+
+  private void createAsyncEventQueue(String id, String persistent, String diskStoreName,
+      String batchSize, String maxQueueMemory, String group) throws IOException {
+    String queueCommandsJarName = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator
+        + "testEndToEndSC-QueueCommands.jar";
     final File jarFile = new File(queueCommandsJarName);
 
     try {
       ClassBuilder classBuilder = new ClassBuilder();
-      byte[] jarBytes = classBuilder.createJarFromClassContent("com/qcdunit/QueueCommandsDUnitTestListener",
-          "package com.qcdunit;" +
-          "import java.util.List; import java.util.Properties;" +
-          "import org.apache.geode.internal.cache.xmlcache.Declarable2; import org.apache.geode.cache.asyncqueue.AsyncEvent;" +
-          "import org.apache.geode.cache.asyncqueue.AsyncEventListener;" +
-          "public class QueueCommandsDUnitTestListener implements Declarable2, AsyncEventListener {" +
-          "Properties props;" +
-          "public boolean processEvents(List<AsyncEvent> events) { return true; }" +
-          "public void close() {}" +
-          "public void init(final Properties props) {this.props = props;}" +
-          "public Properties getConfig() {return this.props;}}");
-      
+      byte[] jarBytes =
+          classBuilder.createJarFromClassContent("com/qcdunit/QueueCommandsDUnitTestListener",
+              "package com.qcdunit;" + "import java.util.List; import java.util.Properties;"
+                  + "import org.apache.geode.internal.cache.xmlcache.Declarable2; import org.apache.geode.cache.asyncqueue.AsyncEvent;"
+                  + "import org.apache.geode.cache.asyncqueue.AsyncEventListener;"
+                  + "public class QueueCommandsDUnitTestListener implements Declarable2, AsyncEventListener {"
+                  + "Properties props;"
+                  + "public boolean processEvents(List<AsyncEvent> events) { return true; }"
+                  + "public void close() {}"
+                  + "public void init(final Properties props) {this.props = props;}"
+                  + "public Properties getConfig() {return this.props;}}");
+
       writeByteArrayToFile(jarFile, jarBytes);
       CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
       csb.addOption(CliStrings.DEPLOY__JAR, queueCommandsJarName);
       executeAndVerifyCommand(csb.getCommandString());
-      
+
       csb = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
       csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, id);
-      csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER, "com.qcdunit.QueueCommandsDUnitTestListener");
+      csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER,
+          "com.qcdunit.QueueCommandsDUnitTestListener");
       csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE, diskStoreName);
       csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE, batchSize);
       csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP, group);
       csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT, persistent);
-      csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY, maxQueueMemory);
+      csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY,
+          maxQueueMemory);
       executeAndVerifyCommand(csb.getCommandString());
-      
+
     } finally {
       deleteQuietly(jarFile);
     }
   }
 
-  private void configurePDX(String autoSerializerClasses, String ignoreUnreadFields, String persistent, String portableAutoSerializerClasses, String readSerialized) {
+  private void configurePDX(String autoSerializerClasses, String ignoreUnreadFields,
+      String persistent, String portableAutoSerializerClasses, String readSerialized) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CONFIGURE_PDX);
-    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES, autoSerializerClasses);
-    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS, ignoreUnreadFields);
+    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
+        autoSerializerClasses);
+    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
+        ignoreUnreadFields);
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__PERSISTENT, persistent);
-    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES, portableAutoSerializerClasses);
+    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
+        portableAutoSerializerClasses);
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__READ__SERIALIZED, readSerialized);
     executeAndVerifyCommand(csb.getCommandString());
   }
@@ -951,12 +976,14 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     executeAndVerifyCommand(csb.getCommandString());
   }
 
-  private void alterRuntime(String copyOnRead, String lockLease, String lockTimeout, String messageSyncInterval) {
+  private void alterRuntime(String copyOnRead, String lockLease, String lockTimeout,
+      String messageSyncInterval) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOptionWithValueCheck(CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ, copyOnRead);
     csb.addOptionWithValueCheck(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE, lockLease);
     csb.addOptionWithValueCheck(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT, lockTimeout);
-    csb.addOptionWithValueCheck(CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL, messageSyncInterval);
+    csb.addOptionWithValueCheck(CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL,
+        messageSyncInterval);
     executeAndVerifyCommand(csb.toString());
   }
 
@@ -970,14 +997,14 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     locatorAndMgr.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.getAnyInstance();
+        GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
         ShutdownAllRequest.send(cache.getDistributedSystem().getDistributionManager(), -1);
         return null;
       }
     });
 
     locatorAndMgr.invoke(SharedConfigurationTestUtils.cleanupLocator);
-    //Clean up the directories
+    // Clean up the directories
     if (serverNames != null && !serverNames.isEmpty()) {
       for (String serverName : serverNames) {
         final File serverDir = new File(serverName);

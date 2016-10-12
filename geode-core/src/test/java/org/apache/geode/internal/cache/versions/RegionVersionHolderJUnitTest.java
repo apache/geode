@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.versions;
 
@@ -44,8 +42,7 @@ public class RegionVersionHolderJUnitTest {
     postSetUp();
   }
 
-  protected void postSetUp() throws Exception {
-  }
+  protected void postSetUp() throws Exception {}
 
   @After
   public final void tearDown() throws Exception {
@@ -59,23 +56,23 @@ public class RegionVersionHolderJUnitTest {
   @Test
   public void test48066_1() {
     RegionVersionHolder vh1 = new RegionVersionHolder(member);
-    for (int i=1; i<=3; i++) {
+    for (int i = 1; i <= 3; i++) {
       vh1.recordVersion(i);
     }
-    System.out.println("vh1="+vh1);
-    
+    System.out.println("vh1=" + vh1);
+
     RegionVersionHolder vh2 = vh1.clone();
-    System.out.println("after clone, vh2="+vh2);
-    
+    System.out.println("after clone, vh2=" + vh2);
+
     {
       RegionVersionHolder vh3 = new RegionVersionHolder(member);
-      for (int i=1; i<=10; i++) {
+      for (int i = 1; i <= 10; i++) {
         vh3.recordVersion(i);
       }
-      
+
       // create special exception 10(3-11), bitsetVerson=3
       vh3.initializeFrom(vh2);
-      System.out.println("after init, vh3="+vh3);
+      System.out.println("after init, vh3=" + vh3);
       assertEquals(3, vh3.getVersion());
 
       // to make bsv3,bs=[0,1]
@@ -84,7 +81,7 @@ public class RegionVersionHolderJUnitTest {
       assertEquals(4, vh3.getVersion());
 
       vh3.recordVersion(7);
-      System.out.println("after record 7, vh3="+vh3);
+      System.out.println("after record 7, vh3=" + vh3);
       assertEquals(7, vh3.getVersion());
     }
   }
@@ -96,11 +93,11 @@ public class RegionVersionHolderJUnitTest {
     bs.set(0, 8679);
     bs.set(8705, 8713);
     recordVersions(vh, bs);
-    System.out.println("init:\t\t" +vh);
-    //This is what happens when we apply an RVV from a member that doesn't
-    //have an entry for a member that we do have an entry from
+    System.out.println("init:\t\t" + vh);
+    // This is what happens when we apply an RVV from a member that doesn't
+    // have an entry for a member that we do have an entry from
     vh.initializeFrom(new RegionVersionHolder(0));
-    System.out.println("init from:\t" +vh);
+    System.out.println("init from:\t" + vh);
     vh.recordVersion(1);
     vh.recordVersion(2);
     vh.recordVersion(14);
@@ -1473,15 +1470,16 @@ public class RegionVersionHolderJUnitTest {
     vh.recordVersion(7744);
     vh.recordVersion(7745);
     vh.recordVersion(7746);
-    System.out.println("updated:\t" +vh);
+    System.out.println("updated:\t" + vh);
     vh.removeExceptionsOlderThan(8712);
-    System.out.println("after GC:\t" +vh);
+    System.out.println("after GC:\t" + vh);
 
 
     RegionVersionHolder clone = vh.clone();
     System.out.println("clone: \t\t" + clone);
-    assertTrue("Expected a version greater than 7746 but got this: " + clone, clone.getVersion() >=7746);
-    
+    assertTrue("Expected a version greater than 7746 but got this: " + clone,
+        clone.getVersion() >= 7746);
+
   }
 
   /**
@@ -1492,71 +1490,71 @@ public class RegionVersionHolderJUnitTest {
     testInitializeFrom(false);
     testInitializeFrom(true);
   }
-  
+
   private void testInitializeFrom(boolean withTreeSets) {
     RVVException.UseTreeSetsForTesting = withTreeSets;
     try {
-      //Create a bit set that represents some seen version
-      //with some exceptions
+      // Create a bit set that represents some seen version
+      // with some exceptions
       BitSet bs1 = new BitSet();
       bs1.set(1, 6);
       bs1.set(10, 13);
       bs1.set(30, 51);
       bs1.set(60, 66);
       bs1.set(68, 101);
-      
-      //Get a version holder that has seen these exceptions
+
+      // Get a version holder that has seen these exceptions
       RegionVersionHolder vh1 = buildHolder(bs1);
       validateExceptions(vh1);
-      
-  
+
+
       {
-        //Simple case, initialize an empty version holder
+        // Simple case, initialize an empty version holder
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
         vh2.initializeFrom(vh1);
-  
+
         assertEquals("RVV=" + vh2, 100, vh2.getVersion());
-  
+
         compareWithBitSet(bs1, vh2);
         validateExceptions(vh2);
       }
-      
+
       {
-        //Initialize a vector that has seen some later versions, and has some older
-        //exceptions
-        
+        // Initialize a vector that has seen some later versions, and has some older
+        // exceptions
+
         BitSet bs2 = new BitSet();
-        
-        //Add an exception that doesn't overlap with vh1 exceptions
+
+        // Add an exception that doesn't overlap with vh1 exceptions
         bs2.set(80, 106);
         bs2.set(72, 74);
-        
-        //Add an exception that is contained within a vh1 exception
-        bs2.set(59,70);
+
+        // Add an exception that is contained within a vh1 exception
+        bs2.set(59, 70);
         bs2.set(57);
-        
-        //Add exceptions that partially overlap a vh1 exception on either end
-        bs2.set(35,56);
-        bs2.set(15,26);
-        bs2.set(1,4);
-        
+
+        // Add exceptions that partially overlap a vh1 exception on either end
+        bs2.set(35, 56);
+        bs2.set(15, 26);
+        bs2.set(1, 4);
+
         RegionVersionHolder vh2 = buildHolder(bs2);
-        
+
         validateExceptions(vh2);
         vh2.initializeFrom(vh1);
-        
+
         assertEquals(105, vh2.version);
         assertEquals(100, vh2.getVersion());
         compareWithBitSet(bs1, vh2);
-        
+
         RegionVersionHolder vh4 = vh2.clone();
         assertEquals(105, vh4.version);
         assertEquals(100, vh4.getVersion());
         compareWithBitSet(bs1, vh4);
-        
+
         // use vh1 to overwrite vh2
         vh1.version = 105;
-        vh1.addException(100,106);
+        vh1.addException(100, 106);
         assertTrue(vh2.sameAs(vh1));
         validateExceptions(vh2);
       }
@@ -1564,55 +1562,52 @@ public class RegionVersionHolderJUnitTest {
       RVVException.UseTreeSetsForTesting = false;
     }
   }
-  
+
   /**
-   * Construct a region version holder that matches the seen revisions
-   * passed in the bit set.
+   * Construct a region version holder that matches the seen revisions passed in the bit set.
    * 
    */
   private RegionVersionHolder buildHolder(BitSet bs) {
-    
-    //Createa version holder
+
+    // Createa version holder
     RegionVersionHolder vh = new RegionVersionHolder(member);
-    
-    //Record all of the version in the holder
+
+    // Record all of the version in the holder
     recordVersions(vh, bs);
-    
-    //Make sure the holder looks matches the bitset.
+
+    // Make sure the holder looks matches the bitset.
     compareWithBitSet(bs, vh);
-    
+
     return vh;
   }
 
   /**
-   * Record all the versions represented in the bit set in the 
-   * RegionVersionHolder. This method is overridden in subclasses
-   * to change the recording order.
+   * Record all the versions represented in the bit set in the RegionVersionHolder. This method is
+   * overridden in subclasses to change the recording order.
    */
   protected void recordVersions(RegionVersionHolder vh, BitSet bs) {
-//    System.out.println("vh="+vh);
-    for(int i =1; i < bs.length(); i++) {
-      if(bs.get(i)) {
+    // System.out.println("vh="+vh);
+    for (int i = 1; i < bs.length(); i++) {
+      if (bs.get(i)) {
         vh.recordVersion(i);
-//        System.out.println("after adding " + i + ", vh="+vh);
+        // System.out.println("after adding " + i + ", vh="+vh);
       }
     }
   }
-  
+
   /**
-   * Test a case in 46522 where the received exceptions end up 
-   * not being in the RVV interval.
+   * Test a case in 46522 where the received exceptions end up not being in the RVV interval.
    */
   @Test
   public void testConsumeReceivedRevisions() {
     testConsumeReceivedRevisions(false);
     testConsumeReceivedRevisions(true);
   }
-  
+
   private void testConsumeReceivedRevisions(boolean useTreeSets) {
     try {
       RVVException.UseTreeSetsForTesting = useTreeSets;
-      //Create a bit set which matches the seen versions of vh1
+      // Create a bit set which matches the seen versions of vh1
       BitSet bs1 = new BitSet();
       bs1.set(1, 6);
       bs1.set(27, 29);
@@ -1620,25 +1615,25 @@ public class RegionVersionHolderJUnitTest {
       bs1.set(42, 43);
       bs1.set(47, 49);
       bs1.set(50, 101);
-      
+
       RegionVersionHolder vh1 = buildHolder(bs1);
       validateExceptions(vh1);
       compareWithBitSet(bs1, vh1);
-  
+
       {
-        //Initialize a vector that has seen some later versions, and has some older
-        //exceptions
+        // Initialize a vector that has seen some later versions, and has some older
+        // exceptions
         BitSet bs2 = new BitSet();
-        
-        //Add an exception that doesn't overlap with vh1 exceptions
+
+        // Add an exception that doesn't overlap with vh1 exceptions
         bs2.set(1, 6);
         bs2.set(20, 44);
         bs2.set(49, 101);
-        
+
         RegionVersionHolder vh2 = buildHolder(bs2);
         validateExceptions(vh2);
         vh2.initializeFrom(vh1);
-  //      bs2.or(bs1);
+        // bs2.or(bs1);
         assertEquals(100, vh2.version);
         compareWithBitSet(bs1, vh2);
         validateExceptions(vh2);
@@ -1652,10 +1647,10 @@ public class RegionVersionHolderJUnitTest {
   public void testChangeSetForm() {
     try {
       RVVException.UseTreeSetsForTesting = true;
-      //Create a bit set which matches the seen versions of vh1
+      // Create a bit set which matches the seen versions of vh1
       BitSet bs1 = new BitSet();
       bs1.set(1024);
-      
+
       RegionVersionHolder vh1 = buildHolder(bs1);
       bs1.set(510);
       bs1.set(511);
@@ -1663,25 +1658,24 @@ public class RegionVersionHolderJUnitTest {
       recordVersions(vh1, bs1);
       validateExceptions(vh1);
       compareWithBitSet(bs1, vh1);
-  
+
     } finally {
       RVVException.UseTreeSetsForTesting = false;
     }
   }
 
-  private void compareWithBitSet(BitSet bitSet,
-      RegionVersionHolder versionHolder) {
-    for(int i = 1; i < bitSet.length(); i++) {
-      assertEquals("For entry " + i + " version=" + versionHolder, bitSet.get(i), versionHolder.contains(i));
+  private void compareWithBitSet(BitSet bitSet, RegionVersionHolder versionHolder) {
+    for (int i = 1; i < bitSet.length(); i++) {
+      assertEquals("For entry " + i + " version=" + versionHolder, bitSet.get(i),
+          versionHolder.contains(i));
     }
   }
-  
+
   /**
    * Test the dominates relation between RegionVersionHolders.
    * 
-   * This test currently fails in the last case with two different
-   * holders with the same exception list expressed differently.
-   * Hence it is disabled.
+   * This test currently fails in the last case with two different holders with the same exception
+   * list expressed differently. Hence it is disabled.
    * 
    * See bug 47106
    */
@@ -1694,88 +1688,89 @@ public class RegionVersionHolderJUnitTest {
   private void testDominates(boolean useTreeSets) {
     try {
       RVVException.UseTreeSetsForTesting = useTreeSets;
-      
-      //Simple case, - vh2 has a greater version than vh1
+
+      // Simple case, - vh2 has a greater version than vh1
       {
         RegionVersionHolder vh1 = new RegionVersionHolder(member);
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
-  
+
         vh1.recordVersion(100);
         BitSet bs1 = new BitSet();
         bs1.set(1, 100);
         recordVersions(vh1, bs1);
-        
+
         BitSet bs2 = new BitSet();
         bs2.set(1, 105);
         recordVersions(vh2, bs2);
         assertFalse(vh1.dominates(vh2));
         assertTrue(vh2.dominates(vh1));
       }
-  
+
       // test with a gap between the bitsetVersion and the version
       {
         RegionVersionHolder vh1 = new RegionVersionHolder(member);
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
-  
+
         BitSet bs1 = new BitSet();
         bs1.set(1, 101);
         recordVersions(vh1, bs1);
         // this test assumes that the width is much greater than 100, so use the
         // original RegionVersionHolder.BIT_SET_WIDTH in order for the assertions to be correct
-        vh1.recordVersion(2*originalBitSetWidth);
-        
+        vh1.recordVersion(2 * originalBitSetWidth);
+
         BitSet bs2 = new BitSet();
-        bs2.set(1, 2*originalBitSetWidth+1);
+        bs2.set(1, 2 * originalBitSetWidth + 1);
         recordVersions(vh2, bs2);
-        
-        //vh1={rv2048 bsv100 bs={0, 1948}} or {rv2048 bsv2048 bs={0}; [e(n=2048 p=100)]} after merging 
-        //vh2={rv2048 bsv2047 bs={0, 1}}   or {rv2048 bsv2048 bs={0}} after merging
-        
+
+        // vh1={rv2048 bsv100 bs={0, 1948}} or {rv2048 bsv2048 bs={0}; [e(n=2048 p=100)]} after
+        // merging
+        // vh2={rv2048 bsv2047 bs={0, 1}} or {rv2048 bsv2048 bs={0}} after merging
+
         assertFalse(vh1.dominates(vh2));
         assertTrue(vh2.dominates(vh1));
       }
-  
-      //More complicated. vh2 has a higher version, but has
-      //some exceptions that vh1 does not have.
+
+      // More complicated. vh2 has a higher version, but has
+      // some exceptions that vh1 does not have.
       {
         RegionVersionHolder vh1 = new RegionVersionHolder(member);
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
         BitSet bs1 = new BitSet();
         bs1.set(1, 21);
         bs1.set(30, 101);
-        recordVersions(vh1,bs1);
-        
+        recordVersions(vh1, bs1);
+
         BitSet bs2 = new BitSet();
         bs2.set(1, 50);
         bs2.set(60, 105);
         recordVersions(vh2, bs2);
-  
-        //double check that we didn't screw up the bit sets
+
+        // double check that we didn't screw up the bit sets
         assertFalse(dominates(bs2, bs1));
         assertFalse(dominates(bs1, bs2));
-        
+
         assertFalse(vh1.dominates(vh2));
         assertFalse(vh2.dominates(vh1));
       }
-      
-      //Same version, but both have some exceptions the other doesn't
+
+      // Same version, but both have some exceptions the other doesn't
       {
-        //VH2 will have exceptions for 20-25, 26-30, 41-43
+        // VH2 will have exceptions for 20-25, 26-30, 41-43
         RegionVersionHolder vh1 = new RegionVersionHolder(member);
         BitSet bs1 = new BitSet();
-        
-        //record some versions to generate two exceptions
+
+        // record some versions to generate two exceptions
         bs1.set(1, 21);
         bs1.set(30, 41);
         bs1.set(43, 101);
         recordVersions(vh1, bs1);
-        
-        //now populate some older versions.
+
+        // now populate some older versions.
         bs1.set(25);
         bs1.set(26);
         recordVersions(vh1, bs1);
-        
-        //VH2 will have exceptions for 20-25, 26-30, 42-45
+
+        // VH2 will have exceptions for 20-25, 26-30, 42-45
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
         BitSet bs2 = new BitSet();
         bs2.set(1, 21);
@@ -1786,33 +1781,33 @@ public class RegionVersionHolderJUnitTest {
         assertFalse(vh1.dominates(vh2));
         assertFalse(vh2.dominates(vh1));
       }
-      
-      //Same version, but vh2 has an exception that vh1 doesn't
+
+      // Same version, but vh2 has an exception that vh1 doesn't
       {
         RegionVersionHolder vh1 = new RegionVersionHolder(member);
         BitSet bs1 = new BitSet();
         bs1.set(1, 101);
         recordVersions(vh1, bs1);
-        
+
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
-        BitSet bs2  = new BitSet();
-        bs2.set(1,43);
-        bs2.set(45,101);
+        BitSet bs2 = new BitSet();
+        bs2.set(1, 43);
+        bs2.set(45, 101);
         recordVersions(vh2, bs2);
-        
+
         assertTrue(vh1.dominates(vh2));
         assertFalse(vh2.dominates(vh1));
       }
-      
-      //Same version, but vh2 has an exception that vh1 doesn't
-      //With overlapping exception 
+
+      // Same version, but vh2 has an exception that vh1 doesn't
+      // With overlapping exception
       {
         RegionVersionHolder vh1 = new RegionVersionHolder(member);
         BitSet bs1 = new BitSet();
         bs1.set(1, 44);
         bs1.set(45, 101);
         recordVersions(vh1, bs1);
-        
+
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
         BitSet bs2 = new BitSet();
         bs2.set(1, 40);
@@ -1821,21 +1816,21 @@ public class RegionVersionHolderJUnitTest {
         assertTrue(vh1.dominates(vh2));
         assertFalse(vh2.dominates(vh1));
       }
-      
-      //Same version, but vh2 has an exception that vh1 doesn't
-      //With some differently expressed
-      //but equivalent exceptions.
+
+      // Same version, but vh2 has an exception that vh1 doesn't
+      // With some differently expressed
+      // but equivalent exceptions.
       {
         RegionVersionHolder vh1 = new RegionVersionHolder(member);
         BitSet bs1 = new BitSet();
         bs1.set(1, 20);
         bs1.set(30, 101);
         recordVersions(vh1, bs1);
-        
+
         bs1.set(25);
         bs1.set(26);
         recordVersions(vh1, bs1);
-        
+
         RegionVersionHolder vh2 = new RegionVersionHolder(member);
         BitSet bs2 = new BitSet();
         bs2.set(1, 20);
@@ -1843,67 +1838,74 @@ public class RegionVersionHolderJUnitTest {
         bs2.set(25);
         bs2.set(26);
         recordVersions(vh2, bs2);
-  //      vh1.sameAs(vh2); vh2.sameAs(vh1);  //force bitsets to be merged
-        System.out.println("vh1="+vh1);
-        System.out.println("vh2="+vh2);
+        // vh1.sameAs(vh2); vh2.sameAs(vh1); //force bitsets to be merged
+        System.out.println("vh1=" + vh1);
+        System.out.println("vh2=" + vh2);
         assertTrue(vh1.dominates(vh2));
         assertTrue(vh2.dominates(vh1));
       }
     } finally {
       RVVException.UseTreeSetsForTesting = false;
     }
-    
+
   }
 
   /**
-   * Return true if bs1 dominates bs2 - meaning that at least all of the bits
-   * set in bs2 are set in bs1.
+   * Return true if bs1 dominates bs2 - meaning that at least all of the bits set in bs2 are set in
+   * bs1.
+   * 
    * @param bs1
    * @param bs2
    * @return
    */
   private boolean dominates(BitSet bs1, BitSet bs2) {
-    //bs1 dominates bs2 if it has set at least all of the bits in bs1.
+    // bs1 dominates bs2 if it has set at least all of the bits in bs1.
     BitSet copy = new BitSet();
-    //Make copy a copy of bit set 2
+    // Make copy a copy of bit set 2
     copy.or(bs2);
-    
-    //Clear all of the bits in copy that are set in bit set 1
+
+    // Clear all of the bits in copy that are set in bit set 1
     copy.andNot(bs1);
-    
-    //If all of the bits have been cleared in copy, that means
-    //bit set 1 had at least all of the bits set that were set in
-    //bs2
+
+    // If all of the bits have been cleared in copy, that means
+    // bit set 1 had at least all of the bits set that were set in
+    // bs2
     return copy.isEmpty();
-    
+
   }
+
   /**
    * For test purposes, make sure this version holder is internally consistent.
    */
   private void validateExceptions(RegionVersionHolder<?> holder) {
     if (holder.getExceptionForTest() != null) {
-      for(RVVException ex : holder.getExceptionForTest()) {
+      for (RVVException ex : holder.getExceptionForTest()) {
         // now it allows the special exception whose nextVersion==holder.version+1
-        if(ex.nextVersion > holder.version+1) {
-          Assert.assertTrue(false, "next version too large next=" + ex.nextVersion + " holder version " + holder.version);
+        if (ex.nextVersion > holder.version + 1) {
+          Assert.assertTrue(false, "next version too large next=" + ex.nextVersion
+              + " holder version " + holder.version);
         }
-        
-        if(ex.nextVersion <= ex.previousVersion) {
-          Assert.assertTrue(false, "bad next and previous next=" + ex.nextVersion + ", previous=" + ex.previousVersion);
+
+        if (ex.nextVersion <= ex.previousVersion) {
+          Assert.assertTrue(false,
+              "bad next and previous next=" + ex.nextVersion + ", previous=" + ex.previousVersion);
         }
-        
-        for(ReceivedVersionsIterator it = ex.receivedVersionsIterator(); it.hasNext(); ) {
+
+        for (ReceivedVersionsIterator it = ex.receivedVersionsIterator(); it.hasNext();) {
           Long received = it.next();
-          if(received >= ex.nextVersion) {
-            Assert.assertTrue(false, "received greater than next next=" + ex.nextVersion + ", received=" + received + " exception=" + ex);
+          if (received >= ex.nextVersion) {
+            Assert.assertTrue(false, "received greater than next next=" + ex.nextVersion
+                + ", received=" + received + " exception=" + ex);
           }
-          
-          if(received <= ex.previousVersion) {
-            Assert.assertTrue(false, "received less than previous prev=" + ex.previousVersion + ", received=" + received);
+
+          if (received <= ex.previousVersion) {
+            Assert.assertTrue(false, "received less than previous prev=" + ex.previousVersion
+                + ", received=" + received);
           }
         }
-        if(ex.nextVersion - ex.previousVersion > 1000000) {
-          Assert.assertTrue(false, "to large a gap in exceptions prev=" + ex.previousVersion + ", next=" + ex.nextVersion);
+        if (ex.nextVersion - ex.previousVersion > 1000000) {
+          Assert.assertTrue(false, "to large a gap in exceptions prev=" + ex.previousVersion
+              + ", next=" + ex.nextVersion);
         }
       }
     }

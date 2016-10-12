@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.test.dunit.rules;
@@ -41,8 +39,9 @@ import org.apache.geode.management.internal.security.AccessControlMXBean;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
 
 /**
- * Class which eases the creation of MBeans for security testing. When combined with {@link ConnectionConfiguration}
- * it allows for the creation of per-test connections with different user/password combinations.
+ * Class which eases the creation of MBeans for security testing. When combined with
+ * {@link ConnectionConfiguration} it allows for the creation of per-test connections with different
+ * user/password combinations.
  */
 public class MBeanServerConnectionRule extends DescribedExternalResource {
 
@@ -64,7 +63,8 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
    *
    * @return A new proxy MBean of the same type with which the class was constructed
    */
-  public <T> T getProxyMBean(Class<T> proxyClass, String beanQueryName) throws MalformedObjectNameException, IOException {
+  public <T> T getProxyMBean(Class<T> proxyClass, String beanQueryName)
+      throws MalformedObjectNameException, IOException {
     ObjectName name = null;
     QueryExp query = null;
 
@@ -77,13 +77,16 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     }
 
     Set<ObjectInstance> beans = con.queryMBeans(name, query);
-    assertEquals("failed to find only one instance of type " + proxyClass.getName() + " with name " + beanQueryName, 1, beans.size());
+    assertEquals("failed to find only one instance of type " + proxyClass.getName() + " with name "
+        + beanQueryName, 1, beans.size());
 
-    return JMX.newMXBeanProxy(con, ((ObjectInstance) beans.toArray()[0]).getObjectName(), proxyClass);
+    return JMX.newMXBeanProxy(con, ((ObjectInstance) beans.toArray()[0]).getObjectName(),
+        proxyClass);
   }
 
-  public AccessControlMXBean getAccessControlMBean() throws Exception{
-    return JMX.newMXBeanProxy(con, new ObjectName("GemFire:service=AccessControl,type=Distributed"), AccessControlMXBean.class);
+  public AccessControlMXBean getAccessControlMBean() throws Exception {
+    return JMX.newMXBeanProxy(con, new ObjectName("GemFire:service=AccessControl,type=Distributed"),
+        AccessControlMXBean.class);
   }
 
   /**
@@ -95,7 +98,8 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     return getProxyMBean(proxyClass, null);
   }
 
-  public <T> T getProxyMBean(String beanQueryName) throws MalformedObjectNameException, IOException {
+  public <T> T getProxyMBean(String beanQueryName)
+      throws MalformedObjectNameException, IOException {
     return getProxyMBean(null, beanQueryName);
   }
 
@@ -109,9 +113,10 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     if (config != null) {
       String user = config.user();
       String password = config.password();
-      env.put(JMXConnector.CREDENTIALS, new String[] { user, password });
+      env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
 
-      JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
+      JMXServiceURL url =
+          new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
       jmxConnector = JMXConnectorFactory.connect(url, env);
       con = jmxConnector.getMBeanServerConnection();
     }

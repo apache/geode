@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -38,14 +36,15 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * This class processes the message to be delivered to admin node.
- * [This needs to be redesigned and reimplemented... see 32887]
+ * This class processes the message to be delivered to admin node. [This needs to be redesigned and
+ * reimplemented... see 32887]
+ * 
  * @since GemFire 5.0
  */
 public class SystemMemberCacheEventProcessor {
   private static final Logger logger = LogService.getLogger();
 
-  
+
   /*
    * Sends cache create/close message to Admin VMs
    */
@@ -57,7 +56,7 @@ public class SystemMemberCacheEventProcessor {
    * Sends region creation/destroy message to Admin VMs
    */
   public static void send(Cache c, Region region, Operation op) {
-    InternalDistributedSystem system = (InternalDistributedSystem)c.getDistributedSystem();
+    InternalDistributedSystem system = (InternalDistributedSystem) c.getDistributedSystem();
     Set recps = system.getDistributionManager().getAdminMemberSet();
     // @todo darrel: find out if any of these guys have region listeners
     if (recps.isEmpty()) {
@@ -73,10 +72,9 @@ public class SystemMemberCacheEventProcessor {
     msg.op = op;
     system.getDistributionManager().putOutgoing(msg);
   }
-  
-  
-  public static final class SystemMemberCacheMessage extends HighPriorityDistributionMessage
-  {
+
+
+  public static final class SystemMemberCacheMessage extends HighPriorityDistributionMessage {
     protected String regionPath;
     protected Operation op;
 
@@ -85,15 +83,16 @@ public class SystemMemberCacheEventProcessor {
       AdminDistributedSystemImpl admin = AdminDistributedSystemImpl.getConnectedInstance();
       if (admin == null) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Ignoring message because there is no admin distributed system present: {}", this);
+          logger.debug("Ignoring message because there is no admin distributed system present: {}",
+              this);
         }
-        return;  // probably shutting down or still connecting
+        return; // probably shutting down or still connecting
       }
       List listeners = admin.getCacheListeners();
       Iterator itr = listeners.iterator();
       SystemMemberCacheListener listener = null;
-      while(itr.hasNext()){
-        listener = (SystemMemberCacheListener)itr.next();
+      while (itr.hasNext()) {
+        listener = (SystemMemberCacheListener) itr.next();
         if (this.regionPath == null) {
           SystemMemberCacheEvent event = new SystemMemberCacheEventImpl(getSender(), this.op);
           if (this.op == Operation.CACHE_CREATE) {
@@ -102,7 +101,8 @@ public class SystemMemberCacheEventProcessor {
             listener.afterCacheClose(event);
           }
         } else {
-          SystemMemberRegionEvent event = new SystemMemberRegionEventImpl(getSender(), this.op, this.regionPath);
+          SystemMemberRegionEvent event =
+              new SystemMemberRegionEventImpl(getSender(), this.op, this.regionPath);
           if (this.op.isRegionDestroy()) {
             listener.afterRegionLoss(event);
           } else {
@@ -117,8 +117,7 @@ public class SystemMemberCacheEventProcessor {
     }
 
     @Override
-    public void fromData(DataInput in)
-      throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.regionPath = DataSerializer.readString(in);
       this.op = Operation.fromOrdinal(in.readByte());

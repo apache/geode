@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -49,16 +47,14 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
   public static Command getCommand() {
     return singleton;
   }
-  
-  private ExecuteFunction70() {
-  }
+
+  private ExecuteFunction70() {}
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
     super.cmdExecute(msg, servConn, start);
   }
-  
+
   @Override
   protected String[] getGroups(Message msg) throws IOException, ClassNotFoundException {
     String[] grp = null;
@@ -95,24 +91,25 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
   }
 
   @Override
-  protected void executeFunctionOnGroups(Object function, Object args,
-      String[] groups, boolean allMembers, Function functionObject,
-      ServerToClientFunctionResultSender resultSender, boolean ignoreFailedMembers) {
+  protected void executeFunctionOnGroups(Object function, Object args, String[] groups,
+      boolean allMembers, Function functionObject, ServerToClientFunctionResultSender resultSender,
+      boolean ignoreFailedMembers) {
 
     DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
     if (ds == null) {
       throw new IllegalStateException(
-          LocalizedStrings.ExecuteFunction_DS_NOT_CREATED_OR_NOT_READY
-              .toLocalizedString());
+          LocalizedStrings.ExecuteFunction_DS_NOT_CREATED_OR_NOT_READY.toLocalizedString());
     }
     Set<DistributedMember> members = new HashSet<DistributedMember>();
     for (String group : groups) {
       if (allMembers) {
         members.addAll(ds.getGroupMembers(group));
       } else {
-        ArrayList<DistributedMember> memberList = new ArrayList<DistributedMember>(ds.getGroupMembers(group));
+        ArrayList<DistributedMember> memberList =
+            new ArrayList<DistributedMember>(ds.getGroupMembers(group));
         if (!memberList.isEmpty()) {
-          if (!FunctionServiceManager.RANDOM_onMember && memberList.contains(ds.getDistributedMember())) {
+          if (!FunctionServiceManager.RANDOM_onMember
+              && memberList.contains(ds.getDistributedMember())) {
             members.add(ds.getDistributedMember());
           } else {
             Collections.shuffle(memberList);
@@ -122,7 +119,8 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
       }
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Executing Function on Groups: {} all members: {} members are: {}", Arrays.toString(groups), allMembers, members);
+      logger.debug("Executing Function on Groups: {} all members: {} members are: {}",
+          Arrays.toString(groups), allMembers, members);
     }
     Execution execution = new MemberFunctionExecutor(ds, members, resultSender);
     if (args != null) {
@@ -132,10 +130,10 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
       if (logger.isDebugEnabled()) {
         logger.debug("Function will ignore failed members");
       }
-      ((AbstractExecution)execution).setIgnoreDepartedMembers(true);
+      ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
     }
-    if(!functionObject.isHA()) {
-      ((AbstractExecution)execution).setWaitOnExceptionFlag(true);
+    if (!functionObject.isHA()) {
+      ((AbstractExecution) execution).setWaitOnExceptionFlag(true);
     }
     if (function instanceof String) {
       execution.execute(functionObject.getId()).getResult();

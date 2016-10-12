@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -36,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 @Category(IntegrationTest.class)
 public class CompactRangeIndexIndexMapJUnitTest {
 
-  
+
   @Before
   public void setUp() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
@@ -51,14 +49,14 @@ public class CompactRangeIndexIndexMapJUnitTest {
 
   @Test
   public void testCreateFromEntriesIndex() {
-    
+
   }
-  
+
   @Test
   public void testCreateIndexAndPopulate() {
-    
+
   }
-  
+
   @Test
   public void testLDMIndexCreation() throws Exception {
     Cache cache = CacheUtils.getCache();
@@ -67,38 +65,44 @@ public class CompactRangeIndexIndexMapJUnitTest {
     Index index = queryService.createIndex("IDIndex", "p.ID", "/portfolios p, p.positions ps");
     assertTrue(index instanceof CompactRangeIndex);
   }
-  
+
   @Test
   public void testFirstLevelEqualityQuery() throws Exception {
     testIndexAndQuery("p.ID", "/portfolios p", "Select * from /portfolios p where p.ID = 1");
     testIndexAndQuery("p.ID", "/portfolios p", "Select * from /portfolios p where p.ID > 1");
     testIndexAndQuery("p.ID", "/portfolios p", "Select * from /portfolios p where p.ID < 10");
   }
-  
+
   @Test
   public void testSecondLevelEqualityQuery() throws Exception {
     boolean oldTestLDMValue = IndexManager.IS_TEST_LDM;
     boolean oldTestExpansionValue = IndexManager.IS_TEST_EXPANSION;
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps", "Select * from /portfolios p where p.ID = 1");
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps", "Select p.ID from /portfolios p where p.ID = 1");
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps", "Select p from /portfolios p where p.ID > 3");
-    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps", "Select ps from /portfolios p, p.positions.values ps where ps.secId = 'VMW'");
+    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
+        "Select * from /portfolios p where p.ID = 1");
+    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
+        "Select p.ID from /portfolios p where p.ID = 1");
+    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
+        "Select p from /portfolios p where p.ID > 3");
+    testIndexAndQuery("p.ID", "/portfolios p, p.positions.values ps",
+        "Select ps from /portfolios p, p.positions.values ps where ps.secId = 'VMW'");
     IndexManager.IS_TEST_LDM = oldTestLDMValue;
     IndexManager.IS_TEST_EXPANSION = oldTestExpansionValue;
   }
-  
+
   @Test
   public void testMultipleSecondLevelMatches() throws Exception {
     boolean oldTestLDMValue = IndexManager.IS_TEST_LDM;
     boolean oldTestExpansionValue = IndexManager.IS_TEST_EXPANSION;
-    testIndexAndQuery("ps.secId", "/portfolios p, p.positions.values ps", "Select * from /portfolios p, p.positions.values ps where ps.secId = 'VMW'");
+    testIndexAndQuery("ps.secId", "/portfolios p, p.positions.values ps",
+        "Select * from /portfolios p, p.positions.values ps where ps.secId = 'VMW'");
     IndexManager.IS_TEST_LDM = oldTestLDMValue;
     IndexManager.IS_TEST_EXPANSION = oldTestExpansionValue;
   }
-  
-  //executes queries against both no index and ldm index
-  //compares size counts of both and compares results
-  private void testIndexAndQuery(String indexExpression, String regionPath, String queryString) throws Exception {
+
+  // executes queries against both no index and ldm index
+  // compares size counts of both and compares results
+  private void testIndexAndQuery(String indexExpression, String regionPath, String queryString)
+      throws Exception {
     Cache cache = CacheUtils.getCache();
     int numEntries = 20;
     QueryService queryService = cache.getQueryService();
@@ -106,24 +110,24 @@ public class CompactRangeIndexIndexMapJUnitTest {
     IndexManager.IS_TEST_EXPANSION = false;
     Region region = createReplicatedRegion("portfolios");
     createPortfolios(region, numEntries);
-    
-    //Test no index
-    //Index index = queryService.createIndex("IDIndex", indexExpression, regionPath);
+
+    // Test no index
+    // Index index = queryService.createIndex("IDIndex", indexExpression, regionPath);
     Query query = queryService.newQuery(queryString);
     SelectResults noIndexResults = (SelectResults) query.execute();
-    //clean up
+    // clean up
     queryService.removeIndexes();
-    
-    //creates indexes that may be used by the queries
+
+    // creates indexes that may be used by the queries
     Index index = queryService.createIndex("IDIndex", indexExpression, regionPath);
     query = queryService.newQuery(queryString);
     SelectResults memResults = (SelectResults) query.execute();
-    //clean up
+    // clean up
     queryService.removeIndexes();
     region.destroyRegion();
-    
-    //Now execute against a replicated region with regular indexes
-    //we want to make sure we don't create and LDM index so undo the test hook
+
+    // Now execute against a replicated region with regular indexes
+    // we want to make sure we don't create and LDM index so undo the test hook
     IndexManager.IS_TEST_LDM = true;
     IndexManager.IS_TEST_EXPANSION = true;
     region = createLDMRegion("portfolios");
@@ -132,22 +136,24 @@ public class CompactRangeIndexIndexMapJUnitTest {
     index = queryService.createIndex("IDIndex", indexExpression, regionPath);
     query = queryService.newQuery(queryString);
     SelectResults ldmResults = (SelectResults) query.execute();
-    
-    assertEquals("Size for no index and index results should be equal", noIndexResults.size(), memResults.size());
-    assertEquals("Size for memory and ldm index results should be equal", memResults.size(), ldmResults.size());
+
+    assertEquals("Size for no index and index results should be equal", noIndexResults.size(),
+        memResults.size());
+    assertEquals("Size for memory and ldm index results should be equal", memResults.size(),
+        ldmResults.size());
     CacheUtils.log("Size is:" + memResults.size());
-    //now check elements for both
-    for (Object o: ldmResults) {
+    // now check elements for both
+    for (Object o : ldmResults) {
       assertTrue(memResults.contains(o));
     }
     queryService.removeIndexes();
     region.destroyRegion();
-    
+
   }
-  
-  
-  //Should be changed to ldm region
-  //Also should remove IS_TEST_LDM when possible
+
+
+  // Should be changed to ldm region
+  // Also should remove IS_TEST_LDM when possible
   private Region createLDMRegion(String regionName) throws ParseException {
     IndexManager.IS_TEST_LDM = true;
     Cache cache = CacheUtils.getCache();
@@ -156,7 +162,7 @@ public class CompactRangeIndexIndexMapJUnitTest {
     RegionAttributes regionAttributes = attributesFactory.create();
     return cache.createRegion(regionName, regionAttributes);
   }
-  
+
   private Region createReplicatedRegion(String regionName) throws ParseException {
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
@@ -164,7 +170,7 @@ public class CompactRangeIndexIndexMapJUnitTest {
     RegionAttributes regionAttributes = attributesFactory.create();
     return cache.createRegion(regionName, regionAttributes);
   }
-  
+
   private void createPortfolios(Region region, int num) {
     for (int i = 0; i < num; i++) {
       Portfolio p = new Portfolio(i);
@@ -175,5 +181,5 @@ public class CompactRangeIndexIndexMapJUnitTest {
       region.put("" + i, p);
     }
   }
-  
+
 }

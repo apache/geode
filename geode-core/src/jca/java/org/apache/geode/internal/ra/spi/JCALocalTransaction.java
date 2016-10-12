@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.ra.spi;
 
@@ -35,8 +33,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 
  *
  */
-public class JCALocalTransaction implements LocalTransaction
-{
+public class JCALocalTransaction implements LocalTransaction {
   private volatile GemFireCacheImpl cache;
 
   private volatile TXManagerImpl gfTxMgr;
@@ -63,13 +60,11 @@ public class JCALocalTransaction implements LocalTransaction
     // this );
   }
 
-  public void begin() throws ResourceException
-  {
+  public void begin() throws ResourceException {
     if (DEBUG) {
       try {
         throw new NullPointerException("Asif:JCALocalTransaction:begin");
-      }
-      catch (NullPointerException npe) {
+      } catch (NullPointerException npe) {
         npe.printStackTrace();
       }
     }
@@ -85,8 +80,7 @@ public class JCALocalTransaction implements LocalTransaction
       }
       TransactionManager tm = cache.getJTATransactionManager();
       if (this.tid != null) {
-        throw new LocalTransactionException(
-            " A transaction is already in progress");
+        throw new LocalTransactionException(" A transaction is already in progress");
       }
       if (tm != null && tm.getTransaction() != null) {
         if (logger.fineEnabled()) {
@@ -103,19 +97,15 @@ public class JCALocalTransaction implements LocalTransaction
           if (logger.fineEnabled()) {
             logger.fine("JCALocalTransaction:begun GFE transaction");
           }
+        } else {
+          throw new LocalTransactionException("GemFire is already associated with a transaction");
         }
-        else {
-          throw new LocalTransactionException(
-              "GemFire is already associated with a transaction");
-        }
-      }
-      else {
+      } else {
         if (logger.fineEnabled()) {
           logger.fine("JCAManagedConnection: JTA Transaction does not exist.");
         }
       }
-    }
-    catch (SystemException e) {
+    } catch (SystemException e) {
       // this.onError();
       throw new ResourceException(e);
     }
@@ -129,13 +119,11 @@ public class JCALocalTransaction implements LocalTransaction
 
   }
 
-  public void commit() throws ResourceException
-  {
+  public void commit() throws ResourceException {
     if (DEBUG) {
       try {
         throw new NullPointerException("Asif:JCALocalTransaction:commit");
-      }
-      catch (NullPointerException npe) {
+      } catch (NullPointerException npe) {
         npe.printStackTrace();
       }
     }
@@ -145,15 +133,13 @@ public class JCALocalTransaction implements LocalTransaction
     }
     TXStateProxy tsp = this.gfTxMgr.getTXState();
     if (tsp != null && this.tid != tsp.getTransactionId()) {
-      throw new IllegalStateException(
-          "Local Transaction associated with Tid = " + this.tid
-              + " attempting to commit a different transaction");
+      throw new IllegalStateException("Local Transaction associated with Tid = " + this.tid
+          + " attempting to commit a different transaction");
     }
     try {
       this.gfTxMgr.commit();
       this.tid = null;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new LocalTransactionException(e.toString());
     }
     // Iterator<ConnectionEventListener> itr = this.listeners.iterator();
@@ -165,21 +151,18 @@ public class JCALocalTransaction implements LocalTransaction
 
   }
 
-  public void rollback() throws ResourceException
-  {
+  public void rollback() throws ResourceException {
     if (DEBUG) {
       try {
         throw new NullPointerException("Asif:JJCALocalTransaction:rollback");
-      }
-      catch (NullPointerException npe) {
+      } catch (NullPointerException npe) {
         npe.printStackTrace();
       }
     }
     TXStateProxy tsp = this.gfTxMgr.getTXState();
     if (tsp != null && this.tid != tsp.getTransactionId()) {
-      throw new IllegalStateException(
-          "Local Transaction associated with Tid = " + this.tid
-              + " attempting to commit a different transaction");
+      throw new IllegalStateException("Local Transaction associated with Tid = " + this.tid
+          + " attempting to commit a different transaction");
     }
     LogWriter logger = cache.getLogger();
     if (logger.fineEnabled()) {
@@ -187,24 +170,18 @@ public class JCALocalTransaction implements LocalTransaction
     }
     try {
       this.gfTxMgr.rollback();
-    }
-    catch (IllegalStateException ise) {
+    } catch (IllegalStateException ise) {
       // It is possible that the GFE transaction has already been rolled back.
-      if (ise
-          .getMessage()
-          .equals(
-              LocalizedStrings.TXManagerImpl_THREAD_DOES_NOT_HAVE_AN_ACTIVE_TRANSACTION
-                  .toLocalizedString())) {
+      if (ise.getMessage()
+          .equals(LocalizedStrings.TXManagerImpl_THREAD_DOES_NOT_HAVE_AN_ACTIVE_TRANSACTION
+              .toLocalizedString())) {
         // /ignore;
-      }
-      else {
+      } else {
         throw new ResourceException(ise);
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new ResourceException(e);
-    }
-    finally {
+    } finally {
       this.tid = null;
     }
     // Iterator<ConnectionEventListener> itr = this.listeners.iterator();
@@ -216,9 +193,8 @@ public class JCALocalTransaction implements LocalTransaction
 
   }
 
-  private void init() throws SystemException
-  {
-    this.cache = (GemFireCacheImpl)CacheFactory.getAnyInstance();
+  private void init() throws SystemException {
+    this.cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
     LogWriter logger = this.cache.getLogger();
     if (logger.fineEnabled()) {
       logger.fine("JCAManagedConnection:init. Inside init");
@@ -227,8 +203,7 @@ public class JCALocalTransaction implements LocalTransaction
     this.initDone = true;
   }
 
-  boolean transactionInProgress()
-  {
+  boolean transactionInProgress() {
     return this.tid != null;
   }
 

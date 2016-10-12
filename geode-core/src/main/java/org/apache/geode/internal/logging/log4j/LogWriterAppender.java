@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.logging.log4j;
 
@@ -48,29 +46,33 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
       return Boolean.FALSE;
     }
   };
-  
+
   private final PureLogWriter logWriter;
-  private final FileOutputStream fos; // TODO:LOG:CLEANUP: why do we track this outside ManagerLogWriter? doesn't rolling invalidate it?
-  
+  private final FileOutputStream fos; // TODO:LOG:CLEANUP: why do we track this outside
+                                      // ManagerLogWriter? doesn't rolling invalidate it?
+
   private final AppenderContext[] appenderContexts;
   private final String appenderName;
   private final String logWriterLoggerName;
-  
-  private LogWriterAppender(final AppenderContext[] appenderContexts, final String name, final PureLogWriter logWriter, final FileOutputStream fos) {
-    super(LogWriterAppender.class.getName() + "-" + name, null, PatternLayout.createDefaultLayout());
-    this.appenderContexts = appenderContexts; 
+
+  private LogWriterAppender(final AppenderContext[] appenderContexts, final String name,
+      final PureLogWriter logWriter, final FileOutputStream fos) {
+    super(LogWriterAppender.class.getName() + "-" + name, null,
+        PatternLayout.createDefaultLayout());
+    this.appenderContexts = appenderContexts;
     this.appenderName = LogWriterAppender.class.getName() + "-" + name;
     this.logWriterLoggerName = name;
     this.logWriter = logWriter;
     this.fos = fos;
   }
-  
+
   /**
    * Used by LogWriterAppenders and tests to create a new instance.
    * 
    * @return The new instance.
    */
-  static final LogWriterAppender create(final AppenderContext[] contexts, final String name, final PureLogWriter logWriter, final FileOutputStream fos) {
+  static final LogWriterAppender create(final AppenderContext[] contexts, final String name,
+      final PureLogWriter logWriter, final FileOutputStream fos) {
     LogWriterAppender appender = new LogWriterAppender(contexts, name, logWriter, fos);
     for (AppenderContext context : appender.appenderContexts) {
       context.getLoggerContext().addPropertyChangeListener(appender);
@@ -90,8 +92,8 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
     }
     appending.set(Boolean.TRUE);
     try {
-      this.logWriter.put(LogWriterLogger.log4jLevelToLogWriterLevel(event.getLevel()), event.getMessage().getFormattedMessage(),
-          event.getThrown());
+      this.logWriter.put(LogWriterLogger.log4jLevelToLogWriterLevel(event.getLevel()),
+          event.getMessage().getFormattedMessage(), event.getThrown());
     } finally {
       appending.set(Boolean.FALSE);
     }
@@ -100,7 +102,8 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
   @Override
   public synchronized void propertyChange(final PropertyChangeEvent evt) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Responding to a property change event. Property name is {}.", evt.getPropertyName());
+      logger.debug("Responding to a property change event. Property name is {}.",
+          evt.getPropertyName());
     }
     if (evt.getPropertyName().equals(LoggerContext.PROPERTY_CONFIG)) {
       for (AppenderContext context : this.appenderContexts) {
@@ -111,20 +114,22 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
       }
     }
   }
-  
+
   /**
    * Stop the appender and remove it from the Log4j configuration.
    */
   protected void destroy() { // called 1st during disconnect
     // add stdout appender to MAIN_LOGGER_NAME only if isUsingGemFireDefaultConfig -- see #51819
-    if (LogService.MAIN_LOGGER_NAME.equals(this.logWriterLoggerName) && LogService.isUsingGemFireDefaultConfig()) {
+    if (LogService.MAIN_LOGGER_NAME.equals(this.logWriterLoggerName)
+        && LogService.isUsingGemFireDefaultConfig()) {
       LogService.restoreConsoleAppender();
     }
     for (AppenderContext context : this.appenderContexts) {
       context.getLoggerContext().removePropertyChangeListener(this);
       context.getLoggerConfig().removeAppender(appenderName);
     }
-    for (AppenderContext context : this.appenderContexts) { // do this second as log4j 2.6+ will re-add
+    for (AppenderContext context : this.appenderContexts) { // do this second as log4j 2.6+ will
+                                                            // re-add
       context.getLoggerContext().updateLoggers();
     }
     stop();
@@ -134,79 +139,78 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
     }
   }
 
-  private void cleanUp() { // was closingLogFile() -- called from destroy() as the final step 
+  private void cleanUp() { // was closingLogFile() -- called from destroy() as the final step
     if (this.logWriter instanceof ManagerLogWriter) {
-      ((ManagerLogWriter)this.logWriter).closingLogFile();
+      ((ManagerLogWriter) this.logWriter).closingLogFile();
     }
     if (this.fos != null) {
       try {
         this.fos.close();
-      }
-      catch (IOException ignore) {
+      } catch (IOException ignore) {
       }
     }
   }
-  
+
   @Override
   public void stop() {
     try {
       if (this.logWriter instanceof ManagerLogWriter) {
-        ((ManagerLogWriter)this.logWriter).shuttingDown();
+        ((ManagerLogWriter) this.logWriter).shuttingDown();
       }
     } catch (RuntimeException e) {
       logger.warn("RuntimeException encountered while shuttingDown LogWriterAppender", e);
     }
-    
+
     super.stop();
   }
-  
+
   protected void startupComplete() {
     if (this.logWriter instanceof ManagerLogWriter) {
-      ((ManagerLogWriter)this.logWriter).startupComplete();
+      ((ManagerLogWriter) this.logWriter).startupComplete();
     }
   }
-  
+
   protected void setConfig(final LogConfig cfg) {
     if (this.logWriter instanceof ManagerLogWriter) {
-      ((ManagerLogWriter)this.logWriter).setConfig(cfg);
+      ((ManagerLogWriter) this.logWriter).setConfig(cfg);
     }
   }
-  
+
   public File getChildLogFile() {
     if (this.logWriter instanceof ManagerLogWriter) {
-      return ((ManagerLogWriter)this.logWriter).getChildLogFile();
+      return ((ManagerLogWriter) this.logWriter).getChildLogFile();
     } else {
       return null;
     }
   }
-  
+
   public File getLogDir() {
     if (this.logWriter instanceof ManagerLogWriter) {
-      return ((ManagerLogWriter)this.logWriter).getLogDir();
+      return ((ManagerLogWriter) this.logWriter).getLogDir();
     } else {
       return null;
     }
   }
-  
+
   public int getMainLogId() {
     if (this.logWriter instanceof ManagerLogWriter) {
-      return ((ManagerLogWriter)this.logWriter).getMainLogId();
+      return ((ManagerLogWriter) this.logWriter).getMainLogId();
     } else {
       return -1;
     }
   }
-  
+
   public boolean useChildLogging() {
     if (this.logWriter instanceof ManagerLogWriter) {
-      return ((ManagerLogWriter)this.logWriter).useChildLogging();
+      return ((ManagerLogWriter) this.logWriter).useChildLogging();
     } else {
       return false;
     }
   }
-  
+
   protected void configChanged() {
     if (this.logWriter instanceof ManagerLogWriter) {
-      ((ManagerLogWriter)this.logWriter).configChanged();
+      ((ManagerLogWriter) this.logWriter).configChanged();
     }
   }
 }

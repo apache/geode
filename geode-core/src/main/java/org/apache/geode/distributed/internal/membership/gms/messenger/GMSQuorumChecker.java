@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
@@ -66,16 +64,17 @@ public class GMSQuorumChecker implements QuorumChecker {
     receivedAcks = new ConcurrentHashSet<>();
 
     pingPonger = new GMSPingPonger();
-//    UUID logicalAddress = (UUID) channel.getAddress();
-//    IpAddress ipaddr = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS));
-//    
-//    myAddress = new JGAddress(logicalAddress, ipaddr);
-    myAddress = (JGAddress)channel.down(new Event(Event.GET_LOCAL_ADDRESS));
+    // UUID logicalAddress = (UUID) channel.getAddress();
+    // IpAddress ipaddr = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS));
+    //
+    // myAddress = new JGAddress(logicalAddress, ipaddr);
+    myAddress = (JGAddress) channel.down(new Event(Event.GET_LOCAL_ADDRESS));
 
     addressConversionMap = new ConcurrentHashMap<>(this.lastView.size());
     List<InternalDistributedMember> members = this.lastView.getMembers();
     for (InternalDistributedMember addr : members) {
-      SocketAddress sockaddr = new InetSocketAddress(addr.getNetMember().getInetAddress(), addr.getPort());
+      SocketAddress sockaddr =
+          new InetSocketAddress(addr.getNetMember().getInetAddress(), addr.getPort());
       addressConversionMap.put(sockaddr, addr);
     }
 
@@ -105,10 +104,10 @@ public class GMSQuorumChecker implements QuorumChecker {
   public void suspend() {
     // NO-OP for this implementation
   }
-  
+
   @Override
   public void close() {
-    if (channel != null  &&  !channel.isClosed()) {
+    if (channel != null && !channel.isClosed()) {
       channel.close();
     }
   }
@@ -118,7 +117,7 @@ public class GMSQuorumChecker implements QuorumChecker {
     channel.setReceiver(null);
     channel.setReceiver(new QuorumCheckerReceiver());
   }
-  
+
   @Override
   public NetView getView() {
     return this.lastView;
@@ -135,7 +134,9 @@ public class GMSQuorumChecker implements QuorumChecker {
     int ackedWeight = getWeight(receivedAcks, this.lastView.getLeadMember());
     int lossThreshold = (int) Math.round((weight * this.partitionThreshold) / 100.0);
     if (isDebugEnabled) {
-      logger.debug("quorum check: contacted {} processes with {} member weight units.  Threshold for a quorum is {}", receivedAcks.size(), ackedWeight, lossThreshold);
+      logger.debug(
+          "quorum check: contacted {} processes with {} member weight units.  Threshold for a quorum is {}",
+          receivedAcks.size(), ackedWeight, lossThreshold);
     }
     return (ackedWeight >= lossThreshold);
   }
@@ -147,18 +148,21 @@ public class GMSQuorumChecker implements QuorumChecker {
       long remaining = (endTime - time);
       if (remaining <= 0) {
         if (isDebugEnabled) {
-          logger.debug("quorum check: timeout waiting for responses.  {} responses received", receivedAcks.size());
+          logger.debug("quorum check: timeout waiting for responses.  {} responses received",
+              receivedAcks.size());
         }
         break;
       }
       if (isDebugEnabled) {
-        logger.debug("quorum check: waiting up to {}ms to receive a quorum of responses", remaining);
+        logger.debug("quorum check: waiting up to {}ms to receive a quorum of responses",
+            remaining);
       }
       Thread.sleep(500);
       if (receivedAcks.size() == numMembers) {
         // we've heard from everyone now so we've got a quorum
         if (isDebugEnabled) {
-          logger.debug("quorum check: received responses from all members that were in the old distributed system");
+          logger.debug(
+              "quorum check: received responses from all members that were in the old distributed system");
         }
         return true;
       }
@@ -166,7 +170,8 @@ public class GMSQuorumChecker implements QuorumChecker {
     return false;
   }
 
-  private int getWeight(Collection<InternalDistributedMember> idms, InternalDistributedMember leader) {
+  private int getWeight(Collection<InternalDistributedMember> idms,
+      InternalDistributedMember leader) {
     int weight = 0;
     for (InternalDistributedMember mbr : idms) {
       int thisWeight = mbr.getNetMember().getMemberWeight();
@@ -218,28 +223,22 @@ public class GMSQuorumChecker implements QuorumChecker {
     }
 
     @Override
-    public void getState(OutputStream output) throws Exception {
-    }
+    public void getState(OutputStream output) throws Exception {}
 
     @Override
-    public void setState(InputStream input) throws Exception {
-    }
+    public void setState(InputStream input) throws Exception {}
 
     @Override
-    public void viewAccepted(View new_view) {
-    }
+    public void viewAccepted(View new_view) {}
 
     @Override
-    public void suspect(Address suspected_mbr) {
-    }
+    public void suspect(Address suspected_mbr) {}
 
     @Override
-    public void block() {
-    }
+    public void block() {}
 
     @Override
-    public void unblock() {
-    }
+    public void unblock() {}
 
     public void pongReceived(Address sender) {
       logger.debug("received ping-pong response from {}", sender);
@@ -253,7 +252,7 @@ public class GMSQuorumChecker implements QuorumChecker {
       }
     }
   }
-  
+
   public String toString() {
     return getClass().getSimpleName() + " on view " + this.lastView;
   }

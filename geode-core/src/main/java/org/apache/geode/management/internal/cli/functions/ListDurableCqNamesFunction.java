@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management.internal.cli.functions;
@@ -35,9 +33,10 @@ import org.apache.geode.management.internal.cli.domain.DurableCqNamesResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
- * The ListDurableCqs class is a GemFire function used to collect all the durable client names
- * on the server
+ * The ListDurableCqs class is a GemFire function used to collect all the durable client names on
+ * the server
  * </p>
+ * 
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.execute.Function
  * @see org.apache.geode.cache.execute.FunctionAdapter
@@ -64,7 +63,7 @@ public class ListDurableCqNamesFunction extends FunctionAdapter implements Inter
     String memberNameOrId = CliUtil.getMemberNameOrId(member);
     DurableCqNamesResult result = new DurableCqNamesResult(memberNameOrId);
 
-    String durableClientId = (String)context.getArguments();
+    String durableClientId = (String) context.getArguments();
 
     try {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
@@ -77,13 +76,15 @@ public class ListDurableCqNamesFunction extends FunctionAdapter implements Inter
             if (durableCqNames != null && !durableCqNames.isEmpty()) {
               result.setCqNamesList(new ArrayList<String>(durableCqNames));
             } else {
-              result.setErrorMessage(CliStrings.format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, durableClientId));
+              result.setErrorMessage(CliStrings
+                  .format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, durableClientId));
             }
           } else {
             result.setErrorMessage(CliStrings.LIST_DURABLE_CQS__NO__CQS__REGISTERED);
           }
         } else {
-          result.setErrorMessage(CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
+          result.setErrorMessage(
+              CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
         }
       } else {
         result.setErrorMessage(CliStrings.NO_CLIENT_FOUND);

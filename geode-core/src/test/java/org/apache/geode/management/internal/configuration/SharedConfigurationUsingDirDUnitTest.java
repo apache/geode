@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.configuration;
 
@@ -213,7 +211,8 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void updateClusterConfigDirWithTwoLocatorsRollingRestartAndRollingServerRestart() throws Exception {
+  public void updateClusterConfigDirWithTwoLocatorsRollingRestartAndRollingServerRestart()
+      throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
@@ -256,11 +255,13 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   private void copyClusterXml(final VM vm, final String clusterXml) {
     vm.invoke("Copying new cluster.xml from " + clusterXml, () -> {
-      String clusterXmlPath = TestUtil.getResourcePath(SharedConfigurationUsingDirDUnitTest.class, clusterXml);
+      String clusterXmlPath =
+          TestUtil.getResourcePath(SharedConfigurationUsingDirDUnitTest.class, clusterXml);
       InputStream cacheXml = new FileInputStream(clusterXmlPath);
       assertNotNull("Could not create InputStream from " + clusterXmlPath, cacheXml);
       Files.createDirectories(Paths.get("cluster_config", "cluster"));
-      Files.copy(cacheXml, Paths.get("cluster_config", "cluster", "cluster.xml"), StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(cacheXml, Paths.get("cluster_config", "cluster", "cluster.xml"),
+          StandardCopyOption.REPLACE_EXISTING);
     });
   }
 

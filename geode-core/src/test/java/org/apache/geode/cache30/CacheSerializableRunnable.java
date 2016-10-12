@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -23,26 +21,24 @@ import org.apache.geode.test.dunit.RepeatableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 
 /**
- * A helper class that provides the {@link SerializableRunnable}
- * class, but uses a {@link #run2} method instead that throws {@link
- * CacheException}.  This way, we don't need to have a lot of
+ * A helper class that provides the {@link SerializableRunnable} class, but uses a {@link #run2}
+ * method instead that throws {@link CacheException}. This way, we don't need to have a lot of
  * try/catch code in the tests.
  *
  * @since GemFire 3.0
  */
-public abstract class CacheSerializableRunnable extends SerializableRunnable implements RepeatableRunnable {
+public abstract class CacheSerializableRunnable extends SerializableRunnable
+    implements RepeatableRunnable {
 
   /**
-   * Creates a new <code>CacheSerializableRunnable</code> with the
-   * given name
+   * Creates a new <code>CacheSerializableRunnable</code> with the given name
    */
   public CacheSerializableRunnable(String name) {
     super(name);
   }
 
   /**
-   * Creates a new <code>CacheSerializableRunnable</code> with the
-   * given name
+   * Creates a new <code>CacheSerializableRunnable</code> with the given name
    */
   public CacheSerializableRunnable(String name, Object[] args) {
     super(name);
@@ -50,14 +46,14 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable imp
   }
 
   /**
-   * Invokes the {@link #run2} method and will wrap any {@link
-   * CacheException} thrown by <code>run2</code> in a {@link
-   * CacheSerializableRunnableException}. 
+   * Invokes the {@link #run2} method and will wrap any {@link CacheException} thrown by
+   * <code>run2</code> in a {@link CacheSerializableRunnableException}.
    */
   public final void run() {
     try {
-      if(args == null){
-      run2();}else{
+      if (args == null) {
+        run2();
+      } else {
         run3();
       }
 
@@ -66,13 +62,11 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable imp
       throw new CacheSerializableRunnableException(s, ex);
     }
   }
-  
+
   /**
-   * Invokes the {@link #run} method.  If AssertionError is thrown,
-   * and repeatTimeoutMs is >0, then repeat the {@link #run} method until
-   * it either succeeds or repeatTimeoutMs milliseconds have passed.  The
-   * AssertionError is only thrown to the caller if the last run
-   * still throws it.
+   * Invokes the {@link #run} method. If AssertionError is thrown, and repeatTimeoutMs is >0, then
+   * repeat the {@link #run} method until it either succeeds or repeatTimeoutMs milliseconds have
+   * passed. The AssertionError is only thrown to the caller if the last run still throws it.
    */
   public final void runRepeatingIfNecessary(long repeatTimeoutMs) {
     long start = System.currentTimeMillis();
@@ -92,16 +86,16 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable imp
         }
       }
     } while (lastErr != null && System.currentTimeMillis() - start < repeatTimeoutMs);
-    if (lastErr != null) throw lastErr;
+    if (lastErr != null)
+      throw lastErr;
   }
 
   /**
-   * A {@link SerializableRunnable#run run} method that may throw a
-   * {@link CacheException}.
+   * A {@link SerializableRunnable#run run} method that may throw a {@link CacheException}.
    */
   public abstract void run2() throws CacheException;
 
-  public void run3() throws CacheException{}
+  public void run3() throws CacheException {}
 
   /**
    * An exception that wraps a {@link CacheException}

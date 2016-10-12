@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -142,7 +140,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       assertEquals(true, resultStr.contains(ARCHIVE_FILE_SIZE_LIMIT));
       assertEquals(true, !resultStr.contains("copy-on-read"));
 
-      cmdResult = executeCommand(command + " --" + CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS + "=false");
+      cmdResult =
+          executeCommand(command + " --" + CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS + "=false");
       resultStr = commandResultToString(cmdResult);
 
       getLogWriter().info("#SB No hiding of defaults\n" + resultStr);
@@ -195,7 +194,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     // Test export config for all members
     deleteTestFiles();
-    CommandResult cmdResult = executeCommand("export config --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    CommandResult cmdResult =
+        executeCommand("export config --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     assertTrue(this.managerConfigFile + " should exist", this.managerConfigFile.exists());
@@ -209,7 +209,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     // Test exporting member
     deleteTestFiles();
-    cmdResult = executeCommand("export config --member=Manager --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    cmdResult = executeCommand(
+        "export config --member=Manager --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     assertTrue(this.managerConfigFile + " should exist", this.managerConfigFile.exists());
@@ -219,7 +220,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     // Test exporting group
     deleteTestFiles();
-    cmdResult = executeCommand("export config --group=Group2 --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    cmdResult = executeCommand(
+        "export config --group=Group2 --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     assertFalse(this.managerConfigFile + " should not exist", this.managerConfigFile.exists());
@@ -242,7 +244,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     String configToMatch = stringWriter.toString();
 
     deleteTestFiles();
-    cmdResult = executeCommand("export config --member=Shell --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    cmdResult = executeCommand(
+        "export config --member=Shell --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     char[] fileContents = new char[configToMatch.length()];
@@ -295,7 +298,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(10, config.getLogDiskSpaceLimit());
 
     CommandProcessor commandProcessor = new CommandProcessor();
-    Result result = commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
+    Result result =
+        commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
   }
 
   @Category(FlakyTest.class) // GEODE-1313
@@ -377,7 +381,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "32");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT, "49");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, "2000");
-    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, controllerStatFilePath);
+    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE,
+        controllerStatFilePath);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED, "true");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
 
@@ -438,13 +443,15 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, locatorDirectory);
 
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null, locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
+              locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
             }
+
             @Override
             public String description() {
               return "Waiting for shared configuration to be started";
@@ -461,7 +468,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     // Start the default manager
     Properties managerProps = new Properties();
     managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
@@ -471,7 +478,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(LOG_LEVEL, "error");
         localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
@@ -483,7 +490,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     });
 
     // Test altering the runtime config
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    CommandStringBuilder commandStringBuilder =
+        new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL, "fine");
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
@@ -494,7 +502,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+        SharedConfiguration sharedConfig =
+            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
         Properties gemfireProperties = null;
 
         try {

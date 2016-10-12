@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.test.dunit.rules;
@@ -34,8 +32,8 @@ import org.apache.geode.test.dunit.VM;
 
 
 /**
- * this rule can help you start up locator/server in different VMs
- * you can multiple locators/servers combination
+ * this rule can help you start up locator/server in different VMs you can multiple locators/servers
+ * combination
  */
 public class LocatorServerStartupRule extends ExternalResource implements Serializable {
 
@@ -56,12 +54,12 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   @After
   public void after() {
     stop();
-    Invoke.invokeInEveryVM("Stop each VM", ()->stop());
+    Invoke.invokeInEveryVM("Stop each VM", () -> stop());
   }
 
   /**
-   * Returns getHost(0).getVM(0) as a locator instance with the given
-   * configuration properties.
+   * Returns getHost(0).getVM(0) as a locator instance with the given configuration properties.
+   * 
    * @param locatorProperties
    *
    * @return VM locator vm
@@ -81,6 +79,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   /**
    * starts a cache server that does not connect to a locator
+   * 
    * @return VM node vm
    */
 
@@ -90,6 +89,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   /**
    * starts a cache server that connect to the locator running at the given port.
+   * 
    * @param index
    * @param properties
    * @param locatorPort
@@ -97,7 +97,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    */
   public VM getServerVM(int index, Properties properties, int locatorPort) {
     VM nodeVM = getNodeVM(index);
-    properties.setProperty(NAME, "server-"+index);
+    properties.setProperty(NAME, "server-" + index);
     int port = nodeVM.invoke(() -> {
       serverStarter = new ServerStarter(properties);
       serverStarter.startServer(locatorPort);
@@ -111,23 +111,24 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   /**
    * this will simply returns the node
+   * 
    * @param index
    * @return
    */
-  public VM getNodeVM(int index){
+  public VM getNodeVM(int index) {
     return host.getVM(index);
   }
 
-  public int getPort(int index){
+  public int getPort(int index) {
     return ports[index];
   }
 
 
-  public final void stop(){
-    if(serverStarter!=null) {
+  public final void stop() {
+    if (serverStarter != null) {
       serverStarter.after();
     }
-    if(locatorStarter!=null){
+    if (locatorStarter != null) {
       locatorStarter.after();
     }
   }

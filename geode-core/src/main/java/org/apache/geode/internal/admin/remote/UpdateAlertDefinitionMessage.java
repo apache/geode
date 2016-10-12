@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.remote;
 
@@ -27,9 +25,8 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatAlertsManager;
 
 /**
- * distribution message to register alert's definition
- * {@link StatAlertDefinition} to member's alert manager
- * {@link StatAlertsManager}
+ * distribution message to register alert's definition {@link StatAlertDefinition} to member's alert
+ * manager {@link StatAlertsManager}
  * 
  */
 public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
@@ -45,18 +42,15 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
   private int _actionCode;
 
   /**
-   * Returns a <code>FetchHostRequest</code> to be sent to the specified
-   * recipient.
+   * Returns a <code>FetchHostRequest</code> to be sent to the specified recipient.
    * 
-   * @param alertDefs
-   *                an array of stat alert definitions to set
-   * @param actionCode
-   *                either of ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION,
-   *                REMOVE_ALERT_DEFINITION
+   * @param alertDefs an array of stat alert definitions to set
+   * @param actionCode either of ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION,
+   *        REMOVE_ALERT_DEFINITION
    */
 
-  public static UpdateAlertDefinitionMessage create(
-      StatAlertDefinition[] alertDefs, int actionCode) {
+  public static UpdateAlertDefinitionMessage create(StatAlertDefinition[] alertDefs,
+      int actionCode) {
 
     UpdateAlertDefinitionMessage m = new UpdateAlertDefinitionMessage();
     m._alertDefinitions = alertDefs;
@@ -81,21 +75,19 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this._actionCode = in.readByte();
-    this._alertDefinitions = (StatAlertDefinition[])DataSerializer
-        .readObjectArray(in);
+    this._alertDefinitions = (StatAlertDefinition[]) DataSerializer.readObjectArray(in);
   }
 
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
-  public int getDSFID() {    
+  public int getDSFID() {
     return UPDATE_ALERTS_DEFN_MESSAGE;
   }
 
   @Override
   protected void process(DistributionManager dm) {
-    StatAlertsManager.getInstance(dm).updateAlertDefinition(_alertDefinitions,
-        _actionCode);
+    StatAlertsManager.getInstance(dm).updateAlertDefinition(_alertDefinitions, _actionCode);
   }
 
   /**
@@ -107,8 +99,8 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
 
   /**
    * 
-   * @return action(ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION,
-   *         REMOVE_ALERT_DEFINITION) to be taken on alert definitions
+   * @return action(ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION, REMOVE_ALERT_DEFINITION) to be
+   *         taken on alert definitions
    * 
    */
   public int getActionCode() {
@@ -117,45 +109,40 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
 
   /**
    * 
-   * @param alertDefinitions
-   *                List of stat alert definitions
-   * @param actionCode
-   *                Action(ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION,
-   *                REMOVE_ALERT_DEFINITION) to be taken on alert definitions
+   * @param alertDefinitions List of stat alert definitions
+   * @param actionCode Action(ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION,
+   *        REMOVE_ALERT_DEFINITION) to be taken on alert definitions
    */
-  public void updateAlertDefinition(StatAlertDefinition[] alertDefinitions,
-      int actionCode) {
+  public void updateAlertDefinition(StatAlertDefinition[] alertDefinitions, int actionCode) {
     _alertDefinitions = alertDefinitions;
     _actionCode = actionCode;
   }
 
   /**
-   * Returns String representation of this message object.<p>
-   * 1. if the internalDS instance is not null & is connected, the returned 
-   *    string contains the string as "... to [intended DistributedMember] from
-   *    [sender DistributedMember]". <p>
-   * 2. if the internalDS instance is null or is dis-connected, the returned 
-   *    string is - "InternalDistributedSystem instance not found, no connection 
-   *    with DistributedSystem."
+   * Returns String representation of this message object.
+   * <p>
+   * 1. if the internalDS instance is not null & is connected, the returned string contains the
+   * string as "... to [intended DistributedMember] from [sender DistributedMember]".
+   * <p>
+   * 2. if the internalDS instance is null or is dis-connected, the returned string is -
+   * "InternalDistributedSystem instance not found, no connection with DistributedSystem."
    * 
-   * @return String representation of this message object. 
+   * @return String representation of this message object.
    */
   @Override
   public String toString() {
-    //instance specific for VM that executes this
-    InternalDistributedSystem internalDS = 
-                              InternalDistributedSystem.getAnyInstance();
-    
+    // instance specific for VM that executes this
+    InternalDistributedSystem internalDS = InternalDistributedSystem.getAnyInstance();
+
     String stringInfo = "";
-    
+
     if (internalDS != null && internalDS.isConnected()) {
-      stringInfo = "Add/update the alert definitions" +
-      		         " to " + internalDS.getDistributedMember() +  
-                   " from "+this.getSender();
-    } else { //when no DS instance found in current VM
-      stringInfo = "InternalDistributedSystem instance not found, " +
-      		         "no connection with DistributedSystem.";
+      stringInfo = "Add/update the alert definitions" + " to " + internalDS.getDistributedMember()
+          + " from " + this.getSender();
+    } else { // when no DS instance found in current VM
+      stringInfo = "InternalDistributedSystem instance not found, "
+          + "no connection with DistributedSystem.";
     }
     return stringInfo;
-  }  
+  }
 }

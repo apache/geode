@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -22,11 +20,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * TXSynchronizationThread manages beforeCompletion and afterCompletion
- * calls on behalf of a client cache.  The thread should be instantiated
- * with a Runnable that invokes beforeCompletion behavior.  Then you
- * must invoke runSecondRunnable() with another Runnable that invokes
- * afterCompletion behavior. 
+ * TXSynchronizationThread manages beforeCompletion and afterCompletion calls on behalf of a client
+ * cache. The thread should be instantiated with a Runnable that invokes beforeCompletion behavior.
+ * Then you must invoke runSecondRunnable() with another Runnable that invokes afterCompletion
+ * behavior.
  * 
  * @since GemFire 6.6
  *
@@ -37,11 +34,11 @@ public class TXSynchronizationRunnable implements Runnable {
   private Runnable firstRunnable;
   private final Object firstRunnableSync = new Object();
   private boolean firstRunnableCompleted;
-  
+
   private Runnable secondRunnable;
   private final Object secondRunnableSync = new Object();
   private boolean secondRunnableCompleted;
-  
+
   private boolean abort;
 
   public TXSynchronizationRunnable(Runnable beforeCompletion) {
@@ -49,7 +46,7 @@ public class TXSynchronizationRunnable implements Runnable {
   }
 
   public void run() {
-    synchronized(this.firstRunnableSync) {
+    synchronized (this.firstRunnableSync) {
       try {
         this.firstRunnable.run();
       } finally {
@@ -61,7 +58,7 @@ public class TXSynchronizationRunnable implements Runnable {
         this.firstRunnableSync.notify();
       }
     }
-    synchronized(this.secondRunnableSync){ 
+    synchronized (this.secondRunnableSync) {
       // TODO there should be a transaction timeout that keeps this thread
       // from sitting around forever in the event the client goes away
       final boolean isTraceEnabled = logger.isTraceEnabled();
@@ -98,13 +95,13 @@ public class TXSynchronizationRunnable implements Runnable {
       }
     }
   }
-  
+
   /**
    * wait for the initial beforeCompletion step to finish
    */
   public void waitForFirstExecution() {
-    synchronized(this.firstRunnableSync) {
-      while(!this.firstRunnableCompleted) {
+    synchronized (this.firstRunnableSync) {
+      while (!this.firstRunnableCompleted) {
         try {
           this.firstRunnableSync.wait(1000);
         } catch (InterruptedException e) {
@@ -122,16 +119,16 @@ public class TXSynchronizationRunnable implements Runnable {
   }
 
   /**
-   * run the afterCompletion portion of synchronization.  This method
-   * schedules execution of the given runnable and then waits for it to
-   * finish running
+   * run the afterCompletion portion of synchronization. This method schedules execution of the
+   * given runnable and then waits for it to finish running
+   * 
    * @param r
    */
   public void runSecondRunnable(Runnable r) {
-    synchronized(this.secondRunnableSync){ 
+    synchronized (this.secondRunnableSync) {
       this.secondRunnable = r;
       this.secondRunnableSync.notify();
-      while(!this.secondRunnableCompleted && !this.abort) {
+      while (!this.secondRunnableCompleted && !this.abort) {
         try {
           this.secondRunnableSync.wait(1000);
         } catch (InterruptedException e) {
@@ -147,12 +144,12 @@ public class TXSynchronizationRunnable implements Runnable {
       }
     }
   }
-  
+
   /**
    * stop waiting for an afterCompletion to arrive and just exit
    */
   public void abort() {
-    synchronized(this.secondRunnableSync) {
+    synchronized (this.secondRunnableSync) {
       this.abort = true;
     }
   }

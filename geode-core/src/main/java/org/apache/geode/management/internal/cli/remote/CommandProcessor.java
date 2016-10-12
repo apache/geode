@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.remote;
 
@@ -44,14 +42,14 @@ import org.springframework.shell.event.ParseResult;
  */
 public class CommandProcessor {
   protected RemoteExecutionStrategy executionStrategy;
-  protected Parser                  parser;  
-  private   CommandManager          commandManager;
-  private   int                     lastExecutionStatus;
-  private   LogWrapper              logWrapper;
-  
+  protected Parser parser;
+  private CommandManager commandManager;
+  private int lastExecutionStatus;
+  private LogWrapper logWrapper;
+
   // Lock to synchronize getters & stop
   private final Object LOCK = new Object();
-  
+
   private volatile boolean isStopped = false;
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
@@ -59,14 +57,14 @@ public class CommandProcessor {
   public CommandProcessor() throws ClassNotFoundException, IOException {
     this(null);
   }
-  
+
   public CommandProcessor(Properties cacheProperties) throws ClassNotFoundException, IOException {
-    this.commandManager    = CommandManager.getInstance(cacheProperties);
+    this.commandManager = CommandManager.getInstance(cacheProperties);
     this.executionStrategy = new RemoteExecutionStrategy();
-    this.parser            = new GfshParser(commandManager);
-    this.logWrapper        = LogWrapper.getInstance();
+    this.parser = new GfshParser(commandManager);
+    this.logWrapper = LogWrapper.getInstance();
   }
-  
+
   protected RemoteExecutionStrategy getExecutionStrategy() {
     synchronized (LOCK) {
       return executionStrategy;
@@ -79,16 +77,17 @@ public class CommandProcessor {
     }
   }
 
-////stripped down AbstractShell.executeCommand
-  public ParseResult parseCommand(String commentLessLine) throws CommandProcessingException, IllegalStateException {
+  //// stripped down AbstractShell.executeCommand
+  public ParseResult parseCommand(String commentLessLine)
+      throws CommandProcessingException, IllegalStateException {
     if (commentLessLine != null) {
       return getParser().parse(commentLessLine);
     }
     throw new IllegalStateException("Command String should not be null.");
   }
-  
+
   public Result executeCommand(CommandStatement cmdStmt) {
-    Object result        = null;
+    Object result = null;
     Result commandResult = null;
 
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
@@ -99,18 +98,18 @@ public class CommandProcessor {
 
       final RemoteExecutionStrategy executionStrategy = getExecutionStrategy();
       try {
-        ParseResult parseResult = ((CommandStatementImpl)cmdStmt).getParseResult();
+        ParseResult parseResult = ((CommandStatementImpl) cmdStmt).getParseResult();
 
         if (parseResult == null) {
           parseResult = parseCommand(commentLessLine);
-          if (parseResult == null) {//TODO-Abhishek: Handle this in GfshParser Implementation
+          if (parseResult == null) {// TODO-Abhishek: Handle this in GfshParser Implementation
             setLastExecutionStatus(1);
             return ResultBuilder.createParsingErrorResult(cmdStmt.getCommandString());
           }
-          ((CommandStatementImpl)cmdStmt).setParseResult(parseResult);
+          ((CommandStatementImpl) cmdStmt).setParseResult(parseResult);
         }
 
-        //do general authorization check here
+        // do general authorization check here
         Method method = parseResult.getMethod();
         ResourceOperation resourceOperation = method.getAnnotation(ResourceOperation.class);
         this.securityService.authorize(resourceOperation);
@@ -120,35 +119,37 @@ public class CommandProcessor {
           commandResult = (Result) result;
         } else {
           if (logWrapper.fineEnabled()) {
-            logWrapper.fine("Unknown result type, using toString : "+String.valueOf(result));
+            logWrapper.fine("Unknown result type, using toString : " + String.valueOf(result));
           }
           commandResult = ResultBuilder.createInfoResult(String.valueOf(result));
         }
-      } catch (CommandProcessingException e) { //expected from Parser
+      } catch (CommandProcessingException e) { // expected from Parser
         setLastExecutionStatus(1);
         if (logWrapper.infoEnabled()) {
-          logWrapper.info("Could not parse \""+cmdStmt.getCommandString()+"\".", e);
+          logWrapper.info("Could not parse \"" + cmdStmt.getCommandString() + "\".", e);
         }
         return ResultBuilder.createParsingErrorResult(e.getMessage());
       } catch (NotAuthorizedException e) {
         setLastExecutionStatus(1);
         if (logWrapper.infoEnabled()) {
-          logWrapper.info("Could not execute \""+cmdStmt.getCommandString()+"\".", e);
+          logWrapper.info("Could not execute \"" + cmdStmt.getCommandString() + "\".", e);
         }
         // for NotAuthorizedException, will catch this later in the code
         throw e;
-      }catch (RuntimeException e) {
+      } catch (RuntimeException e) {
         setLastExecutionStatus(1);
         if (logWrapper.infoEnabled()) {
-          logWrapper.info("Could not execute \""+cmdStmt.getCommandString()+"\".", e);
+          logWrapper.info("Could not execute \"" + cmdStmt.getCommandString() + "\".", e);
         }
-        return ResultBuilder.createGemFireErrorResult("Error while processing command <" +cmdStmt.getCommandString()+"> Reason : " + e.getMessage());
+        return ResultBuilder.createGemFireErrorResult("Error while processing command <"
+            + cmdStmt.getCommandString() + "> Reason : " + e.getMessage());
       } catch (Exception e) {
         setLastExecutionStatus(1);
         if (logWrapper.warningEnabled()) {
-          logWrapper.warning("Could not execute \""+cmdStmt.getCommandString()+"\".", e);
+          logWrapper.warning("Could not execute \"" + cmdStmt.getCommandString() + "\".", e);
         }
-        return ResultBuilder.createGemFireErrorResult("Unexpected error while processing command <" +cmdStmt.getCommandString()+"> Reason : " + e.getMessage());
+        return ResultBuilder.createGemFireErrorResult("Unexpected error while processing command <"
+            + cmdStmt.getCommandString() + "> Reason : " + e.getMessage());
       }
       if (logWrapper.fineEnabled()) {
         logWrapper.fine("Executed " + commentLessLine);
@@ -170,17 +171,17 @@ public class CommandProcessor {
   public void setLastExecutionStatus(int lastExecutionStatus) {
     this.lastExecutionStatus = lastExecutionStatus;
   }
-  
+
   public boolean isStopped() {
     return isStopped;
   }
 
   public void stop() {
     synchronized (LOCK) {
-      this.commandManager    = null;
+      this.commandManager = null;
       this.executionStrategy = null;
-      this.parser            = null;
-      this.isStopped         = true;
+      this.parser = null;
+      this.isStopped = true;
     }
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.functional;
 
@@ -41,38 +39,53 @@ public class IndexOnEntrySetJUnitTest {
   private static int numElem = 100;
   private String newValue = "NEW VALUE";
 
-   @Before
-   public void setUp() throws Exception {
-     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
+  @Before
+  public void setUp() throws Exception {
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
     CacheUtils.startCache();
   }
 
-   @After
+  @After
   public void tearDown() throws Exception {
-    // Destroy current Region for other tests    
+    // Destroy current Region for other tests
     IndexManager.testHook = null;
     if (testRegion != null) {
       testRegion.destroyRegion();
     }
-    CacheUtils.closeCache();    
+    CacheUtils.closeCache();
   }
 
   private String[] getQueriesOnRegion(String regionName) {
-    return new String[] {"SELECT DISTINCT entry.value, entry.key FROM /" + regionName + ".entrySet entry WHERE entry.key.PartitionID > 0 AND " + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-    "SELECT DISTINCT entry.value, entry.key FROM /" + regionName + ".entrySet entry WHERE entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-    "SELECT DISTINCT * FROM /" + regionName + ".entrySet entry WHERE entry.key.PartitionID > 0 AND " + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-    "SELECT DISTINCT entry.value, entry.key FROM /" + regionName + ".entrySet entry WHERE entry.key.PartitionID > 0 AND " + "entry.key.Index > 1 LIMIT 2",
-    "SELECT DISTINCT entry.value, entry.key FROM /" + regionName + ".entrySet entry WHERE entry.key.PartitionID > 0 AND " + "entry.key.Index > 1 ORDER BY entry.key.Index ASC",};
+    return new String[] {
+        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+            + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
+            + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
+        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+            + ".entrySet entry WHERE entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
+        "SELECT DISTINCT * FROM /" + regionName
+            + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
+            + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
+        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+            + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
+            + "entry.key.Index > 1 LIMIT 2",
+        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+            + ".entrySet entry WHERE entry.key.PartitionID > 0 AND "
+            + "entry.key.Index > 1 ORDER BY entry.key.Index ASC",};
   }
-  
+
   private String[] getQueriesOnRegionForPut(String regionName) {
-    return new String[] {"SELECT DISTINCT entry.value, entry.key FROM /" + regionName + ".entrySet entry WHERE entry.key.PartitionID = 50 AND " + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
-        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName + ".entrySet entry WHERE entry.value = 50 AND " + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2"};
+    return new String[] {
+        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+            + ".entrySet entry WHERE entry.key.PartitionID = 50 AND "
+            + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2",
+        "SELECT DISTINCT entry.value, entry.key FROM /" + regionName
+            + ".entrySet entry WHERE entry.value = 50 AND "
+            + "entry.key.Index > 1 ORDER BY entry.key.Index ASC LIMIT 2"};
   }
 
   /**
-   * Test queries with index on replicated regions and concurrent PUT, DESTORY, INVALIDATE operations.
-   * Make sure there is no UNDEFINED in the query result.
+   * Test queries with index on replicated regions and concurrent PUT, DESTORY, INVALIDATE
+   * operations. Make sure there is no UNDEFINED in the query result.
    */
   @Test
   public void testQueriesOnReplicatedRegion() throws Exception {
@@ -82,8 +95,8 @@ public class IndexOnEntrySetJUnitTest {
   }
 
   /**
-   * Test queries with index on partitioned regions and concurrent PUT, DESTORY, INVALIDATE operations.
-   * Make sure there is no UNDEFINED in the query result.
+   * Test queries with index on partitioned regions and concurrent PUT, DESTORY, INVALIDATE
+   * operations. Make sure there is no UNDEFINED in the query result.
    */
   @Test
   public void testQueriesOnPartitionedRegion() throws Exception {
@@ -118,7 +131,7 @@ public class IndexOnEntrySetJUnitTest {
   private void putData(int id, Region region) throws ParseException {
     region.put(new SomeKey(id, id), id);
   }
-  
+
   private void clearData(Region region) {
     Iterator it = region.entrySet().iterator();
     while (it.hasNext()) {
@@ -129,7 +142,8 @@ public class IndexOnEntrySetJUnitTest {
 
   /**** Query Execution Helpers ****/
 
-  private void executeQueryTest(String[] queries, String indexedExpression, String regionPath) throws Exception {
+  private void executeQueryTest(String[] queries, String indexedExpression, String regionPath)
+      throws Exception {
     Cache cache = CacheUtils.getCache();
     boolean[] booleanVals = {true, false};
     for (String query : queries) {
@@ -139,32 +153,35 @@ public class IndexOnEntrySetJUnitTest {
         Assert.assertNotNull(cache.getRegion(testRegionName));
         Assert.assertEquals(numElem, cache.getRegion(testRegionName).size());
         if (isDestroy) {
-          helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath, new DestroyEntryTestHook(testRegion));
-        }
-        else {
-          helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath, new InvalidateEntryTestHook(testRegion));
+          helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath,
+              new DestroyEntryTestHook(testRegion));
+        } else {
+          helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath,
+              new InvalidateEntryTestHook(testRegion));
         }
       }
     }
-    
+
     queries = getQueriesOnRegionForPut(testRegionName);
     for (String query : queries) {
       clearData(testRegion);
       populateRegion(testRegion);
       Assert.assertNotNull(cache.getRegion(testRegionName));
       Assert.assertEquals(numElem, cache.getRegion(testRegionName).size());
-      helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath, new PutEntryTestHook(testRegion));
+      helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath,
+          new PutEntryTestHook(testRegion));
     }
   }
 
   /**
-   *  helper method to test against a functional index
-   *  make sure there is no UNDEFINED result
+   * helper method to test against a functional index make sure there is no UNDEFINED result
    * 
    * @param query
    * 
-   * @throws Exception */
-  private SelectResults helpTestFunctionalIndexForQuery(String query, String indexedExpression, String regionPath, AbstractTestHook testHook) throws Exception {
+   * @throws Exception
+   */
+  private SelectResults helpTestFunctionalIndexForQuery(String query, String indexedExpression,
+      String regionPath, AbstractTestHook testHook) throws Exception {
     MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
     QueryObserverHolder.setInstance(observer);
     IndexManager.testHook = testHook;
@@ -176,14 +193,13 @@ public class IndexOnEntrySetJUnitTest {
       Object row = iterator.next();
       if (row instanceof Struct) {
         Object[] fields = ((Struct) row).getFieldValues();
-        for (Object field: fields) {
+        for (Object field : fields) {
           Assert.assertTrue(field != QueryService.UNDEFINED);
           if (field instanceof String) {
             Assert.assertTrue(((String) field).compareTo(newValue) != 0);
           }
         }
-      }
-      else {
+      } else {
         Assert.assertTrue(row != QueryService.UNDEFINED);
         if (row instanceof String) {
           Assert.assertTrue(((String) row).compareTo(newValue) != 0);
@@ -195,7 +211,7 @@ public class IndexOnEntrySetJUnitTest {
     Assert.assertTrue(((AbstractTestHook) IndexManager.testHook).isTestHookCalled());
     ((AbstractTestHook) IndexManager.testHook).reset();
     qs.removeIndex(index);
-   
+
     return indexedResults;
   }
 
@@ -242,16 +258,16 @@ public class IndexOnEntrySetJUnitTest {
     public void reset() {
       isTestHookCalled = false;
     }
-    
+
     public boolean isTestHookCalled() {
       return isTestHookCalled;
     }
-    
+
     /**
      * Subclass override with different operation
      */
     public abstract void doOp();
-    
+
     @Override
     public void hook(int spot) throws RuntimeException {
       if (spot == 200) {
@@ -278,49 +294,49 @@ public class IndexOnEntrySetJUnitTest {
     }
 
   }
-  
+
   class DestroyEntryTestHook extends AbstractTestHook {
-    
+
     DestroyEntryTestHook(Region r) {
       this.r = r;
     }
-    
+
     public void doOp() {
       Iterator it = r.entrySet().iterator();
       while (it.hasNext()) {
         Region.Entry entry = (Region.Entry) it.next();
-          r.destroy(entry.getKey());
-        }      
+        r.destroy(entry.getKey());
+      }
     }
   }
-  
+
   class InvalidateEntryTestHook extends AbstractTestHook {
-    
+
     InvalidateEntryTestHook(Region r) {
       this.r = r;
     }
-    
+
     public void doOp() {
       Iterator it = r.entrySet().iterator();
       while (it.hasNext()) {
         Region.Entry entry = (Region.Entry) it.next();
-          r.invalidate(entry.getKey());
-      }      
+        r.invalidate(entry.getKey());
+      }
     }
   }
-  
+
   class PutEntryTestHook extends AbstractTestHook {
-    
+
     PutEntryTestHook(Region r) {
       this.r = r;
     }
-    
+
     public void doOp() {
       Iterator it = r.entrySet().iterator();
       while (it.hasNext()) {
         Region.Entry entry = (Region.Entry) it.next();
         r.put(entry.getKey(), newValue);
-      }      
+      }
     }
   }
 }

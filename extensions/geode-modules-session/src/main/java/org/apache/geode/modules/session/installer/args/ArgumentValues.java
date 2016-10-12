@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.installer.args;
 
@@ -31,7 +29,7 @@ public class ArgumentValues {
   /**
    * Storage location for all arguments found after the "--" pseudo-arg.
    */
-  private String[] postArgs = new String[]{};
+  private String[] postArgs = new String[] {};
 
   /**
    * Storage location for the command line argument values.
@@ -56,9 +54,9 @@ public class ArgumentValues {
   }
 
   /**
-   * After processing the command line arguments, this method may be used to
-   * return all arguments which were excluded from processing by their placement
-   * after the "<code>--</code>" psuedo-argument.
+   * After processing the command line arguments, this method may be used to return all arguments
+   * which were excluded from processing by their placement after the "<code>--</code>"
+   * psuedo-argument.
    *
    * @return all unprocess arguments
    */
@@ -69,7 +67,7 @@ public class ArgumentValues {
   /**
    * Sets the data values found for a specific argument.
    *
-   * @param arg         argument
+   * @param arg argument
    * @param paramValues parameter values for the argument
    */
   public void addResult(final Argument arg, final String[] paramValues) {
@@ -93,11 +91,9 @@ public class ArgumentValues {
   }
 
   /**
-   * Counts the number of arguments defined on the command line which are in the
-   * list provided.
+   * Counts the number of arguments defined on the command line which are in the list provided.
    *
-   * @param ofThese the arguments to search for, or null to count all supplied
-   *                arguments
+   * @param ofThese the arguments to search for, or null to count all supplied arguments
    * @return count of the defined arguments
    */
   public int getDefinedCount(Argument... ofThese) {
@@ -119,12 +115,10 @@ public class ArgumentValues {
   }
 
   /**
-   * Returns whetheror not the command line argument was actually provided on
-   * the command line.
+   * Returns whetheror not the command line argument was actually provided on the command line.
    *
    * @param arg argument to query
-   * @return true if the argument is defined by the command line, false
-   * otherwise
+   * @return true if the argument is defined by the command line, false otherwise
    */
   public boolean isDefined(final Argument arg) {
     final List<String[]> result = values.get(arg);
@@ -132,8 +126,8 @@ public class ArgumentValues {
   }
 
   /**
-   * Returns all results for the specified argument.  If a command line option
-   * is specified more than once, this is the method to use to get all values.
+   * Returns all results for the specified argument. If a command line option is specified more than
+   * once, this is the method to use to get all values.
    *
    * @param arg argument to query
    * @return list of all parameter lists defined for this argument
@@ -169,8 +163,7 @@ public class ArgumentValues {
   }
 
   /**
-   * Convenience method to retrieve the first instance of the command line
-   * argument's values.
+   * Convenience method to retrieve the first instance of the command line argument's values.
    *
    * @param arg argument to query
    * @return first parameter list defined for this argument
@@ -185,8 +178,8 @@ public class ArgumentValues {
   }
 
   /**
-   * Convenience method to return the first value of the first instance of the
-   * command line argument values for the specified argument.
+   * Convenience method to return the first value of the first instance of the command line argument
+   * values for the specified argument.
    *
    * @param arg argument to query
    * @return first parameter of the first list of parameters supplied
@@ -201,16 +194,13 @@ public class ArgumentValues {
   }
 
   /**
-   * Convenience method to return the result of getFirstResult method as an
-   * integer.
+   * Convenience method to return the result of getFirstResult method as an integer.
    *
-   * @param arg            argument to query
-   * @param undefinedValue value to return when argument is not defined or is
-   *                       illegally defined
+   * @param arg argument to query
+   * @param undefinedValue value to return when argument is not defined or is illegally defined
    * @return value specified, or default value provided
    */
-  public int getFirstResultAsInt(
-      final Argument arg, final int undefinedValue) {
+  public int getFirstResultAsInt(final Argument arg, final int undefinedValue) {
     final String value = getFirstResult(arg);
     if (value == null) {
       return undefinedValue;

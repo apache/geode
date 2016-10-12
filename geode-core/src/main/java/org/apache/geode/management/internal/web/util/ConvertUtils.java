@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.web.util;
 
@@ -30,9 +28,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * The ConvertUtils class is a support class for performing conversions used by the GemFire web application
- * and REST interface.
+ * The ConvertUtils class is a support class for performing conversions used by the GemFire web
+ * application and REST interface.
  * <p/>
+ * 
  * @see org.apache.geode.management.internal.cli.CliUtil
  * @since GemFire 8.0
  */
@@ -40,12 +39,14 @@ import org.springframework.web.multipart.MultipartFile;
 public abstract class ConvertUtils {
 
   /**
-   * Converts the 2-dimensional byte array of file data, which includes the name of the file as bytes followed by
-   * the byte content of the file, for all files being transmitted by Gfsh to the GemFire Manager.
+   * Converts the 2-dimensional byte array of file data, which includes the name of the file as
+   * bytes followed by the byte content of the file, for all files being transmitted by Gfsh to the
+   * GemFire Manager.
    * <p/>
+   * 
    * @param fileData a 2 dimensional byte array of files names and file content.
-   * @return an array of Spring Resource objects encapsulating the details (name and content) of each file being
-   * transmitted by Gfsh to the GemFire Manager.
+   * @return an array of Spring Resource objects encapsulating the details (name and content) of
+   *         each file being transmitted by Gfsh to the GemFire Manager.
    * @see org.springframework.core.io.ByteArrayResource
    * @see org.springframework.core.io.Resource
    * @see org.apache.geode.management.internal.cli.CliUtil#bytesToData(byte[][])
@@ -60,7 +61,8 @@ public abstract class ConvertUtils {
 
       for (int index = 0; index < fileNames.length; index++) {
         final String filename = fileNames[index];
-        resources.add(new ByteArrayResource(fileContent[index], String.format("Contents of JAR file (%1$s).", filename)) {
+        resources.add(new ByteArrayResource(fileContent[index],
+            String.format("Contents of JAR file (%1$s).", filename)) {
           @Override
           public String getFilename() {
             return filename;
@@ -75,10 +77,13 @@ public abstract class ConvertUtils {
   }
 
   /**
-   * Converts the array of MultipartFiles into a 2-dimensional byte array containing content from each MultipartFile.
-   * The 2-dimensional byte array format is used by Gfsh and the GemFire Manager to transmit file data.
+   * Converts the array of MultipartFiles into a 2-dimensional byte array containing content from
+   * each MultipartFile. The 2-dimensional byte array format is used by Gfsh and the GemFire Manager
+   * to transmit file data.
    * <p/>
-   * @param files an array of Spring MultipartFile objects to convert into the 2-dimensional byte array format.
+   * 
+   * @param files an array of Spring MultipartFile objects to convert into the 2-dimensional byte
+   *        array format.
    * @return a 2-dimensional byte array containing the content of each MultipartFile.
    * @throws IOException if an I/O error occurs reading the contents of a MultipartFile.
    * @see #convert(org.springframework.core.io.Resource...)
@@ -99,10 +104,13 @@ public abstract class ConvertUtils {
   }
 
   /**
-   * Converts the array of Resources into a 2-dimensional byte array containing content from each Resource.
-   * The 2-dimensional byte array format is used by Gfsh and the GemFire Manager to transmit file data.
+   * Converts the array of Resources into a 2-dimensional byte array containing content from each
+   * Resource. The 2-dimensional byte array format is used by Gfsh and the GemFire Manager to
+   * transmit file data.
    * <p/>
-   * @param resources an array of Spring Resource objects to convert into the 2-dimensional byte array format.
+   * 
+   * @param resources an array of Spring Resource objects to convert into the 2-dimensional byte
+   *        array format.
    * @return a 2-dimensional byte array containing the content of each Resource.
    * @throws IllegalArgumentException if the filename of a Resource was not specified.
    * @throws IOException if an I/O error occurs reading the contents of a Resource!
@@ -114,8 +122,8 @@ public abstract class ConvertUtils {
 
       for (final Resource resource : resources) {
         if (StringUtils.isBlank(resource.getFilename())) {
-          throw new IllegalArgumentException(String.format("The filename of Resource (%1$s) must be specified!",
-            resource.getDescription()));
+          throw new IllegalArgumentException(String.format(
+              "The filename of Resource (%1$s) must be specified!", resource.getDescription()));
         }
 
         fileData.add(resource.getFilename().getBytes());

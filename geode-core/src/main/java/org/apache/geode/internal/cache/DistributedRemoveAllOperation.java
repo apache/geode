@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -64,17 +62,20 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * 
  * @since GemFire 8.1
  */
-public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TODO extend DistributedCacheOperation instead
-  {
+public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TODO extend
+                                                                           // DistributedCacheOperation
+                                                                           // instead
+{
   private static final Logger logger = LogService.getLogger();
 
   /**
    * Release is called by freeOffHeapResources.
    */
-  @Retained protected final RemoveAllEntryData[] removeAllData;
+  @Retained
+  protected final RemoveAllEntryData[] removeAllData;
 
   public int removeAllDataSize;
-  
+
   protected boolean isBridgeOp = false;
 
   static final byte USED_FAKE_EVENT_ID = 0x01;
@@ -84,10 +85,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   static final byte POSDUP = 0x10;
   static final byte PERSISTENT_TAG = 0x20;
   static final byte HAS_CALLBACKARG = 0x40;
-  static final byte HAS_TAILKEY = (byte)0x80;
+  static final byte HAS_TAILKEY = (byte) 0x80;
 
   public DistributedRemoveAllOperation(CacheEvent event, int size, boolean isBridgeOp) {
-    super(event, ((EntryEventImpl)event).getEventTime(0L));
+    super(event, ((EntryEventImpl) event).getEventTime(0L));
     this.removeAllData = new RemoveAllEntryData[size];
     this.removeAllDataSize = 0;
     this.isBridgeOp = isBridgeOp;
@@ -96,62 +97,55 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   /**
    * return if the operation is bridge operation
    */
-  public boolean isBridgeOperation()
-  {
+  public boolean isBridgeOperation() {
     return this.isBridgeOp;
   }
-  
+
   public RemoveAllEntryData[] getRemoveAllEntryData() {
-          return removeAllData;
+    return removeAllData;
   }
-  
+
   public void setRemoveAllEntryData(RemoveAllEntryData[] removeAllEntryData) {
     for (int i = 0; i < removeAllEntryData.length; i++) {
       removeAllData[i] = removeAllEntryData[i];
     }
     this.removeAllDataSize = removeAllEntryData.length;
   }
-  
+
   /**
    * Add an entry that this removeAll operation should distribute.
    */
-  public void addEntry(RemoveAllEntryData removeAllEntry)
-  {
+  public void addEntry(RemoveAllEntryData removeAllEntry) {
     this.removeAllData[this.removeAllDataSize] = removeAllEntry;
-    this.removeAllDataSize += 1;
-  }
-  
-  /**
-   * Add an entry that this removeAll operation should distribute.
-   */
-  public void addEntry(EntryEventImpl ev)
-  {
-    this.removeAllData[this.removeAllDataSize] = new RemoveAllEntryData(ev);
     this.removeAllDataSize += 1;
   }
 
   /**
    * Add an entry that this removeAll operation should distribute.
-   * This method is for a special case: the callback will be called after this
-   * in hasSeenEvent() case, so we should change the status beforehand
    */
-  public void addEntry(EntryEventImpl ev, boolean newCallbackInvoked)
-  {
+  public void addEntry(EntryEventImpl ev) {
+    this.removeAllData[this.removeAllDataSize] = new RemoveAllEntryData(ev);
+    this.removeAllDataSize += 1;
+  }
+
+  /**
+   * Add an entry that this removeAll operation should distribute. This method is for a special
+   * case: the callback will be called after this in hasSeenEvent() case, so we should change the
+   * status beforehand
+   */
+  public void addEntry(EntryEventImpl ev, boolean newCallbackInvoked) {
     this.removeAllData[this.removeAllDataSize] = new RemoveAllEntryData(ev);
     this.removeAllData[this.removeAllDataSize].setCallbacksInvoked(newCallbackInvoked);
     this.removeAllDataSize += 1;
   }
-  
+
   /**
    * Add an entry for PR bucket's msg.
    *
-   * @param ev
-   *           event to be added
-   * @param bucketId
-   *           message is for this bucket
+   * @param ev event to be added
+   * @param bucketId message is for this bucket
    */
-  public void addEntry(EntryEventImpl ev, Integer bucketId)
-  {
+  public void addEntry(EntryEventImpl ev, Integer bucketId) {
     this.removeAllData[this.removeAllDataSize] = new RemoveAllEntryData(ev);
     this.removeAllData[this.removeAllDataSize].setBucketId(bucketId);
     this.removeAllDataSize += 1;
@@ -160,8 +154,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   /**
    * set using fake thread id
    *
-   * @param status 
-   *            whether the entry is using fake event id
+   * @param status whether the entry is using fake event id
    */
   public void setUseFakeEventId(boolean status) {
     for (int i = 0; i < removeAllDataSize; i++) {
@@ -170,32 +163,36 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   }
 
   /**
-   * In the originating cache, this returns an iterator on the list
-   * of events caused by the removeAll operation.  This is cached for
-   * listener notification purposes.  The iterator is guaranteed to return
-   * events in the order they are present in putAllData[]
+   * In the originating cache, this returns an iterator on the list of events caused by the
+   * removeAll operation. This is cached for listener notification purposes. The iterator is
+   * guaranteed to return events in the order they are present in putAllData[]
    */
   public Iterator eventIterator() {
     return new Iterator() {
       int position = 0;
+
       public boolean hasNext() {
         return DistributedRemoveAllOperation.this.removeAllDataSize > position;
       };
+
       @Unretained
       public Object next() {
-        @Unretained EntryEventImpl ev = getEventForPosition(position);
+        @Unretained
+        EntryEventImpl ev = getEventForPosition(position);
         position++;
         return ev;
       };
+
       public void remove() {
         throw new UnsupportedOperationException();
       };
     };
   }
-  
+
   public void freeOffHeapResources() {
-    // I do not use eventIterator here because it forces the lazy creation of EntryEventImpl by calling getEventForPosition.
-    for (int i=0; i < this.removeAllDataSize; i++) {
+    // I do not use eventIterator here because it forces the lazy creation of EntryEventImpl by
+    // calling getEventForPosition.
+    for (int i = 0; i < this.removeAllDataSize; i++) {
       RemoveAllEntryData entry = this.removeAllData[i];
       if (entry != null && entry.event != null) {
         entry.event.release();
@@ -212,42 +209,37 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     if (entry.event != null) {
       return entry.event;
     }
-    LocalRegion region = (LocalRegion)this.event.getRegion();
+    LocalRegion region = (LocalRegion) this.event.getRegion();
     // owned by this.removeAllData once entry.event = ev is done
-    @Retained EntryEventImpl ev = EntryEventImpl.create(
-        region,
-        entry.getOp(),
-        entry.getKey(), null/* value */, this.event.getCallbackArgument(),
-        false /* originRemote */,
-        this.event.getDistributedMember(),
-        this.event.isGenerateCallbacks(),
-        entry.getEventID());
+    @Retained
+    EntryEventImpl ev = EntryEventImpl.create(region, entry.getOp(), entry.getKey(),
+        null/* value */, this.event.getCallbackArgument(), false /* originRemote */,
+        this.event.getDistributedMember(), this.event.isGenerateCallbacks(), entry.getEventID());
     boolean returnedEv = false;
     try {
-    ev.setPossibleDuplicate(entry.isPossibleDuplicate());
-    if (entry.versionTag != null && region.concurrencyChecksEnabled) {
-      VersionSource id = entry.versionTag.getMemberID();
-      if (id!= null) {
-        entry.versionTag.setMemberID(
-            ev.getRegion().getVersionVector().getCanonicalId(id));
+      ev.setPossibleDuplicate(entry.isPossibleDuplicate());
+      if (entry.versionTag != null && region.concurrencyChecksEnabled) {
+        VersionSource id = entry.versionTag.getMemberID();
+        if (id != null) {
+          entry.versionTag.setMemberID(ev.getRegion().getVersionVector().getCanonicalId(id));
+        }
+        ev.setVersionTag(entry.versionTag);
       }
-      ev.setVersionTag(entry.versionTag);
-    }
-      
-    entry.event = ev;
-    returnedEv = true;
-    ev.setOldValue(entry.getOldValue());
-    CqService cqService = region.getCache().getCqService();
-    if (cqService.isRunning() && !entry.getOp().isCreate() && !ev.hasOldValue()) {
-      ev.setOldValueForQueryProcessing();
-    }
-    ev.setInvokePRCallbacks(!entry.isNotifyOnly());
-    if (getBaseEvent().getContext() != null) {
-      ev.setContext(getBaseEvent().getContext());
-    }
-    ev.callbacksInvoked(entry.isCallbacksInvoked());
-    ev.setTailKey(entry.getTailKey());
-    return ev;
+
+      entry.event = ev;
+      returnedEv = true;
+      ev.setOldValue(entry.getOldValue());
+      CqService cqService = region.getCache().getCqService();
+      if (cqService.isRunning() && !entry.getOp().isCreate() && !ev.hasOldValue()) {
+        ev.setOldValueForQueryProcessing();
+      }
+      ev.setInvokePRCallbacks(!entry.isNotifyOnly());
+      if (getBaseEvent().getContext() != null) {
+        ev.setContext(getBaseEvent().getContext());
+      }
+      ev.callbacksInvoked(entry.isCallbacksInvoked());
+      ev.setTailKey(entry.getTailKey());
+      return ev;
     } finally {
       if (!returnedEv) {
         ev.release();
@@ -271,9 +263,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     private final Operation op;
 
     private EventID eventID;
-    
+
     transient EntryEventImpl event;
-    
+
     private Integer bucketId = Integer.valueOf(-1);
 
     protected transient boolean callbacksInvoked = false;
@@ -319,15 +311,14 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     /**
      * Constructor to use when receiving a putall from someone else
      */
-    public RemoveAllEntryData(DataInput in, EventID baseEventID, int idx,
-        Version version, ByteArrayDataInput bytesIn) throws IOException,
-        ClassNotFoundException {
+    public RemoveAllEntryData(DataInput in, EventID baseEventID, int idx, Version version,
+        ByteArrayDataInput bytesIn) throws IOException, ClassNotFoundException {
       this.key = DataSerializer.readObject(in);
       this.oldValue = null;
       this.op = Operation.fromOrdinal(in.readByte());
       this.flags = in.readByte();
       if ((this.flags & FILTER_ROUTING) != 0) {
-        this.filterRouting = (FilterRoutingInfo)DataSerializer.readObject(in);
+        this.filterRouting = (FilterRoutingInfo) DataSerializer.readObject(in);
       }
       if ((this.flags & VERSION_TAG) != 0) {
         boolean persistentTag = (this.flags & PERSISTENT_TAG) != 0;
@@ -336,8 +327,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       if (isUsedFakeEventId()) {
         this.eventID = new EventID();
         InternalDataSerializer.invokeFromData(this.eventID, in);
-      }
-      else {
+      } else {
         this.eventID = new EventID(baseEventID, idx);
       }
       if ((this.flags & HAS_TAILKEY) != 0) {
@@ -348,13 +338,13 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder(50);
-      sb.append("(").append(getKey()).append(",").
-        append(getOldValue());
+      sb.append("(").append(getKey()).append(",").append(getOldValue());
       if (this.bucketId > 0) {
         sb.append(", b").append(this.bucketId);
       }
       if (versionTag != null) {
-        sb.append(",v").append(versionTag.getEntryVersion()).append(",rv="+versionTag.getRegionVersion());
+        sb.append(",v").append(versionTag.getEntryVersion())
+            .append(",rv=" + versionTag.getRegionVersion());
       }
       if (filterRouting != null) {
         sb.append(", ").append(filterRouting);
@@ -362,7 +352,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       sb.append(")");
       return sb.toString();
     }
-    
+
     void setSender(InternalDistributedMember sender) {
       if (this.versionTag != null) {
         this.versionTag.replaceNullIDs(sender);
@@ -370,10 +360,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
 
     /**
-     * Used to serialize this instances data to <code>out</code>.
-     * If changes are made to this method make sure that it is backwards
-     * compatible by creating toDataPreXX methods. Also make sure that the callers
-     * to this method are backwards compatible by creating toDataPreXX methods for
+     * Used to serialize this instances data to <code>out</code>. If changes are made to this method
+     * make sure that it is backwards compatible by creating toDataPreXX methods. Also make sure
+     * that the callers to this method are backwards compatible by creating toDataPreXX methods for
      * them even if they are not changed. <br>
      * Callers for this method are: <br>
      * {@link RemoveAllMessage#toData(DataOutput)} <br>
@@ -386,15 +375,16 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
 
       out.writeByte(this.op.ordinal);
       byte bits = this.flags;
-      if (this.filterRouting != null) bits |= FILTER_ROUTING;
+      if (this.filterRouting != null)
+        bits |= FILTER_ROUTING;
       if (this.versionTag != null) {
         bits |= VERSION_TAG;
         if (this.versionTag instanceof DiskVersionTag) {
           bits |= PERSISTENT_TAG;
         }
       }
-      //TODO: Yogesh, this should be conditional, 
-      // make sure that we sent it on wire only 
+      // TODO: Yogesh, this should be conditional,
+      // make sure that we sent it on wire only
       // when parallel wan is enabled
       bits |= HAS_TAILKEY;
       out.writeByte(bits);
@@ -406,11 +396,11 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
         InternalDataSerializer.invokeToData(this.versionTag, out);
       }
       if (isUsedFakeEventId()) {
-        // fake event id should be serialized 
+        // fake event id should be serialized
         InternalDataSerializer.invokeToData(this.eventID, out);
       }
-      //TODO: Yogesh, this should be conditional, 
-      // make sure that we sent it on wire only 
+      // TODO: Yogesh, this should be conditional,
+      // make sure that we sent it on wire only
       // when parallel wan is enabled
       DataSerializer.writeLong(this.tailKey, out);
     }
@@ -418,54 +408,49 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     /**
      * Returns the key
      */
-    public Object getKey()
-    {
+    public Object getKey() {
       return this.key;
     }
 
     /**
      * Returns the old value
      */
-    public Object getOldValue()
-    {
+    public Object getOldValue() {
       return this.oldValue;
     }
 
-    public Long getTailKey(){
+    public Long getTailKey() {
       return this.tailKey;
     }
-    
-    public void setTailKey(Long key){
+
+    public void setTailKey(Long key) {
       this.tailKey = key;
     }
+
     /**
      * Returns the operation
      */
-    public Operation getOp()
-    {
+    public Operation getOp() {
       return this.op;
     }
 
-    public EventID getEventID()
-    {
+    public EventID getEventID() {
       return this.eventID;
     }
-    
+
     /**
      * change event id for the entry
      *
-     * @param eventId 
-     *               new event id
+     * @param eventId new event id
      */
     public void setEventId(EventID eventId) {
       this.eventID = eventId;
     }
-    
+
     /**
      * change bucket id for the entry
      *
-     * @param bucketId 
-     *                new bucket id
+     * @param bucketId new bucket id
      */
     public void setBucketId(Integer bucketId) {
       this.bucketId = bucketId;
@@ -481,13 +466,11 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
 
     /**
-     * change event id into fake event id
-     * The algorithm is to change the threadid into 
-     * bucketid*MAX_THREAD_PER_CLIENT+oldthreadid. So from the log, we can
-     * derive the original thread id.
+     * change event id into fake event id The algorithm is to change the threadid into
+     * bucketid*MAX_THREAD_PER_CLIENT+oldthreadid. So from the log, we can derive the original
+     * thread id.
      *
-     * @return wether current event id is fake or not 
-     *                new bucket id
+     * @return wether current event id is fake or not new bucket id
      */
     public boolean setFakeEventID() {
       if (bucketId.intValue() < 0) {
@@ -497,7 +480,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       if (!isUsedFakeEventId()) {
         // assign a fake big thread id. bucket id starts from 0. In order to distinguish
         // with other read thread, let bucket id starts from 1 in fake thread id
-        long threadId = ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId.intValue(), eventID.getThreadID());
+        long threadId = ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId.intValue(),
+            eventID.getThreadID());
         this.eventID = new EventID(eventID.getMembershipID(), threadId, eventID.getSequenceID());
         this.setUsedFakeEventId(true);
       }
@@ -511,8 +495,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     public void setUsedFakeEventId(boolean usedFakeEventId) {
       if (usedFakeEventId) {
         flags |= USED_FAKE_EVENT_ID;
-      }
-      else {
+      } else {
         flags &= ~(USED_FAKE_EVENT_ID);
       }
     }
@@ -524,8 +507,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     public void setNotifyOnly(boolean notifyOnly) {
       if (notifyOnly) {
         flags |= NOTIFY_ONLY;
-      }
-      else {
+      } else {
         flags &= ~(NOTIFY_ONLY);
       }
     }
@@ -537,8 +519,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     public void setPossibleDuplicate(boolean possibleDuplicate) {
       if (possibleDuplicate) {
         flags |= POSDUP;
-      }
-      else {
+      } else {
         flags &= ~(POSDUP);
       }
     }
@@ -566,17 +547,18 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     // create a consolidated routing object representing all events that can be
     // used for distribution
     CacheDistributionAdvisor advisor;
-    LocalRegion region = (LocalRegion)this.event.getRegion();
+    LocalRegion region = (LocalRegion) this.event.getRegion();
     if (region instanceof PartitionedRegion) {
-      advisor = ((PartitionedRegion)region).getCacheDistributionAdvisor();
+      advisor = ((PartitionedRegion) region).getCacheDistributionAdvisor();
     } else if (region.isUsedForPartitionedRegionBucket()) {
-      advisor = ((BucketRegion)region).getPartitionedRegion().getCacheDistributionAdvisor();
+      advisor = ((BucketRegion) region).getPartitionedRegion().getCacheDistributionAdvisor();
     } else {
-      advisor = ((DistributedRegion)region).getCacheDistributionAdvisor();
+      advisor = ((DistributedRegion) region).getCacheDistributionAdvisor();
     }
     FilterRoutingInfo consolidated = new FilterRoutingInfo();
-    for (int i=0; i<this.removeAllData.length; i++) {
-      @Unretained EntryEventImpl ev = getEventForPosition(i);
+    for (int i = 0; i < this.removeAllData.length; i++) {
+      @Unretained
+      EntryEventImpl ev = getEventForPosition(i);
       if (ev != null) {
         FilterRoutingInfo eventRouting = advisor.adviseFilterRouting(ev, cacheOpRecipients);
         if (eventRouting != null) {
@@ -606,8 +588,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   }
 
   @Override
-  protected CacheOperationMessage createMessage()
- {
+  protected CacheOperationMessage createMessage() {
     EntryEventImpl event = getBaseEvent();
     RemoveAllMessage msg = new RemoveAllMessage();
     msg.eventId = event.getEventId();
@@ -618,8 +599,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   /**
    * Create RemoveAllPRMessage for notify only (to adjunct nodes)
    * 
-   * @param bucketId
-   *               create message to send to this bucket
+   * @param bucketId create message to send to this bucket
    * @return RemoveAllPRMessage
    */
   public RemoveAllPRMessage createPRMessagesNotifyOnly(int bucketId) {
@@ -631,8 +611,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
 
     // will not recover event id here
-    for (int i=0; i<removeAllDataSize; i++) {
-      prMsg.addEntry(removeAllData[i]);  
+    for (int i = 0; i < removeAllDataSize; i++) {
+      prMsg.addEntry(removeAllData[i]);
     }
 
     return prMsg;
@@ -643,19 +623,19 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
    * 
    * @return a HashMap contain RemoveAllPRMessages, key is bucket id
    */
-  public HashMap<Integer, RemoveAllPRMessage> createPRMessages()
-  {
-    //getFilterRecipients(Collections.EMPTY_SET); // establish filter recipient routing information
+  public HashMap<Integer, RemoveAllPRMessage> createPRMessages() {
+    // getFilterRecipients(Collections.EMPTY_SET); // establish filter recipient routing information
     HashMap<Integer, RemoveAllPRMessage> prMsgMap = new HashMap<Integer, RemoveAllPRMessage>();
     final EntryEventImpl event = getBaseEvent();
-    
-    for (int i=0; i<removeAllDataSize; i++) {
+
+    for (int i = 0; i < removeAllDataSize; i++) {
       Integer bucketId = removeAllData[i].getBucketId();
       RemoveAllPRMessage prMsg = prMsgMap.get(bucketId);
       if (prMsg == null) {
         prMsg = new RemoveAllPRMessage(bucketId.intValue(), removeAllDataSize, false,
             event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
-        prMsg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
+        prMsg
+            .setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
 
         // set dpao's context(original sender) into each PutAllMsg
         // dpao's event's context could be null if it's P2P putAll in PR
@@ -665,8 +645,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       }
 
       // Modify the event id, assign new thread id and new sequence id
-      // We have to set fake event id here, because we cannot derive old event id from baseId+idx as we
-      // did in DR's PutAllMessage. 
+      // We have to set fake event id here, because we cannot derive old event id from baseId+idx as
+      // we
+      // did in DR's PutAllMessage.
       removeAllData[i].setFakeEventID();
       // we only save the reference in prMsg. No duplicate copy
       prMsg.addEntry(removeAllData[i]);
@@ -676,24 +657,21 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
   }
 
   @Override
-  protected void initMessage(CacheOperationMessage msg,
-      DirectReplyProcessor proc)
-  {
+  protected void initMessage(CacheOperationMessage msg, DirectReplyProcessor proc) {
     super.initMessage(msg, proc);
-    RemoveAllMessage m = (RemoveAllMessage)msg;
-    
+    RemoveAllMessage m = (RemoveAllMessage) msg;
+
     // if concurrency checks are enabled and this is not a replicated
     // region we need to see if any of the entries have no versions and,
     // if so, cull them out and send a 1-hop message to a replicate that
     // can generate a version for the operation
-    
+
     RegionAttributes attr = this.event.getRegion().getAttributes();
-    if (attr.getConcurrencyChecksEnabled()
-        && !attr.getDataPolicy().withReplication() 
+    if (attr.getConcurrencyChecksEnabled() && !attr.getDataPolicy().withReplication()
         && attr.getScope() != Scope.GLOBAL) {
       if (attr.getDataPolicy() == DataPolicy.EMPTY) {
         // all entries are without version tags
-        boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl)this.event, 
+        boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl) this.event,
             this.removeAllData, this.removeAllDataSize);
         if (success) {
           m.callbackArg = this.event.getCallbackArgument();
@@ -702,9 +680,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
           m.skipCallbacks = !event.isGenerateCallbacks();
 
           return;
-          
+
         } else if (!getRegion().getGenerateVersionTag()) {
-          // Fix for #45934.  We can't continue if we need versions and we failed
+          // Fix for #45934. We can't continue if we need versions and we failed
           // to distribute versionless entries.
           throw new PersistentReplicatesOfflineException();
         }
@@ -715,13 +693,14 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
           logger.trace("Found these versionless entries: {}", Arrays.toString(versionless));
         }
         if (versionless.length > 0) {
-          boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl)this.event,
+          boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl) this.event,
               versionless, versionless.length);
           if (success) {
             versionless = null;
-            RemoveAllEntryData[] versioned = selectVersionedEntries(); 
+            RemoveAllEntryData[] versioned = selectVersionedEntries();
             if (logger.isTraceEnabled()) {
-              logger.trace("Found these remaining versioned entries: {}", Arrays.toString(versioned));
+              logger.trace("Found these remaining versioned entries: {}",
+                  Arrays.toString(versioned));
             }
             m.callbackArg = this.event.getCallbackArgument();
             m.removeAllData = versioned;
@@ -730,7 +709,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
             return;
 
           } else if (!getRegion().getGenerateVersionTag()) {
-            // Fix for #45934.  We can't continue if we need versions and we failed
+            // Fix for #45934. We can't continue if we need versions and we failed
             // to distribute versionless entries.
             throw new PersistentReplicatesOfflineException();
           }
@@ -750,14 +729,16 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
 
   @Override
   protected boolean shouldAck() {
-    // bug #45704 - RemotePutAllOp's DPAO in another server conflicts with lingering DPAO from same thread, so
-    // we require an ACK if concurrency checks are enabled to make sure that the previous op has finished first.
+    // bug #45704 - RemotePutAllOp's DPAO in another server conflicts with lingering DPAO from same
+    // thread, so
+    // we require an ACK if concurrency checks are enabled to make sure that the previous op has
+    // finished first.
     return super.shouldAck() || getRegion().concurrencyChecksEnabled;
   }
 
   private RemoveAllEntryData[] selectVersionlessEntries() {
     int resultSize = this.removeAllData.length;
-    for (int i=0; i<this.removeAllData.length; i++) {
+    for (int i = 0; i < this.removeAllData.length; i++) {
       RemoveAllEntryData p = this.removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         resultSize--;
@@ -767,7 +748,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
     RemoveAllEntryData[] result = new RemoveAllEntryData[resultSize];
     int ri = 0;
-    for (int i=0; i<this.removeAllData.length; i++) {
+    for (int i = 0; i < this.removeAllData.length; i++) {
       RemoveAllEntryData p = this.removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
@@ -779,10 +760,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
     return result;
   }
-  
+
   private RemoveAllEntryData[] selectVersionedEntries() {
     int resultSize = 0;
-    for (int i=0; i<this.removeAllData.length; i++) {
+    for (int i = 0; i < this.removeAllData.length; i++) {
       RemoveAllEntryData p = this.removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
@@ -792,7 +773,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
     RemoveAllEntryData[] result = new RemoveAllEntryData[resultSize];
     int ri = 0;
-    for (int i=0; i<this.removeAllData.length; i++) {
+    for (int i = 0; i < this.removeAllData.length; i++) {
       RemoveAllEntryData p = this.removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
@@ -802,59 +783,57 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
     return result;
   }
-  
+
   /**
-   * version tags are gathered from local operations and remote operation
-   * responses.  This method gathers all of them and stores them in the
-   * given list.
+   * version tags are gathered from local operations and remote operation responses. This method
+   * gathers all of them and stores them in the given list.
+   * 
    * @param list
    */
   protected void fillVersionedObjectList(VersionedObjectList list) {
-    for (RemoveAllEntryData entry: this.removeAllData) {
+    for (RemoveAllEntryData entry : this.removeAllData) {
       if (entry.versionTag != null) {
         list.addKeyAndVersion(entry.key, entry.versionTag);
       }
     }
   }
-  
-  
-  public static class RemoveAllMessage extends AbstractUpdateMessage // TODO extend CacheOperationMessage instead
-   {
+
+
+  public static class RemoveAllMessage extends AbstractUpdateMessage // TODO extend
+                                                                     // CacheOperationMessage
+                                                                     // instead
+  {
 
     protected RemoveAllEntryData[] removeAllData;
 
     protected int removeAllDataSize;
-    
+
     protected transient ClientProxyMembershipID context;
 
     protected boolean skipCallbacks;
 
     protected EventID eventId = null;
-    
+
     protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
-    protected static final short SKIP_CALLBACKS =
-      (short)(HAS_BRIDGE_CONTEXT << 1);
+    protected static final short SKIP_CALLBACKS = (short) (HAS_BRIDGE_CONTEXT << 1);
 
     /** test to see if this message holds any data */
     public boolean isEmpty() {
       return this.removeAllData.length == 0;
     }
+
     /**
-     * Note this this is a "dummy" event since this message contains a list of
-     * entries each one of which has its own event. The key thing needed in this
-     * event is the region. This is the event that gets passed to
-     * basicOperateOnRegion
+     * Note this this is a "dummy" event since this message contains a list of entries each one of
+     * which has its own event. The key thing needed in this event is the region. This is the event
+     * that gets passed to basicOperateOnRegion
      */
     @Override
     @Retained
-    protected InternalCacheEvent createEvent(DistributedRegion rgn)
-    throws EntryNotFoundException
-    {
+    protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       // Gester: We have to specify eventId for the message of MAP
-      @Retained EntryEventImpl event = EntryEventImpl.create(
-          rgn,
-          Operation.REMOVEALL_DESTROY, null /* key */, null/* value */,
-          this.callbackArg, true /* originRemote */, getSender());
+      @Retained
+      EntryEventImpl event = EntryEventImpl.create(rgn, Operation.REMOVEALL_DESTROY, null /* key */,
+          null/* value */, this.callbackArg, true /* originRemote */, getSender());
       if (this.context != null) {
         event.context = this.context;
       }
@@ -875,28 +854,29 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
         sb.append("; entry values=").append(Arrays.toString(this.removeAllData));
       }
     }
-    
+
     /**
-     * Does the "remove" of one entry for a "removeAll" operation. Note it calls back
-     * to AbstractUpdateOperation.UpdateMessage#basicOperationOnRegion
+     * Does the "remove" of one entry for a "removeAll" operation. Note it calls back to
+     * AbstractUpdateOperation.UpdateMessage#basicOperationOnRegion
      * 
-     * @param entry
-     *          the entry being removed
-     * @param rgn
-     *          the region the entry is removed from
+     * @param entry the entry being removed
+     * @param rgn the region the entry is removed from
      */
     public void doEntryRemove(RemoveAllEntryData entry, DistributedRegion rgn) {
-      @Released EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), 
-          this.context, rgn, this.possibleDuplicate,
-          this.needsRouting, this.callbackArg, true, skipCallbacks);
-//      rgn.getLogWriterI18n().info(LocalizedStrings.DEBUG, "RemoveAllMessage.doEntryRemove sender=" + getSender() +
-//          " event="+ev);
-      // we don't need to set old value here, because the msg is from remote. local old value will get from next step
+      @Released
+      EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), this.context, rgn,
+          this.possibleDuplicate, this.needsRouting, this.callbackArg, true, skipCallbacks);
+      // rgn.getLogWriterI18n().info(LocalizedStrings.DEBUG, "RemoveAllMessage.doEntryRemove
+      // sender=" + getSender() +
+      // " event="+ev);
+      // we don't need to set old value here, because the msg is from remote. local old value will
+      // get from next step
       try {
         if (ev.getVersionTag() != null) {
           checkVersionTag(rgn, ev.getVersionTag());
         }
-        // TODO check all removeAll basicDestroy calls done on the farside and make sure "cacheWrite" is false
+        // TODO check all removeAll basicDestroy calls done on the farside and make sure
+        // "cacheWrite" is false
         rgn.basicDestroy(ev, false, null);
       } catch (EntryNotFoundException ignore) {
         this.appliedOperation = true;
@@ -912,9 +892,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
         ev.release();
       }
     }
-    
+
     /**
      * create an event for a RemoveAllEntryData element
+     * 
      * @param entry
      * @param sender
      * @param context
@@ -926,40 +907,38 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      */
     @Retained
     public static EntryEventImpl createEntryEvent(RemoveAllEntryData entry,
-        InternalDistributedMember sender, ClientProxyMembershipID context,
-        DistributedRegion rgn,
-        boolean possibleDuplicate, boolean needsRouting, Object callbackArg,
-        boolean originRemote, boolean skipCallbacks) {
+        InternalDistributedMember sender, ClientProxyMembershipID context, DistributedRegion rgn,
+        boolean possibleDuplicate, boolean needsRouting, Object callbackArg, boolean originRemote,
+        boolean skipCallbacks) {
       final Object key = entry.getKey();
       EventID evId = entry.getEventID();
-      @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
-          key, null/* value */, callbackArg,
-          originRemote, sender, !skipCallbacks,
-          evId);
+      @Retained
+      EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(), key, null/* value */,
+          callbackArg, originRemote, sender, !skipCallbacks, evId);
       boolean returnedEv = false;
       try {
-      if (context != null) {
-        ev.context = context;
-      }
-      ev.setPossibleDuplicate(possibleDuplicate);
-      ev.setVersionTag(entry.versionTag);
-//      if (needsRouting) {
-//               FilterProfile fp = rgn.getFilterProfile();
-//                if (fp != null) {
-//                  FilterInfo fi = fp.getLocalFilterRouting(ev);
-//                  ev.setLocalFilterInfo(fi);
-//                }
-//      }
-      if (entry.filterRouting != null) {
-        InternalDistributedMember id = rgn.getMyId();
-        ev.setLocalFilterInfo(entry.filterRouting.getFilterInfo(id));
-      }
-      /**
-       * Setting tailKey for the secondary bucket here. Tail key was update by the primary.
-       */
-      ev.setTailKey(entry.getTailKey());
-      returnedEv = true;
-      return ev;
+        if (context != null) {
+          ev.context = context;
+        }
+        ev.setPossibleDuplicate(possibleDuplicate);
+        ev.setVersionTag(entry.versionTag);
+        // if (needsRouting) {
+        // FilterProfile fp = rgn.getFilterProfile();
+        // if (fp != null) {
+        // FilterInfo fi = fp.getLocalFilterRouting(ev);
+        // ev.setLocalFilterInfo(fi);
+        // }
+        // }
+        if (entry.filterRouting != null) {
+          InternalDistributedMember id = rgn.getMyId();
+          ev.setLocalFilterInfo(entry.filterRouting.getFilterInfo(id));
+        }
+        /**
+         * Setting tailKey for the secondary bucket here. Tail key was update by the primary.
+         */
+        ev.setTailKey(entry.getTailKey());
+        returnedEv = true;
+        return ev;
       } finally {
         if (!returnedEv) {
           ev.release();
@@ -968,19 +947,19 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
 
     @Override
-    protected void basicOperateOnRegion(EntryEventImpl ev, final DistributedRegion rgn)
-    {
+    protected void basicOperateOnRegion(EntryEventImpl ev, final DistributedRegion rgn) {
       for (int i = 0; i < removeAllDataSize; ++i) {
         if (removeAllData[i].versionTag != null) {
           checkVersionTag(rgn, removeAllData[i].versionTag);
         }
       }
-      
+
       rgn.syncBulkOp(new Runnable() {
         public void run() {
           for (int i = 0; i < removeAllDataSize; ++i) {
             if (logger.isTraceEnabled()) {
-              logger.trace("removeAll processing {} with {}", removeAllData[i], removeAllData[i].versionTag);
+              logger.trace("removeAll processing {} with {}", removeAllData[i],
+                  removeAllData[i].versionTag);
             }
             removeAllData[i].setSender(sender);
             doEntryRemove(removeAllData[i], rgn);
@@ -994,20 +973,17 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
       super.fromData(in);
       this.eventId = (EventID) DataSerializer.readObject(in);
-      this.removeAllDataSize = (int)InternalDataSerializer.readUnsignedVL(in);
+      this.removeAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
       this.removeAllData = new RemoveAllEntryData[this.removeAllDataSize];
       if (this.removeAllDataSize > 0) {
-        final Version version = InternalDataSerializer
-            .getVersionForDataStreamOrNull(in);
+        final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
         final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
         for (int i = 0; i < this.removeAllDataSize; i++) {
-          this.removeAllData[i] = new RemoveAllEntryData(in, eventId, i, version,
-              bytesIn);
+          this.removeAllData[i] = new RemoveAllEntryData(in, eventId, i, version, bytesIn);
         }
 
         boolean hasTags = in.readBoolean();
@@ -1059,35 +1035,33 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     @Override
     protected short computeCompressedShort(short s) {
       s = super.computeCompressedShort(s);
-      if (this.context != null) s |= HAS_BRIDGE_CONTEXT;
-      if (this.skipCallbacks) s |= SKIP_CALLBACKS;
+      if (this.context != null)
+        s |= HAS_BRIDGE_CONTEXT;
+      if (this.skipCallbacks)
+        s |= SKIP_CALLBACKS;
       return s;
     }
 
     @Override
-    public int getOperationCount()
-    {
+    public int getOperationCount() {
       return this.removeAllDataSize;
     }
 
-    public ClientProxyMembershipID getContext()
-    {
+    public ClientProxyMembershipID getContext() {
       return this.context;
     }
-    
-    public RemoveAllEntryData[] getRemoveAllEntryData()
-    {
+
+    public RemoveAllEntryData[] getRemoveAllEntryData() {
       return this.removeAllData;
     }
-    
+
     @Override
-    public List getOperations()
-    {
+    public List getOperations() {
       QueuedOperation[] ops = new QueuedOperation[getOperationCount()];
       for (int i = 0; i < ops.length; i++) {
         RemoveAllEntryData entry = this.removeAllData[i];
-        ops[i] = new QueuedOperation(entry.getOp(), entry.getKey(), null,
-            null, (byte) 0, this.callbackArg);
+        ops[i] = new QueuedOperation(entry.getOp(), entry.getKey(), null, null, (byte) 0,
+            this.callbackArg);
       }
       return Arrays.asList(ops);
     }

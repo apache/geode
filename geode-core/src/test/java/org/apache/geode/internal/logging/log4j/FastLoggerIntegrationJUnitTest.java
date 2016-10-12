@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.logging.log4j;
 
@@ -53,20 +51,20 @@ public class FastLoggerIntegrationJUnitTest {
   private static final String TEST_LOGGER_NAME = FastLogger.class.getPackage().getName();
   private static final String ENABLED_MARKER_NAME = "ENABLED";
   private static final String UNUSED_MARKER_NAME = "UNUSED";
-  
+
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  
+
   @Rule
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
-  
+
   private File configFile;
   private String configFileLocation;
   private Logger logger;
   private LoggerContext appenderContext;
   private Marker enabledMarker;
   private Marker unusedMarker;
-  
+
   @Before
   public void setUp() throws Exception {
     System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
@@ -76,13 +74,13 @@ public class FastLoggerIntegrationJUnitTest {
     this.unusedMarker = MarkerManager.getMarker(UNUSED_MARKER_NAME);
     setUpLogService();
   }
-  
+
   @After
   public void tearDown() {
     System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
     LogService.reconfigure();
   }
-  
+
   private void setUpLogService() throws Exception {
     // Load a base config and do some sanity checks
     writeSimpleConfigFile(this.configFile, Level.WARN);
@@ -91,33 +89,39 @@ public class FastLoggerIntegrationJUnitTest {
     LogService.reconfigure();
     LogService.getLogger().getName(); // This causes the config file to be loaded
     this.logger = LogService.getLogger(TEST_LOGGER_NAME);
-    this.appenderContext = ((org.apache.logging.log4j.core.Logger) LogService.getRootLogger()).getContext();
-    
+    this.appenderContext =
+        ((org.apache.logging.log4j.core.Logger) LogService.getRootLogger()).getContext();
+
     assertThat(LogService.getLogger(LogService.BASE_LOGGER_NAME).getLevel(), is(Level.FATAL));
     assertThat(this.logger, is(instanceOf(FastLogger.class)));
     assertThat(this.logger.getLevel(), is(Level.WARN));
   }
-  
+
   @Test
   public void debugConfigIsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
   }
+
   @Test
   public void traceConfigIsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.TRACE, expectDelegating(true));
   }
+
   @Test
   public void infoConfigIsNotDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
   }
+
   @Test
   public void warnConfigIsNotDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.WARN, expectDelegating(false));
   }
+
   @Test
   public void errorConfigIsNotDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.ERROR, expectDelegating(false));
   }
+
   @Test
   public void fatalConfigIsNotDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.FATAL, expectDelegating(false));
@@ -128,27 +132,31 @@ public class FastLoggerIntegrationJUnitTest {
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
   }
+
   @Test
   public void fromInfoToDebugUnsetsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
   }
-  
+
   @Test
   public void fromDebugToContextWideFilterKeepsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
     verifyIsDelegatingForContextWideFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromInfoToContextWideFilterSetsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
     verifyIsDelegatingForContextWideFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromContextWideFilterToInfoUnsetsDelegating() throws Exception {
     verifyIsDelegatingForContextWideFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
   }
+
   @Test
   public void fromContextWideFilterToDebugKeepsDelegating() throws Exception {
     verifyIsDelegatingForContextWideFilter(Level.INFO, expectDelegating(true));
@@ -160,37 +168,43 @@ public class FastLoggerIntegrationJUnitTest {
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
     verifyIsDelegatingForAppenderFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromInfoToAppenderFilterSetsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
     verifyIsDelegatingForAppenderFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromAppenderFilterToInfoUnsetsDelegating() throws Exception {
     verifyIsDelegatingForAppenderFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
   }
+
   @Test
   public void fromAppenderFilterToDebugKeepsDelegating() throws Exception {
     verifyIsDelegatingForAppenderFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
   }
-  
+
   @Test
   public void fromDebugToLoggerFilterKeepsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
     verifyIsDelegatingForLoggerFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromInfoToLoggerFilterSetsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
     verifyIsDelegatingForLoggerFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromLoggerFilterToInfoUnsetsDelegating() throws Exception {
     verifyIsDelegatingForLoggerFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
   }
+
   @Test
   public void fromLoggerFilterToDebugKeepsDelegating() throws Exception {
     verifyIsDelegatingForLoggerFilter(Level.INFO, expectDelegating(true));
@@ -202,33 +216,37 @@ public class FastLoggerIntegrationJUnitTest {
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
     verifyIsDelegatingForAppenderRefFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromInfoToAppenderRefFilterSetsDelegating() throws Exception {
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
     verifyIsDelegatingForAppenderRefFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromAppenderRefFilterToInfoUnsetsDelegating() throws Exception {
     verifyIsDelegatingForAppenderRefFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForDebugOrLower(Level.INFO, expectDelegating(false));
   }
+
   @Test
   public void fromAppenderRefFilterToDebugKeepsDelegating() throws Exception {
     verifyIsDelegatingForAppenderRefFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForDebugOrLower(Level.DEBUG, expectDelegating(true));
   }
-    
+
   @Test
   public void fromContextWideFilterToLoggerFilterKeepsDelegating() throws Exception {
     verifyIsDelegatingForContextWideFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForLoggerFilter(Level.INFO, expectDelegating(true));
   }
+
   @Test
   public void fromLoggerFilterToContextWideFilterKeepsDelegating() throws Exception {
     verifyIsDelegatingForLoggerFilter(Level.INFO, expectDelegating(true));
     verifyIsDelegatingForContextWideFilter(Level.INFO, expectDelegating(true));
   }
-  
+
   @Test
   public void contextWideFilterIsDelegating() throws Exception {
     verifyIsDelegatingForContextWideFilter(Level.TRACE, expectDelegating(true));
@@ -238,7 +256,7 @@ public class FastLoggerIntegrationJUnitTest {
     verifyIsDelegatingForContextWideFilter(Level.ERROR, expectDelegating(true));
     verifyIsDelegatingForContextWideFilter(Level.FATAL, expectDelegating(true));
   }
-  
+
   @Test
   public void loggerFilterIsDelegating() throws Exception {
     verifyIsDelegatingForLoggerFilter(Level.TRACE, expectDelegating(true));
@@ -248,7 +266,7 @@ public class FastLoggerIntegrationJUnitTest {
     verifyIsDelegatingForLoggerFilter(Level.ERROR, expectDelegating(true));
     verifyIsDelegatingForLoggerFilter(Level.FATAL, expectDelegating(true));
   }
-  
+
   @Test
   public void appenderFilterIsDelegating() throws Exception {
     verifyIsDelegatingForAppenderFilter(Level.TRACE, expectDelegating(true));
@@ -258,7 +276,7 @@ public class FastLoggerIntegrationJUnitTest {
     verifyIsDelegatingForAppenderFilter(Level.ERROR, expectDelegating(true));
     verifyIsDelegatingForAppenderFilter(Level.FATAL, expectDelegating(true));
   }
-  
+
   @Test
   public void appenderRefFilterIsDelegating() throws Exception {
     verifyIsDelegatingForAppenderRefFilter(Level.TRACE, expectDelegating(true));
@@ -268,75 +286,95 @@ public class FastLoggerIntegrationJUnitTest {
     verifyIsDelegatingForAppenderRefFilter(Level.ERROR, expectDelegating(true));
     verifyIsDelegatingForAppenderRefFilter(Level.FATAL, expectDelegating(true));
   }
-  
+
   /**
    * Verifies FastLogger isDelegating if Level is DEBUG or TRACE.
    * 
    * @param level the log Level
    * @param expectIsDelegating true if expecting FastLogger.isDelegating to be true
    */
-  private void verifyIsDelegatingForDebugOrLower(final Level level, final boolean expectIsDelegating) throws Exception {
+  private void verifyIsDelegatingForDebugOrLower(final Level level,
+      final boolean expectIsDelegating) throws Exception {
     writeSimpleConfigFile(this.configFile, level);
     this.appenderContext.reconfigure();
-    
+
     assertThat(this.logger.getLevel(), is(level));
-    
+
     assertThat(this.logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
     assertThat(this.logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
     assertThat(this.logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
     assertThat(this.logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
     assertThat(this.logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
     assertThat(this.logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(this.logger.isTraceEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(this.logger.isDebugEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(this.logger.isInfoEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(this.logger.isWarnEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(this.logger.isErrorEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(this.logger.isFatalEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.FATAL)));
 
-    final boolean delegating = ((FastLogger)this.logger).isDelegating();
+    assertThat(this.logger.isTraceEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.TRACE)));
+    assertThat(this.logger.isDebugEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.DEBUG)));
+    assertThat(this.logger.isInfoEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.INFO)));
+    assertThat(this.logger.isWarnEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.WARN)));
+    assertThat(this.logger.isErrorEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.ERROR)));
+    assertThat(this.logger.isFatalEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.FATAL)));
+
+    final boolean delegating = ((FastLogger) this.logger).isDelegating();
     assertThat(delegating, is(expectIsDelegating));
     assertThat(delegating, is(level.isLessSpecificThan(Level.DEBUG)));
     assertThat(delegating, is(expectIsDelegating));
   }
-  
+
   /**
    * Verifies FastLogger isDelegating if there is a Logger Filter.
    * 
    * @param level the log Level
    * @param expectIsDelegating true if expecting FastLogger.isDelegating to be true
    */
-  private void verifyIsDelegatingForLoggerFilter(final Level level, final boolean expectIsDelegating) throws Exception {
+  private void verifyIsDelegatingForLoggerFilter(final Level level,
+      final boolean expectIsDelegating) throws Exception {
     assertThat(expectIsDelegating, is(true)); // always true for Logger Filter
 
     writeLoggerFilterConfigFile(this.configFile, level);
     this.appenderContext.reconfigure();
-    
+
     assertThat(this.logger.getLevel(), is(level));
-    
+
     assertThat(this.logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
     assertThat(this.logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
     assertThat(this.logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
     assertThat(this.logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
     assertThat(this.logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
     assertThat(this.logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(this.logger.isTraceEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(this.logger.isDebugEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(this.logger.isInfoEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(this.logger.isWarnEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(this.logger.isErrorEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(this.logger.isFatalEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(this.logger.isTraceEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(this.logger.isDebugEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(this.logger.isInfoEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(this.logger.isWarnEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(this.logger.isErrorEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(this.logger.isFatalEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(((FastLogger)this.logger).isDelegating(), is(expectIsDelegating));
+
+    assertThat(this.logger.isTraceEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.TRACE)));
+    assertThat(this.logger.isDebugEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.DEBUG)));
+    assertThat(this.logger.isInfoEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.INFO)));
+    assertThat(this.logger.isWarnEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.WARN)));
+    assertThat(this.logger.isErrorEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.ERROR)));
+    assertThat(this.logger.isFatalEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.FATAL)));
+
+    assertThat(this.logger.isTraceEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.TRACE)));
+    assertThat(this.logger.isDebugEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.DEBUG)));
+    assertThat(this.logger.isInfoEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.INFO)));
+    assertThat(this.logger.isWarnEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.WARN)));
+    assertThat(this.logger.isErrorEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.ERROR)));
+    assertThat(this.logger.isFatalEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.FATAL)));
+
+    assertThat(((FastLogger) this.logger).isDelegating(), is(expectIsDelegating));
   }
 
   /**
@@ -345,30 +383,31 @@ public class FastLoggerIntegrationJUnitTest {
    * @param level the log Level
    * @param expectIsDelegating true if expecting FastLogger.isDelegating to be true
    */
-  private void verifyIsDelegatingForContextWideFilter(final Level level, final boolean expectIsDelegating) throws Exception {
+  private void verifyIsDelegatingForContextWideFilter(final Level level,
+      final boolean expectIsDelegating) throws Exception {
     assertThat(expectIsDelegating, is(true)); // always true for Context-wide Filter
-    
+
     writeContextWideFilterConfigFile(this.configFile, level);
     this.appenderContext.reconfigure();
-    
+
     assertThat(this.logger.getLevel(), is(level));
-    
+
     // note: unlike other filters, Context-wide filters are processed BEFORE isEnabled checks
-    
+
     assertThat(this.logger.isTraceEnabled(), is(false));
     assertThat(this.logger.isDebugEnabled(), is(false));
     assertThat(this.logger.isInfoEnabled(), is(false));
     assertThat(this.logger.isWarnEnabled(), is(false));
     assertThat(this.logger.isErrorEnabled(), is(false));
     assertThat(this.logger.isFatalEnabled(), is(false));
-    
+
     assertThat(this.logger.isTraceEnabled(this.enabledMarker), is(true));
     assertThat(this.logger.isDebugEnabled(this.enabledMarker), is(true));
     assertThat(this.logger.isInfoEnabled(this.enabledMarker), is(true));
     assertThat(this.logger.isWarnEnabled(this.enabledMarker), is(true));
     assertThat(this.logger.isErrorEnabled(this.enabledMarker), is(true));
     assertThat(this.logger.isFatalEnabled(this.enabledMarker), is(true));
-    
+
     assertThat(this.logger.isTraceEnabled(this.unusedMarker), is(false));
     assertThat(this.logger.isDebugEnabled(this.unusedMarker), is(false));
     assertThat(this.logger.isInfoEnabled(this.unusedMarker), is(false));
@@ -376,45 +415,58 @@ public class FastLoggerIntegrationJUnitTest {
     assertThat(this.logger.isErrorEnabled(this.unusedMarker), is(false));
     assertThat(this.logger.isFatalEnabled(this.unusedMarker), is(false));
 
-    assertThat(((FastLogger)this.logger).isDelegating(), is(expectIsDelegating));
+    assertThat(((FastLogger) this.logger).isDelegating(), is(expectIsDelegating));
   }
-  
+
   /**
    * Verifies FastLogger isDelegating if there is a Appender Filter.
    * 
    * @param level the log Level
    * @param expectIsDelegating true if expecting FastLogger.isDelegating to be true
    */
-  private void verifyIsDelegatingForAppenderFilter(final Level level, final boolean expectIsDelegating) throws Exception {
+  private void verifyIsDelegatingForAppenderFilter(final Level level,
+      final boolean expectIsDelegating) throws Exception {
     assertThat(expectIsDelegating, is(true)); // always true for Appender Filter
 
     writeAppenderFilterConfigFile(this.configFile, level);
     this.appenderContext.reconfigure();
-    
+
     assertThat(this.logger.getLevel(), is(level));
-    
+
     assertThat(this.logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
     assertThat(this.logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
     assertThat(this.logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
     assertThat(this.logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
     assertThat(this.logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
     assertThat(this.logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(this.logger.isTraceEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(this.logger.isDebugEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(this.logger.isInfoEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(this.logger.isWarnEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(this.logger.isErrorEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(this.logger.isFatalEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(this.logger.isTraceEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(this.logger.isDebugEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(this.logger.isInfoEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(this.logger.isWarnEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(this.logger.isErrorEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(this.logger.isFatalEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(((FastLogger)this.logger).isDelegating(), is(expectIsDelegating));
+
+    assertThat(this.logger.isTraceEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.TRACE)));
+    assertThat(this.logger.isDebugEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.DEBUG)));
+    assertThat(this.logger.isInfoEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.INFO)));
+    assertThat(this.logger.isWarnEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.WARN)));
+    assertThat(this.logger.isErrorEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.ERROR)));
+    assertThat(this.logger.isFatalEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.FATAL)));
+
+    assertThat(this.logger.isTraceEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.TRACE)));
+    assertThat(this.logger.isDebugEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.DEBUG)));
+    assertThat(this.logger.isInfoEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.INFO)));
+    assertThat(this.logger.isWarnEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.WARN)));
+    assertThat(this.logger.isErrorEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.ERROR)));
+    assertThat(this.logger.isFatalEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.FATAL)));
+
+    assertThat(((FastLogger) this.logger).isDelegating(), is(expectIsDelegating));
   }
 
   /**
@@ -423,148 +475,127 @@ public class FastLoggerIntegrationJUnitTest {
    * @param level the log Level
    * @param expectIsDelegating true if expecting FastLogger.isDelegating to be true
    */
-  private void verifyIsDelegatingForAppenderRefFilter(final Level level, final boolean expectIsDelegating) throws Exception {
+  private void verifyIsDelegatingForAppenderRefFilter(final Level level,
+      final boolean expectIsDelegating) throws Exception {
     assertThat(expectIsDelegating, is(true)); // always true for AppenderRef Filter
 
     writeAppenderRefFilterConfigFile(this.configFile, level);
     this.appenderContext.reconfigure();
-    
+
     assertThat(this.logger.getLevel(), is(level));
-    
+
     assertThat(this.logger.isTraceEnabled(), is(level.isLessSpecificThan(Level.TRACE)));
     assertThat(this.logger.isDebugEnabled(), is(level.isLessSpecificThan(Level.DEBUG)));
     assertThat(this.logger.isInfoEnabled(), is(level.isLessSpecificThan(Level.INFO)));
     assertThat(this.logger.isWarnEnabled(), is(level.isLessSpecificThan(Level.WARN)));
     assertThat(this.logger.isErrorEnabled(), is(level.isLessSpecificThan(Level.ERROR)));
     assertThat(this.logger.isFatalEnabled(), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(this.logger.isTraceEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(this.logger.isDebugEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(this.logger.isInfoEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(this.logger.isWarnEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(this.logger.isErrorEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(this.logger.isFatalEnabled(this.enabledMarker), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(this.logger.isTraceEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.TRACE)));
-    assertThat(this.logger.isDebugEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.DEBUG)));
-    assertThat(this.logger.isInfoEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.INFO)));
-    assertThat(this.logger.isWarnEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.WARN)));
-    assertThat(this.logger.isErrorEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.ERROR)));
-    assertThat(this.logger.isFatalEnabled(this.unusedMarker), is(level.isLessSpecificThan(Level.FATAL)));
-    
-    assertThat(((FastLogger)this.logger).isDelegating(), is(expectIsDelegating));
+
+    assertThat(this.logger.isTraceEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.TRACE)));
+    assertThat(this.logger.isDebugEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.DEBUG)));
+    assertThat(this.logger.isInfoEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.INFO)));
+    assertThat(this.logger.isWarnEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.WARN)));
+    assertThat(this.logger.isErrorEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.ERROR)));
+    assertThat(this.logger.isFatalEnabled(this.enabledMarker),
+        is(level.isLessSpecificThan(Level.FATAL)));
+
+    assertThat(this.logger.isTraceEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.TRACE)));
+    assertThat(this.logger.isDebugEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.DEBUG)));
+    assertThat(this.logger.isInfoEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.INFO)));
+    assertThat(this.logger.isWarnEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.WARN)));
+    assertThat(this.logger.isErrorEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.ERROR)));
+    assertThat(this.logger.isFatalEnabled(this.unusedMarker),
+        is(level.isLessSpecificThan(Level.FATAL)));
+
+    assertThat(((FastLogger) this.logger).isDelegating(), is(expectIsDelegating));
   }
 
   private boolean expectDelegating(final boolean value) {
     return value;
   }
-  
-  private static String writeSimpleConfigFile(final File configFile, final Level level) throws IOException {
-    final String xml = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<Configuration monitorInterval=\"5\">" +
-            "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>" +
-            "<Loggers>" +
-              "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name() + "\" additivity=\"true\">" +
-                "<AppenderRef ref=\"STDOUT\"/>" +
-              "</Logger>" +
-              "<Root level=\"FATAL\"/>" +
-            "</Loggers>" +
-           "</Configuration>";
-    final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
-    writer.write(xml);
-    writer.close();
-    return xml;
-  }
-  
-  private static String writeLoggerFilterConfigFile(final File configFile, final Level level) throws IOException {
-    final String xml = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<Configuration monitorInterval=\"5\">" +
-            "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>" +
-            "<Loggers>" +
-              "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name() + "\" additivity=\"true\">" +
-                "<filters>" +
-                  "<MarkerFilter marker=\"" + ENABLED_MARKER_NAME + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" +
-                "</filters>" +
-                "<AppenderRef ref=\"STDOUT\"/>" +
-              "</Logger>" +
-              "<Root level=\"FATAL\"/>" +
-            "</Loggers>" +
-           "</Configuration>";
-    final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
-    writer.write(xml);
-    writer.close();
-    return xml;
-  }
-  
-  private static String writeContextWideFilterConfigFile(final File configFile, final Level level) throws IOException {
-    final String xml = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-          "<Configuration monitorInterval=\"5\">" +
-            "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>" +
-            "<Loggers>" +
-              "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name() + "\" additivity=\"true\">" +
-              "</Logger>" +
-              "<Root level=\"FATAL\">" +
-                "<AppenderRef ref=\"STDOUT\"/>" +
-              "</Root>" +
-            "</Loggers>" +
-            "<filters>" +
-              "<MarkerFilter marker=\"" + ENABLED_MARKER_NAME + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" +
-            "</filters>" +
-           "</Configuration>";
+
+  private static String writeSimpleConfigFile(final File configFile, final Level level)
+      throws IOException {
+    final String xml =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<Configuration monitorInterval=\"5\">"
+            + "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>"
+            + "<Loggers>" + "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name()
+            + "\" additivity=\"true\">" + "<AppenderRef ref=\"STDOUT\"/>" + "</Logger>"
+            + "<Root level=\"FATAL\"/>" + "</Loggers>" + "</Configuration>";
     final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
     writer.write(xml);
     writer.close();
     return xml;
   }
 
-  private static String writeAppenderFilterConfigFile(final File configFile, final Level level) throws IOException {
-    final String xml = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-          "<Configuration monitorInterval=\"5\">" +
-            "<Appenders>" +
-              "<Console name=\"STDOUT\" target=\"SYSTEM_OUT\">" +
-              "<filters>" +
-                "<MarkerFilter marker=\"" + ENABLED_MARKER_NAME + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" +
-              "</filters>" +
-              "</Console>" +
-            "</Appenders>" +
-            "<Loggers>" +
-              "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name() + "\" additivity=\"true\">" +
-              "</Logger>" +
-              "<Root level=\"FATAL\">" +
-                "<AppenderRef ref=\"STDOUT\"/>" +
-              "</Root>" +
-            "</Loggers>" +
-           "</Configuration>";
+  private static String writeLoggerFilterConfigFile(final File configFile, final Level level)
+      throws IOException {
+    final String xml =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<Configuration monitorInterval=\"5\">"
+            + "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>"
+            + "<Loggers>" + "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name()
+            + "\" additivity=\"true\">" + "<filters>" + "<MarkerFilter marker=\""
+            + ENABLED_MARKER_NAME + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" + "</filters>"
+            + "<AppenderRef ref=\"STDOUT\"/>" + "</Logger>" + "<Root level=\"FATAL\"/>"
+            + "</Loggers>" + "</Configuration>";
     final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
     writer.write(xml);
     writer.close();
     return xml;
   }
 
-  private static String writeAppenderRefFilterConfigFile(final File configFile, final Level level) throws IOException {
-    final String xml = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-          "<Configuration monitorInterval=\"5\">" +
-            "<Appenders>" +
-              "<Console name=\"STDOUT\" target=\"SYSTEM_OUT\">" +
-              "</Console>" +
-            "</Appenders>" +
-            "<Loggers>" +
-              "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name() + "\" additivity=\"true\">" +
-              "</Logger>" +
-              "<Root level=\"FATAL\">" +
-                "<AppenderRef ref=\"STDOUT\">" +
-                  "<filters>" +
-                    "<MarkerFilter marker=\"" + ENABLED_MARKER_NAME + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" +
-                  "</filters>" +
-                "</AppenderRef>" +
-              "</Root>" +
-            "</Loggers>" +
-           "</Configuration>";
+  private static String writeContextWideFilterConfigFile(final File configFile, final Level level)
+      throws IOException {
+    final String xml =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<Configuration monitorInterval=\"5\">"
+            + "<Appenders><Console name=\"STDOUT\" target=\"SYSTEM_OUT\"/></Appenders>"
+            + "<Loggers>" + "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\"" + level.name()
+            + "\" additivity=\"true\">" + "</Logger>" + "<Root level=\"FATAL\">"
+            + "<AppenderRef ref=\"STDOUT\"/>" + "</Root>" + "</Loggers>" + "<filters>"
+            + "<MarkerFilter marker=\"" + ENABLED_MARKER_NAME
+            + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" + "</filters>" + "</Configuration>";
+    final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
+    writer.write(xml);
+    writer.close();
+    return xml;
+  }
+
+  private static String writeAppenderFilterConfigFile(final File configFile, final Level level)
+      throws IOException {
+    final String xml =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<Configuration monitorInterval=\"5\">"
+            + "<Appenders>" + "<Console name=\"STDOUT\" target=\"SYSTEM_OUT\">" + "<filters>"
+            + "<MarkerFilter marker=\"" + ENABLED_MARKER_NAME
+            + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" + "</filters>" + "</Console>"
+            + "</Appenders>" + "<Loggers>" + "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\""
+            + level.name() + "\" additivity=\"true\">" + "</Logger>" + "<Root level=\"FATAL\">"
+            + "<AppenderRef ref=\"STDOUT\"/>" + "</Root>" + "</Loggers>" + "</Configuration>";
+    final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
+    writer.write(xml);
+    writer.close();
+    return xml;
+  }
+
+  private static String writeAppenderRefFilterConfigFile(final File configFile, final Level level)
+      throws IOException {
+    final String xml =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<Configuration monitorInterval=\"5\">"
+            + "<Appenders>" + "<Console name=\"STDOUT\" target=\"SYSTEM_OUT\">" + "</Console>"
+            + "</Appenders>" + "<Loggers>" + "<Logger name=\"" + TEST_LOGGER_NAME + "\" level=\""
+            + level.name() + "\" additivity=\"true\">" + "</Logger>" + "<Root level=\"FATAL\">"
+            + "<AppenderRef ref=\"STDOUT\">" + "<filters>" + "<MarkerFilter marker=\""
+            + ENABLED_MARKER_NAME + "\" onMatch=\"ACCEPT\" onMismatch=\"DENY\"/>" + "</filters>"
+            + "</AppenderRef>" + "</Root>" + "</Loggers>" + "</Configuration>";
     final BufferedWriter writer = new BufferedWriter(new FileWriter(configFile));
     writer.write(xml);
     writer.close();

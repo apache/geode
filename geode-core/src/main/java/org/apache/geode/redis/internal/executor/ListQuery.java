@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor;
 
@@ -20,31 +18,44 @@ public enum ListQuery {
 
   LINDEX {
     public String getQueryString(String fullpath) {
-      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath + ".entrySet entry WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
+      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
+          + ".entrySet entry WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
     }
-  }, LRANGE {
+  },
+  LRANGE {
     public String getQueryString(String fullpath) {
-      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath + ".entrySet entry WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
+      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
+          + ".entrySet entry WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
     }
-  }, LREMG {
+  },
+  LREMG {
     public String getQueryString(String fullpath) {
-      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath + ".entrySet entry WHERE value = $1 AND key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $2";
+      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
+          + ".entrySet entry WHERE value = $1 AND key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $2";
     }
-  }, LREML {
+  },
+  LREML {
     public String getQueryString(String fullpath) {
-      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath + ".entrySet entry WHERE value = $1 AND key != 'head' AND key != 'tail' ORDER BY key desc LIMIT $2";
+      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
+          + ".entrySet entry WHERE value = $1 AND key != 'head' AND key != 'tail' ORDER BY key desc LIMIT $2";
     }
-  }, LREME {
+  },
+  LREME {
     public String getQueryString(String fullpath) {
-      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath + ".entrySet entry WHERE value = $1 ORDER BY key asc";
+      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
+          + ".entrySet entry WHERE value = $1 ORDER BY key asc";
     }
-  }, LSET {
+  },
+  LSET {
     public String getQueryString(String fullpath) {
-      return "SELECT DISTINCT * FROM " + fullpath + ".keySet key WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
+      return "SELECT DISTINCT * FROM " + fullpath
+          + ".keySet key WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
     }
-  }, LTRIM {
+  },
+  LTRIM {
     public String getQueryString(String fullpath) {
-      return "SELECT DISTINCT * FROM " + fullpath + ".keySet key WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
+      return "SELECT DISTINCT * FROM " + fullpath
+          + ".keySet key WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
     }
   };
 

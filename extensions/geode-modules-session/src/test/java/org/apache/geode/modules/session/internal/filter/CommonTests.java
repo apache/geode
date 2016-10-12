@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.session.internal.filter;
 
 import static org.junit.Assert.*;
@@ -42,8 +40,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * This servlet tests the effects of the downstream SessionCachingFilter filter.
- * When these tests are performed, the filter would already have taken effect.
+ * This servlet tests the effects of the downstream SessionCachingFilter filter. When these tests
+ * are performed, the filter would already have taken effect.
  */
 public abstract class CommonTests extends BasicServletTestCaseAdapter {
 
@@ -52,10 +50,8 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   @Test
   public void testGetSession1() throws Exception {
     doFilter();
-    HttpSession session1 =
-        ((HttpServletRequest) getFilteredRequest()).getSession();
-    HttpSession session2 =
-        ((HttpServletRequest) getFilteredRequest()).getSession();
+    HttpSession session1 = ((HttpServletRequest) getFilteredRequest()).getSession();
+    HttpSession session2 = ((HttpServletRequest) getFilteredRequest()).getSession();
 
     assertSame("Session should be the same", session1, session2);
   }
@@ -84,8 +80,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     getFilteredRequest().setAttribute("foo", "bar");
 
     assertEquals("bar", getFilteredRequest().getAttribute("foo"));
-    assertNull("Unknown attribute should be null",
-        getFilteredRequest().getAttribute("baz"));
+    assertNull("Unknown attribute should be null", getFilteredRequest().getAttribute("baz"));
   }
 
   @Test
@@ -101,8 +96,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     doFilter();
 
     assertEquals("bar", getFilteredRequest().getAttribute("foo"));
-    assertNull("Unknown attribute should be null",
-        getFilteredRequest().getAttribute("baz"));
+    assertNull("Unknown attribute should be null", getFilteredRequest().getAttribute("baz"));
   }
 
   @Test
@@ -166,8 +160,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
 
 
   /**
-   * Test that various methods throw the appropriate exception when the session is
-   * invalid.
+   * Test that various methods throw the appropriate exception when the session is invalid.
    */
   @Test
   public void testInvalidate1() throws Exception {
@@ -342,7 +335,9 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     doFilter();
 
     // Ugh
-    MockHttpSession session = (MockHttpSession) ((GemfireHttpSession) ((HttpServletRequest) getFilteredRequest()).getSession()).getNativeSession();
+    MockHttpSession session =
+        (MockHttpSession) ((GemfireHttpSession) ((HttpServletRequest) getFilteredRequest())
+            .getSession()).getNativeSession();
     session.addAttributeListener((HttpSessionAttributeListener) listener);
     session.setAttribute("foo", "bar");
     session.setAttribute("foo", "baz");
@@ -350,10 +345,8 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
 
     assertTrue("Event timeout", listener.await(1, TimeUnit.SECONDS));
     assertEquals(ListenerEventType.SESSION_ATTRIBUTE_ADDED, listener.getEvents().get(0));
-    assertEquals(ListenerEventType.SESSION_ATTRIBUTE_REPLACED,
-        listener.getEvents().get(1));
-    assertEquals(ListenerEventType.SESSION_ATTRIBUTE_REMOVED,
-        listener.getEvents().get(2));
+    assertEquals(ListenerEventType.SESSION_ATTRIBUTE_REPLACED, listener.getEvents().get(1));
+    assertEquals(ListenerEventType.SESSION_ATTRIBUTE_REMOVED, listener.getEvents().get(2));
   }
 
   /**
@@ -363,13 +356,10 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   public void testHttpSessionBindingListener1() throws Exception {
     doFilter();
 
-    HttpSession session =
-        ((HttpServletRequest) getFilteredRequest()).getSession();
+    HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
 
-    HttpSessionBindingListenerImpl listener1 =
-        new HttpSessionBindingListenerImpl(2);
-    HttpSessionBindingListenerImpl listener2 =
-        new HttpSessionBindingListenerImpl(2);
+    HttpSessionBindingListenerImpl listener1 = new HttpSessionBindingListenerImpl(2);
+    HttpSessionBindingListenerImpl listener2 = new HttpSessionBindingListenerImpl(2);
 
     session.setAttribute("foo", listener1);
     session.setAttribute("foo", listener2);
@@ -381,11 +371,9 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     assertEquals("Event list size incorrect", 2, listener1.getEvents().size());
     assertEquals("Event list size incorrect", 2, listener2.getEvents().size());
     assertEquals(ListenerEventType.SESSION_VALUE_BOUND, listener1.getEvents().get(0));
-    assertEquals(ListenerEventType.SESSION_VALUE_UNBOUND,
-        listener1.getEvents().get(1));
+    assertEquals(ListenerEventType.SESSION_VALUE_UNBOUND, listener1.getEvents().get(1));
     assertEquals(ListenerEventType.SESSION_VALUE_BOUND, listener2.getEvents().get(0));
-    assertEquals(ListenerEventType.SESSION_VALUE_UNBOUND,
-        listener2.getEvents().get(1));
+    assertEquals(ListenerEventType.SESSION_VALUE_UNBOUND, listener2.getEvents().get(1));
   }
 
   @Test
@@ -581,8 +569,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
     request.getSession();
 
-    assertFalse("Session ID should not be from cookie",
-        request.isRequestedSessionIdFromCookie());
+    assertFalse("Session ID should not be from cookie", request.isRequestedSessionIdFromCookie());
     assertTrue("Session ID should be from URL", request.isRequestedSessionIdFromURL());
   }
 
@@ -598,14 +585,14 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
 
   public static class RequestWrappingFilter implements Filter {
 
-    @Override public void init(final FilterConfig filterConfig) throws ServletException {
+    @Override
+    public void init(final FilterConfig filterConfig) throws ServletException {
 
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-      throws IOException, ServletException
-    {
+        throws IOException, ServletException {
       final HttpServletRequest httpRequest = (HttpServletRequest) request;
       httpRequest.getSession();
       httpRequest.setAttribute("original_session", httpRequest.getSession());
@@ -614,7 +601,8 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
 
     }
 
-    @Override public void destroy() {
+    @Override
+    public void destroy() {
 
     }
   }

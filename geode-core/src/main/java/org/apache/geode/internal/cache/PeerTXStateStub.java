@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -40,16 +38,19 @@ import org.apache.geode.internal.logging.LogService;
 public class PeerTXStateStub extends TXStateStub {
 
   protected static final Logger logger = LogService.getLogger();
-  
+
   private InternalDistributedMember originatingMember = null;
   protected TXCommitMessage commitMessage = null;
 
-  public PeerTXStateStub(TXStateProxy stateProxy, DistributedMember target,InternalDistributedMember onBehalfOfClient) {
+  public PeerTXStateStub(TXStateProxy stateProxy, DistributedMember target,
+      InternalDistributedMember onBehalfOfClient) {
     super(stateProxy, target);
     this.originatingMember = onBehalfOfClient;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.internal.cache.TXStateInterface#rollback()
    */
   @Override
@@ -57,18 +58,15 @@ public class PeerTXStateStub extends TXStateStub {
     /*
      * txtodo: work this into client realm
      */
-    ReliableReplyProcessor21 response = TXRemoteRollbackMessage.send(
-                                                          this.proxy.getCache(),
-                                                          this.proxy.getTxId().getUniqId(),
-                                                          getOriginatingMember(),
-                                                          this.target);
+    ReliableReplyProcessor21 response = TXRemoteRollbackMessage.send(this.proxy.getCache(),
+        this.proxy.getTxId().getUniqId(), getOriginatingMember(), this.target);
     if (this.internalAfterSendRollback != null) {
       this.internalAfterSendRollback.run();
     }
-    
+
     try {
       response.waitForReplies();
-    } catch(PrimaryBucketException pbe) {
+    } catch (PrimaryBucketException pbe) {
       // ignore this
     } catch (ReplyException e) {
       this.proxy.getCache().getCancelCriterion().checkCancelInProgress(e);
@@ -78,13 +76,13 @@ public class PeerTXStateStub extends TXStateStub {
           this.internalAfterSendRollback.run();
         }
       } else {
-        throw new TransactionException(LocalizedStrings.
-            TXStateStub_ROLLBACK_ON_NODE_0_FAILED.toLocalizedString(target), e);
+        throw new TransactionException(
+            LocalizedStrings.TXStateStub_ROLLBACK_ON_NODE_0_FAILED.toLocalizedString(target), e);
       }
-    } catch(Exception e) {
+    } catch (Exception e) {
       this.getCache().getCancelCriterion().checkCancelInProgress(e);
-      throw new TransactionException(LocalizedStrings.
-          TXStateStub_ROLLBACK_ON_NODE_0_FAILED.toLocalizedString(target), e);
+      throw new TransactionException(
+          LocalizedStrings.TXStateStub_ROLLBACK_ON_NODE_0_FAILED.toLocalizedString(target), e);
     } finally {
       cleanup();
     }
@@ -96,63 +94,61 @@ public class PeerTXStateStub extends TXStateStub {
     /*
      * txtodo: Going to need to deal with client here
      */
-    RemoteCommitResponse message = 
-          TXRemoteCommitMessage.send(this.proxy.getCache(),
-                                      this.proxy.getTxId().getUniqId(),
-                                      this.getOriginatingMember(),
-                                      target);
-    
+    RemoteCommitResponse message = TXRemoteCommitMessage.send(this.proxy.getCache(),
+        this.proxy.getTxId().getUniqId(), this.getOriginatingMember(), target);
+
     if (this.internalAfterSendCommit != null) {
       this.internalAfterSendCommit.run();
     }
-    
+
     try {
       commitMessage = message.waitForResponse();
-    }  catch (CommitConflictException e) {
+    } catch (CommitConflictException e) {
       throw e;
-    } catch(TransactionException te) {
+    } catch (TransactionException te) {
       throw te;
     } catch (ReliableReplyException e) {
-      if(e.getCause()!=null) {
+      if (e.getCause() != null) {
         throw new TransactionInDoubtException(e.getCause());
       } else {
         throw new TransactionInDoubtException(e);
       }
-    } catch(ReplyException e) {
-      if(e.getCause() instanceof CommitConflictException) {
-        throw (CommitConflictException)e.getCause();
-      } else if(e.getCause() instanceof TransactionException) {
-        throw (TransactionException)e.getCause();
+    } catch (ReplyException e) {
+      if (e.getCause() instanceof CommitConflictException) {
+        throw (CommitConflictException) e.getCause();
+      } else if (e.getCause() instanceof TransactionException) {
+        throw (TransactionException) e.getCause();
       }
       /*
-      if(e.getCause()!=null) {
-        throw new CommitConflictException(e.getCause());
-      } else {
-        throw new CommitConflictException(e);
-      } */
-      if(e.getCause()!=null) {
+       * if(e.getCause()!=null) { throw new CommitConflictException(e.getCause()); } else { throw
+       * new CommitConflictException(e); }
+       */
+      if (e.getCause() != null) {
         throw new TransactionInDoubtException(e.getCause());
       } else {
         throw new TransactionInDoubtException(e);
       }
     } catch (Exception e) {
       this.getCache().getCancelCriterion().checkCancelInProgress(e);
-      if (e.getCause()!=null) {
-    	if (e.getCause() instanceof ForceReattemptException) {
-    	  Throwable e2 = e.getCause();
-    	  if (e2.getCause()!=null && e2.getCause() instanceof PrimaryBucketException) {
-    	      // data rebalanced
-    	      TransactionDataRebalancedException tdnce =  new TransactionDataRebalancedException(e2.getCause().getMessage());
-	      tdnce.initCause(e2.getCause());
-	      throw tdnce;
-    	  } else {
-    	    // We cannot be sure that the member departed starting to process commit request,
-    	    // so throw a TransactionInDoubtException rather than a TransactionDataNodeHasDeparted. fixes 44939
-   	    TransactionInDoubtException tdnce =  new TransactionInDoubtException(e.getCause().getMessage());
-	    tdnce.initCause(e.getCause());
-	    throw tdnce;
-    	  }
-    	}
+      if (e.getCause() != null) {
+        if (e.getCause() instanceof ForceReattemptException) {
+          Throwable e2 = e.getCause();
+          if (e2.getCause() != null && e2.getCause() instanceof PrimaryBucketException) {
+            // data rebalanced
+            TransactionDataRebalancedException tdnce =
+                new TransactionDataRebalancedException(e2.getCause().getMessage());
+            tdnce.initCause(e2.getCause());
+            throw tdnce;
+          } else {
+            // We cannot be sure that the member departed starting to process commit request,
+            // so throw a TransactionInDoubtException rather than a TransactionDataNodeHasDeparted.
+            // fixes 44939
+            TransactionInDoubtException tdnce =
+                new TransactionInDoubtException(e.getCause().getMessage());
+            tdnce.initCause(e.getCause());
+            throw tdnce;
+          }
+        }
         throw new TransactionInDoubtException(e.getCause());
       } else {
         throw new TransactionInDoubtException(e);
@@ -170,46 +166,45 @@ public class PeerTXStateStub extends TXStateStub {
 
   @Override
   protected TXRegionStub generateRegionStub(LocalRegion region) {
-      TXRegionStub stub = null;
-      if(region.getPartitionAttributes()==null) {
-        // This is a dist region
-        stub = new DistributedTXRegionStub(this,region);
-      } else {
-        stub = new PartitionedTXRegionStub(this,region);
-      }
-      return stub;
+    TXRegionStub stub = null;
+    if (region.getPartitionAttributes() == null) {
+      // This is a dist region
+      stub = new DistributedTXRegionStub(this, region);
+    } else {
+      stub = new PartitionedTXRegionStub(this, region);
+    }
+    return stub;
   }
 
   @Override
-  protected void validateRegionCanJoinTransaction(LocalRegion region)
-      throws TransactionException {
+  protected void validateRegionCanJoinTransaction(LocalRegion region) throws TransactionException {
     /*
      * Ok is this region legit to enter into tx?
      */
-    if(region.hasServerProxy()) {
+    if (region.hasServerProxy()) {
       /*
        * This is a c/s region in a peer tx. nope!
        */
       throw new TransactionException("Can't involve c/s region in peer tx");
     }
-    
+
   }
 
 
   @Override
   public void afterCompletion(int status) {
     RemoteCommitResponse response = JtaAfterCompletionMessage.send(this.proxy.getCache(),
-        this.proxy.getTxId().getUniqId(),getOriginatingMember(), status, this.target);
+        this.proxy.getTxId().getUniqId(), getOriginatingMember(), status, this.target);
     try {
       this.proxy.getTxMgr().setTXState(null);
       this.commitMessage = response.waitForResponse();
       if (logger.isDebugEnabled()) {
         logger.debug("afterCompletion received commit response of {}", this.commitMessage);
       }
-      
+
     } catch (Exception e) {
       throw new TransactionException(e);
-      //TODO throw a better exception
+      // TODO throw a better exception
     } finally {
       cleanup();
     }
@@ -231,7 +226,7 @@ public class PeerTXStateStub extends TXStateStub {
 
   @Override
   public boolean isMemberIdForwardingRequired() {
-    return getOriginatingMember()!=null;
+    return getOriginatingMember() != null;
   }
 
   @Override
@@ -251,7 +246,8 @@ public class PeerTXStateStub extends TXStateStub {
   }
 
   @Override
-  public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key, Object arguments[]) {
+  public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
+      Object arguments[]) {
     // no-op here
   }
 }

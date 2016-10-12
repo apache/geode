@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.functions;
 
@@ -74,7 +72,7 @@ public class DataCommandFunctionJUnitTest {
         return true;
       }
       if (other instanceof StringCheese) {
-        return this.cheese.equals(((StringCheese)other).cheese);
+        return this.cheese.equals(((StringCheese) other).cheese);
       }
       return false;
     }
@@ -82,9 +80,7 @@ public class DataCommandFunctionJUnitTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    cache = new CacheFactory().
-        set(MCAST_PORT, "0").
-        create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
     region1 = factory.create(PARTITIONED_REGION);
 
@@ -105,7 +101,8 @@ public class DataCommandFunctionJUnitTest {
   public void testLocateKeyIsObject() throws Exception {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
-    DataCommandResult result = dataCmdFn.locateEntry("{'cheese': 'key_1'}", StringCheese.class.getName(), String.class.getName(), PARTITIONED_REGION, false);
+    DataCommandResult result = dataCmdFn.locateEntry("{'cheese': 'key_1'}",
+        StringCheese.class.getName(), String.class.getName(), PARTITIONED_REGION, false);
 
     assertNotNull(result);
     result.aggregate(null);
@@ -117,7 +114,8 @@ public class DataCommandFunctionJUnitTest {
   public void testLocateKeyIsString() throws Exception {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
-    DataCommandResult result = dataCmdFn.locateEntry("key_2", String.class.getName(), String.class.getName(), PARTITIONED_REGION, false);
+    DataCommandResult result = dataCmdFn.locateEntry("key_2", String.class.getName(),
+        String.class.getName(), PARTITIONED_REGION, false);
 
     assertNotNull(result);
     result.aggregate(null);

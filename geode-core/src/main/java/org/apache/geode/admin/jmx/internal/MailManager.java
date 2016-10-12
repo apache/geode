@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.jmx.internal;
 
@@ -36,18 +34,17 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * Provides the ways to send emails to all the registered email id It also
- * provides the way to add/remove email ids. Can be used to send email in case
- * of any alerts raised / warning / failure in gemfire.
+ * Provides the ways to send emails to all the registered email id It also provides the way to
+ * add/remove email ids. Can be used to send email in case of any alerts raised / warning / failure
+ * in gemfire.
  * 
  * @since GemFire 5.1
  */
 public class MailManager {
 
   private static final Logger logger = LogService.getLogger();
-  
-  public MailManager() {
-  }
+
+  public MailManager() {}
 
   public MailManager(Properties mailProperties) {
     setMailProperties(mailProperties);
@@ -58,8 +55,7 @@ public class MailManager {
     FileInputStream fio = new FileInputStream(mailPropertiesFile);
     try {
       prop.load(fio);
-    }
-    finally {
+    } finally {
       fio.close();
     }
     setMailProperties(prop);
@@ -80,18 +76,18 @@ public class MailManager {
   /**
    * Send Emails to all the registered email id
    * 
-   * @param emailData
-   *                Instance of EmailData
+   * @param emailData Instance of EmailData
    */
-  // Why a separate method & class EmailData needed??? 
+  // Why a separate method & class EmailData needed???
   private void processEmail(EmailData emailData) {
     if (logger.isTraceEnabled()) {
       logger.trace("Entered MailManager:processEmail");
     }
 
-    if (mailHost == null || mailHost.length() == 0
-        || emailData == null || mailToAddresses.length == 0) {
-      logger.error(LocalizedMessage.create(LocalizedStrings.MailManager_REQUIRED_MAILSERVER_CONFIGURATION_NOT_SPECIFIED));
+    if (mailHost == null || mailHost.length() == 0 || emailData == null
+        || mailToAddresses.length == 0) {
+      logger.error(LocalizedMessage
+          .create(LocalizedStrings.MailManager_REQUIRED_MAILSERVER_CONFIGURATION_NOT_SPECIFIED));
       if (logger.isDebugEnabled()) {
         logger.debug("Exited MailManager:processEmail: Not sending email as conditions not met");
       }
@@ -106,8 +102,7 @@ public class MailManager {
 
     try {
       for (int i = 0; i < mailToAddresses.length; i++) {
-        mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(
-            mailToAddresses[i]));
+        mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(mailToAddresses[i]));
       }
 
       if (subject == null) {
@@ -121,27 +116,33 @@ public class MailManager {
       mimeMessage.setText(message);
 
       Transport.send(mimeMessage);
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.MailManager_EMAIL_ALERT_HAS_BEEN_SENT_0_1_2,
-          new Object[] { mailToList, subject, message }));
+      logger.info(
+          LocalizedMessage.create(LocalizedStrings.MailManager_EMAIL_ALERT_HAS_BEEN_SENT_0_1_2,
+              new Object[] {mailToList, subject, message}));
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
     } catch (Throwable ex) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
       StringBuilder buf = new StringBuilder();
-      buf.append(LocalizedStrings.MailManager_AN_EXCEPTION_OCCURRED_WHILE_SENDING_EMAIL.toLocalizedString());
-      buf.append(LocalizedStrings.MailManager_UNABLE_TO_SEND_EMAIL_PLEASE_CHECK_YOUR_EMAIL_SETTINGS_AND_LOG_FILE.toLocalizedString());
-      buf.append("\n\n").append(LocalizedStrings.MailManager_EXCEPTION_MESSAGE_0.toLocalizedString(ex.getMessage()));
-      buf.append("\n\n").append(LocalizedStrings.MailManager_FOLLOWING_EMAIL_WAS_NOT_DELIVERED.toLocalizedString());
-      buf.append("\n\t").append(LocalizedStrings.MailManager_MAIL_HOST_0.toLocalizedString(mailHost));
+      buf.append(LocalizedStrings.MailManager_AN_EXCEPTION_OCCURRED_WHILE_SENDING_EMAIL
+          .toLocalizedString());
+      buf.append(
+          LocalizedStrings.MailManager_UNABLE_TO_SEND_EMAIL_PLEASE_CHECK_YOUR_EMAIL_SETTINGS_AND_LOG_FILE
+              .toLocalizedString());
+      buf.append("\n\n").append(
+          LocalizedStrings.MailManager_EXCEPTION_MESSAGE_0.toLocalizedString(ex.getMessage()));
+      buf.append("\n\n").append(
+          LocalizedStrings.MailManager_FOLLOWING_EMAIL_WAS_NOT_DELIVERED.toLocalizedString());
+      buf.append("\n\t")
+          .append(LocalizedStrings.MailManager_MAIL_HOST_0.toLocalizedString(mailHost));
       buf.append("\n\t").append(LocalizedStrings.MailManager_FROM_0.toLocalizedString(mailFrom));
       buf.append("\n\t").append(LocalizedStrings.MailManager_TO_0.toLocalizedString(mailToList));
       buf.append("\n\t").append(LocalizedStrings.MailManager_SUBJECT_0.toLocalizedString(subject));
@@ -157,8 +158,7 @@ public class MailManager {
   /**
    * Not yet implemented
    */
-  public void close() {
-  }
+  public void close() {}
 
   /**
    * @return All the registered email id as string
@@ -191,8 +191,7 @@ public class MailManager {
 
   /**
    * 
-   * @param host
-   *                mail host server name
+   * @param host mail host server name
    */
   public void setMailHost(String host) {
     this.mailHost = host;
@@ -208,8 +207,7 @@ public class MailManager {
 
   /**
    * 
-   * @param fromAddress
-   *                mailFrom email id
+   * @param fromAddress mailFrom email id
    */
   public void setMailFromAddress(String fromAddress) {
     mailFrom = fromAddress;
@@ -243,7 +241,7 @@ public class MailManager {
    * @return list all the registered email id
    */
   public String[] getAllToAddresses() {
-    return (String[])mailToSet.toArray(new String[0]);
+    return (String[]) mailToSet.toArray(new String[0]);
   }
 
   /**
@@ -285,8 +283,7 @@ public class MailManager {
         buffer.append(", ");
       }
       buffer.replace(buffer.length() - 2, buffer.length(), "");
-    }
-    else {
+    } else {
       buffer.append(" Undefined");
     }
     buffer.append("]");
@@ -324,8 +321,7 @@ public class MailManager {
   }
 
   public static void main(String args[]) {
-    MailManager mailManager = new MailManager("mailsrv1.gemstone.com",
-        "hkhanna@gemstone.com");
+    MailManager mailManager = new MailManager("mailsrv1.gemstone.com", "hkhanna@gemstone.com");
     mailManager.sendEmail("Alert!", "Test");
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.operations;
@@ -20,11 +18,10 @@ package org.apache.geode.cache.operations;
 import org.apache.geode.security.ResourcePermission;
 
 /**
- * Encapsulates a cache operation and the data associated with it for both the
- * pre-operation and post-operation cases. Implementations for specific
- * operations will extend this with the specifics as required e.g. a getKey()
- * method for a GET operation. Implementations for all the cache operations that
- * require authorization are provided.
+ * Encapsulates a cache operation and the data associated with it for both the pre-operation and
+ * post-operation cases. Implementations for specific operations will extend this with the specifics
+ * as required e.g. a getKey() method for a GET operation. Implementations for all the cache
+ * operations that require authorization are provided.
  *
  * Implementations of this interface are <b>not</b> expected to be thread-safe.
  *
@@ -32,46 +29,28 @@ import org.apache.geode.security.ResourcePermission;
  *
  * @deprecated since Geode1.0, use {@link ResourcePermission} instead
  */
-public abstract class OperationContext{
+public abstract class OperationContext {
 
   public enum OperationCode {
     @Deprecated
-    GET,
-    @Deprecated
-    PUT,
-    @Deprecated
-    PUTALL,
-    @Deprecated
-    REMOVEALL,
-    @Deprecated
-    DESTROY,
-    @Deprecated
-    INVALIDATE,
-    @Deprecated
-    REGISTER_INTEREST,
-    @Deprecated
-    UNREGISTER_INTEREST,
-    @Deprecated
-    CONTAINS_KEY,
-    @Deprecated
-    KEY_SET,
-    @Deprecated
-    QUERY,
-    @Deprecated
-    EXECUTE_CQ,
-    @Deprecated
-    STOP_CQ,
-    @Deprecated
-    CLOSE_CQ,
-    @Deprecated
-    REGION_CLEAR,
-    @Deprecated
-    REGION_CREATE,
-    @Deprecated
-    REGION_DESTROY,
-    @Deprecated
-    EXECUTE_FUNCTION,
-    @Deprecated
+    GET, @Deprecated
+    PUT, @Deprecated
+    PUTALL, @Deprecated
+    REMOVEALL, @Deprecated
+    DESTROY, @Deprecated
+    INVALIDATE, @Deprecated
+    REGISTER_INTEREST, @Deprecated
+    UNREGISTER_INTEREST, @Deprecated
+    CONTAINS_KEY, @Deprecated
+    KEY_SET, @Deprecated
+    QUERY, @Deprecated
+    EXECUTE_CQ, @Deprecated
+    STOP_CQ, @Deprecated
+    CLOSE_CQ, @Deprecated
+    REGION_CLEAR, @Deprecated
+    REGION_CREATE, @Deprecated
+    REGION_DESTROY, @Deprecated
+    EXECUTE_FUNCTION, @Deprecated
     GET_DURABLE_CQS;
 
     /**
@@ -286,29 +265,27 @@ public abstract class OperationContext{
   }
 
   /**
-   * Return the operation code associated with the <code>OperationContext</code>
-   * object.
+   * Return the operation code associated with the <code>OperationContext</code> object.
    */
   public abstract OperationCode getOperationCode();
 
   /**
    * True if the context is for post-operation.
    *
-   * The <code>OperationContext</code> interface encapsulates the data both
-   * before the operation is performed and after the operation is complete. For
-   * example, for a query operation the <code>Query</code> object as well as
-   * the list of region names referenced by the query would be part of the
-   * context object in the pre-processing stage. In the post-processing stage
-   * the context object shall contain results of the query.
+   * The <code>OperationContext</code> interface encapsulates the data both before the operation is
+   * performed and after the operation is complete. For example, for a query operation the
+   * <code>Query</code> object as well as the list of region names referenced by the query would be
+   * part of the context object in the pre-processing stage. In the post-processing stage the
+   * context object shall contain results of the query.
    */
   public abstract boolean isPostOperation();
 
   /**
-   * When called post-operation, returns true if the operation was one that performed an update.
-   * An update occurs when one of the following methods on <code>getOperationCode()</code> returns true:
-   * <code>isPut()</code>, <code>isPutAll()</code>, <code>isDestroy()</code>, <code>isRemoveAll()</code>,
-   * <code>isInvalidate()</code>, <code>isRegionCreate()</code>, <code>isRegionClear()</code>, <code>isRegionDestroy()</code>.
-   * Otherwise, returns false.
+   * When called post-operation, returns true if the operation was one that performed an update. An
+   * update occurs when one of the following methods on <code>getOperationCode()</code> returns
+   * true: <code>isPut()</code>, <code>isPutAll()</code>, <code>isDestroy()</code>,
+   * <code>isRemoveAll()</code>, <code>isInvalidate()</code>, <code>isRegionCreate()</code>,
+   * <code>isRegionClear()</code>, <code>isRegionDestroy()</code>. Otherwise, returns false.
    *
    * @since GemFire 6.6
    */
@@ -335,10 +312,8 @@ public abstract class OperationContext{
   @Deprecated
   public boolean isClientUpdate(OperationContext context) {
     OperationCode opCode = context.getOperationCode();
-    return context.isPostOperation()
-        && (opCode.isPut() || opCode.isPutAll() || opCode.isDestroy()
-        || opCode.isRemoveAll()
-        || opCode.isInvalidate() || opCode.isRegionCreate()
+    return context.isPostOperation() && (opCode.isPut() || opCode.isPutAll() || opCode.isDestroy()
+        || opCode.isRemoveAll() || opCode.isInvalidate() || opCode.isRegionCreate()
         || opCode.isRegionDestroy() || opCode.isRegionClear());
   }
 

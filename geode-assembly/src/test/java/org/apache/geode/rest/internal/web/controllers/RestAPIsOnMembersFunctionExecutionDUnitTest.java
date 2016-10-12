@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.rest.internal.web.controllers;
 
@@ -63,7 +61,8 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
 
     Cache c = null;
     try {
-      c = CacheFactory.getInstance(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
+      c = CacheFactory
+          .getInstance(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
       c.close();
     } catch (CacheClosedException ignore) {
     }
@@ -86,7 +85,8 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     createCacheForVMs();
 
     for (int i = 0; i < 10; i++) {
-      CloseableHttpResponse response = executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, null);
+      CloseableHttpResponse response =
+          executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, null);
       assertHttpResponse(response, 200, 4);
     }
 
@@ -96,14 +96,14 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   }
 
   private void createCacheForVMs() {
-    restURLs.add(vm0.invoke("createCacheAndRegisterFunction", () -> createCacheAndRegisterFunction(vm0.getHost()
-                                                                                                      .getHostName(), "m1")));
-    restURLs.add(vm1.invoke("createCacheAndRegisterFunction", () -> createCacheAndRegisterFunction(vm1.getHost()
-                                                                                                      .getHostName(), "m2")));
-    restURLs.add(vm2.invoke("createCacheAndRegisterFunction", () -> createCacheAndRegisterFunction(vm2.getHost()
-                                                                                                      .getHostName(), "m3")));
-    restURLs.add(vm3.invoke("createCacheAndRegisterFunction", () -> createCacheAndRegisterFunction(vm3.getHost()
-                                                                                                      .getHostName(), "m4")));
+    restURLs.add(vm0.invoke("createCacheAndRegisterFunction",
+        () -> createCacheAndRegisterFunction(vm0.getHost().getHostName(), "m1")));
+    restURLs.add(vm1.invoke("createCacheAndRegisterFunction",
+        () -> createCacheAndRegisterFunction(vm1.getHost().getHostName(), "m2")));
+    restURLs.add(vm2.invoke("createCacheAndRegisterFunction",
+        () -> createCacheAndRegisterFunction(vm2.getHost().getHostName(), "m3")));
+    restURLs.add(vm3.invoke("createCacheAndRegisterFunction",
+        () -> createCacheAndRegisterFunction(vm3.getHost().getHostName(), "m4")));
   }
 
   @Test
@@ -111,7 +111,8 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     createCacheForVMs();
 
     for (int i = 0; i < 10; i++) {
-      CloseableHttpResponse response = executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, "m1,m2,m3");
+      CloseableHttpResponse response =
+          executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, "m1,m2,m3");
       assertHttpResponse(response, 200, 3);
     }
 
@@ -125,7 +126,8 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     createCacheForVMs();
 
     for (int i = 0; i < 10; i++) {
-      CloseableHttpResponse response = executeFunctionThroughRestCall("OnMembersFunction", null, "key2", null, null, "m1,m2,m3");
+      CloseableHttpResponse response =
+          executeFunctionThroughRestCall("OnMembersFunction", null, "key2", null, null, "m1,m2,m3");
       assertHttpResponse(response, 500, 0);
     }
 

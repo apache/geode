@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -34,15 +32,13 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class HAContainerMap implements HAContainerWrapper {
 
   /**
-   * TODO: Amogh: Using ConcurrentHashMap may be beneficial. It gives us
-   * putEntryIfAbsent()!
+   * TODO: Amogh: Using ConcurrentHashMap may be beneficial. It gives us putEntryIfAbsent()!
    */
   private ConcurrentHashMap map = null;
 
   /**
-   * This map helps us retrieve the proxy id at the receiver side during GII so
-   * that we can retain the cqlist of a client for an event which already
-   * existed at the receiver side.
+   * This map helps us retrieve the proxy id at the receiver side during GII so that we can retain
+   * the cqlist of a client for an event which already existed at the receiver side.
    */
   private final Map<String, CacheClientProxy> haRegionNameToProxy;
 
@@ -53,7 +49,7 @@ public class HAContainerMap implements HAContainerWrapper {
 
   public ClientProxyMembershipID getProxyID(String haRegionName) {
     CacheClientProxy proxy = haRegionNameToProxy.get(haRegionName);
-    if (proxy != null){
+    if (proxy != null) {
       return proxy.getProxyID();
     } else {
       return null;
@@ -61,7 +57,8 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   public Object putProxy(String haName, CacheClientProxy proxy) {
-//    InternalDistributedSystem.getLoggerI18n().info(LocalizedStrings.DEBUG, "adding proxy for " + haName + ": " + proxy, new Exception("stack trace"));
+    // InternalDistributedSystem.getLoggerI18n().info(LocalizedStrings.DEBUG, "adding proxy for " +
+    // haName + ": " + proxy, new Exception("stack trace"));
     return haRegionNameToProxy.put(haName, proxy);
   }
 
@@ -70,18 +67,19 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   public Object removeProxy(String haName) {
-//    InternalDistributedSystem.getLoggerI18n().info(LocalizedStrings.DEBUG, "removing proxy for " + haName, new Exception("stack trace"));
+    // InternalDistributedSystem.getLoggerI18n().info(LocalizedStrings.DEBUG, "removing proxy for "
+    // + haName, new Exception("stack trace"));
     return haRegionNameToProxy.remove(haName);
   }
-  
+
   /**
    * @param key
    * @return Object
    */
-	public Object getKey(Object key) {
-		Entry entry = (Entry) map.get(key);
-		return (entry == null) ? null : entry.getKey();
-	}
+  public Object getKey(Object key) {
+    Entry entry = (Entry) map.get(key);
+    return (entry == null) ? null : entry.getKey();
+  }
 
   public String getName() {
     return "HashMap";
@@ -101,17 +99,17 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   public boolean containsValue(Object value) {
-    //return map.containsValue(value);
+    // return map.containsValue(value);
     throw new UnsupportedOperationException("containsValue() not supported.");
   }
 
   public Set entrySet() {
-    //return map.entrySet();
+    // return map.entrySet();
     throw new UnsupportedOperationException("entrySet() not supported.");
   }
 
   public Object get(Object key) {
-    Entry entry = (Entry)map.get(key);
+    Entry entry = (Entry) map.get(key);
     return (entry == null) ? null : entry.getValue();
   }
 
@@ -143,7 +141,7 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   public Object remove(Object key) {
-    Entry entry = (Entry)map.remove(key);
+    Entry entry = (Entry) map.remove(key);
     return (entry == null) ? null : entry.getValue();
   }
 
@@ -152,7 +150,7 @@ public class HAContainerMap implements HAContainerWrapper {
   }
 
   public Collection values() {
-    //return map.values();
+    // return map.values();
     throw new UnsupportedOperationException("values() not supported.");
   }
 

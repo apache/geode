@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans.stats;
 
@@ -58,44 +56,43 @@ public class MemberClusterStatsMonitor {
   private static final String GARBAGE_COLL_COUNT = "GarbageCollectionCount";
 
   private static final String JVM_PAUSES = "JVMPauses";
-  
+
   private static final String OFF_HEAP_MAX_MEMORY = "OffHeapMaxMemory";
-  
+
   private static final String OFF_HEAP_USED_MEMORY = "OffHeapUsedMemory";
-  
+
   private static final String OFF_HEAP_FREE_MEMORY = "OffHeapFreeMemory";
-  
+
   private static final String TXN_COMMITTED_TOTAL_COUNT = "TransactionCommittedTotalCount";
-  
+
   private static final String TXN_ROLLEDBACK_TOTAL_COUNT = "TransactionRolledBackTotalCount";
 
   private static final String MAX_MEMORY = "MaxMemory";
-  
+
   private static final String USED_MEMORY = "UsedMemory";
-  
+
   private static final String FREE_MEMORY = "FreeMemory";
-  
-  private AtomicInteger systemDiskStoreCount = new AtomicInteger(0);  
-  
+
+  private AtomicInteger systemDiskStoreCount = new AtomicInteger(0);
+
   private StatsAggregator aggregator;
-  
+
   private IntegerStatsDeltaAggregator deltas;
 
   private Map<String, Class<?>> typeMap;
 
-  public void aggregate(FederationComponent newState,
-      FederationComponent oldState) {
+  public void aggregate(FederationComponent newState, FederationComponent oldState) {
     aggregator.aggregate(newState, oldState);
     // Special Aggregations
     incSystemDiskStoreCount(newState, oldState);
-    deltas.aggregate(newState,oldState);
+    deltas.aggregate(newState, oldState);
   }
 
   public MemberClusterStatsMonitor() {
     this.typeMap = new HashMap<String, Class<?>>();
     intTypeMap();
     this.aggregator = new StatsAggregator(typeMap);
-    
+
     List<String> keysList = new ArrayList<String>();
     keysList.add(TXN_COMMITTED_TOTAL_COUNT);
     keysList.add(TXN_ROLLEDBACK_TOTAL_COUNT);
@@ -181,20 +178,20 @@ public class MemberClusterStatsMonitor {
       if (newState.getValue(SYSTEM_DISK_STORE_COUNT) != null) {
         String[] diskStores = (String[]) newState.getValue(SYSTEM_DISK_STORE_COUNT);
         if (diskStores != null) {
-            systemDiskStoreCount.addAndGet(diskStores.length);// Used Atomic
-                                                              // Integer to
-                                                              // avoid race
-                                                              // condition
-                                                              // between
-                                                              // different
-                                                              // members
+          systemDiskStoreCount.addAndGet(diskStores.length);// Used Atomic
+                                                            // Integer to
+                                                            // avoid race
+                                                            // condition
+                                                            // between
+                                                            // different
+                                                            // members
 
         }
       }
     }
 
   }
-  
+
 
   public int getNumRunningFunctions() {
     return aggregator.getIntValue(NUM_RUNNING_FUNCTIONS);
@@ -223,7 +220,7 @@ public class MemberClusterStatsMonitor {
   public long getJVMPauses() {
     return aggregator.getLongValue(JVM_PAUSES);
   }
-  
+
   public long getOffHeapFreeMemory() {
     return aggregator.getLongValue(OFF_HEAP_FREE_MEMORY);
   }
@@ -231,7 +228,7 @@ public class MemberClusterStatsMonitor {
   public long getOffHeapUsedMemory() {
     return aggregator.getLongValue(OFF_HEAP_USED_MEMORY);
   }
-  
+
   public int getTransactionCommitted() {
     return deltas.getDelta(TXN_COMMITTED_TOTAL_COUNT);
   }
@@ -243,11 +240,11 @@ public class MemberClusterStatsMonitor {
   public long getMaxMemory() {
     return aggregator.getLongValue(MAX_MEMORY);
   }
-  
+
   public long getFreeMemory() {
     return aggregator.getLongValue(FREE_MEMORY);
   }
-  
+
   public long getUsedMemory() {
     return aggregator.getLongValue(USED_MEMORY);
   }

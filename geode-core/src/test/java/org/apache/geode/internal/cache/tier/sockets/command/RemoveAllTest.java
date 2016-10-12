@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -51,7 +49,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class RemoveAllTest {
 
   private static final String REGION_NAME = "region1";
-  private static final Object[] KEYS = new Object[] { "key1", "key2", "key3" };
+  private static final Object[] KEYS = new Object[] {"key1", "key2", "key3"};
   private static final byte[] EVENT = new byte[8];
   private static final Object CALLBACK_ARG = "arg";
 
@@ -90,7 +88,8 @@ public class RemoveAllTest {
     this.removeAll = new RemoveAll();
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.removeAllAuthorize(any(), any(), any())).thenReturn(mock(RemoveAllOperationContext.class));
+    when(this.authzRequest.removeAllAuthorize(any(), any(), any()))
+        .thenReturn(mock(RemoveAllOperationContext.class));
 
     when(this.cache.getRegion(isA(String.class))).thenReturn(mock(PartitionedRegion.class));
     when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
@@ -153,7 +152,8 @@ public class RemoveAllTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
+      doThrow(new NotAuthorizedException("")).when(this.securityService)
+          .authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
     }
 
     this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
@@ -172,7 +172,7 @@ public class RemoveAllTest {
 
     this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
 
-    for (Object key: KEYS) {
+    for (Object key : KEYS) {
       verify(this.authzRequest).removeAllAuthorize(eq(REGION_NAME), any(), any());
     }
 
@@ -185,11 +185,12 @@ public class RemoveAllTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
+      doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
+          eq(key.toString()), eq(null));
     }
     this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
 
-    for (Object key: KEYS) {
+    for (Object key : KEYS) {
       verify(this.authzRequest).removeAllAuthorize(eq(REGION_NAME), any(), any());
     }
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));

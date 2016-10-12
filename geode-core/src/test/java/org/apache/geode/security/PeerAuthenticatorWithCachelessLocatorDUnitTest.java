@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.security;
@@ -36,7 +34,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4DistributedTestCase {
   protected VM locator = null;
   protected VM server = null;
@@ -51,22 +49,22 @@ public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4Distri
   }
 
   @Test
-  public void testPeerAuthenticator() throws Exception{
+  public void testPeerAuthenticator() throws Exception {
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    locator.invoke(()->{
+    locator.invoke(() -> {
       Properties props = new Properties();
       props.setProperty(SECURITY_PEER_AUTHENTICATOR, DummyAuthenticator.class.getName());
       props.setProperty(MCAST_PORT, "0");
       props.put(JMX_MANAGER, "true");
       props.put(JMX_MANAGER_START, "true");
       props.put(JMX_MANAGER_PORT, "0");
-      props.setProperty("start-locator", "localhost["+locatorPort+"]");
+      props.setProperty("start-locator", "localhost[" + locatorPort + "]");
       DistributedSystem.connect(props);
     });
 
     // set up server with security
     String locators = "localhost[" + locatorPort + "]";
-    server.invoke(()->{
+    server.invoke(() -> {
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, locators);
@@ -78,7 +76,7 @@ public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4Distri
       InternalDistributedSystem ds = getSystem(props);
     });
 
-    server1.invoke(()->{
+    server1.invoke(() -> {
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, locators);
@@ -87,7 +85,7 @@ public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4Distri
       props.setProperty("security-username", "bogus");
       props.setProperty("security-password", "user");
 
-      assertThatThrownBy(()->getSystem(props)).isInstanceOf(GemFireSecurityException.class);
+      assertThatThrownBy(() -> getSystem(props)).isInstanceOf(GemFireSecurityException.class);
     });
   }
 

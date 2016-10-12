@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -44,44 +42,44 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * This message is used to request a VersionTag from a remote member.
  * 
- * DistributedRegions with DataPolicy EMPTY, NORMAL, PRELOADED, can use
- * this message to fetch VersionTag for a key.
+ * DistributedRegions with DataPolicy EMPTY, NORMAL, PRELOADED, can use this message to fetch
+ * VersionTag for a key.
  * 
  * @since GemFire 7.0
  */
 public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private Object key;
 
   /** for deserialization */
-  public RemoteFetchVersionMessage() {
-  }
+  public RemoteFetchVersionMessage() {}
 
   /**
    * Send RemoteFetchVersionMessage to the recipient for the given key
+   * 
    * @param recipient
    * @param r
    * @param key
    * @return the processor used to fetch the VersionTag for the key
    * @throws RemoteOperationException if the member is no longer available
    */
-  public static FetchVersionResponse send(InternalDistributedMember recipient,
-      LocalRegion r, Object key) throws RemoteOperationException {
-    FetchVersionResponse response = new FetchVersionResponse(r.getSystem(),
-        recipient);
-    RemoteFetchVersionMessage msg = new RemoteFetchVersionMessage(recipient,
-        r.getFullPath(), response, key);
+  public static FetchVersionResponse send(InternalDistributedMember recipient, LocalRegion r,
+      Object key) throws RemoteOperationException {
+    FetchVersionResponse response = new FetchVersionResponse(r.getSystem(), recipient);
+    RemoteFetchVersionMessage msg =
+        new RemoteFetchVersionMessage(recipient, r.getFullPath(), response, key);
     Set<?> failures = r.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
-      throw new RemoteOperationException(LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(msg));
+      throw new RemoteOperationException(
+          LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(msg));
     }
     return response;
   }
 
-  private RemoteFetchVersionMessage(InternalDistributedMember recipient,
-      String regionPath, ReplyProcessor21 processor, Object key) {
+  private RemoteFetchVersionMessage(InternalDistributedMember recipient, String regionPath,
+      ReplyProcessor21 processor, Object key) {
     super(recipient, regionPath, processor);
     this.key = key;
   }
@@ -115,8 +113,8 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
   }
 
   @Override
-  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r,
-      long startTime) throws RemoteOperationException {
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+      throws RemoteOperationException {
     if (!(r instanceof PartitionedRegion)) {
       r.waitOnInitialization();
     }
@@ -125,7 +123,8 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
       RegionEntry re = r.getRegionEntry(key);
       if (re == null) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,"RemoteFetchVersionMessage did not find entry for key:{}", key);
+          logger.trace(LogMarker.DM, "RemoteFetchVersionMessage did not find entry for key:{}",
+              key);
         }
         r.checkEntryNotFound(key);
       }
@@ -136,8 +135,7 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
       FetchVersionReplyMessage.send(getSender(), processorId, tag, dm);
 
     } catch (EntryNotFoundException e) {
-      sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r,
-          startTime);
+      sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
     }
     return false;
   }
@@ -150,18 +148,16 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
     private VersionTag tag;
 
     /** for deserialization */
-    public FetchVersionReplyMessage() {
-    }
+    public FetchVersionReplyMessage() {}
 
     private FetchVersionReplyMessage(int processorId, VersionTag tag) {
       setProcessorId(processorId);
       this.tag = tag;
     }
 
-    public static void send(InternalDistributedMember recipient,
-        int processorId, VersionTag tag, DM dm) {
-      FetchVersionReplyMessage reply = new FetchVersionReplyMessage(
-          processorId, tag);
+    public static void send(InternalDistributedMember recipient, int processorId, VersionTag tag,
+        DM dm) {
+      FetchVersionReplyMessage reply = new FetchVersionReplyMessage(processorId, tag);
       reply.setRecipient(recipient);
       dm.putOutgoing(reply);
     }
@@ -170,9 +166,11 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
     public void process(DM dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
-      
+
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM, "FetchVersionReplyMessage process invoking reply processor with processorId:{}",  this.processorId);
+        logger.trace(LogMarker.DM,
+            "FetchVersionReplyMessage process invoking reply processor with processorId:{}",
+            this.processorId);
       }
 
       if (processor == null) {
@@ -184,7 +182,7 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
       processor.process(this);
 
       if (isDebugEnabled) {
-        logger.trace(LogMarker.DM, "{}  Processed  {}",  processor, this);
+        logger.trace(LogMarker.DM, "{}  Processed  {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -201,8 +199,7 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.tag = DataSerializer.readObject(in);
     }
@@ -216,8 +213,7 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
     private volatile VersionTag tag;
 
-    public FetchVersionResponse(InternalDistributedSystem dm,
-        InternalDistributedMember member) {
+    public FetchVersionResponse(InternalDistributedSystem dm, InternalDistributedMember member) {
       super(dm, member, true);
     }
 
@@ -235,7 +231,7 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
         super.process(msg);
       }
     }
-    
+
     public VersionTag waitForResponse() throws RemoteOperationException {
       try {
         waitForCacheException();

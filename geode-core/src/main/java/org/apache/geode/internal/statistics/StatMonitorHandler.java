@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -34,20 +32,19 @@ public class StatMonitorHandler implements SampleHandler {
 
   private static final Logger logger = LogService.getLogger();
 
-  static final String ENABLE_MONITOR_THREAD = DistributionConfig.GEMFIRE_PREFIX + "stats.enableMonitorThread";
+  static final String ENABLE_MONITOR_THREAD =
+      DistributionConfig.GEMFIRE_PREFIX + "stats.enableMonitorThread";
   static final boolean enableMonitorThread = Boolean.getBoolean(ENABLE_MONITOR_THREAD);
-  
+
   /** The registered monitors */
-  private volatile List<StatisticsMonitor> monitors = 
-      Collections.<StatisticsMonitor>emptyList();
-  
+  private volatile List<StatisticsMonitor> monitors = Collections.<StatisticsMonitor>emptyList();
+
   /** Protected by synchronization on this handler instance */
   private volatile StatMonitorNotifier notifier;
 
   /** Constructs a new StatMonitorHandler instance */
-  public StatMonitorHandler() {
-  }
-  
+  public StatMonitorHandler() {}
+
   /** Adds a monitor which will be notified of samples */
   public boolean addMonitor(StatisticsMonitor monitor) {
     synchronized (this) {
@@ -83,7 +80,7 @@ public class StatMonitorHandler implements SampleHandler {
       return removed;
     }
   }
-  
+
   /**
    * Stops the notifier thread if one exists.
    */
@@ -94,7 +91,7 @@ public class StatMonitorHandler implements SampleHandler {
       }
     }
   }
-  
+
   @Override
   public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances) {
     synchronized (this) {
@@ -112,7 +109,7 @@ public class StatMonitorHandler implements SampleHandler {
       }
     }
   }
-  
+
   private void monitor(final long sampleTimeMillis, final List<ResourceInstance> resourceInstance) {
     List<StatisticsMonitor> currentMonitors = StatMonitorHandler.this.monitors;
     for (StatisticsMonitor monitor : currentMonitors) {
@@ -121,64 +118,60 @@ public class StatMonitorHandler implements SampleHandler {
       } catch (VirtualMachineError e) {
         SystemFailure.initiateFailure(e);
         throw e;
-      }
-      catch (Error e) {
+      } catch (Error e) {
         SystemFailure.checkFailure();
-        logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor, e.getClass().getSimpleName(), e);
-      }
-      catch (RuntimeException e) {
-        logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor, e.getClass().getSimpleName(), e);
+        logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+            e.getClass().getSimpleName(), e);
+      } catch (RuntimeException e) {
+        logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+            e.getClass().getSimpleName(), e);
       }
     }
   }
 
   @Override
-  public void allocatedResourceType(ResourceType resourceType) {
-  }
+  public void allocatedResourceType(ResourceType resourceType) {}
 
   @Override
-  public void allocatedResourceInstance(ResourceInstance resourceInstance) {
-  }
+  public void allocatedResourceInstance(ResourceInstance resourceInstance) {}
 
   @Override
-  public void destroyedResourceInstance(ResourceInstance resourceInstance) {
-  }
+  public void destroyedResourceInstance(ResourceInstance resourceInstance) {}
 
   /** For testing only */
   List<StatisticsMonitor> getMonitorsSnapshot() {
     return Collections.unmodifiableList(this.monitors);
   }
-  
+
   /** For testing only */
   StatMonitorNotifier getStatMonitorNotifier() {
     synchronized (this) {
       return this.notifier;
     }
   }
-  
+
   /**
    * @since GemFire 7.0
    */
   class StatMonitorNotifier implements Runnable {
-    
+
     /** True while this notifier's thread is running */
     private volatile boolean alive;
-    
+
     /** Protected by synchronization on this notifier instance */
     private Thread consumer;
-    
+
     /** Protected by synchronization on this notifier instance */
     private boolean waiting;
-    
+
     /** Protected by synchronization on this notifier instance */
     private Thread producer;
 
     /** Used to hand-off from producer to consumer */
     private final SynchronousQueue<MonitorTask> task = new SynchronousQueue<MonitorTask>();
 
-    StatMonitorNotifier() {
-    }
-    
+    StatMonitorNotifier() {}
+
     @Override
     public void run() {
       final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
@@ -199,7 +192,7 @@ public class StatMonitorHandler implements SampleHandler {
         logger.trace(LogMarker.STATISTICS, "StatMonitorNotifier is stopping {}", this);
       }
     }
-    
+
     private void work() {
       boolean working = true;
       while (working) {
@@ -225,18 +218,18 @@ public class StatMonitorHandler implements SampleHandler {
             List<StatisticsMonitor> currentMonitors = StatMonitorHandler.this.monitors;
             for (StatisticsMonitor monitor : currentMonitors) {
               try {
-                monitor.monitor(latestTask.getSampleTimeMillis(), 
-                                latestTask.getResourceInstances());
+                monitor.monitor(latestTask.getSampleTimeMillis(),
+                    latestTask.getResourceInstances());
               } catch (VirtualMachineError e) {
                 SystemFailure.initiateFailure(e);
                 throw e;
-              }
-              catch (Error e) {
+              } catch (Error e) {
                 SystemFailure.checkFailure();
-                logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor, e.getClass().getSimpleName(), e);
-              }
-              catch (RuntimeException e) {
-                logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor, e.getClass().getSimpleName(), e);
+                logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+                    e.getClass().getSimpleName(), e);
+              } catch (RuntimeException e) {
+                logger.warn(LogMarker.STATISTICS, "StatisticsMonitor {} threw {}", monitor,
+                    e.getClass().getSimpleName(), e);
               }
             }
           }
@@ -247,7 +240,7 @@ public class StatMonitorHandler implements SampleHandler {
         }
       }
     }
-      
+
     void start() {
       synchronized (this) {
         if (this.consumer == null) {
@@ -268,7 +261,7 @@ public class StatMonitorHandler implements SampleHandler {
         }
       }
     }
-    
+
     void monitor(MonitorTask task) throws InterruptedException {
       boolean isAlive = false;
       synchronized (this) {
@@ -289,7 +282,7 @@ public class StatMonitorHandler implements SampleHandler {
         }
       }
     }
-    
+
     boolean isWaiting() {
       synchronized (this) {
         return this.waiting;
@@ -309,23 +302,23 @@ public class StatMonitorHandler implements SampleHandler {
       return sb.toString();
     }
   }
-  
+
   /**
    * @since GemFire 7.0
    */
   static class MonitorTask {
-    private final long sampleTimeMillis; 
+    private final long sampleTimeMillis;
     private final List<ResourceInstance> resourceInstances;
-    
+
     MonitorTask(long sampleTimeMillis, List<ResourceInstance> resourceInstances) {
       this.sampleTimeMillis = sampleTimeMillis;
       this.resourceInstances = resourceInstances;
     }
-    
+
     long getSampleTimeMillis() {
       return this.sampleTimeMillis;
     }
-    
+
     List<ResourceInstance> getResourceInstances() {
       return this.resourceInstances;
     }

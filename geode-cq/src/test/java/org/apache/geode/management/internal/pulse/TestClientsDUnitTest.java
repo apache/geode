@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.pulse;
 
@@ -37,8 +35,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
- * This is for testing Number of clients and can be extended for relevant test
- * addition
+ * This is for testing Number of clients and can be extended for relevant test addition
  * 
  * 
  */
@@ -57,8 +54,7 @@ public class TestClientsDUnitTest extends ManagementTestBase {
       @Override
       public boolean done() {
         final ManagementService service = getManagementService();
-        final DistributedSystemMXBean bean = service
-            .getDistributedSystemMXBean();
+        final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         if (bean != null) {
           if (bean.getNumClients() > 0) {
             return true;
@@ -74,8 +70,7 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     };
 
     Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
-    final DistributedSystemMXBean bean = getManagementService()
-        .getDistributedSystemMXBean();
+    final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);
     return Integer.valueOf(bean.getNumClients());
   }
@@ -92,7 +87,8 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     cqDUnitTest.createClient(client, port, host0);
-    Integer numOfClients = (Integer) managingNode.invoke(() -> TestClientsDUnitTest.getNumOfClients());
+    Integer numOfClients =
+        (Integer) managingNode.invoke(() -> TestClientsDUnitTest.getNumOfClients());
     LogWriterUtils.getLogWriter().info("testNumOfClients numOfClients = " + numOfClients);
     cqDUnitTest.closeClient(client);
     cqDUnitTest.closeServer(server);

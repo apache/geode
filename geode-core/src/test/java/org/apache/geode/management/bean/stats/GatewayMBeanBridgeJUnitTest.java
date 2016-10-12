@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.bean.stats;
 
@@ -34,7 +32,7 @@ import io.codearte.catchexception.shade.mockito.Mockito;
  */
 @Category(IntegrationTest.class)
 public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
-  
+
   private GatewaySenderMBeanBridge bridge;
 
   private GatewaySenderStats senderStats;
@@ -51,9 +49,9 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
     bridge = new GatewaySenderMBeanBridge(sender);
     bridge.addGatewaySenderStats(senderStats);
   }
-  
+
   @Test
-  public void testSenderStats() throws InterruptedException{
+  public void testSenderStats() throws InterruptedException {
     senderStats.incBatchesRedistributed();
     senderStats.incEventsReceived();
     Mockito.when(sender.getEventQueueSize()).thenReturn(10);
@@ -61,17 +59,17 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
     senderStats.endBatch(testStartTime, 100);
     senderStats.incEventsNotQueuedConflated();
     senderStats.incEventsExceedingAlertThreshold();
-    
+
     sample();
-    
+
     assertEquals(1, getTotalBatchesRedistributed());
     assertEquals(1, getTotalEventsConflated());
     assertEquals(10, getEventQueueSize());
-    assertTrue(getEventsQueuedRate() >0);
-    assertTrue(getEventsReceivedRate() >0);
-    assertTrue(getBatchesDispatchedRate() >0);
-    assertTrue(getAverageDistributionTimePerBatch() >0);
-    assertTrue(getEventsExceedingAlertThreshold() >0);
+    assertTrue(getEventsQueuedRate() > 0);
+    assertTrue(getEventsReceivedRate() > 0);
+    assertTrue(getBatchesDispatchedRate() > 0);
+    assertTrue(getAverageDistributionTimePerBatch() > 0);
+    assertTrue(getEventsExceedingAlertThreshold() > 0);
   }
 
   private int getTotalBatchesRedistributed() {
@@ -80,7 +78,7 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
   private int getTotalEventsConflated() {
     return bridge.getTotalEventsConflated();
-  }  
+  }
 
   private int getEventQueueSize() {
     return bridge.getEventQueueSize();
@@ -93,14 +91,15 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
   private float getEventsReceivedRate() {
     return bridge.getEventsReceivedRate();
   }
-   
+
   private float getBatchesDispatchedRate() {
     return bridge.getBatchesDispatchedRate();
   }
-   
+
   private long getAverageDistributionTimePerBatch() {
     return bridge.getAverageDistributionTimePerBatch();
   }
+
   private long getEventsExceedingAlertThreshold() {
     return bridge.getEventsExceedingAlertThreshold();
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -42,8 +40,8 @@ import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of
- * the lifecycle launcher GemFire shell (Gfsh) commands.
+ * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract
+ * and functionality of the lifecycle launcher GemFire shell (Gfsh) commands.
  *
  * @see org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands
  * @see org.junit.Assert
@@ -78,12 +76,13 @@ public class LauncherLifecycleCommandsIntegrationTest {
     assertNotNull(coreDependenciesJar);
     assertTrue(coreDependenciesJar + " is not a file", coreDependenciesJar.isFile());
 
-    Collection<String> expectedJarDependencies = Arrays.asList("antlr", "commons-io", "commons-lang", "commons-logging",
-            "geode", "jackson-annotations", "jackson-core", "jackson-databind", "jansi", "jline", "snappy",
-            "spring-core", "spring-shell", "jetty-server", "jetty-servlet", "jetty-webapp", "jetty-util", "jetty-http",
-            "servlet-api", "jetty-io", "jetty-security", "jetty-xml"
+    Collection<String> expectedJarDependencies =
+        Arrays.asList("antlr", "commons-io", "commons-lang", "commons-logging", "geode",
+            "jackson-annotations", "jackson-core", "jackson-databind", "jansi", "jline", "snappy",
+            "spring-core", "spring-shell", "jetty-server", "jetty-servlet", "jetty-webapp",
+            "jetty-util", "jetty-http", "servlet-api", "jetty-io", "jetty-security", "jetty-xml"
 
-    );
+        );
 
     assertJarFileManifestClassPath(coreDependenciesJar, expectedJarDependencies);
   }
@@ -93,7 +92,8 @@ public class LauncherLifecycleCommandsIntegrationTest {
     final int expectedPid = 12345;
 
     File folder = temporaryFolder.newFolder();
-    File pidFile = new File(folder, getClass().getSimpleName() + "_" + testName.getMethodName() + ".pid");
+    File pidFile =
+        new File(folder, getClass().getSimpleName() + "_" + testName.getMethodName() + ".pid");
 
     assertTrue(pidFile.createNewFile());
 
@@ -118,7 +118,7 @@ public class LauncherLifecycleCommandsIntegrationTest {
   }
 
   private void assertJarFileManifestClassPath(final File dependenciesJar,
-                                              final Collection<String> expectedJarDependencies) throws IOException {
+      final Collection<String> expectedJarDependencies) throws IOException {
     JarFile dependenciesJarFile = new JarFile(dependenciesJar);
     Manifest manifest = dependenciesJarFile.getManifest();
 
@@ -132,19 +132,23 @@ public class LauncherLifecycleCommandsIntegrationTest {
     String[] actualJarDependencies = attributes.getValue(Name.CLASS_PATH).split(" ");
 
     assertNotNull(actualJarDependencies);
-    assertTrue(String.format("Expected the actual number of JAR dependencies to be (%1$d); but was (%2$d)!",
+    assertTrue(
+        String.format(
+            "Expected the actual number of JAR dependencies to be (%1$d); but was (%2$d)!",
             expectedJarDependencies.size(), actualJarDependencies.length),
-            actualJarDependencies.length >= expectedJarDependencies.size());
-    //assertTrue(Arrays.asList(actualJarDependencies).containsAll(expectedJarDependencies));
+        actualJarDependencies.length >= expectedJarDependencies.size());
+    // assertTrue(Arrays.asList(actualJarDependencies).containsAll(expectedJarDependencies));
 
     List<String> actualJarDependenciesList = new ArrayList<>(Arrays.asList(actualJarDependencies));
-    List<String> missingExpectedJarDependenciesList = new ArrayList<>(expectedJarDependencies.size());
+    List<String> missingExpectedJarDependenciesList =
+        new ArrayList<>(expectedJarDependencies.size());
 
     for (String expectedJarDependency : expectedJarDependencies) {
       boolean containsExpectedJar = false;
 
       for (int index = 0, size = actualJarDependenciesList.size(); index < size; index++) {
-        if (actualJarDependenciesList.get(index).toLowerCase().contains(expectedJarDependency.toLowerCase())) {
+        if (actualJarDependenciesList.get(index).toLowerCase()
+            .contains(expectedJarDependency.toLowerCase())) {
           actualJarDependenciesList.remove(index);
           containsExpectedJar = true;
           break;
@@ -156,10 +160,12 @@ public class LauncherLifecycleCommandsIntegrationTest {
       }
     }
 
-    assertTrue(String.format(
+    assertTrue(
+        String.format(
             "GemFire dependencies JAR file (%1$s) does not contain the expected dependencies (%2$s) in the Manifest Class-Path attribute (%3$s)!",
-            dependenciesJar, missingExpectedJarDependenciesList, attributes.getValue(Name.CLASS_PATH)),
-            missingExpectedJarDependenciesList.isEmpty());
+            dependenciesJar, missingExpectedJarDependenciesList,
+            attributes.getValue(Name.CLASS_PATH)),
+        missingExpectedJarDependenciesList.isEmpty());
   }
 
 }

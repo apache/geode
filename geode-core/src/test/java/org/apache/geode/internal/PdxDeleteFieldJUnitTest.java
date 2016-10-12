@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -38,7 +36,7 @@ import static org.junit.Assert.assertSame;
 
 @Category(IntegrationTest.class)
 public class PdxDeleteFieldJUnitTest {
-    
+
   @Test
   public void testPdxDeleteField() throws Exception {
     String DS_NAME = "PdxDeleteFieldJUnitTestDiskStore";
@@ -48,14 +46,16 @@ public class PdxDeleteFieldJUnitTest {
     File f = new File(DS_NAME);
     f.mkdir();
     try {
-      Cache cache = (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
+      Cache cache =
+          (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
       try {
         {
           DiskStoreFactory dsf = cache.createDiskStoreFactory();
-          dsf.setDiskDirs(new File[]{f});
+          dsf.setDiskDirs(new File[] {f});
           dsf.create(DS_NAME);
         }
-        RegionFactory<String, PdxValue> rf1 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT);    
+        RegionFactory<String, PdxValue> rf1 =
+            cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT);
         rf1.setDiskStoreName(DS_NAME);
         Region<String, PdxValue> region1 = rf1.create("region1");
         PdxValue pdxValue = new PdxValue(1, 2L);
@@ -68,22 +68,23 @@ public class PdxDeleteFieldJUnitTest {
         }
         cache.close();
 
-        Collection<PdxType> types = DiskStoreImpl.pdxDeleteField(DS_NAME, new File[]{f}, PdxValue.class.getName(), "fieldToDelete");
+        Collection<PdxType> types = DiskStoreImpl.pdxDeleteField(DS_NAME, new File[] {f},
+            PdxValue.class.getName(), "fieldToDelete");
         assertEquals(1, types.size());
         PdxType pt = types.iterator().next();
         assertEquals(PdxValue.class.getName(), pt.getClassName());
         assertEquals(null, pt.getPdxField("fieldToDelete"));
-        types = DiskStoreImpl.getPdxTypes(DS_NAME, new File[]{f});
+        types = DiskStoreImpl.getPdxTypes(DS_NAME, new File[] {f});
         assertEquals(1, types.size());
         pt = types.iterator().next();
         assertEquals(PdxValue.class.getName(), pt.getClassName());
         assertEquals(true, pt.getHasDeletedField());
         assertEquals(null, pt.getPdxField("fieldToDelete"));
-        
+
         cache = (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
         {
           DiskStoreFactory dsf = cache.createDiskStoreFactory();
-          dsf.setDiskDirs(new File[]{f});
+          dsf.setDiskDirs(new File[] {f});
           dsf.create(DS_NAME);
           PdxValue deserializedPdxValue = (PdxValue) BlobHelper.deserializeBlob(pdxValueBytes);
           assertEquals(1, deserializedPdxValue.value);
@@ -98,7 +99,7 @@ public class PdxDeleteFieldJUnitTest {
       FileUtil.delete(f);
     }
   }
-  
+
   @Test
   public void testPdxFieldDelete() throws Exception {
     Properties props = new Properties();
@@ -130,7 +131,7 @@ public class PdxDeleteFieldJUnitTest {
         field.setDeleted(true);
         assertEquals(null, pt.getPdxField("fieldToDelete"));
         assertEquals(2, pt.getFieldCount());
-        
+
         {
           PdxValue deserializedPdxValue = (PdxValue) BlobHelper.deserializeBlob(pdxValueBytes);
           assertEquals(1, deserializedPdxValue.value);
@@ -143,14 +144,14 @@ public class PdxDeleteFieldJUnitTest {
           assertEquals(1, pi.getField("value"));
           assertEquals(false, pi.hasField("fieldToDelete"));
           assertEquals(null, pi.getField("fieldToDelete"));
-          assertSame(pt, ((PdxInstanceImpl)pi).getPdxType());
+          assertSame(pt, ((PdxInstanceImpl) pi).getPdxType());
           PdxValue deserializedPdxValue = (PdxValue) pi.getObject();
           assertEquals(1, deserializedPdxValue.value);
           assertEquals(0L, deserializedPdxValue.fieldToDelete);
         } finally {
           DefaultQuery.setPdxReadSerialized(false);
         }
-        TypeRegistry tr = ((GemFireCacheImpl)cache).getPdxRegistry();
+        TypeRegistry tr = ((GemFireCacheImpl) cache).getPdxRegistry();
         // Clear the local registry so we will regenerate a type for the same class
         tr.testClearLocalTypeRegistry();
         {
@@ -159,11 +160,11 @@ public class PdxDeleteFieldJUnitTest {
           PdxInstance pi = piFactory.create();
           assertEquals(1, pi.getField("value"));
           assertEquals(null, pi.getField("fieldToDelete"));
-          PdxType pt2 = ((PdxInstanceImpl)pi).getPdxType();
+          PdxType pt2 = ((PdxInstanceImpl) pi).getPdxType();
           assertEquals(null, pt2.getPdxField("fieldToDelete"));
           assertEquals(1, pt2.getFieldCount());
         }
-        
+
       } finally {
         if (!cache.isClosed()) {
           cache.close();
@@ -172,10 +173,13 @@ public class PdxDeleteFieldJUnitTest {
     } finally {
     }
   }
+
   public static class PdxValue implements PdxSerializable {
     public int value;
     public long fieldToDelete = -1L;
+
     public PdxValue() {} // for deserialization
+
     public PdxValue(int v, long lv) {
       this.value = v;
       this.fieldToDelete = lv;

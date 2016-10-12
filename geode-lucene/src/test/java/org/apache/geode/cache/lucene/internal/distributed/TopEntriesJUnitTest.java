@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
@@ -53,7 +49,7 @@ public class TopEntriesJUnitTest {
     hits.addHit(r2_1);
     hits.addHit(r1_2);
     hits.addHit(r2_2);
-    
+
     assertEquals(4, hits.size());
     verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
@@ -65,11 +61,11 @@ public class TopEntriesJUnitTest {
     EntryScore<String> r2 = new EntryScore<String>("2", .8f);
     hits.addHit(r1);
     hits.addHit(r2);
-    
+
     assertEquals(2, hits.size());
     verifyResultOrder(hits.getHits(), r1, r2);
   }
-  
+
   @Test
   public void testInitialization() {
     TopEntries<String> hits = new TopEntries<String>();
@@ -83,7 +79,7 @@ public class TopEntriesJUnitTest {
   public void testInvalidLimit() {
     new TopEntries<String>(-1);
   }
-  
+
   @Test
   public void enforceLimit() throws Exception {
     TopEntries<String> hits = new TopEntries<String>(3);
@@ -100,23 +96,24 @@ public class TopEntriesJUnitTest {
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
     TopEntries<String> hits = new TopEntries<String>(3);
-    
+
     TopEntries<String> copy = CopyHelper.deepCopy(hits);
     assertEquals(3, copy.getLimit());
     assertEquals(0, copy.getHits().size());
-    
+
     hits = new TopEntries<String>(3);
     hits.addHit(r1_1);
     hits.addHit(r2_1);
     hits.addHit(r1_2);
-    
+
     copy = CopyHelper.deepCopy(hits);
     assertEquals(3, copy.size());
     verifyResultOrder(copy.getHits(), r1_1, r2_1, r1_2);
   }
 
   // TODO: extract to lucene test util class
-  public static void verifyResultOrder(Collection<EntryScore<String>> list, EntryScore<String>... expectedEntries) {
+  public static void verifyResultOrder(Collection<EntryScore<String>> list,
+      EntryScore<String>... expectedEntries) {
     Iterator<EntryScore<String>> iter = list.iterator();
     for (EntryScore expectedEntry : expectedEntries) {
       if (!iter.hasNext()) {

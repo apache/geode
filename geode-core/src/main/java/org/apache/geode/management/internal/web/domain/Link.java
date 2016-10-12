@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.web.domain;
 
@@ -29,6 +27,7 @@ import org.apache.geode.management.internal.web.util.UriUtils;
 /**
  * The Link class models hypermedia controls/link relations.
  * <p/>
+ * 
  * @see java.lang.Comparable
  * @see java.io.Serializable
  * @see java.net.URI
@@ -40,7 +39,7 @@ import org.apache.geode.management.internal.web.util.UriUtils;
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
-@XmlType(name = "link", propOrder = { "method", "href", "relation" })
+@XmlType(name = "link", propOrder = {"method", "href", "relation"})
 public class Link implements Comparable<Link>, Serializable {
 
   protected static final HttpMethod DEFAULT_HTTP_METHOD = HttpMethod.GET;
@@ -50,8 +49,10 @@ public class Link implements Comparable<Link>, Serializable {
   protected static final String METHOD_ATTRIBUTE_NAME = "method";
   protected static final String RELATION_ATTRIBUTE_NAME = "rel";
 
-  // This enum type is used in place of Spring's org.springframework.http.HttpMethod enum due to classpath issues
-  // between the GemFire Locator/Manager and the embedded HTTP service using Tomcat with Java/Tomcat's class resolution
+  // This enum type is used in place of Spring's org.springframework.http.HttpMethod enum due to
+  // classpath issues
+  // between the GemFire Locator/Manager and the embedded HTTP service using Tomcat with
+  // Java/Tomcat's class resolution
   // delegation model.
   private HttpMethod method;
 
@@ -59,8 +60,7 @@ public class Link implements Comparable<Link>, Serializable {
 
   private URI href;
 
-  public Link() {
-  }
+  public Link() {}
 
   public Link(final String relation, final URI href) {
     this(relation, href, DEFAULT_HTTP_METHOD);
@@ -121,7 +121,7 @@ public class Link implements Comparable<Link>, Serializable {
     final Link that = (Link) obj;
 
     return ObjectUtils.equals(getHref(), that.getHref())
-      && ObjectUtils.equals(getMethod(), that.getMethod());
+        && ObjectUtils.equals(getMethod(), that.getMethod());
   }
 
   @Override
@@ -133,17 +133,21 @@ public class Link implements Comparable<Link>, Serializable {
   }
 
   /**
-   * The HTTP Request-Line begins with a method token, followed by the Request-URI and the protocol version, and ending
-   * with CRLF.  However, this method just returns a String representation similar to the HTTP Request-Line based on
-   * values of the Link's properties, which only includes method and request URI.
+   * The HTTP Request-Line begins with a method token, followed by the Request-URI and the protocol
+   * version, and ending with CRLF. However, this method just returns a String representation
+   * similar to the HTTP Request-Line based on values of the Link's properties, which only includes
+   * method and request URI.
    * <p/>
+   * 
    * @return a String representation of the HTTP request-line.
    * @see java.net.URI
    * @see org.apache.geode.management.internal.web.http.HttpMethod
-   * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html</a>
+   * @see <a href=
+   *      "http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html</a>
    */
   public String toHttpRequestLine() {
-    return getMethod().name().concat(StringUtils.SPACE).concat(UriUtils.decode(getHref().toString()));
+    return getMethod().name().concat(StringUtils.SPACE)
+        .concat(UriUtils.decode(getHref().toString()));
   }
 
   @Override

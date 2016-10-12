@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.gatewaydelta;
 
 import org.apache.geode.cache.Cache;
@@ -33,7 +31,8 @@ import org.apache.geode.internal.cache.LocalRegion;
 
 import java.util.Properties;
 
-public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<String, GatewayDelta> implements Declarable {
+public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<String, GatewayDelta>
+    implements Declarable {
 
   private final Cache cache;
 
@@ -55,9 +54,7 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
       if (this.cache.getLogger().fineEnabled()) {
         StringBuilder builder = new StringBuilder();
         builder.append("GatewayDeltaForwarderCacheListener: Received create event for ")
-            .append(event.getKey())
-            .append("->")
-            .append(event.getNewValue())
+            .append(event.getKey()).append("->").append(event.getNewValue())
             .append(" that originated in the local site. Sending it to the remote site.");
         this.cache.getLogger().fine(builder.toString());
       }
@@ -67,12 +64,12 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
       String sessionId = event.getKey();
       SerializedCacheValue scv = event.getSerializedNewValue();
       if (scv == null) {
-        getGatewayDeltaRegion().put(sessionId,
-            new GatewayDeltaCreateEvent(regionName, sessionId, EntryEventImpl.serialize(event.getNewValue())));
+        getGatewayDeltaRegion().put(sessionId, new GatewayDeltaCreateEvent(regionName, sessionId,
+            EntryEventImpl.serialize(event.getNewValue())));
       } else {
         System.out.println(
-            "GatewayDeltaForwarderCacheListener event.getSerializedNewValue().getSerializedValue(): " + event.getSerializedNewValue()
-                .getSerializedValue());
+            "GatewayDeltaForwarderCacheListener event.getSerializedNewValue().getSerializedValue(): "
+                + event.getSerializedNewValue().getSerializedValue());
         getGatewayDeltaRegion().put(sessionId,
             new GatewayDeltaCreateEvent(regionName, sessionId, scv.getSerializedValue()));
       }
@@ -80,9 +77,7 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
       if (this.cache.getLogger().fineEnabled()) {
         StringBuilder builder = new StringBuilder();
         builder.append("GatewayDeltaForwarderCacheListener: Received create event for ")
-            .append(event.getKey())
-            .append("->")
-            .append(event.getNewValue())
+            .append(event.getKey()).append("->").append(event.getNewValue())
             .append(" that originated in the remote site.");
         this.cache.getLogger().fine(builder.toString());
       }
@@ -90,16 +85,14 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
   }
 
   public void afterUpdate(EntryEvent<String, GatewayDelta> event) {
-    //System.out.println("GatewayDeltaForwarderCacheListener.afterUpdate: " + event);
+    // System.out.println("GatewayDeltaForwarderCacheListener.afterUpdate: " + event);
     // If the event is from the local site, create an 'update' event and send it to the
     // gateway delta region
     if (event.getCallbackArgument() == null) {
       if (this.cache.getLogger().fineEnabled()) {
         StringBuilder builder = new StringBuilder();
         builder.append("GatewayDeltaForwarderCacheListener: Received update event for ")
-            .append(event.getKey())
-            .append("->")
-            .append(event.getNewValue())
+            .append(event.getKey()).append("->").append(event.getNewValue())
             .append(" that originated in the local site. Sending it to the remote site.");
         this.cache.getLogger().fine(builder.toString());
       }
@@ -114,9 +107,7 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
       if (this.cache.getLogger().fineEnabled()) {
         StringBuilder builder = new StringBuilder();
         builder.append("GatewayDeltaForwarderCacheListener: Received update event for ")
-            .append(event.getKey())
-            .append("->")
-            .append(event.getNewValue())
+            .append(event.getKey()).append("->").append(event.getNewValue())
             .append(" that originated in the remote site.");
         this.cache.getLogger().fine(builder.toString());
       }
@@ -130,16 +121,15 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
       if (this.cache.getLogger().fineEnabled()) {
         StringBuilder builder = new StringBuilder();
         builder.append("GatewayDeltaForwarderCacheListener: Received destroy event for ")
-            .append(event.getKey())
-            .append("->")
-            .append(event.getNewValue())
+            .append(event.getKey()).append("->").append(event.getNewValue())
             .append(" that originated in the local site. Sending it to the remote site.");
         this.cache.getLogger().fine(builder.toString());
       }
 
       // Distribute the destroy event to the gateway hub(s)
       String sessionId = event.getKey();
-      getGatewayDeltaRegion().put(sessionId, new GatewayDeltaDestroyEvent(event.getRegion().getFullPath(), sessionId));
+      getGatewayDeltaRegion().put(sessionId,
+          new GatewayDeltaDestroyEvent(event.getRegion().getFullPath(), sessionId));
     } else {
       if (this.cache.getLogger().fineEnabled()) {
         StringBuilder builder = new StringBuilder();
@@ -151,8 +141,7 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
     }
   }
 
-  public void init(Properties p) {
-  }
+  public void init(Properties p) {}
 
   private LocalRegion getGatewayDeltaRegion() {
     if (this.gatewayDeltaRegion == null) {
@@ -165,17 +154,17 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
   private LocalRegion createOrRetrieveGatewayDeltaRegion() {
     Region region = this.cache.getRegion(GatewayDelta.GATEWAY_DELTA_REGION_NAME);
     if (region == null) {
-      region = new RegionFactory().setScope(Scope.LOCAL)
-          .setDataPolicy(DataPolicy.EMPTY)
+      region = new RegionFactory().setScope(Scope.LOCAL).setDataPolicy(DataPolicy.EMPTY)
           .setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL))
-// TODO: Disabled for WAN
-//        .setEnableGateway(true)
+          // TODO: Disabled for WAN
+          // .setEnableGateway(true)
           .addCacheListener(new GatewayDeltaEventApplicationCacheListener())
           .create(GatewayDelta.GATEWAY_DELTA_REGION_NAME);
     }
     if (this.cache.getLogger().fineEnabled()) {
       StringBuilder builder = new StringBuilder();
-      builder.append("GatewayDeltaForwarderCacheListener: Created gateway delta region: ").append(region);
+      builder.append("GatewayDeltaForwarderCacheListener: Created gateway delta region: ")
+          .append(region);
       this.cache.getLogger().fine(builder.toString());
     }
     return (LocalRegion) region;

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.net;
 
@@ -40,7 +38,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class SocketCloserJUnitTest {
 
   private SocketCloser socketCloser;
-  
+
   @Before
   public void setUp() throws Exception {
     this.socketCloser = createSocketCloser();
@@ -50,7 +48,7 @@ public class SocketCloserJUnitTest {
   public void tearDown() throws Exception {
     this.socketCloser.close();
   }
-  
+
   private Socket createClosableSocket() {
     return new Socket();
   }
@@ -58,7 +56,7 @@ public class SocketCloserJUnitTest {
   protected SocketCloser createSocketCloser() {
     return new SocketCloser();
   }
-  
+
   /**
    * Test that close requests are async.
    */
@@ -76,32 +74,32 @@ public class SocketCloserJUnitTest {
         }
       }
     };
-    
+
     final int SOCKET_COUNT = 100;
     final Socket[] aSockets = new Socket[SOCKET_COUNT];
-    for (int i=0; i < SOCKET_COUNT; i++) {
+    for (int i = 0; i < SOCKET_COUNT; i++) {
       aSockets[i] = createClosableSocket();
     }
     // Schedule a 100 sockets for async close.
     // They should all be stuck on cdl.
-    for (int i=0; i < SOCKET_COUNT; i++) {
+    for (int i = 0; i < SOCKET_COUNT; i++) {
       this.socketCloser.asyncClose(aSockets[i], "A", r);
     }
     // Make sure the sockets have not been closed
-    for (int i=0; i < SOCKET_COUNT; i++) {
+    for (int i = 0; i < SOCKET_COUNT; i++) {
       assertEquals(false, aSockets[i].isClosed());
     }
     final Socket[] bSockets = new Socket[SOCKET_COUNT];
-    for (int i=0; i < SOCKET_COUNT; i++) {
+    for (int i = 0; i < SOCKET_COUNT; i++) {
       bSockets[i] = createClosableSocket();
     }
     // Schedule a 100 sockets for async close.
     // They should all be stuck on cdl.
-    for (int i=0; i < SOCKET_COUNT; i++) {
+    for (int i = 0; i < SOCKET_COUNT; i++) {
       this.socketCloser.asyncClose(bSockets[i], "B", r);
     }
     // Make sure the sockets have not been closed
-    for (int i=0; i < SOCKET_COUNT; i++) {
+    for (int i = 0; i < SOCKET_COUNT; i++) {
       assertEquals(false, bSockets[i].isClosed());
     }
     // close the socketCloser first to verify that the sockets
@@ -114,10 +112,11 @@ public class SocketCloserJUnitTest {
       final int maxThreads = this.socketCloser.getMaxThreads();
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
-          return waitingToClose.get() == 2*maxThreads;
+          return waitingToClose.get() == 2 * maxThreads;
         }
+
         public String description() {
-          return "expected " + 2*maxThreads + " waiters but found only " + waitingToClose.get();
+          return "expected " + 2 * maxThreads + " waiters but found only " + waitingToClose.get();
         }
       };
       Wait.waitForCriterion(wc, 5000, 10, true);
@@ -129,13 +128,14 @@ public class SocketCloserJUnitTest {
     {
       WaitCriterion wc = new WaitCriterion() {
         public boolean done() {
-          for (int i=0; i < SOCKET_COUNT; i++) {
+          for (int i = 0; i < SOCKET_COUNT; i++) {
             if (!aSockets[i].isClosed() || !bSockets[i].isClosed()) {
               return false;
             }
           }
           return true;
         }
+
         public String description() {
           return "one or more sockets did not close";
         }
@@ -143,10 +143,9 @@ public class SocketCloserJUnitTest {
       Wait.waitForCriterion(wc, 5000, 10, true);
     }
   }
-  
+
   /**
-   * Verify that requesting an asyncClose on an already
-   * closed socket is a noop.
+   * Verify that requesting an asyncClose on an already closed socket is a noop.
    */
   @Test
   public void testClosedSocket() throws Exception {
@@ -157,14 +156,14 @@ public class SocketCloserJUnitTest {
         runnableCalled.set(true);
       }
     };
-    
+
     Socket s = createClosableSocket();
     s.close();
     this.socketCloser.asyncClose(s, "A", r);
     Wait.pause(10);
     assertEquals(false, runnableCalled.get());
   }
-  
+
   /**
    * Verify that a closed SocketCloser will still close an open socket
    */
@@ -177,14 +176,15 @@ public class SocketCloserJUnitTest {
         runnableCalled.set(true);
       }
     };
-    
+
     final Socket s = createClosableSocket();
     this.socketCloser.close();
     this.socketCloser.asyncClose(s, "A", r);
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        return runnableCalled.get() && s.isClosed(); 
+        return runnableCalled.get() && s.isClosed();
       }
+
       public String description() {
         return "runnable was not called or socket was not closed";
       }

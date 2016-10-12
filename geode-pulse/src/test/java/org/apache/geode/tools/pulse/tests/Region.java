@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 package org.apache.geode.tools.pulse.tests;
@@ -31,22 +29,18 @@ import javax.management.openmbean.SimpleType;
 public class Region extends JMXBaseBean implements RegionMBean {
   private String name = null;
 
-  private static String[] regAttItemNames = { "compressionCodec",
-    "enableOffHeapMemory", "scope", "diskStoreName",
-    "diskSynchronous" };
-  private static String[] regAttItemDescriptions = { "compressionCodec",
-    "enableOffHeapMemory", "scope", "diskStoreName",
-    "diskSynchronous" };
-  private static OpenType[] regAttItemTypes = { SimpleType.STRING,
-    SimpleType.BOOLEAN, SimpleType.STRING,
-    SimpleType.STRING, SimpleType.BOOLEAN };
+  private static String[] regAttItemNames =
+      {"compressionCodec", "enableOffHeapMemory", "scope", "diskStoreName", "diskSynchronous"};
+  private static String[] regAttItemDescriptions =
+      {"compressionCodec", "enableOffHeapMemory", "scope", "diskStoreName", "diskSynchronous"};
+  private static OpenType[] regAttItemTypes = {SimpleType.STRING, SimpleType.BOOLEAN,
+      SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN};
   private static CompositeType listRegionAttributesCompData = null;
 
   static {
     try {
-      listRegionAttributesCompData = new CompositeType("listRegionAttributes",
-          "Regions attributes", regAttItemNames, regAttItemDescriptions,
-          regAttItemTypes);
+      listRegionAttributesCompData = new CompositeType("listRegionAttributes", "Regions attributes",
+          regAttItemNames, regAttItemDescriptions, regAttItemTypes);
 
     } catch (OpenDataException e) {
       e.printStackTrace();
@@ -143,11 +137,10 @@ public class Region extends JMXBaseBean implements RegionMBean {
 
   @Override
   public CompositeData listRegionAttributes() {
-    String value = JMXProperties.getInstance().getProperty(
-        getKey("listRegionAttributes"), "");
+    String value = JMXProperties.getInstance().getProperty(getKey("listRegionAttributes"), "");
     String[] itemValues = value.split(",");
     Map<String, Object> itemValuesHM = new HashMap<String, Object>();
-    
+
     // compressionCodec
     if (null != itemValues[0]) {
       itemValuesHM.put(regAttItemNames[0], itemValues[0]);
@@ -175,8 +168,7 @@ public class Region extends JMXBaseBean implements RegionMBean {
 
     CompositeData lraCompData;
     try {
-      lraCompData = new CompositeDataSupport(listRegionAttributesCompData,
-          itemValuesHM);
+      lraCompData = new CompositeDataSupport(listRegionAttributesCompData, itemValuesHM);
     } catch (OpenDataException e) {
       e.printStackTrace();
       lraCompData = null;

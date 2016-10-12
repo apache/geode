@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -22,13 +20,12 @@ import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 
 /**
- * Implementing class for <code>Conflatable</code> interface. Objects of this
- * class will be add to the queue
+ * Implementing class for <code>Conflatable</code> interface. Objects of this class will be add to
+ * the queue
  * 
  * 
  */
-public class ConflatableObject implements Conflatable, Serializable
-{
+public class ConflatableObject implements Conflatable, Serializable {
 
   /** The key for this entry */
   private Object key;
@@ -52,19 +49,14 @@ public class ConflatableObject implements Conflatable, Serializable
   /**
    * Constructor
    * 
-   * @param key -
-   *          The key for this entry
-   * @param value -
-   *          The value for this entry
-   * @param eventId -
-   *          eventID object for this entry
-   * @param conflate -
-   *          conflate it true
-   * @param regionname -
-   *          The region to which this entry belongs
+   * @param key - The key for this entry
+   * @param value - The value for this entry
+   * @param eventId - eventID object for this entry
+   * @param conflate - conflate it true
+   * @param regionname - The region to which this entry belongs
    */
-  public ConflatableObject(Object key, Object value, EventID eventId,
-      boolean conflate, String regionname) {
+  public ConflatableObject(Object key, Object value, EventID eventId, boolean conflate,
+      String regionname) {
     this.key = key;
     this.value = value;
     this.id = eventId;
@@ -77,8 +69,7 @@ public class ConflatableObject implements Conflatable, Serializable
    * 
    * @return whether the object should be conflated
    */
-  public boolean shouldBeConflated()
-  {
+  public boolean shouldBeConflated() {
     return this.conflate;
   }
 
@@ -87,8 +78,7 @@ public class ConflatableObject implements Conflatable, Serializable
    * 
    * @return the name of the region for this <code>Conflatable</code>
    */
-  public String getRegionToConflate()
-  {
+  public String getRegionToConflate() {
     return this.regionname;
   }
 
@@ -97,8 +87,7 @@ public class ConflatableObject implements Conflatable, Serializable
    * 
    * @return the key for this <code>Conflatable</code>
    */
-  public Object getKeyToConflate()
-  {
+  public Object getKeyToConflate() {
     return this.key;
   }
 
@@ -107,20 +96,17 @@ public class ConflatableObject implements Conflatable, Serializable
    * 
    * @return the value for this <code>Conflatable</code>
    */
-  public Object getValueToConflate()
-  {
+  public Object getValueToConflate() {
     return this.value;
   }
 
   /**
    * Sets the latest value for this <code>Conflatable</code>
    * 
-   * @param value
-   *          The latest value
+   * @param value The latest value
    */
-  public void setLatestValue(Object value)
-  {
-     throw new UnsupportedOperationException("setLatestValue should not be used");
+  public void setLatestValue(Object value) {
+    throw new UnsupportedOperationException("setLatestValue should not be used");
   }
 
   /**
@@ -128,93 +114,77 @@ public class ConflatableObject implements Conflatable, Serializable
    * 
    * @return this event's identifier
    */
-  public EventID getEventId()
-  {
+  public EventID getEventId() {
     return this.id;
   }
 
   /**
    * @return Returns the conflate.
    */
-  final boolean isConflate()
-  {
+  final boolean isConflate() {
     return conflate;
   }
 
   /**
-   * @param conflate
-   *          The conflate to set.
+   * @param conflate The conflate to set.
    */
-  final void setConflate(boolean conflate)
-  {
+  final void setConflate(boolean conflate) {
     this.conflate = conflate;
   }
 
   /**
    * @return Returns the id.
    */
-  final EventID getId()
-  {
+  final EventID getId() {
     return id;
   }
 
   /**
-   * @param id
-   *          The id to set.
+   * @param id The id to set.
    */
-  final void setId(EventID id)
-  {
+  final void setId(EventID id) {
     this.id = id;
   }
 
   /**
    * @return Returns the key.
    */
-  final Object getKey()
-  {
+  final Object getKey() {
     return key;
   }
 
   /**
-   * @param key
-   *          The key to set.
+   * @param key The key to set.
    */
-  final void setKey(Object key)
-  {
+  final void setKey(Object key) {
     this.key = key;
   }
 
   /**
    * @return Returns the regionname.
    */
-  final String getRegionname()
-  {
+  final String getRegionname() {
     return regionname;
   }
 
   /**
-   * @param regionname
-   *          The regionname to set.
+   * @param regionname The regionname to set.
    */
-  final void setRegionname(String regionname)
-  {
+  final void setRegionname(String regionname) {
     this.regionname = regionname;
   }
 
   /**
    * @return Returns the value.
    */
-  final Object getValue()
-  {
+  final Object getValue() {
     return value;
   }
 
   /**
-   * @param value
-   *          The value to set.
+   * @param value The value to set.
    */
-  final void setValue(Object value)
-  {
+  final void setValue(Object value) {
     this.value = value;
   }
 }

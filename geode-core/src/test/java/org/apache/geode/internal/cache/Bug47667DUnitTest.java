@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -69,17 +67,23 @@ public class Bug47667DUnitTest extends LocatorTestBase {
     locator.invoke("Start Locator", () -> startLocator(locatorHost, locatorPort, ""));
 
     String locString = getLocatorString(host, locatorPort);
-    server1.invoke("Start BridgeServer", () -> startBridgeServer(new String[] { "R1" }, locString, new String[] { "R1" }));
-    server2.invoke("Start BridgeServer", () -> startBridgeServer(new String[] { "R2" }, locString, new String[] { "R2" }));
+    server1.invoke("Start BridgeServer",
+        () -> startBridgeServer(new String[] {"R1"}, locString, new String[] {"R1"}));
+    server2.invoke("Start BridgeServer",
+        () -> startBridgeServer(new String[] {"R2"}, locString, new String[] {"R2"}));
 
     client.invoke("create region and insert data in transaction", () -> {
       ClientCacheFactory ccf = new ClientCacheFactory();
       ccf.addPoolLocator(locatorHost, locatorPort);
       ClientCache cache = ccf.create();
-      PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R1").create("R1");
-      PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R2").create("R2");
-      Region region1 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).setPoolName("R1").create("R1");
-      Region region2 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).setPoolName("R2").create("R2");
+      PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R1")
+          .create("R1");
+      PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R2")
+          .create("R2");
+      Region region1 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+          .setPoolName("R1").create("R1");
+      Region region2 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+          .setPoolName("R2").create("R2");
       CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
       transactionManager.begin();
       region1.put(1, "value1");

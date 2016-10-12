@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.xmlcache;
 
@@ -31,26 +29,28 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 
-public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender implements GatewaySender{
+public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender
+    implements GatewaySender {
 
   public ParallelAsyncEventQueueCreation(Cache cache, GatewaySenderAttributes attrs) {
     super(cache, attrs);
   }
 
-  public void distribute(EnumListenerEvent operation, EntryEventImpl event, List<Integer> remoteDSIds) {
+  public void distribute(EnumListenerEvent operation, EntryEventImpl event,
+      List<Integer> remoteDSIds) {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void start() {
     // TODO Auto-generated method stub
-    
+
   }
 
   public void stop() {
     // TODO Auto-generated method stub
-    
+
   }
 
   public void rebalance() {
@@ -59,7 +59,7 @@ public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender imple
 
   public void fillInProfile(Profile profile) {
     // TODO Auto-generated method stub
-    
+
   }
 
   public CancelCriterion getCancelCriterion() {
@@ -107,13 +107,17 @@ public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender imple
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.geode.internal.cache.wan.AbstractGatewaySender#setModifiedEventId(org.apache.geode.internal.cache.EntryEventImpl)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.geode.internal.cache.wan.AbstractGatewaySender#setModifiedEventId(org.apache.geode.
+   * internal.cache.EntryEventImpl)
    */
   @Override
   protected void setModifiedEventId(EntryEventImpl clonedEvent) {
     // TODO Auto-generated method stub
-    
+
   }
-  
+
 }

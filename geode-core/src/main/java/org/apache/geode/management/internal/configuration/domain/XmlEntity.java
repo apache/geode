@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.configuration.domain;
 
@@ -77,21 +75,16 @@ public class XmlEntity implements DataSerializable {
    * @deprecated Use {@link XmlEntity#builder()}.
    */
   @Deprecated
-  public XmlEntity() {
-  }
+  public XmlEntity() {}
 
   /**
-   * Construct a new XmlEntity while creating XML from the cache using the
-   * element which has a type and attribute matching those given.
+   * Construct a new XmlEntity while creating XML from the cache using the element which has a type
+   * and attribute matching those given.
    * 
-   * @param type
-   *          Type of the XML element to search for. Should be one of the
-   *          constants from the {@link CacheXml} class. For example,
-   *          CacheXml.REGION.
-   * @param key
-   *          Key of the attribute to match, for example, "name" or "id".
-   * @param value
-   *          Value of the attribute to match.
+   * @param type Type of the XML element to search for. Should be one of the constants from the
+   *        {@link CacheXml} class. For example, CacheXml.REGION.
+   * @param key Key of the attribute to match, for example, "name" or "id".
+   * @param value Value of the attribute to match.
    */
   public XmlEntity(final String type, final String key, final String value) {
     this.type = type;
@@ -101,29 +94,21 @@ public class XmlEntity implements DataSerializable {
   }
 
   /****
-   * Construct a new XmlEntity while creating Xml from the cache using the
-   * element which has attributes matching those given
+   * Construct a new XmlEntity while creating Xml from the cache using the element which has
+   * attributes matching those given
    * 
-   * @param parentType
-   *          Parent type of the XML element to search for. Should be one of the
-   *          constants from the {@link CacheXml} class. For example,
-   *          CacheXml.REGION.
+   * @param parentType Parent type of the XML element to search for. Should be one of the constants
+   *        from the {@link CacheXml} class. For example, CacheXml.REGION.
    * 
-   * @param parentKey
-   *          Identifier for the parent elements such "name/id"
-   * @param parentValue
-   *          Value of the identifier
-   * @param childType
-   *          Child type of the XML element to search for within the parent .
-   *          Should be one of the constants from the {@link CacheXml} class.
-   *          For example, CacheXml.INDEX.
-   * @param childKey
-   *          Identifier for the child element such as "name/id"
-   * @param childValue
-   *          Value of the child element identifier
+   * @param parentKey Identifier for the parent elements such "name/id"
+   * @param parentValue Value of the identifier
+   * @param childType Child type of the XML element to search for within the parent . Should be one
+   *        of the constants from the {@link CacheXml} class. For example, CacheXml.INDEX.
+   * @param childKey Identifier for the child element such as "name/id"
+   * @param childValue Value of the child element identifier
    */
-  public XmlEntity(final String parentType, final String parentKey, final String parentValue, final String childType, final String childKey,
-      final String childValue) {
+  public XmlEntity(final String parentType, final String parentKey, final String parentValue,
+      final String childType, final String childKey, final String childValue) {
     // TODO this should be replaced with a builder.
     // TODO consider parent as nested XmlEntity type.
     this.parentType = parentType;
@@ -148,8 +133,7 @@ public class XmlEntity implements DataSerializable {
 
 
   /**
-   * Initialize new instances. Called from
-   * {@link #XmlEntity(String, String, String)} and
+   * Initialize new instances. Called from {@link #XmlEntity(String, String, String)} and
    * {@link XmlEntityBuilder#build()}.
    * 
    * @since GemFire 8.1
@@ -164,10 +148,9 @@ public class XmlEntity implements DataSerializable {
       xmlDefinition = loadXmlDefinition();
     }
   }
-  
+
   /**
-   * Use the CacheXmlGenerator to create XML from the entity associated with the
-   * current cache.
+   * Use the CacheXmlGenerator to create XML from the entity associated with the current cache.
    * 
    * @return XML string representation of the entity.
    */
@@ -185,8 +168,7 @@ public class XmlEntity implements DataSerializable {
   /**
    * Used supplied xmlDocument to extract the XML for the defined {@link XmlEntity}.
    * 
-   * @param xmlDocument
-   *          to extract XML from.
+   * @param xmlDocument to extract XML from.
    * @return XML for {@link XmlEntity} if found, otherwise <code>null</code>.
    * @since GemFire 8.1
    */
@@ -195,7 +177,8 @@ public class XmlEntity implements DataSerializable {
     try {
       InputSource inputSource = new InputSource(new StringReader(xmlDocument));
       return loadXmlDefinition(XmlUtils.getDocumentBuilder().parse(inputSource));
-    } catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException | TransformerFactoryConfigurationError | TransformerException e) {
+    } catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException
+        | TransformerFactoryConfigurationError | TransformerException e) {
       throw new InternalGemFireError("Could not parse XML when creating XMLEntity", e);
     }
   }
@@ -203,15 +186,15 @@ public class XmlEntity implements DataSerializable {
   /**
    * Used supplied XML {@link Document} to extract the XML for the defined {@link XmlEntity}.
    * 
-   * @param document
-   *          to extract XML from.
+   * @param document to extract XML from.
    * @return XML for {@link XmlEntity} if found, otherwise <code>null</code>.
-   * @throws XPathExpressionException 
-   * @throws TransformerException 
-   * @throws TransformerFactoryConfigurationError 
+   * @throws XPathExpressionException
+   * @throws TransformerException
+   * @throws TransformerFactoryConfigurationError
    * @since GemFire 8.1
    */
-  private final String loadXmlDefinition(final Document document) throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
+  private final String loadXmlDefinition(final Document document)
+      throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
     final Cache cache = CacheFactory.getAnyInstance();
 
     this.searchString = createQueryString(prefix, type, attributes);
@@ -220,7 +203,7 @@ public class XmlEntity implements DataSerializable {
     if (document != null) {
       XPathContext xpathContext = new XPathContext();
       xpathContext.addNamespace(prefix, namespace);
-      //Create an XPathContext here
+      // Create an XPathContext here
       Node element = XmlUtils.querySingleElement(document, this.searchString, xpathContext);
       // Must copy to preserve namespaces.
       if (null != element) {
@@ -228,7 +211,8 @@ public class XmlEntity implements DataSerializable {
       }
     }
 
-    logger.warn("No XML definition could be found with name={} and attributes={}", type, attributes);
+    logger.warn("No XML definition could be found with name={} and attributes={}", type,
+        attributes);
     return null;
   }
 
@@ -236,13 +220,13 @@ public class XmlEntity implements DataSerializable {
    * Create an XmlPath query string from the given element name and attributes.
    * 
    * @param element Name of the XML element to search for.
-   * @param attributes
-   *          Attributes of the element that should match, for example "name" or
-   *          "id" and the value they should equal.  This list may be empty.
+   * @param attributes Attributes of the element that should match, for example "name" or "id" and
+   *        the value they should equal. This list may be empty.
    * 
    * @return An XmlPath query string.
    */
-  private String createQueryString(final String prefix, final String element, final Map<String, String> attributes) {
+  private String createQueryString(final String prefix, final String element,
+      final Map<String, String> attributes) {
     StringBuilder queryStringBuilder = new StringBuilder();
     Iterator<Entry<String, String>> attributeIter = attributes.entrySet().iterator();
     queryStringBuilder.append("//").append(prefix).append(':').append(element);
@@ -250,12 +234,15 @@ public class XmlEntity implements DataSerializable {
     if (attributes.size() > 0) {
       queryStringBuilder.append("[");
       Entry<String, String> attrEntry = attributeIter.next();
-      //queryStringBuilder.append("@").append(attrEntry.getKey()).append("=\"").append(attrEntry.getValue()).append("\"");
-      queryStringBuilder.append("@").append(attrEntry.getKey()).append("='").append(attrEntry.getValue()).append("'");
+      // queryStringBuilder.append("@").append(attrEntry.getKey()).append("=\"").append(attrEntry.getValue()).append("\"");
+      queryStringBuilder.append("@").append(attrEntry.getKey()).append("='")
+          .append(attrEntry.getValue()).append("'");
       while (attributeIter.hasNext()) {
         attrEntry = attributeIter.next();
-        //queryStringBuilder.append(" and @").append(attrEntry.getKey()).append("=\"").append(attrEntry.getValue()).append("\"");
-        queryStringBuilder.append(" and @").append(attrEntry.getKey()).append("='").append(attrEntry.getValue()).append("'");
+        // queryStringBuilder.append(" and
+        // @").append(attrEntry.getKey()).append("=\"").append(attrEntry.getValue()).append("\"");
+        queryStringBuilder.append(" and @").append(attrEntry.getKey()).append("='")
+            .append(attrEntry.getValue()).append("'");
       }
 
       queryStringBuilder.append("]");
@@ -263,11 +250,11 @@ public class XmlEntity implements DataSerializable {
 
     return queryStringBuilder.toString();
   }
-  
+
   public String getSearchString() {
     return this.searchString;
   }
-  
+
   public String getType() {
     return this.type;
   }
@@ -279,8 +266,7 @@ public class XmlEntity implements DataSerializable {
   /**
    * Return the value of a single attribute.
    * 
-   * @param key
-   *          Key of the attribute whose while will be returned.
+   * @param key Key of the attribute whose while will be returned.
    * 
    * @return The value of the attribute.
    */
@@ -289,8 +275,8 @@ public class XmlEntity implements DataSerializable {
   }
 
   /**
-   * A convenience method to get a name or id attributes from the list of
-   * attributes if one of them has been set.  Name takes precedence.
+   * A convenience method to get a name or id attributes from the list of attributes if one of them
+   * has been set. Name takes precedence.
    * 
    * @return The name or id attribute or null if neither is found.
    */
@@ -298,7 +284,7 @@ public class XmlEntity implements DataSerializable {
     if (this.attributes.containsKey("name")) {
       return this.attributes.get("name");
     }
-    
+
     return this.attributes.get("id");
   }
 
@@ -307,8 +293,7 @@ public class XmlEntity implements DataSerializable {
   }
 
   /**
-   * Gets the namespace for the element. Defaults to {@link CacheXml#GEODE_NAMESPACE}
-   * if not set.
+   * Gets the namespace for the element. Defaults to {@link CacheXml#GEODE_NAMESPACE} if not set.
    * 
    * @return XML element namespace
    * @since GemFire 8.1
@@ -318,8 +303,7 @@ public class XmlEntity implements DataSerializable {
   }
 
   /**
-   * Gets the prefix for the element. Defaults to {@link CacheXml#PREFIX} if not
-   * set.
+   * Gets the prefix for the element. Defaults to {@link CacheXml#PREFIX} if not set.
    * 
    * @return XML element prefix
    * @since GemFire 8.1
@@ -330,7 +314,8 @@ public class XmlEntity implements DataSerializable {
 
   @Override
   public String toString() {
-    return "XmlEntity [namespace=" + namespace + ", type=" + this.type + ", attributes=" + this.attributes + ", xmlDefinition=" + this.xmlDefinition + "]";
+    return "XmlEntity [namespace=" + namespace + ", type=" + this.type + ", attributes="
+        + this.attributes + ", xmlDefinition=" + this.xmlDefinition + "]";
   }
 
   @Override
@@ -400,8 +385,7 @@ public class XmlEntity implements DataSerializable {
   }
 
   /**
-   * Builder for {@link XmlEntity}. Default values are as described in
-   * {@link XmlEntity}.
+   * Builder for {@link XmlEntity}. Default values are as described in {@link XmlEntity}.
    * 
    *
    * @since GemFire 8.1
@@ -419,9 +403,8 @@ public class XmlEntity implements DataSerializable {
     }
 
     /**
-     * Produce an {@link XmlEntity} with the supplied values. Builder is reset
-     * after {@link #build()} is called. Subsequent calls will produce a new
-     * {@link XmlEntity}.
+     * Produce an {@link XmlEntity} with the supplied values. Builder is reset after
+     * {@link #build()} is called. Subsequent calls will produce a new {@link XmlEntity}.
      * 
      * You are required to at least call {@link #withType(String)}.
      * 
@@ -429,20 +412,18 @@ public class XmlEntity implements DataSerializable {
      * @since GemFire 8.1
      */
     public XmlEntity build() {
-        xmlEntity.init();
-        
-        final XmlEntity built = xmlEntity;
-        xmlEntity = new XmlEntity();
-        
-        return built;
+      xmlEntity.init();
+
+      final XmlEntity built = xmlEntity;
+      xmlEntity = new XmlEntity();
+
+      return built;
     }
 
     /**
-     * Sets the type or element name value as returned by
-     * {@link XmlEntity#getType()}
+     * Sets the type or element name value as returned by {@link XmlEntity#getType()}
      * 
-     * @param type
-     *          Name of element type.
+     * @param type Name of element type.
      * @return this {@link XmlEntityBuilder}
      * @since GemFire 8.1
      */
@@ -453,15 +434,12 @@ public class XmlEntity implements DataSerializable {
     }
 
     /**
-     * Sets the element prefix and namespace as returned by
-     * {@link XmlEntity#getPrefix()} and {@link XmlEntity#getNamespace()}
-     * respectively. Defaults are {@link CacheXml#PREFIX} and
+     * Sets the element prefix and namespace as returned by {@link XmlEntity#getPrefix()} and
+     * {@link XmlEntity#getNamespace()} respectively. Defaults are {@link CacheXml#PREFIX} and
      * {@link CacheXml#GEODE_NAMESPACE} respectively.
      * 
-     * @param prefix
-     *          Prefix of element
-     * @param namespace
-     *          Namespace of element
+     * @param prefix Prefix of element
+     * @param namespace Namespace of element
      * @return this {@link XmlEntityBuilder}
      * @since GemFire 8.1
      */
@@ -473,14 +451,11 @@ public class XmlEntity implements DataSerializable {
     }
 
     /**
-     * Adds an attribute for the given <code>name</code> and <code>value</code>
-     * to the attributes map returned by {@link XmlEntity#getAttributes()} or
-     * {@link XmlEntity#getAttribute(String)}.
+     * Adds an attribute for the given <code>name</code> and <code>value</code> to the attributes
+     * map returned by {@link XmlEntity#getAttributes()} or {@link XmlEntity#getAttribute(String)}.
      * 
-     * @param name
-     *          Name of attribute to set.
-     * @param value
-     *          Value of attribute to set.
+     * @param name Name of attribute to set.
+     * @param value Value of attribute to set.
      * @return this {@link XmlEntityBuilder}
      * @since GemFire 8.1
      */
@@ -493,8 +468,7 @@ public class XmlEntity implements DataSerializable {
     /**
      * Replaces all attributes with the supplied attributes {@link Map}.
      * 
-     * @param attributes
-     *          {@link Map} to use.
+     * @param attributes {@link Map} to use.
      * @return this {@link XmlEntityBuilder}
      * @since GemFire 8.1
      */
@@ -505,14 +479,13 @@ public class XmlEntity implements DataSerializable {
     }
 
     /**
-     * Sets a config xml document source to get the entity XML Definition from
-     * as returned by {@link XmlEntity#getXmlDefinition()}. Defaults to current
-     * active configuration for {@link Cache}.
+     * Sets a config xml document source to get the entity XML Definition from as returned by
+     * {@link XmlEntity#getXmlDefinition()}. Defaults to current active configuration for
+     * {@link Cache}.
      * 
      * <b>Should only be used for testing.</b>
      * 
-     * @param xmlDocument
-     *          Config XML document.
+     * @param xmlDocument Config XML document.
      * @return this {@link XmlEntityBuilder}
      * @since GemFire 8.1
      */
@@ -523,21 +496,21 @@ public class XmlEntity implements DataSerializable {
     }
 
     /**
-     * Sets a config xml document source to get the entity XML Definition from
-     * as returned by {@link XmlEntity#getXmlDefinition()}. Defaults to current
-     * active configuration for {@link Cache}.
+     * Sets a config xml document source to get the entity XML Definition from as returned by
+     * {@link XmlEntity#getXmlDefinition()}. Defaults to current active configuration for
+     * {@link Cache}.
      * 
      * <b>Should only be used for testing.</b>
      * 
-     * @param document
-     *          Config XML {@link Document}.
+     * @param document Config XML {@link Document}.
      * @return this {@link XmlEntityBuilder}
-     * @throws TransformerException 
-     * @throws TransformerFactoryConfigurationError 
-     * @throws XPathExpressionException 
+     * @throws TransformerException
+     * @throws TransformerFactoryConfigurationError
+     * @throws XPathExpressionException
      * @since GemFire 8.1
      */
-    public XmlEntityBuilder withConfig(final Document document) throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
+    public XmlEntityBuilder withConfig(final Document document) throws XPathExpressionException,
+        TransformerFactoryConfigurationError, TransformerException {
       xmlEntity.xmlDefinition = xmlEntity.loadXmlDefinition(document);
 
       return this;

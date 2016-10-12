@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -33,13 +31,12 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class PRQueryTraceInfo implements DataSerializableFixedID {
 
   public String indexesUsed = "";
-  //Set and used by the pr query gathering side for logging purposes
+  // Set and used by the pr query gathering side for logging purposes
   private InternalDistributedMember sender;
   private float timeInMillis;
   private int numResults;
-  
-  public PRQueryTraceInfo() {
-  }
+
+  public PRQueryTraceInfo() {}
 
   @Override
   public void toData(DataOutput out) throws IOException {
@@ -54,7 +51,7 @@ public class PRQueryTraceInfo implements DataSerializableFixedID {
     numResults = in.readInt();
     indexesUsed = DataSerializer.readString(in);
   }
-  
+
 
   @Override
   public Version[] getSerializationVersions() {
@@ -66,7 +63,7 @@ public class PRQueryTraceInfo implements DataSerializableFixedID {
   public int getDSFID() {
     return PR_QUERY_TRACE_INFO;
   }
-  
+
   public int calculateNumberOfResults(Collection resultCollector) {
     int traceSize = 0;
     Iterator<Collection> iterator = resultCollector.iterator();
@@ -79,31 +76,32 @@ public class PRQueryTraceInfo implements DataSerializableFixedID {
 
   public String createLogLine(DistributedMember me) {
     if (sender.equals(me)) {
-      return LocalizedStrings.PartitionedRegion_QUERY_TRACE_LOCAL_NODE_LOG.toLocalizedString(sender, timeInMillis, numResults, indexesUsed);
-    }
-    else {
-      return LocalizedStrings.PartitionedRegion_QUERY_TRACE_REMOTE_NODE_LOG.toLocalizedString( sender, timeInMillis, numResults, indexesUsed);
+      return LocalizedStrings.PartitionedRegion_QUERY_TRACE_LOCAL_NODE_LOG.toLocalizedString(sender,
+          timeInMillis, numResults, indexesUsed);
+    } else {
+      return LocalizedStrings.PartitionedRegion_QUERY_TRACE_REMOTE_NODE_LOG
+          .toLocalizedString(sender, timeInMillis, numResults, indexesUsed);
     }
   }
-  
+
   public float getTimeInMillis() {
     return timeInMillis;
   }
-  
+
   public void setTimeInMillis(float timeInMillis) {
     this.timeInMillis = timeInMillis;
   }
-  
+
   public void setSender(InternalDistributedMember sender) {
     this.sender = sender;
   }
-  
+
   public void setNumResults(int numResults) {
     this.numResults = numResults;
   }
-  
+
   public void setIndexesUsed(String indexesUsed) {
     this.indexesUsed = indexesUsed;
   }
-  
+
 }

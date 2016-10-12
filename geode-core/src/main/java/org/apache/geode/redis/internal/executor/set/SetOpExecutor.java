@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.set;
 
@@ -51,7 +49,8 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
     ByteArrayWrapper firstSetKey = new ByteArrayWrapper(commandElems.get(setsStartIndex++));
     if (!isStorage())
       checkDataType(firstSetKey, RedisDataType.REDIS_SET, context);
-    Region<ByteArrayWrapper, Boolean> region = (Region<ByteArrayWrapper, Boolean>) rC.getRegion(firstSetKey);
+    Region<ByteArrayWrapper, Boolean> region =
+        (Region<ByteArrayWrapper, Boolean>) rC.getRegion(firstSetKey);
     Set<ByteArrayWrapper> firstSet = null;
     if (region != null) {
       firstSet = new HashSet<ByteArrayWrapper>(region.keySet());
@@ -68,30 +67,34 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
     }
     if (setList.isEmpty()) {
       if (isStorage()) {
-          command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-          context.getRegionProvider().removeKey(destination);
+        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
+        context.getRegionProvider().removeKey(destination);
       } else {
         if (firstSet == null)
           command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
         else
-          command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), firstSet));
+          command.setResponse(
+              Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), firstSet));
       }
       return;
     }
 
     Set<ByteArrayWrapper> resultSet = setOp(firstSet, setList);
     if (isStorage()) {
-      Region<ByteArrayWrapper, Boolean> newRegion = null; // (Region<ByteArrayWrapper, Boolean>) rC.getRegion(destination);
+      Region<ByteArrayWrapper, Boolean> newRegion = null; // (Region<ByteArrayWrapper, Boolean>)
+                                                          // rC.getRegion(destination);
       rC.removeKey(destination);
       if (resultSet != null) {
         Map<ByteArrayWrapper, Boolean> map = new HashMap<ByteArrayWrapper, Boolean>();
         for (ByteArrayWrapper entry : resultSet)
           map.put(entry, Boolean.TRUE);
         if (!map.isEmpty()) {
-          newRegion = (Region<ByteArrayWrapper, Boolean>) rC.getOrCreateRegion(destination, RedisDataType.REDIS_SET, context);
+          newRegion = (Region<ByteArrayWrapper, Boolean>) rC.getOrCreateRegion(destination,
+              RedisDataType.REDIS_SET, context);
           newRegion.putAll(map);
         }
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), resultSet.size()));
+        command
+            .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), resultSet.size()));
       } else {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
       }
@@ -99,11 +102,13 @@ public abstract class SetOpExecutor extends SetExecutor implements Extendable {
       if (resultSet == null || resultSet.isEmpty())
         command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       else
-        command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), resultSet));
+        command.setResponse(
+            Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), resultSet));
     }
   }
 
   protected abstract boolean isStorage();
 
-  protected abstract Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet, List<Set<ByteArrayWrapper>> setList);
+  protected abstract Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet,
+      List<Set<ByteArrayWrapper>> setList);
 }

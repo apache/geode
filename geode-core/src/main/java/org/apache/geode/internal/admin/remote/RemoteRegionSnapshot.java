@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.admin.remote;
@@ -36,7 +34,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
 
   public RemoteRegionSnapshot(Region r) throws CacheException {
 
-    this.name = r.getName();    
+    this.name = r.getName();
     RegionAttributes rAttr = r.getAttributes();
     this.attributes = new RemoteRegionAttributes(rAttr);
     if (rAttr.getStatisticsEnabled()) {
@@ -66,7 +64,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     return this.name;
   }
 
-  public long getLastModifiedTime() {     
+  public long getLastModifiedTime() {
     return stats.getLastModifiedTime();
   }
 
@@ -85,16 +83,16 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
   public float getHitRatio() {
     return stats.getHitRatio();
   }
-  
+
   public RegionAttributes getAttributes() {
     return this.attributes;
-//     if (rUserAttributes != null) {
-//       Iterator it = rUserAttributes.entrySet().iterator();
-//       while (it.hasNext()) {
-//         Map.Entry me = (Map.Entry)it.next();
-//         result.setUserAttribute(me.getKey(), me.getValue());
-//       }
-//     }
+    // if (rUserAttributes != null) {
+    // Iterator it = rUserAttributes.entrySet().iterator();
+    // while (it.hasNext()) {
+    // Map.Entry me = (Map.Entry)it.next();
+    // result.setUserAttribute(me.getKey(), me.getValue());
+    // }
+    // }
   }
 
   public int getEntryCount() {
@@ -109,22 +107,23 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     return userAttribute;
   }
 
-//  private String getDesc(Object o) {
-//    if (o == null) {
-//      return "";
-//    } else {
-//      return o.getClass().getName();
-//    }
-//  }
+  // private String getDesc(Object o) {
+  // if (o == null) {
+  // return "";
+  // } else {
+  // return o.getClass().getName();
+  // }
+  // }
 
   @Override
   public boolean equals(Object other) {
-    if (other == this) return true;
+    if (other == this)
+      return true;
     if (other instanceof RemoteRegionSnapshot) {
-      RemoteRegionSnapshot snap = (RemoteRegionSnapshot)other;
+      RemoteRegionSnapshot snap = (RemoteRegionSnapshot) other;
       return this.name.equals(snap.name);
     }
-    return false;    
+    return false;
   }
 
   @Override
@@ -146,11 +145,10 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     DataSerializer.writeObject(this.userAttribute, out);
   }
 
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
-    this.stats = (RemoteCacheStatistics)DataSerializer.readObject(in);
-    this.attributes = (RemoteRegionAttributes)DataSerializer.readObject(in);
+    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
+    this.attributes = (RemoteRegionAttributes) DataSerializer.readObject(in);
     this.entryCount = in.readInt();
     this.subregionCount = in.readInt();
     this.userAttribute = DataSerializer.readObject(in);

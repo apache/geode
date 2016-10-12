@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -26,15 +24,13 @@ import org.apache.geode.cache.DiskWriteAttributesFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Tests if DiskWriteAttributeFactory returns the correct DWA object with the
- * desired values
+ * Tests if DiskWriteAttributeFactory returns the correct DWA object with the desired values
  */
 @Category(UnitTest.class)
 public class DiskWriteAttributesJUnitTest {
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultInstance()'
+   * Test method for 'org.apache.geode.cache.DiskWriteAttributes.getDefaultInstance()'
    */
   @Test
   public void testGetDefaultInstance() {
@@ -45,8 +41,7 @@ public class DiskWriteAttributesJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultSync()'
+   * Test method for 'org.apache.geode.cache.DiskWriteAttributes.getDefaultSync()'
    */
   @Test
   public void testGetDefaultSync() {
@@ -58,8 +53,7 @@ public class DiskWriteAttributesJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultAsync()'
+   * Test method for 'org.apache.geode.cache.DiskWriteAttributes.getDefaultAsync()'
    */
   @Test
   public void testGetDefaultAsync() {
@@ -70,8 +64,7 @@ public class DiskWriteAttributesJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultRollingSync()'
+   * Test method for 'org.apache.geode.cache.DiskWriteAttributes.getDefaultRollingSync()'
    */
   @Test
   public void testGetDefaultRollingSync() {
@@ -84,8 +77,7 @@ public class DiskWriteAttributesJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultRollingAsync()'
+   * Test method for 'org.apache.geode.cache.DiskWriteAttributes.getDefaultRollingAsync()'
    */
   @Test
   public void testGetDefaultRollingAsync() {
@@ -96,8 +88,7 @@ public class DiskWriteAttributesJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultNonRollingSync()'
+   * Test method for 'org.apache.geode.cache.DiskWriteAttributes.getDefaultNonRollingSync()'
    */
   @Test
   public void testGetDefaultNonRollingSync() {
@@ -110,8 +101,7 @@ public class DiskWriteAttributesJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.DiskWriteAttributes.getDefaultNonRollingAsync()'
+   * Test method for 'org.apache.geode.cache.DiskWriteAttributes.getDefaultNonRollingAsync()'
    */
   @Test
   public void testGetDefaultNonRollingAsync() {
@@ -121,82 +111,82 @@ public class DiskWriteAttributesJUnitTest {
     assertTrue(!dwa.isSynchronous());
     assertTrue(!dwa.isRollOplogs());
   }
-  
+
   /**
-   * Tests the behaviour of DiskWriteAttributesFactory & DiskWritesAttrbutes with
-   * various combinations of  time interval & buffer size.
+   * Tests the behaviour of DiskWriteAttributesFactory & DiskWritesAttrbutes with various
+   * combinations of time interval & buffer size.
    */
   @Test
   public void testDiskWriteAttributesCreation() {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setSynchronous(true);
     DiskWriteAttributes dwa = dwaf.create();
-    assertEquals(dwa.getBytesThreshold(),0);
-    assertEquals(dwa.getTimeInterval(),0);
-    
+    assertEquals(dwa.getBytesThreshold(), 0);
+    assertEquals(dwa.getTimeInterval(), 0);
+
     dwaf.setSynchronous(false);
     dwa = dwaf.create();
-    assertEquals(dwa.getBytesThreshold(),0);
-    assertEquals(dwa.getTimeInterval(),DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
-    
+    assertEquals(dwa.getBytesThreshold(), 0);
+    assertEquals(dwa.getTimeInterval(), DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
+
     dwaf.setBytesThreshold(0);
     dwa = dwaf.create();
-    assertEquals(dwa.getBytesThreshold(),0);
-    assertEquals(dwa.getTimeInterval(),DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
-    
+    assertEquals(dwa.getBytesThreshold(), 0);
+    assertEquals(dwa.getTimeInterval(), DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
+
     dwaf.setBytesThreshold(1);
     dwa = dwaf.create();
-    assertEquals(dwa.getBytesThreshold(),1);
-    assertEquals(dwa.getTimeInterval(),0);
-    
+    assertEquals(dwa.getBytesThreshold(), 1);
+    assertEquals(dwa.getTimeInterval(), 0);
+
     dwaf.setBytesThreshold(0);
     dwaf.setTimeInterval(0);
     dwa = dwaf.create();
-    assertEquals(dwa.getBytesThreshold(),0);
-    assertEquals(dwa.getTimeInterval(),0);
-    
-    DiskWriteAttributesFactory dwaf1 = new DiskWriteAttributesFactory();    
+    assertEquals(dwa.getBytesThreshold(), 0);
+    assertEquals(dwa.getTimeInterval(), 0);
+
+    DiskWriteAttributesFactory dwaf1 = new DiskWriteAttributesFactory();
     DiskWriteAttributes dwa1 = dwaf1.create();
-    assertEquals(dwa1.getBytesThreshold(),0);
-    assertEquals(dwa1.getTimeInterval(),DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
-    
+    assertEquals(dwa1.getBytesThreshold(), 0);
+    assertEquals(dwa1.getTimeInterval(), DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
+
     DiskWriteAttributesFactory dwaf2 = new DiskWriteAttributesFactory(dwa1);
     DiskWriteAttributes dwa2 = dwaf2.create();
-    assertEquals(dwa2.getBytesThreshold(),0);
-    assertEquals(dwa2.getTimeInterval(),DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
-    
+    assertEquals(dwa2.getBytesThreshold(), 0);
+    assertEquals(dwa2.getTimeInterval(), DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
+
     dwaf1 = new DiskWriteAttributesFactory();
     dwaf1.setBytesThreshold(100);
     dwaf2 = new DiskWriteAttributesFactory(dwaf1.create());
     dwa2 = dwaf2.create();
-    assertEquals(dwa2.getBytesThreshold(),100);
-    assertEquals(dwa2.getTimeInterval(),0);
-    
+    assertEquals(dwa2.getBytesThreshold(), 100);
+    assertEquals(dwa2.getTimeInterval(), 0);
+
     dwaf1 = new DiskWriteAttributesFactory();
     dwaf1.setBytesThreshold(0);
     dwaf1.setTimeInterval(0);
     dwaf2 = new DiskWriteAttributesFactory(dwaf1.create());
     dwa2 = dwaf2.create();
-    assertEquals(dwa2.getBytesThreshold(),0);
-    assertEquals(dwa2.getTimeInterval(),0);
-    
-    
+    assertEquals(dwa2.getBytesThreshold(), 0);
+    assertEquals(dwa2.getTimeInterval(), 0);
+
+
     dwaf1 = new DiskWriteAttributesFactory();
     dwa1 = dwaf1.create();
     dwaf2 = new DiskWriteAttributesFactory(dwa1);
     dwa2 = dwaf2.create();
-    assertEquals(dwa2.getBytesThreshold(),0);
-    assertEquals(dwa2.getTimeInterval(),DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
-    assertEquals(dwa1.getBytesThreshold(),0);
-    assertEquals(dwa1.getTimeInterval(),DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
-    //Important :Notice the behaviour difference in the time nterval setting
+    assertEquals(dwa2.getBytesThreshold(), 0);
+    assertEquals(dwa2.getTimeInterval(), DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
+    assertEquals(dwa1.getBytesThreshold(), 0);
+    assertEquals(dwa1.getTimeInterval(), DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
+    // Important :Notice the behaviour difference in the time nterval setting
     dwaf1.setBytesThreshold(1);
     dwaf2.setBytesThreshold(1);
     dwa1 = dwaf1.create();
     dwa2 = dwaf2.create();
-    assertEquals(dwa2.getBytesThreshold(),1);
-    assertEquals(dwa2.getTimeInterval(),DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
-    assertEquals(dwa1.getBytesThreshold(),1);
-    assertEquals(dwa1.getTimeInterval(),0);     
-  }  
+    assertEquals(dwa2.getBytesThreshold(), 1);
+    assertEquals(dwa2.getTimeInterval(), DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL);
+    assertEquals(dwa1.getBytesThreshold(), 1);
+    assertEquals(dwa1.getTimeInterval(), 0);
+  }
 }

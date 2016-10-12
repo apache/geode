@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.security;
@@ -52,18 +50,21 @@ public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTes
   protected boolean pdxPersistent = false;
 
   // overwrite this in child classes
-  public Properties getProperties(){
-    return new Properties() {{
-      setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-      setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/management/internal/security/clientServer.json");
-    }};
+  public Properties getProperties() {
+    return new Properties() {
+      {
+        setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+        setProperty(SampleSecurityManager.SECURITY_JSON,
+            "org/apache/geode/management/internal/security/clientServer.json");
+      }
+    };
   }
 
   // overwrite this if you want a different set of initial data
-  public Map<String, String> getData(){
+  public Map<String, String> getData() {
     Map<String, String> data = new HashMap();
-    for(int i=0; i<5; i++){
-      data.put("key"+i, "value"+i);
+    for (int i = 0; i < 5; i++) {
+      data.put("key" + i, "value" + i);
     }
     return data;
   }
@@ -73,8 +74,9 @@ public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTes
     ServerStarter serverStarter = new ServerStarter(getProperties());
     serverStarter.startServer(0, pdxPersistent);
     serverPort = serverStarter.server.getPort();
-    Region region = serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
-    for(Entry entry:getData().entrySet()){
+    Region region =
+        serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    for (Entry entry : getData().entrySet()) {
       region.put(entry.getKey(), entry.getValue());
     }
 
@@ -101,11 +103,9 @@ public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTes
     return props;
   }
 
-  public static ClientCache createClientCache(String username, String password, int serverPort){
+  public static ClientCache createClientCache(String username, String password, int serverPort) {
     ClientCache cache = new ClientCacheFactory(createClientProperties(username, password))
-      .setPoolSubscriptionEnabled(true)
-      .addPoolServer("localhost", serverPort)
-      .create();
+        .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
 
     cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
     return cache;

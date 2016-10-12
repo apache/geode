@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -35,14 +33,14 @@ public class CallbackSampler {
   private ScheduledExecutorService executor;
   private final StatSamplerStats statSamplerStats;
 
-  public CallbackSampler( final CancelCriterion cancelCriterion,
-                         final StatSamplerStats statSamplerStats)
-  {
+  public CallbackSampler(final CancelCriterion cancelCriterion,
+      final StatSamplerStats statSamplerStats) {
     this.cancelCriterion = cancelCriterion;
     this.statSamplerStats = statSamplerStats;
   }
 
-  public void start(StatisticsManager statisticsManager, ThreadGroup threadGroup, int sampleInterval, TimeUnit timeUnit) {
+  public void start(StatisticsManager statisticsManager, ThreadGroup threadGroup,
+      int sampleInterval, TimeUnit timeUnit) {
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(runnable -> {
       Thread thread = new Thread(threadGroup, runnable, "CallbackSampler");
       thread.setDaemon(true);
@@ -51,7 +49,8 @@ public class CallbackSampler {
     start(executor, statisticsManager, sampleInterval, timeUnit);
   }
 
-  void start(ScheduledExecutorService executor, StatisticsManager statisticsManager, int sampleInterval, TimeUnit timeUnit) {
+  void start(ScheduledExecutorService executor, StatisticsManager statisticsManager,
+      int sampleInterval, TimeUnit timeUnit) {
     stop();
     this.statisticsManager = statisticsManager;
     this.executor = executor;
@@ -60,7 +59,7 @@ public class CallbackSampler {
   }
 
   private void sampleCallbacks() {
-    if(cancelCriterion.isCancelInProgress()) {
+    if (cancelCriterion.isCancelInProgress()) {
       executor.shutdown();
     }
     int errors = 0;
@@ -72,7 +71,7 @@ public class CallbackSampler {
         errors += statistics.invokeSuppliers();
         suppliers += statistics.getSupplierCount();
       }
-    } catch(VirtualMachineError e) {
+    } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
     } catch (Throwable throwable) {
       logger.error("Error invoking statistic suppliers", throwable);
@@ -86,7 +85,7 @@ public class CallbackSampler {
   }
 
   public void stop() {
-    if(executor != null) {
+    if (executor != null) {
       this.executor.shutdown();
     }
   }

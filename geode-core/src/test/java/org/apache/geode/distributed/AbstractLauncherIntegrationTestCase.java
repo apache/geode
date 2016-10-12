@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -48,31 +46,34 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractLauncherIntegrationTestCase {
   protected static final Logger logger = LogService.getLogger();
-  
+
   protected static final int WAIT_FOR_PROCESS_TO_DIE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
   protected static final int TIMEOUT_MILLISECONDS = WAIT_FOR_PROCESS_TO_DIE_TIMEOUT;
-  protected static final int WAIT_FOR_FILE_CREATION_TIMEOUT = 10*1000; // 10s
-  protected static final int WAIT_FOR_FILE_DELETION_TIMEOUT = 10*1000; // 10s
-  protected static final int WAIT_FOR_MBEAN_TIMEOUT = 10*1000; // 10s
+  protected static final int WAIT_FOR_FILE_CREATION_TIMEOUT = 10 * 1000; // 10s
+  protected static final int WAIT_FOR_FILE_DELETION_TIMEOUT = 10 * 1000; // 10s
+  protected static final int WAIT_FOR_MBEAN_TIMEOUT = 10 * 1000; // 10s
   protected static final int INTERVAL_MILLISECONDS = 100;
-  
-  private static final String EXPECTED_EXCEPTION_ADD = "<ExpectedException action=add>{}</ExpectedException>";
-  private static final String EXPECTED_EXCEPTION_REMOVE = "<ExpectedException action=remove>{}</ExpectedException>";
-  private static final String EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED = "MBean Not Registered In GemFire Domain";
-  
+
+  private static final String EXPECTED_EXCEPTION_ADD =
+      "<ExpectedException action=add>{}</ExpectedException>";
+  private static final String EXPECTED_EXCEPTION_REMOVE =
+      "<ExpectedException action=remove>{}</ExpectedException>";
+  private static final String EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED =
+      "MBean Not Registered In GemFire Domain";
+
   protected volatile ServerSocket socket;
 
   protected volatile File pidFile;
   protected volatile File stopRequestFile;
   protected volatile File statusRequestFile;
   protected volatile File statusFile;
-  
+
   @Rule
-  public TestName testName= new TestName();
+  public TestName testName = new TestName();
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  
+
   @Before
   public final void setUpAbstractLauncherIntegrationTestCase() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, Integer.toString(0));
@@ -86,12 +87,16 @@ public abstract class AbstractLauncherIntegrationTestCase {
       this.socket.close();
       this.socket = null;
     }
-    delete(this.pidFile); this.pidFile = null;
-    delete(this.stopRequestFile); this.stopRequestFile = null;
-    delete(this.statusRequestFile); this.statusRequestFile = null;
-    delete(this.statusFile); this.statusFile = null;
+    delete(this.pidFile);
+    this.pidFile = null;
+    delete(this.stopRequestFile);
+    this.stopRequestFile = null;
+    delete(this.statusRequestFile);
+    this.statusRequestFile = null;
+    delete(this.statusFile);
+    this.statusFile = null;
   }
-  
+
   protected void delete(final File file) throws Exception {
     assertEventuallyTrue("deleting " + file, new Callable<Boolean>() {
       @Override
@@ -107,7 +112,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
       }
     }, WAIT_FOR_FILE_DELETION_TIMEOUT, INTERVAL_MILLISECONDS);
   }
-  
+
   protected void waitForPidToStop(final int pid, boolean throwOnTimeout) throws Exception {
     assertEventuallyFalse("Process never died", new Callable<Boolean>() {
       @Override
@@ -116,11 +121,11 @@ public abstract class AbstractLauncherIntegrationTestCase {
       }
     }, WAIT_FOR_PROCESS_TO_DIE_TIMEOUT, INTERVAL_MILLISECONDS);
   }
-  
+
   protected void waitForPidToStop(final int pid) throws Exception {
     waitForPidToStop(pid, true);
   }
-  
+
   protected void waitForFileToDelete(final File file, boolean throwOnTimeout) throws Exception {
     if (file == null) {
       return;
@@ -132,11 +137,11 @@ public abstract class AbstractLauncherIntegrationTestCase {
       }
     }, WAIT_FOR_FILE_DELETION_TIMEOUT, INTERVAL_MILLISECONDS);
   }
-  
+
   protected void waitForFileToDelete(final File file) throws Exception {
     waitForFileToDelete(file, true);
   }
-  
+
   protected static int getPid() throws PidUnavailableException {
     return ProcessUtils.identifyPid();
   }
@@ -147,6 +152,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
       public void notifyInputLine(String line) {
         logger.info(new StringBuilder("[").append(header).append("]").append(line).toString());
       }
+
       @Override
       public String toString() {
         return name;
@@ -154,12 +160,14 @@ public abstract class AbstractLauncherIntegrationTestCase {
     };
   }
 
-  protected InputListener createCollectionListener(final String name, final String header, final List<String> lines) {
+  protected InputListener createCollectionListener(final String name, final String header,
+      final List<String> lines) {
     return new InputListener() {
       @Override
       public void notifyInputLine(String line) {
         lines.add(line);
       }
+
       @Override
       public String toString() {
         return name;
@@ -167,7 +175,8 @@ public abstract class AbstractLauncherIntegrationTestCase {
     };
   }
 
-  protected InputListener createExpectedListener(final String name, final String header, final String expected, final AtomicBoolean atomic) {
+  protected InputListener createExpectedListener(final String name, final String header,
+      final String expected, final AtomicBoolean atomic) {
     return new InputListener() {
       @Override
       public void notifyInputLine(String line) {
@@ -175,6 +184,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
           atomic.set(true);
         }
       }
+
       @Override
       public String toString() {
         return name;
@@ -182,9 +192,11 @@ public abstract class AbstractLauncherIntegrationTestCase {
     };
   }
 
-  protected void writeGemfireProperties(final Properties gemfireProperties, final File gemfirePropertiesFile) throws IOException {
+  protected void writeGemfireProperties(final Properties gemfireProperties,
+      final File gemfirePropertiesFile) throws IOException {
     if (!gemfirePropertiesFile.exists()) {
-      gemfireProperties.store(new FileWriter(gemfirePropertiesFile), "Configuration settings for the GemFire Server");
+      gemfireProperties.store(new FileWriter(gemfirePropertiesFile),
+          "Configuration settings for the GemFire Server");
     }
   }
 
@@ -193,8 +205,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
     try {
       reader = new BufferedReader(new FileReader(pidFile));
       return Integer.parseInt(StringUtils.trim(reader.readLine()));
-    }
-    finally {
+    } finally {
       IOUtils.close(reader);
     }
   }
@@ -215,31 +226,35 @@ public abstract class AbstractLauncherIntegrationTestCase {
       }
     }, WAIT_FOR_FILE_CREATION_TIMEOUT, INTERVAL_MILLISECONDS);
   }
-  
+
   protected void waitForFileToExist(final File file) throws Exception {
     waitForFileToExist(file, true);
   }
-  
+
   protected String getUniqueName() {
     return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
-  
-  protected static void assertEventuallyTrue(final String message, final Callable<Boolean> callable, final int timeout, final int interval) throws Exception {
+
+  protected static void assertEventuallyTrue(final String message, final Callable<Boolean> callable,
+      final int timeout, final int interval) throws Exception {
     boolean done = false;
-    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done = (callable.call())) {
+    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done =
+        (callable.call())) {
       Thread.sleep(interval);
     }
     assertTrue(message, done);
   }
-  
-  protected static void assertEventuallyFalse(final String message, final Callable<Boolean> callable, final int timeout, final int interval) throws Exception {
+
+  protected static void assertEventuallyFalse(final String message,
+      final Callable<Boolean> callable, final int timeout, final int interval) throws Exception {
     boolean done = false;
-    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done = (!callable.call())) {
+    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done =
+        (!callable.call())) {
       Thread.sleep(interval);
     }
     assertTrue(message, done);
   }
-  
+
   protected static void disconnectFromDS() {
     InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
     if (ids != null) {

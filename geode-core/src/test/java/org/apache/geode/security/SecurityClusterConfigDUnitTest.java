@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.security;
@@ -39,7 +37,7 @@ import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
@@ -47,8 +45,10 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
   @Before
   public void before() throws Exception {
-    IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
-    IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+    IgnoredException
+        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
+    IgnoredException
+        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.put(JMX_MANAGER, "false");
@@ -113,9 +113,8 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     ServerStarter serverStarter = new ServerStarter(props);
 
     assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
-      .isInstanceOf(GemFireConfigException.class)
-      .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
-        .toLocalizedString());
+        .isInstanceOf(GemFireConfigException.class)
+        .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
 
   }
 
@@ -133,9 +132,8 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     ServerStarter serverStarter = new ServerStarter(props);
 
     assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
-      .isInstanceOf(GemFireConfigException.class)
-      .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
-                                                       .toLocalizedString());
+        .isInstanceOf(GemFireConfigException.class)
+        .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
 
   }
 
@@ -152,9 +150,8 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     ServerStarter serverStarter = new ServerStarter(props);
 
     assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
-      .isInstanceOf(GemFireConfigException.class)
-      .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2
-                                                       .toLocalizedString());
+        .isInstanceOf(GemFireConfigException.class)
+        .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toLocalizedString());
 
   }
 

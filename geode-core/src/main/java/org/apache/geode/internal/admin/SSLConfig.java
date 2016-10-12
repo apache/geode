@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin;
 
@@ -44,13 +42,12 @@ public class SSLConfig {
   private SecurableCommunicationChannel securableCommunicationChannel = null;
 
   /**
-   * SSL implementation-specific key-value pairs. Each key should be prefixed
-   * with <code>javax.net.ssl.</code>
+   * SSL implementation-specific key-value pairs. Each key should be prefixed with
+   * <code>javax.net.ssl.</code>
    */
   private Properties properties = new Properties();
 
-  public SSLConfig() {
-  }
+  public SSLConfig() {}
 
   public String getAlias() {
     return alias;
@@ -156,9 +153,9 @@ public class SSLConfig {
 
   public void setProperties(Properties newProps) {
     this.properties = new Properties();
-    for (Iterator iter = newProps.keySet().iterator(); iter.hasNext(); ) {
+    for (Iterator iter = newProps.keySet().iterator(); iter.hasNext();) {
       String key = (String) iter.next();
-      //            String value = newProps.getProperty(key);
+      // String value = newProps.getProperty(key);
       this.properties.setProperty(key, newProps.getProperty(key));
     }
   }
@@ -167,19 +164,26 @@ public class SSLConfig {
     return securableCommunicationChannel;
   }
 
-  public void setSecurableCommunicationChannel(final SecurableCommunicationChannel securableCommunicationChannel) {
+  public void setSecurableCommunicationChannel(
+      final SecurableCommunicationChannel securableCommunicationChannel) {
     this.securableCommunicationChannel = securableCommunicationChannel;
   }
 
   @Override
   public String toString() {
-    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='" + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\'' + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='" + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='" + alias + '\'' + ", securableCommunicationChannel=" + securableCommunicationChannel + ", properties=" + properties + '}';
+    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"
+        + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\''
+        + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword
+        + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='"
+        + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='"
+        + alias + '\'' + ", securableCommunicationChannel=" + securableCommunicationChannel
+        + ", properties=" + properties + '}';
   }
 
   /**
-   * Populates a <code>Properties</code> object with the SSL-related
-   * configuration information used by {@link
-   * org.apache.geode.distributed.DistributedSystem#connect}.
+   * Populates a <code>Properties</code> object with the SSL-related configuration information used
+   * by {@link org.apache.geode.distributed.DistributedSystem#connect}.
+   * 
    * @since GemFire 4.0
    */
   public void toDSProperties(Properties props) {

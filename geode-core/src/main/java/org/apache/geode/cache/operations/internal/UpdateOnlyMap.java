@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.operations.internal;
 
@@ -32,11 +30,9 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Token;
 
 /**
- * This map only allows updates. No creates or removes.
- * It was adapted from UnmodifiableMap in the jdk's Collections class.
- * It was added to fix bug 51604.
- * It also make sure that customers do not see Token.INVALID and
- * CachedDeserializable to fix bug 51625.
+ * This map only allows updates. No creates or removes. It was adapted from UnmodifiableMap in the
+ * jdk's Collections class. It was added to fix bug 51604. It also make sure that customers do not
+ * see Token.INVALID and CachedDeserializable to fix bug 51625.
  */
 public class UpdateOnlyMap implements Map, Serializable {
   private static final long serialVersionUID = -1034234728574286014L;
@@ -44,31 +40,41 @@ public class UpdateOnlyMap implements Map, Serializable {
   private final Map m;
 
   public UpdateOnlyMap(Map m) {
-    if (m==null) {
+    if (m == null) {
       throw new NullPointerException();
     }
     this.m = m;
   }
 
   /**
-   * Only called by internal code
-   * to bypass exportValue() method
+   * Only called by internal code to bypass exportValue() method
+   * 
    * @return internal map
    */
   public Map getInternalMap() {
     return this.m;
   }
-  
-  public int size()                        {return m.size();}
-  public boolean isEmpty()                 {return m.isEmpty();}
-  public boolean containsKey(Object key)   {return m.containsKey(key);}
+
+  public int size() {
+    return m.size();
+  }
+
+  public boolean isEmpty() {
+    return m.isEmpty();
+  }
+
+  public boolean containsKey(Object key) {
+    return m.containsKey(key);
+  }
+
   public boolean containsValue(Object val) {
     return values().contains(val);
   }
+
   public Object get(Object key) {
     return exportValue(m.get(key));
   }
-  
+
   private static Object exportValue(Object v) {
     Object result;
     if (v == Token.INVALID) {
@@ -83,24 +89,27 @@ public class UpdateOnlyMap implements Map, Serializable {
 
   public Object put(Object key, Object value) {
     if (containsKey(key)) {
-      return m.put(key,  value);
+      return m.put(key, value);
     } else {
       throw new UnsupportedOperationException("can not add the key \"" + key + "\"");
     }
   }
+
   public void putAll(Map m) {
     if (m != null) {
-      for (Object i: m.entrySet()) {
+      for (Object i : m.entrySet()) {
         Map.Entry me = (Map.Entry) i;
         put(me.getKey(), me.getValue());
       }
     }
   }
+
   public Object remove(Object key) {
-      throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException();
   }
+
   public void clear() {
-      throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException();
   }
 
   private transient Set keySet = null;
@@ -108,14 +117,14 @@ public class UpdateOnlyMap implements Map, Serializable {
   private transient Collection values = null;
 
   public Set keySet() {
-    if (keySet==null) {
+    if (keySet == null) {
       keySet = Collections.unmodifiableSet(m.keySet());
     }
     return keySet;
   }
 
   public Set entrySet() {
-    if (entrySet==null) {
+    if (entrySet == null) {
       entrySet = Collections.unmodifiableSet(new EntrySet());
     }
     return entrySet;
@@ -123,11 +132,12 @@ public class UpdateOnlyMap implements Map, Serializable {
 
   private final class EntrySet extends AbstractSet {
     public Iterator iterator() {
-        return new EntryIterator();
+      return new EntryIterator();
     }
+
     @Override
     public int size() {
-        return m.size();
+      return m.size();
     }
   }
   private class EntryIterator implements Iterator {
@@ -135,7 +145,7 @@ public class UpdateOnlyMap implements Map, Serializable {
 
     @Override
     public boolean hasNext() {
-        return this.mIterator.hasNext();
+      return this.mIterator.hasNext();
     }
 
     @Override
@@ -155,18 +165,23 @@ public class UpdateOnlyMap implements Map, Serializable {
     ExportableEntry(Map.Entry e) {
       this.e = e;
     }
+
     public Object getKey() {
       return this.e.getKey();
     }
+
     public Object getValue() {
       return exportValue(this.e.getValue());
     }
+
     public Object setValue(Object value) {
       return exportValue(this.e.setValue(value));
     }
+
     public int hashCode() {
       return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
     }
+
     public boolean equals(Object o) {
       if (this == o) {
         return true;
@@ -177,26 +192,29 @@ public class UpdateOnlyMap implements Map, Serializable {
       Entry other = (Entry) o;
       return eq(getKey(), other.getKey()) && eq(getValue(), other.getValue());
     }
+
     public String toString() {
       return getKey() + "=" + getValue();
     }
   }
+
   private static boolean eq(Object o1, Object o2) {
-    return o1==null ? o2==null : o1.equals(o2);
+    return o1 == null ? o2 == null : o1.equals(o2);
   }
-  
+
   public Collection values() {
-    if (values==null) {
+    if (values == null) {
       values = Collections.unmodifiableCollection(new Values());
     }
     return values;
   }
-  
+
   private final class Values extends AbstractCollection {
     @Override
     public Iterator iterator() {
       return new ValueIterator();
     }
+
     @Override
     public int size() {
       return m.size();
@@ -207,7 +225,7 @@ public class UpdateOnlyMap implements Map, Serializable {
 
     @Override
     public boolean hasNext() {
-        return this.mIterator.hasNext();
+      return this.mIterator.hasNext();
     }
 
     @Override
@@ -221,10 +239,10 @@ public class UpdateOnlyMap implements Map, Serializable {
     }
   }
 
-  
+
   /**
-   * equals is over-ridden to make sure it is based on
-   * the objects we expose and not the internal CachedDeserializables.
+   * equals is over-ridden to make sure it is based on the objects we expose and not the internal
+   * CachedDeserializables.
    */
   @Override
   public boolean equals(Object o) {
@@ -247,7 +265,7 @@ public class UpdateOnlyMap implements Map, Serializable {
         Object key = e.getKey();
         Object value = e.getValue();
         if (value == null) {
-          if (!(m.get(key)==null && m.containsKey(key))) {
+          if (!(m.get(key) == null && m.containsKey(key))) {
             return false;
           }
         } else {
@@ -263,26 +281,26 @@ public class UpdateOnlyMap implements Map, Serializable {
     }
 
     return true;
-}
-
-/**
- * hashCode is over-ridden to make sure it is based on
- * the objects we expose and not the internal CachedDeserializables.
- */
-@Override
-public int hashCode() {
-  int h = 0;
-  Iterator<Entry> i = entrySet().iterator();
-  while (i.hasNext()) {
-    h += i.next().hashCode();
   }
-  return h;
-}
+
+  /**
+   * hashCode is over-ridden to make sure it is based on the objects we expose and not the internal
+   * CachedDeserializables.
+   */
+  @Override
+  public int hashCode() {
+    int h = 0;
+    Iterator<Entry> i = entrySet().iterator();
+    while (i.hasNext()) {
+      h += i.next().hashCode();
+    }
+    return h;
+  }
 
   @Override
   public String toString() {
     Iterator<Entry> i = entrySet().iterator();
-    if (! i.hasNext()) {
+    if (!i.hasNext()) {
       return "{}";
     }
     StringBuilder sb = new StringBuilder();
@@ -291,10 +309,10 @@ public int hashCode() {
       Entry e = i.next();
       Object key = e.getKey();
       Object value = e.getValue();
-      sb.append(key   == this ? "(this Map)" : key);
+      sb.append(key == this ? "(this Map)" : key);
       sb.append('=');
       sb.append(value == this ? "(this Map)" : value);
-      if (! i.hasNext()) {
+      if (!i.hasNext()) {
         return sb.append('}').toString();
       }
       sb.append(',').append(' ');

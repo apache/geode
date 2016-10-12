@@ -1,30 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.offheap;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
- * A fragment is a block of memory that can have chunks allocated from it.
- * The allocations are always from the front so the free memory is always
- * at the end. The freeIdx keeps track of the first byte of free memory in
- * the fragment.
- * The base memory address and the total size of a fragment never change.
- * During defragmentation fragments go away and are recreated.
+ * A fragment is a block of memory that can have chunks allocated from it. The allocations are
+ * always from the front so the free memory is always at the end. The freeIdx keeps track of the
+ * first byte of free memory in the fragment. The base memory address and the total size of a
+ * fragment never change. During defragmentation fragments go away and are recreated.
  * 
  *
  */
@@ -34,15 +30,16 @@ public class Fragment implements MemoryBlock {
   private final int size;
   @SuppressWarnings("unused")
   private volatile int freeIdx;
-  private static AtomicIntegerFieldUpdater<Fragment> freeIdxUpdater = AtomicIntegerFieldUpdater.newUpdater(Fragment.class, "freeIdx");
-  
+  private static AtomicIntegerFieldUpdater<Fragment> freeIdxUpdater =
+      AtomicIntegerFieldUpdater.newUpdater(Fragment.class, "freeIdx");
+
   public Fragment(long addr, int size) {
     MemoryAllocatorImpl.validateAddress(addr);
     this.baseAddr = addr;
     this.size = size;
     freeIdxUpdater.set(this, 0);
   }
-  
+
   public int freeSpace() {
     return getSize() - getFreeIndex();
   }
@@ -72,12 +69,12 @@ public class Fragment implements MemoryBlock {
   public MemoryBlock getNextBlock() {
     throw new UnsupportedOperationException();
   }
-  
+
   @Override
   public int getBlockSize() {
     return freeSpace();
   }
-  
+
   @Override
   public int getSlabId() {
     throw new UnsupportedOperationException();
@@ -112,7 +109,7 @@ public class Fragment implements MemoryBlock {
   public Object getDataValue() {
     return null;
   }
-  
+
   public void fill() {
     AddressableMemoryManager.fill(this.baseAddr, this.size, FILL_BYTE);
   }
@@ -124,12 +121,13 @@ public class Fragment implements MemoryBlock {
     }
     return false;
   }
-  
+
   @Override
   public int hashCode() {
     long value = this.getAddress();
-    return (int)(value ^ (value >>> 32));
+    return (int) (value ^ (value >>> 32));
   }
+
   @Override
   public String toString() {
     return "Fragment [baseAddr=" + baseAddr + ", size=" + size + ", freeIdx=" + freeIdx + "]";

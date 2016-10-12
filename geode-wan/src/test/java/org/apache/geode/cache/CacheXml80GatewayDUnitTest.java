@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache;
 
@@ -46,12 +44,12 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   protected String getGemFireVersion() {
     return CacheXml.VERSION_8_0;
   }
-  
+
   @Test
-  public void testGatewayReceiverWithManualStartTRUE() throws CacheException{
-    //getSystem();
+  public void testGatewayReceiverWithManualStartTRUE() throws CacheException {
+    // getSystem();
     CacheCreation cache = new CacheCreation();
-    
+
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
     gatewayReceiverFactory.setBindAddress("");
     gatewayReceiverFactory.setStartPort(20000);
@@ -66,15 +64,14 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     GatewayReceiver receiver1 = gatewayReceiverFactory.create();
     try {
       receiver1.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       fail("Could not start GatewayReceiver");
     }
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
     Set<GatewayReceiver> receivers = c.getGatewayReceivers();
-    for(GatewayReceiver receiver : receivers){
+    for (GatewayReceiver receiver : receivers) {
       validateGatewayReceiver(receiver1, receiver);
     }
   }
@@ -109,7 +106,8 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     CacheCreation cache = new CacheCreation();
 
     // Create a GatewaySender with GatewayEventSubstitutionFilter.
-    // Don't start the sender to avoid 'Locators must be configured before starting gateway-sender' exception.
+    // Don't start the sender to avoid 'Locators must be configured before starting gateway-sender'
+    // exception.
     String id = getName();
     GatewaySenderFactory factory = cache.createGatewaySenderFactory();
     factory.setManualStart(true);
@@ -130,21 +128,20 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   protected void validateGatewayReceiver(GatewayReceiver receiver1,
-      GatewayReceiver gatewayReceiver){
+      GatewayReceiver gatewayReceiver) {
     CacheXml70GatewayDUnitTest.validateGatewayReceiver(receiver1, gatewayReceiver);
     assertEquals(receiver1.isManualStart(), gatewayReceiver.isManualStart());
   }
 
-  public static class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
+  public static class MyGatewayEventSubstitutionFilter
+      implements GatewayEventSubstitutionFilter, Declarable {
 
     public Object getSubstituteValue(EntryEvent event) {
       return event.getKey();
     }
 
-    public void close() {
-    }
+    public void close() {}
 
-    public void init(Properties properties) {
-    }
+    public void init(Properties properties) {}
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -66,7 +64,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-1034: random ports, GC sensitive, memory sensitive, HeadlessGFSH
+  @Category(FlakyTest.class) // GEODE-1034: random ports, GC sensitive, memory sensitive,
+                             // HeadlessGFSH
   @Test
   public void testGCForGroup() {
     Properties localProps = new Properties();
@@ -78,7 +77,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     cmdResult.resetToFirstLine();
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      getLogWriter().info("testGCForGroup cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
+      getLogWriter()
+          .info("testGCForGroup cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
         TabularResultData table = (TabularResultData) cmdResult.getResultData();
@@ -175,7 +175,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     cmdResult.resetToFirstLine();
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
-      getLogWriter().info("testGCForEntireCluster cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
+      getLogWriter()
+          .info("testGCForEntireCluster cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
         TabularResultData table = (TabularResultData) cmdResult.getResultData();
@@ -202,7 +203,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create("testRegion");
         for (int i = 0; i < 10; i++) {
           region.put("key" + (i + 200), "value" + (i + 200));
@@ -214,7 +216,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         dataRegionFactory.create("testRegion");
       }
     });
@@ -276,7 +279,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
     final HeadlessGfsh defaultShell = getDefaultShell();
 
-    // Need for the Gfsh HTTP enablement during shutdown to properly assess the state of the connection.
+    // Need for the Gfsh HTTP enablement during shutdown to properly assess the state of the
+    // connection.
     waitForCriterion(new WaitCriterion() {
       public boolean done() {
         return !defaultShell.isConnectedAndReady();
@@ -309,7 +313,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     if (cmdResult != null) {
       String cmdResultStr = commandResultToString(cmdResult);
       getLogWriter().info("testShutDownForTIMEOUT cmdResultStr = " + cmdResultStr);
-      CommandResult result = (CommandResult) ResultBuilder.createInfoResult(CliStrings.SHUTDOWN_TIMEDOUT);
+      CommandResult result =
+          (CommandResult) ResultBuilder.createInfoResult(CliStrings.SHUTDOWN_TIMEDOUT);
       String expectedResult = commandResultToString(result);
       assertEquals(expectedResult, cmdResultStr);
     }
@@ -330,7 +335,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create("testRegion");
         for (int i = 0; i < 10; i++) {
           region.put("key" + (i + 200), "value" + (i + 200));
@@ -350,7 +356,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create("testRegion");
         for (int i = 0; i < 10; i++) {
           region.put("key" + (i + 200), "value" + (i + 200));
@@ -363,7 +370,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
 
-    @SuppressWarnings("serial") final SerializableCallable connectedChecker = new SerializableCallable() {
+    @SuppressWarnings("serial")
+    final SerializableCallable connectedChecker = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         boolean cacheExists = true;
@@ -380,7 +388,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     WaitCriterion waitCriterion = new WaitCriterion() {
       @Override
       public boolean done() {
-        return Boolean.FALSE.equals(vm0.invoke(connectedChecker)) && Boolean.FALSE.equals(vm1.invoke(connectedChecker));
+        return Boolean.FALSE.equals(vm0.invoke(connectedChecker))
+            && Boolean.FALSE.equals(vm1.invoke(connectedChecker));
       }
 
       @Override
@@ -418,7 +427,9 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    String commandString = CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL + "=finer" + " --" + CliStrings.CHANGE_LOGLEVEL__MEMBER + "=" + serverName1 + "," + serverName2;
+    String commandString =
+        CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL + "=finer" + " --"
+            + CliStrings.CHANGE_LOGLEVEL__MEMBER + "=" + serverName1 + "," + serverName2;
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testChangeLogLevel commandResult=" + commandResult);
@@ -429,8 +440,10 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     TabularResultData tableRsultData = section.retrieveTable("ChangeLogLevel");
     assertNotNull(tableRsultData);
 
-    List<String> columns = tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER);
-    List<String> status = tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS);
+    List<String> columns =
+        tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER);
+    List<String> status =
+        tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS);
 
     assertEquals(columns.size(), 2);
     assertEquals(status.size(), 2);
@@ -475,7 +488,8 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    String commandString = CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL + "=finer" + " --" + CliStrings.CHANGE_LOGLEVEL__GROUPS + "=" + grp1 + "," + grp2;
+    String commandString = CliStrings.CHANGE_LOGLEVEL + " --" + CliStrings.CHANGE_LOGLEVEL__LOGLEVEL
+        + "=finer" + " --" + CliStrings.CHANGE_LOGLEVEL__GROUPS + "=" + grp1 + "," + grp2;
 
     CommandResult commandResult = executeCommand(commandString);
     getLogWriter().info("testChangeLogLevelForGrps commandResult=" + commandResult);
@@ -488,8 +502,10 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     TabularResultData tableRsultData = section.retrieveTable("ChangeLogLevel");
     assertNotNull(tableRsultData);
 
-    List<String> columns = tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER);
-    List<String> status = tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS);
+    List<String> columns =
+        tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER);
+    List<String> status =
+        tableRsultData.retrieveAllValues(CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS);
 
     assertEquals(columns.size(), 2);
     assertEquals(status.size(), 2);

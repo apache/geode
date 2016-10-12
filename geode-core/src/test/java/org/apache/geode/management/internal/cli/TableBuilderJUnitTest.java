@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli;
 
@@ -94,7 +92,8 @@ public class TableBuilderJUnitTest {
 
     int line = 0;
     for (String s : lines) {
-      System.out.println("For line " + line++ + " length is " + s.length() + " isWider = " + (s.length() > screenWidth));
+      System.out.println("For line " + line++ + " length is " + s.length() + " isWider = "
+          + (s.length() > screenWidth));
 
       if (shouldTrim) {
         if (s.length() > screenWidth) {
@@ -120,9 +119,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(3, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("1")
-        .newLeftCol("1")
-        .newLeftCol("1");
+    row1.newLeftCol("1").newLeftCol("1").newLeftCol("1");
 
     List<String> result = validateTable(table, true);
     // Check the last line
@@ -136,9 +133,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("1")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
+    row1.newLeftCol("1").newLeftCol("123456789-").newLeftCol("123456789-")
         .newLeftCol("123456789-123456789-12345");
 
     List<String> result = validateTable(table, true);
@@ -153,9 +148,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("123456789-123456789-")
-        .newLeftCol("123456789-12345")
-        .newLeftCol("123456789-")
+    row1.newLeftCol("123456789-123456789-").newLeftCol("123456789-12345").newLeftCol("123456789-")
         .newLeftCol("1");
 
     List<String> result = validateTable(table, true);
@@ -170,9 +163,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("1")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-123456789-123456789-")
+    row1.newLeftCol("1").newLeftCol("123456789-").newLeftCol("123456789-123456789-123456789-")
         .newLeftCol("123456789-123456789-12345");
 
     List<String> result = validateTable(table, true);
@@ -187,10 +178,8 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("123456789-123456789-123456789-")
-        .newLeftCol("123456789-123456789-12345")
-        .newLeftCol("1")
-        .newLeftCol("123456789-");
+    row1.newLeftCol("123456789-123456789-123456789-").newLeftCol("123456789-123456789-12345")
+        .newLeftCol("1").newLeftCol("123456789-");
 
     List<String> result = validateTable(table, true);
     // Check the last line
@@ -205,9 +194,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(3, "|", "A", "A", "A");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("123")
-        .newLeftCol("123")
-        .newLeftCol("123");
+    row1.newLeftCol("123").newLeftCol("123").newLeftCol("123");
 
     List<String> result = validateTable(table, true);
     // Check the last line
@@ -222,9 +209,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(3, "|", "A", "A", "A");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("12")
-        .newLeftCol("12")
-        .newLeftCol("12");
+    row1.newLeftCol("12").newLeftCol("12").newLeftCol("12");
 
     // This should throw an exception
     List<String> result = validateTable(table, true);
@@ -237,9 +222,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(4, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("1")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-123456789-123456789-")
+    row1.newLeftCol("1").newLeftCol("123456789-").newLeftCol("123456789-123456789-123456789-")
         .newLeftCol("123456789-123456789-12345");
 
     List<String> result = validateTable(table, true);
@@ -254,9 +237,7 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(4, "<|>");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("1")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
+    row1.newLeftCol("1").newLeftCol("123456789-").newLeftCol("123456789-")
         .newLeftCol("123456789-123456789-12345");
 
     List<String> result = validateTable(table, true);
@@ -274,14 +255,9 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(8, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("123456789-")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-");
+    row1.newLeftCol("123456789-").newLeftCol("123456789-").newLeftCol("123456789-")
+        .newLeftCol("123456789-").newLeftCol("123456789-").newLeftCol("123456789-")
+        .newLeftCol("123456789-").newLeftCol("123456789-");
 
     List<String> result = validateTable(table, true);
     // Check the last line
@@ -299,11 +275,8 @@ public class TableBuilderJUnitTest {
     Table table = createTableStructure(5, "|");
     RowGroup rowGroup = table.getLastRowGroup();
     Row row1 = rowGroup.newRow();
-    row1.newLeftCol("1")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-")
-        .newLeftCol("123456789-123456789-12345")
-        .newLeftCol("1");
+    row1.newLeftCol("1").newLeftCol("123456789-").newLeftCol("123456789-")
+        .newLeftCol("123456789-123456789-12345").newLeftCol("1");
 
     List<String> result = validateTable(table, false);
     // Check the last line

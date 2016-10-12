@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.functions;
 
@@ -38,41 +36,42 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   private XmlEntity xmlEntity;
   private byte[] byteData = new byte[0];
 
-  public CliFunctionResult() {
-  }
+  public CliFunctionResult() {}
 
   public CliFunctionResult(final String memberIdOrName) {
     this.memberIdOrName = memberIdOrName;
-    
+
     this.successful = true;
   }
-  
+
   public CliFunctionResult(final String memberIdOrName, final Serializable[] serializables) {
     this.memberIdOrName = memberIdOrName;
     this.serializables = serializables;
-    
+
     this.successful = true;
   }
-  
-  public CliFunctionResult(final String memberIdOrName, final byte[] byteData, final Serializable[] serializables) {
+
+  public CliFunctionResult(final String memberIdOrName, final byte[] byteData,
+      final Serializable[] serializables) {
     this.byteData = byteData;
     this.serializables = serializables;
     this.successful = true;
   }
-  
+
   public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
-    
+
     this.successful = true;
   }
-  
-  
-  public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity, final Serializable[] serializables) {
+
+
+  public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity,
+      final Serializable[] serializables) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
     this.serializables = serializables;
-    
+
     this.successful = true;
   }
 
@@ -80,30 +79,32 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
     if (message != null) {
-      this.serializables = new String[] { message };
+      this.serializables = new String[] {message};
     }
-    
+
     this.successful = true;
   }
-  
-  public CliFunctionResult(final String memberIdOrName, final boolean successful, final String message) {
+
+  public CliFunctionResult(final String memberIdOrName, final boolean successful,
+      final String message) {
     this.memberIdOrName = memberIdOrName;
     this.successful = successful;
     if (message != null) {
-      this.serializables = new String[] { message };
+      this.serializables = new String[] {message};
     }
   }
-  
-  public CliFunctionResult(final String memberIdOrName, final Throwable throwable, final String message) {
+
+  public CliFunctionResult(final String memberIdOrName, final Throwable throwable,
+      final String message) {
     this.memberIdOrName = memberIdOrName;
     this.throwable = throwable;
     if (message != null) {
-      this.serializables = new String[] { message };
+      this.serializables = new String[] {message};
     }
-    
+
     this.successful = false;
   }
-  
+
   public String getMemberIdOrName() {
     return this.memberIdOrName;
   }
@@ -112,14 +113,14 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     if (this.serializables.length == 0 || !(this.serializables[0] instanceof String)) {
       return null;
     }
-    
+
     return (String) this.serializables[0];
   }
 
   public Serializable[] getSerializables() {
     return this.serializables;
   }
-  
+
   public Throwable getThrowable() {
     return this.throwable;
   }
@@ -160,19 +161,19 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.throwable = DataSerializer.readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
   }
-  
+
   public boolean isSuccessful() {
     return this.successful;
   }
-  
+
   public XmlEntity getXmlEntity() {
     return this.xmlEntity;
   }
-  
+
   public byte[] getByteData() {
     return this.byteData;
   }
-  
+
   @Override
   public int compareTo(CliFunctionResult o) {
     if (this.memberIdOrName == null && o.memberIdOrName == null) {
@@ -214,17 +215,14 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public String toString() {
-    return "CliFunctionResult [memberId=" + this.memberIdOrName
-        + ", successful=" + this.successful
-        + ", xmlEntity=" + this.xmlEntity
-        + ", serializables=" + Arrays.toString(this.serializables)
-        + ", throwable=" + this.throwable
-        + ", byteData=" + Arrays.toString(this.byteData) +"]";
+    return "CliFunctionResult [memberId=" + this.memberIdOrName + ", successful=" + this.successful
+        + ", xmlEntity=" + this.xmlEntity + ", serializables=" + Arrays.toString(this.serializables)
+        + ", throwable=" + this.throwable + ", byteData=" + Arrays.toString(this.byteData) + "]";
   }
-  
-  /** 
-   * Remove elements from the list that are not instances of CliFunctionResult and then
-   * sort the results.
+
+  /**
+   * Remove elements from the list that are not instances of CliFunctionResult and then sort the
+   * results.
    * 
    * @param results The results to clean.
    * @return The cleaned results.
@@ -236,13 +234,13 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
         returnResults.add((CliFunctionResult) result);
       }
     }
-    
+
     Collections.sort(returnResults);
     return returnResults;
   }
 
   @Override
   public Version[] getSerializationVersions() {
-     return new Version[] {Version.GFE_80};
+    return new Version[] {Version.GFE_80};
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -29,14 +27,12 @@ import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * Cache listener on local monitoring region to get Manager's local MBean
- * updates. This acts as an aggregator interface for Manager. Its used only on
- * Manager's side.
+ * Cache listener on local monitoring region to get Manager's local MBean updates. This acts as an
+ * aggregator interface for Manager. Its used only on Manager's side.
  * 
  * 
  */
-public class MonitoringRegionCacheListener extends
-    CacheListenerAdapter<String, Object> {
+public class MonitoringRegionCacheListener extends CacheListenerAdapter<String, Object> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -81,35 +77,36 @@ public class MonitoringRegionCacheListener extends
     }
 
   }
-  
-  @Override 
-      public void afterCreate(EntryEvent<String, Object> event) { 
-        ObjectName objectName = null; 
-        try { 
-     
-          if (!service.isStartedAndOpen() || !service.isManager()) { 
-            // NO OP return; No work for Non Manager Nodes 
-            return; 
-          } 
-          objectName = ObjectName.getInstance(event.getKey()); 
-     
-          FederationComponent newObject = (FederationComponent) event.getNewValue(); 
-          String className = newObject.getMBeanInterfaceClass(); 
-          Class interfaceClass; 
-          if (classRef.get(className) != null) { 
-            interfaceClass = classRef.get(className); 
-          } else { 
-            interfaceClass = ClassLoadUtil.classFromName(className); 
-            classRef.put(className, interfaceClass); 
-          } 
-     
-         service.afterPseudoCreateProxy(objectName, interfaceClass, null, newObject); 
-     
-        } catch (Exception e) { 
-          if (logger.isDebugEnabled()) { 
-            logger.debug("{}: Aggregation Failed failed for {} With Exception {}", THIS_COMPONENT, objectName, e); 
-          } 
-        } 
-      } 
+
+  @Override
+  public void afterCreate(EntryEvent<String, Object> event) {
+    ObjectName objectName = null;
+    try {
+
+      if (!service.isStartedAndOpen() || !service.isManager()) {
+        // NO OP return; No work for Non Manager Nodes
+        return;
+      }
+      objectName = ObjectName.getInstance(event.getKey());
+
+      FederationComponent newObject = (FederationComponent) event.getNewValue();
+      String className = newObject.getMBeanInterfaceClass();
+      Class interfaceClass;
+      if (classRef.get(className) != null) {
+        interfaceClass = classRef.get(className);
+      } else {
+        interfaceClass = ClassLoadUtil.classFromName(className);
+        classRef.put(className, interfaceClass);
+      }
+
+      service.afterPseudoCreateProxy(objectName, interfaceClass, null, newObject);
+
+    } catch (Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: Aggregation Failed failed for {} With Exception {}", THIS_COMPONENT,
+            objectName, e);
+      }
+    }
+  }
 
 }

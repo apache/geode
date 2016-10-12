@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -45,8 +43,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.internal.cache.ComplexDiskRegion.addToBeCompacted(Oplog)'
+   * Test method for 'org.apache.geode.internal.cache.ComplexDiskRegion.addToBeCompacted(Oplog)'
    * 
    * The test will test that an oplog is correctly being added to be rolled
    */
@@ -56,11 +53,11 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
     diskProps.setRolling(false);
     diskProps.setAllowForceCompaction(true);
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-    DiskRegion dr = ((LocalRegion)region).getDiskRegion();
+    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     StatisticsFactory factory = region.getCache().getDistributedSystem();
-    Oplog oplog1 = new Oplog(11, dr.getOplogSet(), new DirectoryHolder(factory,dirs[1], 1000, 0));
-    Oplog oplog2 = new Oplog(12, dr.getOplogSet(), new DirectoryHolder(factory,dirs[2], 1000, 1));
-    Oplog oplog3 = new Oplog(13, dr.getOplogSet(), new DirectoryHolder(factory,dirs[3], 1000, 2));
+    Oplog oplog1 = new Oplog(11, dr.getOplogSet(), new DirectoryHolder(factory, dirs[1], 1000, 0));
+    Oplog oplog2 = new Oplog(12, dr.getOplogSet(), new DirectoryHolder(factory, dirs[2], 1000, 1));
+    Oplog oplog3 = new Oplog(13, dr.getOplogSet(), new DirectoryHolder(factory, dirs[3], 1000, 2));
     // give these guys some fake "live" entries
     oplog1.incTotalCount();
     oplog1.incLiveCount();
@@ -103,22 +100,21 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.internal.cache.ComplexDiskRegion.removeFirstOplog(Oplog)'
+   * Test method for 'org.apache.geode.internal.cache.ComplexDiskRegion.removeFirstOplog(Oplog)'
    * 
-   * The test verifies the FIFO property of the oplog set (first oplog to be added should be
-   * the firs to be rolled).
+   * The test verifies the FIFO property of the oplog set (first oplog to be added should be the
+   * firs to be rolled).
    */
   @Test
   public void testRemoveFirstOplog() {
     deleteFiles();
     diskProps.setRolling(false);
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-    DiskRegion dr = ((LocalRegion)region).getDiskRegion();
+    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     StatisticsFactory factory = region.getCache().getDistributedSystem();
-    Oplog oplog1 = new Oplog(11, dr.getOplogSet(), new DirectoryHolder(factory,dirs[1], 1000, 0));
-    Oplog oplog2 = new Oplog(12, dr.getOplogSet(), new DirectoryHolder(factory,dirs[2], 1000, 1));
-    Oplog oplog3 = new Oplog(13, dr.getOplogSet(), new DirectoryHolder(factory,dirs[3], 1000, 2));
+    Oplog oplog1 = new Oplog(11, dr.getOplogSet(), new DirectoryHolder(factory, dirs[1], 1000, 0));
+    Oplog oplog2 = new Oplog(12, dr.getOplogSet(), new DirectoryHolder(factory, dirs[2], 1000, 1));
+    Oplog oplog3 = new Oplog(13, dr.getOplogSet(), new DirectoryHolder(factory, dirs[3], 1000, 2));
     // give these guys some fake "live" entries
     oplog1.incTotalCount();
     oplog1.incLiveCount();

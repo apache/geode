@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.converters;
 
@@ -33,34 +31,35 @@ import org.apache.geode.management.cli.ConverterHint;
  */
 public class DirPathConverter implements Converter<String> {
   private final DirFilterImpl dirFilter = new DirFilterImpl();
-  
+
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-//    System.out.println("FilePathConverter.supports() : type :: "+type+", optionContext :: "+optionContext);
+    // System.out.println("FilePathConverter.supports() : type :: "+type+", optionContext ::
+    // "+optionContext);
     return String.class.equals(type) && ConverterHint.DIR_PATHSTRING.equals(optionContext);
   }
 
   @Override
   public String convertFromText(String value, Class<?> targetType, String optionContext) {
-//    System.out.println("FilePathConverter.convertFromText() : optionContext :: "+optionContext);
+    // System.out.println("FilePathConverter.convertFromText() : optionContext :: "+optionContext);
     return value;
   }
 
   @Override
-  public boolean getAllPossibleValues(List<Completion> completions,
-      Class<?> targetType, String existingData, String optionContext,
-      MethodTarget target) {
-    // prefix is needed while comparing Completion Candidates as potential matches 
+  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
+      String existingData, String optionContext, MethodTarget target) {
+    // prefix is needed while comparing Completion Candidates as potential matches
     String prefixToUse = "";
     boolean prependAbsolute = true;
-    File   parentDir        = null; // directory to be searched for file(s)
-    
+    File parentDir = null; // directory to be searched for file(s)
+
     if (existingData != null) {
-  //    System.out.println("FilePathConverter.getAllPossibleValues() : optionContext :: "+optionContext+", existingData : "+existingData);
+      // System.out.println("FilePathConverter.getAllPossibleValues() : optionContext ::
+      // "+optionContext+", existingData : "+existingData);
       String[] completionValues = new String[0];
-      
+
       if (ConverterHint.DIR_PATHSTRING.equals(optionContext)) {
-        // if existingData is empty, start from root 
+        // if existingData is empty, start from root
         if (existingData != null && existingData.trim().isEmpty()) {
           File[] listRoots = File.listRoots();
           completionValues = new String[listRoots.length];
@@ -105,11 +104,12 @@ public class DirPathConverter implements Converter<String> {
           }
         }
         // add File.separator in the end
-        if (!prefixToUse.endsWith(File.separator) && (prependAbsolute || existingData.startsWith(".")) ) {
+        if (!prefixToUse.endsWith(File.separator)
+            && (prependAbsolute || existingData.startsWith("."))) {
           prefixToUse += File.separator;
         }
         for (int i = 0; i < completionValues.length; i++) {
-          completions.add(new Completion(prefixToUse+completionValues[i]));
+          completions.add(new Completion(prefixToUse + completionValues[i]));
         }
       }
     }
@@ -120,7 +120,7 @@ public class DirPathConverter implements Converter<String> {
   class DirNameFilterImpl implements FilenameFilter {
     private File parentDirectory;
     private String userInput;
-    
+
     public DirNameFilterImpl(File parentDirectory, String userInput) {
       this.parentDirectory = parentDirectory;
       this.userInput = userInput;
@@ -128,7 +128,8 @@ public class DirPathConverter implements Converter<String> {
 
     @Override
     public boolean accept(File dir, String name) {
-      return parentDirectory.equals(dir) && name.startsWith(userInput) && new File(dir, name).isDirectory();
+      return parentDirectory.equals(dir) && name.startsWith(userInput)
+          && new File(dir, name).isDirectory();
     }
   }
 

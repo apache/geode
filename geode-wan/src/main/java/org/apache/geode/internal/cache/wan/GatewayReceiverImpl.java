@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan;
 
@@ -46,49 +44,48 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 public class GatewayReceiverImpl implements GatewayReceiver {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private String host;
 
   private int startPort;
-  
+
   private int endPort;
-  
+
   private int port;
 
   private int timeBetPings;
 
   private int socketBufferSize;
-  
+
   private boolean manualStart;
 
   private final List<GatewayTransportFilter> filters;
 
   private String bindAdd;
-  
+
   private CacheServer receiver;
 
   private final GemFireCacheImpl cache;
-  
-  public GatewayReceiverImpl(Cache cache, int startPort,
-      int endPort, int timeBetPings, int buffSize, String bindAdd,
-      List<GatewayTransportFilter> filters, String hostnameForSenders, boolean manualStart) {
-    this.cache = (GemFireCacheImpl)cache;
-    
+
+  public GatewayReceiverImpl(Cache cache, int startPort, int endPort, int timeBetPings,
+      int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
+      boolean manualStart) {
+    this.cache = (GemFireCacheImpl) cache;
+
     /*
-     * If user has set hostNameForSenders then it should take precedence over
-     * bindAddress. If user hasn't set either hostNameForSenders or bindAddress
-     * then getLocalHost().getHostName() should be used.
+     * If user has set hostNameForSenders then it should take precedence over bindAddress. If user
+     * hasn't set either hostNameForSenders or bindAddress then getLocalHost().getHostName() should
+     * be used.
      */
     if (hostnameForSenders == null || hostnameForSenders.isEmpty()) {
       if (bindAdd == null || bindAdd.isEmpty()) {
         try {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiverImpl_USING_LOCAL_HOST));
+          logger
+              .warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiverImpl_USING_LOCAL_HOST));
           this.host = SocketCreator.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
           throw new IllegalStateException(
-              LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME
-                  .toLocalizedString(),
-              e);
+              LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME.toLocalizedString(), e);
         }
       } else {
         this.host = bindAdd;
@@ -121,11 +118,11 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   public int getStartPort() {
     return this.startPort;
   }
-  
+
   public int getEndPort() {
     return this.endPort;
   }
-  
+
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -133,11 +130,11 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   public boolean isManualStart() {
     return this.manualStart;
   }
-  
+
   public CacheServer getServer() {
     return receiver;
   }
-  
+
   public void start() throws IOException {
     if (receiver == null) {
       receiver = this.cache.addCacheServer(true);
@@ -154,66 +151,67 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       receiver.setMaximumTimeBetweenPings(timeBetPings);
       receiver.setHostnameForClients(host);
       receiver.setBindAddress(bindAdd);
-      receiver.setGroups(new String[] { GatewayReceiverImpl.RECEIVER_GROUP });
-      ((CacheServerImpl)receiver).setGatewayTransportFilter(this.filters);
+      receiver.setGroups(new String[] {GatewayReceiverImpl.RECEIVER_GROUP});
+      ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
       try {
-        ((CacheServerImpl)receiver).start();
+        ((CacheServerImpl) receiver).start();
         started = true;
       } catch (BindException be) {
         if (be.getCause() != null
-            && be.getCause().getMessage()
-                .contains("assign requested address")) {
+            && be.getCause().getMessage().contains("assign requested address")) {
           throw new GatewayReceiverException(
               LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                  .toLocalizedString(new Object[] { bindAdd,
-                      Integer.valueOf(this.port) }));
+                  .toLocalizedString(new Object[] {bindAdd, Integer.valueOf(this.port)}));
         }
         // ignore as this port might have been used by other threads.
-        logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use, this.port));
+        logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use,
+            this.port));
         this.port = getPortToStart();
       } catch (SocketException se) {
         if (se.getMessage().contains("Address already in use")) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use, this.port));
+          logger.warn(LocalizedMessage
+              .create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use, this.port));
           this.port = getPortToStart();
 
         } else {
           throw se;
         }
       }
-      
+
     }
     if (!started) {
-      throw new IllegalStateException(
-          "No available free port found in the given range.");
+      throw new IllegalStateException("No available free port found in the given range.");
     }
-    logger.info(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_STARTED_ON_PORT, this.port));
+    logger
+        .info(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_STARTED_ON_PORT, this.port));
 
     InternalDistributedSystem system = this.cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
 
   }
-  
-  private int getPortToStart(){
+
+  private int getPortToStart() {
     // choose a random port from the given port range
     int rPort;
     if (this.startPort == this.endPort) {
       rPort = this.startPort;
     } else {
-      rPort = AvailablePort.getRandomAvailablePortInRange(this.startPort,
-          this.endPort, AvailablePort.SOCKET);
+      rPort = AvailablePort.getRandomAvailablePortInRange(this.startPort, this.endPort,
+          AvailablePort.SOCKET);
     }
     return rPort;
   }
-  
+
   public void stop() {
-    if(!isRunning()){
-      throw new GatewayReceiverException(LocalizedStrings.GatewayReceiver_IS_NOT_RUNNING.toLocalizedString());
+    if (!isRunning()) {
+      throw new GatewayReceiverException(
+          LocalizedStrings.GatewayReceiver_IS_NOT_RUNNING.toLocalizedString());
     }
     receiver.stop();
 
-//    InternalDistributedSystem system = ((GemFireCacheImpl) this.cache)
-//        .getDistributedSystem();
-//    system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_STOP, this);
+    // InternalDistributedSystem system = ((GemFireCacheImpl) this.cache)
+    // .getDistributedSystem();
+    // system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_STOP, this);
 
   }
 
@@ -231,21 +229,16 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     }
     return false;
   }
-  
+
   public String toString() {
-    return new StringBuffer()
-      .append("Gateway Receiver")
-      .append("@").append(Integer.toHexString(hashCode()))
-      .append(" [")
-      .append("host='").append(getHost())
-      .append("'; port=").append(getPort())
-      .append("; bindAddress=").append(getBindAddress())
-      .append("; maximumTimeBetweenPings=").append(getMaximumTimeBetweenPings())
-      .append("; socketBufferSize=").append(getSocketBufferSize())
-      .append("; isManualStart=").append(isManualStart())
-      .append("; group=").append(Arrays.toString(new String[]{GatewayReceiverImpl.RECEIVER_GROUP}))
-      .append("]")
-      .toString();
+    return new StringBuffer().append("Gateway Receiver").append("@")
+        .append(Integer.toHexString(hashCode())).append(" [").append("host='").append(getHost())
+        .append("'; port=").append(getPort()).append("; bindAddress=").append(getBindAddress())
+        .append("; maximumTimeBetweenPings=").append(getMaximumTimeBetweenPings())
+        .append("; socketBufferSize=").append(getSocketBufferSize()).append("; isManualStart=")
+        .append(isManualStart()).append("; group=")
+        .append(Arrays.toString(new String[] {GatewayReceiverImpl.RECEIVER_GROUP})).append("]")
+        .toString();
   }
-   
+
 }
