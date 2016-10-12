@@ -319,7 +319,6 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
-  @Category(FlakyTest.class) // GEODE-1978
   @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -327,11 +326,30 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
     //these are part of remote site
     createCacheInVMs(nyPort, vm2, vm3);
+
+    //create one RR (RR_1) on remote site
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR_1", null, isOffHeap() ));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR_1", null, isOffHeap() ));
+
     createReceiverInVMs(vm2, vm3);
 
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000,getTestMethodName() + "_RR_1"));
+    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(1000,getTestMethodName() + "_RR_1"));
 
     //these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    //create one RR (RR_1) on local site
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
+      getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
 
     //senders are created on local site
     vm4.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
@@ -339,24 +357,8 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
         false, 100, 500, false, false, null, true, 5, OrderPolicy.KEY ));
 
-    //create one RR (RR_1) on remote site
-    vm2.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR_1", null, isOffHeap() ));
-    vm3.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR_1", null, isOffHeap() ));
-
     //start the senders on local site
     startSenderInVMs("ln", vm4, vm5);
-
-    //create one RR (RR_1) on local site
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(
-        getTestMethodName() + "_RR_1", "ln", isOffHeap() ));
 
     IgnoredException.addIgnoredException(BatchException70.class.getName());
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
