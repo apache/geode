@@ -1320,7 +1320,7 @@ public class HandShake implements ClientHandShake
       int qSize = dis.readInt();
 
       // Read the server member
-      member = readServerMember(dis);
+      member = readServerMember(dis, location);
       serverQStatus = new ServerQueueStatus(epType, qSize,member);
 
       // Read the message (if any)
@@ -1439,7 +1439,7 @@ public class HandShake implements ClientHandShake
     return sqs;
   }
 
-  protected DistributedMember readServerMember(DataInputStream p_dis) throws IOException {
+  public static DistributedMember readServerMember(DataInputStream p_dis, ServerLocation serverLocation) throws IOException {
 
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
     ByteArrayInputStream bais = new ByteArrayInputStream(memberBytes);
@@ -1449,7 +1449,9 @@ public class HandShake implements ClientHandShake
       dis = new VersionedDataInputStream(dis, v);
     }
     try {
-      return (DistributedMember)DataSerializer.readObject(dis);
+      InternalDistributedMember ids = (InternalDistributedMember)DataSerializer.readObject(dis);
+      ids.setHost(serverLocation.getHostName());
+      return ids;
     }
     catch (EOFException e) {
       throw e;
