@@ -200,4 +200,4 @@ DEPENDENCIES
   libv8 (= 3.16.14.7)
 
 BUNDLED WITH
-   1.11.2
+   1.13.1
