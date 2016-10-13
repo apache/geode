@@ -1,4 +1,4 @@
-# Project Geode End-User Documentation
+# Apache Geode End-User Documentation
 
 Apache Geode provides the full source for end-user documentation in markdown format. The latest check-ins to `incubator-geode/geode-docs` are regularly built and published to http://geode.incubator.apache.org/docs/. Users can build the markdown into an HTML user guide using [Bookbinder](https://github.com/pivotal-cf/bookbinder) and the instructions below.
 
