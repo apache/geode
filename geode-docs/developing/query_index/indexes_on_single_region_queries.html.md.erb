@@ -1,0 +1,50 @@
+---
+title:  Using Indexes on Single Region Queries
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Queries with one comparison operation may be improved with either a key or range index, depending on whether the attribute being compared is also the primary key.
+
+<a id="concept_0210701C193A470E8C572111F6CEC3FC__section_751427643EC3480BABCE9CA44E831E27"></a>
+If pkid is the key in the /exampleRegion region, creating a key index on pkid is the best choice as a key index does not have maintenance overhead. If pkid is not the key, a range index on pkid should improve performance.
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion portfolio WHERE portfolio.pkid = '123'
+```
+
+With multiple comparison operations, you can create a range index on one or more of the attributes. Try the following:
+
+1.  Create a single index on the condition you expect to have the smallest result set size. Check performance with this index.
+2.  Keeping the first index, add an index on a second condition. Adding the second index may degrade performance. If it does, remove it and keep only the first index. The order of the two comparisons in the query can also impact performance. Generally speaking, in OQL queries, as in SQL queries, you should order your comparisons so the earlier ones give you the fewest results on which to run subsequent comparisons.
+
+For this query, you would try a range index on name, age, or on both:
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion portfolio WHERE portfolio.status = 'active' and portfolio.ID > 45
+```
+
+For queries with nested levels, you may get better performance by drilling into the lower levels in the index as well as in the query.
+
+This query drills down one level:
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion portfolio, portfolio.positions.values positions where positions.secId = 'AOL' and positions.MktValue > 1
+```
+
+

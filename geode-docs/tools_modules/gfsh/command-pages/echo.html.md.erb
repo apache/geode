@@ -1,0 +1,66 @@
+---
+title:  echo
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Echo the given text, which may include system and user variables.
+
+The command can also echo gfsh environment properties (using '[set variable](set.html)' command) if variable name is pre-pended with '$' - like UNIX.
+
+See [Useful gfsh Shell Variables](../useful_gfsh_shell_variables.html#concept_731ECA5E40E943CBA5C1198A0745D8EE) for a list of gfsh environment variables.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+echo [--string=value]
+```
+
+<a id="concept_2828E2617F6A49D7BB811917BE268704__table_uwf_sch_2w"></a>
+
+| Name                                            | Description                                                                                                  |
+|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-string </span> | String to be echoed. For example, `SYS_USER                                 variable is set to ${SYS_USER}`. |
+
+<span class="tablecap">Table 1. Echo Parameters</span>
+
+**Example Commands:**
+
+``` pre
+echo --string="Hello World!"
+echo --string="Hello World! This is ${SYS_USER}"
+echo --string=${APP_FETCH_SIZE}
+```
+
+To see all the variable set in the shell:
+
+``` pre
+echo --string=$*
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>echo --string=${SYS_JAVA_VERSION}
+Post substitution: echo --string=1.8.0_60
+1.8.0_60
+```
+
+

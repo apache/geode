@@ -1,0 +1,105 @@
+---
+title:  Mapping cache.xml Elements to gfsh Configuration Commands
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can configure a Geode cluster using either cache.xml files,
+or you can use gfsh and the cluster configuration service
+to configure a cluster.
+This table maps `cache.xml` elements to the gfsh commands that
+configure and manage a cluster.
+
+<a id="reference_qvw_zyq_54__table_in3_dzq_54"></a>
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>cache.xml Element</th>
+<th>gfsh Command</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt;cache&gt;, &lt;cache-server&gt;</td>
+<td><ul>
+<li><a href="command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A">start server</a></li>
+<li><a href="command-pages/status.html#topic_E5DB49044978404D9D6B1971BF5D400D">status server</a></li>
+<li><a href="command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115">stop server</a></li>
+<li><a href="command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B">alter runtime</a></li>
+</ul></td>
+</tr>
+<tr class="even">
+<td>&lt;async-event-queue&gt;</td>
+<td><ul>
+<li><a href="command-pages/create.html#topic_ryz_pb1_dk">create async-event-queue</a></li>
+<li><a href="command-pages/list.html#topic_j22_kzk_2l">list async-event-queues</a></li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td>&lt;pdx&gt;</td>
+<td><ul>
+<li><a href="command-pages/configure.html#topic_jdkdiqbgphqh">configure pdx</a></li>
+</td>
+</tr>
+<tr class="even">
+<td>&lt;region&gt;</td>
+<td><ul>
+<li><a href="command-pages/create.html#topic_54B0985FEC5241CA9D26B0CE0A5EA863">create region</a></li>
+<li><a href="command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758">alter region</a></li>
+<li><a href="command-pages/destroy.html#topic_BEDACECF4599407794ACBC0E56B30F65">destroy region</a></li>
+<li><a href="command-pages/describe.html#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B">describe region</a></li>
+<li><a href="command-pages/list.html#topic_F0ECEFF26086474498598035DD83C588">list regions</a></li>
+<li><a href="command-pages/rebalance.html">rebalance</a></li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td>&lt;index&gt;</td>
+<td><ul>
+<li><a href="command-pages/create.html#topic_960A5B6FD3D84E1881EE118E299DD12D">create index</a></li>
+<li><a href="command-pages/destroy.html#topic_D00219CCD6F64C1582A0802AC5CDF3F3">destroy index</a></li>
+<li><a href="command-pages/list.html#topic_B3B51B6DEA484EE086C4F657EC9831F2">list indexes</a></li>
+</ul></td>
+</tr>
+<tr class="even">
+<td>&lt;disk-store&gt;</td>
+<td><ul>
+<li><a href="command-pages/create.html#topic_bkn_zty_ck">create disk-store</a></li>
+<li><a href="command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB">alter disk-store</a></li>
+<li><a href="command-pages/backup.html#topic_E74ED23CB60342538B2175C326E7D758">backup disk-store</a></li>
+<li><a href="command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC">compact disk-store</a></li>
+<li><a href="command-pages/compact.html#topic_9CCFCB2FA2154E16BD775439C8ABC8FB">compact offline-disk-store</a></li>
+<li><a href="command-pages/describe.html#topic_C635B500BE6A4F1D9572D0BC98A224F2">describe disk-store</a></li>
+<li><a href="command-pages/describe.html#topic_kys_yvk_2l">describe offline-disk-store</a></li>
+<li><a href="command-pages/destroy.html#topic_yfr_l2z_ck">destroy disk-store</a></li>
+<li><a href="command-pages/list.html#topic_BC14AD57EA304FB3845766898D01BD04">list disk-stores</a></li>
+<li><a href="command-pages/revoke.html">revoke missing-disk-store</a></li>
+<li><a href="command-pages/show.html#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780">show missing-disk-stores</a></li>
+<li><a href="command-pages/validate.html">validate offline-disk-store</a></li>
+</ul></td>
+</tr>
+</tbody>
+</table>
+
+<span class="tablecap">Table 1. Migrating cache.xml elements to gfsh commands</span>
+
+

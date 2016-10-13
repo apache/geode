@@ -1,0 +1,103 @@
+---
+title:  FROM Clause
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="the_from_clause__section_FAEBC02C4E414F91B1CA8D33E11218AF"></a>
+Use the FROM clause to bring the data you need into scope for the rest of your query. The FROM clause also includes object typing and iterator variables.
+
+The query engine resolves names and path expressions according to the name space that is currently in scope in the query.
+
+## <a id="the_from_clause__section_CF6063A6C5134EFC89C43D106B6A6D4D" class="no-quick-link"></a>Path Expressions
+
+The initial name space for any query is composed of:
+
+-   **Regions.** In the context of a query, the name of a region is specified by its full path starting with a forward slash ( / ) and delimited by the forward slash between region names. For example, **/exampleRegion** or **/root/exampleRegion**.
+-   **Region querying attributes**. From a region path, you can access the Region object's public fields and methods, referred to in querying as the region's attributes. For example, **/exampleRegion.size**.
+-   **Top-level region data.** You can access entry keys and entry data through the region path.
+    1.  `/exampleRegion.keySet` returns the Set of entry keys in the region
+    2.  `/exampleRegion.entryset` returns the Set of Region.Entry objects
+    3.  `/exampleRegion.values` returns the Collection of entry values
+    4.  `/exampleRegion` returns the Collection of entry values
+
+New name spaces are brought into scope based on the FROM clause in the SELECT statement.
+
+**Examples:**
+
+Query a region for all distinct values. Return a collection of unique entry values from the region:
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion
+```
+
+Query the top level region data using entrySet. Return the keys and positions of Region.Entry objects whose mktValue attribute is greater than 25.00:
+
+``` pre
+SELECT key, positions FROM /exampleRegion.entrySet, value.positions.values positions WHERE positions.mktValue >= 25.00
+```
+
+Query the region for its entry values. Return a set of unique values from Region.Entry objects that have the key equal to 1:
+
+``` pre
+SELECT DISTINCT entry.value FROM /exampleRegion.entries entry WHERE entry.key = '1'
+```
+
+Query the region for its entry values. Return the set of all entry values in which the `ID` field is greater than 1000:
+
+``` pre
+SELECT * FROM /exampleRegion.entries entry WHERE entry.value.ID > 1000
+```
+
+Query entry keys in the region. Return a set of entry keys in the region that have the key equal to '1':
+
+``` pre
+SELECT * FROM /exampleRegion.keySet key WHERE key = '1'
+```
+
+Query values in the region. Return a collection of entry values in the region that have the status attribute value of 'active':
+
+``` pre
+SELECT * FROM /exampleRegion.values portfolio WHERE portfolio.status = 'active'
+```
+
+## <a id="the_from_clause__section_AB1734C16DC348479C00FD6829B933AA" class="no-quick-link"></a>Aliases and Synonyms
+
+In query strings, you can use aliases in path expressions (region and its objects) so that you can refer to the region or objects in other places in the query.
+
+You can also use the **AS** keyword to provide a label for joined path expressions.
+
+**Examples:**
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.status = 'active'
+```
+
+``` pre
+SELECT * FROM /exampleRegion p, p.positions.values AS pos WHERE pos.secId != '1'
+```
+
+## <a id="the_from_clause__section_A5B42CCB7C924949954AEC2DAAD51134" class="no-quick-link"></a>Object Typing
+
+Specifying object type in the FROM clause helps the query engine to process the query at optimal speed. Apart from specifying the object types during configuration (using key-constraint and value-constraint), type can be explicitly specified in the query string.
+
+**Example:**
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion, positions.values positions TYPE Position WHERE positions.mktValue >= 25.00
+```

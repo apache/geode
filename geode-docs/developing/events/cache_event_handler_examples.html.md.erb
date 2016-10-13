@@ -1,0 +1,155 @@
+---
+title:  Cache Event Handler Examples
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Some examples of cache event handlers.
+
+## <a id="cache_event_handler_examples__section_F2790678E9DE4A81B73A4B6346CB210B" class="no-quick-link"></a>Declaring and Loading an Event Handler with Parameters
+
+This declares an event handler for a region in the `cache.xml`. The handler is a cache listener designed to communicate changes to a DB2 database. The declaration includes the listener’s parameters, which are the database path, username, and password.
+
+``` pre
+<region name="exampleRegion"> 
+  <region-attributes> 
+  . . . 
+    <cache-listener> 
+      <class-name>JDBCListener</class-name> 
+      <parameter name="url"> 
+        <string>jdbc:db2:SAMPLE</string> 
+      </parameter> 
+      <parameter name="username"> 
+        <string>gfeadmin</string> 
+      </parameter> 
+      <parameter name="password"> 
+        <string>admin1</string> 
+      </parameter> 
+    </cache-listener> 
+  </region-attributes> 
+  </region>
+```
+
+This code listing shows part of the implementation of the `JDBCListener` declared in the `cache.xml`. This listener implements the `Declarable` interface. When an entry is created in the cache, this listener’s `afterCreate` callback method is triggered to update the database. Here the listener’s properties, provided in the `cache.xml`, are passed into the `Declarable.init` method and used to create a database connection.
+
+``` pre
+. . .
+public class JDBCListener
+extends CacheListenerAdapter
+implements Declarable {
+  public void afterCreate(EntryEvent e) {
+  . . .
+    // Initialize the database driver and connection using input parameters
+    Driver driver = (Driver) Class.forName(DRIVER_NAME).newInstance();
+    Connection connection =
+      DriverManager.getConnection(_url, _username, _password);
+      System.out.println(_connection);
+        . . .
+  }
+    . . .
+  public void init(Properties props) {
+    this._url = props.getProperty("url");
+    this._username = props.getProperty("username");
+    this._password = props.getProperty("password");
+  }
+}
+```
+
+## <a id="cache_event_handler_examples__section_2B4275C1AE744794AAD22530E5ECA8CC" class="no-quick-link"></a>Installing an Event Handler Through the API
+
+This listing defines a cache listener using the `RegionFactory` method `addCacheListener`.
+
+``` pre
+Region newReg = cache.createRegionFactory()
+          .addCacheListener(new SimpleCacheListener())
+          .create(name);
+ 
+```
+
+You can create a cache writer similarly, using the `RegionFactory` method `setCacheWriter`, like this:
+
+``` pre
+Region newReg = cache.createRegionFactory()
+          .setCacheWriter(new SimpleCacheWriter())
+          .create(name);
+ 
+```
+
+## <a id="cache_event_handler_examples__section_C62E9535C43B4BC5A7AA7B8B4125D1EB" class="no-quick-link"></a>Installing Multiple Listeners on a Region
+
+XML:
+
+``` pre
+<region name="exampleRegion">
+  <region-attributes>
+    . . .
+    <cache-listener>
+      <class-name>myCacheListener1</class-name>
+    </cache-listener>
+    <cache-listener>
+      <class-name>myCacheListener2</class-name>
+    </cache-listener>
+    <cache-listener>
+      <class-name>myCacheListener3</class-name>
+    </cache-listener>
+  </region-attributes>
+</region>
+```
+
+API:
+
+``` pre
+CacheListener listener1 = new myCacheListener1(); 
+CacheListener listener2 = new myCacheListener2(); 
+CacheListener listener3 = new myCacheListener3(); 
+
+Region nr = cache.createRegionFactory()
+  .initCacheListeners(new CacheListener[]
+    {listener1, listener2, listener3})
+  .setScope(Scope.DISTRIBUTED_NO_ACK)
+  .create(name);
+```
+
+## <a id="cache_event_handler_examples__section_3AF3D7C9927F491F8BACDB72834E42AA" class="no-quick-link"></a>Installing a Write-Behind Cache Listener
+
+``` pre
+//AsyncEventQueue with listener that performs WBCL work
+<cache>
+   <async-event-queue id="sampleQueue" persistent="true"
+    disk-store-name="exampleStore" parallel="false">
+      <async-event-listener>
+         <class-name>MyAsyncListener</class-name>
+         <parameter name="url"> 
+           <string>jdbc:db2:SAMPLE</string> 
+         </parameter> 
+         <parameter name="username"> 
+           <string>gfeadmin</string> 
+         </parameter> 
+         <parameter name="password"> 
+           <string>admin1</string> 
+         </parameter> 
+               </async-event-listener>
+             </async-event-queue>
+
+// Add the AsyncEventQueue to region(s) that use the WBCL
+  <region name="data">
+       <region-attributes async-event-queue-ids="sampleQueue">
+    </region-attributes>
+  </region>
+</cache>
+```

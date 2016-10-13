@@ -1,0 +1,130 @@
+---
+title:  Delta Propagation Example
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic provides an example of delta propagation.
+
+<a id="delta_propagation_example__section_F6700EB7F305462D9F0DEE3080497A14"></a>
+In this example, the feeder client is connected to the first server, and the receiver client is connected to the second. The servers are peers to each other.
+
+<img src="../../images/DeltaPropagation-3.gif" id="delta_propagation_example__image_E20DAE5925C44EBDA03D1AC8325D1122" class="image" />
+
+The example demonstrates the following operations:
+
+1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, Geode calls `hasDelta`, which returns true, so Geode calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, Geode would distribute the full entry value.
+2.  In Server1, Geode applies the delta to the cache, distributes the received delta to the server's peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example)
+3.  In Server2, Geode applies the delta to the cache and forwards it to its interested clients, which in this case is just the Receiver client.
+
+<a id="delta_propagation_example__section_185444FC51FB467587A62DFEC07C9C7D"></a>
+
+This example shows the basic approach to programming a `Delta` implementation.
+
+``` pre
+package delta;
+
+import org.apache.geode.Delta;
+import org.apache.geode.InvalidDeltaException;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+
+/**
+ * Sample implementation of Delta
+ * 
+ * @author GemStone Systems, Inc.
+ * @since 6.1
+ */
+public class SimpleDelta implements Delta, Serializable {
+
+// Original object fields
+    private int intVal;
+    private double doubleVal;
+
+    // Added for delta - one boolean per field to track changed status
+    private transient boolean intFldChd = false;
+    private transient boolean dblFldChd = false;
+
+    public SimpleDelta(){}
+
+    public SimpleDelta(int i, double d){
+        this.intVal = i;
+        this.doubleVal = d;
+    }
+
+    public boolean hasDelta() {
+        return this.intFldChd || this.dblFldChd;
+    }
+
+    public void toDelta(DataOutput out) throws IOException {
+        System.out.println("Extracting delta from " + this.toString());
+    // Write information on what has changed to the 
+    // data stream, so fromDelta knows what it's getting 
+        out.writeBoolean(intFldChd);
+        if (intFldChd) {
+    // Write just the changes into the data stream
+            out.writeInt(this.intVal);
+    // Once the delta information is written, reset the delta status field
+            this.intFldChd = false;
+            System.out.println(" Extracted delta from field 'intVal' = "
+                                                + this.intVal);
+        }
+        out.writeBoolean(dblFldChd);
+        if (dblFldChd) {
+            out.writeDouble(this.doubleVal);
+            this.dblFldChd = false;
+            System.out.println(" Extracted delta from field 'doubleVal' = "
+                                                + this.doubleVal);
+        }
+    }
+
+    public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
+        System.out.println("Applying delta to " + this.toString());
+        // For each field, read whether there is a change 
+        if (in.readBoolean()) {
+            // Read the change and apply it to the object 
+            this.intVal = in.readInt();
+            System.out.println(" Applied delta to field 'intVal' = "
+                        + this.intVal);
+        }
+        if (in.readBoolean()) {
+            this.doubleVal = in.readDouble();
+            System.out.println(" Applied delta to field 'doubleVal' = "
+                        + this.doubleVal);
+        }
+    }
+    // In the setter methods, add setting of delta-related 
+    // fields indicating what has changed 
+    public void setIntVal(int anIntVal) {
+        this.intFldChd = true;
+        this.intVal = anIntVal;
+    }
+
+    public void setDoubleVal(double aDoubleVal) {
+        this.dblFldChd = true;
+        this.doubleVal = aDoubleVal;
+    }
+
+    public String toString() {
+        return "SimpleDelta [ hasDelta = " + hasDelta() + ", intVal = " + 
+                this.intVal + ", doubleVal = {" + this.doubleVal + "} ]";
+    }
+}
+```

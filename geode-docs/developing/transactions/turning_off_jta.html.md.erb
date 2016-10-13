@@ -1,0 +1,40 @@
+---
+title:  Turning Off JTA Transactions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can configure regions to not participate in any JTA global transaction.
+
+The `ignore-jta` region attribute is a boolean that tells the cache to ignore any in-progress JTA transactions when performing cache operations. It is primarily used for cache loaders, cache writers, and cache listeners that need to perform non-transactional operations on a region, such as caching a result set. It is set per region, so some regions can participate in JTA transactions, while others avoid participating in them. This example sets the `ignore-jta` region attribute in the `cache.xml` file.
+
+cache.xml:
+
+``` pre
+<region name="bridge_region">
+   <region-attributes scope="local" ignore-jta="true" statistics-enabled="true"/> 
+       <cache-writer> . . . </cache-writer>
+    </region-attributes> 
+</region>
+```
+
+API:
+
+Using the API, you can turn off JTA transactions using `RegionFactory` and its method `setIgnoreJTA(boolean)`. The current setting for a region can be fetched from a region's `RegionAttributes` by using the `getIgnoreJTA` method.
+
+

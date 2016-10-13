@@ -1,0 +1,130 @@
+---
+title:  Conflating Events in a Queue
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Conflating a queue improves distribution performance. When conflation is enabled, only the latest queued value is sent for a particular key.
+
+<a id="conflate_multisite_gateway_queue__section_294AD2E2328E4D6B8D6A73966F7B3B14"></a>
+**Note:**
+Do not use conflation if your receiving applications depend on the specific ordering of entry modifications, or if they need to be notified of every change to an entry.
+
+Conflation is most useful when a single entry is updated frequently, but other sites only need to know the current value of the entry (rather than the value of each update). When an update is added to a queue that has conflation enabled, if there is already an update message in the queue for the entry key, then the existing message assumes the value of the new update and the new update is dropped, as shown here for key A.
+
+<img src="../../images/MultiSite-4.gif" id="conflate_multisite_gateway_queue__image_27219DAAB6D643348641389DBAEA1E94" class="image" />
+
+**Note:**
+This method of conflation is different from the one used for server-to-client subscription queue conflation and peer-to-peer distribution within a distributed system.
+
+## <a id="conflate_multisite_gateway_queue__section_207FA6BF0F734F9A91EAACB136F8D6B5" class="no-quick-link"></a>Examples—Configuring Conflation for a Gateway Sender Queue
+
+To enable conflation for a gateway sender queue, use one of the following mechanisms:
+
+-   **cache.xml configuration**
+
+    ``` pre
+    <cache>
+      <gateway-sender id="NY" parallel="true" 
+       remote-distributed-system-id="1"
+       enable-persistence="true"
+       disk-store-name="gateway-disk-store"
+       enable-batch-conflation="true"/> 
+       ... 
+    </cache>
+    ```
+
+-   **Java API configuration**
+
+    ``` pre
+    Cache cache = new CacheFactory().create();
+
+    GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
+    gateway.setParallel(true);
+    gateway.setPersistenceEnabled(true);
+    gateway.setDiskStoreName("gateway-disk-store");
+    gateway.setBatchConflationEnabled(true);
+    GatewaySender sender = gateway.create("NY", "1");
+    sender.start();
+    ```
+
+    Entry updates in the current, in-process batch are not eligible for conflation.
+
+-   **gfsh:**
+
+    ``` pre
+    gfsh>create gateway-sender --id="NY" --parallel=true 
+       --remote-distributed-system-id="1"
+       --enable-persistence=true
+       --disk-store-name="gateway-disk-store"
+       --enable-batch-conflation=true
+    ```
+
+The following examples show how to configure conflation for an asynchronous event queue:
+
+-   **cache.xml configuration**
+
+    ``` pre
+    <cache>
+       <async-event-queue id="sampleQueue" persistent="true"
+        disk-store-name="async-disk-store" parallel="false"
+        enable-batch-conflation="true">
+          <async-event-listener>
+             <class-name>MyAsyncEventListener</class-name>
+             <parameter name="url"> 
+               <string>jdbc:db2:SAMPLE</string> 
+             </parameter> 
+             <parameter name="username"> 
+               <string>gfeadmin</string> 
+             </parameter> 
+             <parameter name="password"> 
+               <string>admin1</string> 
+             </parameter> 
+       </async-event-listener>
+     </async-event-queue>
+    ...
+    </cache>
+    ```
+
+-   **Java API configuration**
+
+    ``` pre
+    Cache cache = new CacheFactory().create();
+    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
+    factory.setPersistent(true);
+    factory.setDiskStoreName("async-disk-store");
+    factory.setParallel(false);
+    factory.setBatchConflationEnabled(true);
+    AsyncEventListener listener = new MyAsyncEventListener();
+    AsyncEventQueue sampleQueue = factory.create("customerWB", listener);
+    ```
+
+    Entry updates in the current, in-process batch are not eligible for conflation.
+
+-   **gfsh:**
+
+    ``` pre
+    gfsh>create async-event-queue --id="sampleQueue" --persistent=true 
+    --disk-store="async-disk-store" --parallel="false" 
+    --listener=myAsyncEventListener 
+    --listener-param=url#jdbc:db2:SAMPLE 
+    --listener-param=username#gfeadmin 
+    --listener-param=password#admin1
+    ```
+
+

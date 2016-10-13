@@ -1,0 +1,52 @@
+---
+title:  Client/Server Configuration
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In the client/server architecture, a relatively small server farm manages the cached data of and access to the same data for many client applications. Clients can update and access data efficiently, leaving the servers to manage data distribution to other clients and any synchronization with outside data stores.
+
+-   **[Standard Client/Server Deployment](../../topologies_and_comm/cs_configuration/standard_client_server_deployment.html)**
+
+    In the most common client/server topology, a farm of cache servers provides caching services to many clients. Cache servers have a homogeneous data store in data regions that are replicated or partitioned across the server farm.
+
+-   **[How Server Discovery Works](../../topologies_and_comm/topology_concepts/how_server_discovery_works.html)**
+
+    Apache Geode locators provide reliable and flexible server discovery services for your clients. You can use all servers for all client requests, or group servers according to function, with the locators directing each client request to the right group of servers.
+
+-   **[How Client/Server Connections Work](../../topologies_and_comm/topology_concepts/how_the_pool_manages_connections.html)**
+
+    The server pools in your Apache Geode client processes manage all client connection requests to the server tier. To make the best use of the pool functionality, you should understand how the pool manages the server connections.
+
+-   **[Configuring a Client/Server System](../../topologies_and_comm/cs_configuration/setting_up_a_client_server_system.html)**
+
+    Configure your server and client processes and data regions to run your client/server system.
+
+-   **[Organizing Servers Into Logical Member Groups](../../topologies_and_comm/cs_configuration/configure_servers_into_logical_groups.html)**
+
+    In a client/server configuration, by putting servers into logical member groups, you can control which servers your clients use and target specific servers for specific data or tasks. You can configure servers to manage different data sets or to direct specific client traffic to a subset of servers, such as those directly connected to a back-end database.
+
+-   **[Client/Server Example Configurations](../../topologies_and_comm/cs_configuration/client_server_example_configurations.html)**
+
+    For easy configuration, you can start with these example client/server configurations and modify for your systems.
+
+-   **[Fine-Tuning Your Client/Server Configuration](../../topologies_and_comm/cs_configuration/client_server_whats_next.html)**
+
+    You can fine-tune your client/server system with server load-balancing and client thread use of pool connections. For example, you can configure how often the servers check their load with the cache server `load-poll-interval` property, or configure your own server load metrics by implementing the `org.apache.geode.cache.server` package.
+
+

@@ -1,0 +1,51 @@
+---
+title:  Configuring Multicast Speed Limits
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+After you determine the maximum transmission rate, configure and tune your production system.
+
+<a id="multicast__section_8E225FC6829946C287552BC7996F2765"></a>
+For best performance, the producer and the consumers should run on different machines and each process should have at least one CPU dedicated to it. The following is a list of configuration changes that can improve multicast performance. Check with your system administrator about changing any of the limits discussed here.
+
+-   Increase the default datagram size for systems running Microsoft Windows from 1024 bytes to a value that matches your network’s maximum transmission unit (MTU), which is typically 1500 bytes. The higher setting should improve the system’s network performance.
+-   Distribution statistics for stack time probes are disabled by default to increase multicast performance. To reduce multicast speed, you can enable time statistics by setting the gemfire.`enable-time-statistics` property to true.
+
+    This enables time statistics for a Java application:
+
+    ``` pre
+    -Dgemfire.enable-time-statistics=true
+    ```
+
+    The time statistics properties are passed to the cache server on the `gfsh` the command line:
+
+    ``` pre
+    gfsh>start server --name=server_name --enable-time-statistics=true
+    ```
+
+-   Monitor the members that receive data for signs of data loss. A few data loss messages can happen normally during region creation. Multicast retransmit requests and unicast retransmits can also be monitored to detect data loss. Even when you see data loss, the cause of the problem may have nothing to do with the network. However, if it happens constantly then you should try testing the flow control rate again
+-   If necessary, reconfigure all the `gemfire.properties` files and repeat with lower flow control maximum credits until you find the maximum useful rate for your installation.
+-   Slow system performance might be helped by reducing how far your multicast messaging goes in your network.
+-   Reduce multicast latency by disabling batching. By default, Geode uses batching for operations when the region’s scope is distributed-no-ack. Set the `disableBatching` property to true on the application or when starting a cache server process through the `gfsh` command line:
+
+    ``` pre
+    gfsh>start server --name=server_name --J=-Dp2p.disableBatching=true
+    ```
+
+

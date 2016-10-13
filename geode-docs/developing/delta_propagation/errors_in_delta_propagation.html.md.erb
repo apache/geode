@@ -1,0 +1,35 @@
+---
+title:  Errors In Delta Propagation
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic lists the errors that can occur when using delta propagation.
+
+<a id="errors_in_delta_propagation__section_877AC61D691C44078A782683F90D169B"></a>
+Errors in delta propagation fall into two categories based on how they are handled by the system:
+
+-   Problems applying the delta that can be remedied by requesting the full value in place of the delta. Your `put` operation does not see errors or exceptions related to this type of delta propagation failure. The system automatically does a full value distribution from the sender to the receiver where the problem occurs. This type of error includes:
+    -   Unavailable entry value in the receiving cache, either because the entry is missing or its value is null. In both cases, there is nothing to apply the delta to and the full value must be sent. This is most likely to occur if you destroy or invalidate your entries locally, either through application calls or through configured actions like eviction or entry expiration.
+    -   `InvalidDeltaException` thrown by `fromDelta` method, programmed by you. This exception enables you to avoid applying deltas that would violate data consistency checks or other application requirements.
+    -   Any error applying the delta in a client in server-to-client propagation. The client logs a warning in addition to retrieving the full value from the server.
+-   Problems creating or distributing the delta that cannot be fixed by distributing the full value. In these cases, your `put` operation fails with an exception. This type of error includes:
+    -   Error or exception in `hasDelta` or `toDelta`.
+    -   Error or exception in a server or peer receiver that fall outside of the situations described above in the first category.
+
+

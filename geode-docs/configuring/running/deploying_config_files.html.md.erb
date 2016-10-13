@@ -1,0 +1,45 @@
+---
+title:  Deploying Configuration Files without the Cluster Configuration Service
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can deploy your Apache Geode configuration files in your system directory structure or in jar files. You determine how you want to deploy your configuration files and set them up accordingly.
+
+**Note:**
+If you use the cluster configuration service to create and manage your Apache Geode cluster configuration, the procedures described in this section are not needed because Geode automatically manages the distribution of the configuration files and jar files to members of the cluster. See [Overview of the Cluster Configuration Service](../cluster_config/gfsh_persist.html).
+
+You can use the procedures described in this section to distribute configurations that are member-specific, or for situations where you do not want to use the cluster configuration service.
+
+-   **[Main Steps to Deploying Configuration Files](../../configuring/running/deploy_config_files_intro.html)**
+
+    These are the basic steps for deploying configuration files, with related detail in sections that follow.
+
+-   **[Default File Specifications and Search Locations](../../configuring/running/default_file_specs.html)**
+
+    Each file has a default name, a set of file search locations, and a system property you can use to override the defaults.
+
+-   **[Changing the File Specifications](../../configuring/running/change_file_spec.html)**
+
+    You can change all file specifications in the `gemfire.properties` file and at the command line.
+
+-   **[Deploying Configuration Files in JAR Files](../../configuring/running/deploying_config_jar_files.html)**
+
+    This section provides a procedure and an example for deploying configuration files in JAR files.
+
+

@@ -1,0 +1,119 @@
+---
+title:  Persisting an Event Queue
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can configure a gateway sender queue or an asynchronous event queue to persist data to disk similar to the way in which replicated regions are persisted.
+
+<a id="configuring_highly_available_gateway_queues__section_7EB2A7E38B074AAAA06D22C59687CB8A"></a>
+Persisting a queue provides high availability for the event messaging that the sender performs. For example, if a persistent gateway sender queue exits for any reason, when the member that hosts the sender restarts it automatically reloads the queue and resumes sending messages. If an asynchronous event queue exits for any reason, write-back caching can resume where it left off when the queue is brought back online.
+Geode persists an event queue if you set the `enable-persistence` attribute to true. The queue is persisted to the disk store specified in the queue's `disk-store-name` attribute, or to the default disk store if you do not specify a store name.
+
+You must configure the event queue to use persistence if you are using persistent regions. The use of non-persistent event queues with persistent regions is not supported.
+
+When you enable persistence for a queue, the `maximum-queue-memory` attribute determines how much memory the queue can consume before it overflows to disk. By default, this value is set to 100MB.
+
+**Note:**
+If you configure a parallel queue and/or you configure multiple dispatcher threads for a queue, the values that are defined in the `maximum-queue-memory` and `disk-store-name` attributes apply to each instance of the queue.
+
+In the example below the gateway sender queue uses "diskStoreA" for persistence and overflow, and the queue has a maximum queue memory of 100MB:
+
+-   XML example:
+
+    ``` pre
+    <cache>
+      <gateway-sender id="persistedsender1" parallel="false" 
+       remote-distributed-system-id="1"
+       enable-persistence="true"
+       disk-store-name="diskStoreA"
+       maximum-queue-memory="100"/> 
+       ... 
+    </cache>
+    ```
+
+-   API example:
+
+    ``` pre
+    Cache cache = new CacheFactory().create();
+
+    GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
+    gateway.setParallel(false);
+    gateway.setPersistenceEnabled(true);
+    gateway.setDiskStoreName("diskStoreA");
+    gateway.setMaximumQueueMemory(100); 
+    GatewaySender sender = gateway.create("persistedsender1", "1");
+    sender.start();
+    ```
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create gateway-sender --id="persistedsender1 --parallel=false 
+    --remote-distributed-system-id=1 --enable-persistence=true --disk-store-name=diskStoreA 
+    --maximum-queue-memory=100
+    ```
+
+If you were to configure 10 dispatcher threads for the serial gateway sender, then the total maximum memory for the gateway sender queue would be 1000MB on each Geode member that hosted the sender, because Geode creates a separate copy of the queue per thread..
+
+The following example shows a similar configuration for an asynchronous event queue:
+
+-   XML example:
+
+    ``` pre
+    <cache>
+       <async-event-queue id="persistentAsyncQueue" persistent="true"
+        disk-store-name="diskStoreA" parallel="true">
+          <async-event-listener>
+             <class-name>MyAsyncEventListener</class-name>
+             <parameter name="url"> 
+               <string>jdbc:db2:SAMPLE</string> 
+             </parameter> 
+             <parameter name="username"> 
+               <string>gfeadmin</string> 
+             </parameter> 
+             <parameter name="password"> 
+               <string>admin1</string> 
+             </parameter> 
+          </async-event-listener>
+        </async-event-queue>
+    ...
+    </cache>
+    ```
+
+-   API example:
+
+    ``` pre
+    Cache cache = new CacheFactory().create();
+    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
+    factory.setPersistent(true);
+    factory.setDiskStoreName("diskStoreA");
+    factory.setParallel(true);
+    AsyncEventListener listener = new MyAsyncEventListener();
+    AsyncEventQueue persistentAsyncQueue = factory.create("customerWB", listener);
+    ```
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create async-event-queue --id="persistentAsyncQueue" --persistent=true 
+    --disk-store="diskStoreA" --parallel=true --listener=MyAsyncEventListener 
+    --listener-param=url#jdbc:db2:SAMPLE --listener-param=username#gfeadmin --listener-param=password#admin1
+    ```
+
+

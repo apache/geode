@@ -1,0 +1,46 @@
+---
+title:  Planning Topology and Communication
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Create a topology plan and a detailed list of machines and communication ports that your members will use. Configure your Apache Geode systems and the communication between systems.
+
+## <a id="membership_and_communication__section_AC0D7685A2CA4999A40BCEFD514BF599" class="no-quick-link"></a>Determine Protocols and Addresses
+
+Your configuration governs how your applications find each other and distribute events and data among themselves.
+
+Work with your system administrator to determine the protocols and addresses you will use for membership and communication.
+
+1.  For each host machine with more than one network adapter card, decide whether to use the default address or one or more non-default bind addresses. You can use different cards for peer and server.
+2.  Identify any members you want to run as standalone, isolated members with no member discovery. This can be a good option for clients, because it has faster startup but no peer-to-peer distribution of any kind.
+3.  For all non-standalone members:
+    -   Decide how many locators you will use and where they will run. To ensure the most stable startup and availability, use multiple locators on multiple machines.
+    -   Create a list of your locators' address and port pairs. You will use the list to configure your system members, any clients, and the locators themselves.
+    -   If you will use multicasting for communication, note the addresses and ports. Select both unique multicast ports and unique addresses for your distributed systems.
+        **Note:**
+        Use different port numbers for different systems, even if you use different multicast addresses. Some operating systems do not keep communication separate between systems that have unique addresses but the same port number.
+
+## <a id="membership_and_communication__section_vy1_cg1_2v" class="no-quick-link"></a>Set Up Membership and Communication
+
+Using the protocols and addresses you determined above, do the following:
+
+-   Set up membership in your systems.
+-   Set up communication between system members. See [Configuring Peer Communication](../p2p_configuration/setting_up_peer_communication.html).
+-   As needed, set up communication between your systems. See [Configuring a Client/Server System](../cs_configuration/setting_up_a_client_server_system.html#setting_up_a_client_server_system).
+

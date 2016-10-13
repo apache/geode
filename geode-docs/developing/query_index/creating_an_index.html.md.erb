@@ -1,0 +1,111 @@
+---
+title:  Creating, Listing and Removing Indexes
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The Geode `QueryService` API provides methods to create, list and remove the index. You can also use `gfsh` command-line interface to create, list and remove indexes, and use cache.xml to create an index.
+
+## <a id="indexing__section_565C080FBDD0443C8504DF372E3C32C8" class="no-quick-link"></a>Creating Indexes
+
+Indexes can be created programmatically, by using the `gfsh` command line interface or by using cache.xml.
+
+To create an index, use one of the following `QueryService` methods:
+
+-   `createIndex`. Creates the default type of index, a range index. Use this type of index if you will be writing queries that will be doing any kind of comparison operation besides an equality comparison.
+-   `createKeyIndex`. Creates a key index. See [Creating Key Indexes](creating_key_indexes.html#concept_09E29507AF0D42CF81D261B030D0B7C8) for more information.
+-   `createHashIndex`. Creates a hash index. See [Creating Hash Indexes](creating_hash_indexes.html#concept_5C7614F71F394C62ACA1BDC5684A7AC4) for more information.
+-   `createDefinedIndexes`. Creates multiple indexes that were previously defined using `defineIndex`. See [Creating Multiple Indexes at Once](create_multiple_indexes.html) for more information.
+
+The following sections provide examples of index creation:
+
+**Using gfsh:**
+
+``` pre
+gfsh> create index --name=myIndex --expression=status --region=/exampleRegion
+gfsh> create index --name=myKeyIndex --type=key --expression=id --region=/exampleRegion
+gfsh> create index --name=myHashIndex --type=hash --expression=mktValue --region=/exampleRegion
+```
+
+See [Index Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_688C66526B4649AFA51C0F72F34FA45E) for more examples.
+
+**Using Java API:**
+
+``` pre
+QueryService qs = cache.getQueryService();
+ qs.createIndex("myIndex", "status", "/exampleRegion");
+ qs.createKeyIndex("myKeyIndex", "id", "/exampleRegion");
+ qs.createHashIndex("myHashIndex", "mktValue", "/exampleRegion");
+```
+
+**Using cache.xml:**
+
+``` pre
+<region name=exampleRegion>
+ <region-attributes . . . >
+ </region-attributes>
+ <index name="myIndex" from-clause="/exampleRegion" expression="status"/>
+ <index name="myKeyIndex" from-clause="/exampleRegion" expression="id" key-index="true"/>
+ <index name="myHashIndex" from-clause="/exampleRegion p" expression="p.mktValue" type="hash"/>
+ ...
+</region>
+```
+
+**Note:**
+If you do not specify the type of index in cache.xml, the type defaults to "range".
+
+## <a id="indexing__section_40089270C67A49FFA0C749E287F722F8" class="no-quick-link"></a>Listing Indexes
+
+To retrieve a list of indexes from the cache or region, use the `QueryService.getIndexes` method or the `gfsh` command line interface.
+
+**Using gfsh:**
+
+``` pre
+gfsh> list indexes
+gfsh> list indexes --with-stats
+```
+
+**Using Java API:**
+
+``` pre
+QueryService qs = cache.getQueryService();
+ qs.getIndexes(); //returns a collection of all indexes in the cache
+ qs.getIndexes(exampleRegion); //returns a collection of all indexes in exampleRegion
+ qs.getIndexes(exampleRegion, myKeyIndex); //returns the index named myKeyIndex from the exampleRegion
+```
+
+## <a id="indexing__section_ACBFB76C539A405D90B05856CB79BEFF" class="no-quick-link"></a>Removing Indexes
+
+To remove an index or all indexes from the cache or region, use the `QueryService.removeIndexes` method or the `gfsh` command line interface.
+
+**Using gfsh:**
+
+``` pre
+gfsh> destroy index
+gfsh> destroy index --name=myIndex
+gfsh> destroy index --region=/exampleRegion
+```
+
+**Using Java API:**
+
+``` pre
+QueryService qs = cache.getQueryService();
+ qs.removeIndexes(); //removes all indexes from the cache
+ qs.removeIndexes(myKeyIndex); //removes the index named myKeyIndex
+ qs.removeIndexes(exampleRegion); //removes all indexes from the exampleRegion
+```

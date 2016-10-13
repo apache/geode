@@ -1,0 +1,58 @@
+---
+title:  Configure High Availability for a Partitioned Region
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Configure in-memory high availability for your partitioned region. Set other high-availability options, like redundancy zones and redundancy recovery strategies.
+
+Here are the main steps for configuring high availability for a partitioned region. See later sections for details.
+
+1.  Set the number of redundant copies the system should maintain of the region data. See [Set the Number of Redundant Copies](set_pr_redundancy.html#set_pr_redundancy). 
+2.  (Optional) If you want to group your data store members into redundancy zones, configure them accordingly. See [Configure Redundancy Zones for Members](set_redundancy_zones.html#set_redundancy_zones). 
+3.  (Optional) If you want Geode to only place redundant copies on different physical machines, configure for that. See [Set Enforce Unique Host](set_enforce_unique_host.html#set_pr_redundancy). 
+4.  Decide how to manage redundancy recovery and change Geode's default behavior as needed. 
+    - **After a member crashes**. If you want automatic redundancy recovery, change the configuration for that. See [Configure Member Crash Redundancy Recovery for a Partitioned Region](set_crash_redundancy_recovery.html#set_crash_redundancy_recovery). 
+    - **After a member joins**. If you do *not* want immediate, automatic redundancy recovery, change the configuration for that. See [Configure Member Join Redundancy Recovery for a Partitioned Region](set_join_redundancy_recovery.html#set_join_redundancy_recovery). 
+
+5.  Decide how many buckets Geode should attempt to recover in parallel when performing redundancy recovery. By default, the system recovers up to 8 buckets in parallel. Use the `gemfire.MAX_PARALLEL_BUCKET_RECOVERIES` system property to increase or decrease the maximum number of buckets to recover in parallel any time redundancy recovery is performed.
+6.  For all but fixed partitioned regions, review the points at which you kick off rebalancing. Redundancy recovery is done automatically at the start of any rebalancing. This is most important if you run with no automated recovery after member crashes or joins. See [Rebalancing Partitioned Region Data](rebalancing_pr_data.html#rebalancing_pr_data). 
+
+During runtime, you can add capacity by adding new members for the region. For regions that do not use fixed partitioning, you can also kick off a rebalancing operation to spread the region buckets among all members.
+
+-   **[Set the Number of Redundant Copies](../../developing/partitioned_regions/set_pr_redundancy.html)**
+
+    Configure in-memory high availability for your partitioned region by specifying the number of secondary copies you want to maintain in the region's data stores.
+
+-   **[Configure Redundancy Zones for Members](../../developing/partitioned_regions/set_redundancy_zones.html)**
+
+    Group members into redundancy zones so Geode will separate redundant data copies into different zones.
+
+-   **[Set Enforce Unique Host](../../developing/partitioned_regions/set_enforce_unique_host.html)**
+
+    Configure Geode to use only unique physical machines for redundant copies of partitioned region data.
+
+-   **[Configure Member Crash Redundancy Recovery for a Partitioned Region](../../developing/partitioned_regions/set_crash_redundancy_recovery.html)**
+
+    Configure whether and how redundancy is recovered in a partition region after a member crashes.
+
+-   **[Configure Member Join Redundancy Recovery for a Partitioned Region](../../developing/partitioned_regions/set_join_redundancy_recovery.html)**
+
+    Configure whether and how redundancy is recovered in a partition region after a member joins.
+
+

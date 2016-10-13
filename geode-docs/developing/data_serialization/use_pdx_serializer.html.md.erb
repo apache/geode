@@ -1,0 +1,145 @@
+---
+title:  Serializing Your Domain Object with a PdxSerializer
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+For a domain object that you cannot or do not want to modify, use the `PdxSerializer` class to serialize and deserialize the object's fields. You use one `PdxSerializer` implementation for the entire cache, programming it for all of the domain objects that you handle in this way.
+
+With `PdxSerializer`, you leave your domain object as-is and handle the serialization and deserialization in the separate serializer. You register the serializer in your cache PDX configuration. Program the serializer to handle all of the domain objects you need.
+
+If you write your own `PdxSerializer` and you also use the `ReflectionBasedAutoSerializer`, then the `PdxSerializer` needs to own the `ReflectionBasedAutoSerializer` and delegate to it. A Cache can only have a single `PdxSerializer` instance.
+
+**Note:**
+The `PdxSerializer` `toData` and `fromData` methods differ from those for `PdxSerializable`. They have different parameters and results.
+
+**Procedure**
+
+1.  In the domain classes that you wish to PDX serialize, make sure each class has a zero-arg constructor. For example:
+
+    ``` pre
+    public PortfolioPdx(){}
+    ```
+
+2.  If you have not already implemented `PdxSerializer` for some other domain object, perform these steps:
+    1.  Create a new class as your cache-wide serializer and make it implement `PdxSerializer`. If you want to declare your new class in the `cache.xml` file, have it also implement `Declarable`.
+
+        Example:
+
+        ``` pre
+        import org.apache.geode.cache.Declarable;
+        import org.apache.geode.pdx.PdxReader;
+        import org.apache.geode.pdx.PdxSerializer;
+        import org.apache.geode.pdx.PdxWriter;
+
+        public class ExamplePdxSerializer implements PdxSerializer, Declarable {
+        ...
+        ```
+
+    2.  In your cache pdx configuration, register the serializer class in the cache's `<pdx>` `<pdx-serializer>` `<class-name>` attribute.
+
+        Example:
+
+        ``` pre
+        // Configuration setting PDX serializer for the cache
+        <cache>
+          <pdx>
+            <pdx-serializer>
+             <class-name>com.company.ExamplePdxSerializer</class-name>
+            </pdx-serializer>
+          </pdx> 
+          ...
+        </cache>
+        ```
+
+        Or use the `CacheFactory.setPdxSerializer ` API.
+
+        ``` pre
+        Cache c = new CacheFactory
+           .setPdxSerializer(new ExamplePdxSerializer())
+           .create();
+        ```
+
+    **Note:**
+    You cannot specify a custom `pdx-serializer` class using gfsh, however the `configure pdx` command automatically configures the <span class="keyword apiname">org.apache.geode.pdx.ReflectionBasedAutoSerializer</span> class. See [configure pdx](../../tools_modules/gfsh/command-pages/configure.html#topic_jdkdiqbgphqh).
+
+3.  Program `PdxSerializer.toData` to recognize, cast, and handle your domain object:
+
+    1.  Write each standard Java data field of your domain class using the `PdxWriter` write methods.
+    2.  Call the `PdxWriter` `markIdentityField` method for each field you want to have Geode use to identify your object. Put this after the field's write method. Geode uses this information to compare objects for operations like distinct queries. If you do not set as least one identity field, then the `equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well. It is important that the fields used by your `equals` and `hashCode` implementations are the same fields that you mark as identity fields.
+    3.  For a particular version of your class, you need to consistently write the same named field each time. The field names or number of fields must not change from one instance to another for the same class version.
+    4.  For best performance, do fixed width fields first and then variable length fields.
+    5.  If desired, you can check the portability of the object before serializing it by adding the `checkPortability` parameter when using the`                                 PdxWriter` `writeObject`, `writeObjectArray`, and `writeField` methods.
+
+    Example `toData` code:
+
+    ``` pre
+    public boolean toData(Object o, PdxWriter writer)
+      {
+        if(!(o instanceof PortfolioPdx)) {
+          return false;
+        }
+
+        PortfolioPdx instance = (PortfolioPdx) o;
+        writer.writeInt("id", instance.id)
+        //identity field
+        .markIdentityField("id")
+        .writeDate("creationDate", instance.creationDate)
+        .writeString("pkid", instance.pkid)
+        .writeObject("positions", instance.positions)
+        .writeString("type", instance.type)
+        .writeString("status", instance.status)
+        .writeStringArray("names", instance.names)
+        .writeByteArray("newVal", instance.newVal)
+
+        return true;
+      }
+    ```
+
+    1.  Program `PdxSerializer.fromData` to create an instance of your class, read your data fields from the serialized form into the object's fields using the `PdxReader` read methods, and return the created object.
+
+        Provide the same names that you did in `toData` and call the read operations in the same order as you called the write operations in your `toData` implementation.
+
+        Geode provides the domain class type and `PdxReader` to the `fromData` method.
+
+        Example `fromData` code:
+
+        ``` pre
+          public Object fromData(Class<?> clazz, PdxReader reader)
+          {
+            if(!clazz.equals(PortfolioPdx.class)) {
+              return null;
+            }
+
+            PortfolioPdx instance = new PortfolioPdx();
+            instance.id = reader.readInt("id");
+            instance.creationDate = reader.readDate("creationDate");
+            instance.pkid = reader.readString("pkid");
+            instance.positions = (Map<String, PositionPdx>)reader.readObject("positions");
+            instance.type = reader.readString("type");
+            instance.status = reader.readString("status");
+            instance.names = reader.readStringArray("names");
+            instance.newVal = reader.readByteArray("newVal");
+
+            return instance;
+          }
+        ```
+
+4.  If desired, you can also enable extra validation in your use of `PdxWriter`. You can set this by setting the system property `gemfire.validatePdxWriters` to **true**. Note that you should only set this option if you are debugging new code as this option can decrease system performance.
+
+

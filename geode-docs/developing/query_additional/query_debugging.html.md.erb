@@ -1,0 +1,104 @@
+---
+title:  Query Debugging
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can debug a specific query at the query level by adding the `<trace>` keyword before the query string that you want to debug.
+
+Here is an example:
+
+``` pre
+<trace> select * from /exampleRegion
+```
+
+You can also write:
+
+``` pre
+<TRACE> select * from /exampleRegion
+```
+
+When the query is executed, Geode will log a message in `$GEMFIRE_DIR/system.log` with the following information:
+
+``` pre
+[info 2011/08/29 11:24:35.472 PDT CqServer <main> tid=0x1] Query Executed in 9.619656 ms; rowCount = 99; indexesUsed(0) "select *  from /exampleRegion" 
+```
+
+If you want to enable debugging for all queries, you can enable query execution logging by setting a System property on the command line during start-up:
+
+``` pre
+gfsh>start server --name=server_name -–J=-Dgemfire.Query.VERBOSE=true
+```
+
+Or you can set the property programmatically:
+
+``` pre
+System.setProperty("gemfire.Query.VERBOSE","true");
+```
+
+As an example, let us say you have an EmployeeRegion that that contains Employee objects as values and the objects have public fields in them like ID and status.
+
+``` pre
+Employee.java
+Class Employee {
+ public int ID;
+ public String status;
+ - - - - - -
+ - - - - - -
+}
+```
+
+In addition, you have created the following indexes for the region:
+
+``` pre
+<index name="sampleIndex-1">
+<functional from-clause="/test " expression="ID"/>
+</index>
+<index name="sampleIndex-2">
+<functional from-clause="/test " expression="status"/>
+</index>
+```
+
+After you have set `gemfire.Query.VERBOSE` to "true", you could see the following debug messages in the logs after running queries on the EmployeeRegion or its indexes:
+
+-   If indexes are not used in the query execution, you would see a debug message like this:
+
+    ``` pre
+    [info 2011/08/29 11:24:35.472 PDT CqServer <main> tid=0x1] Query Executed in 9.619656 ms; rowCount = 99; indexesUsed(0) "select * from /test k where ID > 0 and status='active'"
+    ```
+
+-   When single index is used in query execution, you might see a debug message like this:
+
+    ``` pre
+    [info 2011/08/29 11:24:35.472 PDT CqServer <main> tid=0x1] Query Executed in 101.43499 ms; rowCount = 199; indexesUsed(1):sampleIndex-1(Results: 199) "select count *   from /test k where ID > 0"
+    ```
+
+-   When multiple indexes are used by a query, you might see a debug message like this:
+
+    ``` pre
+    [info 2011/08/29 11:24:35.472 PDT CqServer <main> tid=0x1] Query Executed in 79.43847 ms; rowCount = 199; indexesUsed(2):sampleIndex-2(Results: 100),sampleIndex-1(Results: 199) "select * from /test k where ID > 0 OR status='active'"
+    ```
+
+In above log messages, the following information is provided:
+
+-   "rowCount" represents ResultSet size for the query.
+-   "indexesUsed(\\n) " shows n indexes were used for finding the results of the query.
+-   Each index name and its corresponding results are reported respectively.
+-   The log can be identified with the original query string itself appended in the end.
+
+

@@ -1,0 +1,35 @@
+---
+title:  Standard Client/Server Deployment
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In the most common client/server topology, a farm of cache servers provides caching services to many clients. Cache servers have a homogeneous data store in data regions that are replicated or partitioned across the server farm.
+
+<a id="standard_deployment__section_5DC4875B143F4160BC790C4AFAB75265"></a>
+The client/server data flow proceeds as follows:
+
+-   Cache servers send their address and load information to the server locator, if locators are used.
+-   If locators are used, clients request server connection information from the locator. The locator responds with the address of the least-loaded server.
+-   The client pool checks its connections periodically for proper server load balancing. The pool rebalances as needed.
+-   Clients can subscribe to events at startup. Events are streamed automatically from the servers to client listeners and into the client cache.
+-   Client data updates and data requests that the client cache does not fulfill are forwarded automatically to the servers.
+
+<img src="../../images_svg/client_server_deployment.svg" id="standard_deployment__image_7D26C05F80E7449C960A4D7FFC127012" class="image" />
+
+

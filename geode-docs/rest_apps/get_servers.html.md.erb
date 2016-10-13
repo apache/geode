@@ -1,0 +1,64 @@
+---
+title:  GET /gemfire-api/v1/servers
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Mechanism to obtain a list of all members in the distributed system that are running the REST API service.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/servers
+```
+
+## Parameters
+
+None.
+
+## Example Request
+
+``` pre
+Request Payload: null
+Request: GET /gemfire-api/v1/servers
+Response Payload: application/json
+```
+
+## Example Success Response
+
+``` pre
+200 OK
+
+Content-Length: <#-of-bytes>
+Content-Type: application/json; charset=utf-8
+
+[
+ "http://<HOST_NAME1>:<PORT1>",
+ "http://<HOST_NAME2>:<PORT2>",
+ "http://<HOST_NAME3>:<PORT3>",
+ "http://<HOST_NAME4>:<PORT4>"
+]
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                 |
+|---------------------------|---------------------------------------------------------------------------------------------|
+| 500 INTERNAL SERVER ERROR | Returned if Geode throws an error while executing the request. |
+
+

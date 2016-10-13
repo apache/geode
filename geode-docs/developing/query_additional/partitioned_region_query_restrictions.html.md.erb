@@ -1,0 +1,50 @@
+---
+title:  Partitioned Region Query Restrictions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## <a id="concept_5353476380D44CC1A7F586E5AE1CE7E8__section_16875A7EA07D42C08FB194F4A854360D" class="no-quick-link"></a>Query Restrictions in Partitioned Regions
+
+Partitioned region queries function the same as non-partitioned region queries, except for the restrictions listed in this section. Partitioned region queries that do not follow these guidelines generate an `UnsupportedOperationException`.
+
+-   Join queries between partitioned region and between partitioned regions and replicated regions are supported through the function service only. Join queries partitioned regions are not supported through the client server API.
+-   You can run join queries on partitioned regions and on partitioned regions and replicated regions only if they are co-located. Equi-join queries are supported only on partitioned regions that are co-located and where the co-located columns are indicated in the WHERE clause of the query. In the case of multi-column partitioning, there should also be an AND clause in the WHERE specification. See [Colocate Data from Different Partitioned Regions](../partitioned_regions/colocating_partitioned_region_data.html#colocating_partitioned_region_data) for more information on partitioned region co-location.
+-   Equi-join queries are allowed between partitioned regions and between partitioned regions and local replicated regions as long as the local replicated region also exists on all partitioned region nodes. To perform a join query on a partitioned region and another region (partitioned or not), you need to use the `query.execute` method and supply it with a function execution context. See [Performing an Equi-Join Query on Partitioned Regions](../partitioned_regions/join_query_partitioned_regions.html#concept_B930D276F49541F282A2CFE639F107DD) for an example.
+-   The query must be just a SELECT expression (as opposed to arbitrary OQL expressions), preceded by zero or more IMPORT statements. For example, this query is not allowed because it is not just a SELECT expression:
+
+    ``` pre
+    // NOT VALID for partitioned regions
+    (SELECT DISTINCT *FROM /prRgn WHERE attribute > 10).size
+    ```
+
+    This query is allowed:
+
+    ``` pre
+    // VALID for partitioned regions
+    SELECT DISTINCT *FROM /prRgn WHERE attribute > 10
+    ```
+
+-   The SELECT expression itself can be arbitrarily complex, including nested SELECT expressions, as long as only one partitioned region is referenced.
+-   The partitioned region reference can only be in the first FROM clause iterator. Additional FROM clause iterators are allowed if they do not reference any regions (such as drilling down into the values in the partitioned region).
+-   The first FROM clause iterator must contain only one reference to the partitioned region (the reference can be a parameter, such as $1).
+-   The first FROM clause iterator cannot contain a subquery, but subqueries are allowed in additional FROM clause iterators.
+-   You can use ORDER BY on partitioned region queries, but the fields that are specified in the ORDER BY clause must be part of the projection list.
+-   If a partition region (or a bucket) being queried has been destroyed, the query is reattempted on the new primary for the destroyed bucket (if it exists). After certain number of attempts, a QueryException is thrown if all buckets (calculated at the startup of the query) cannot be queried.
+
+

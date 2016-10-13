@@ -1,0 +1,82 @@
+---
+title:  PUT /gemfire-api/v1/{region}/{key}
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Update or insert (put) data for key in region.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key}
+```
+
+## Parameters
+
+See [PUT /gemfire-api/v1/{region}/{key}?op=REPLACE](put_replace_data.html#topic_itv_mg5_m4) and [PUT /gemfire-api/v1/{region}/{key}?op=CAS](put_update_cas_data.html#topic_itv_mg5_m4).
+
+## Example Request
+
+``` pre
+PUT /gemfire-api/v1/orders/2
+Request Payload: application/json
+Content-Type: application/json
+Accept: application/json
+{
+    "@type": "org.apache.geode.web.rest.domain.Order",
+     "purchaseOrderNo": 1121,
+     "customerId": 1012,
+     "description":  "Order for XYZ Corp",
+     "orderDate":  "02/10/2014",
+     "deliveryDate":  "02/20/2014",
+     "contact":  "Pie Doe",
+     "email":  "pie.doe@example.com",
+     "phone":  "01-2048096",
+     "totalPrice": 225,
+     "items": [
+        {
+             "itemNo": 1,
+             "description": "Product-100",
+             "quantity": 10,
+             "unitPrice": 5,
+             "totalPrice": 50
+        }
+    ]
+}
+```
+
+## Example Success Response
+
+``` pre
+Response Payload:  null
+
+200 OK
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                                                      |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| 400 BAD REQUEST           | Returned if supplied key is an invalid format.                                                                                   |
+| 404 NOT FOUND             | Returned if the region is not found.                                                                                             |
+| 500 INTERNAL SERVER ERROR | Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. |
+
+## Implementation Notes
+
+This operation is idempotent, meaning multiple identical requests should have the same effect as the initial request.

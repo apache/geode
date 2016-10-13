@@ -1,0 +1,51 @@
+---
+title:  resume gateway-sender
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Resume any gateway senders that you have paused.
+
+Resume the gateway sender on a member or members.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+resume gateway-sender --id=value [--group=value(,value)*] 
+[--member=value]
+```
+
+<a id="concept_8B0532D13CF34E0CB04ACC3F14F1E4A2__table_rwp_vbg_2w"></a>
+
+| Name                                           | Description                                                  |
+|------------------------------------------------|--------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the Gateway Sender.                        |
+| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to resume the Gateway Sender.   |
+| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member on which to resume the Gateway Sender. |
+
+<span class="tablecap">Table 1. Resume Gateway-Sender Parameters</span>
+
+**Example Commands:**
+
+``` pre
+resume gateway-sender --id=sender1-LN --group=LN-Group1
+```
+
+

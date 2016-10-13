@@ -1,0 +1,42 @@
+---
+title:  Configuring Peer-to-Peer Discovery
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Peer members discover each other using one or more locators.
+
+<a id="setting_up_membership__section_8C0147A16D5A488FB9C0EB765BDEC07B"></a>
+The `gemfire.properties` file can list the locators:
+
+``` pre
+locators=<locator1-address>[<port1>],<locator2-address>[<port2>]
+```
+
+To run a standalone member, the `gemfire.properties` file disables using locators:
+
+``` pre
+locators=
+mcast-address=                    
+mcast-port=0
+```
+
+**Note:**
+Locator settings must be consistent throughout the distributed system.
+
+

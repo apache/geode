@@ -1,0 +1,58 @@
+---
+title:  Using Indexes with Overflow Regions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can use indexes when querying on overflow regions; however, there are caveats.
+
+The following are caveats for querying overflow regions:
+
+-   You must use synchronous index maintenance for the region. This is the default maintenance setting.
+-   The index FROM clause must specify only one iterator, and it must refer to the keys or entry values. The index cannot refer to the region’s entrySet.
+-   The index data itself is not stored on (overflowed to) disk .
+
+**Examples:**
+
+The following example index creation calls DO NOT work for overflow regions.
+
+``` pre
+// This index will not work on an overflow region because there are two iterators in the FROM clause.
+createIndex("secIdIndex", "b.secId","/portfolios pf, pf.positions.values b");
+
+// This index will not work on an overflow region because the FROM clause specifies the entrySet
+createIndex("indx1", "entries.value.getID", "/exampleRegion.entrySet() entries");
+```
+
+The following example indexes will work for overflow regions.
+
+``` pre
+createIndex("pkidIndex", "p.pkid", "/Portfolios p");
+
+createIndex("indx1", "ks.toString", "/portfolio.keySet() ks");
+```
+
+The same working examples in gfsh:
+
+``` pre
+gfsh> create index -name="pkidIndex" --expression="p.pkid" --region="/Portfolios p"
+
+gfsh> create index -name="indx1" --expression="ks.toString" --region="/portfolio.keySet() ks"
+```
+
+

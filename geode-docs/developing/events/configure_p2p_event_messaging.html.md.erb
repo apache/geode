@@ -1,0 +1,50 @@
+---
+title:  Configuring Peer-to-Peer Event Messaging
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can receive events from distributed system peers for any region that is not a local region. Local regions receive only local cache events.
+
+<a id="configuring_event_distribution__section_7D5B1F0C0EF24E58BB3C335CB4EA9A3C"></a>
+Peer distribution is done according to the region's configuration.
+
+-   Replicated regions always receive all events from peers and require no further configuration. Replicated regions are configured using the `REPLICATE` region shortcut settings.
+-   For non-replicated regions, decide whether you want to receive all entry events from the distributed cache or only events for the data you have stored locally. To configure:
+    -   To receive all events, set the `subscription-attributes` `interest-policy` to `all`:
+
+        ``` pre
+        <region-attributes> 
+            <subscription-attributes interest-policy="all"/> 
+        </region-attributes>
+        ```
+
+    -   To receive events just for the data you have stored locally, set the `subscription-attributes` `interest-policy` to `cache-content` or do not set it (`cache-content` is the default):
+
+        ``` pre
+        <region-attributes> 
+            <subscription-attributes interest-policy="cache-content"/> 
+        </region-attributes>
+        ```
+
+    For partitioned regions, this only affects the receipt of events, as the data is stored according to the region partitioning. Partitioned regions with interest policy of `all` can create network bottlenecks, so if you can, run listeners in every member that hosts the partitioned region data and use the `cache-content` interest policy.
+
+**Note:**
+You can also configure Regions using the gfsh command-line interface. See [Region Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_EF03119A40EE492984F3B6248596E1DD).
+
+

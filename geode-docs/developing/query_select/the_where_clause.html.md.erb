@@ -1,0 +1,353 @@
+---
+title:  WHERE Clause
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="the_where_clause__section_56BB3A7F44124CA9BFBC20E19399C6E4"></a>
+Each FROM clause expression must resolve to a collection of objects. The collection is then available for iteration in the query expressions that follow in the WHERE clause.
+
+For example:
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.status = 'active'
+```
+
+The entry value collection is iterated by the WHERE clause, comparing the status field to the string 'active'. When a match is found, the value object of the entry is added to the return set.
+
+In the next example query, the collection specified in the first FROM clause expression is used by the rest of the SELECT statement, including the second FROM clause expression.
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion, positions.values p WHERE p.qty > 1000.00
+```
+
+## <a id="the_where_clause__section_99CA3FA508B740DCBAB4F01F8F9B1390" class="no-quick-link"></a>Implementing equals and hashCode Methods
+
+You must implement the `equals` and `hashCode` methods in your custom objects if you are doing ORDER BY and DISTINCT queries on the objects. The methods must conform to the properties and behavior documented in the online Java API documentation for `java.lang.Object`. Inconsistent query results may occur if these methods are absent.
+
+If you have implemented `equals` and `hashCode` methods in your custom objects, you must provide detailed implementations of these methods so that queries execute properly against the objects. For example, assume that you have defined a custom object (CustomObject) with the following variables:
+
+``` pre
+int ID
+int otherValue
+```
+
+Let's put two CustomObjects (we'll call them CustomObjectA and CustomObjectB) into the cache:
+
+CustomObjectA:
+
+``` pre
+ID=1
+otherValue=1
+```
+
+CustomObjectB:
+
+``` pre
+ID=1
+otherValue=2
+```
+
+If you have implemented the equals method to simply match on the ID field (ID == ID), queries will produce unpredictable results.
+
+The following query:
+
+``` pre
+SELECT * FROM /CustomObjects c 
+WHERE c.ID > 1 AND c.ID < 3 
+AND c.otherValue > 0 AND c.otherValue < 3
+```
+
+returns two objects, however the objects will be two of either CustomObjectA or CustomObjectB.
+
+Alternately, the following query:
+
+``` pre
+SELECT * FROM /CustomObjects c 
+WHERE c.ID > 1 AND c.ID < 3 
+AND c.otherValue > 1 AND c.otherValue < 3
+```
+
+returns either 0 results or 2 results of CustomObjectB, depending on which entry is evaluated last.
+
+To avoid unpredictable querying behavior, implement detailed versions of the `equals` and `hashCode` methods.
+
+If you are comparing a non-primitive field of the object in the WHERE clause, use the `equals` method instead of the `=` operator. For example instead of `nonPrimitiveObj = objToBeCompared` use `nonPrimitiveObj.equals(objToBeCompared)`.
+
+## <a id="the_where_clause__section_7484AD999D01473385628246697F37F6" class="no-quick-link"></a>Querying Serialized Objects
+
+Objects must implement serializable if you will be querying partitioned regions or if you are performing client-server querying.
+
+If you are using PDX serialization, you can access the values of individual fields without having to deserialize the entire object. This is accomplished by using PdxInstance, which is a wrapper around the serialized stream. The PdxInstance provides a helper method that takes field-name and returns the value without deserializing the object. While evaluating the query, the query engine will access field values by calling the getField method thus avoiding deserialization.
+
+To use PdxInstances in querying, ensure that PDX serialization reads are enabled in your server's cache. In gfsh, execute the following command before starting up your data members:
+
+``` pre
+gfsh>configure pdx --read-serialized=true
+```
+
+See [configure pdx](../../tools_modules/gfsh/command-pages/configure.html#topic_jdkdiqbgphqh) for more information.
+
+In cache.xml, set the following:
+
+``` pre
+// Cache configuration setting PDX read behavior 
+<cache>
+  <pdx read-serialized="true">
+  ...
+  </pdx>
+</cache>
+```
+
+## <a id="the_where_clause__section_75A114F9FEBF40A586621CAA1780DBD3" class="no-quick-link"></a>Attribute Visibility
+
+You can access any object or object attribute that is available in the current scope of a query. In querying, an object's attribute is any identifier that can be mapped to a public field or method in the object. In the FROM specification, any object that is in scope is valid. Therefore, at the beginning of a query, all locally cached regions and their attributes are in scope.
+
+For attribute Position.secId which is public and has getter method "getSecId()", the query can be written as the following:
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.position1.secId = '1'
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.position1.SecId = '1'
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.position1.getSecId() = '1'
+```
+
+The query engine tries to evaluate the value using the public field value. If a public field value is not found, it makes a get call using field name (note that the first character is uppercase.)
+
+## <a id="the_where_clause__section_EB7B976238104C0EACD959C52E5BD75B" class="no-quick-link"></a>Joins
+
+If collections in the FROM clause are not related to each other, the WHERE clause can be used to join them.
+
+The statement below returns all portfolios from the /exampleRegion and /exampleRegion2 regions that have the same status.
+
+``` pre
+SELECT * FROM /exampleRegion portfolio1, /exampleRegion2 portfolio2 WHERE portfolio1.status = portfolio2.status
+```
+
+To create indexes for region joins you create single-region indexes for both sides of the join condition. These are used during query execution for the join condition. Partitioned regions do not support region joins. For more information on indexes, see [Working with Indexes](../query_index/query_index.html).
+
+**Examples:**
+
+Query two regions. Return the ID and status for portfolios that have the same status.
+
+``` pre
+SELECT portfolio1.ID, portfolio2.status FROM /exampleRegion portfolio1, /exampleRegion2 portfolio2 WHERE portfolio1.status = portfolio2.status
+```
+
+Query two regions, iterating over all `positions` within each portfolio. Return all 4-tuples consisting of the value from each of the two regions and the value portion of the `positions` map from both regions in which the `secId` field of positions match.
+
+``` pre
+SELECT * FROM /exampleRegion portfolio1, portfolio1.positions.values positions1, /exampleRegion2 portfolio2, portfolio2.positions.values positions2 WHERE positions1.secId = positions2.secId
+```
+
+Same query as the previous example, with the additional constraint that matches will have a `ID` of 1.
+
+``` pre
+SELECT * FROM /exampleRegion portfolio1, portfolio1.positions.values positions1, /exampleRegion2 portfolio2, portfolio2.positions.values positions2 WHERE portfolio1.ID = 1 AND positions1.secId = positions2.secId
+```
+
+## <a id="the_where_clause__section_D91E0B06FFF6431490CC0BFA369425AD" class="no-quick-link"></a>LIKE
+
+Geode offers limited support for the LIKE predicate. LIKE can be used to mean 'equals to'. If you terminate the string with a wildcard ('%'), it behaves like 'starts with'. You can also place a wildcard (either '%' or '\_') at any other position in the comparison string. You can escape the wildcard characters to represent the characters themselves.
+
+**Note:**
+The '\*' wildcard is not supported in OQL LIKE predicates.
+
+You can also use the LIKE predicate when an index is present.
+
+**Examples:**
+
+Query the region. Return all objects where status equals 'active':
+
+``` pre
+SELECT * FROM /exampleRegion p WHERE p.status LIKE 'active'
+```
+
+Query the region using a wild card for comparison. Returns all objects where status begins with 'activ':
+
+``` pre
+SELECT * FROM /exampleRegion p WHERE p.status LIKE 'activ%'
+```
+
+## Case Insensitive Fields
+
+You can use the Java String class methods `toUpperCase` and `toLowerCase` to transform fields where you want to perform a case-insensitive search. For example:
+
+``` pre
+SELECT entry.value FROM /exampleRegion.entries entry WHERE entry.value.toUpperCase LIKE '%BAR%'
+```
+
+or
+
+``` pre
+SELECT * FROM /exampleRegion WHERE foo.toLowerCase LIKE '%bar%'
+```
+
+## <a id="the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676" class="no-quick-link"></a>Method Invocations
+
+To use a method in a query, use the attribute name that maps to the public method you want to invoke.
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.positions.size >= 2 - maps to positions.size()
+```
+
+Methods declared to return void evaluate to null when invoked through the query processor.
+
+You cannot invoke a static method. See [Enum Objects](the_where_clause.html#the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5) for more information.
+
+**Methods without parameters**
+
+If the attribute name maps to a public method that takes no parameters, just include the method name in the query string as an attribute. For example, emps.isEmpty is equivalent to emps.isEmpty().
+
+In the following example, the query invokes isEmpty on positions, and returns the set of all portfolios with no positions:
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.positions.isEmpty
+```
+
+**Methods with parameters**
+
+To invoke methods with parameters, include the method name in the query string as an attribute and provide method arguments between parentheses.
+
+This example passes the argument "Bo" to the public method, and returns all names that begin with "Bo".
+
+``` pre
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.name.startsWith('Bo')
+```
+
+For overloaded methods, the query processor decides which method to call by matching the runtime argument types with the parameter types required by the method. If only one method's signature matches the parameters provided, it is invoked. The query processor uses runtime types to match method signatures.
+
+If more than one method can be invoked, the query processor chooses the method whose parameter types are the most specific for the given arguments. For example, if an overloaded method includes versions with the same number of arguments, but one takes a Person type as an argument and the other takes an Employee type, derived from Person, Employee is the more specific object type. If the argument passed to the method is compatible with both types, the query processor uses the method with the Employee parameter type.
+
+The query processor uses the runtime types of the parameters and the receiver to determine the proper method to invoke. Because runtime types are used, an argument with a null value has no typing information, and so can be matched with any object type parameter. When a null argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an `AmbiguousNameException`.
+
+## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
+
+To write a query based on the value of an Enum object field, you must use the `toString` method of the enum object or use a query bind parameter.
+
+For example, the following query is NOT valid:
+
+``` pre
+//INVALID QUERY
+select distinct * from /QueryRegion0 where aDay = Day.Wednesday
+```
+
+The reason it is invalid is that the call to `Day.Wednesday` involves a static class and method invocation which is not supported.
+
+Enum types can be queried by using toString method of the enum object or by using bind parameter. When you query using the toString method, you must already know the constraint value that you wish to query. In the following first example, the known value is 'active'.
+
+**Examples:**
+
+Query enum type using the toString method:
+
+``` pre
+// eStatus is an enum with values 'active' and 'inactive'
+select * from /exampleRegion p where p.eStatus.toString() = 'active'
+```
+
+Query enum type using a bind parameter. The value of the desired Enum field ( Day.Wednesday) is passed as an execution parameter:
+
+``` pre
+select distinct * from /QueryRegion0 where aDay = $1
+```
+
+## <a id="the_where_clause__section_AC12146509F141378E493078540950C7" class="no-quick-link"></a>IN and SET
+
+The IN expression is a boolean indicating if one expression is present inside a collection of expressions of compatible type. The determination is based on the expressions' equals semantics.
+
+If `e1` and `e2` are expressions, `e2` is a collection, and `e1` is an object or a literal whose type is a subtype or the same type as the elements of `e2`, then `e1 IN                     e2` is an expression of type boolean.
+
+The expression returns:
+
+-   TRUE if e1 is not UNDEFINED and is contained in collection e2
+-   FALSE if e1 is not UNDEFINED and is not contained in collection e2 \#
+-   UNDEFINED if e1 is UNDEFINED
+
+For example, `2 IN SET(1, 2, 3)` is TRUE.
+
+Another example is when the collection you are querying into is defined by a subquery. This query looks for companies that have an active portfolio on file:
+
+``` pre
+SELECT name, address FROM /company 
+  WHERE id IN (SELECT id FROM /portfolios WHERE status = 'active')
+```
+
+The interior SELECT statement returns a collection of ids for all /portfolios entries whose status is active. The exterior SELECT iterates over /company, comparing each entry’s id with this collection. For each entry, if the IN expression returns TRUE, the associated name and address are added to the outer SELECT’s collection.
+
+**Comparing Set Values**
+
+The following is an example of a set value type comparison where sp is of type Set:
+
+``` pre
+SELECT * FROM /exampleRegion WHERE sp = set('20','21','22')
+```
+
+In this case, if sp only contains '20' and '21', then the query will evalute to false. The query compares the two sets and looks for the presence of all elements in both sets.
+
+For other collections types like list, the query can be written as follows:
+
+``` pre
+SELECT * FROM /exampleRegion WHERE sp.containsAll(set('20','21','22))
+```
+
+where sp is of type List.
+
+In order to use it for Set value, the query can be written as:
+
+``` pre
+SELECT * FROM /exampleRegion WHERE sp IN SET (set('20','21','22'),set('10',11','12'))
+```
+
+where a set value is searched in collection of set values.
+
+One problem is that you cannot create indexes on Set or List types (collection types) that are not comparable. To workaround this, you can create an index on a custom collection type that implements Comparable.
+
+## <a id="the_where_clause__section_E7206D045BEC4F67A8D2B793922BF213" class="no-quick-link"></a>Double.NaN and Float.NaN Comparisons
+
+The comparison behavior of Double.NaN and Float.NaN within Geode queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
+
+In summary, the comparisons differ in the following ways from those performed by the Java language numerical comparison operators (<, <=, ==, >= >) when applied to primitive double [float] values:
+
+-   Double.NaN \[Float.NaN\] is considered to be equal to itself and greater than all other double \[float\] values (including Double.POSITIVE\_INFINITY \[Float.POSITIVE\_INFINITY\]).
+-   0.0d \[0.0f\] is considered by this method to be greater than -0.0d \[-0.0f\].
+
+Therefore, Double.NaN\[Float.NaN\] is considered to be larger than Double.POSITIVE\_INFINITY\[Float.POSITIVE\_INFINITY\]. Here are some example queries and what to expect.
+
+| If p.value is NaN, the following query:                                                        | Evaluates to:     | Appears in the result set?     |
+|------------------------------------------------------------------------------------------------|-------------------|--------------------------------|
+| `SELECT * FROM /positions p WHERE                                         p.value = 0`         | false             | no                             |
+| `SELECT * FROM /positions p WHERE                                         p.value > 0`         | true              | yes                            |
+| `SELECT * FROM /positions p WHERE                                         p.value >= 0`        | true              | yes                            |
+| `SELECT * FROM /positions p WHERE                                         p.value < 0`         | false             | no                             |
+| `SELECT * FROM /positions p WHERE                                         p.value <= 0`        | false             | no                             |
+| **When p.value and p.value1 are both NaN, the following query:**                               | **Evaluates to:** | **Appears in the result set:** |
+| `SELECT * FROM /positions p WHERE                                         p.value = p.value1 ` | true              | yes                            |
+
+If you combine values when defining the following query in your code, when the query is executed the value itself is considered UNDEFINED when parsed and will not be returned in the result set.
+
+``` pre
+String query = "SELECT * FROM /positions p WHERE p.value =" + Float.NaN
+```
+
+Executing this query, the value itself is considered UNDEFINED when parsed and will not be returned in the result set.
+
+To retrieve NaN values without having another field already stored as NaN, you can define the following query in your code:
+
+``` pre
+String query = "SELECT * FROM /positions p WHERE p.value > " + Float.MAX_VALUE;
+        
+```

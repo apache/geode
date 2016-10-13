@@ -1,0 +1,109 @@
+---
+title:  OQL Aggregate Functions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The aggregate functions 
+```MIN```,
+```MAX```,
+```AVG```,
+```AVG``` over a DISTINCT expression,
+```SUM``` over a DISTINCT expression,
+```COUNT```, and
+```COUNT``` over a DISTINCT expression
+are supported.
+The ```GROUP BY``` extension is also supported where appropriate.
+
+The ```MIN``` function returns the smallest of the selected
+expression.
+The type of the expression must evaluate to a 
+```java.lang.Comparable```.
+
+The ```MAX``` function returns the largest of the selected
+expression.
+The type of the expression must evaluate to a 
+```java.lang.Comparable```.
+
+The ```AVG``` function returns the arithmetic mean of the set
+formed by the selected expression.
+The type of the expression must evaluate to a 
+```java.lang.Number```.
+For partitioned regions,
+each node's buckets provide both a sum and the number of elements
+to the node executing the query,
+such that a correct average may be computed.
+
+The ```AVG``` function where the DISTINCT modifier is applied
+to the expression returns the arithmetic mean of the set
+of unique (distinct) values.
+The type of the expression must evaluate to a 
+```java.lang.Number```.
+For partitioned regions,
+the distinct values in a node's buckets are returned
+to the node executing the query.
+The query node can then calculate the avarage over
+the values that are unique across nodes,
+after eliminating duplicate values that come from separate nodes.
+
+The ```SUM``` function returns the sum over the set
+formed by the selected expression.
+The type of the expression must evaluate to a 
+```java.lang.Number```.
+For partitioned regions,
+each node's buckets compute a sum over that node,
+returning that sum
+to the node executing the query,
+when then sums across all nodes.
+
+The ```SUM``` function where the DISTINCT modifier is applied
+to the expression returns the sum over the set
+of unique (distinct) values.
+The type of the expression must evaluate to a 
+```java.lang.Number```.
+For partitioned regions,
+the distinct values in a node's buckets are returned
+to the node executing the query.
+The query node can then calculate the sum over
+the values that are unique across nodes,
+after eliminating duplicate values that come from separate nodes.
+
+The ```COUNT``` function returns the quantity of values in the set
+formed by the selected expression.
+For example, to return the quantity of employees who have a
+positive sales amount:
+
+``` pre
+SELECT count(e.sales) FROM /employees e WHERE e.sales > 0.0
+```
+
+The ```COUNT``` function where the DISTINCT modifier is applied
+returns the quantity of unique (distinct) values in the set
+formed by the selected expression.
+
+## GROUP BY Extension for Aggregate Functions
+
+```GROUP BY``` is required 
+when aggregate functions are used in combination
+with other selected items.
+It permits ordering.
+For example,
+
+``` pre
+SELECT ID, MAX(e.sales) FROM /employees e GROUP BY ID
+```

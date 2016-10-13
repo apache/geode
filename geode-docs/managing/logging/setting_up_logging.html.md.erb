@@ -1,0 +1,76 @@
+---
+title:  Set Up Logging
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You configure logging in a member's `gemfire.properties` or at startup with `gfsh`.
+
+<a id="setting_up_logging__section_35F8A9028A91441785BCACD6CD40A498"></a>
+Before you begin, make sure you understand [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+1.  Run a time synchronization service such as NTP on all Geode host machines. This is the only way to produce logs that are useful for troubleshooting. Synchronized time stamps ensure that log messages from different hosts can be merged to accurately reproduce a chronological history of a distributed run.
+2.  Use a sniffer to monitor your logs Look for new or unexpected warnings, errors, or severe messages. The logs output by your system have their own characteristics, indicative of your system configuration and of the particular behavior of your applications, so you must become familiar with your applications' logs to use them effectively.
+3.  Configure member logging in each member's `gemfire.properties` as needed:
+
+    ``` pre
+    # Default gemfire.properties log file settings
+    log-level=config
+    log-file=
+    log-file-size-limit=0
+    log-disk-space-limit=0
+    ```
+
+    **Note:**
+    You can also specify logging parameters when you start up members (either locators or servers) using the `gfsh` command-line utility. In addition, you can modify log file properties and log-level settings while a member is already running by using the [alter runtime](../../tools_modules/gfsh/command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B) command.
+
+    1.  Set `log-level`. Options are `severe` (the highest level), `error`, `warning`, `info`, `config`, and `fine`. The lower levels include higher level settings, so a setting of `warning` would log `warning`, `error`, and `severe` messages. For general troubleshooting, we recommend setting the log level at `config` or higher.  The `fine` setting can fill up disk rather quickly and impact system performance. Use `fine` only if necessary.
+
+    2.  Specify the log file name in `log-file`. This can be relative or absolute. If this property is not specified, the defaults are:
+        -   Standard output for applications
+        -   For servers, the default log file location is:
+
+            ``` pre
+            working-directory/server-name.log
+            ```
+
+            By default, when starting a server through `gfsh`, the *working -directory* corresponds to the directory (named after itself) that the cache server creates upon startup. Alternatively, you can specify a different working directory path when you start the cache server. The *server-name* corresponds to the name of the cache server provided upon startup.
+        -   For a standalone locator, the default log file location is:
+
+            ``` pre
+            working-directory/locator-name.log
+            ```
+
+            By default, when starting a locator through `gfsh`, the *working -directory* corresponds to the directory (named after itself) created when the locator starts up. Alternatively, you can specify a different working directory path when you start a locator. The *locator-name* corresponds to the name of the locator provided upon startup. If you are using a colocated or embedded locator, the locator logs will be part of the member’s log file.
+
+        For the easiest logs examination and troubleshooting, send your logs to files instead of standard out.
+        **Note:**
+        Make sure each member logs to its own files. This makes the logs easier to decipher.
+
+    3.  Set the maximum size of a single log file in `log-file-size-limit`. If not set, the single, main log file is used. If set, the metadata file, the main log, and rolled child logs are used.
+    4.  Set the maximum size of all log files in `log-disk-space-limit`. If non-zero, this limits the combined size of all inactive log files, deleting oldest files first to stay under the limit. A zero setting indicates no limit.
+
+4.  If you are using the `gfsh` command-line interface, `gfsh` can creates its own log file in the directory where you run the `gfsh` or `gfsh.bat` script. By default, gfsh does not generate log files for itself. To enable gfsh logs, set the following system property to the desired log level before starting gfsh:
+
+    ``` pre
+    export JAVA_ARGS=-Dgfsh.log-level=[severe|warning|info|config|fine|finer|finest]
+    ```
+
+    gfsh log files are named `gfsh-0_0.log`.
+
+

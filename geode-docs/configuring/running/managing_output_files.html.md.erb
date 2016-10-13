@@ -1,0 +1,33 @@
+---
+title:  Managing System Output Files
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode output files are optional and can become quite large. Work with your system administrator to determine where to place them to avoid interfering with other system activities.
+
+<a id="managing_output_files__section_F0CEA4299D274801B9AB700C074F178F"></a>
+Geode includes several types of optional output files as described below.
+
+-   **Log Files**. Comprehensive logging messages to help you confirm system configuration and to debug problems in configuration and code. Configure log file behavior in the `gemfire.properties` file. See [Logging](../../managing/logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865).
+
+-   **Statistics Archive Files**. Standard statistics for caching and distribution activities, which you can archive on disk. Configure statistics collection and archival in the `gemfire.properties`, `archive-disk-space-limit` and `archive-file-size-limit`. See the [Reference](../../reference/book_intro.html#reference).
+
+-   **Disk Store Files**. Hold persistent and overflow data from the cache. You can configure regions to persist data to disk for backup purposes or overflow to disk to control memory use. The subscription queues that servers use to send events to clients can be overflowed to disk. Gateway sender queues overflow to disk automatically and can be persisted for high availability. Configure these through the `cache.xml`. See [Disk Storage](../../managing/disk_storage/chapter_overview.html).
+
+

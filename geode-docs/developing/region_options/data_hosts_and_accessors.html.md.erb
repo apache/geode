@@ -1,0 +1,31 @@
+---
+title:  Region Data Stores and Data Accessors
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Understand the difference between members that store data for a region and members that act only as data accessors to the region.
+
+<a id="data_hosts_and_accessors__section_0EF33633F97B4C63AC34F523259AD310"></a>
+In most cases, when you define a data region in a member’s cache, you also specify whether the member is a data store. Members that store data for a region are referred to as data stores or data hosts. Members that do not store data are referred to as accessor members, or empty members. Any member, store or accessor, that defines a region can access it, put data into it, and receive events from other members. To configure a region so the member is a data accessor, you use configurations that specify no local data storage for the region. Otherwise, the member is a data store for the region.
+
+For server regions, suppress local data storage at region creation by specifying a region shortcut that contains the term
+"PROXY" in its name, such as `PARTITION_PROXY` or `REPLICATE_PROXY`.
+
+For client regions, suppress local data storage at region creation by specifying the `PROXY` region
+shortcut. Do not use the `CACHING_PROXY` shortcut for this purpose, as it allows local data storage.

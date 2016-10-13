@@ -1,0 +1,41 @@
+---
+title:  Persistence and Overflow
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can persist data on disk for backup purposes and overflow it to disk to free up memory without completely removing the data from your cache.
+
+**Note:**
+This supplements the general steps for managing data regions provided in [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+All disk storage uses Apache Geode[Disk Storage](../../managing/disk_storage/chapter_overview.html).
+
+-   **[How Persistence and Overflow Work](../../developing/storing_data_on_disk/how_persist_overflow_work.html)**
+
+    To use Geode persistence and overflow, you should understand how they work with your data.
+
+-   **[Configure Region Persistence and Overflow](../../developing/storing_data_on_disk/storing_data_on_disk.html)**
+
+    Plan persistence and overflow for your data regions and configure them accordingly.
+
+-   **[Overflow Configuration Examples](../../developing/storing_data_on_disk/overflow_config_examples.html)**
+
+    The `cache.xml` examples show configuration of region and server subscription queue overflows.
+
+

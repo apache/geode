@@ -1,0 +1,69 @@
+---
+title:  Maintaining Indexes (Synchronously or Asynchronously) and Index Storage
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Indexes are automatically kept current with the region data they reference. The region attribute `IndexMaintenanceSynchronous` specifies whether the region indexes are updated synchronously when a region is modified or asynchronously in a background thread.
+
+## <a id="concept_98ED3F38919A490B9AE2553568455C35__section_FF1945F2AAFA4B158067CEE967410616" class="no-quick-link"></a>Index Maintenance Behavior
+
+Asynchronous index maintenance batches up multiple updates to the same region key. The default mode is synchronous, since this provides the greatest consistency with region data.
+
+See [RegionFactory.setIndexMaintenanceSynchronous](/releases/latest/javadoc/org/apache/geode/cache/RegionFactory.html).
+
+This declarative index creation sets the maintenance mode to asynchronous:
+
+``` pre
+<region-attributes index-update-type="asynchronous"> 
+</region-attributes>
+```
+
+## <a id="concept_98ED3F38919A490B9AE2553568455C35__section_68308B5597CF4A9EAA8EC0BD83A233E6" class="no-quick-link"></a>Internal Index Structure and Storage
+
+Indexes are stored either as compact or non-compact data structures based on the indexed expression (even if the index key type is the same.) For example, consider the following Passenger object:
+
+``` pre
+Passenger {
+   String name,
+   Date travelDate,
+   int age,
+   Flight flt,
+}
+Flight {
+   int flightId,
+   String origin,
+   String dest,
+}
+```
+
+An index on the Passenger name field will have different memory space requirements in the cache than the Flight origin field even though they are both String field types. The internal data structure selected by Geode for index storage will depend on the field's level in the object. In this example, name is a top-level field and an index on name can be stored as a compact index. Since origin is a second-level field, any index that uses origin as the indexed expression will be stored as a non-compact index.
+
+**Compact Index**
+
+A compact index has simple data structures to minimize its footprint, at the expense of doing extra work at index maintenance. This index does not support the storage of projection attributes.
+
+Currently compact indexes are only selected only supports the creation of an index on a region path. In addition, the following conditions must be met:
+
+-   Index maintenance is synchronous.
+-   The indexed expression is a path expression.
+-   The FROM clause has only one iterator. This implies that there is only one value in the index for each region entry and it is directly on the region values (not supported with keys, entries).
+
+**Non-Compact Index**
+
+Used whenever a compact index cannot be used.

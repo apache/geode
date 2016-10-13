@@ -1,0 +1,90 @@
+---
+title: Geode Redis Adapter
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
+
+
+The Geode Redis adapter allows Geode to function as a drop-in replacement for a Redis data store, letting Redis applications take advantage of Geode’s scaling capabilities without changing their client code. Redis clients connect to a Geode server in the same way they connect to a Redis server, using an IP address and a port number.
+
+-   **[Using the Redis Adapter](#using-the-redis-adapter)**
+
+-   **[How the Redis Adapter Works](#how-the-redis-adapter-works)**
+
+-   **[Advantages of Geode over a Redis Server](#advantages-of-geode-over-redis)**
+
+## <a id="using-the-redis-adapter" class="no-quick-link"></a>Using the Redis Adapter
+
+To use the Redis Adapter, you will need three pieces of information:
+
+1.  The port number through which clients will communicate
+2.  The IP address of the host where the server is to reside
+3.  A choice of which attributes you will use for a Geode partitioned region
+
+The IP address and port number should be the same ones coded in the Redis clients.
+
+In order to take advantage of Geode’s scaling capabilities, you should specify the Geode region as one of the types that use the PARTITION data policy. PARTITION is the default. Other possibilities include PARTITION\_REDUNDANT and PARTITION\_PERSISTENT. (See [“Region Shortcuts Quick Reference”](../reference/topics/region_shortcuts_table.html) for a complete list.)
+
+To implement a Geode instance using the Redis Adapter:
+
+1.  Install Geode on the system where the server is to reside.
+2.  Use gfsh to start a Geode server, specifying the three configuration options described above:
+    -   Use `--redis-port` to specify the port. This parameter is required -- the Geode server will listen on this port for Redis commands.
+    -   Use `--redis-bind-address` to specify the IP address of the server host. This parameter is optional. If not specified, the default is determined from the /etc/hosts file.
+    -   Use `--J=-Dgemfireredis.regiontype` to specify the region type. This parameter is optional. If not specified, regiontype is set to PARTITION.
+
+For example:
+
+``` pre
+gfsh> start server --name=server1 --redis-bind-address=localhost \
+ --redis-port=11211 --J=-Dgemfireredis.regiontype=PARTITION_PERSISTENT
+```
+
+Redis clients can then connect to the server at localhost:11211.
+
+## <a id="how-the-redis-adapter-works" class="no-quick-link"></a>How the Redis Adapter Works
+
+The Geode Redis Adapter supports all Redis data structures, including
+
+-   String
+-   List
+-   Hash
+-   Set
+-   SortedSet
+-   HyperLogLog
+
+In Geode these data structures are implemented using partitioned regions. In most cases, Geode allocates one partitioned region for each data structure. For example, each Sorted Set is allocated its own partitioned region, in which the key is the user data and the value is the user-provided score, and entries are indexed by score. The two exceptions to this design are data types String and HyperLogLog. All Strings are allocated to a single partitioned region. Similarly, all HyperLogLogs are allocated to a single region. Regions use Geode’s OQL and indexes.
+
+The Geode Redis Adapter supports all Redis commands for each of the Redis data structures. (See the Javadocs for the GemFireRedisServer class for a detailed list.) The Geode server’s responses to Redis commands are identical to those of a Redis server with the following exceptions, resulting from Geode’s more extensive partitioning model:
+
+-   Any command that removes keys and returns a count of removed entries will return a count of how many entries have been removed from the local vm, rather than a total count of items removed across all members. However, all entries will be removed.
+-   Any command that returns a count of newly set members has an unspecified return value. The command will work just as the Redis protocol states, but the count will not necessarily reflect the number set compared to the number overridden.
+-   Transactions work just as they would on a Redis instance; they are local transactions. Transactions cannot be executed on data that is not local to the executing server, that is on a partitioned region in a different server instance, or that is on a persistent region that does not have transactions enabled. Also, you cannot watch or unwatch keys, as all keys within a Geode transaction are watched by default.
+
+## <a id="advantages-of-geode-over-redis" class="no-quick-link"></a>Advantages of Geode over a Redis Server
+
+Geode’s primary advantage is its **scalability**. While the Redis server is single threaded, Geode supports high concurrency. Many Redis clients can execute commands on the Geode server simultaneously.
+
+Geode supports **stored procedures**, which can execute on the server and report results to the requesting client.
+
+Geode architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis client.
+
+Geode **WAN replication** allows the data store to expand horizontally, across physically distant sites, while maintaining data consistency.
+
+

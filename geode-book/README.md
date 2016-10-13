@@ -1,0 +1,1 @@
+For information about writing, editing, building, and publishing the Apache Geode documentation, please view the `README.md` and `CONTRIBUTING.md` files in the `geode-docs` directory.

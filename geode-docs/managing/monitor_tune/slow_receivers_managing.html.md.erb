@@ -1,0 +1,116 @@
+---
+title:  Managing Slow Receivers
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+If the receiver fails to receive a message, the sender continues to attempt to deliver the message as long as the receiving member is still in the distributed system.
+
+During the retry cycle, Geode throws warnings that include this string:
+
+``` pre
+will reattempt
+```
+
+The warnings are followed by an informational message when the delivery finally succeeds.
+
+For distributed regions, the scope of a region determines whether distribution acknowledgments and distributed synchronization are required. Partitioned regions ignore the scope attribute, but for the purposes of this discussion you should think of them as having an implicit distributed-ack scope.
+
+By default, distribution between system members is performed synchronously. With synchronous communication, when one member is slow to receive, it can cause its producers to slow down as well. This, of course, can lead to general performance problems in the distributed system.
+
+If you are experiencing slow performance and are sending large objects (multiple megabytes), before implementing these slow receiver options make sure your socket buffer sizes are appropriate for the size of the objects you distribute. The socket buffer size is set using socket-buffer-size in the `gemfire.properties` file.
+
+**Managing Slow distributed-no-ack Receivers**
+
+You can configure your consumer members so their messages are queued separately when they are slow to respond. The queueing happens in the producer members when the producers detect slow receipt and allows the producers to keep sending to other consumers at a normal rate. Any member that receives data distribution can be configured as described in this section.
+
+The specifications for handling slow receipt primarily affect how your members manage distribution for regions with distributed-no-ack scope, where distribution is asynchronous, but the specifications can affect other distributed scopes as well. If no regions have distributed-no-ack scope, the mechanism is unlikely to kick in at all. When slow receipt handling does kick in, however, it affects all distribution between the producer and that consumer, regardless of scope.
+
+**Note:**
+These slow receiver options are disabled in systems using SSL. See [SSL](../security/ssl_overview.html).
+
+Each consumer member determines how its own slow behavior is to be handled by its producers. The settings are specified as distributed system connection properties. This section describes the settings and lists the associated properties.
+
+-   async-distribution-timeout—The distribution timeout specifies how long producers are to wait for the consumer to respond to synchronous messaging before switching to asynchronous messaging with that consumer. When a producer switches to asynchronous messaging, it creates a queue for that consumer’s messages and a separate thread to handle the communication. When the queue empties, the producer automatically switches back to synchronous communication with the consumer. These settings affect how long your producer’s cache operations might block. The sum of the timeouts for all consumers is the longest time your producer might block on a cache operation.
+-   async-queue-timeout—The queue timeout sets a limit on the length of time the asynchronous messaging queue can exist without a successful distribution to the slow receiver. When the timeout is reached, the producer asks the consumer to leave the distributed system.
+-   async-max-queue-size—The maximum queue size limits the amount of memory the asynchronous messaging queue can consume. When the maximum is reached, the producer asks the consumer to leave the distributed system.
+
+**Configuring Async Queue Conflation**
+
+When the scope is distributed-no-ack scope, you can configure the producer to conflate entry update messages in its queues, which may further speed communication. By default, distributed-no-ack entry update messages are not conflated. The configuration is set in the producer at the region level.
+
+**Forcing the Slow Receiver to Disconnect**
+
+If either of the queue timeout or maximum queue size limits is reached, the producer sends the consumer a high-priority message (on a different TCP connection than the connection used for cache messaging) telling it to disconnect from the distributed system. This prevents growing memory consumption by the other processes that are queuing changes for the slow receiver while they wait for that receiver to catch up. It also allows the slow member to start fresh, possibly clearing up the issues that were causing it to run slowly.
+
+When a producer gives up on a slow receiver, it logs one of these types of warnings:
+
+-   Blocked for time ms which is longer than the max of asyncQueueTimeout ms so asking slow receiver slow\_receiver\_ID to disconnect.
+-   Queued bytes exceed max of asyncMaxQueueSize so asking slow receiver slow\_receiver\_ID to disconnect.
+
+When a process disconnects after receiving a request to do so by a producer, it logs a warning message of this type:
+
+-   Disconnect forced by producer because we were too slow.
+
+These messages only appear in your logs if logging is enabled and the log level is set to a level that includes warning (which it does by default). See [Logging](../logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865).
+
+If your consumer is unable to receive even high priority messages, only the producer’s warnings will appear in the logs. If you see only producer warnings, you can restart the consumer process. Otherwise, the Geode failure detection code will eventually cause the member to leave the distributed system on its own.
+
+**Use Cases**
+
+These are the main use cases for the slow receiver specifications:
+
+-   Message bursts—With message bursts, the socket buffer can overflow and cause the producer to block. To keep from blocking, first make sure your socket buffer is large enough to handle a normal number of messages (using the socket-buffer-size property), then set the async distribution timeout to 1. With this very low distribution timeout, when your socket buffer does fill up, the producer quickly switches to async queueing. Use the distribution statistics, asyncQueueTimeoutExceeded and asyncQueueSizeExceeded, to make sure your queue settings are high enough to avoid forcing unwanted disconnects during message bursts.
+-   Unhealthy or dead members—When members are dead or very unhealthy, they may not be able to communicate with other distributed system members. The slow receiver specifications allow you to force crippled members to disconnect, freeing up resources and possibly allowing the members to restart fresh. To configure for this, set the distribution timeout high (one minute), and set the queue timeout low. This is the best way to avoid queueing for momentary slowness, while still quickly telling very unhealthy members to leave the distributed system.
+-   Combination message bursts and unhealthy members—To configure for both of the above situations, set the distribution timeout low and the queue timeout high, as for the message bursts scenario.
+
+**Managing Slow distributed-ack Receivers**
+
+When using a distribution scope other than distributed-no-ack, alerts are issued for slow receivers. A member that isn’t responding to messages may be sick, slow, or missing. Sick or slow members are detected in message transmission and reply-wait processing code, triggering a warning alert first. If a member still isn’t responding, a severe warning alert is issued, indicating that the member may be disconnected from the distributed system. This alert sequence is enabled by setting the ack-wait-threshold and the ack-severe-alert-threshold to some number of seconds.
+
+When ack-severe-alert-threshold is set, regions are configured to use ether distributed-ack or global scope, or use the partition data policy. Geode will wait for a total of ack-wait-threshold seconds for a response to a cache operation, then it logs a warning alert ("Membership: requesting removal of entry(\#). Disconnected as a slow-receiver"). After waiting an additional ack-severe-alert-threshold seconds after the first threshold is reached, the system also informs the failure detection mechanism that the receiver is suspect and may be disconnected, as shown in the following figure.
+
+<img src="../../images_svg/member_severe_alert.svg" id="slow_recv__image_BA474143B16744F28DE0AB1CAD00FB48" class="image" />
+The events occur in this order:
+
+1.  CACHE\_OPERATION - transmission of cache operation is initiated.
+2.  SUSPECT - identified as a suspect by ack-wait-threshold, which is the maximum time to wait for an acknowledge before initiating failure detection.
+3.  I AM ALIVE - notification to the system in response to failure detection queries, if the process is still alive. A new membership view is sent to all members if the suspect process fails to answer with I AM ALIVE.
+4.  SEVERE ALERT- the result of ack-severe-wait-threshold elapsing without receiving a reply.
+
+When a member fails suspect processing, its cache is closed and its CacheListeners are notified with the afterRegionDestroyed notification. The RegionEvent passed with this notification has a CACHE\_CLOSED operation and a FORCED\_DISCONNECT operation, as shown in the FORCED\_DISCONNECT example.
+
+``` pre
+public static final Operation FORCED_DISCONNECT 
+= new Operation("FORCED_DISCONNECT",
+        true, // isLocal
+        true, // isRegion
+        OP_TYPE_DESTROY,
+        OP_DETAILS_NONE
+        );
+            
+```
+
+A cache closes due to being expelled from the distributed system by other members. Typically, this happens when a member becomes unresponsive and does not respond to heartbeat requests within the member-timeout period, or when ack-severe-alert-threshold has expired without a response from the member.
+
+**Note:**
+This is marked as a region operation.
+
+Other members see the normal membership notifications for the departing member. For instance, RegionMembershipListeners receive the afterRemoteRegionCrashed notification, and SystemMembershipListeners receive the memberCrashed notification.
+
+

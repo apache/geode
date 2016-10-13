@@ -1,0 +1,48 @@
+---
+title:  Understanding Client Single-Hop Access to Server-Partitioned Regions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+With single-hop access the client connects to every server, so more connections are generally used. This works fine for smaller installations, but is a barrier to scaling.
+
+If you have a large installation with many clients, you may want to disable single hop by setting the pool attribute, `pr-single-hop-enabled` to false in your pool declarations.
+
+Without single hop, the client uses whatever server connection is available, the same as with all other operations. The server that receives the request determines the data location and contacts the host, which might be a different server. So more multiple-hop requests are made to the server system.
+
+**Note:**
+Single hop is used for the following operations: `put`, `get`, `destroy`, `putAll`, `getAll`, `removeAll` and `onRegion` function execution.
+
+Even with single hop access enabled, you will occasionally see some multiple-hop behavior. To perform single-hop data access, clients automatically get metadata from the servers about where the entry buckets are hosted. The metadata is maintained lazily. It is only updated after a single-hop operation ends up needing multiple hops, an indicator of stale metadata in the client.
+
+## <a id="how_pr_single_hop_works__section_AE4A6DA0064C4D5280336DD65CB107CC" class="no-quick-link"></a>Single Hop and the Pool max-connections Setting
+
+Do not set the pool's `max-connections` setting with single hop enabled. Limiting the pool's connections with single hop can cause connection thrashing, throughput loss, and server log bloat.
+
+If you need to limit the pool’s connections, either disable single hop or keep a close watch on your system for these negative effects.
+
+Setting no limit on connections, however, can result in too many connections to your servers, possibly causing you to run up against your system’s file handle limits. Review your anticipated connection use and make sure your servers are able to accommodate it.
+
+## <a id="how_pr_single_hop_works__section_99F27B724E5F4008BC8878D1CB4B9821" class="no-quick-link"></a>Balancing Single-Hop Server Connection Use
+
+Single-hop gives the biggest benefits when data access is well balanced across your servers. In particular, the loads for client/server connections can get out of balance if you have these in combination:
+
+-   Servers that are empty data accessors or that do not host the data the clients access through single-key operations
+-   Many single-key operations from the clients
+
+If data access is greatly out of balance, clients can thrash trying to get to the data servers. In this case, it might be faster to disable single hop and go through servers that do not host the data.

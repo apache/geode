@@ -1,0 +1,42 @@
+---
+title:  How Consistency Is Achieved in WAN Deployments
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+When two or more Geode systems are configured to distribute events over a WAN, each system performs local consistency checking before it distributes an event to a configured gateway sender. Discarded events are not distributed across the WAN.
+
+Regions can also be configured to distribute updates to other Geode clusters over a WAN. With a distributed WAN configuration, multiple gateway senders asynchronously queue and send region updates to another Geode cluster. It is possible for multiple sites to send updates to the same region entry at the same time. It is also possible that, due to a slow WAN connection, a cluster might receive region updates after a considerable delay, and after it has applied more recent updates to a region. To ensure that WAN-replicated regions eventually reach a consistent state, Geode first ensures that each cluster performs consistency checking to regions before queuing updates to a gateway sender for WAN distribution. In order words, region conflicts are first detected and resolved in the local cluster, using the techniques described in the previous sections.
+
+When a Geode cluster in a WAN configuration receives a distributed update, conflict checking is performed to ensure that all sites apply updates in the same way. This ensures that regions eventually reach a consistent state across all Geode clusters. The default conflict checking behavior for WAN-replicated regions is summarized as follows:
+
+-   If an update is received from the same Geode cluster that last updated the region entry, then there is no conflict and the update is applied.
+-   If an update is received from a different Geode cluster than the one that last updated the region entry, then a potential conflict exists. A cluster applies the update only when the update has a timestamp that is later than the timestamp currently recorded in the cache.
+
+**Note:**
+If you use the default conflict checking feature for WAN deployments, you must ensure that all Geode members in all clusters synchronize their system clocks. For example, use a common NTP server for all Geode members that participate in a WAN deployment.
+
+As an alternative to the default conflict checking behavior for WAN deployments, you can develop and deploy a custom conflict resolver for handling region events that are distributed over a WAN. Using a custom resolver enables you to handle conflicts using criteria other than, or in addition to, timestamp information. For example, you might always prioritize updates that originate from a particular site, given that the timestamp value is within a certain range.
+
+When a gateway sender distributes an event to another Geode site, it adds the distributed system ID of the local cluster, as well as a timestamp for the event. In a default configuration, the cluster that receives the event examines the timestamp to determine whether or not the event should be applied. If the timestamp of the update is earlier than the local timestamp, the cluster discards the event. If the timestamp is the same as the local timestamp, then the entry having the highest distributed system ID is applied (or kept).
+
+You can override the default consistency checking for WAN events by installing a conflict resolver plug-in for the region. If a conflict resolver is installed, then any event that can potentially cause a conflict (any event that originated from a different distributed system ID than the ID that last modified the entry) is delivered to the conflict resolver. The resolver plug-in then makes the sole determination for which update to apply or keep.
+
+See "Implementing a GatewayConflictResolver" under [Resolving Conflicting Events](../events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542) to configure a custom resolver.
+
+

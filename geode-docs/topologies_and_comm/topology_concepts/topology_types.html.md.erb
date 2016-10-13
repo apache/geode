@@ -1,0 +1,48 @@
+---
+title:  Topology Types
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The Apache Geode topology options allow you to scale horizontally and vertically.
+
+Apache Geode provides a variety of cache topologies:
+
+-   At the core of all systems is the single, peer-to-peer distributed system.
+-   For horizontal and vertical scaling, you can combine individual systems into client/server and multi-site (WAN) topologies:
+    -   In client/server systems, a small number of server processes manage data and event processing for a much larger client group.
+    -   In multi-site systems, several geographically disparate systems are loosely coupled into a single, cohesive processing unit.
+
+## <a id="concept_7628F498DB534A2D8A99748F5DA5DC94__section_333142A36A3E4AF7A1EC31856ED99FCA" class="no-quick-link"></a>Peer-to-Peer Configuration
+
+The peer-to-peer distributed system is the building block for all Geode installations. Peer-to-peer alone is the simplest topology. Each cache instance, or member, directly communicates with every other member in the distributed system. This cache configuration is primarily designed for applications that need to embed a cache within the application process space and participate in a cluster. A typical example is an application server cluster in which the application and the cache are co-located and share the same heap.
+
+<img src="../../images_svg/p2p_topology.svg" id="concept_7628F498DB534A2D8A99748F5DA5DC94__image_vzs_qwn_4r" class="image" />
+
+## <a id="concept_7628F498DB534A2D8A99748F5DA5DC94__section_38F7D763AE32466299DC5B7DB9E71C61" class="no-quick-link"></a>Client/Server Configuration
+
+The client/server topology is the model for vertical scaling, where clients typically host a small subset of the data in the application process space and delegate to the server system for the rest. Compared to peer-to-peer by itself, the client/server architecture provides better data isolation, high fetch performance, and more scalability. If data distribution will put a very heavy load on the network, a client/server architecture usually gives better performance. In any client/server installation, the server system is itself a peer-to-peer system, with data distributed between servers. A client system has a connection pool, which it uses to communicate with servers and other Geode members. A client may also contain a local cache.
+
+<img src="../../images_svg/cs_topology.svg" id="concept_7628F498DB534A2D8A99748F5DA5DC94__image_073094D7ED05419A9EE8E6AE552BE3F3" class="image" />
+
+## <a id="concept_7628F498DB534A2D8A99748F5DA5DC94__section_566EC05894D6461AA0E7DD7B065D457B" class="no-quick-link"></a>Multi-site Configuration
+
+For horizontal scaling, you can use a loosely coupled multi-site topology. With multi-site, multiple Geode systems are loosely coupled, generally across geographical distances with slower connections, such as with a WAN. This topology provides better performance than the tight coupling of a single system, and greater independence between locations, so that each site can function on its own if the connection or remote site become unavailable. In a multi-site installation, each individual site is a peer-to-peer or Client/Server system.
+
+<img src="../../images/consistent_multisite.png" id="concept_7628F498DB534A2D8A99748F5DA5DC94__image_6501FD66F0F94273A1F7EEE5747B3925" class="image" />
+

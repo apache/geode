@@ -1,0 +1,46 @@
+---
+title:  Performance Controls
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic provides tuning suggestions of particular interest to developers, primarily programming techniques and cache configuration.
+
+Before you begin, you should understand Apache Geode [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+-   **[Data Serialization](../../managing/monitor_tune/performance_controls_data_serialization.html)**
+
+    In addition to standard Java serialization, Geode offers serialization options that give you higher performance and greater flexibility for data storage, transfers, and language types.
+
+-   **[Setting Cache Timeouts](../../managing/monitor_tune/performance_controls_setting_cache_timeouts.html)**
+
+    Cache timeout properties can modified through the gfsh `alter runtime` command (or declared in the `cache.xml` file) and can also be set through methods of the interface, `org.apache.geode.cache.Cache`.
+
+-   **[Controlling Socket Use](../../managing/monitor_tune/performance_controls_controlling_socket_use.html)**
+
+    For peer-to-peer communication, you can manage socket use at the system member level and at the thread level.
+
+-   **[Management of Slow Receivers](../../managing/monitor_tune/performance_controls_managing_slow_receivers.html)**
+
+    You have several options for handling slow members that receive data distribution. The slow receiver options control only to peer-to-peer communication between distributed regions using TCP/IP. This topic does not apply to client/server or multi-site communication, or to communication using the UDP unicast or IP multicast protocols.
+
+-   **[Increasing the Ratio of Cache Hits](../../managing/monitor_tune/performance_controls_increasing_cache_hits.html)**
+
+    The more frequently a get fails to find a valid value in the first cache and has to try a second cache, the more the overall performance is affected.
+
+

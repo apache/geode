@@ -1,0 +1,708 @@
+---
+title: Sample REST Applications
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="topic_lvp_cd5_m4"></a>
+
+
+This section provides examples that illustrate how multiple clients, both REST and native, can access the same Geode region data.
+
+**Note:**
+You must set PDX read-serialized to true when starting the cache server to achieve interoperability between different clients. See [Setup and Configuration](setup_config.html#topic_e21_qc5_m4) for instructions on starting up REST-enabled cache servers.
+
+The following examples demonstrate the following:
+
+1.  A Java REST client creates a Person object on key 1. This client references the following supporting examples (also provided):
+    1.  Geode cache client
+    2.  REST client utility
+    3.  Date Time utility
+    4.  Person class
+    5.  Gender class
+
+2.  A Ruby REST client also gets data for key 1 and updates it.
+3.  A Python REST Client demonstrates the creation and modification of objects.
+    **Note:**
+    An additional Python REST client reference application is available here: [https://github.com/gemfire/py-gemfire-rest](https://github.com/gemfire/py-gemfire-rest).
+
+The following Java examples assume a project directory structure similar to the following:
+
+<img src="../images/rest_example_java_packages.png" id="topic_lvp_cd5_m4__image_rvd_ydd_3r" class="image" />
+## \#1. REST Java Client (RestClientApp.java)
+
+``` pre
+package org.apache.geode.restclient;
+
+ import org.springframework.http.HttpHeaders;
+ import org.springframework.http.MediaType;
+ import org.springframework.http.HttpMethod;
+ import org.springframework.http.HttpEntity;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.client.HttpClientErrorException;
+ import org.springframework.web.client.HttpServerErrorException;
+
+ import org.apache.geode.util.RestClientUtils;
+
+ import java.util.ArrayList;
+ import java.util.List;
+
+@SuppressWarnings( "unused")
+ public class RestClientApp  {
+   private static final String PEOPLE_REGION =  "/People";
+
+   private static final String PERSON1_AS_JSON =  "{"
+          +  "\"@type\ ": \"org.apache.geode.domain.Person\ "," +  "\"id\ ": 1,"
+       +  " \"firstName\ ": \"Jane\ "," +  " \"middleName\ ": \"H\ ","
+       +  " \"lastName\ ": \"Doe1\ "," +  " \"birthDate\ ": \"04/12/1983\ ","
+       +  "\"gender\ ": \"MALE\ "" + "}";
+
+   public static void main( final String... args)  throws Exception {
+    doCreate(PEOPLE_REGION,  "1");
+     System.out.println( "Programme has run successfully...!");
+  }
+
+   private static  HttpHeaders setAcceptAndContentTypeHeaders(){
+    List<MediaType> acceptableMediaTypes =  new ArrayList<MediaType>();
+    acceptableMediaTypes.add(MediaType.APPLICATION_JSON);
+
+    HttpHeaders headers =  new HttpHeaders();
+    headers.setAccept(acceptableMediaTypes);
+    headers.setContentType(MediaType.APPLICATION_JSON);
+     return headers;
+  }
+
+   private static void doCreate( final String regionNamePath,  final String key) {
+    HttpHeaders headers =  setAcceptAndContentTypeHeaders();
+    HttpEntity< String> entity =  new HttpEntity< String>(PERSON1_AS_JSON, headers);
+     try {
+      ResponseEntity< String> result = RestClientUtils.getRestTemplate().exchange(
+             "http://localhost:8080/gemfire-api/v1/People?key=1" , HttpMethod.POST,
+            entity,  String.class);
+
+       System.out.println( "STATUS_CODE = " + result.getStatusCode().value());
+       System.out.println( "HAS_BODY = " + result.hasBody());
+       System.out.println( "LOCATION_HEADER = " + result.getHeaders().getLocation().toString());
+    }  catch (HttpClientErrorException e) {
+       System.out.println( "Http Client encountered error, msg:: " + e.getMessage());
+    }  catch(HttpServerErrorException se) {
+       System.out.println( "Server encountered error, msg::" + se.getMessage());
+    }  catch (Exception e) {
+       System.out.println( "Unexpected ERROR...!!");
+    }
+  }
+}
+```
+
+## \#1a. Geode Cache Java Client (MyJavaClient.java)
+
+``` pre
+package org.apache.geode.javaclient;
+
+ import java.util.Calendar;
+ import java.util.HashMap;
+ import java.util.Map;
+
+ import org.apache.geode.cache.Region;
+ import org.apache.geode.cache.client.ClientCache;
+ import org.apache.geode.cache.client.ClientCacheFactory;
+ import org.apache.geode.cache.client.ClientRegionFactory;
+ import org.apache.geode.cache.client.ClientRegionShortcut;
+ import org.apache.geode.domain.Gender;
+ import org.apache.geode.domain.Person;
+ import org.apache.geode.pdx.PdxInstance;
+ import org.apache.geode.util.DateTimeUtils;
+
+ public class MyJavaClient {
+
+   public static void main( String[] args) {
+    ClientCacheFactory cf =  new ClientCacheFactory().addPoolServer( "localhost", 40405);
+    ClientCache cache = cf.setPdxReadSerialized( true).create();
+    ClientRegionFactory rf = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+
+    Region region = rf.create( "People");
+
+     //Get data on key "1" , update it and put it again in cache
+    Person actualObj =  null;
+     Object obj = region.get( "1");
+     if(obj  instanceof PdxInstance){
+       System.out.println( "Obj is PdxInstance");
+      PdxInstance pi = (PdxInstance)obj;
+       Object obj2 = pi.getObject();
+       if(obj2  instanceof Person){
+        actualObj = (Person)obj2;
+         System.out.println( "Received Person :" + actualObj.toString());
+      } else {
+         System.out.println( "Error: obj2 is expected to be of type Person");
+      }
+    } else {
+       System.out.println( "Error: obj is expected to be of type PdxInstance");
+    }
+
+     //update the received object and put it in cache
+ if(actualObj !=  null){
+      actualObj.setFirstName( "Jane_updated");
+      actualObj.setLastName( "Doe_updated");
+      region.put( "1", actualObj);
+    }
+
+     //Add/putAll set of person objects
+ final Person person2 =  new Person(102L,  "Sachin",  "Ramesh",  "Tendulkar", DateTimeUtils.createDate(1975, Calendar.DECEMBER, 14), Gender.MALE);
+     final Person person3 =  new Person(103L,  "Saurabh",  "Baburav",  "Ganguly", DateTimeUtils.createDate(1972, Calendar.AUGUST, 29), Gender.MALE);
+     final Person person4 =  new Person(104L,  "Rahul",  "subrymanyam",  "Dravid", DateTimeUtils.createDate(1979, Calendar.MARCH, 17), Gender.MALE);
+     final Person person5 =  new Person(105L,  "Jhulan",  "Chidambaram",  "Goswami", DateTimeUtils.createDate(1983, Calendar.NOVEMBER, 25), Gender.FEMALE);
+     final Person person6 =  new Person(101L,  "Rahul",  "Rajiv",  "Gndhi", DateTimeUtils.createDate(1970, Calendar.MAY, 14), Gender.MALE);
+     final Person person7 =  new Person(102L,  "Narendra",  "Damodar",  "Modi", DateTimeUtils.createDate(1945, Calendar.DECEMBER, 24), Gender.MALE);
+     final Person person8 =  new Person(103L,  "Atal",  "Bihari",  "Vajpayee", DateTimeUtils.createDate(1920, Calendar.AUGUST, 9), Gender.MALE);
+     final Person person9 =  new Person(104L,  "Soniya",  "Rajiv",  "Gandhi", DateTimeUtils.createDate(1929, Calendar.MARCH, 27), Gender.FEMALE);
+     final Person person10 =  new Person(104L,  "Priyanka",  "Robert",  "Gandhi", DateTimeUtils.createDate(1973, Calendar.APRIL, 15), Gender.FEMALE);
+     final Person person11 =  new Person(104L,  "Murali",  "Manohar",  "Joshi", DateTimeUtils.createDate(1923, Calendar.APRIL, 25), Gender.MALE);
+     final Person person12 =  new Person(104L,  "Lalkrishna",  "Parmhansh",  "Advani", DateTimeUtils.createDate(1910, Calendar.JANUARY, 01), Gender.MALE);
+     final Person person13 =  new Person(104L,  "Shushma",  "kumari",  "Swaraj", DateTimeUtils.createDate(1943, Calendar.AUGUST, 10), Gender.FEMALE);
+     final Person person14 =  new Person(104L,  "Arun",  "raman",  "jetly", DateTimeUtils.createDate(1942, Calendar.OCTOBER, 27), Gender.MALE);
+     final Person person15 =  new Person(104L,  "Amit",  "kumar",  "shah", DateTimeUtils.createDate(1958, Calendar.DECEMBER, 21), Gender.MALE);
+     final Person person16 =  new Person(104L,  "Shila",  "kumari",  "Dixit", DateTimeUtils.createDate(1927, Calendar.FEBRUARY, 15), Gender.FEMALE);
+
+    Map< String,  Object> userMap =  new HashMap< String,  Object>();
+    userMap.put( "2", person6);
+    userMap.put( "3", person6);
+    userMap.put( "4", person6);
+    userMap.put( "5", person6);
+    userMap.put( "6", person6);
+    userMap.put( "7", person7);
+    userMap.put( "8", person8);
+    userMap.put( "9", person9);
+    userMap.put( "10", person10);
+    userMap.put( "11", person11);
+    userMap.put( "12", person12);
+    userMap.put( "13", person13);
+    userMap.put( "14", person14);
+    userMap.put( "15", person15);
+    userMap.put( "16", person16);
+
+     //putAll all person
+    region.putAll(userMap);
+
+     System.out.println( "successfully Put set of Person objects into the cache");
+  }
+
+}
+```
+
+## \#1b. REST Client Utilities (RestClientUtils.java)
+
+``` pre
+package org.apache.geode.util;
+
+
+ import java.net.URI;
+ import java.text.SimpleDateFormat;
+ import java.util.ArrayList;
+ import java.util.List;
+ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+ import org.springframework.http.converter.HttpMessageConverter;
+ //import  org.springframework.http.converter.ResourceHttpMessageConverter;
+ import org.springframework.http.converter.StringHttpMessageConverter;
+ import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
+ import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+ import org.springframework.web.client.RestTemplate;
+ import org.springframework.web.util.UriComponentsBuilder;
+
+ public class RestClientUtils {
+
+   public static final String BASE_URL =  "http://192.0.2.0:8080" ;
+ public static final String GEMFIRE_REST_API_CONTEXT =  "/gemfire-api";
+   public static final String GEMFIRE_REST_API_VERSION =  "/v1";
+   public static final URI GEMFIRE_REST_API_WEB_SERVICE_URL = URI
+      .create(BASE_URL + GEMFIRE_REST_API_CONTEXT + GEMFIRE_REST_API_VERSION);
+
+   public static RestTemplate restTemplate;
+   public static RestTemplate getRestTemplate() {
+     if (restTemplate ==  null) {
+      restTemplate =  new RestTemplate();
+       final List<HttpMessageConverter<?>> messageConverters =  new ArrayList<HttpMessageConverter<?>>();
+
+      messageConverters.add( new ByteArrayHttpMessageConverter());
+       //messageConverters.add(new  ResourceHttpMessageConverter());
+      messageConverters.add( new StringHttpMessageConverter());
+      messageConverters.add(createMappingJackson2HttpMessageConverter());
+       // messageConverters.add(createMarshallingHttpMessageConverter());
+
+      restTemplate.setMessageConverters(messageConverters);
+    }
+     return restTemplate;
+  }
+
+   public static HttpMessageConverter< Object> createMappingJackson2HttpMessageConverter() {
+     final Jackson2ObjectMapperFactoryBean objectMapperFactoryBean =  new Jackson2ObjectMapperFactoryBean();
+    objectMapperFactoryBean.setFailOnEmptyBeans( true);
+    objectMapperFactoryBean.setIndentOutput( true);
+    objectMapperFactoryBean.setDateFormat( new SimpleDateFormat( "MM/dd/yyyy"));
+    objectMapperFactoryBean
+        .setFeaturesToDisable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    objectMapperFactoryBean
+        .setFeaturesToEnable(
+            com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS,
+            com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES,
+            com.fasterxml.jackson.databind.DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+    objectMapperFactoryBean.afterPropertiesSet();
+
+     final MappingJackson2HttpMessageConverter httpMessageConverter =  new MappingJackson2HttpMessageConverter();
+    httpMessageConverter.setObjectMapper(objectMapperFactoryBean.getObject());
+     return httpMessageConverter;
+  }
+
+   public static URI toUri( final String... pathSegments) {
+     return toUri(GEMFIRE_REST_API_WEB_SERVICE_URL, pathSegments);
+  }
+
+   public static URI toUri( final URI baseUrl,  final String... pathSegments) {
+     return UriComponentsBuilder.fromUri(baseUrl).pathSegment(pathSegments)
+        .build().toUri();
+  }
+}
+```
+
+## \#1c. Date and Time Utilities (DateTimeUtils.java)
+
+``` pre
+package org.apache.geode.util;
+
+
+ import java.text.SimpleDateFormat;
+ import java.util.Calendar;
+ import java.util.Date;
+
+/**
+ * The DateTimeUtils class is a utility class  for working with dates and times.
+ */
+@SuppressWarnings( "unused")
+ public abstract class DateTimeUtils {
+
+   public static Calendar createCalendar( final int year,  final int month,  final int day) {
+     final Calendar dateTime = Calendar.getInstance();
+    dateTime.clear();
+    dateTime.set(Calendar.YEAR, year);
+    dateTime.set(Calendar.MONTH, month);
+    dateTime.set(Calendar.DAY_OF_MONTH, day);
+     return dateTime;
+  }
+
+   public static Date createDate( final int year,  final int month,  final int day) {
+     return createCalendar(year, month, day).getTime();
+  }
+
+   public static String format( final Date dateTime,  final String formatPattern) {
+     return (dateTime !=  null ?  new SimpleDateFormat(formatPattern).format(dateTime) :  null);
+  }
+
+}
+```
+
+## \#1d. Person Class (Person.java)
+
+``` pre
+package org.apache.geode.domain;
+
+
+ import java.util.Date;
+
+ import org.apache.geode.internal.lang.ObjectUtils;
+ import org.apache.geode.pdx.PdxReader;
+ import org.apache.geode.pdx.PdxSerializable;
+ import org.apache.geode.pdx.PdxWriter;
+
+ import org.apache.geode.util.DateTimeUtils;
+
+/**
+ * The Person class is an abstraction modeling a person.
+ */
+
+ public class Person  implements PdxSerializable /*ResourceSupport  implements DomainObject< Long>*/  {
+
+   private static final long serialVersionUID = 42108163264l;
+
+   protected static final String DOB_FORMAT_PATTERN =  "MM/dd/yyyy";
+
+   private Long id;
+
+   private Date birthDate;
+
+   private Gender gender;
+
+   private String firstName;
+   private String middleName;
+   private String lastName;
+
+   public Person() {
+  }
+
+   public Person( final Long id) {
+     this.id = id;
+  }
+
+   public Person( final String firstName,  final String lastName) {
+     this.firstName = firstName;
+     this.lastName = lastName;
+  }
+
+   public Person( final Long id,  final String firstName,  final String middleName,  final String lastName, Date date, Gender gender) {
+     this.id = id;
+     this.firstName = firstName;
+     this.middleName = middleName;
+     this.lastName = lastName;
+     this.birthDate = date;
+     this.gender = gender;
+  }
+
+   public Long getId() {
+     return id;
+  }
+
+   public void setId( final Long id) {
+     this.id = id;
+  }
+
+   public String getFirstName() {
+     return firstName;
+  }
+
+   public void setFirstName( final String firstName) {
+     this.firstName = firstName;
+  }
+
+   public String getLastName() {
+     return lastName;
+  }
+
+   public void setLastName( final String lastName) {
+     this.lastName = lastName;
+  }
+
+   public String getMiddleName() {
+     return middleName;
+  }
+
+   public void setMiddleName( final String middleName) {
+     this.middleName = middleName;
+  }
+
+   public Date getBirthDate() {
+     return birthDate;
+  }
+
+   public void setBirthDate( final Date birthDate) {
+     this.birthDate = birthDate;
+  }
+
+   public Gender getGender() {
+     return gender;
+  }
+
+   public void setGender( final Gender gender) {
+     this.gender = gender;
+  }
+
+  @Override
+   public boolean equals( final Object obj) {
+     if (obj ==  this) {
+       return true;
+    }
+
+     if (!(obj  instanceof Person)) {
+       return false;
+    }
+
+     final Person that = (Person) obj;
+
+     return (ObjectUtils.equals( this.getId(), that.getId())
+      || (ObjectUtils.equals( this.getBirthDate(), that.getBirthDate())
+      && ObjectUtils.equals( this.getLastName(), that.getLastName())
+      && ObjectUtils.equals( this.getFirstName(), that.getFirstName())));
+  }
+
+  @Override
+   public int hashCode() {
+     int hashValue = 17;
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getId());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getBirthDate());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getLastName());
+    hashValue = 37 * hashValue + ObjectUtils.hashCode(getFirstName());
+     return hashValue;
+  }
+
+  @Override
+   public String toString() {
+     final StringBuilder buffer =  new StringBuilder( "{ type = ");
+    buffer.append(getClass().getName());
+    buffer.append( ", id = ").append(getId());
+    buffer.append( ", firstName = ").append(getFirstName());
+    buffer.append( ", middleName = ").append(getMiddleName());
+    buffer.append( ", lastName = ").append(getLastName());
+    buffer.append( ", birthDate = ").append(DateTimeUtils.format(getBirthDate(), DOB_FORMAT_PATTERN));
+    buffer.append( ", gender = ").append(getGender());
+    buffer.append( " }");
+     return buffer.toString();
+  }
+
+  @Override
+   public void fromData(PdxReader pr) {
+
+    id = pr.readLong( "id");
+    firstName = pr.readString( "firstName");
+    middleName = pr.readString( "middleName");
+    lastName = pr.readString( "lastName");
+    birthDate = pr.readDate( "birthDate");
+    gender = (Gender)pr.readObject( "gender");
+  }
+
+  @Override
+   public void toData(PdxWriter pw) {
+    pw.writeLong( "id", id);
+    pw.writeString( "firstName", firstName);
+    pw.writeString( "middleName", middleName);
+    pw.writeString( "lastName", lastName);
+    pw.writeDate( "birthDate", birthDate);
+    pw.writeObject( "gender", gender);
+  }
+
+}
+```
+
+## \#1e. Gender Class (Gender.java)
+
+``` pre
+package org.apache.geode.domain;
+
+/**
+ * The Gender  enum is a enumeration of genders (sexes).
+ */
+
+ public enum Gender {
+  FEMALE,
+  MALE
+}
+```
+
+## \#2. Ruby REST Client (restClient.rb)
+
+``` pre
+#!/usr/bin/ruby -w
+
+puts "Hello, Ruby!";
+
+# !/usr/bin/env ruby
+
+require 'json'
+require 'net/http'
+
+class JsonSerializable
+
+  def to_json
+    hash = {}
+    hash["@type"] = "org.apache.geode.web.rest.domain.Person"
+    self.instance_variables.each do |var|
+      if !var.to_s.end_with?("links")
+        hash[var.to_s[1..-1]] = self.instance_variable_get var
+      end
+    end
+    hash.to_json
+  end
+
+  def from_json! jsonString
+    JSON.load(jsonString).each do |var, val|
+      if !var.end_with?("type")
+        self.instance_variable_set "@".concat(var), val
+      end
+    end
+  end
+
+end
+
+class Person < JsonSerializable
+
+  attr_accessor :id, :firstName, :middleName, :lastName, :birthDate, :gender
+
+  def initialize(id = nil, firstName = nil, middleName = nil, lastName = nil )
+    @id = id
+    @firstName = firstName
+    @middleName = middleName
+    @lastName = lastName
+    @birthDate = nil
+    @gender = nil
+  end
+
+  def to_s
+    s = "{ type = Person, id = #{@id}"
+    s += ", firstName = #{@firstName}"
+    s += ", middleName = #{@middleName}"
+    s += ", lastName = #{@lastName}"
+    s += ", birthDate = #{@birthDate}"
+    s += ", gender = #{@gender}"
+    s += "}"
+  end
+
+end
+
+if __FILE__ == $0
+  #p = Person.new(1, "Jon", "T", "Doe")
+  #puts p
+  #puts p.inspect
+  #puts p.to_json
+
+  uri = URI("http://localhost:8080/gemfire-api/v1/People/1");
+
+  personJson = Net::HTTP::get(uri);
+
+  # JSON from server
+  puts "JSON read from Server for Person with ID 1...\n #{personJson}"
+
+  p = Person.new
+  p.from_json! personJson
+
+  # print the Person to standard out
+  puts "Person is...\n #{p}"
+
+  p.id = 1
+  p.firstName = "Jack"
+  p.lastName = "Handy"
+  p.gender = "MALE"
+
+  # prints modified Person to standard out
+  puts "Person modified is...\n #{p}"
+
+  puts "JSON sent to Server for Person with ID 1...\n #{p.to_json}"
+
+  Net::HTTP.start(uri.hostname, uri.port) do |http|
+    putRequest = Net::HTTP::Put.new uri.path, { "Content-Type" => "application/json" }
+    putRequest.body = p.to_json
+    http.request(putRequest)
+  end
+
+end
+```
+
+**Output from running the Ruby client:**
+
+``` pre
+prompt# ruby restClient.rb
+Hello, Ruby!
+JSON read from Server for Person with ID 1...
+ {
+  "@type" : "org.gopivotal.app.domain.Person",
+  "id" : 1,
+  "firstName" : "Jane_updated",
+  "middleName" : "H",
+  "lastName" : "Doe_updated",
+  "gender" : "MALE",
+  "birthDate" : "04/12/1983"
+}
+Person is...
+ { type = Person, id = 1, firstName = Jane_updated, middleName = H, lastName = Doe_updated, birthDate = 04/12/1983, gender = MALE}
+Person modified is...
+ { type = Person, id = 1, firstName = Jack, middleName = H, lastName = Handy, birthDate = 04/12/1983, gender = MALE}
+JSON sent to Server for Person with ID 1...
+ {"@type":"org.apache.geode.web.rest.domain.Person","id":1,"firstName":"Jack","middleName":"H","lastName":"Handy","birthDate":"04/12/1983","gender":"MALE"}
+```
+
+## \#3. Python REST Client (restClient.py)
+
+This example uses Python 3 and shows the creation and modification of objects. It uses one external library called `requests`, which is nearly ubiquitous and avoids having to use HTTP code.
+
+``` pre
+#!/usr/bin/env python3
+
+# This is simple, repetitive and assumes you have created a region called
+# "demoRegion".
+
+import sys
+import json
+import uuid
+import requests
+
+REGION = "demoRegion"
+BASE_URI = "http://localhost:8080/gemfire-api/v1"
+
+headers = {'content-type': 'application/json'}
+
+person = {'type': 'Person',
+          'firstName': 'John',
+          'middleName': 'Q',
+          'lastName': 'Public',
+          'birthDate': '1 Jan 1900'}
+
+
+def resource_uri(res=None, region=REGION):
+    if res:
+        return "%s/%s/%s" % (BASE_URI, region, res)
+    return "%s/%s" % (BASE_URI, region)
+
+
+print("[*] First, we'll empty out our demo region - DELETE %s" %
+      requests.delete(resource_uri()))
+
+r = requests.delete(resource_uri())
+r.raise_for_status()
+
+print("[*] Now, we'll create 5 demo objects")
+
+keys = []
+
+for i in range(1, 6):
+    key = uuid.uuid1()
+
+    keys.append(key)
+    person['uuid'] = str(key)
+
+    print("\t Creating object with key: POST %s" % key)
+    r = requests.post(resource_uri(), data=json.dumps(person),
+                      params={'key': key},
+                      headers=headers)
+    r.raise_for_status()
+
+print("[*] List our keys - GET %s" % resource_uri("keys"))
+
+r = requests.get(resource_uri("keys"))
+print(r.text)
+
+print("[*] Here's all our data - GET %s" % resource_uri())
+
+r = requests.get(resource_uri())
+print(r.text)
+
+print("[*] Now each key one by one")
+
+for key in keys:
+    print("Fetching key - GET %s" % resource_uri(res=key))
+    r = requests.get(resource_uri(res=key))
+    print(r.text)
+
+print("[*] Now grab one, change the first name to 'Jane' and save it")
+
+print("  GET - %s" % resource_uri(res=keys[0]))
+r = requests.get(resource_uri(res=keys[0]))
+p = json.loads(r.text)
+p['firstName'] = 'Jane'
+print("  PUT - %s" % resource_uri(res=keys[0]))
+r = requests.put(resource_uri(res=keys[0]), data=json.dumps(p),
+                 headers=headers)
+
+print("  GET - %s" % resource_uri(res=keys[0]))
+r = requests.get(resource_uri(res=keys[0]))
+print(r.text)
+```

@@ -1,0 +1,39 @@
+---
+title: Security Detail Considerations
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_36C918B4202D45F3AC225FFD23B11D7C"></a>
+
+
+This section gathers discrete details in one convenient location to better help you assess and configure the security of your environment.
+
+-   **[External Interfaces, Ports, and Services](security-audit.html)**
+
+    Geode processes use either UDP or TCP/IP ports to communicate with other processes or clients.
+
+-   **[Resources That Must Be Protected](security-audit.html#topic_263072624B8D4CDBAD18B82E07AA44B6)**
+
+    Certain Geode configuration files should be readable and writeable *only* by the dedicated user who runs servers.
+
+-   **[Log File Locations](security-audit.html#topic_5B6DF783A14241399DC25C6EE8D0048A)**
+
+    By default, the log files are located in the working directory used when you started the corresponding processes.
+
+-   **[Where to Place Security Configuration Settings](properties_file.html)**
+

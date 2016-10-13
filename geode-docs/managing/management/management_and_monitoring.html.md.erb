@@ -1,0 +1,52 @@
+---
+title:  Apache Geode Management and Monitoring
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Apache Geode provides APIs and tools for managing your distributed system and monitoring the health of your distributed system members.
+
+-   **[Management and Monitoring Features](../../managing/management/management_and_monitoring_features.html)**
+
+    Apache Geode uses a federated Open MBean strategy to manage and monitor all members of the distributed system. This strategy gives you a consolidated, single-agent view of the distributed system.
+
+-   **[Overview of Geode Management and Monitoring Tools](../../managing/management/mm_overview.html)**
+
+    Geode provides a variety of management tools you can use to manage a Geode distributed system.
+
+-   **[Architecture and Components](../../managing/management/management_system_overview.html)**
+
+    Geode's management and monitoring system consists of one JMX Manager node (there should only be one) and one or more managed nodes within a distributed system. All members in the distributed system are manageable through MBeans and Geode Management Service APIs.
+
+-   **[JMX Manager Operations](../../managing/management/jmx_manager_node.html#topic_36C918B4202D45F3AC225FFD23B11D7C)**
+
+    Any member can host an embedded JMX Manager, which provides a federated view of all MBeans for the distributed system. The member can be configured to be a manager at startup or anytime during its life by invoking the appropriate API calls on the ManagementService.
+
+-   **[Federated MBean Architecture](../../managing/management/mbean_architecture.html)**
+
+    Geode uses MBeans to manage and monitor different parts of Geode. Geode's federated MBean architecture is scalable and allows you to have a single-agent view of a Geode distributed system.
+
+-   **[Configuring RMI Registry Ports and RMI Connectors](../../managing/management/configuring_rmi_connector.html)**
+
+    Geode programmatically emulates out-of-the-box JMX provided by Java and creates a JMXServiceURL with RMI Registry and RMI Connector ports on all manageable members.
+
+-   **[Executing gfsh Commands through the Management API](../../managing/management/gfsh_and_management_api.html)**
+
+    You can also use management APIs to execute gfsh commands programmatically.
+
+

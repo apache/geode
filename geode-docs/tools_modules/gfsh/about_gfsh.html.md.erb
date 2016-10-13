@@ -1,0 +1,42 @@
+---
+title:  What You Can Do with gfsh
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+`gfsh` supports the administration, debugging, and deployment of Apache Geode processes and applications.
+
+With `gfsh`, you can:
+
+-   Start and stop Apache Geode processes, such as locators and cache servers
+-   Start and stop gateway sender and gateway receiver processes
+-   Deploy applications
+-   Create and destroy regions
+-   Execute functions
+-   Manage disk stores
+-   Import and export data
+-   Monitor Apache Geode processes
+-   Launch Apache Geode monitoring tools
+
+The `gfsh` command line interface lets developers spend less time configuring cache instance XML, properties, logs, and statistics. gfsh commands generate reports; capture cluster-wide statistics; and support the export of statistics, logs, and configurations. Like Spring Roo, gfsh features command completion (so you do not have to know the syntax), context-sensitive help, scripting, and the ability to invoke any commands from within an application by using a simple API. The gfsh interface uses JMX/RMI to communicate with Apache Geode processes.
+
+You can connect gfsh to a remote distributed system using the HTTP protocol. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../configuring/cluster_config/gfsh_remote.html).
+
+By default, the cluster configuration service saves the configuration of your Apache Geode cluster as you create Apache Geode objects using gfsh. You can export this configuration and import it into another Apache Geode cluster. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html#concept_r22_hyw_bl).
+
+
