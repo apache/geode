@@ -357,31 +357,31 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       boolean ifOld, Object expectedOldValue, boolean requireOldValue,
       long lastModified, boolean overwriteDestroyed) throws TimeoutException,
       CacheWriterException {
-    boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
-        requireOldValue, lastModified, overwriteDestroyed);
-    if (success) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Key : ----> {}", event.getKey());
+    try {
+      boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
+          requireOldValue, lastModified, overwriteDestroyed);
+      if (success) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Key : ----> {}", event.getKey());
+        }      
+      } else {
+        GatewaySenderEventImpl.release(event.getRawNewValue());
       }
-      //@Unretained Object ov = event.getRawOldValue();
-      //if (ov instanceof GatewaySenderEventImpl) {
-      //  ((GatewaySenderEventImpl)ov).release();
-      //}
-       GatewaySenderEventImpl.release(event.getRawOldValue());
+      return success;
+    } finally {
+      GatewaySenderEventImpl.release(event.getRawOldValue());
     }
-    return success;
     
   }
   @Override
   protected void basicDestroy(final EntryEventImpl event,
       final boolean cacheWrite, Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
-    super.basicDestroy(event, cacheWrite, expectedOldValue);
-    //@Unretained Object rov = event.getRawOldValue();
-    //if (rov instanceof GatewaySenderEventImpl) {
-    //  ((GatewaySenderEventImpl) rov).release();
-    //}
-	GatewaySenderEventImpl.release(event.getRawOldValue());
+    try {
+      super.basicDestroy(event, cacheWrite, expectedOldValue);
+    } finally {
+      GatewaySenderEventImpl.release(event.getRawOldValue());
+    }
   }
 
 
