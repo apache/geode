@@ -1,0 +1,76 @@
+---
+title:  Default File Specifications and Search Locations
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Each file has a default name, a set of file search locations, and a system property you can use to override the defaults.
+
+To use the default specifications, place the file at the top level of its directory or jar file. The system properties are standard file specifications that can have absolute or relative pathnames and filenames.
+
+**Note:**
+If you do not specify an absolute file path and name, the search examines all search locations for the file.
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Default File Specification</th>
+<th>Search Locations for Relative File Specifications</th>
+<th>Available Property for File Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code class="ph codeph">gemfire.properties</code></td>
+<td><ol>
+<li>current directory</li>
+<li>home directory</li>
+<li>CLASSPATH</li>
+</ol></td>
+<td>As a Java system property, use <code class="ph codeph">gemfirePropertyFile</code></td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">cache.xml</code></td>
+<td><ol>
+<li>current directory</li>
+<li>CLASSPATH</li>
+</ol></td>
+<td>In <code class="ph codeph">gemfire.properties</code>, use the <code class="ph codeph">cache-xml-file</code> property</td>
+</tr>
+</tbody>
+</table>
+
+Examples of valid `gemfirePropertyFile` specifications:
+
+-   `/zippy/users/jpearson/gemfiretest/gemfire.properties`
+-   `c:\gemfiretest\gemfire.prp`
+-   `myGF.properties`
+-   `test1/gfprops`
+
+For the `test1/gfprops` specification, if you launch your Geode system member from `/testDir` in a Unix file system, Geode looks for the file in this order until it finds the file or exhausts all locations:
+
+1.  `/testDir/test1/gfprops`
+2.  `<yourHomeDir>/test1/gfprops`
+3.  under every location in your `CLASSPATH` for `test1/gfprops`
+
+

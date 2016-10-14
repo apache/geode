@@ -1,0 +1,129 @@
+---
+title:  Reserved Words
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## <a id="concept_4F288B1F9579422FA481FBE2C3ADD007__section_3415163C3EFB46A6BE873E2606C9DE0F" class="no-quick-link"></a>Reserved Words
+
+These words are reserved for the query language and may not be used as identifiers. The words with asterisk (`*`) after them are not currently used by Geode, but are reserved for future implementation.
+
+<table>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><pre class="pre codeblock"><code>abs*
+all
+and 
+andthen* 
+any* 
+array 
+as 
+asc 
+avg* 
+bag* 
+boolean 
+by 
+byte 
+char 
+collection
+count 
+date 
+declare* 
+define*
+desc </code></pre></td>
+<td><pre class="pre codeblock"><code>dictionary 
+distinct 
+double 
+element 
+enum* 
+except* 
+exists* 
+false 
+first* 
+flatten* 
+float 
+for* 
+from 
+group* 
+having* 
+import 
+in 
+int 
+intersect* 
+interval* </code></pre></td>
+<td><pre class="pre codeblock"><code>is_defined 
+is_undefined 
+last* 
+like
+limit
+list* 
+listtoset* 
+long 
+map 
+max* 
+min* 
+mod* 
+nil 
+not 
+null 
+nvl 
+octet 
+or 
+order </code></pre></td>
+<td><pre class="pre codeblock"><code>orelse* 
+query* 
+select 
+set 
+short 
+some* 
+string 
+struct* 
+sum* 
+time 
+timestamp 
+to_date 
+true 
+type 
+undefine* 
+undefined 
+union* 
+unique* 
+where</code></pre></td>
+</tr>
+</tbody>
+</table>
+
+To access any method, attribute, or named object that has the same name as a query language reserved word, enclose the name within double quotation marks.
+
+Examples:
+
+``` pre
+SELECT DISTINCT "type" FROM /portfolios WHERE status = 'active'
+```
+
+``` pre
+SELECT DISTINCT * FROM /region1 WHERE emps."select"() < 100000 
+```
+
+

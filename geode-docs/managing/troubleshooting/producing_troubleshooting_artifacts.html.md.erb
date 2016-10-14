@@ -1,0 +1,92 @@
+---
+title:  Producing Artifacts for Troubleshooting
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+There are several types of files that are critical for troubleshooting.
+
+Geode logs and statistics are the two most important artifacts used in troubleshooting. In addition, they are required for Geode system health verification and performance analysis. For these reasons, logging and statistics should always be enabled, especially in production. Save the following files for troubleshooting purposes:
+
+-   Log files. Even at the default logging level, the log contains data that may be important. Save the whole log, not just the stack. For comparison, save log files from before, during, and after the problem occurred.
+-   Statistics archive files.
+-   Core files or stack traces.
+-   For Linux, you can use gdb to extract a stack from a core file.
+-   Crash dumps.
+-   For Windows, save the user mode dump files. Some locations to check for these files:
+    -   C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive
+    -   C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportQueue
+    -   C:\\Users\\*UserProfileName*\\AppData\\Local\\Microsoft\\Windows\\WER\\ReportArchive
+    -   C:\\Users\\*UserProfileName*\\AppData\\Local\\Microsoft\\Windows\\WER\\ReportQueue
+
+When a problem arises that involves more than one process, a network problem is the most likely cause. When you diagnose a problem, create a log file for each member of all the distributed systems involved. If you are running a client/server architecture, create log files for the clients.
+
+**Note:**
+You must run a time synchronization service on all hosts for troubleshooting. Synchronized time stamps ensure that log messages on different hosts can be merged to accurately reproduce a chronological history of a distributed run.
+
+For each process, complete these steps:
+
+1.  Make sure the host’s clock is synchronized with the other hosts. Use a time synchronization tool such as Network Time Protocol (NTP).
+2.  Enable logging to a file instead of standard output by editing `gemfire.properties` to include this line:
+
+    ``` pre
+    log-file=filename
+    ```
+
+3.  Keep the log level at `config` to avoid filling up the disk while including configuration information. Add this line to `gemfire.properties`:
+
+    ``` pre
+    log-level=config
+    ```
+
+    **Note:**
+    Running with the log level at `fine` can impact system performance and fill up your disk.
+
+4.  Enable statistics gathering for the distributed system either by modifying `gemfire.properties`:
+
+    ``` pre
+    statistic-sampling-enabled=true
+    statistic-archive-file=StatisticsArchiveFile.gfs
+    ```
+
+    or by using the `gfsh alter rutime` command:
+
+    ``` pre
+    alter runtime --group=myMemberGroup --enable-statistics=true --statistic-archive-file=StatisticsArchiveFile.gfs
+    ```
+
+    **Note:**
+    Collecting statistics at the default sample rate frequency of 1000 milliseconds does not incur performance overhead.
+
+5.  Run the application again.
+6.  Examine the log files. To get the clearest picture, merge the files. To find all the errors in the log file, search for lines that begin with these strings:
+
+    ``` pre
+    [error
+    [severe
+    ```
+
+    For details on merging log files, see the `--merge-log` argument for the [export logs](../../tools_modules/gfsh/command-pages/export.html#topic_B80978CC659244AE91E2B8CE56EBDFE3)command.
+
+7.  Export and analyze the stack traces on the member or member group where the application is running. Use the `gfsh export stack-traces                         command`. For example:
+
+    ``` pre
+    gfsh> export stack-traces --file=ApplicationStackTrace.txt --member=member1
+    ```
+
+

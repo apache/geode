@@ -1,0 +1,56 @@
+---
+title:  DELETE /gemfire-api/v1/{region}/{key1},{key2},...{keyN}
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Delete entries for multiple keys in the region.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key1},{key2},...{keyN}
+```
+
+## Parameters
+
+None.
+
+## Example Request
+
+``` pre
+Request Payload: null
+DELETE /gemfire-api/v1/orders/12,13
+Accept: application/json
+```
+
+## Example Success Response
+
+``` pre
+Response Payload: null
+200 OK
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                                                      |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| 404 NOT FOUND             | Returned if either the region or one or more of the specified keys is not found.                                                 |
+| 500 INTERNAL SERVER ERROR | Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. |
+
+

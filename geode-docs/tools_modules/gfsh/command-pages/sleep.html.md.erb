@@ -1,0 +1,57 @@
+---
+title:  sleep
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Delay `gfsh` command execution.
+
+Delay for a specified amount of time in seconds - floating point values are allowed.
+
+**Availability:** Online of offline.
+
+**Syntax:**
+
+``` pre
+sleep [--time=value]
+```
+
+<a id="concept_249C98CFF0BF4BCCA7778AE2D751F52E__table_kyd_fjf_2w"></a>
+
+| Name                                          | Description                 | Default Value |
+|-----------------------------------------------|-----------------------------|---------------|
+| <span class="keyword parmname">\\-\\-time </span> | Number of seconds to sleep. | 3             |
+
+<span class="tablecap">Table 1. Sleep Parameters</span>
+
+**Example Commands:**
+
+``` pre
+sleep
+sleep --time=60
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>sleep --time=60
+
+gfsh>
+```
+
+

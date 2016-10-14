@@ -1,0 +1,78 @@
+---
+title:  hint
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Display information on topics and a list of commands associated with a topic.
+
+Provide hints for a topic or lists all available topics if a topic is not specified.
+
+<a id="concept_0FD387293BE14CB5B3CC2C6ADA90AAFB__section_47FACBC27C4F4BE1AD07AE65785A9C50"></a>
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+hint [topic]
+```
+
+**Example Commands:**
+
+``` pre
+hint
+hint Server
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>hint
+Hints are available for the following topics. Use "hint <topic-name>" for a specific
+ hint.
+Configuration
+Data
+Debug-Utility
+Disk Store
+Function Execution
+GFSH
+Help
+JMX
+Lifecycle
+Locator
+Management-Monitoring
+Manager
+Region
+Server
+Statistics
+
+gfsh>hint server
+A server is GemFire cluster member which holds a GemFire cache. Depending on the
+ topology used it can refer to either a system that responds to client requests
+or a system that is only a peer to other members.
+
+describe member : Display information about a member, including name, id, groups
+, regions, etc.
+export logs     : Export the log files for a member or members.
+list members    : Display all or a subset of members.
+start server    : Start a GemFire Cache Server.
+status server   : Display the status of a GemFire Cache Server.
+stop server     : Stop a GemFire Cache Server..
+```
+
+

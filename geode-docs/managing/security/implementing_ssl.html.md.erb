@@ -1,0 +1,226 @@
+---
+title:  Configuring SSL
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can configure SSL for authentication between members and to protect your data during
+distribution. You can use SSL alone or in conjunction with the other Geode security options.
+Geode SSL connections use the Java Secure Sockets Extension (JSSE) package.
+
+## <a id="ssl_configurable_components" class="no-quick-link"></a>SSL-Configurable Components
+
+You can specify that SSL be used system-wide, or you can independently configure SSL for specific
+system components.  The following list shows the system components that can be separately configured
+to communicate using SSL, and the kind of communications to which each component name refers:
+
+<dt>**cluster**</dt>
+<dd>Peer-to-peer communications among members of a distributed system</dd>
+
+<dt>**gateway**</dt>
+<dd>Communication across WAN gateways from one site to another</dd>
+
+<dt>**web**</dt>
+<dd>All web-based services hosted on the configured server, which can include the Developer REST API
+service, the Management REST API service (used for remote cluster management) and the Pulse
+monitoring tool's web-based user interface.</dd>
+
+<dt>**jmx**</dt>
+<dd>Java management extension communications, including communications with the `gfsh` utility. 
+The Pulse monitoring tool uses JMX for server-side communication with a locator, but SSL
+applies to this connection only if Pulse is located on an app server separate from the
+locator. When Pulse and the locator are colocated, JMX communication between the two does not
+involve a TCP connection, so SSL does not apply.</dd>
+
+<dt>**locator**</dt>
+<dd>Communication with and between locators</dd>
+
+<dt>**server**</dt>
+<dd>Communication between clients and servers</dd>
+
+<dt>**all**</dt>
+<dd>All of the above (use SSL system-wide)</dd>
+
+Specifying that a component is enabled for SSL applies to the component's server-socket side and its
+client-socket side.  For example, if you enable SSL for locators, then any process that communicates
+with a locator must also have SSL enabled.
+
+## <a id="ssl_configuration_properties" class="no-quick-link"></a>SSL Configuration Properties
+
+You can use Geode configuration properties to enable or disable SSL, to identify SSL ciphers and
+protocols, and to provide the location and credentials for key and trust stores.
+
+<dt>**ssl-enabled-components**</dt>
+<dd>list of components for which to enable SSL. "all" or comma-separated list of components</dd>
+
+<dt>**ssl-require-authentication**</dt>
+<dd>Requires two-way authentication, applies to all components except web. boolean - if true (the default), two-way authentication is required.</dd>
+
+<dt>**ssl-web-require-authentication**</dt>
+<dd>Requires two-way authentication for web component. boolean - if true, two-way authentication is required. Default is false (one-way authentication only).</dd>
+
+<dt>**ssl-default-alias**</dt>
+<dd>A server uses one key store to hold its SSL certificates. All components on that server can share a
+single certificate, designated by the ssl-default-alias property.  If ssl-default-alias
+is not specified, the first certificate in the key store acts as the default certificate.</dd>
+
+<dt>**ssl-_component_-alias=string**</dt>
+<dd>You can configure a separate certificate for any component. All certificates reside in the same key
+store, but can be designated by separate aliases that incorporate the component name, using this syntax,
+where _component_ is the name of a component. When a component-specific alias is specified, it
+overrides the ssl-default-alias for the _component_ specified.
+
+For example, ssl-locator-alias would specify a name for the locator component's certificate in the system key store.</dd>
+
+<dt>**ssl-ciphers**</dt>
+<dd>A comma-separated list of the valid SSL ciphers for SSL-enabled component connections. A setting of 'any'
+uses any ciphers that are enabled by default in the configured JSSE provider.</dd>
+
+<dt>**ssl-protocols**</dt>
+<dd>A comma-separated list of the valid SSL-enabled component connections. A setting of 'any' uses
+any protocol that is enabled by default in the configured JSSE provider.</dd>
+
+<dt>**ssl-keystore, ssl-keystore-password**</dt>
+<dd>The path to the key store and the key store password, specified as strings</dd>
+
+<dt>**ssl-truststore, ssl-truststore-password**</dt>
+<dd>The path to the trust store and the trust store password, specified as strings</dd>
+
+### Example: secure communications throughout
+
+To implement secure SSL communications throughout an entire distributed system, each process should
+enable SSL for all components.
+ 
+``` pre
+ssl-enabled-components=all
+ssl-keystore=secure/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secure/truststore.dat
+ssl-truststore-password=changeit
+```
+ 
+If the key store has multiple certificates you may want to specify the alias of the one you wish to use for each process.  For instance, `ssl-default-alias=Hiroki`.
+
+
+### Example: non-secure cluster communications, secure client/server
+
+In this example, SSL is used to secure communications between the client and the server:
+
+**Server properties**
+
+Cluster SSL is not enabled.
+
+``` pre
+ssl-enabled-components=server,locator
+ssl-server-alias=server
+ssl-keystore=secure/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secure/truststore.dat
+ssl-truststore-password=changeit
+ssl-default-alias=Server-Cert
+```
+
+**Locator properties**
+
+Cluster SSL is not enabled.
+
+``` pre
+ssl-enabled-components=locator
+ssl-locator-alias=locator
+ssl-keystore=secure/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secure/truststore.dat
+ssl-truststore-password=changeit
+ssl-default-alias=Locator-Cert
+```
+ 
+**Client properties**
+
+The client's trust store must trust both locator and server certificates.
+
+Since the client did not specify a certificate alias, SSL will use the default certificate in its key store.
+
+``` pre
+ssl-enabled-components=server,locator
+ssl-keystore=secret/keystore.dat
+ssl-keystore-password=changeit
+ssl-truststore=secret/truststore.dat
+ssl-truststore-password=changeit
+```
+ 
+## <a id="ssl_property_reference_tables" class="no-quick-link"></a>SSL Property Reference Tables
+
+The following table lists the components you can configure to use SSL.
+
+<span class="tablecap">Table 1. SSL-Configurable Components</span>
+
+| Component | Communication Types                                                   |
+|-----------|-----------------------------------------------------------------------|
+| cluster   | Peer-to-peer communications among members of a distributed system     |
+| gateway   | Communication across WAN gateways from one site to another            |
+| web       | Web-based communication, including REST interfaces                    |
+| jmx       | Java management extension communications, including gfsh              |
+| locator   | Communication with and between locators                               |
+| server    | Communication between clients and servers                             |
+| all       | All of the above                                                      |
+
+The following table lists the properties you can use to configure SSL on your Geode system.
+
+<span class="tablecap">Table 2. SSL Configuration Properties</span>
+
+| Property                           | Description                                                                  | Value |
+|------------------------------------|------------------------------------------------------------------------------|-------|
+| ssl&#8209;enabled&#8209;components | list of components for which to enable SSL | "all" or comma-separated list of components: cluster, gateway, web, jmx, locator, server |
+| ssl-require-authentication         | requires two-way authentication, applies to all components except web | boolean - if true (the default), two-way authentication is required |
+| ssl&#8209;web&#8209;require&#8209;authentication    | requires two-way authentication for web component | boolean - if true, two-way authentication is required. Default is false (one-way authentication only) |
+| ssl-default-alias                  | default certificate name                   | string - if empty, use first certificate in key store |
+| ssl-_component_-alias              | component-specific certificate name        | string - applies to specified _component_ |
+| ssl-ciphers                        | list of SSL ciphers                        | comma-separated list (default "any") |
+| ssl-protocols                      | list of SSL protocols                      | comma-separated list (default "any") |
+| ssl-keystore                       | path to key store                           | string |
+| ssl-keystore-password              | key store password                          | string |
+| ssl-truststore                     | path to trust store                         | string |
+| ssl-truststore-password            | trust store password                        | string |
+
+## <a id="implementing_ssl__sec_ssl_impl_proc" class="no-quick-link"></a>Procedure
+
+1.  Make sure your Java installation includes the JSSE API and familiarize yourself with its
+use. For information, see the [Oracle JSSE website](http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html).
+
+2.  Configure SSL as needed for each connection type:
+
+    1.  Use locators for member discovery within the distributed systems and for client discovery of
+    servers. See [Configuring Peer-to-Peer Discovery](../../topologies_and_comm/p2p_configuration/setting_up_a_p2p_system.html) and
+    [Configuring a Client/Server System](../../topologies_and_comm/cs_configuration/setting_up_a_client_server_system.html#setting_up_a_client_server_system).
+
+    2.  Configure SSL properties as necessary for different component types, using the properties
+    described above. For example, to enable SSL for
+    communication between clients and servers you would configure properties in the
+    `gemfire.properties` file similar to:
+
+        ``` pre
+        ssl-enabled-components=server
+        ssl-protocols=any
+        ssl-ciphers=SSL_RSA_WITH_NULL_MD5, SSL_RSA_WITH_NULL_SHA
+        ssl-keystore=/path/to/trusted.keystore
+        ssl-keystore-password=password
+        ssl-truststore=/path/to/trusted.keystore
+        ssl-truststore-password=password
+        ```
+
+

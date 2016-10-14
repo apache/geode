@@ -1,0 +1,36 @@
+---
+title:  Common Topologies for HTTP Session Management
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Decide which topology is best for your usage. The module configuration process is slightly different for each topology.
+
+By default, a peer-to-peer configuration creates a replicated region across all servers. By default, a client/server configuration creates a partitioned region across all servers.
+
+## <a id="common_gemfire_topologies__p2p_configuration" class="no-quick-link"></a>Peer-to-Peer Configuration
+
+<img src="../../images_svg/http_module_p2p_with_locator.svg" id="common_gemfire_topologies__image_nqv_gzw_rv" class="image" />
+
+In a peer-to-peer configuration, each instance within an application server contains its own cache. Each instance communicates with the locator and with other instances as peers. By default, data is replicated. A peer-to-peer configuration is useful when multiple systems want fast access to all session data. This configuration is also the simplest one to set up and does not require any external processes.
+
+## <a id="common_gemfire_topologies__cs_configuration" class="no-quick-link"></a>Client/Server Configuration
+
+<img src="../../images_svg/http_module_cs_with_locator.svg" id="common_gemfire_topologies__image_oss_zyw_rv" class="image" />
+
+In a client/server configuration, the Tomcat or tc Server instance operates as a Geode client, which must communicate with one or more Geode servers to acquire session data. The client maintains its own local cache and will communicate with the server to satisfy cache misses. A client/server configuration is useful when you want to separate the application server instance from the cached session data. In this configuration, you can reduce the memory consumption of the application server since session data is stored in separate Geode server processes.

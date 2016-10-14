@@ -1,0 +1,40 @@
+---
+title:  Configure Redundancy Zones for Members
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Group members into redundancy zones so Geode will separate redundant data copies into different zones.
+
+Understand how to set a member's `gemfire.properties` settings. See [Reference](../../reference/book_intro.html#reference).
+
+Group your partition region hosts into redundancy zones with the `gemfire.properties` setting `redundancy-zone`. 
+
+For example, if you had redundancy set to 1, so you have one primary and one secondary copy of each data entry, you could split primary and secondary data copies between two machine racks by defining one redundancy zone for each rack. To do this, you set this zone in the `gemfire.properties` for all members that run on one rack:
+``` pre
+redundancy-zone=rack1
+```
+
+You would set this zone `gemfire.properties` for all members on the other rack:
+``` pre
+redundancy-zone=rack2
+```
+
+Each secondary copy would be hosted on the rack opposite the rack where its primary copy is hosted.
+
+

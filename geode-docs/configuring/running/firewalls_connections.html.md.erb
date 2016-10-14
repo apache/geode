@@ -1,0 +1,35 @@
+---
+title:  Firewalls and Connections
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Be aware of possible connection problems that can result from running a firewall on your machine.
+
+Apache Geode is a network-centric distributed system, so if you have a firewall running on your machine it could cause connection problems. For example, your connections may fail if your firewall places restrictions on inbound or outbound permissions for Java-based sockets. You may need to modify your firewall configuration to permit traffic to Java applications running on your machine. The specific configuration depends on the firewall you are using.
+
+As one example, firewalls may close connections to Geode due to timeout settings. If a firewall senses no activity in a certain time period, it may close a connection and open a new connection when activity resumes, which can cause some confusion about which connections you have.
+
+For more information on how Geode client and servers connect, see the following topics:
+
+-   [How Client/Server Connections Work](../../topologies_and_comm/topology_concepts/how_the_pool_manages_connections.html#how_the_pool_manages_connections)
+-   [Socket Communication](../../managing/monitor_tune/socket_communication.html)
+-   [Controlling Socket Use](../../managing/monitor_tune/performance_controls_controlling_socket_use.html#perf)
+-   [Setting Socket Buffer Sizes](../../managing/monitor_tune/socket_communication_setting_socket_buffer_sizes.html)
+
+

@@ -1,0 +1,69 @@
+---
+title:  Managing Apache Geode
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+*Managing Apache Geode* describes how to plan and implement tasks associated with managing, monitoring, and troubleshooting Apache Geode.
+
+-   **[Apache Geode Management and Monitoring](../managing/management/management_and_monitoring.html)**
+
+    Apache Geode provides APIs and tools for managing your distributed system and monitoring the health of your distributed system members.
+
+-   **[Managing Heap and Off-heap Memory](../managing/heap_use/heap_management.html)**
+
+    By default, Apache Geode uses the JVM heap. Apache Geode also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
+
+-   **[Disk Storage](../managing/disk_storage/chapter_overview.html)**
+
+    With Apache Geode disk stores, you can persist data to disk as a backup to your in-memory copy and overflow data to disk when memory use gets too high.
+
+-   **[Cache and Region Snapshots](../managing/cache_snapshots/chapter_overview.html)**
+
+    Snapshots allow you to save region data and reload it later. A typical use case is loading data from one environment into another, such as capturing data from a production system and moving it into a smaller QA or development system.
+
+-   **[Region Compression](../managing/region_compression/region_compression.html)**
+
+    This section describes region compression, its benefits and usage.
+
+-   **[Network Partitioning](../managing/network_partitioning/chapter_overview.html)**
+
+    Apache Geode architecture and management features help detect and resolve network partition problems.
+
+-   **[Security](../managing/security/chapter_overview.html)**
+
+    The security framework establishes trust by authenticating components 
+    and members upon connection. It facilitates the authorization of operations.
+
+-   **[Performance Tuning and Configuration](../managing/monitor_tune/chapter_overview.html)**
+
+    A collection of tools and controls allow you to monitor and adjust Apache Geode performance.
+
+-   **[Logging](../managing/logging/logging.html)**
+
+    Comprehensive logging messages help you confirm system configuration and debug problems in configuration and code.
+
+-   **[Statistics](../managing/statistics/chapter_overview.html)**
+
+    Every application and server in a distributed system can access statistical data about Apache Geode operations. You can configure the gathering of statistics by using the `alter runtime` command of `gfsh` or in the `gemfire.properties` file to facilitate system analysis and troubleshooting.
+
+-   **[Troubleshooting and System Recovery](../managing/troubleshooting/chapter_overview.html)**
+
+    This section provides strategies for handling common errors and failure situations.
+
+

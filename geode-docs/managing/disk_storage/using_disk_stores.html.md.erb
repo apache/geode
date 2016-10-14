@@ -1,0 +1,216 @@
+---
+title:  Designing and Configuring Disk Stores
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You define disk stores in your cache, then you assign them to your regions and queues by setting the `disk-store-name` attribute in your region and queue configurations.
+
+**Note:**
+Besides the disk stores you specify, Apache Geode has a default disk store that it uses when disk use is configured with no disk store name specified. By default, this disk store is saved to the application’s working directory. You can change its behavior, as indicated in [Create and Configure Your Disk Stores](using_disk_stores.html#defining_disk_stores__section_37BC5A4D84B34DB49E489DD4141A4884) and [Modifying the Default Disk Store](using_the_default_disk_store.html#using_the_default_disk_store).
+
+-   [Design Your Disk Stores](using_disk_stores.html#defining_disk_stores__section_0CD724A12EE4418587046AAD9EEC59C5)
+-   [Create and Configure Your Disk Stores](using_disk_stores.html#defining_disk_stores__section_37BC5A4D84B34DB49E489DD4141A4884)
+-   [Configuring Regions, Queues, and PDX Serialization to Use the Disk Stores](using_disk_stores.html#defining_disk_stores__section_AFB254CA9C5A494A8E335352A6849C16)
+-   [Configuring Disk Stores on Gateway Senders](using_disk_stores.html#defining_disk_stores__config-disk-store-gateway)
+
+## <a id="defining_disk_stores__section_0CD724A12EE4418587046AAD9EEC59C5" class="no-quick-link"></a>Design Your Disk Stores
+
+Before you begin, you should understand Geode [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+1.  Work with your system designers and developers to plan for anticipated disk storage requirements in your testing and production caching systems. Take into account space and functional requirements.
+    -   For efficiency, separate data that is only overflowed in separate disk stores from data that is persisted or persisted and overflowed. Regions can be overflowed, persisted, or both. Server subscription queues are only overflowed.
+    -   When calculating your disk requirements, figure in your data modification patterns and your compaction strategy. Geode creates each oplog file at the max-oplog-size, which defaults to 1 GB. Obsolete operations are only removed from the oplogs during compaction, so you need enough space to store all operations that are done between compactions. For regions where you are doing a mix of updates and deletes, if you use automatic compaction, a good upper bound for the required disk space is
+
+        ``` pre
+        (1 / (1 - (compaction_threshold/100)) ) * data size
+        ```
+
+        where data size is the total size of all the data you store in the disk store. So, for the default compaction-threshold of 50, the disk space is roughly twice your data size. Note that the compaction thread could lag behind other operations, causing disk use to rise above the threshold temporarily. If you disable automatic compaction, the amount of disk required depends on how many obsolete operations accumulate between manual compactions.
+
+2.  Work with your host system administrators to determine where to place your disk store directories, based on your anticipated disk storage requirements and the available disks on your host systems.
+    -   Make sure the new storage does not interfere with other processes that use disk on your systems. If possible, store your files to disks that are not used by other processes, including virtual memory or swap space. If you have multiple disks available, for the best performance, place one directory on each disk.
+    -   Use different directories for different members. You can use any number of directories for a single disk store.
+
+## <a id="defining_disk_stores__section_37BC5A4D84B34DB49E489DD4141A4884" class="no-quick-link"></a>Create and Configure Your Disk Stores
+
+1.  In the locations you have chosen, create all directories you will specify for your disk stores to use. Geode throws an exception if the specified directories are not available when a disk store is created. You do not need to populate these directories with anything.
+2.  Open a `gfsh` prompt and connect to the distributed system.
+3.  At the `gfsh` prompt, create and configure a disk store:
+    -  Specify the name (`--name`) of the disk-store.
+
+        -   Choose disk store names that reflect how the stores should be used and that work for your operating systems. Disk store names are used in the disk file names:
+
+            -   Use disk store names that satisfy the file naming requirements for your operating system. For example, if you store your data to disk in a Windows system, your disk store names could not contain any of these reserved characters, &lt; &gt; : " / \\ | ? \*.
+
+            -   Do not use very long disk store names. The full file names must fit within your operating system limits. On Linux, for example, the standard limitation is 255 characters.
+
+        ``` pre
+        gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 
+        ```
+    -  Configure the directory locations (`--dir`) and the maximum space to use for the store (specified after the disk directory name by \# and the maximum number in megabytes).
+
+        ``` pre
+        gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480
+        ```
+    -  Optionally, you can configure the store’s file compaction behavior. In conjunction with this, plan and program for any manual compaction.  Example:
+
+        ``` pre
+        gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
+        --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true
+        ```
+    -  If needed, configure the maximum size (in MB) of a single oplog. When the current files reach this size, the system rolls forward to a new file. You get better performance with relatively small maximum file sizes.  Example:
+
+        ``` pre
+        gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
+        --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
+        --max-oplog-size=512
+        ```
+    -  If needed, modify queue management parameters for asynchronous queueing to the disk store. You can configure any region for synchronous or asynchronous queueing (region attribute `disk-synchronous`). Server queues and gateway sender queues always operate synchronously. When either the `queue-size` (number of operations) or `time-interval` (milliseconds) is reached, enqueued data is flushed to disk. You can also synchronously flush unwritten data to disk through the `DiskStore` `flushToDisk` method.  Example:
+
+        ``` pre
+        gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
+        --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
+        --max-oplog-size=512 --queue-size=10000 --time-interval=15
+        ```
+    -  If needed, modify the size (specified in bytes) of the buffer used for writing to disk.  Example:
+
+        ``` pre
+        gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
+        --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
+        --max-oplog-size=512 --queue-size=10000 --time-interval=15 --write-buffer-size=65536
+        ```
+    -  If needed, modify the `disk-usage-warning-percentage` and `disk-usage-critical-percentage` thresholds that determine the percentage (default: 90%) of disk usage that will trigger a warning and the percentage (default: 99%) of disk usage that will generate an error and shut down the member cache.  Example:
+
+        ``` pre
+        gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
+        --compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
+        --max-oplog-size=512 --queue-size=10000 --time-interval=15 --write-buffer-size=65536 \
+        --disk-usage-warning-percentage=80 --disk-usage-critical-percentage=98
+        ```
+
+The following is the complete disk store cache.xml configuration example:
+
+``` pre
+<disk-store name="serverOverflow" compaction-threshold="40" 
+           auto-compact="false" allow-force-compaction="true"
+        max-oplog-size="512" queue-size="10000"  
+        time-interval="15" write-buffer-size="65536"
+        disk-usage-warning-percentage="80"
+        disk-usage-critical-percentage="98">
+       <disk-dirs>
+              <disk-dir>c:\overflow_data</disk-dir>
+              <disk-dir dir-size="20480">d:\overflow_data</disk-dir>
+       </disk-dirs>
+</disk-store>
+```
+
+**Note:**
+As an alternative to defining cache.xml on every server in the cluster-- if you have the cluster configuration service enabled, when you create a disk store in `gfsh`, you can share the disk store's configuration with the rest of cluster. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+
+## Modifying Disk Stores
+
+You can modify an offline disk store by using the [alter disk-store](../../tools_modules/gfsh/command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB) command. If you are modifying the default disk store configuration, use "DEFAULT" as the disk-store name.
+
+## <a id="defining_disk_stores__section_AFB254CA9C5A494A8E335352A6849C16" class="no-quick-link"></a>Configuring Regions, Queues, and PDX Serialization to Use the Disk Stores
+
+The following are examples of using already created and named disk stores for Regions, Queues, and PDX Serialization.
+
+Example of using a disk store for region persistence and overflow:
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create region --name=regionName --type=PARTITION_PERSISTENT_OVERFLOW \
+    --disk-store=serverPersistOverflow
+    ```
+
+-   cache.xml
+
+    ``` pre
+    <region refid="PARTITION_PERSISTENT_OVERFLOW" disk-store-name="persistOverflow1"/>
+    ```
+
+Example of using a named disk store for server subscription queue overflow (cache.xml):
+
+``` pre
+<cache-server port="40404">
+   <client-subscription 
+      eviction-policy="entry" 
+      capacity="10000"
+      disk-store-name="queueOverflow2"/>
+</cache-server>
+```
+
+Example of using a named disk store for PDX serialization metadata (cache.xml):
+
+``` pre
+<pdx read-serialized="true" 
+    persistent="true" 
+    disk-store-name="SerializationDiskStore">
+</pdx>
+```
+
+## <a id="defining_disk_stores__config-disk-store-gateway" class="no-quick-link"></a>Configuring Disk Stores on Gateway Senders
+
+Gateway sender queues are always overflowed and may be persisted. Assign them to overflow disk stores if you do not persist, and to persistence disk stores if you do.
+
+Example of using a named disk store for gateway sender queue persistence:
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create gateway-sender --id=persistedSender1 --remote-distributed-system-id=1 \
+    --enable-persistence=true --disk-store-name=diskStoreA --maximum-queue-memory=100  
+    ```
+
+-   cache.xml:
+
+    ``` pre
+    <cache>
+      <gateway-sender id="persistedsender1" parallel="true" 
+       remote-distributed-system-id="1"
+       enable-persistence="true"
+       disk-store-name="diskStoreA"
+       maximum-queue-memory="100"/> 
+       ... 
+    </cache>
+    ```
+
+Examples of using the default disk store for gateway sender queue persistence and overflow:
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create gateway-sender --id=persistedSender1 --remote-distributed-system-id=1 \
+    --enable-persistence=true --maximum-queue-memory=100 
+    ```
+
+-   cache.xml:
+
+    ``` pre
+    <cache>
+      <gateway-sender id="persistedsender1" parallel="true" 
+       remote-distributed-system-id="1"
+       enable-persistence="true"
+       maximum-queue-memory="100"/> 
+       ... 
+    </cache>
+    ```
+
+

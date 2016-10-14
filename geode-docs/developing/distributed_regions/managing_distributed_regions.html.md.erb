@@ -1,0 +1,64 @@
+---
+title:  Configure Distributed, Replicated, and Preloaded Regions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Plan the configuration and ongoing management of your distributed, replicated, and preloaded regions, and configure the regions.
+
+<a id="configure_distributed_region__section_11E9E1B3EB5845D9A4FB226A992B8D0D"></a>
+Before you begin, understand [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+1.  Choose the region shortcut setting that most closely matches your region configuration. See **`org.apache.geode.cache.RegionShortcut`** or [Region Shortcuts](../../reference/topics/chapter_overview_regionshortcuts.html#concept_ymp_rkz_4dffhdfhk). To create a replicated region, use one of the `REPLICATE` shortcut settings. To create a preloaded region, set your region `data-policy` to `preloaded`. This `cache.xml` declaration creates a replicated region:
+
+    ``` pre
+    <region-attributes refid="REPLICATE"> 
+    </region-attributes>
+    ```
+
+    You can also use gfsh to configure a region. For example:
+
+    ``` pre
+    gfsh>create region --name=regionA --type=REPLICATE
+    ```
+
+    See [Region Types](../region_options/region_types.html#region_types).
+
+2.  Choose the level of distribution for your region. The region shortcuts in `RegionShortcut` for distributed regions use `distributed-ack` scope. If you need a different scope, set the `region-attributes` `scope` to `distributed-no-ack` or `global`.
+
+    Example:
+
+    ``` pre
+    <region-attributes refid="REPLICATE" scope="distributed-no-ack"> 
+    </region-attributes>
+    ```
+
+3.  If you are using the `distributed-ack` scope, optionally enable concurrency checks for the region.
+
+    Example:
+
+    ``` pre
+    <region-attributes refid="REPLICATE" scope="distributed-ack" concurrency-checks-enabled="true"> 
+    </region-attributes>
+    ```
+
+4.  If you are using `global` scope, program any explicit locking you need in addition to the automated locking provided by Geode.
+
+## <a id="configure_distributed_region__section_6F53FB58B8A84D0F8086AFDB08A649F9" class="no-quick-link"></a>Local Destroy and Invalidate in the Replicated Region
+
+Of all the operations that affect the local cache only, only local region destroy is allowed in a replicated region. Other operations are not configurable or throw exceptions. For example, you cannot use local destroy as the expiration action on a replicated region. This is because local operations like entry invalidation and destruction remove data from the local cache only. A replicated region would no longer be complete if data were removed locally but left intact.

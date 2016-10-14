@@ -1,0 +1,44 @@
+---
+title:  Loading Existing Configuration Files into Cluster Configuration
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To load an existing cache.xml or gemfire.properties configuration file into a new cluster, use the `--load-cluster-configuration-from-dir` parameter when starting up the locator.
+
+You can use this technique to migrate a single server's configuration into the cluster configuration service. To load an existing cache.xml file or cluster configuration into a cluster, perform the following steps:
+
+1.  Make sure the locator is not currently running.
+2.  Within the locator's working directory, create a `cluster_config/cluster` directory if the directory does not already exist.
+3.  Copy the desired configuration files (cache.xml or gemfire.properties, or both) into the `cluster_config/cluster` directory.
+4.  Rename the configuration files as follows:
+    -   Rename `cache.xml` to `cluster.xml`
+    -   Rename `gemfire.properties` to `cluster.properties`
+
+5.  Start the locator in `gfsh` as follows:
+
+    ``` pre
+    gfsh>start locator --name=<locator_name> --enable-cluster-configuration=true --load-cluster-configuration-from-dir=true
+    ```
+
+    After successful startup, the locator should report that the "Cluster configuration service is up and running." Any servers that join this cluster and have `--use-cluster-configuration` set to true will pick up these configuration files.
+
+**Note:**
+If you make any manual modifications to the cluster.xml or cluster.properties (or group\_name.xml or group\_name.properties) files, you must stop the locator and then restart the locator using the `--load-cluster-configuration-from-dir` parameter. Direct file modifications are not picked up iby the cluster configuration service without a locator restart.
+
+

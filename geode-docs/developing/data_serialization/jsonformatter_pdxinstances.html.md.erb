@@ -1,0 +1,46 @@
+---
+title:  Adding JSON Documents to the Geode Cache
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The `JSONFormatter` API allows you to put JSON formatted documents into regions and retrieve them later by storing the documents internally as PdxInstances.
+
+Geode now supports the use of JSON formatted documents natively. When you add a JSON document to a Geode cache, you call the JSONFormatter APIs to transform them into the PDX format (as a `PdxInstance`), which enables Geode to understand the JSON document at a field level.
+
+In terms of querying and indexing, because the documents are stored internally as PDX, applications can index on any field contained inside the JSON document including any nested field (within JSON objects or JSON arrays.) Any queries run on these stored documents will return PdxInstances as results. To update a JSON document stored in Geode , you can execute a function on the PdxInstance.
+
+You can then use the `JSONFormatter` to convert the PdxInstance results back into the JSON document.
+
+`JSONFormatter` uses a streaming parser ([Jackson](http://wiki.fasterxml.com/JacksonHome), JSON processor) to turn JSON documents into the optimized PDX format. To use the JSONFormatter, make sure that `$GEMFIRE/lib/server-dependencies.jar` is available in your application's CLASSPATH.
+
+The `JSONFormatter` class has four static methods that are used to convert JSON document into PdxInstances and then to convert those PdxInstances back into JSON document.
+
+You need to call the following methods before putting any JSON document into the Geode region:
+
+-   `fromJSON`. Creates a PdxInstance from a JSON byte array. Returns the PdxInstance.
+-   `fromJSON`. Creates a PdxInstance from a JSON string. Returns the PdxInstance.
+
+After putting the JSON document into a region as a PdxInstance, you can execute standard Geode queries and create indexes on the JSON document in the same manner you would query or index any other Geode PdxInstance.
+
+After executing a Geode query or calling `region.get`, you can use the following methods to convert a PdxInstance back into the JSON format:
+
+-   `toJSON`. Reads a PdxInstance and returns a JSON string.
+-   `toJSONByteArray`. Reads a PdxInstance and returns a JSON byte array.
+
+For more information on using the JSONFormatter, see the Java API documentation for `org.apache.geode.pdx.JSONFormatter`.

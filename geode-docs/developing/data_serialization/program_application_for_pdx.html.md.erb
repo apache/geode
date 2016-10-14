@@ -1,0 +1,107 @@
+---
+title:  Programming Your Application to Use PdxInstances
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+A `PdxInstance` is a light-weight wrapper around PDX serialized bytes. It provides applications with run-time access to fields of a PDX serialized object.
+
+<a id="program_application_for_pdx__section_7F357A8E56B54BFB9A5778C0F89E034E"></a>
+You can configure your cache to return a `PdxInstance` when a PDX serialized object is deserialized instead of deserializing the object to a domain class. You can then program your application code that reads your entries to handle `PdxInstance`s fetched from the cache.
+
+**Note:**
+This applies only to entry retrieval that you explicitly code using methods like `EntryEvent.getNewValue` and `Region.get`, as you do inside functions or in cache listener code. This does not apply to querying because the query engine retrieves the entries and handles object access for you.
+
+If you configure your cache to allow PDX serialized reads, a fetch from the cache returns the data in the form it is found. If the object is not serialized, the fetch returns the domain object. If the object is serialized, the fetch returns the `PdxInstance` for the object.
+
+**Note:**
+If you are using `PdxInstance`s, you cannot use delta propagation to apply changes to PDX serialized objects.
+
+For example, in client/server applications that are programmed and configured to handle all data activity from the client, PDX serialized reads done on the server side will always return a `PdxInstance`. This is because all of data is serialized for transfer from the client, and you are not performing any server-side activities that would deserialize the objects in the server cache.
+
+In mixed situations, such as where a server cache is populated from client operations and also from data loads done on the server side, fetches done on the server can return a mix of `PdxInstance`s and domain objects.
+
+When fetching data in a cache with PDX serialized reads enabled, the safest approach is to code to handle both types, receiving an `Object` from the fetch operation, checking the type and casting as appropriate. However, if you know that the class is not available in the JVM, then you can avoid performing the type check.
+
+`PdxInstance` overrides any custom implementation you might have coded for your object's `equals` and `hashcode` methods. Make sure you have marked at least one identity field when writing PDX serialized objects. If you do not set as least one identity field, then the PdxInstance`equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well.
+
+<a id="program_application_for_pdx__section_03F8918B4CAD49CCA1823FAAE25D53A8"></a>
+
+**Prerequisites**
+
+-   Understand generally how to configure the Geode cache. See [Basic Configuration and Programming](../../basic_config/book_intro.html#basic_config_management).
+
+<a id="program_application_for_pdx__section_B3C7C7629DFD4483B32B27F84D64DFCF"></a>
+
+**Procedure**
+
+In your application where you fetch data from the cache, provide the following configuration and code as appropriate:
+
+1.  In the cache.xml file of the member where entry fetches are run, set the `<pdx>` `read-serialized` attribute to true.
+    Data is not necessarily accessed on the member that you have coded for it. For example, if a client application runs a function on a server, the actual data access is done on the server, so you set `read-serialized` to true on the server.
+
+    For example:
+
+    ``` pre
+    // Cache configuration setting PDX read behavior 
+    <cache>
+      <pdx read-serialized="true" />
+      ...
+    </cache>
+                                
+    ```
+
+2.  Write the application code that fetches data from the cache to handle a `PdxInstance`. If you are sure you will only retrieve `PdxInstance`s from the cache, you can code only for that. In many cases, a `PdxInstance` or a domain object may be returned from your cache entry retrieval operation, so you should check the object type and handle each possible type.
+
+    For example:
+
+    ``` pre
+    // put/get code with serialized read behavior
+    // put is done as normal
+    myRegion.put(myKey, myPdxSerializableObject);
+
+    // get checks Object type and handles each appropriately
+    Object myObject = myRegion.get(myKey);
+    if (myObject instanceof PdxInstance) {
+      // get returned PdxInstance instead of domain object    
+      PdxInstance myPdxInstance = (PdxInstance)myObject;
+
+      // PdxInstance.getField deserializes the field, but not the object
+      String fieldValue = myPdxInstance.getField("stringFieldName"); 
+
+      // Update a field and put it back into the cache 
+      // without deserializing the entire object
+      WritablePdxInstance myWritablePdxI = myPdxInstance.createWriter();
+      myWritablePdxI.setField("fieldName", fieldValue);
+      region.put(key, myWritablePdxI);
+
+      // Deserialize the entire object if needed, from the PdxInstance
+      DomainClass myPdxObject = (DomainClass)myPdxInstance.getObject();
+    }
+    else if (myObject instanceof DomainClass) {
+      // get returned instance of domain object  
+      // code to handle domain object instance  
+      ...  
+    }
+    ...
+    ```
+
+    **Note:**
+    Due to a limitation with PDX, if your PDX-enabled cache contains TreeSet domain objects, you should implement a Comparator that can handle both your domain objects and PdxInstance objects. You will also need to make the domain classes available on the server.
+
+

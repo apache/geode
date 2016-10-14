@@ -1,0 +1,66 @@
+---
+title:  Creating Key Indexes
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Creating a key index is a good way to improve query performance when data is partitioned using a key or a field value. You can create key indexes by using the `createKeyIndex` method of the QueryService or by defining the index in `cache.xml`. Creating a key index makes the query service aware of the relationship between the values in the region and the keys in the region.
+
+The FROM clause for a primary key index must be just a region path. The indexed expression is an expression that, when applied to an entry value, produces the key. For example, if a region has Portfolios as the values and the keys are the id field of the Portfolios region, the indexed expression is id.
+
+You can then use the FunctionService (using the partitioned key as a filter passed to the function and as part of the query equality condition) to execute the query against the indexed data. See [Optimizing Queries on Data Partitioned by a Key or Field Value](../query_additional/partitioned_region_key_or_field_value.html#concept_3010014DFBC9479783B2B45982014454) for more details.
+
+There are two issues to note with key indexes:
+
+-   The key index is not sorted. Without sorting, you can only do equality tests. Other comparisons are not possible. To obtain a sorted index on your primary keys, create a functional index on the attribute used as the primary key.
+-   The query service is not automatically aware of the relationship between the region values and keys. For this, you must create the key index.
+
+**Note:**
+Using a key-index with an explicit type='range' in the cache.xml will lead to an exception. Key indexes will not be used in 'range' queries.
+
+## <a id="concept_09E29507AF0D42CF81D261B030D0B7C8__section_8F1B7893F6D44D9CB36679222927031C" class="no-quick-link"></a>Examples of Creating a Key Index
+
+**Using Java API:**
+
+``` pre
+QueryService qs = cache.getQueryService();
+ qs.createKeyIndex("myKeyIndex", "id", "/exampleRegion");
+ 
+```
+
+**Using gfsh:**
+
+``` pre
+gfsh> create index --name=myKeyIndex --expression=id --region=/exampleRegion
+```
+
+**Using cache.xml:**
+
+``` pre
+<region name=exampleRegion>
+ <region-attributes . . . >
+ </region-attributes>
+ <index name="myKeyIndex" from-clause="/exampleRegion" expression="id" key-index="true"/>
+ ...
+</region>
+```
+
+**Note:**
+If you do not specify the type of index when defining indexes using cache.xml, the type defaults to "range".
+
+

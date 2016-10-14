@@ -1,0 +1,53 @@
+---
+title:  Network Partitioning Scenarios
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic describes network partitioning scenarios and what happens to the partitioned sides of the distributed system.
+
+<img src="../../images_svg/network_partition_scenario.svg" id="concept_357ABE91AAA042D2A20328BD01FEB882__image_6ED88C6911EE4C68A19353ABD7B1552A" class="image" />
+
+## <a id="concept_357ABE91AAA042D2A20328BD01FEB882__section_DAFBCB8BB421453EB6C5B4A348640762" class="no-quick-link"></a>What the Losing Side Does
+
+In a network partitioning scenario, the "losing side" constitutes the cluster partition where the membership coordinator has detected that there is an insufficient quorum of members to continue.
+
+The membership coordinator calculates membership weight change after sending out its view preparation message. If a quorum of members does not remain after the view preparation phase, the coordinator on the "losing side" declares a network partition event and sends a network-partition-detected UDP message to the members. The coordinator then closes its distributed system with a `ForcedDisconnectException`. If a member fails to receive the message before the coordinator closes the connection, it is responsible for detecting the event on its own.
+
+When the losing side discovers that a network partition event has occurred, all peer members receive a `RegionDestroyedException` with `Operation`: `FORCED_DISCONNECT`.
+
+If a `CacheListener` is installed, the `afterRegionDestroy` callback is invoked with a `RegionDestroyedEvent`, as shown in this example logged by the losing side's callback. The peer member process IDs are 14291 (lead member) and 14296, and the locator is 14289.
+
+``` pre
+[info 2008/05/01 11:14:51.853 PDT <CloserThread> tid=0x4a] 
+Invoked splitBrain.SBListener: afterRegionDestroy in client1 whereIWasRegistered: 14291 
+event.isReinitializing(): false 
+event.getDistributedMember(): thor(14291):40440/34132 
+event.getCallbackArgument(): null 
+event.getRegion(): /TestRegion 
+event.isOriginRemote(): false 
+Operation: FORCED_DISCONNECT 
+Operation.isDistributed(): false 
+Operation.isExpiration(): false 
+```
+
+Peers still actively performing operations on the cache may see `ShutdownException`s or `CacheClosedException`s with `Caused by: ForcedDisconnectException`.
+
+## <a id="concept_357ABE91AAA042D2A20328BD01FEB882__section_E6E914107FE64C0F9D8F7DA142D00AD7" class="no-quick-link"></a>What Isolated Members Do
+
+When a member is isolated from all locators, it is unable to receive membership view changes. It can't know if the current coordinator is present or, if it has left, whether there are other members available to take over that role. In this condition, a member will eventually detect the loss of all other members and will use the loss threshold to determine whether it should shut itself down. In the case of a distributed system with 2 locators and 2 cache servers, the loss of communication with the non-lead cache server plus both locators would result in this situation and the remaining cache server would eventually shut itself down.

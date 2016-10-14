@@ -1,0 +1,142 @@
+---
+title:  Interactive Configuration Reference for the tc Server Module
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This section describes each prompt when entering into interactive configuration mode of the Geode HTTP Session Management Module for tc Server.
+
+``` pre
+  Please enter a value for 'geode-cs.maximum.vm.heap.size.mb'. Default '512':
+  Please enter a value for 'geode-cs.initial.vm.heap.size.mb'. Default '512':
+  Please enter a value for 'geode-cs.cms.initiating.heap.percentage'. Default '50':
+```
+
+The above properties allow you to fine-tune your JVM heap and garbage collector. For more information, refer to [Managing Heap and Off-heap Memory](../../managing/heap_use/heap_management.html#resource_manager).
+
+``` pre
+  Please specify whether to enable a Geode listener that logs session create, 
+  update, destroy and expiration events. Default 'false':
+```
+
+The above property determines whether a debug cache listener is added to the session region. When true, info-level messages are logged to the Geode log when sessions are created, updated, invalidated, or expired.
+
+``` pre
+With the geode-p2p template:
+  Please specify whether to maintain a local Geode cache. Default 'false':
+  
+With the geode-cs template:
+  Please specify whether to maintain a local Geode cache. Default 'true':
+```
+
+The above property determines whether a local cache is enabled; if this parameter is set to true, the app server load balancer should be configured for sticky session mode.
+
+``` pre
+With the geode-p2p template:
+  Please enter the id of the attributes of the Geode region used to cache 
+      sessions.
+  Default 'REPLICATE':
+
+With the geode-cs template:
+  Please enter the id of the attributes of the Geode region used to cache 
+      sessions.
+  Default 'PARTITION_REDUNDANT':
+```
+
+The above property determines the ID of the attributes for the cache region; possible values include PARTITION, PARTITION\_REDUNDANT, PARTITION\_PERSISTENT, REPLICATE, REPLICATE\_PERSISTENT, and any other region shortcut that can be found in [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html). When using a partitioned region attribute, it is recommended that you use PARTITION\_REDUNDANT (rather than PARTITION) to ensure that the failure of a server does not result in lost session data.
+
+``` pre
+  Please enter the name of the Geode region used to cache sessions. 
+  Default 'gemfire_modules_sessions':
+```
+
+The above property determines the Geode region name.
+
+``` pre
+  Please enter the port that Tomcat Shutdown should listen on. Default '-1':
+  Please enter the port that the JMX socket listener should listen on. 
+      Default '6969':
+```
+
+The above properties are application server properties.
+
+``` pre
+  Please enter a value for 'bio.http.port'. Default '8080':
+  Please enter a value for 'bio.https.port'. Default '8443':
+```
+
+tc Server requires information about connector ports. `bio.http.port` is the http port for tc Server and `bio.https.port` is the secure http port for tc Server.
+
+``` pre
+With the geode-p2p template:
+  Please enter the name of the Geode cache configuration file. 
+  Default 'cache-peer.xml':
+  
+With the geode-cs template:
+  Please enter the name of the Geode cache configuration file. 
+  Default 'cache-client.xml':
+```
+
+You can change the name of the cache configuration file with the above property. If you do change this value, be sure to include an xml file by that name in the `conf` subdirectory.
+
+``` pre
+  Please enter the percentage of heap at which updates to the cache are refused.
+  0.0 means disabled. Default '0.0':
+  Please enter the percentage of heap at which sessions will be evicted from the 
+  local cache. Default '80.0':
+```
+
+The above properties allow you to control the critical and eviction watermarks for the heap. By default, the critical watermark is disabled (set to 0.0) and the eviction watermark is set to 80%.
+
+``` pre
+Please enter the list of locators used by Geode members to discover each other. 
+The format is a comma-separated list of host[port]. Default ' ':
+```
+
+The above property specifies the list of locators.
+
+``` pre
+  Please enter the name of the file used to log Geode messages. 
+  Default 'gemfire_modules.log':
+```
+
+The above property determines the file name for the Geode log file.
+
+``` pre
+Applicable to the geode-p2p template ONLY:
+  Please specify whether to rebalance the Geode cache at startup.
+  Default 'false':
+```
+
+This property allows you to rebalance a partitioned Geode cache when a new Geode peer starts up.
+
+``` pre
+  Please enter the name of the file used to store Geode statistics. 
+  Default 'gemfire_modules.gfs':
+```
+
+The above property determines the filename for the Geode statistics file.
+
+``` pre
+  Please specify whether Geode statistic sampling should be enabled. 
+  Default 'false':
+```
+
+The above property determines whether statistics sampling should occur. See [Statistics](../../managing/statistics/chapter_overview.html) for more information.
+
+

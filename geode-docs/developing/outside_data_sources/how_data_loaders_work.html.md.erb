@@ -1,0 +1,52 @@
+---
+title:  How Data Loaders Work
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+By default, a region has no data loader defined. Plug an application-defined loader into any region by setting the region attribute cache-loader on the members that host data for the region.
+
+<a id="how_data_loaders_work__section_1E600469D223498DB49446434CE9B0B4"></a>
+The loader is called on cache misses during get operations, and it populates the cache with the new entry value in addition to returning the value to the calling thread.
+
+A loader can be configured to load data into the Geode cache from an outside data store. To do the reverse operation, writing data from the Geode cache to an outside data store, use a cache writer event handler. See [Implementing Cache Event Handlers](../events/implementing_cache_event_handlers.html).
+
+How to install your cache loader depends on the type of region.
+
+## <a id="how_data_loaders_work__section_5CD65D559F1A490DAB5ED9326860FE8D" class="no-quick-link"></a>Data Loading in Partitioned Regions
+
+Because of the huge amounts of data they can handle, partitioned regions support partitioned loading. Each cache loader loads only the data entries in the member where the loader is defined. If data redundancy is configured, data is loaded only if the member holds the primary copy. So you must install a cache loader in every member where the partitioned attributes `local-max-memory` is not zero.
+
+If you depend on a JDBC connection, every data store must have a connection to the data source, as shown in the following figure. Here the three members require three connections. See [Configuring Database Connections Using JNDI](../transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) for information on how to configure data sources.
+
+**Note:**
+Partitioned regions generally require more JDBC connections than distributed regions.
+
+<img src="../../images_svg/cache_data_loader.svg" id="how_data_loaders_work__image_CD7CE9BD22ED4782AB6B296187AB983A" class="image" />
+
+## <a id="how_data_loaders_work__section_6A2CE777CE9E4BD682B881F6986CF66C" class="no-quick-link"></a>Data Loading in Distributed Regions
+
+In a non-partitioned distributed region, a cache loader defined in one member is available to all members that have the region defined. Loaders are usually defined in just a subset of the caches holding the region. When a loader is needed, all available loaders for the region are invoked, starting with the most convenient loader, until the data is loaded or all loaders have been tried.
+
+In the following figure, these members of one distributed system can be running on different machines. Loading for the distributed region is performed from M1.
+
+<img src="../../images_svg/cache_data_loader_2.svg" id="how_data_loaders_work__image_3C39A50218D64EF28A5448EB01A4C6EC" class="image" />
+
+## <a id="how_data_loaders_work__section_BE33D9AB27104D1BB8AC8BFCE11A063E" class="no-quick-link"></a>Data Loading in Local Regions
+
+For local regions, the cache loader is available only in the member where it is defined. If a loader is defined, it is called whenever a value is not found in the local cache.

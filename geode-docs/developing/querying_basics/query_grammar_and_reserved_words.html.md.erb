@@ -1,0 +1,163 @@
+---
+title:  Query Language Grammar
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## <a id="query_grammar_and_reserved_words__section_F6DF7EBA0201463F9F19645849748D54" class="no-quick-link"></a>Language Grammar
+
+Notation used in the grammar:
+n   
+A nonterminal symbol that has to appear at some place within the grammar on the left side of a rule. All nonterminal symbols have to be derived to be terminal symbols.
+
+ ***t***   
+A terminal symbol (shown in italic bold).
+
+x y   
+x followed by y
+
+x | y   
+x or y
+
+(x | y)   
+x or y
+
+\[ x \]   
+x or empty
+
+{ x }   
+A possibly empty sequence of x.
+
+ *comment*   
+descriptive text
+
+Grammar list:
+
+``` pre
+symbol ::= expression
+query_program ::= [ imports semicolon ] query [semicolon]
+imports ::= import { semicolon import }
+import ::= IMPORT qualifiedName [ AS identifier ]
+query ::= selectExpr | expr
+selectExpr ::= SELECT DISTINCT projectionAttributes fromClause [ whereClause ]
+projectionAttributes ::= * | projectionList
+projectionList ::= projection { comma projection }
+projection ::= field | expr [ AS identifier ]
+field ::= identifier colon expr
+fromClause ::= FROM iteratorDef { comma iteratorDef }
+iteratorDef ::= expr [ [ AS ] identifier ] [ TYPE identifier ] | identifier IN expr [ TYPE identifier ]
+whereClause ::= WHERE expr
+expr ::= castExpr
+castExpr ::= orExpr | left_paren identifier right_paren castExpr
+orExpr ::= andExpr { OR andExpr }
+andExpr ::= equalityExpr { AND equalityExpr }
+equalityExpr ::= relationalExpr { ( = | <> | != ) relationalExpr }
+relationalExpr ::= inExpr { ( < | <= | > | >= ) inExpr }
+inExpr ::= unaryExpr { IN unaryExpr }
+unaryExpr ::= [ NOT ] unaryExpr
+postfixExpr ::= primaryExpr { left_bracket expr right_bracket }
+        | primaryExpr { dot identifier [ argList ] }
+argList ::= left_paren [ valueList ] right_paren
+qualifiedName ::= identifier { dot identifier }
+primaryExpr ::= functionExpr
+        | identifier [ argList ]
+        | undefinedExpr
+        | collectionConstruction
+        | queryParam
+        | literal
+        | ( query )
+        | region_path
+functionExpr ::= ELEMENT left_paren query right_paren
+        | NVL left_paren query comma query right_paren
+        | TO_DATE left_paren query right_paren
+undefinedExpr ::= IS_UNDEFINED left_paren query right_paren
+        | IS_DEFINED left_paren query right_paren
+collectionConstruction ::= SET left_paren [ valueList ] right_paren
+valueList ::= expr { comma expr }
+queryParam ::= $ integerLiteral
+region_path ::= forward_slash region_name { forward_slash region_name }
+region_name ::= name_character { name_character }
+identifier ::= letter { name_character }
+literal ::= booleanLiteral
+        | integerLiteral
+        | longLiteral
+        | doubleLiteral
+        | floatLiteral
+        | charLiteral
+        | stringLiteral
+        | dateLiteral
+        | timeLiteral
+        | timestampLiteral
+        | NULL
+        | UNDEFINED
+booleanLiteral ::= TRUE | FALSE
+integerLiteral ::= [ dash ] digit { digit }
+longLiteral ::= integerLiteral L
+floatLiteral ::= [ dash ] digit { digit } dot digit { digit } [ ( E | e ) [ plus | dash ] digit { digit } ] F
+doubleLiteral ::= [ dash ] digit { digit } dot digit { digit } [ ( E | e ) [ plus | dash ] digit { digit } ] [ D ]
+charLiteral ::= CHAR single_quote character single_quote
+stringLiteral ::= single_quote { character } single_quote
+dateLiteral ::= DATE single_quote integerLiteral dash integerLiteral dash integerLiteral single_quote
+timeLiteral ::= TIME single_quote integerLiteral colon
+        integerLiteral colon integerLiteral single_quote
+timestampLiteral ::= TIMESTAMP single_quote
+        integerLiteral dash integerLiteral dash integerLiteral integerLiteral colon
+        integerLiteral colon
+        digit { digit } [ dot digit { digit } ] single_quote
+letter ::= any unicode letter
+character ::= any unicode character except 0xFFFF
+name_character ::= letter | digit | underscore
+digit ::= any unicode digit 
+```
+
+The expressions in the following are all terminal characters:
+
+``` pre
+dot ::= .
+left_paren ::= (
+right_paren ::= )
+left_bracket ::= [
+right_bracket ::= ]
+single_quote ::= ’
+underscore ::= _
+forward_slash ::= /
+comma ::= ,
+semicolon ::= ;
+colon ::= :
+dash ::= -
+plus ::= +
+            
+```
+
+## <a id="query_grammar_and_reserved_words__section_B074373F2ED44DC7B98652E70ABC5D5D" class="no-quick-link"></a>Language Notes
+
+-   Query language keywords such as SELECT, NULL, and DATE are case-insensitive. Identifiers such as attribute names, method names, and path expressions are case-sensitive.
+-   Comment lines begin with -- (double dash).
+-   Comment blocks begin with /\* and end with \*/.
+-   String literals are delimited by single-quotes. Embedded single-quotes are doubled.
+
+    Examples:
+
+    ``` pre
+    'Hello' value = Hello
+    'He said, ''Hello''' value = He said, 'Hello'
+    ```
+
+-   Character literals begin with the CHAR keyword followed by the character in single quotation marks. The single-quotation mark character itself is represented as `CHAR ''''` (with four single quotation marks).
+-   In the TIMESTAMP literal, there is a maximum of nine digits after the decimal point.
+

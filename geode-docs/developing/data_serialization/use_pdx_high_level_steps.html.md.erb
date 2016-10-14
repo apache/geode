@@ -1,0 +1,49 @@
+---
+title:  High Level Steps for Using PDX Serialization
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To use PDX serialization, you can configure and use Geode's reflection-based autoserializer, or you can program the serialization of your objects by using the PDX interfaces and classes.
+
+<a id="concept_A7C8890826394B4293C036DD739835BD__section_7F357A8E56B54BFB9A5778C0F89E034E"></a>
+Optionally, program your application code to deserialize individual fields out of PDX representations of your serialized objects. You may also need to persist your PDX metadata to disk for recovery on startup.
+
+**Procedure**
+
+1.  Use one of these serialization options for each object type that you want to serialize using PDX serialization:
+    -   [Using Automatic Reflection-Based PDX Serialization](auto_serialization.html)
+    -   [Serializing Your Domain Object with a PdxSerializer](use_pdx_serializer.html)
+    -   [Implementing PdxSerializable in Your Domain Object](use_pdx_serializable.html)
+
+2.  To ensure that your servers do not need to load the application classes, set the `pdx` `read-serialized` attribute to true. In gfsh, execute the following command before starting up your servers:
+
+    ``` pre
+    gfsh>configure pdx --read-serialized=true
+    ```
+
+    By using gfsh, this configuration can propagated across the cluster through the [Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html). Alternately, you would need to configure `pdx read-serialized` in each server's `cache.xml` file.
+
+3.  If you are storing any Geode data on disk, then you must configure PDX serialization to use persistence. See [Persisting PDX Metadata to Disk](persist_pdx_metadata_to_disk.html) for more information.
+4.  (Optional) Wherever you run explicit application code to retrieve and manage your cached entries, you may want to manage your data objects without using full deserialization. To do this, see [Programming Your Application to Use PdxInstances](program_application_for_pdx.html).
+
+## PDX and Multi-Site (WAN) Deployments
+
+For multisite (WAN) installations only-- if you will use PDX serialization in any of your WAN-enabled regions, for each distributed system, you must choose a unique integer between 0 (zero) and 255 and set the `distributed-system-id` in every member's `gemfire.properties` file. See [Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html).
+
+

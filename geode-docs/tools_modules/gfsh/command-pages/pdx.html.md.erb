@@ -1,0 +1,90 @@
+---
+title:  pdx rename
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Renames PDX types in an offline disk store.
+
+Any PDX types that are renamed will be listed in the output. If no renames are done or the disk-store is online, then this command will fail.
+
+**Availability:** Offline.
+
+**Syntax:**
+
+``` pre
+pdx rename --old=value --new=value --disk-store=value --disk-dirs=value(,value)*
+```
+
+| Name                                               | Description                                                                                                                                           |
+|----------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-old</span>        | *Required.* If a PDX type's fully qualified class name has a word that matches this text then it will be renamed. Words are delimited by '.' and '$'. |
+| <span class="keyword parmname">\\-\\-new</span>        | *Required.* The text to replace the word that matched old.                                                                                            |
+| <span class="keyword parmname">&#8209;&#8209;disk&#8209;store</span> | *Required.* Name of the disk store to operate on.                                                                                                     |
+| <span class="keyword parmname">\\-\\-disk-dirs</span>  | *Required.* Directories which contain the disk store files.                                                                                           |
+
+**Example Commands:**
+
+Change all packages that start with "com.gemstone" to "com.pivotal":
+
+``` pre
+gfsh>pdx rename --old=com.gemstone --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1
+```
+
+Change a class named “MyClassName” to “YourClassName”:
+
+``` pre
+gfsh>pdx rename --old=MyClassName --new=YourClassName --disk-store=ds1 --disk-dirs=/diskDir1
+```
+
+Change the FQCN “com.target.app1.OldClass” to “com.target.app2.NewClass”:
+
+``` pre
+gfsh>pdx rename --old=com.target.app1.OldClass --new=com.target.app2.NewClass --disk-store=ds1 --disk-dirs=/diskDir1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>pdx rename --old=PortfolioPdx --new=StockPdx --disk-store=DiskStore1 --disk-dirs=/DiskDir1
+Successfully renamed pdx types:
+  com.app.data.StockPdx: id=2
+  com.app.data.StockPdx$Day.Monday
+```
+
+**Error Messages:**
+
+If no types match, you may receive the following error message:
+
+``` pre
+gfsh>pdx rename --old=gemstone --new=pivotal --disk-store=DiskStore1 --disk-dirs=/DiskDir1
+Could not process command due to GemFire error. No Pdx types found to rename.
+```
+
+If the disk-store where the PDX types are stored is online, you will receive the following error message:
+
+``` pre
+gfsh>pdx rename --old=StockPdx --new=PortfolioPdx --disk-store=DiskStore1 --disk-dirs=/DiskDir1
+Could not process command due to GemFire error. Error renaming pdx types :
+GemFireCache[id = 484629896; isClosing = false; isShutDownAll = false;
+closingGatewayHubsByShutdownAll = false; created = Wed Jan 07 10:29:45 PST 2015;
+server = false; copyOnRead = false; lockLease = 120; lockTimeout = 60]: An open cache
+already exists.
+```
+
+

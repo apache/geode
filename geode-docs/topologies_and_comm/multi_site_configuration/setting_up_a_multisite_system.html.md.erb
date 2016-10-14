@@ -1,0 +1,381 @@
+---
+title:  Configuring a Multi-site (WAN) System
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Plan and configure your multi-site topology, and configure the regions that will be shared between systems.
+
+## <a id="setting_up_a_multisite_system__section_5DF2D8D199364E6C8B7F83382A134B5E" class="no-quick-link"></a>Prerequisites
+
+Before you start, you should understand how to configure membership and communication in peer-to-peer systems using locators. See [Configuring Peer-to-Peer Discovery](../p2p_configuration/setting_up_a_p2p_system.html) and [Configuring Peer Communication](../p2p_configuration/setting_up_peer_communication.html).
+
+WAN deployments increase the messaging demands on a Geode system. To avoid hangs related to WAN messaging, always set `conserve-sockets=false` for Geode members that participate in a WAN deployment. See [Configuring Sockets in Multi-Site (WAN) Deployments](../../managing/monitor_tune/sockets_and_gateways.html) and [Making Sure You Have Enough Sockets](../../managing/monitor_tune/socket_communication_have_enough_sockets.html).
+
+## <a id="setting_up_a_multisite_system__section_86F9FE9D786D407FB438C56E43FC5DB1" class="no-quick-link"></a>Main Steps
+
+Use the following steps to configure a multi-site system:
+
+1.  Plan the topology of your multi-site system. See [Multi-site (WAN) Topologies](multisite_topologies.html#multisite_topologies) for a description of different multi-site topologies.
+2.  Configure membership and communication for each distributed system in your multi-site system. You must use locators for peer discovery in a WAN configuration. See [Configuring Peer-to-Peer Discovery](../p2p_configuration/setting_up_a_p2p_system.html). Start each distributed system using a unique `distributed-system-id` and identify remote clusters using `remote-locators`. For example:
+
+    ``` pre
+    mcast-port=0
+    locators=<locator1-address>[<port1>],<locator2-address>[<port2>]
+    distributed-system-id=1
+    remote-locators=<remote-locator-addr1>[<port1>],<remote-locator-addr2>[<port2>]
+    ```
+
+3.  Configure the gateway senders that you will use to distribute region events to remote systems. See [Configure Gateway Senders](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC).
+4.  Create the data regions that you want to participate in the multi-site system, specifying the gateway sender(s) that each region should use for WAN distribution. Configure the same regions in the target clusters to apply the distributed events. See [Create Data Regions for Multi-site Communication](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879).
+5.  Configure gateway receivers in each Geode cluster that will receive region events from another cluster. See [Configure Gateway Receivers](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B).
+6.  Start distributed system member processes in the correct order (locators first, followed by data nodes) to ensure efficient discovery of WAN resources. See [Starting Up and Shutting Down Your System](../../configuring/running/starting_up_shutting_down.html).
+7.  (Optional.) Deploy custom conflict resolvers to handle resolve potential conflicts that are detected when applying events from over a WAN. See [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542).
+8.  (Optional.) Deploy WAN filters to determine which events are distributed over the WAN, or to modify events as they are distributed over the WAN. See [Filtering Events for Multi-Site (WAN) Distribution](../../developing/events/filtering_multisite_events.html#topic_E97BB68748F14987916CD1A50E4B4542).
+9.  (Optional.) Configure persistence, conflation, and/or dispatcher threads for gateway sender queues using the instructions in [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
+
+## <a id="setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC" class="no-quick-link"></a>Configure Gateway Senders
+
+Each gateway sender configuration includes:
+
+-   A unique ID for the gateway sender configuration.
+-   The distributed system ID of the remote site to which the sender propagates region events.
+-   A property that specifies whether the gateway sender is a serial gateway sender or a parallel gateway sender.
+-   Optional properties that configure the gateway sender queue. These queue properties determine features such the amount of memory used by the queue, whether the queue is persisted to disk, and how one or more gateway sender threads dispatch events from the queue.
+
+**Note:**
+To configure a gateway sender that uses gfsh to create the cache.xml configurations described below, as well as other options, see [create gateway-sender](../../tools_modules/gfsh/command-pages/create.html#topic_hg2_bjz_ck).
+
+See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD056499AA57AF3CFDBF8ABE3) for more information about individual configuration properties.
+
+1.  For each Geode system, choose the members that will host a gateway sender configuration and distribute region events to remote sites:
+    -   You must deploy a parallel gateway sender configuration on each Geode member that hosts a region that uses the sender.
+    -   You may choose to deploy a serial gateway sender configuration on one or more Geode members in order to provide high availability. However, only one instance of a given serial gateway sender configuration distributes region events at any given time.
+
+2.  Configure each gateway sender on a Geode member using gfsh, `cache.xml` or Java API:
+    -   **gfsh configuration command**
+
+        ``` pre
+        gfsh>create gateway-sender --id="sender2" --parallel=true --remote-distributed-system-id="2"
+
+        gfsh>create gateway-sender --id="sender3" --parallel=true --remote-distributed-system-id="3"
+        ```
+    -   **cache.xml configuration**
+
+        These example `cache.xml` entries configure two parallel gateway senders to distribute region events to two remote Geode clusters (clusters "2" and "3"):
+
+        ``` pre
+        <cache>
+          <gateway-sender id="sender2" parallel="true" 
+           remote-distributed-system-id="2"/> 
+          <gateway-sender id="sender3" parallel="true" 
+           remote-distributed-system-id="3"/> 
+           ... 
+        </cache>
+        ```
+    -   **Java configuration**
+
+        This example code shows how to configure a parallel gateway sender using the API:
+
+        ``` pre
+        // Create or obtain the cache
+        Cache cache = new CacheFactory().create();
+
+        // Configure and create the gateway sender
+        GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
+        gateway.setParallel(true);
+        GatewaySender sender = gateway.create("sender2", "2");
+        sender.start();
+        ```
+
+3.  Depending on your applications, you may need to configure additional features in each gateway sender. Things you need to consider are:
+    -   The maximum amount of memory each gateway sender queue can use. When the queue exceeds the configured amount of memory, the contents of the queue overflow to disk. For example:
+
+        ``` pre
+        gfsh>create gateway-sender --id=sender2 --parallel=true --remote-distributed-system-id=2 --maximum-queue-memory=150
+        ```
+
+        In cache.xml:
+
+        ``` pre
+        <gateway-sender id="sender2" parallel="true"
+         remote-distributed-system-id="2" 
+         maximum-queue-memory="150"/> 
+        ```
+    -   Whether to enable disk persistence, and whether to use a named disk store for persistence or for overflowing queue events. See [Persisting an Event Queue](../../developing/events/configuring_highly_available_gateway_queues.html#configuring_highly_available_gateway_queues). For example:
+
+        ``` pre
+        gfsh>create gateway-sender --id=sender2 --parallel=true --remote-distributed-system-id=2 \
+        --maximum-queue-memory=150 --enable-persistence=true --disk-store-name=cluster2Store
+        ```
+
+        In cache.xml:
+
+        ``` pre
+        <gateway-sender id="sender2" parallel="true"
+         remote-distributed-system-id="2" 
+         enable-persistence="true" disk-store-name="cluster2Store"
+         maximum-queue-memory="150"/> 
+        ```
+    -   The number of dispatcher threads to use for processing events from each each gateway queue. The `dispatcher-threads` attribute of the gateway sender specifies the number of threads that process the queue (default of 5). For example:
+
+        ``` pre
+        gfsh>create gateway-sender --id=sender2 --parallel=true --remote-distributed-system-id=2 \
+        --dispatcher-threads=2 --order-policy=partition
+        ```
+
+        In cache.xml:
+
+        ``` pre
+        <gateway-sender id="sender2" parallel="false"
+         remote-distributed-system-id="2" 
+         dispatcher-threads="2" order-policy="partition"/>
+        ```
+
+        **Note:**
+        When multiple dispatcher threads are configured for a serial queue, each thread operates on its own copy of the gateway sender queue. Queue configuration attributes such as `maximum-queue-memory` are repeated for each dispatcher thread that you configure.
+
+        See [Configuring Dispatcher Threads and Order Policy for Event Distribution](../../developing/events/configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85).
+    -   For serial gateway senders (parallel=false) that use multiple `dispatcher-threads`, also configure the ordering policy to use for dispatching the events. See [Configuring Dispatcher Threads and Order Policy for Event Distribution](../../developing/events/configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85).
+    -   Determine whether you should conflate events in the queue. See [Conflating Events in a Queue](../../developing/events/conflate_multisite_gateway_queue.html#conflate_multisite_gateway_queue).
+    -   Decide whether the gateway sender should start automatically or requires a manual start. This is controlled by the `manual-start` attribute. For example, in gfsh:
+
+        ``` pre
+        gfsh>create gateway-sender --id=sender2 --parallel=true --remote-distributed-system-id=2 --manual-start=true
+        ```
+
+        In cache.xml:
+
+        ``` pre
+        <gateway-sender id="sender2" parallel="false"
+         remote-distributed-system-id="2" 
+         dispatcher-threads="2" order-policy="partition" manual-start="true" />
+        ```
+
+        By default, this is set to false on gateway senders and the senders are started automatically.
+
+4.  If you have configured the gateway sender with `manual-start` equal to true, then start the gateway sender when appropriate. For persistent gateway senders, the appropriate time to start them is when all other members hosting persistent regions are started. In gfsh:
+
+    ``` pre
+    gfsh> start gateway-sender --id=sender2
+    ```
+
+**Note:**
+The gateway sender configuration for a specific sender `id` must be identical on each Geode member that hosts the gateway sender.
+
+## <a id="setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879" class="no-quick-link"></a>Create Data Regions for Multi-site Communication
+
+When you are using a multi-site configuration, you choose which data regions to share between sites. Because of the high cost of distributing data between disparate geographical locations, not all changes are passed between sites. After you define gateway senders, configure regions to use the gateway sender to distribute region events.
+
+-   **gfsh Configuration**
+
+    ``` pre
+    gfsh>create region --name=customer --gateway-sender-id=sender2,sender3
+    ```
+
+    or to modify an existing region:
+
+    ``` pre
+    gfsh>alter region --name=customer --gateway-sender-id=sender2,sender3
+    ```
+
+-   **cache.xml Configuration**
+
+    Use the `gateway-sender-ids` region attribute to add gateway senders to a region. To assign multiple gateway senders, use a comma-separated list. For example:
+
+    ``` pre
+    <region-attributes gateway-sender-ids="sender2,sender3">
+    </region-attributes>
+    ```
+
+-   **Java API Configuration**
+
+    This example shows adding two gateway senders (configured in the earlier example) to a partitioned region:
+
+    ``` pre
+    RegionFactory rf = 
+      cache.createRegionFactory(RegionShortcut.PARTITION);
+    rf.addCacheListener(new LoggingCacheListener());
+    rf.addGatewaySenderId("sender2");
+    rf.addGatewaySenderId("sender3");
+    custRegion = rf.create("customer");
+    ```
+
+    **Note:**
+    When using the Java API, you must configure a parallel gateway sender *before* you add its id to a region. This ensures that the sender distributes region events that were persisted before new cache operations take place. If the gateway sender id does not exist when you add it to a region, you receive an `IllegalStateException`.
+
+**Note:**
+Replicated regions cannot use a parallel gateway sender. Use a serial gateway sender instead.
+
+**Note:**
+In addition to configuring regions with gateway senders to distribute events, you must configure the same regions in the target clusters to apply the distributed events. The region name in the receiving cluster must exactly match the region name in the sending cluster.
+
+## <a id="setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B" class="no-quick-link"></a>Configure Gateway Receivers
+
+Always configure a gateway receiver in each Geode cluster that will receive and apply region events from another cluster.
+
+A gateway receiver configuration can be applied to multiple Geode servers for load balancing and high availability. However, each Geode member that hosts a gateway receiver must also define all of the regions for which the receiver may receive an event. If a gateway receiver receives an event for a region that the local member does not define, Geode throws an exception. See [Create Data Regions for Multi-site Communication](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879).
+
+**Note:**
+You can only host one gateway receiver per member.
+
+A gateway receiver configuration specifies a range of possible port numbers on which to listen. The Geode server picks an unused port number from the specified range to use for the receiver process. You can use this functionality to easily deploy the same gateway receiver configuration to multiple members.
+
+You can optionally configure gateway receivers to provide a specific IP address or host name for gateway sender connections. If you configure hostname-for-senders, locators will use the provided host name or IP address when instructing gateway senders on how to connect to gateway receivers. If you provide "" or null as the value, by default the gateway receiver's bind-address will be sent to clients.
+
+In addition, you can configure gateway receivers to start automatically or to require a manual start. By default, gateway receivers must be started manually.
+
+**Note:**
+To configure a gateway receiver, you can use gfsh, cache.xml or Java API configurations as described below. For more information on configuring gateway receivers in gfsh, see [create gateway-receiver](../../tools_modules/gfsh/command-pages/create.html#topic_a4x_pb1_dk).
+
+-   **gfsh configuration command**
+
+    ``` pre
+    gfsh>create gateway-receiver --start-port=1530 --end-port=1551 
+    ```
+
+-   **cache.xml Configuration**
+
+    The following configuration defines a gateway receiver that listens on an unused port in the range from 1530 to 1550:
+
+    ``` pre
+    <cache>
+      <gateway-receiver start-port="1530" end-port="1551" hostname-for-senders="gateway1.mycompany.com" manual-start="false" /> 
+       ... 
+    </cache>
+    ```
+
+-   **Java API Configuration**
+
+    ``` pre
+    // Create or obtain the cache
+    Cache cache = new CacheFactory().create();
+
+    // Configure and create the gateway receiver
+    GatewayReceiverFactory gateway = cache.createGatewayReceiverFactory();
+    gateway.setStartPort(1530);
+    gateway.setEndPort(1551);
+    gateway.setHostnameForSenders("gateway1.mycompany.com");
+    GatewayReceiver receiver = gateway.create();
+    receiver.start();
+    ```
+
+    **Note:**
+    When using the Java API, you must create any region that might receive events from a remote site before you start the gateway receiver. Otherwise, batches of events could arrive from remote sites before the regions for those events have been created. If this occurs, the local site will throw exceptions because the receiving region does not exist yet. If you define regions in `cache.xml`, the correct startup order is handled automatically.
+
+-   By default, `manual-start` is configured to **true** on gateway receivers. If you have not changed this configuration (either in gfsh or cache.xml), you must start your gateway receiver manually. For example, in gfsh:
+
+    ``` pre
+    gfsh>create gateway-receiver --manual-start=false
+    ```
+
+-   In gfsh, if you have not disabled manual-start, execute the following command to start the gateway receiver:
+
+    ``` pre
+    gfsh>start gateway-receiver
+    ```
+
+-   After starting new gateway receivers, you can execute the [load-balance gateway-sender](../../tools_modules/gfsh/command-pages/load-balance.html) command in `gfsh` so that a specific gateway sender will be able to rebalance its connections and connect new remote gateway receivers. Invoking this command redistributes gateway sender connections more evenly among all the gateway receivers.
+
+    Another option is to use the `GatewaySender.rebalance` Java API.
+
+As an example, assume the following scenario:
+
+1.  start 1 receiver in site ny
+2.  start 4 senders in site ln
+3.  start 3 additional receiver in NY
+
+You can then execute the following in gfsh to see the effects of rebalancing:
+
+    gfsh -e "connect --locator=localhost[10331]" -e "list gateways"
+    ...
+    (2) Executing - list gateways
+
+    Gateways
+
+    GatewaySender
+
+    GatewaySender Id |              Member               | Remote Cluster Id |   Type   | Status  | Queued Events | Receiver Location
+    ---------------- | --------------------------------- | ----------------- | -------- | ------- | ------------- | -----------------
+    ln               | boglesbymac(ny-1:88641)<v2>:33491 | 2                 | Parallel | Running | 0             | boglesbymac:5037
+    ln               | boglesbymac(ny-2:88705)<v3>:29329 | 2                 | Parallel | Running | 0             | boglesbymac:5064
+    ln               | boglesbymac(ny-3:88715)<v4>:36808 | 2                 | Parallel | Running | 0             | boglesbymac:5132
+    ln               | boglesbymac(ny-4:88724)<v5>:52993 | 2                 | Parallel | Running | 0             | boglesbymac:5324
+
+    GatewayReceiver
+
+                 Member               | Port | Sender Count | Sender's Connected
+    --------------------------------- | ---- | ------------ | --------------------------------------------------------------------------
+    boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 24           | ["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+    boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 0            | []
+    boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 0            | []
+    boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 0            | []
+
+
+Execute the load-balance command:
+
+    gfsh -e "connect --locator=localhost[10441]" -e "load-balance gateway-sender --id=ny"...
+
+    (2) Executing - load-balance gateway-sender --id=ny
+
+                 Member               | Result | Message
+    --------------------------------- | ------ |--------------------------------------------------------------------------
+    boglesbymac(ln-1:88651)<v2>:48277 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-1:88651)<v2>:48277
+    boglesbymac(ln-4:88681)<v5>:42784 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-4:88681)<v5>:42784
+    boglesbymac(ln-3:88672)<v4>:43675 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-3:88672)<v4>:43675
+    boglesbymac(ln-2:88662)<v3>:12796 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-2:88662)<v3>:12796
+
+Listing gateways in ny again shows the connections are spread much better among the receivers.
+
+
+    gfsh -e "connect --locator=localhost[10331]" -e "list gateways"...
+
+    (2) Executing - list gateways
+
+    Gateways
+
+    GatewaySender
+
+    GatewaySender Id |              Member               | Remote Cluster Id |  Type    | Status  | Queued Events | Receiver Location
+    ---------------- | --------------------------------- |  ---------------- | -------- | ------- | ------------- | -----------------
+    ln               | boglesbymac(ny-1:88641)<v2>:33491 | 2                 | Parallel | Running | 0             | boglesbymac:5037
+    ln               | boglesbymac(ny-2:88705)<v3>:29329 | 2                 | Parallel | Running | 0             | boglesbymac:5064
+    ln               | boglesbymac(ny-3:88715)<v4>:36808 | 2                 | Parallel | Running | 0             | boglesbymac:5132
+    ln               | boglesbymac(ny-4:88724)<v5>:52993 | 2                 | Parallel | Running | 0             | boglesbymac:5324
+
+    GatewayReceiver
+
+             Member                   | Port | Sender Count | Sender's Connected
+    --------------------------------- | ---- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------
+    boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 9            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
+    boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
+    boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 4            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
+    boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-3:88672)<v4>:43675"]
+
+
+Running the load balance command in site ln again produces even better balance.
+
+``` pre
+         Member                   | Port | Sender Count | Sender's Connected
+--------------------------------- | ---- | ------------ |-------------------------------------------------------------------------------------------------------------------------------------------------
+boglesbymac(ny-1:88641)<v2>:33491 | 5057 | 7            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+boglesbymac(ny-2:88705)<v3>:29329 | 5082 | 3            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-3:88672)<v4>:43675","boglesbymac(ln-2:88662)<v3>:12796"]
+boglesbymac(ny-3:88715)<v4>:36808 | 5371 | 5            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+boglesbymac(ny-4:88724)<v5>:52993 | 5247 | 6            |["boglesbymac(ln-1:88651)<v2>:48277","boglesbymac(ln-4:88681)<v5>:42784","boglesbymac(ln-2:88662)<v3>:12796","boglesbymac(ln-3:88672)<v4>:43675"]
+```
+

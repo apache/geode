@@ -1,0 +1,38 @@
+---
+title:  Troubleshooting the Multicast Tuning Process
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Several problems may arise during the initial testing and tuning process for multicasting.
+
+**Some or All Members Cannot Communicate**
+
+If your applications and cache servers cannot talk to each other, even though they are configured correctly, you may not have multicast connectivity on your network. It’s common to have unicast connectivity, but not multicast connectivity. See your network administrator.
+
+**Multicast Is Slower Than Expected**
+
+Look for an Ethernet flow control limit. If you have mixed-speed networks that result in a multicast flooding problem, the Ethernet hardware may be trying to slow down the fast traffic.
+
+Make sure your network hardware can deal with multicast traffic and route it efficiently. Some network hardware designed to handle multicast does not perform well enough to support a full-scale production system.
+
+**Multicast Fails Unexpectedly**
+
+If you find through testing that multicast fails above a round number, for example, it works up to 100 Mbps and fails at all rates over that, suspect that it is failing because it exceeds the network rate. This problem often arises at sites where one of the secondary LANs is slower than the main network
+
+

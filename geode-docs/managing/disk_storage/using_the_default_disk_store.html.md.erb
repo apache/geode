@@ -1,0 +1,70 @@
+---
+title:  Modifying the Default Disk Store
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can modify the behavior of the default disk store by specifying the attributes you want for the disk store named "DEFAULT".
+
+<a id="using_the_default_disk_store__section_7D6E1A05D28840AC8606EF0D88E9B373"></a>
+Whenever you use disk stores without specifying the disk store to use, Geode uses the disk store named "DEFAULT".
+
+For example, these region and queue configurations specify persistence and/or overflow, but do not specify the disk-store-name. Because no disk store is specified, these use the disk store named "DEFAULT".
+
+Examples of using the default disk store for region persistence and overflow:
+
+-   gfsh:
+
+    ``` pre
+    gfsh>create region --name=regionName --type=PARTITION_PERSISTENT_OVERFLOW
+    ```
+
+-   cache.xml
+
+    ``` pre
+    <region refid="PARTITION_PERSISTENT_OVERFLOW"/>
+    ```
+
+Example of using the default disk store for server subscription queue overflow (cache.xml):
+
+``` pre
+<cache-server port="40404">
+    <client-subscription eviction-policy="entry" capacity="10000"/>
+</cache-server>
+```
+
+## <a id="using_the_default_disk_store__section_671AED6EAFEE485D837411DEBE0C6BC6" class="no-quick-link"></a>Change the Behavior of the Default Disk Store
+
+Geode initializes the default disk store with the default disk store configuration settings. You can modify the behavior of the default disk store by specifying the attributes you want for the disk store named "DEFAULT". The only thing you can’t change about the default disk store is the name.
+
+The following example changes the default disk store to allow manual compaction and to use multiple, non-default directories:
+
+cache.xml:
+
+``` pre
+<disk-store name="DEFAULT" allow-force-compaction="true">
+     <disk-dirs>
+        <disk-dir>/export/thor/customerData</disk-dir>
+        <disk-dir>/export/odin/customerData</disk-dir>
+        <disk-dir>/export/embla/customerData</disk-dir>
+     </disk-dirs>
+</disk-store>
+```
+
+<a id="using_the_default_disk_store__section_C61BA9AD9A6442DA934C2B20C75E0996"></a>
+

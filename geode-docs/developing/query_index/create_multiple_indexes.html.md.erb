@@ -1,0 +1,78 @@
+---
+title:  Creating Multiple Indexes at Once
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In order to speed and promote efficiency when creating indexes, you can define multiple indexes and then create them all at once.
+
+Defining multiple indexes before creating them speeds up the index creation process by iterating over region entries only once.
+
+You can define multiple indexes of different types at once by specifying the `--type` parameter at definition time.
+
+To define multiple indexes, you can use gfsh or the Java API:
+
+**gfsh example:**
+
+``` pre
+gfsh> define index --name=myIndex1 --expression=exp1 --region=/exampleRegion 
+
+gfsh> define index --name=myIndex2 --expression="c.exp2" --region="/exampleRegion e, e.collection1 c" 
+
+gfsh> define index --name=myIndex3 --expression=exp3 --region=/exampleRegion --type=hash 
+
+gfsh> create defined indexes
+ 
+```
+
+If index creation fails, you may receive an error message in gfsh similar to the following:
+
+``` pre
+gfsh>create defined indexes
+Exception : org.apache.geode.cache.query.RegionNotFoundException , 
+Message : Region ' /r3' not found: from  /r3Occurred on following members
+1. india(s1:17866)<v1>:27809
+```
+
+**Java API example:**
+
+``` pre
+ Cache cache = new CacheFactory().create();
+    QueryService queryService = cache.getQueryService();
+    queryService.defineIndex("name1", "indexExpr1", "regionPath1");
+    queryService.defineIndex("name2", "indexExpr2", "regionPath2");
+    queryService.defineHashIndex("name3", "indexExpr3", "regionPath2");
+    queryService.defineKeyIndex("name4", "indexExpr4", "regionPath2");
+    List<Index> indexes = queryService.createDefinedIndexes();
+```
+
+If one or more index population fails, Geode collect the Exceptions and continues to populate the rest of the indexes. The collected `Exceptions` are stored in a Map of index names and exceptions that can be accessed through `MultiIndexCreationException`.
+
+Index definitions are stored locally on the `gfsh` client. If you want to create a new set of indexes or if one or more of the index creations fail, you might want to clear the definitions stored by using `clear defined indexes`command. The defined indexes can be cleared by using the Java API:
+
+``` pre
+queryService.clearDefinedIndexes();
+```
+
+or gfsh:
+
+``` pre
+gfsh> clear defined indexes
+```
+
+

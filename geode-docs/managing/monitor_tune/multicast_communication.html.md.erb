@@ -1,0 +1,46 @@
+---
+title:  Multicast Communication
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can make configuration adjustments to improve the UDP multicast performance of peer-to-peer communication in your Geode system.
+
+Before you begin, you should understand Geode [Basic Configuration and Programming](../../basic_config/book_intro.html). See also the general communication tuning and UDP tuning covered in [Socket Communication](socket_communication.html) and [UDP Communication](udp_communication.html#udp_comm).
+
+-   **[Provisioning Bandwidth for Multicast](../../managing/monitor_tune/multicast_communication_provisioning_bandwidth.html)**
+
+    Multicast installations require more planning and configuration than TCP installations. With IP multicast, you gain scalability but lose the administrative convenience of TCP.
+
+-   **[Testing Multicast Speed Limits](../../managing/monitor_tune/multicast_communication_testing_multicast_speed_limits.html)**
+
+    TCP automatically adjusts its speed to the capability of the processes using it and enforces bandwidth sharing so that every process gets a turn. With multicast, you must determine and explicitly set those limits.
+
+-   **[Configuring Multicast Speed Limits](../../managing/monitor_tune/multicast_communication_configuring_speed_limits.html)**
+
+    After you determine the maximum transmission rate, configure and tune your production system.
+
+-   **[Run-time Considerations for Multicast](../../managing/monitor_tune/multicast_communication_runtime_considerations.html)**
+
+    When you use multicast for messaging and data distribution, you need to understand how the health monitoring setting works and how to control memory use.
+
+-   **[Troubleshooting the Multicast Tuning Process](../../managing/monitor_tune/multicast_communication_troubleshooting.html)**
+
+    Several problems may arise during the initial testing and tuning process for multicasting.
+
+

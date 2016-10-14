@@ -1,0 +1,47 @@
+---
+title:  cache.xml
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Use the cache.xml file to set up general cache facilities and behavior and to create and initialize cached data regions. These sections document cache.xml requirements; provide hierarchical diagrams of `<cache>` and `<client-cache>         `elements; and describe the function of each element.
+
+**Note:**
+You can configure most elements of the cache.xml file and apply it to your entire cluster by using the [gfsh](../../tools_modules/gfsh/chapter_overview.html) and [cluster configuration service](../../configuring/cluster_config/gfsh_persist.html). See [gfsh Limitations](../../configuring/cluster_config/gfsh_persist.html#concept_r22_hyw_bl__section_bn3_23p_y4) for a list of items you cannot configure in gfsh and must still configure in cache.xml.
+
+-   **[cache.xml Quick Reference](../../reference/topics/elements_ref.html)**
+
+    This section documents cache.xml file requirements and variables. It also points you to specific element sections for server, client, and WAN configuration.
+
+-   **[&lt;cache&gt; Element Hierarchy](../../reference/topics/cache-elements-list.html)**
+
+    This section shows the hierarchy of `<cache>` element sub-elements that you use to configure Geode caches and servers.
+
+-   **[&lt;cache&gt; Element Reference](../../reference/topics/cache_xml.html#cache_xml_cache)**
+
+    This section documents the `cache.xml` sub-elements used for Geode server configuration. All elements are sub-elements of the `<cache>` element.
+
+-   **[&lt;client-cache&gt; Element Hierarchy](../../reference/topics/client-cache-elements-list.html)**
+
+    This section shows the hierarchy of `<client-cache>` element sub-elements that you use to configure Geode caches and clients.
+
+-   **[&lt;client-cache&gt; Element Reference](../../reference/topics/client-cache.html)**
+
+    This section documents all `cache.xml` elements that you use to configure Geode clients. All elements are sub-elements of the `<client-cache>` element.
+
+

@@ -1,0 +1,34 @@
+---
+title: Where to Place Security Configuration Settings 
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="implementing_security__section_155ED414321E4D4ABBD7ED3508E7BD62"></a>
+
+Any security-related (properties that begin with `security-*`) configuration properties that are normally configured in `gemfire.properties` can be moved to a separate `gfsecurity.properties` file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your `gemfire.properties` file.
+
+Upon startup, Geode processes will look for the `gfsecurity.properties` file in the following locations in order:
+
+-   current working directory
+-   user's home directory
+-   classpath
+
+If any password-related security properties are listed in the file but have a blank value, the process will prompt the user to enter a password upon startup.
+
+
+

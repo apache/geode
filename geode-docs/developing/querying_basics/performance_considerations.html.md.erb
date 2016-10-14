@@ -1,0 +1,33 @@
+---
+title:  Performance Considerations
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic covers considerations for improving query performance.
+
+<a id="performance_considerations__section_2DA52BD8C72A4D01982CA8A44954ADAF"></a>
+Some general performance tips:
+
+-   Improve query performance whenever possible by creating indexes. See [Tips and Guidelines on Using Indexes](../query_index/indexing_guidelines.html#indexing_guidelines) for some scenarios for using indexes.
+-   Use bind parameters for frequently used queries. When you use a bind parameter, the query is compiled once. This improves the subsequent performance of the query when it is re-run. See [Using Query Bind Parameters](../query_additional/using_query_bind_parameters.html#concept_173E775FE46B47DF9D7D1E40680D34DF) for more details.
+-   When querying partitioned regions, execute the query using the FunctionService. This function allows you to target a particular node, which will improve performance greatly by avoiding query distribution. See [Querying a Partitioned Region on a Single Node](../query_additional/query_on_a_single_node.html#concept_30B18A6507534993BD55C2C9E0544A97) for more information.
+-   Use key indexes when querying data that has been partitioned by a key or field value. See [Optimizing Queries on Data Partitioned by a Key or Field Value](../query_additional/partitioned_region_key_or_field_value.html#concept_3010014DFBC9479783B2B45982014454).
+-   The size of a query result set depends on the restrictiveness of the query and the size of the total data set. A partitioned region can hold much more data than other types of regions, so there is more potential for larger result sets on partitioned region queries. This could cause the member receiving the results to run out of memory if the result set is very large.
+
+

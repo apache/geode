@@ -1,0 +1,53 @@
+---
+title:  Conflate the Server Subscription Queue
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="conflate_the_server_subscription_queue__section_1791DFB89502480EB57F81D16AC0EBAC"></a>
+Conflating the server subscription queue can save space in the server and time in message processing.
+
+Enable conflation at the server level in the server region configuration:
+
+``` pre
+<region ... >
+  <region-attributes enable-subscription-conflation="true" /> 
+</region>
+```
+
+Override the server setting as needed, on a per-client basis, in the client’s `gemfire.properties`:
+
+``` pre
+conflate-events=false
+```
+
+Valid `conflate-events` settings are:
+-   `server`, which uses the server settings
+-   `true`, which conflates everything sent to the client
+-   `false`, which does not conflate anything sent to this client
+
+Conflation can both improve performance and reduce the amount of memory required on the server for queuing. The client receives only the latest available update in the queue for a particular entry key. Conflation is disabled by default.
+
+Conflation is particularly useful when a single entry is updated often and the intermediate updates don’t require processing by the client. With conflation, if an entry is updated and there is already an update in the queue for its key, the existing update is removed and the new update is placed at the end of the queue. Conflation is only done on messages that are not in the process of being sent to the client.
+
+<img src="../../images/ClientServerAdvancedTopics-7.gif" id="conflate_the_server_subscription_queue__image_FA77FD2857464D17BF2ED5B3CC62687A" class="image" />
+
+**Note:**
+This method of conflation is different from the one used for multi-site gateway sender queue conflation. It is the same as the method used for the conflation of peer-to-peer distribution messages within a single distributed system.
+
+

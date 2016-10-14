@@ -1,0 +1,75 @@
+---
+title:  Starting gfsh
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Before you start gfsh, confirm that you have set JAVA\_HOME and that your PATH variable includes the gfsh executable.
+
+To manage servers and locators properly, `gfsh` requires the `tools.jar` file (provided with the JDK) exist in the CLASSPATH.
+
+**Note:**
+On Windows, you must have the JAVA\_HOME environment variable set properly to use start, stop and status commands for both locators and servers.
+
+To launch the gfsh command-line interface, execute the following command at the prompt on any machine that is currently installed with Apache Geode:
+
+**Start gfsh on Windows:**
+
+``` pre
+<product_directory>\bin\gfsh.bat 
+```
+
+where &lt;*product\_directory*&gt; corresponds to the location where you installed Apache Geode.
+
+**Start gfsh on Unix:**
+
+``` pre
+<product_directory>/bin/gfsh
+```
+
+where &lt;*product\_directory*&gt; corresponds to the location where you installed Apache Geode. If you installed Apache Geode using RPM, the default product directory installation location is `/opt/pivotal/gemfire`. Upon execution, the `gfsh` script appends the required Pivotal GemFire and JDK Jar libraries to your existing CLASSPATH.
+
+If you have successfully started `gfsh`, the `gfsh` splash screen and prompt appears.
+
+``` pre
+c:\Geode\Latest>gfsh.bat
+    _________________________     __
+   / _____/ ______/ ______/ /____/ /
+  / /  __/ /___  /_____  / _____  /
+ / /__/ / ____/  _____/ / /    / /
+/______/_/      /______/_/    /_/
+
+Monitor and Manage Geode
+gfsh>
+```
+
+You can also run some gfsh commands directly within your terminal without entering a `gfsh` prompt. For example, on Unix/Linux you could enter:
+
+``` pre
+$ gfsh start server --name=server1
+```
+
+or on Windows:
+
+``` pre
+prompt> gfsh start server --name=server1
+```
+
+See [Creating and Running gfsh Command Scripts](command_scripting.html#concept_9B2F7550F16C4717831AD40A56922259) for more information.
+
+

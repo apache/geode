@@ -1,0 +1,145 @@
+---
+title:  Testing Multicast Speed Limits
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+TCP automatically adjusts its speed to the capability of the processes using it and enforces bandwidth sharing so that every process gets a turn. With multicast, you must determine and explicitly set those limits.
+
+<a id="multicast__section_AB06591284DB4E9785EE79FBE1C59554"></a>
+Without the proper configuration, multicast delivers its traffic as fast as possible, overrunning the ability of consumers to process the data and locking out other processes that are waiting for the bandwidth. You can tune your multicast and unicast behavior using mcast-flow-control in `gemfire.properties`.
+
+**Using Iperf**
+
+Iperf is an open-source TCP/UDP performance tool that you can use to find your site’s maximum rate for data distribution over multicast. Iperf can be downloaded from web sites such as the National Laboratory for Applied Network Research (NLANR).
+
+Iperf measures maximum bandwidth, allowing you to tune parameters and UDP characteristics. Iperf reports statistics on bandwidth, delay jitter, and datagram loss. On Linux, you can redirect this output to a file; on Windows, use the -o filename parameter.
+
+Run each test for ten minutes to make sure any potential problems have a chance to develop. Use the following command lines to start the sender and receivers.
+
+**Sender**:
+
+``` pre
+iperf -c 192.0.2.0 -u -T 1 -t 100 -i 1 -b 1000000000
+```
+
+where:
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td>-c address</td>
+<td><p>Run in client mode and connect to a multicast address</p></td>
+</tr>
+<tr class="even">
+<td>-u</td>
+<td><p>Use UDP</p></td>
+</tr>
+<tr class="odd">
+<td>-T #</td>
+<td><p>Multicast time-to-live: number of subnets across which a multicast packet can travel before the routers drop the packet</p></td>
+</tr>
+</tbody>
+</table>
+
+**Note:**
+Do not set the -T parameter above 1 without consulting your network administrator. If this number is too high then the iperf traffic could interfere with production applications or continue out onto the internet.
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td>-t</td>
+<td><p>Length of time to transmit, in seconds</p></td>
+</tr>
+<tr class="even">
+<td>-i</td>
+<td><p>Time between periodic bandwidth reports, in seconds</p></td>
+</tr>
+<tr class="odd">
+<td>-b</td>
+<td>Sending bandwidth, in bits per second</td>
+</tr>
+</tbody>
+</table>
+
+**Receiver**:
+
+``` pre
+iperf -s -u -B 192.0.2.0 -i 1
+```
+
+where:
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p>-s</p></td>
+<td><p>Run in server mode</p></td>
+</tr>
+<tr class="even">
+<td><p>-u</p></td>
+<td><p>Use UDP</p></td>
+</tr>
+<tr class="odd">
+<td><p>-B address</p></td>
+<td><p>Bind to a multicast address</p></td>
+</tr>
+<tr class="even">
+<td>-i #</td>
+<td>Time between periodic bandwidth reports, in seconds</td>
+</tr>
+</tbody>
+</table>
+
+**Note:**
+If your Geode distributed system runs across several subnets, start a receiver on each subnet.
+
+In the receiver’s output, look at the Lost/Total Datagrams columns for the number and percentage of lost packets out of the total sent.
+
+**Output From Iperf Testing**:
+
+``` pre
+[    ID] Interval     Transfer    Bandwidth   Jitter  Lost/Total Datagrams
+[    3] 0.0- 1.0 sec     129 KBytes  1.0 Mbits/sec  0.778 ms     61/    151 (40%)
+[    3] 1.0- 2.0 sec     128 KBytes  1.0 Mbits/sec  0.236 ms     0/  89 (0%)
+[    3] 2.0- 3.0 sec     128 KBytes  1.0 Mbits/sec  0.264 ms     0/  89 (0%)
+[    3] 3.0- 4.0 sec     128 KBytes  1.0 Mbits/sec  0.248 ms     0/  89 (0%)
+[    3] 0.0- 4.3 sec     554 KBytes  1.0 Mbits/sec  0.298 ms     61/    447 (14%)
+```
+
+Rerun the test at different bandwidths until you find the maximum useful multicast rate. Start high, then gradually decrease the send rate until the test runs consistently with no packet loss. For example, you might need to run five tests in a row, changing the -b (bits per second) parameter each time until there is no loss:
+
+1.  -b 1000000000 (loss)
+2.  -b 900000000 (no loss)
+3.  -b 950000000 (no loss)
+4.  -b 980000000 (a bit of loss)
+5.  -b 960000000 (no loss)
+
+Enter iperf -h to see all of the command-line options. For more information, see the Iperf user manual.

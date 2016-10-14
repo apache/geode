@@ -1,0 +1,80 @@
+---
+title:  Resolving Conflicting Events
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can optionally create a `GatewayConflictResolver` cache plug-in to decide whether a potentially conflicting event that was delivered from another site should be applied to the local cache.
+
+By default, all regions perform consistency checks when a member applies an update received either from another cluster member or from a remote cluster over the WAN. The default consistency checking for WAN events is described in [How Consistency Is Achieved in WAN Deployments](../distributed_regions/how_region_versioning_works_wan.html#topic_fpy_z3h_j5).
+
+You can override the default consistency checking behavior by writing and configuring a custom `GatewayConflictResolver`. The `GatewayConflictResolver` implementation can use the timestamp and distributed system ID included in a WAN update event to determine whether or not to apply the update. For example, you may decide that updates from a particular cluster should always "win" a conflict when the timestamp difference between updates is less than some fixed period of time.
+
+## <a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7" class="no-quick-link"></a>Implementing a GatewayConflictResolver
+
+**Note:**
+A `GatewayConflictResolver` implementation is called only for update events that could cause a conflict in the region. This corresponds to update events that have a different distributed system ID than the distributed system that last updated the region entry. If the same distributed system ID makes consecutive updates to a region entry, no conflict is possible, and the `GatewayConflictResolver` is not called.
+
+**Procedure**
+
+1.  Program the event handler:
+    1.  Create a class that implements the `GatewayConflictResolver` interface.
+    2.  If you want to declare the handler in `cache.xml`, implement the `org.apache.geode.cache.Declarable` interface as well.
+    3.  Implement the handler's `onEvent()` method to determine whether the WAN event should be allowed. `onEvent()` receives both a `TimestampedEntryEvent` and a `GatewayConflictHelper` instance. `TimestampedEntryEvent` has methods for obtaining the timestamp and distributed system ID of both the update event and the current region entry. Use methods in the `GatewayConflictHelper` to either disallow the update event (retaining the existing region entry value) or provide an alternate value.
+
+        **Example:**
+
+        ``` pre
+         public void onEvent(TimestampedEntryEvent event, GatewayConflictHelper helper) {
+            if (event.getOperation().isUpdate()) {
+              ShoppingCart oldCart = (ShoppingCart)event.getOldValue();
+              ShoppingCart newCart = (ShoppingCart)event.getNewValue();
+              oldCart.updateFromConflictingState(newCart);
+              helper.changeEventValue(oldCart);
+            }
+          }
+        ```
+
+        **Note:**
+        In order to maintain consistency in the region, your conflict resolver must always resolve two events in the same way regardless of which event it receives first.
+
+2.  Install the conflict resolver for the cache, using either the `cache.xml` file or the Java API.
+
+    **cache.xml**
+
+    ``` pre
+    <cache>
+         ... 
+        <gateway-conflict-resolver>
+          <class-name>myPackage.MyConflictResolver</class-name>
+        </gateway-conflict-resolver>
+        ...
+    </cache>
+    ```
+
+    **Java API**
+
+    ``` pre
+    // Create or obtain the cache
+    Cache cache = new CacheFactory().create();
+
+    // Create and add a conflict resolver
+    cache.setGatewayConflictResolver(new MyConflictResolver);
+    ```
+
+

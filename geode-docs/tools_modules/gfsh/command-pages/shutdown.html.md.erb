@@ -1,0 +1,62 @@
+---
+title:  shutdown
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Stop all members.
+
+Asks all the members that have a cache to close the cache and disconnect from the system. If the `--include-locators` parameter is specified, the command shuts down any running locators one by one. The timeout parameter allows you to specify that the system should be shutdown forcibly after the time has exceeded.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+shutdown [--time-out=value] [--include-locators=value]
+```
+
+<a id="concept_249C98CFF0BF4BCCA7778AE2D751F52E__table_gfr_3jf_2w"></a>
+
+| Name                                                     | Description                                                                                                                 | Default Value |
+|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|---------------|
+| <span class="keyword parmname">\\-\\-time-out </span>        | Time to wait (in seconds) for a graceful shutdown. Should be at least 10 seconds. The default value if not specified is 10. | 10            |
+| <span class="keyword parmname">\\-\\-include-locators</span> | To shutdown locators, specify this option as true.                                                                          | false         |
+
+<span class="tablecap">Table 1. Shutdown Parameters</span>
+
+**Example Commands:**
+
+``` pre
+shutdown
+shutdown --time-out=15
+shutdown --include-locators=true
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>shutdown
+"As a lot of data in memory will be lost, including possibly events in
+queues, do you really want to shutdown the entire distributed system? (Y/n):"
+Y
+Shutdown is triggered
+ 
+```
+
+

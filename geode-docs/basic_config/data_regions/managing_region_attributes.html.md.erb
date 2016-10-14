@@ -1,0 +1,113 @@
+---
+title:  Managing Region Attributes
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Use region attributes to fine-tune the region configuration provided by the region shortcut settings.
+
+<a id="managing_region_attributes__section_B6363B281A994141B9B9BDD952173330"></a>
+All region attributes have default settings, so you only need to use region attributes to set the ones you want to override. See [&lt;region-attributes&gt;](../../reference/topics/cache_xml.html#region-attributes).
+
+## <a id="managing_region_attributes__section_DDBF2810ABB54A55B1479AD786ED48DF" class="no-quick-link"></a>Define Region Attributes
+
+Create region attributes using any of these methods:
+
+-   Declarations inside the `cache.xml` `<region>` element:
+
+    ``` pre
+    <cache>
+       <region name="exampleRegion" refid="REPLICATE">
+          <region-attributes statistics-enabled="true">
+            <entry-idle-time>
+              <expiration-attributes timeout="10" action="destroy"/>
+            </entry-idle-time>
+            <cache-listener>
+              <class-name>quickstart.SimpleCacheListener</class-name>
+            </cache-listener>
+          </region-attributes>
+        </region>
+    </cache>
+    ```
+
+    When the `cache.xml` is loaded at startup, declared region attributes are automatically created and applied to the region.
+
+-   `RegionFactory` API `set`\* method calls:
+
+    ``` pre
+    // Creating a partitioned region using the RegionFactory
+    RegionFactory rf = cache.createRegionFactory(RegionShortcut.PARTITION);
+    rf.addCacheListener(new LoggingCacheListener());
+    custRegion = rf.create("customer");
+    ```
+
+    ``` pre
+    // Creating a partitioned region using the RegionFactory, with attribute modifications
+    RegionFactory rf = 
+      cache.createRegionFactory(RegionShortcut.PARTITION);
+    rf.setPartitionResolver(new CustomerOrderResolver());
+    rf.addCacheListener(new LoggingCacheListener());
+    custRegion = rf.create("customer");
+    ```
+
+    ``` pre
+    // Creating a client with a Pool Specification Using ClientRegionFactory
+    ClientRegionFactory<String,String> cRegionFactory = 
+        cache.createClientRegionFactory(PROXY);
+    Region<String, String> region = 
+        cRegionFactory.setPoolName("Pool3").create("DATA");
+    ```
+
+-   By issuing the gfsh `create region` command.
+
+## <a id="managing_region_attributes__section_F69A7664F72D47BBA463D81B72C03B4D" class="no-quick-link"></a>Modify Region Attributes
+
+You can modify a region’s event handlers and expiration and eviction attributes after the region is created.
+
+**Note:**
+Do not modify attributes for existing regions unless absolutely necessary. Creating the attributes you need at region creation is more efficient.
+
+Modify attributes in one of these ways:
+
+-   By loading a `cache.xml` with modified region attribute specifications:
+
+    ``` pre
+    <!-- Change the listener for exampleRegion
+    ...
+        <region name="exampleRegion">
+          <region-attributes statistics-enabled="true">
+            <cache-listener>
+              <class-name>quickstart.ComplicatedCacheListener</class-name>
+            </cache-listener>
+          </region-attributes>
+        </region>
+    ... 
+    ```
+
+-   Using the `AttributesMutator` API:
+    1.  Retrieve the `AttributesMutator` from the region
+    2.  Call the mutator set methods to modify attributes:
+
+    ``` pre
+    currRegion = cache.getRegion("root");
+    AttributesMutator mutator = this.currRegion.getAttributesMutator();
+    mutator.addCacheListener(new LoggingCacheListener()); 
+    ```
+
+-   By issuing the gfsh `alter region` command. See [alter region](../../tools_modules/gfsh/command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758).
+

@@ -1,0 +1,139 @@
+---
+title:  netstat
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Report network information and statistics via the "netstat" operating system command.
+
+Report important network usage information/statistics for the given member.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+netstat [--member=value(,value)*] [--group=value] [--file=value] 
+[--with-lsof(=value)?]
+```
+
+<a id="concept_8B8D6D6E3CE84B46ABCFE59B63F15684__table_ow3_kdg_2w"></a>
+
+| Name                                              | Description                                                                                                                                               | Default Value |
+|---------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| <span class="keyword parmname">\\-\\-member </span>   | Name or ID of the member(s) on which to run the `netstat` command.                                                                                        |               |
+| <span class="keyword parmname">\\-\\-group</span>     | Group of members on which to run the `netstat` command.                                                                                                   |               |
+| <span class="keyword parmname">\\-\\-file</span>      | Text file to which output from the `netstat` command will be written. A "`.txt`" extension will be added if it is not already part of the specified name. |               |
+| <span class="keyword parmname">&#8209;&#8209;with&#8209;lsof</span> | Specifies whether `lsof` (list open files) command output should also be displayed. Not applicable for Microsoft Windows hosts.                           | false         |
+
+<span class="tablecap">Table 1. Netstat Parameters</span>
+
+**Example Commands:**
+
+``` pre
+netstat
+netstat --member=server1
+netstat --member=server1 --file=server1_netstat.txt
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>netstat
+####################################
+Host: GemFireTest
+OS: Windows XP 5.1 x86
+Member(s):
+ server2, locator1, server1
+####################################
+
+Active Connections
+
+  Proto  Local Address          Foreign Address        State
+  TCP    GemFireTest:epmap    GemFireTest:0        LISTENING
+  TCP    GemFireTest:microsoft-ds  GemFireTest:0        LISTENING
+  TCP    GemFireTest:1034     GemFireTest:0        LISTENING
+  TCP    GemFireTest:1069     GemFireTest:0        LISTENING
+  TCP    GemFireTest:1099     GemFireTest:0        LISTENING
+  TCP    GemFireTest:1134     GemFireTest:0        LISTENING
+  TCP    GemFireTest:3389     GemFireTest:0        LISTENING
+  TCP    GemFireTest:8080     GemFireTest:0        LISTENING
+  TCP    GemFireTest:8081     GemFireTest:0        LISTENING
+  TCP    GemFireTest:10334    GemFireTest:0        LISTENING
+  TCP    GemFireTest:40404    GemFireTest:0        LISTENING
+  TCP    GemFireTest:40405    GemFireTest:0        LISTENING
+  TCP    GemFireTest:1025     GemFireTest:0        LISTENING
+  TCP    GemFireTest:5152     GemFireTest:0        LISTENING
+  TCP    GemFireTest:netbios-ssn  GemFireTest:0        LISTENING
+  TCP    GemFireTest:1035     GemFireTest:0        LISTENING
+  TCP    GemFireTest:1035     GemFireTest:1081     ESTABLISHED
+  TCP    GemFireTest:1035     GemFireTest:1086     ESTABLISHED
+  TCP    GemFireTest:1035     GemFireTest:1147     ESTABLISHED
+  TCP    GemFireTest:1035     GemFireTest:1156     ESTABLISHED
+  TCP    GemFireTest:1046     GemFireTest:1099     ESTABLISHED
+  TCP    GemFireTest:1049     osdc-proxy-vip.vmware.com:http  CLOSE_WA
+  TCP    GemFireTest:1050     osdc-proxy-vip.vmware.com:3128  CLOSE_WA
+  TCP    GemFireTest:1071     GemFireTest:0        LISTENING
+  TCP    GemFireTest:1071     GemFireTest:1077     ESTABLISHED
+  TCP    GemFireTest:1071     GemFireTest:1150     ESTABLISHED
+  TCP    GemFireTest:1071     GemFireTest:1157     ESTABLISHED
+  TCP    GemFireTest:1077     GemFireTest:1071     ESTABLISHED
+  TCP    GemFireTest:1078     GemFireTest:24400    ESTABLISHED
+  TCP    GemFireTest:1081     GemFireTest:1035     ESTABLISHED
+  TCP    GemFireTest:1086     GemFireTest:1035     ESTABLISHED
+  TCP    GemFireTest:1099     GemFireTest:1046     ESTABLISHED
+  TCP    GemFireTest:1136     GemFireTest:0        LISTENING
+  TCP    GemFireTest:1136     GemFireTest:1143     ESTABLISHED
+  TCP    GemFireTest:1136     GemFireTest:1151     ESTABLISHED
+  TCP    GemFireTest:1136     GemFireTest:1201     ESTABLISHED
+  TCP    GemFireTest:1141     GemFireTest:4247     ESTABLISHED
+  TCP    GemFireTest:1142     GemFireTest:48640    ESTABLISHED
+  TCP    GemFireTest:1143     GemFireTest:1136     ESTABLISHED
+  TCP    GemFireTest:1147     GemFireTest:1035     ESTABLISHED
+  TCP    GemFireTest:1150     GemFireTest:1071     ESTABLISHED
+  TCP    GemFireTest:1151     GemFireTest:1136     ESTABLISHED
+  TCP    GemFireTest:1156     GemFireTest:1035     ESTABLISHED
+  TCP    GemFireTest:1157     GemFireTest:1071     ESTABLISHED
+  TCP    GemFireTest:1201     GemFireTest:1136     ESTABLISHED
+  TCP    GemFireTest:1349     GemFireTest:10334    TIME_WAIT
+  TCP    GemFireTest:1350     GemFireTest:10334    TIME_WAIT
+  TCP    GemFireTest:1351     GemFireTest:10334    TIME_WAIT
+  TCP    GemFireTest:1352     GemFireTest:10334    TIME_WAIT
+  TCP    GemFireTest:1353     GemFireTest:10334    TIME_WAIT
+  TCP    GemFireTest:1354     GemFireTest:10334    TIME_WAIT
+  TCP    GemFireTest:4247     GemFireTest:0        LISTENING
+  TCP    GemFireTest:4247     GemFireTest:1141     ESTABLISHED
+  TCP    GemFireTest:24400    GemFireTest:0        LISTENING
+  TCP    GemFireTest:24400    GemFireTest:1078     ESTABLISHED
+  TCP    GemFireTest:48640    GemFireTest:0        LISTENING
+  TCP    GemFireTest:48640    GemFireTest:1142     ESTABLISHED
+  UDP    GemFireTest:microsoft-ds  *:*
+  UDP    GemFireTest:isakmp   *:*
+  UDP    GemFireTest:4500     *:*
+  UDP    GemFireTest:ntp      *:*
+  UDP    GemFireTest:1900     *:*
+  UDP    GemFireTest:ntp      *:*
+  UDP    GemFireTest:netbios-ns  *:*
+  UDP    GemFireTest:netbios-dgm  *:*
+  UDP    GemFireTest:1900     *:*
+  UDP    GemFireTest:32270    *:*
+  UDP    GemFireTest:42838    *:*
+  UDP    GemFireTest:47727    *:*
+```
+
+

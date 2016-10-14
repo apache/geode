@@ -1,0 +1,81 @@
+---
+title:  Configuring Client/Server Event Messaging
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can receive events from your servers for server-side cache events and query result changes.
+
+<a id="receiving_events_from_servers__section_F21FB253CCC244708CB953B6D5866A91"></a>
+For cache updates, you can configure to receive entry keys and values or just entry keys, with the data retrieved lazily when requested. The queries are run continuously against server cache events, with the server sending the deltas for your query result sets.
+
+Before you begin, set up your client/server installation and configure and program your basic event messaging.
+
+Servers receive updates for all entry events in their client's client regions.
+
+To receive entry events in the client from the server:
+
+1.  Set the client pool `subscription-enabled` to true. See [&lt;pool&gt;](../../reference/topics/client-cache.html#cc-pool).
+2.  Program the client to register interest in the entries you need.
+
+    **Note:**
+    This must be done through the API.
+
+    Register interest in all keys, a key list, individual keys, or by comparing key strings to regular expressions. By default, no entries are registered to receive updates. Specify whether the server is to send values with entry update events. Interest registration is only available through the API.
+
+    1.  Get an instance of the region where you want to register interest.
+    2.  Use the regions's `registerInterest`\* methods to specify the entries you want. Examples:
+
+        ``` pre
+        // Register interest in a single key and download its entry 
+        // at this time, if it is available in the server cache 
+        Region region1 = . . . ;
+        region1.registerInterest("key-1"); 
+                            
+        // Register Interest in a List of Keys but do not do an initial bulk load
+        // do not send values for creater/update events - just send key with invalidation
+        Region region2 = . . . ; 
+        List list = new ArrayList();
+        list.add("key-1"); 
+        list.add("key-2"); 
+        list.add("key-3"); 
+        list.add("key-4");
+        region2.registerInterest(list, InterestResultPolicy.NONE, false); 
+                            
+        // Register interest in all keys and download all available keys now
+        Region region3 = . . . ;
+        region3.registerInterest("ALL_KEYS", InterestResultPolicy.KEYS); 
+                            
+        // Register Interest in all keys matching a regular expression 
+        Region region1 = . . . ; 
+        region1.registerInterestRegex("[a-zA-Z]+_[0-9]+"); 
+        ```
+
+        You can call the register interest methods multiple times for a single region. Each interest registration adds to the server’s list of registered interest criteria for the client. So if a client registers interest in key ‘A’, then registers interest in regular expression "B\*", the server will send updates for all entries with key ‘A’ or key beginning with the letter ‘B’.
+
+    3.  For highly available event messaging, configure server redundancy. See [Configuring Highly Available Servers](configuring_highly_available_servers.html).
+    4.  To have events enqueued for your clients during client downtime, configure durable client/server messaging.
+    5.  Write any continuous queries (CQs) that you want to run to receive continuously streaming updates to client queries. CQ events do not update the client cache. If you have dependencies between CQs and/or interest registrations, so that you want the two types of subscription events to arrive as closely together on the client, use a single server pool for everything. Using different pools can lead to time differences in the delivery of events because the pools might use different servers to process and deliver the event messages.
+
+-   **[Configuring Highly Available Servers](../../developing/events/configuring_highly_available_servers.html)**
+
+-   **[Implementing Durable Client/Server Messaging](../../developing/events/implementing_durable_client_server_messaging.html)**
+
+-   **[Tuning Client/Server Event Messaging](../../developing/events/tune_client_server_event_messaging.html)**
+
+

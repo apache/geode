@@ -1,0 +1,128 @@
+---
+title:  Start Up and Shut Down with Disk Stores
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This section describes what happens during startup and shutdown and provides procedures for those operations.
+
+## Start Up
+
+When you start a member with a persistent region, the data is retrieved from disk stores to recreate the member’s persistent region. If the member does not hold all of the most recent data for the region, then other members have the data, and region creation blocks, waiting for the those other members. A partitioned region with colocated entries also blocks on start up, waiting for the entries of the colocated region to be available. A persistent gateway sender is treated the same as a colocated region, so it can also block region creation.
+
+With a log level of info or below, the system provides messaging about the wait. Here, the disk store for server2 has the most recent data for the region, and server1 is waiting for server2.
+
+``` pre
+Region /people has potentially stale data.
+It is waiting for another member to recover the latest data.
+My persistent id:
+
+  DiskStore ID: 6893751ee74d4fbd-b4780d844e6d5ce7
+  Name: server1
+  Location: /192.0.2.0:/home/dsmith/server1/.
+
+Members with potentially new data:
+[
+  DiskStore ID: 160d415538c44ab0-9f7d97bae0a2f8de
+  Name: server2
+  Location: /192.0.2.0:/home/dsmith/server2/.
+]
+Use the "gfsh show missing-disk-stores" command to see all disk stores
+that are being waited on by other members.
+```
+
+When the most recent data is available, the system updates the region, logs a message, and continues the startup.
+
+``` pre
+[info 2010/04/09 10:52:13.010 PDT CacheRunner <main> tid=0x1]    
+   Done waiting for the remote data to be available.
+```
+
+If the member's disk store has data for a region that is never created, the data remains in the disk store.
+
+Each member’s persistent regions load and go online as quickly as possible, not waiting unnecessarily for other members to complete. For performance reasons, these actions occur asynchronously:
+
+-   Once at least one copy of each and every bucket is recovered from disk, the region is available. Secondary buckets will load asynchronously.
+-   Entry keys are loaded from the key file in the disk store before considering entry values. Once all keys are loaded, Geode loads the entry values asynchronously. If a value is requested before it has loaded, the value will immediately be fetched from the disk store.
+
+## <a id="starting_system_with_disk_stores__section_D0A7403707B847749A22BF9221A2C823" class="no-quick-link"></a>Start Up Procedure
+
+To start a system with disk stores:
+
+1.  **Start all members with persisted data first and at the same time**. Exactly how you do this depends on your members. Make sure to start members that host colocated regions, as well as persistent gateway senders.
+
+    While they are initializing their regions, the members determine which have the most recent region data, and initialize their regions with the most recent data.
+
+    For replicated regions, where you define persistence only in some of the region's host members, start the persistent replicate members prior to the non-persistent replicate members to make sure the data is recovered from disk.
+
+    This is an example bash script for starting members in parallel. The script waits for the startup to finish. It exits with an error status if one of the jobs fails.
+
+    ``` pre
+    #!/bin/bash
+    ssh servera "cd /my/directory; gfsh start server --name=servera &
+    ssh serverb "cd /my/directory; gfsh start server --name=serverb &
+
+    STATUS=0;
+    for job in `jobs -p`
+    do
+    echo $job
+    wait $job;
+    JOB_STATUS=$?;
+    test $STATUS -eq 0 && STATUS=$JOB_STATUS;
+    done
+    exit $STATUS;
+    ```
+
+2.  **Respond to blocked members**. When a member blocks waiting for more recent data from another member, the member waits indefinitely rather than coming online with stale data. Check for missing disk stores with the `gfsh show                             missing-disk-stores` command. See [Handling Missing Disk Stores](handling_missing_disk_stores.html#handling_missing_disk_stores).
+    -   If no disk stores are missing, the cache initialization must be slow for some other reason. Check the information on member hangs in [Diagnosing System Problems](../troubleshooting/diagnosing_system_probs.html#diagnosing_system_probs).
+    -   If disk stores are missing that you think should be there:
+        -   Make sure you have started the member. Check the logs for any failure messages. See [Logging](../logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865).
+        -   Make sure your disk store files are accessible. If you have moved your member or disk store files, you must update your disk store configuration to match.
+    -   If disk stores are missing that you know are lost, because you have deleted them or their files are otherwise unavailable, revoke them so the startup can continue.
+
+## <a id="starting_system_with_disk_stores__section_5E32F488EB5D4E74AAB6BF394E4329D6" class="no-quick-link"></a>Example Startup to Illustrate Ordering
+
+The following lists the two possibilities for starting up a replicated persistent region after a shutdown. Assume that Member A (MA) exits first, leaving persisted data on disk for RegionP. Member B (MB) continues to run operations on RegionP, which update its disk store and leave the disk store for MA in a stale condition. MB exits, leaving the most up-to-date data on disk for RegionP.
+
+-   Restart order 1
+    1.  MB is started first. MB identifies that it has the most recent disk data for RegionP and initializes the region from disk. MB does not block.
+    2.  MA is started, recovers its data from disk, and updates region data as needed from the data in MB.
+-   Restart order 2
+    1.  MA is started first. MA identifies that it does not have the most recent disk data and blocks, waiting for MB to start before recreating RegionP in MA.
+    2.  MB is started. MB identifies that it has the most recent disk data for RegionP and initializes the region from disk.
+    3.  MA recovers its RegionP data from disk and updates region data as needed from the data in MB.
+
+## Shutdown
+
+If more than one member hosts a persistent region or queue, the order in which the various members shut down may be significant upon restart of the system. The last member to exit the system or shut down has the most up-to-date data on disk. Each member knows which other system members were online at the time of exit or shutdown. This permits a member to acquire the most recent data upon subsequent start up.
+
+For a replicated region with persistence, the last member to exit has the most recent data.
+
+For a partitioned region every member persists its own buckets. A shutdown using `gfsh shutdown` will synchronize the disk stores before exiting, so all disk stores hold the most recent data. Without an orderly shutdown, some disk stores may have more recent bucket data than others.
+
+The best way to shut down a system is to invoke the `gfsh shutdown` command with all members running. All online data stores will be synchronized before shutting down, so all hold the most recent data copy. To shut down all members other than locators:
+
+``` pre
+gfsh>shutdown
+```
+
+To shut down all members, including locators:
+
+``` pre
+gfsh>shutdown --include-locators=true
+```

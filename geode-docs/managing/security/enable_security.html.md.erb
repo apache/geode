@@ -1,0 +1,73 @@
+---
+title:  Enable Security with Property Definitions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
+## security-manager Property
+
+The authentication callback and the authorization callback that implement 
+the `SecurityManager` interface
+are specified with the `security-manager` property.
+When this property is defined, authentication and authorization are enabled.
+The definition of the `security-manager` property is the
+fully qualified name of the class that implements the `SecurityManager` interface.
+For example:
+
+``` pre
+security-manager = com.example.security.MySecurityManager
+```
+
+All components of the system invoke the same callbacks.
+Here are descriptions of the components and the connections that they
+make with the system.
+
+- A client connects with a server and makes operation requests 
+of that server.  The callbacks invoked are those defined by the
+`SecurityManager` interface for that server.
+- A server connects with a locator, invoking the `authenticate` callback
+defined for that locator.
+- Components communicating with a locator's JMX manager connect and make
+operation requests of the locator.
+The callbacks invoked are those defined by the
+`SecurityManager` interface for that locator.
+Both `gfsh` and `Pulse` use this form of communication.
+- Applications communicating via the REST API make of a server
+invoke security callbacks upon connection and operation requests.
+- Requests that a gateway sender makes of a locator
+invoke security callbacks defined for that locator.
+
+## security-post-processor Property
+
+The  `PostProcessor` interface allows the definition of a set of callbacks
+that are invoked after operations that get data,
+but before the data is returned.
+This permits the callback to intervene and modify of the data
+that is to be returned.
+The callbacks do not modify the region data,
+only the data to be returned.
+
+Enable the post processing of data by defining the
+`security-post-processor` property
+with the path to the definition of the interface.
+For example,
+
+``` pre
+security-post-processor = com.example.security.MySecurityPostProcessing
+```

@@ -1,0 +1,98 @@
+---
+title:  How Continuous Querying Works
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Clients subscribe to server-side events by using SQL-type query filtering. The server sends all events that modify the query results. CQ event delivery uses the client/server subscription framework.
+
+<a id="how_continuous_querying_works__section_D473C4D532E14044820B7D76DEE83450"></a>
+With CQ, the client sends a query to the server side for execution and receives the events that satisfy the criteria. For example, in a region storing stock market trade orders, you can retrieve all orders over a certain price by running a CQ with a query like this:
+
+``` pre
+SELECT * FROM /tradeOrder t WHERE t.price > 100.00
+```
+
+When the CQ is running, the server sends the client all new events that affect the results of the query. On the client side, listeners programmed by you receive and process incoming events. For this example query on `/tradeOrder`, you might program a listener to push events to a GUI where higher-priced orders are displayed. CQ event delivery uses the client/server subscription framework.
+
+## <a id="how_continuous_querying_works__section_777DEEA9D1DD45F59EC1BB35789C3A5D" class="no-quick-link"></a>Logical Architecture of Continuous Querying
+
+Your clients can execute any number of CQs, with each CQ assigned any number of listeners.
+
+<img src="../../images/ContinuousQuerying-1.gif" id="how_continuous_querying_works__image_B7C36491E8CA4376AEAE4E030C3DF86B" class="image" />
+
+## <a id="how_continuous_querying_works__section_F0E19919B3F645EF83EACBD7AFDF527E" class="no-quick-link"></a>Data Flow with CQs
+
+CQs do not update the client region. This is in contrast to other server-to-client messaging like the updates sent to satisfy interest registration and responses to get requests from the client's `Pool`. CQs serve as notification tools for the CQ listeners, which can be programmed in any way your application requires.
+
+When a CQ is running against a server region, each entry event is evaluated against the CQ query by the thread that updates the server cache. If either the old or the new entry value satisfies the query, the thread puts a `CqEvent` in the client's queue. The `CqEvent` contains information from the original cache event plus information specific to the CQ's execution. Once received by the client, the `CqEvent` is passed to the `onEvent` method of all `CqListener`s defined for the CQ.
+
+Here is the typical CQ data flow for entries updated in the server cache:
+
+1.  Entry events come to the server's cache from the server or its peers, distribution from remote sites, or updates from a client.
+2.  For each event, the server's CQ executor framework checks for a match with its running CQs.
+3.  If the old or new entry value satisfies a CQ query, a CQ event is sent to the CQ's listeners on the client side. Each listener for the CQ gets the event.
+
+In the following figure:
+
+-   Both the new and old prices for entry X satisfy the CQ query, so that event is sent indicating an update to the query results.
+-   The old price for entry Y satisfied the query, so it was part of the query results. The invalidation of entry Y makes it not satisfy the query. Because of this, the event is sent indicating that it is destroyed in the query results.
+-   The price for the newly created entry Z does not satisfy the query, so no event is sent.
+
+<img src="../../images/ContinuousQuerying-3.gif" id="how_continuous_querying_works__image_2F21A3820906449FAABE7ACC9654A564" class="image" />
+
+## <a id="how_continuous_querying_works__section_819CDBA814024315A6DDA83BD56D125C" class="no-quick-link"></a>CQ Events
+
+CQ events do not change your client cache. They are provided as an event service only. This allows you to have any collection of CQs without storing large amounts of data in your regions. If you need to persist information from CQ events, program your listener to store the information where it makes the most sense for your application.
+
+The `CqEvent` object contains this information:
+
+-   Entry key and new value.
+-   Base operation that triggered the cache event in the server. This is the standard `Operation` class instance used for cache events in GemFire.
+-   `CqQuery` object associated with this CQ event.
+-   `Throwable` object, returned only if an error occurred when the `CqQuery` ran for the cache event. This is non-null only for `CqListener` onError calls.
+-   Query operation associated with this CQ event. This operation describes the change affected to the query results by the cache event. Possible values are:
+    -   `CREATE`, which corresponds to the standard database
+    -   `INSERT` operation
+    -   `UPDATE`
+    -   `DESTROY`, which corresponds to the standard database DELETE operation
+
+Region operations do not translate to specific query operations and query operations do not specifically describe region events. Instead, the query operation describes how the region event affects the query results.
+
+| Query operations based on old and new entry values | New value does not satisfy the query | New value satisfies the query |
+|----------------------------------------------------|--------------------------------------|-------------------------------|
+| Old value does not satisfy the query               | no event                             | `CREATE` query operation      |
+| Old value does satisfies the query                 | `DESTROY` query operation            | `UPDATE` query operation      |
+
+You can use the query operation to decide what to do with the `CqEvent` in your listeners. For example, a `CqListener` that displays query results on screen might stop displaying the entry, start displaying the entry, or update the entry display depending on the query operation.
+
+## <a id="how_continuous_querying_works__section_bfs_llr_gr" class="no-quick-link"></a>Region Type Restrictions for CQs
+
+You can only create CQs on replicated or partitioned regions. If you attempt to create a CQ on a non-replicated or non-partitioned region, you will receive the following error message:
+
+``` pre
+The region <region name> specified in CQ creation is neither replicated nor partitioned; only replicated or partitioned regions are allowed in CQ creation.
+```
+
+In addition, you cannot create a CQ on a replicated region with eviction setting of local-destroy since this eviction setting changes the region's data policy. If you attempt to create a CQ on this kind of region, you will receive the following error message:
+
+``` pre
+CQ is not supported for replicated region: <region name> with eviction action: LOCAL_DESTROY
+```
+
+See also [Configure Distributed, Replicated, and Preloaded Regions](../distributed_regions/managing_distributed_regions.html) for potential issues with setting local-destroy eviction on replicated regions.

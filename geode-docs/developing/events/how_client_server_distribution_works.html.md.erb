@@ -1,0 +1,137 @@
+---
+title:  Client-to-Server Event Distribution
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Clients and servers distribute events according to client activities and according to interest registered by the client in server-side cache changes.
+
+<a id="how_client_server_distribution_works__section_F1070B06B3344D1CA7309934FCE097B9"></a>
+When the client updates its cache, changes to client regions are automatically forwarded to the server side. The server-side update is then propagated to the other clients that are connected and have subscriptions enabled. The server does not return the update to the sending client.
+
+The update is passed to the server and then passed, with the value, to every other client that has registered interest in the entry key. This figure shows how a client’s entry updates are propagated.
+
+<img src="../../images_svg/client_server_event_dist.svg" id="how_client_server_distribution_works__image_66AB57EEDC154962B32F7951667F4656" class="image" />
+
+The figure shows the following process:
+
+1.  Entry X is updated or created in Region A through a direct API call on Client1.
+2.  The update to the region is passed to the pool named in the region.
+3.  The pool propagates the event to the cache server, where the region is updated.
+4.  The server member distributes the event to its peers and also places it into the subscription queue for Client2 because that client has previously registered interest in entry X.
+5.  The event for entry X is sent out of the queue to Client2. When this happens is indeterminate.
+
+Client to server distribution uses the client pool connections to send updates to the server. Any region with a named pool automatically forwards updates to the server. Client cache modifications pass first through a client `CacheWriter`, if one is defined, then to the server through the client pool, and then finally to the client cache itself. A cache writer, either on the client or server side, may abort the operation.
+
+| Change in Client Cache                              | Effect on Server Cache                                                                                    |
+|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| Entry create or update                              | Creation or update of entry.                                                                              |
+| Distributed entry destroy                           | Entry destroy. The destroy call is propagated to the server even if the entry is not in the client cache. |
+| Distributed region destroy/clear (distributed only) | Region destroy/clear                                                                                      |
+
+**Note:**
+Invalidations on the client side are not forwarded to the server.
+
+## <a id="how_client_server_distribution_works__section_A16562611E094C88B12BC149D5EEEEBA" class="no-quick-link"></a>Server-to-Client Event Distribution
+
+The server automatically sends entry modification events only for keys in which the client has registered interest. In the interest registration, the client indicates whether to send new values or just invalidations for the server-side entry creates and updates. If invalidation is used, the client then updates the values lazily as needed.
+
+This figure shows the complete event subscription event distribution for interest registrations, with value receipt requested (receiveValues=true) and without.
+
+<img src="../../images_svg/server_client_event_dist.svg" id="how_client_server_distribution_works__image_7FD1450B9D58429F860400801EDFDCAE" class="image" />
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Change in Server Cache</th>
+<th>Effect on Client Cache</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Entry create/update</td>
+<td>For subscriptions with <code class="ph codeph">receiveValues</code> set to true, entry create or update.
+<p></p>
+For subscriptions with <code class="ph codeph">receiveValues</code> set to false, entry invalidate if the entry already exists in the client cache; otherwise, no effect. The next client get for the entry is forwarded to the server.</td>
+</tr>
+<tr class="even">
+<td>Entry invalidate/destroy (distributed only)</td>
+<td>Entry invalidate/destroy</td>
+</tr>
+<tr class="odd">
+<td>Region destroy/clear (distributed only)</td>
+<td>Region destroy or local region clear</td>
+</tr>
+</tbody>
+</table>
+
+Server-side distributed operations are all operations that originate as a distributed operation in the server or one of its peers. Region invalidation in the server is not forwarded to the client.
+
+**Note:**
+To maintain a unified set of data in your servers, do not do local entry invalidation in your server regions.
+
+## <a id="how_client_server_distribution_works__section_34613292788D4FA4AB730045FB9A405A" class="no-quick-link"></a>Server-to-Client Message Tracking
+
+The server uses an asynchronous messaging queue to send events to its clients. Every event in the queue originates in an operation performed by a thread in a client, a server, or an application in the server’s or some other distributed system. The event message has a unique identifier composed of the originating thread’s ID combined with its member’s distributed system member ID, and the sequential ID of the operation. So the event messages originating in any single thread can be grouped and ordered by time from lowest sequence ID to highest. Servers and clients track the highest sequential ID for each member thread ID.
+
+A single client thread receives and processes messages from the server, tracking received messages to make sure it does not process duplicate sends. It does this using the process IDs from originating threads.
+
+<img src="../../images_svg/client_server_message_tracking.svg" id="how_client_server_distribution_works__image_F4F9D13252E14F11AD63240AED39191A" class="image" />
+
+The client’s message tracking list holds the highest sequence ID of any message received for each originating thread. The list can become quite large in systems where there are many different threads coming and going and doing work on the cache. After a thread dies, its tracking entry is not needed. To avoid maintaining tracking information for threads that have died, the client expires entries that have had no activity for more than the `subscription-message-tracking-timeout`.
+
+## <a id="how_client_server_distribution_works__section_99E436C569F3422AA842AA74F73A6B36" class="no-quick-link"></a>Client Interest Registration on the Server
+
+The system processes client interest registration following these steps:
+
+1.  The entries in the client region that may be affected by this registration are silently destroyed. Other keys are left alone.
+    -   For the `registerInterest` method, the system destroys all of the specified keys, leaving other keys in the client region alone. So if you have a client region with keys A, B, and C and you register interest in the key list A, B, at the start of the `registerInterest` operation, the system destroys keys A and B in the client cache but does not touch key C.
+    -   For the `registerInterestRegex` method, the system silently destroys all keys in the client region.
+
+2.  The interest specification is sent to the server, where it is added to the client’s interest list. The list can specify entries that are not in the server region at the time interest is registered.
+3.  If a bulk load is requested in the call's `InterestResultPolicy` parameter, before control is returned to the calling method, the server sends all data that currently satisfies the interest specification. The client's region is updated automatically with the downloaded data. If the server region is partitioned, the entire partitioned region is used in the bulk load. Otherwise, only the server’s local cache region is used. The interest results policy options are:
+    -   KEYS—The client receives a bulk load of all available keys matching the interest registration criteria.
+    -   KEYS\_VALUES—The client receives a bulk load of all available keys and values matching the interest registration criteria. This is the default interest result policy.
+    -   NONE—The client does not receive any immediate bulk loading.
+
+Once interest is registered, the server continually monitors region activities and sends events to its clients that match the interest.
+
+-   No events are generated by the register interest calls, even if they load values into the client cache.
+-   The server maintains the union of all of the interest registrations, so if a client registers interest in key ‘A’, then registers interest in regular expression "B\*", the server will send updates for all entries with key ‘A’ or key beginning with the letter ‘B’.
+-   The server maintains the interest registration list separate from the region. The list can contain specifications for entries that are not currently in the server region.
+-   The `registerInterestRegex` method uses the standard `java.util.regex` methods to parse the key specification.
+
+## <a id="how_client_server_distribution_works__section_928BB60066414BEB9FAA7FB3120334A3" class="no-quick-link"></a>Server Failover
+
+When a server hosting a subscription queue fails, the queueing responsibilities pass to another server. How this happens depends on whether the new server is a secondary server. In any case, all failover activities are carried out automatically by the Geode system.
+
+-   **Non-HA failover:** The client fails over without high availability if it is not configured for redundancy or if all secondaries also fail before new secondaries can be initialized. As soon as it can attach to a server, the client goes through an automatic reinitialization process. In this process, the failover code on the client side silently destroys all entries of interest to the client and refetches them from the new server, essentially reinitializing the client cache from the new server’s cache. For the notify all configuration, this clears and reloads all of the entries for the client regions that are connected to the server. For notify by subscription, it clears and reloads only the entries in the region interest lists. To reduce failover noise, the events caused by the local entry destruction and refetching are blocked by the failover code and do not reach the client cache listeners. Because of this, your clients could receive some out-of-sequence events during and after a server failover. For example, entries that exist on the failed server and not on its replacement are destroyed and never recreated during a failover. Because the destruction events are blocked, the client ends up with entries removed from its cache with no associated destroy events.
+-   **HA failover:** If your client pool is configured with redundancy and a secondary server is available at the time the primary fails, the failover is invisible to the client. The secondary server resumes queueing activities as soon as the primary loss is detected. The secondary might resend a few events, which are discarded automatically by the client message tracking activities.
+
+    **Note:**
+    There is a very small potential for message loss during HA server failover. The risk is not present for failover to secondaries that have fully initialized their subscription queue data. The risk is extremely low in healthy systems that use at least two secondary servers. The risk is higher in unstable systems where servers often fail and where secondaries do not have time to initialize their subscription queue data before becoming primaries. To minimize the risk, the failover logic chooses the longest-lived secondary as the new primary.
+
+
+    **Note:**
+    Redundancy management is handled by the client, so when a durable client is disconnected from the server, client event redundancy is not maintained. Even if the servers fail one at a time, so that running clients have time to fail over and pick new secondary servers, an offline durable client cannot fail over. As a result, the client loses its queued messages.
+
+

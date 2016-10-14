@@ -1,0 +1,52 @@
+---
+title:  Common Geode Configuration Changes for AppServers
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## <a id="weblogic_common_cfg_changes__section_38D803A7E8474188898963F456188543" class="no-quick-link"></a>Overriding Region Attributes
+
+When using the HTTP Session Management Module, you cannot override region attributes directly on the cache server. You must place all region attribute definitions in the region attributes template that you customize within the application server. For example, to specify a different name for the region's disk store, you could add the new disk-store-name specification to the region attributes template and then reference the template on the cache server.
+
+``` pre
+<region-attributes id="MY_SESSIONS" refid="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW" 
+disk-store-name="mystore">
+  ...
+</region-attributes>
+```
+
+Then on the cache server side, reference the modified region attributes template to allow the region to use the disk-store-name attribute:
+
+``` pre
+<region name="gemfire_modules_sessions" refid="MY_SESSIONS"/>
+```
+
+Next, you must specify the region attributes ID as a value for the `region_attributes_id` parameter in web.xml. For example, if you want to enable the `region-attributes` in the above example for a specific Web application, you would configure the Web application's web.xml in the following manner:
+
+``` pre
+<filter>
+  ...
+    <init-param>
+        <param-name>gemfire.cache.region_attributes_id</param-name>
+        <param-value>MY_SESSIONS</param-value>
+    </init-param>
+  ...
+</filter>
+```
+
+
