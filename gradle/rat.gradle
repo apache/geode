@@ -94,11 +94,15 @@ rat {
     '**/publickeyfile',
     '**/*.dat',
 
+    // Geode docs
+    'geode-book/Gemfile.lock',
+    'geode-book/output/**',
+    'geode-book/final_app/**',
+
     // other text files
     'geode-spark-connector/project/plugins.sbt',
     'geode-spark-connector/project/build.properties',
     '**/log4j*.xml',
-    'geode-book/Gemfile.lock',
 
     // modules
     'extensions/**/log4j.properties',
