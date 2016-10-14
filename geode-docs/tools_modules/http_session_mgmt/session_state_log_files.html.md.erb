@@ -1,0 +1,111 @@
+---
+title:  Session State Log Files
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Several log files are written by the various parts of the session management code.
+
+-   `catalina.log`. Log file written by the tc server
+-   `cacheserver.log`. Log file written by the Geode server process.
+-   `gemfire_modules.log`. Log file written by the Geode cache client.
+
+## <a id="concept_33F73F78783D4994B721486243827E15__section_A547F9C7AA4541ED9B99CF0DEAC1417A" class="no-quick-link"></a>Adding FINE Debug Logging to catalina.log
+
+To add Geode-specific FINE logging to the `catalina.log` file, add the following lines to your `<instance>/conf/logging.properties` file:
+
+``` pre
+org.apache.geode.modules.session.catalina.DeltaSessionManager.level = FINE
+org.apache.geode.modules.session.catalina.DeltaSession.level = FINE
+```
+
+These configurations will add FINE logging to the `catalina.DATE.log` file. The following is an example of FINE logging:
+
+``` pre
+06-Sep-2011 15:59:47.250 FINE org.apache.geode.modules.session.catalina.DeltaSessionManager.start 
+DeltaSessionManager[container=StandardEngine[Catalina].StandardHost[localhost].StandardContext[/manager]; 
+regionName=gemfire_modules_sessions; regionAttributesId=PARTITION_REDUNDANT]: Starting
+
+06-Sep-2011 15:59:47.254 FINE org.apache.geode.modules.session.catalina.DeltaSessionManager.registerJvmRouteBinderValve 
+DeltaSessionManager[container=StandardEngine[Catalina].StandardHost[localhost].StandardContext[/manager]; 
+regionName=gemfire_modules_sessions; regionAttributesId=PARTITION_REDUNDANT]: Registering JVM route binder valve
+
+06-Sep-2011 15:59:47.351 FINE org.apache.geode.modules.session.catalina.ClientServerSessionCache.createOrRetrieveRegion 
+Created session region: org.apache.geode.internal.cache.LocalRegion[path='/gemfire_modules_sessions';
+scope=LOCAL';dataPolicy=EMPTY; gatewayEnabled=false]
+```
+
+## <a id="concept_33F73F78783D4994B721486243827E15__section_CF950FC81CC046838F42A3E6783985BD" class="no-quick-link"></a>Add Session State Logging to the Geode Server Log
+
+To add session-state-specific logging to the Geode server log file, add the following property to the `catalina.properties` file for the tc Server instance:
+
+``` pre
+geode-cs.enable.debug.listener=true
+```
+
+Adding this configuration will print logging in the server log such as the following:
+
+``` pre
+[info 2011/09/06 15:18:27.749 PDT  <ServerConnection on port 40404 Thread 3> tid=0x32] DebugCacheListener: Received 
+CREATE for key=5782ED83A3D9F101BBF8D851CE4E798E; value=DeltaSession[id=5782ED83A3D9F101BBF8D851CE4E798E; 
+sessionRegionName=gemfire_modules_sessions; operatingRegionName=unset]
+
+[info 2011/09/06 15:18:27.769 PDT  <ServerConnection on port 40404 Thread 3> tid=0x32] DebugCacheListener: Received UPDATE 
+for key=5782ED83A3D9F101BBF8D851CE4E798E; value=DeltaSession[id=5782ED83A3D9F101BBF8D851CE4E798E; 
+sessionRegionName=gemfire_modules_sessions; operatingRegionName=unset]
+
+[info 2011/09/06 15:19:36.729 PDT  <Timer-2> tid=0x24] DebugCacheListener: Received EXPIRE_DESTROY for 
+key=5782ED83A3D9F101BBF8D851CE4E798E
+```
+
+## <a id="concept_33F73F78783D4994B721486243827E15__section_B446063292F0447CA178DB67245B72C1" class="no-quick-link"></a>Adding Additional Debug Logging to the Geode Server Log
+
+To add fine-level logging to the Geode cache server, add the 'log-level' property to the server process. For example:
+
+``` pre
+gfsh> start server --name=server1 --cache-xml-file=../conf/cache-server.xml 
+              --log-level=fine
+```
+
+This will add fine-level logging to the `server.log` file.
+
+**Note:**
+This will help debug Geode server issues, but it adds a lot of logging to the file.
+
+## <a id="concept_33F73F78783D4994B721486243827E15__section_D36A81360D904450B8BE7334897C5685" class="no-quick-link"></a>Add Debug Logging to gemfire\_modules.log
+
+To add fine-level logging to the Geode Cache Client, add the 'log-level' property to the Listener element in the tc Server or Tomcat `server.xml` file. For example:
+
+``` pre
+<Listener log-level="fine" 
+cache-xml-file="${geode-cs.cache.configuration.file}" 
+className="org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener"
+criticalHeapPercentage="${geode-cs.critical.heap.percentage}"
+evictionHeapPercentage="${geode-cs.eviction.heap.percentage}"
+log-file="${geode-cs.log.file}"
+statistic-archive-file="${geode-cs.statistic.archive.file}"
+statistic-sampling-enabled="${geode-cs.statistic.sampling.enabled}"/>
+        
+```
+
+This will add fine-level logging to the file defined by the `${geode-cs.log.file}` property. The default log file name is `gemfire_modules.log`.
+
+**Note:**
+This will help debug Geode client issues, but it adds a lot of logging to the file.
+
+

@@ -1,0 +1,52 @@
+---
+title:  Deploying Configuration Files in JAR Files
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This section provides a procedure and an example for deploying configuration files in JAR files.
+
+**Procedure**
+
+1.  Jar the files.
+2.  Set the Apache Geode system properties to point to the files as they reside in the jar file.
+3.  Include the jar file in your `CLASSPATH.`
+4.  Verify the jar file copies are the only ones visible to the application at runtime. Geode searches the `CLASSPATH` after searching other locations, so the files cannot be available in the other search areas.
+5.  Start your application. The configuration file is loaded from the jar file.
+
+**Example of Deploying a Configuration JAR**
+
+The following example deploys the cache configuration file, `myCache.xml`, in `my.jar`. The following displays the contents of `my.jar`:
+
+``` pre
+% jar -tf my.jar 
+META-INF 
+META-INF/MANIFEST.MF 
+myConfig/ 
+myConfig/myCache.xml
+```
+
+In this example, you would perform the following steps to deploy the configuration jar file:
+
+1.  Set the system property, `gemfire.cache-xml-file`, to `myConfig/myCache.xml`
+2.  Set your `CLASSPATH` to include `my.jar`.
+3.  Verify there is no file named `myCache.xml` in `./myConfig/myCache.xml`, the current directory location of the file
+
+When you start your application, the configuration file is loaded from the jar file.
+
+

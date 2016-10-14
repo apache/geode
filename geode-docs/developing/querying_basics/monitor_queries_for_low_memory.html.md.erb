@@ -1,0 +1,41 @@
+---
+title: Monitoring Queries for Low Memory
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="topic_685CED6DE7D0449DB8816E8ABC1A6E6F"></a>
+
+
+The query monitoring feature prevents out-of-memory exceptions from occurring when you execute queries or create indexes.
+
+This feature is automatically enabled when you set a `critical-heap-percentage` attribute for the resource-manager element in cache.xml or by using the `cache.getResourceManager().setCriticalHelpPercentage(float                     heapPercentage)` API. Use this feature to cancel out queries that are taking too long and to warn the user that there are low memory conditions when they are running queries or creating indexes.
+
+You can override this feature by setting the system property `gemfire.cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY` to true.
+
+When the query memory monitoring feature is on, the default query time out is set to five hours. You can override this value by setting a larger or smaller, non -1 value to the existing query time out system variable `gemfire.cache.MAX_QUERY_EXECUTION_TIME`.
+
+When system memory is low (as determined by the critical heap percentage threshold that you defined in cache.xml or in the getResourceManager API ), queries will throw a `QueryExecutionLowMemoryException`. Any indexes that are in the process of being created will throw an `InvalidIndexException` with the message indicating the reason.
+
+## <a id="topic_685CED6DE7D0449DB8816E8ABC1A6E6F__section_2E9DEEC9D9C94D038543DDE03BC60B20" class="no-quick-link"></a>Partitioned Region Queries and Low Memory
+
+Partitioned region queries are likely causes for out-of-memory exceptions. If query monitoring is enabled, partitioned region queries drop or ignore results that are being gathered by other servers if the executing server is low in memory.
+
+Query-monitoring does not address a scenario in which a low-level collection is expanded while the partitioned region query is gathering results. For example, if a row is added and then causes a Java level collection or array to expand, it is possible to then encounter an out-of-memory exception. This scenario is rare and is only possible if the collection size itself expands before a low memory condition is met and then expands beyond the remaining available memory. As a workaround, in the event that you encounter this situation, you may be able to tune the system by additionally lowering the `critical-heap-percentage`.
+
+

@@ -1,0 +1,70 @@
+---
+title:  How Expiration Works
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Expiration removes old entries and entries that you are not using. You can destroy or invalidate entries.
+
+<a id="how_expiration_works__section_94FDBB821CDE49C48A0EFA6ED4DE194F"></a>
+Expiration activities in distributed regions can be distributed or local. Thus, one cache could control expiration for a number of caches in the system.
+
+This figure shows two basic expiration settings for a producer/consumer system. The producer member (on the right) populates the region from a database and the data is automatically distributed throughout the system. The data is valid only for one hour, so the producer performs a distributed destroy on entries that are an hour old. The other applications are consumers. The consumers free up space in their caches by removing their local copies of the entries for which there is no local interest (idle-time expiration). Requests for entries that have expired on the consumers will be forwarded to the producer.
+
+<img src="../../images_svg/expiration.svg" id="how_expiration_works__image_3D674825D1434830A8242D77CC89289F" class="image" />
+
+## <a id="how_expiration_works__section_B6C55A610F4243ED8F1986E8A98858CF" class="no-quick-link"></a>Expiration Types
+
+Apache Geode uses the following expiration types:
+
+-   **Time to live (TTL)**. The amount of time, in seconds, the object may remain in the cache after the last creation or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when the region is created and when an entry has its counter reset. The TTL expiration attributes are `region-time-to-live` and `entry-time-to-live`.
+-   **Idle timeout**. The amount of time, in seconds, the object may remain in the cache after the last access. The idle timeout counter for an object is reset any time its TTL counter is reset. In addition, an entry’s idle timeout counter is reset any time the entry is accessed through a get operation or a netSearch . The idle timeout counter for a region is reset whenever the idle timeout is reset for one of its entries. Idle timeout expiration attributes are: `region-idle-time` and `entry-idle-time`.
+
+## <a id="how_expiration_works__section_BA995343EF584104B9853CFE4CAD88AD" class="no-quick-link"></a>Expiration Actions
+
+Apache Geode uses the following expiration actions:
+
+-   destroy
+-   local destroy
+-   invalidate (default)
+-   local invalidate
+
+## <a id="how_expiration_works__section_AB4AB9E57D434159AA6E9B402E5E599D" class="no-quick-link"></a>Partitioned Regions and Entry Expiration
+
+For overall region performance, idle time expiration in partitioned regions may expire some entries sooner than expected. To ensure reliable read behavior across the partitioned region, we recommend that you use `entry-time-to-live` for entry expiration in partitioned regions instead of `entry-idle-time`.
+
+Expiration in partitioned regions is executed in the primary copy, based on the primary’s last accessed and last updated statistics.
+
+-   Entry updates are always done in the primary copy, resetting the primary copy’s last updated and last accessed statistics.
+-   Entry retrieval uses the most convenient available copy of the data, which may be one of the secondary copies. This provides the best performance at the cost of possibly not updating the primary copy’s statistic for last accessed time.
+
+When the primary expires entries, it does not request last accessed statistics from the secondaries, as the performance hit would be too great. It expires entries based solely on the last time the entries were accessed in the primary copy.
+
+You cannot use `local-destroy` or `local-invalidate` expiration actions in a partitioned region.
+
+## <a id="how_expiration_works__section_expiration_settings_and_netSearch" class="no-quick-link"></a>Interaction Between Expiration Settings and `netSearch`
+
+Before `netSearch` retrieves an entry value from a remote cache, it validates the *remote* entry’s statistics against the *local* region’s expiration settings. Entries that would have already expired in the local cache are passed over. Once validated, the entry is brought into the local cache and the local access and update statistics are updated for the local copy. The last accessed time is reset and the last modified time is updated to the time in the remote cache, with corrections made for system clock differences. Thus the local entry is assigned the true last time the entry was modified in the distributed system. The `netSearch` operation has no effect on the expiration counters in remote caches.
+
+The `netSearch` method operates only on distributed regions with a data-policy of empty, normal and preloaded.
+
+## Configuring the Number of Threads for Expiration
+
+You can use the `gemfire.EXPIRY_THREADS` system property to increase the number of threads that handle expiration. By default, one thread handles expiration, and it is possible for the thread to become overloaded when entries expire faster than the thread can expire them. If a single thread is handling too many expirations, it can result in an OOME. Set the gemfire.EXPIRY\_THREADS system property to the desired number when starting the cache server.
+
+

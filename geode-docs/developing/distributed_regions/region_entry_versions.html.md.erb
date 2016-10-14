@@ -1,0 +1,51 @@
+---
+title: Consistency for Region Updates
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="topic_CF2798D3E12647F182C2CEC4A46E2045"></a>
+
+
+Geode ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including Geode members that distribute region events.
+
+-   **[Consistency Checking by Region Type](../../developing/distributed_regions/how_region_versioning_works.html#topic_7A4B6C6169BD4B1ABD356294F744D236)**
+
+    Geode performs different consistency checks depending on the type of region you have configured.
+
+-   **[Configuring Consistency Checking](../../developing/distributed_regions/how_region_versioning_works.html#topic_B64891585E7F4358A633C792F10FA23E)**
+
+    Geode enables consistency checking by default. You cannot disable consistency checking for persistent regions. For all other regions, you can explicitly enable or disable consistency checking by setting the `concurrency-checks-enabled` region attribute in `cache.xml` to "true" or "false."
+
+-   **[Overhead for Consistency Checks](../../developing/distributed_regions/how_region_versioning_works.html#topic_0BDACA590B2C4974AC9C450397FE70B2)**
+
+    Consistency checking requires additional overhead for storing and distributing version and timestamp information, as well as for maintaining destroyed entries for a period of time to meet consistency requirements.
+
+-   **[How Consistency Checking Works for Replicated Regions](../../developing/distributed_regions/how_region_versioning_works.html#topic_C5B74CCDD909403C815639339AA03758)**
+
+    Each region stores version and timestamp information for use in conflict detection. Geode members use the recorded information to detect and resolve conflicts consistently before applying a distributed update.
+
+-   **[How Destroy and Clear Operations Are Resolved](../../developing/distributed_regions/how_region_versioning_works.html#topic_321B05044B6641FCAEFABBF5066BD399)**
+
+    When consistency checking is enabled for a region, a Geode member does not immediately remove an entry from the region when an application destroys the entry. Instead, the member retains the entry with its current version stamp for a period of time in order to detect possible conflicts with operations that have occurred. The retained entry is referred to as a *tombstone*. Geode retains tombstones for partitioned regions and non-replicated regions as well as for replicated regions, in order to provide consistency.
+
+-   **[Transactions with Consistent Regions](../../developing/distributed_regions/how_region_versioning_works.html#topic_32ACFA5542C74F3583ECD30467F352B0)**
+
+    A transaction that modifies a region having consistency checking enabled generates all necessary version information for region updates when the transaction commits.
+
+

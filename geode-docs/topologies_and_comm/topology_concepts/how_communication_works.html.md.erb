@@ -1,0 +1,62 @@
+---
+title:  How Communication Works
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode uses a combination of TCP and UDP unicast and multicast for communication between members. You can change the default behavior to optimize communication for your system.
+
+Client/server communication and gateway sender to gateway receiver communication uses TCP/IP sockets. The server listens for client communication at a published address and the client establishes the connection, sending its location. Similarly, the gateway receiver listens for gateway sender communication and the connection is established between sites.
+
+In peer systems, for general messaging and region operations distribution, Geode uses either TCP or UDP unicast. The default is TCP. You can use TCP or UDP unicast for all communications or you can use it as the default but then can target specific regions to use UDP multicast for operations distribution. The best combination for your installation depends in large part on your data use and event messaging.
+
+## <a id="how_communication_works__section_4402A20FEEC04055A0EEF6FEE82C116D" class="no-quick-link"></a>TCP
+
+TCP (Transmission Control Protocol) provides reliable in-order delivery of the system messages. TCP is more appropriate than UDP if the data is partitioned, if the distributed system is small, or if network loads are unpredictable. TCP is preferable to UDP unicast in smaller distributed systems because it implements more reliable communications at the operating system level than UDP and its performance can be substantially faster than UDP. As the size of the distributed system increases, however, the relatively small overhead of UDP makes it the better choice. TCP adds new threads and sockets to every member, causing more overhead as the system grows.
+
+**Note:**
+Even when Geode is configured to use UDP for messaging, Geode uses a TCP connection when attempting to detect failed members. See [Failure Detection and Membership Views](../../managing/network_partitioning/failure_detection.html#concept_CFD13177F78C456095622151D6EE10EB) for more details. In addition, the TCP connection's ping is not used for keep alive purposes; it is only used to detect failed members. See [TCP/IP KeepAlive Configuration](../../managing/monitor_tune/socket_tcp_keepalive.html#topic_jvc_pw3_34) for TCP keep alive configuration.
+
+## <a id="how_communication_works__section_E2D56EE03B54435BA9F04B8550F00534" class="no-quick-link"></a>UDP Unicast and Multicast
+
+UDP (User Datagram Protocol) is a connectionless protocol which uses far fewer resources than TCP. Adding another process to the distributed system incurs little overhead for UDP messaging. UDP on its own is not reliable however, and messages are restricted in size to 64k bytes or less, including overhead for message headers. Large messages must be fragmented and transmitted as multiple datagram messages. Consequently, UDP is slower than TCP in many cases and unusable in other cases if network traffic is unpredictable or heavily congested.
+
+UDP is used in Geode for both unicast and multicast messaging. Geode implements retransmission protocols to ensure proper delivery of messages over UDP.
+
+## <a id="how_communication_works__section_F2393EE1280749F4B59E2558AA907526" class="no-quick-link"></a>UDP Unicast
+
+UDP unicast is the alternative to TCP for general messaging. UDP is more appropriate than TCP for unicast messaging when there are a large number of processes in the distributed system, the network is not congested, cached objects are small, and applications can give the cache enough processing time to read from the network. If you disable TCP, Geode uses UDP for unicast messaging.
+
+For each member, Geode selects a unique port for UDP unicast communication. You can restrict the range used for the selection by setting `membership-port-range` in the `gemfire.properties` file. Example:
+
+``` pre
+membership-port-range=1024-60000
+```
+
+**Note:**
+In addition to UDP port configuration, the `membership-port-range` property defines the TCP port used for failure detection. See the [Reference](../../reference/book_intro.html#reference) for a description of the Geode property.
+
+## <a id="how_communication_works__section_15F9EEDD65374F3E9D26C5A960D9D9D3" class="no-quick-link"></a>UDP Multicast
+
+Your options for general messaging and for default region operations messaging is between TCP and UDP unicast. You can choose to replace the default with UDP multicast for operations distribution of some or all of your regions. For every region where you want to use multicast, you set an additional attribute on the region itself.
+
+When multicast is enabled for a region, all processes in the distributed system receive all events for the region. Every member receives each message for the region and has to unpack it, schedule it for processing, and then process it, all before discovering whether it is interested in the message. Multicasting is suitable, therefore, for regions that are of general interest in the distributed system, where most or all members have the region defined and are interested in receiving most or all messages for the region. Multicasting should not be used for regions that are of little general interest in the distributed system.
+
+Multicast is most appropriate when the majority of processes in a distributed system are using the same cache regions and need to get updates for them, such as when the processes define replicated regions or have their regions configured to receive all events.
+
+Even if you use multicast for a region, Geode will send unicast messages when appropriate. If data is partitioned, multicast is not a useful option. Even with multicast enabled, partitioned regions still use unicast for almost all purposes.

@@ -1,0 +1,38 @@
+---
+title:  Installing the HTTP Module for Tomcat
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic describes how to install the HTTP session management module for Tomcat.
+
+1.  If you do not already have Tomcat installed, download the desired version from the [Apache Website](http://tomcat.apache.org/).
+2.  The HTTP Session Management Module for Tomcat is included in the Pivotal Geode installation package. After you install Apache Geode, you will find the module in the `tools/Modules` directory of the installation.
+
+3.  Unzip the module into the `$CATALINA_HOME` directory or wherever you installed the application server.
+4.  Copy the following jar files to the `lib` directory of your Tomcat server (`$CATALINA_HOME/lib`):
+    -   antlr jar
+    -   fastutil jar
+    -   geode-core jar
+    -   javax.transaction-api jar
+    -   jgroups jar
+    -   log4j-api jar
+    -   log4j-core jar
+    -   log4j-jul jar
+
+

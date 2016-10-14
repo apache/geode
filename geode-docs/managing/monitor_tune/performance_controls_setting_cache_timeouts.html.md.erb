@@ -1,0 +1,41 @@
+---
+title:  Setting Cache Timeouts
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Cache timeout properties can modified through the gfsh `alter runtime` command (or declared in the `cache.xml` file) and can also be set through methods of the interface, `org.apache.geode.cache.Cache`.
+
+To modify cache timeout properties, you can issue the following `gfsh alter             runtime` command. For example:
+
+``` pre
+gfsh>alter runtime --search-timeout=150
+```
+
+The `--search-timeout` parameter specifies how long a netSearch operation can wait for data before timing out. The default is 5 minutes. You may want to change this based on your knowledge of the network load or other factors.
+
+The next two configurations describe timeout settings for locking in regions with global scope. Locking operations can time out in two places: when waiting to obtain a lock (lock time out); and when holding a lock (lock lease time). Operations that modify objects in a global region use automatic locking. In addition, you can manually lock a global region and its entries through `org.apache.geode.cache.Region`. The explicit lock methods provided by the APIs allow you to specify a lock timeout parameter. The lock time out for implicit operations and the lock lease time for implicit and explicit operations are governed by these cache-wide settings:
+
+``` pre
+gfsh>alter runtime --lock-timeout=30 --lock-lease=60
+```
+
+-   `--lock-timeout`. Timeout for object lock requests, specified in seconds. The setting affects automatic locking only, and does not apply to manual locking. The default is 1 minute. If a lock request does not return before the specified timeout period, it is cancelled and returns with a failure.
+-   `--lock-lease`. Timeout for object lock leases, specified in seconds. The setting affects both automatic locking and manual locking. The default is 2 minutes. Once a lock is obtained, it may remain in force for the lock lease time period before being automatically cleared by the system.
+
+

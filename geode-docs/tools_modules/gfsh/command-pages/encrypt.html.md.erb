@@ -1,0 +1,57 @@
+---
+title:  encrypt password
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Encrypt a password for later use.
+
+## <a id="concept_2B834B0AC8EE44C6A7F85CC66B1D6E18__section_F3D0959AF6264A3CB1821383B2AE4407" class="no-quick-link"></a>encrypt password
+
+Encrypt a password for use in data source configuration. See [Configuring Database Connections Using JNDI](../../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) and [Encrypting Passwords for Use in cache.xml](../../../managing/security/encrypting_passwords.html#topic_730CC61BA84F421494956E2B98BDE2A1) for more information on how to use these encrypted passwords.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+encrypt password --password=value
+```
+
+<a id="concept_2B834B0AC8EE44C6A7F85CC66B1D6E18__table_uvh_gch_2w"></a>
+
+|                                                   |                                              |
+|---------------------------------------------------|----------------------------------------------|
+| <span class="keyword parmname">\\-\\-password </span> | *Required.* Password string to be encrypted. |
+
+<span class="tablecap">Table 1. Encrypt Password Parameters</span>
+
+**Example Commands:**
+
+``` pre
+encrypt password --password=Aht23fbd1234#q
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>encrypt password --password=Aht23fbd1234#q
+21793243D4F4B1C90B032D0CC0A80821
+```
+
+

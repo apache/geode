@@ -1,0 +1,57 @@
+---
+title:  Configuring Disk Free Space Monitoring
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To modify `disk-usage-warning-percentage` and `disk-usage-critical-percentage` thresholds, specify the parameters when executing the `gfsh create disk-store` command.
+
+``` pre
+gfsh>create disk-store --name=serverOverflow --dir=c:\overflow_data#20480 \
+--compaction-threshold=40 --auto-compact=false --allow-force-compaction=true \
+--max-oplog-size=512 --queue-size=10000 --time-interval=15 --write-buffer-size=65536 \
+--disk-usage-warning-percentage=80 --disk-usage-critical-percentage=98
+```
+
+By default, disk usage above 80% triggers a warning message. Disk usage above 99% generates an error and shuts down the member cache that accesses that disk store. To disable disk store monitoring, set the parameters to 0.
+
+To view the current threshold values set for an existing disk store, use the `gfsh                 describe` disk-store command:
+
+``` pre
+gfsh>describe disk-store --member=server1 --name=DiskStore1
+```
+
+You can also use the following `DiskStoreMXBean` method APIs to configure and obtain these thresholds programmatically.
+
+-   `getDiskUsageCriticalPercentage`
+-   `getDiskUsageWarningPercentage`
+-   `setDiskUsageCriticalPercentage`
+-   `setDiskUsageWarningPercentage`
+
+You can obtain statistics on disk space usage and the performance of disk space monitoring by accessing the following statistics:
+
+-   `diskSpace`
+-   `maximumSpace`
+-   `volumeSize`
+-   `volumeFreeSpace`
+-   `volumeFreeSpaceChecks`
+-   `volumeFreeSpaceTime`
+
+See [Disk Space Usage (DiskDirStatistics)](../../reference/statistics/statistics_list.html#section_6C2BECC63A83456190B029DEDB8F4BE3).
+
+

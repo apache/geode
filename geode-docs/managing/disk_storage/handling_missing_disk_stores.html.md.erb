@@ -1,0 +1,72 @@
+---
+title:  Handling Missing Disk Stores
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="handling_missing_disk_stores__section_9345819FC27E41FB94F5E54979B7C506"></a>
+This section applies to disk stores that hold the latest copy of your data for at least one region.
+
+## <a id="handling_missing_disk_stores__section_9E8FBB7935F34239AD5E65A3E857EEAA" class="no-quick-link"></a>Show Missing Disk Stores
+
+Using `gfsh`, the `show missing-disk-stores` command lists all disk stores with most recent data that are being waited on by other members.
+
+For replicated regions, this command only lists missing members that are preventing other members from starting up. For partitioned regions, this command also lists any offline data stores, even when other data stores for the region are online, because their offline status may be causing `PartitionOfflineExceptions` in cache operations or preventing the system from satisfying redundancy.
+
+Example:
+
+``` pre
+gfsh>show missing-disk-stores
+          Disk Store ID              |   Host    |               Directory                                           
+------------------------------------ | --------- | -------------------------------------
+60399215-532b-406f-b81f-9b5bd8d1b55a | excalibur | /usr/local/gemfire/deploy/disk_store1
+```
+
+**Note:**
+You need to be connected to JMX Manager in `gfsh` to run this command.
+
+**Note:**
+The disk store directories listed for missing disk stores may not be the directories you have currently configured for the member. The list is retrieved from the other running members—the ones who are reporting the missing member. They have information from the last time the missing disk store was online. If you move your files and change the member’s configuration, these directory locations will be stale.
+
+Disk stores usually go missing because their member fails to start. The member can fail to start for a number of reasons, including:
+
+-   Disk store file corruption. You can check on this by validating the disk store.
+-   Incorrect distributed system configuration for the member
+-   Network partitioning
+-   Drive failure
+
+## <a id="handling_missing_disk_stores__section_FDF161F935054AB190D9DB0D7930CEAA" class="no-quick-link"></a>Revoke Missing Disk Stores
+
+This section applies to disk stores for which both of the following are true:
+
+-   Disk stores that have the most recent copy of data for one or more regions or region buckets.
+-   Disk stores that are unrecoverable, such as when you have deleted them, or their files are corrupted or on a disk that has had a catastrophic failure.
+
+When you cannot bring the latest persisted copy online, use the revoke command to tell the other members to stop waiting for it. Once the store is revoked, the system finds the remaining most recent copy of data and uses that.
+
+**Note:**
+Once revoked, a disk store cannot be reintroduced into the system.
+
+Use gfsh show missing-disk-stores to properly identify the disk store you need to revoke. The revoke command takes the disk store ID as input, as listed by that command.
+
+Example:
+
+``` pre
+gfsh>revoke missing-disk-store --id=60399215-532b-406f-b81f-9b5bd8d1b55a
+Missing disk store successfully revoked
+```

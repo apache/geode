@@ -1,0 +1,123 @@
+---
+title:  Disk Store Configuration Parameters
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You define your disk stores by using the `gfsh create disk-store` command or in `<disk-store>` subelements of your cache declaration in `cache.xml`. All disk stores are available for use by all of your regions and queues.
+
+These `<disk-store>` attributes and subelements have corresponding `gfsh create disk-store` command-line parameters as well as getter and setter methods in the `org.apache.geode.cache.DiskStoreFactory` and `org.apache.geode.cache.DiskStore` APIs.
+
+## <a id="disk_store_configuration_params__section_77273B9B5EA54227A2D25682BD77BAC3" class="no-quick-link"></a>Disk Store Configuration Attributes and Elements
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="34%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>disk-store attribute</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code class="ph codeph">name</code></td>
+<td>String used to identify this disk store. All regions and queues select their disk store by specifying this name.</td>
+<td>DEFAULT</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">allow-force-compaction</code></td>
+<td>Boolean indicating whether to allow manual compaction through the API or command-line tools.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">auto-compact</code></td>
+<td>Boolean indicating whether to automatically compact a file when it reaches the <code class="ph codeph">compaction-threshold</code>.</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">compaction-threshold</code></td>
+<td>Percentage of garbage allowed in the file before it is eligible for compaction. Garbage is created by entry destroys, entry updates, and region destroys and creates. Surpassing this percentage does not make compaction occur—it makes the file eligible to be compacted when a compaction is done.</td>
+<td>50</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">disk-usage-critical-percentage</code></td>
+<td>Disk usage above this threshold generates an error message and shuts down the member's cache. For example, if the threshold is set to 99%, then falling under 10 GB of free disk space on a 1 TB drive generates the error and shuts down the cache.
+<p>Set to &quot;0&quot; (zero) to disable.</p></td>
+<td>99</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">disk-usage-warning-percentage</code></td>
+<td>Disk usage above this threshold generates a warning message. For example, if the threshold is set to 90%, then on a 1 TB drive falling under 100 GB of free disk space generates the warning.
+<p>Set to &quot;0&quot; (zero) to disable.</p></td>
+<td>90</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">max-oplog-size</code></td>
+<td>The largest size, in megabytes, to allow an operation log to become before automatically rolling to a new file. This size is the combined sizes of the oplog files.</td>
+<td>1024</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">queue-size</code></td>
+<td>For asynchronous queueing. The maximum number of operations to allow into the write queue before automatically flushing the queue. Operations that would add entries to the queue block until the queue is flushed. A value of zero implies no size limit. Reaching this limit or the time-interval limit will cause the queue to flush.</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">time-interval</code></td>
+<td>For asynchronous queueing. The number of milliseconds that can elapse before data is flushed to disk. Reaching this limit or the queue-size limit causes the queue to flush.</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td><code class="ph codeph">write-buffer-size</code></td>
+<td>Size of the buffer, in bytes, used to write to disk.</td>
+<td>32768</td>
+</tr>
+</tbody>
+</table>
+
+| `disk-store` subelement | Description                                                                             | Default                |
+|-------------------------|-----------------------------------------------------------------------------------------|------------------------|
+| `<disk-dirs>`           | Defines the system directories where the disk store is written and their maximum sizes. | `.` with no size limit |
+
+## <a id="disk_store_configuration_params__section_366001C72D674AF69B2CED91BFA73A9B" class="no-quick-link"></a>disk-dirs Element
+
+The `<disk-dirs>` element defines the host system directories to use for the disk store. It contains one or more single `<disk-dir>` elements with the following contents:
+
+-   The directory specification, provided as the text of the `disk-dir` element.
+-   An optional `dir-size` attribute specifying the maximum amount of space, in megabytes, to use for the disk store in the directory. By default, there is no limit. The space used is calculated as the combined sizes of all oplog files.
+
+You can specify any number of `disk-dir` subelements to the `disk-dirs` element. The data is spread evenly among the active disk files in the directories, keeping within any limits you set.
+
+Example:
+
+``` pre
+<disk-dirs>
+    <disk-dir>/host1/users/gf/memberA_DStore</disk-dir>
+    <disk-dir>/host2/users/gf/memberA_DStore</disk-dir> 
+    <disk-dir dir-size="20480">/host3/users/gf/memberA_DStore</disk-dir> 
+</disk-dirs>
+```
+
+**Note:**
+The directories must exist when the disk store is created or the system throws an exception. Geode does not create directories.
+
+Use different disk-dir specifications for different disk stores. You cannot use the same directory for the same named disk store in two different members.

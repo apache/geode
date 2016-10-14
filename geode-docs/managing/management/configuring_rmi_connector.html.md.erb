@@ -1,0 +1,34 @@
+---
+title:  Configuring RMI Registry Ports and RMI Connectors
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode programmatically emulates out-of-the-box JMX provided by Java and creates a JMXServiceURL with RMI Registry and RMI Connector ports on all manageable members.
+
+## <a id="concept_BC793A7ACF9A4BD9A29C2DCC6894767D__section_143531EBBCF94033B8058FCF5F8A5A0D" class="no-quick-link"></a>Configuring JMX Manager Port and Bind Addresses
+
+You can configure a specific connection port and address when launching a process that will host the Geode JMX Manager. To do this, specify values for the `jmx-manager-bind-address`, which specifies the JMX manager's IP address and `jmx-manager-port`, which defines the RMI connection port.
+
+The default Geode JMX Manager RMI port is 1099. You may need to modify this default if 1099 is reserved for other uses.
+
+## <a id="concept_BC793A7ACF9A4BD9A29C2DCC6894767D__section_BF6352A05CE94F35A8355232D22AC2BC" class="no-quick-link"></a>Using Out-of-the-Box RMI Connectors
+
+If for some reason you need to use standard JMX RMI in your deployment for other monitoring purposes, set the Geode property `jmx-manager-port` to 0 on any members where you want to use standard JMX RMI.
+
+If you use out-of-the-box JMX RMI instead of starting an embedded Geode JMX Manager, you should consider setting `-Dsun.rmi.dgc.server.gcInterval=Long.MAX_VALUE-1` when starting the JVM for customer applications and client processes. Every Geode process internally sets this setting before creating and starting the JMX RMI connector in order to prevent full garbage collection from pausing processes.

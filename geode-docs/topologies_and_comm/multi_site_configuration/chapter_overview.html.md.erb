@@ -1,0 +1,44 @@
+---
+title:  Multi-site (WAN) Configuration
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Use the multi-site configuration to scale horizontally between disparate, loosely-coupled distributed systems. A wide-area network (WAN) is the main use case for the multi-site topology.
+
+-   **[How Multi-site (WAN) Systems Work](../../topologies_and_comm/topology_concepts/how_multisite_systems_work.html)**
+
+    The Apache Geode multi-site implementation connects disparate distributed systems. The systems act as one when they are coupled, and they act as independent systems when communication between sites fails. The coupling is tolerant of weak or slow links between distributed system sites. A wide-area network (WAN) is the main use case for the multi-site topology.
+
+-   **[Multi-site (WAN) Topologies](../../topologies_and_comm/multi_site_configuration/multisite_topologies.html)**
+
+    To configure your multi-site topology, you should understand the recommended topologies and the topologies to avoid.
+
+-   **[Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html)**
+
+    Plan and configure your multi-site topology, and configure the regions that will be shared between systems.
+
+-   **[Filtering Events for Multi-Site (WAN) Distribution](../../developing/events/filtering_multisite_events.html)**
+
+    You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between Geode sites.
+
+-   **[Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html)**
+
+    You can optionally create a `GatewayConflictResolver` cache plug-in to decide whether a potentially conflicting event that was delivered from another site should be applied to the local cache.
+
+

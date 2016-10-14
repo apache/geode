@@ -1,0 +1,64 @@
+---
+title: External Interfaces, Ports, and Services
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_686158E9AFBD47518BE1B4BEB232C190"></a>
+
+
+Geode processes use either UDP or TCP/IP ports to communicate with other processes or clients.
+
+For example:
+
+-   Members can use multicast to communicate with peer members. You specify multicast addresses and multicast ports in your `gemfire.properties` file or as parameters on the command-line when starting the members using `gfsh`.
+-   Clients connect to a locator to discover cache servers.
+-   JMX clients (such as `gfsh` and JConsole) can connect to JMX Managers and other manageable members on the pre-defined RMI port 1099. You can configure a different port if necessary.
+-   Each gateway receiver usually has a port range where it listens for incoming communication.
+
+See [Firewalls and Ports](../../configuring/running/firewalls_ports.html#concept_5ED182BDBFFA4FAB89E3B81366EBC58E) for the complete list of ports used by Geode, their default values, and how to configure them if you do not want to use the default value.
+
+Geode does not have any external interfaces or services that need to be enabled or opened.
+
+## <a id="topic_263072624B8D4CDBAD18B82E07AA44B6" class="no-quick-link"></a>Resources That Must Be Protected
+
+These configuration files should be readable and writeable *only* by the dedicated user who runs servers:
+
+-   `gemfire.properties`
+-   `cache.xml`
+-   `gfsecurity.properties`
+    A default `gfsecurity.properties` is not provided in the `defaultConfigs` directory. If you choose to use this properties file, you must create it manually. A clear text user name and associated clear text password may be in this file for authentication purposes. The file system's access rights are relied upon to protect this sensitive information.
+
+The default location of the `gemfire.properties` and `cache.xml` configuration files is the `defaultConfigs` child directory of the main installation directory.
+
+## <a id="topic_5B6DF783A14241399DC25C6EE8D0048A" class="no-quick-link"></a>Log File Locations
+
+By default, the log files are located in the working directory used when you started the corresponding processes.
+
+For Geode members (locators and cache servers), you can also specify a custom working directory location when you start each process. See [Logging](../logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865) for more details.
+
+The log files are as follows:
+
+-   `locator-name.log`: Contains logging information for the locator process.
+-   `server-name.log`: Contains logging information for a cache server process.
+-   `gfsh-%u_%g.log`: Contains logging information of an individual `gfsh` environment and session.
+
+    **Note:** By default, `gfsh` session logging is disabled. To enable `gfsh` logging, you must set the Java system property `-Dgfsh.                                 log-level=desired_log_level`. See [Configuring the gfsh Environment](../../tools_modules/gfsh/configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487) for more information.
+
+These log files should be readable and writable *only* by the dedicated user who runs the servers.
+
+

@@ -1,0 +1,51 @@
+---
+title:  Cache and Region Snapshots
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Snapshots allow you to save region data and reload it later. A typical use case is loading data from one environment into another, such as capturing data from a production system and moving it into a smaller QA or development system.
+
+In effect, you can load data from one distributed system into another distributed system. Administrators export a snapshot of a region or an entire cache (multiple regions) and later import the snapshot into another region or distributed system by using the `RegionSnapshotService` or `CacheSnapshotService` interface and the `Region.getSnapshotService` or `Cache.getSnapshotService` method.
+
+The snapshot file is a binary file that contains all data from a particular region. The binary format contains serialized key/value pairs and supports PDX type registry to allow the deserialization of PDX data. The snapshot can be directly imported into a region or read entry-by-entry for further processing or transformation into other formats.
+
+**Note:**
+The previous `Region.loadSnapshot` and `Region.saveSnapshot` APIs have been deprecated. Data written in this format is not compatible with the new APIs.
+
+-   **[Usage and Performance Notes](../../managing/cache_snapshots/using_cache_and_region_snapshots.html)**
+
+    Optimize the cache and region snapshot feature by understanding how it performs.
+
+-   **[Exporting Cache and Region Snapshots](../../managing/cache_snapshots/exporting_a_snapshot.html)**
+
+    To save Geode cache or region data to a snapshot that you can later load into another distributed system or region, use the `cache.getSnapshotService.save` API, `region.getSnapshotService.save` API, or the `gfsh` command-line interface (`export data`).
+
+-   **[Importing Cache and Region Snapshots](../../managing/cache_snapshots/importing_a_snapshot.html)**
+
+    To import a Geode cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
+
+-   **[Filtering Entries During Import or Export](../../managing/cache_snapshots/filtering_snapshot_entries.html)**
+
+    You can customize your snapshot by filtering entries during the import or export of a region or a cache.
+
+-   **[Reading Snapshots Programmatically](../../managing/cache_snapshots/read_snapshots_programmatically.html)**
+
+    You can read a snapshot entry-by-entry for further processing or transformation into other formats.
+
+

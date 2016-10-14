@@ -1,0 +1,40 @@
+---
+title:  Implementing Geode Event Handlers
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can specify event handlers for region and region entry operations and for administrative events.
+
+-   **[Implementing Cache Event Handlers](implementing_cache_event_handlers.html)**
+
+    Depending on your installation and configuration, cache events can come from local operations, peers, servers, and remote sites. Event handlers register their interest in one or more events and are notified when the events occur.
+
+-   **[Implementing an AsyncEventListener for Write-Behind Cache Event Handling](implementing_write_behind_event_handler.html)**
+
+    An `AsyncEventListener` asynchronously processes batches of events after they have been applied to a region. You can use an `AsyncEventListener` implementation as a write-behind cache event handler to synchronize region updates with a database.
+
+-   **[How to Safely Modify the Cache from an Event Handler Callback](writing_callbacks_that_modify_the_cache.html)**
+
+    Event handlers are synchronous. If you need to change the cache or perform any other distributed operation from event handler callbacks, be careful to avoid activities that might block and affect your overall system performance.
+
+-   **[Cache Event Handler Examples](cache_event_handler_examples.html)**
+
+    Some examples of cache event handlers.
+
+

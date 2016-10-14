@@ -1,0 +1,32 @@
+---
+title:  Geode REST API Overview
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+By using the Geode REST application interface, you can immediately access Geode's data management capabilities in languages other than the natively supported Java language.
+
+You can write REST-enabled client applications for Geode in a variety of languages that use the open and standard HTTP protocol-- for example, Ruby, Python, JavaScript and Scala, as well as already supported languages such as Java.
+
+When you access Geode through the REST interface, objects are stored in Geode as PdxInstances. A PdxInstance is a light-weight wrapper around PDX serialized bytes. It provides applications with run-time access to fields of a PDX serialized object. This interoperable format allows your Java applications to operate on the same data as your REST applications.
+
+As an added benefit, because Geode's REST interface stores objects as PdxInstances, you do not need to write corresponding Java classes to translate JSON data (which you must do with other REST interface providers such as Oracle Coherence.) For example, consider the use case where a non-Java REST client application (Python, Ruby or Scala) performs Geode region operations with JSON data that represents employee data. Since the object is stored in Geode as a PdxInstance that can be automatically mapped to JSON, the user does not need to write a corresponding Employee.java class and also does not need to worry about related issues such as keeping the Employee object in the CLASSPATH.
+
+See [Geode PDX Serialization](../developing/data_serialization/gemfire_pdx_serialization.html#gemfire_pdx_serialization) for more information on PDX serialization.
+
+

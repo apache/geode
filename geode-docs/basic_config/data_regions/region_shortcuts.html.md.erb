@@ -1,0 +1,115 @@
+---
+title:  Region Shortcuts and Custom Named Region Attributes
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode provides region shortcut settings, with preset region configurations for the most common region types. For the easiest configuration, start with a shortcut setting and customize as needed. You can also store your own custom configurations in the cache for use by multiple regions.
+
+<a id="region_shortcuts__section_D9E58754D2B0435FA2986DBBF3063D4C"></a>
+You configure automated management of data regions and their entries through region shortcuts and region attributes. These region configuration settings determine such things as where the data resides, how the region is managed in memory, reliability behavior, and the automatic loading, distribution, and expiration of data entries.
+
+**Note:**
+Whenever possible, use region shortcuts to configure your region, and further customize behavior using region attributes. The shortcut settings are preset with the most common region configurations.
+
+Geode provides a number of predefined, shortcut region attributes settings for your use. You can also define your own custom region attributes and store them with an identifier for later retrieval. Both types of stored attributes are referred to as named region attributes. You can create and store your attribute settings in the `cache.xml` file and through the API.
+
+Retrieve region shortcuts and custom named attributes by providing the ID to the region creation, in the `refid` attribute setting. This example uses the shortcut REPLICATE attributes to create a region:
+
+``` pre
+<region name="testREP" refid="REPLICATE"/>
+```
+
+You can create your own named attributes as needed, by providing an `id` in your region attributes declaration. The following region declaration:
+
+1.  Retrieves all of the attribute settings provided by the persistent partitioned region shortcut
+2.  Modifies the shortcut attribute settings by specifying a disk store name to use for persistence
+3.  Assigns the new attribute settings to the new region named `testPR`
+4.  Stores the attribute settings in a new custom attributes named `testPRPersist`:
+
+    ``` pre
+    <disk-store name="testDiskStore" >
+        <disk-dirs>
+            <disk-dir>PRPersist1</disk-dir>
+            <disk-dir>PRPersist2</disk-dir>
+        </disk-dirs>
+    </disk-store>
+    <region name="testPR" >
+        <region-attributes id="testPRPersist"
+            refid="PARTITION_PERSISTENT" disk-store-name="testDiskStore"/>
+    </region>
+    ```
+
+## <a id="region_shortcuts__section_20548383511141B19EBC053E36877B1A" class="no-quick-link"></a>Shortcut Attribute Options
+
+You can select the most common region attributes settings from Geode’s predefined named region attributes in these classes:
+
+-   **`org.apache.geode.cache.RegionShortcut`**. For peers and servers.
+-   **`org.apache.geode.cache.client.ClientRegionShortcut`**. For clients.
+
+Shortcut attributes are a convenience only. They are just named attributes that Geode has already stored for you. You can override their settings by storing new attributes with the same id as the predefined attributes.
+
+For a full list of all available region shortcuts, see [Region Shortcuts Quick Reference](../../reference/topics/region_shortcuts_table.html#reference_ufj_5kz_4k).
+
+The `org.apache.geode.cache.RegionShortcut` Javadocs give complete listings of the options.
+
+## <a id="region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251" class="no-quick-link"></a>RegionShortcuts for Peers and Servers
+
+These are the primary options available in the region shortcut settings. The names listed appear in the shortcut identifier alone or in combination, like "`PARTITION`" in `PARTITION`, `PARTITION_PROXY`, and `PARTITION_REDUNDANT`.
+
+**Cache Data Storage Mode**
+
+-   **`PARTITION`** . Creates a partitioned region. This is a data store for the region. You can also specify these options with `PARTITION`:
+    -   **`PROXY`**. Data is not stored in the local cache and the member is a data accessor to the region. This requires other members to create non-proxy copies of the region, so the data is stored somewhere.
+    -   **`REDUNDANT`**. The region stores a secondary copy of all data, for high availability.
+-   **`REPLICATE`**. Creates a replicated region. This is a data store for the region. You can also specify these options with `REPLICATE`:
+    -   **`PROXY`**. Data is not stored in the local cache and the member is a data accessor to the region. This requires other members to create non-proxy copies of the region, so the data is stored somewhere.
+-   **`LOCAL`**. Creates a region private to the defining member.
+
+**Data Eviction**
+
+-   **`HEAP_LRU`**. Causes least recently used data to be evicted from memory when the Geode resource manager determines that the cache has reached configured storage limits.
+
+**Disk Storage**
+
+You can specify these alone or in combination:
+
+-   **`PERSISTENT`**. Backs up all data to disk, in addition to storing it in memory.
+-   **`OVERFLOW`**. Moves data out of memory and on to disk, when memory use becomes too high.
+
+## <a id="region_shortcuts__section_BD136ACEB8274B17ACFB9A5954D116E4" class="no-quick-link"></a>ClientRegionShortcuts for Clients
+
+These are the primary options available in the client region shortcut settings. The names listed appear in the shortcut identifier alone or in combination, like "`PROXY`" in `PROXY` and `CACHING_PROXY`.
+
+**Communication with Servers and Data Storage**
+
+-   **`PROXY`**. Does not store data in the client cache, but connects the region to the servers for data requests and updates, interest registrations, and so on. The client is a data accessor to the region.
+-   **`CACHING_PROXY`**. Stores data in the client cache and connects the region to the servers for data requests and updates, interest registrations, and so on.
+-   **`LOCAL`**. Stores data in the client cache and does not connect the region to the servers. This is a client-side-only region. Note that this is not the same as setting the region's `scope` attribute to `LOCAL`.
+
+**Data Eviction**
+
+-   **`HEAP_LRU`**. Causes least recently used data to be evicted from memory when the Geode resource manager determines that the cache has reached configured storage limits.
+
+**Disk Storage**
+
+With the LOCAL and CACHING data storage shortcut options, you can also specify these disk storage options, alone or in combination:
+
+-   **`PERSISTENT`**. Backs up all data to disk, in addition to storing it in memory.
+-   **`OVERFLOW`**. Moves data out of memory and on to disk, when memory use becomes too high.
+

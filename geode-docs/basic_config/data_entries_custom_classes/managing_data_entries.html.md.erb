@@ -1,0 +1,146 @@
+---
+title:  Managing Data Entries
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Program your applications to create, modify, and manage your cached data entries.
+
+<a id="managing_data_entries__section_AACC36127F17411F86D1E409B86C6E5C"></a>
+**Note:**
+If you do not have the cache's `copy-on-read` attribute set to true, do not change the objects returned from the Java entry access methods. Instead, create a copy of the object, then modify the copy and pass it to the Java `put` method. Modifying a value in place bypasses the entire distribution framework provided by Geode, including cache listeners and expiration activities, and can produce undesired results.
+
+## <a id="managing_data_entries__section_B095A4073EFB4A3C91AF7C03632EEBFB" class="no-quick-link"></a>Basic Create and Update
+
+To create or update an entry in the cache, use `Region.put`. For example:
+
+``` pre
+String name = ... 
+String value = ...  
+this.currRegion.put(name,value); 
+```
+
+**Note:**
+You can also use the `gfsh put` command to add entries to a region, and the `get` command to retrieve entries from a region. See [get](../../tools_modules/gfsh/command-pages/get.html) and [put](../../tools_modules/gfsh/command-pages/put.html) for more information.
+
+If you want only to create the entry (with a null value and with method failure if the entry already exists), use `Region.create` instead.
+
+## <a id="managing_data_entries__section_7578349EA26A4621B732FE851D71A84F" class="no-quick-link"></a>Batch Operations (getAll, putAll, removeAll)
+
+Geode provides three APIs to perform batch operations on multiple region entries:
+
+-   `Region.getAll`
+-   `Region.putAll`
+-   `Region.removeAll`
+
+The `getAll` method takes a collection of keys and returns a `Map` of values for the provided keys. If a given key does not exist in the region, then that key's value in the returned map will be null.
+
+The `putAll` method takes a `Map` of key-value pairs and puts them into the cache and distributes them in a single operation.
+
+**Example:**
+
+``` pre
+void putAll(String command) throws CacheException 
+{ 
+// Get Entry keys and values into Strings key1, ... keyN and value1, ... valueN 
+  Map map = new LinkedHashMap(); 
+  map.put(key1, value1)); 
+  ...
+  map.put(keyN, valueN));
+  this.currRegion.putAll(map); 
+}
+```
+
+The updates to the cache are done individually in the order in which they were placed in the `Map`. For partitioned regions, multiple events are sent as a single message to the primary buckets and then distributed to the secondary buckets.
+
+**Note:**
+The processing of maps with very many entries and/or very large data may affect system performance and cause cache update timeouts, especially if the region uses overflow or persistence to disk.
+
+The `removeAll` method takes a collection of keys and removes all of the entries for the specified keys from this region. This call performs the equivalent of calling`destroy(Object)` on this region once for each key in the specified collection. If an entry does not exist, then that key is skipped. An `EntryNotFoundException` is not thrown. This operation will be distributed to other caches if the region's scope is not set to `Scope.LOCAL`.
+
+## <a id="managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809" class="no-quick-link"></a>Safe Entry Modification
+
+When you get an entry value from the cache, by default, the retrieval methods return a direct reference to the cached object. This provides the value as quickly as possible, but also opens the cache to direct, in-place changes.
+
+**Note:**
+Do not directly modify cached values. Modifying a value in place bypasses the Geode distribution framework, including cache writers and listeners, expiration activities, and transaction management, and can produce undesired results.
+
+Always change your entries using copies of the retrieved objects—never directly modify the returned objects. You can do this in one of two ways:
+
+1.  Change the entry retrieval behavior for your cache by setting the cache attribute, `copy-on-read`, to true (the default is false).
+
+    ``` pre
+    <cache copy-on-read="true">
+     ...
+    </cache>
+    ```
+
+    When `copy-on-read` is true, the entry access methods return copies of the entries. This protects you from inadvertently modifying in-place, but negatively impacts performance and memory consumption when copying is not needed.
+
+    These entry access methods return an entry reference if `copy-on-read` is false and a copy of the entry if `copy-on-read` is true:
+
+    `Region.get`
+    result of `Region.put`
+    `EntryEvent.getNewValue`
+    `Region.values`
+    `Region.Entry.getValue`
+    `EntryEvent.getOldValue`
+    `Query.select`
+
+2.  Create a copy of the returned object and work with that. For objects that are cloneable or serializable, you can copy the entry value to a new object using `org.apache.geode.CopyHelper.copy`. Example:
+
+    ``` pre
+    Object o = (StringBuffer)region.get("stringBuf");
+    StringBuffer s = (StringBuffer) CopyHelper.copy(o);
+    s.append("Changes to value, added using put.");
+    region.put("stringBuf", s);
+    ```
+
+## <a id="managing_data_entries__section_78F6731642944DE594316B86ECB4E70F" class="no-quick-link"></a>Retrieving Region Entries from Proxy Members
+
+The `Region.values` method call applies to the local region instance only. If you call the `values` method from a client region using the PROXY shortcut, the method call will not be redirected to the server region. To obtain a collection of all values in the Region from a client, you should use interest registration on ALL\_KEYS, or use a query.
+
+If you use the `Region.get` method from a proxy member, the method call will redirect to the region on the server if it cannot find the key locally.
+
+## Using gfsh to get and put
+
+You can use the gfsh `get` and `put` commands to manage data. See [get](../../tools_modules/gfsh/command-pages/get.html) and [put](../../tools_modules/gfsh/command-pages/put.html).
+
+For example:
+
+``` pre
+get --key=('id':'133abg124') --region=region1
+
+// Retrieving when key type is a wrapper(primitive)/String
+get --key=('133abg124') --region=/region1/region12 --value-class=data.ProfileDetails
+
+get --key=('100L') --region=/region1/region12 --value-class=data.ProfileDetails 
+--key-class=java.lang.Long
+```
+
+``` pre
+put --key=('id':'133abg125') --value=('firstname':'James','lastname':'Gosling') 
+--region=/region1 --key-class=data.ProfileKey --value-class=data.ProfileDetails
+
+put --key=('133abg124') --value=('Hello World!!') --region=/region2
+
+put --key=('100F') --value=('2146547689879658564')  --region=/region1/region12 
+--key-class=java.lang.Float --value-class=java.lang.Long
+```
+
+

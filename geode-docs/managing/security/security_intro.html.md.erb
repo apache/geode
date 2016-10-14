@@ -1,0 +1,38 @@
+---
+title:  Security Features
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Encryption, SSL secure communication, authentication, and authorization 
+features help to secure the distributed system.
+
+The features include:
+
+-   **A single security interface for all components**. The single
+authentication and authorization mechanism simplifies the security
+implementation.
+It views and interacts with all components in a consistent manner. 
+-   **System-wide role-based access control**.
+Roles regiment authorized operations requested by the various components.
+-   **SSL communication**. Allows configuration of connections to be 
+SSL-based, rather than plain socket connections.
+You can enable SSL separately for peer-to-peer, client, JMX, gateway senders and receivers, and HTTP connections.
+-   **Post processing of region data**. Return values for operations that
+return region values may be altered, permitting the filtering of returned data.
+

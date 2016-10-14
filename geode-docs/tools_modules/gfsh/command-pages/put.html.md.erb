@@ -1,0 +1,78 @@
+---
+title:  put
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Add or update a region entry.
+
+Add or update an entry in a region.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+put --key=value --value=value --region=value [--key-class=value] 
+[--value-class=value] [--skip-if-exists=value]
+```
+
+| Name                                                   | Description                                                                                                              | Default Value      |
+|--------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|--------------------|
+| <span class="ph">\\-\\-key</span>                          | *Required.* String or JSON text from which to create the key. For example: "`James`", "`100L`" and "`('id': 'l34s')`".   |                    |
+| <span class="keyword parmname">\\-\\-value</span>          | *Required.* String or JSON text from which to create the value. For example: "`James`", "`100L`" and "`('id': 'l34s')`". |                    |
+| <span class="keyword parmname">\\-\\-region</span>         | *Required.* Region into which the entry will be put.                                                                     |                    |
+| <span class="keyword parmname">\\-\\-key-class</span>      | Fully qualified class name of the key's type.                                                                            | `java.lang.String` |
+| <span class="keyword parmname">\\-\\-value-class</span>    | Fully qualified class name of the value's type.                                                                          | `java.lang.String` |
+| <span class="keyword parmname">\\-\\-skip-if-exists</span> | Skip the put operation when an entry with the same key already exists.                                                   | false              |
+
+**Example Commands:**
+
+``` pre
+put --key=('id':'133abg125') --value=('firstname':'James','lastname':'Gosling') 
+--region=/region1 --key-class=data.ProfileKey --value-class=data.ProfileDetails
+
+put --key=('133abg124') --value=('Hello World!!') --region=/region2
+
+put --key=('100F') --value=('2146547689879658564')  --region=/region1/region12 
+--key-class=java.lang.Float --value-class=java.lang.Long
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>put --key=('123abc') --value=('Hello World!!') --region=region2
+Result      : true
+Key Class   : java.lang.String
+Key         : ('123abc')
+Value Class : java.lang.String
+Old Value   : <NULL>
+```
+
+**Error Messages:**
+
+``` pre
+"Region name is either empty or Null";
+"Key is either empty or Null";
+"Value is either empty or Null";
+"Region <{0}> not found in any of the members";
+"Region <{0}> Not Found";
+"Key is not present in the region";
+```
+
+

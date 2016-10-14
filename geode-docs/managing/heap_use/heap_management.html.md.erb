@@ -1,0 +1,225 @@
+---
+title: Managing Heap and Off-heap Memory
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+By default, Apache Geode uses the JVM heap. Apache Geode also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
+
+## <a id="section_590DA955523246ED980E4E351FF81F71" class="no-quick-link"></a>Tuning the JVM's Garbage Collection Parameters
+
+Because Apache Geode is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way Apache Geode uses the JVM heap.
+
+See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response. At a minimum, do the following:
+
+1.  Set the initial and maximum heap switches, `-Xms` and `-Xmx`, to the same values. The `gfsh start server` options `--initial-heap` and `--max-heap` accomplish the same purpose, with the added value of providing resource manager defaults such as eviction threshold and critical threshold.
+2.  Configure your JVM for concurrent mark-sweep (CMS) garbage collection.
+3.  If your JVM allows, configure it to initiate CMS collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when Geode is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
+
+| JVM         | CMS switch flag           | CMS initiation (begin at heap % N)     |
+|-------------|---------------------------|----------------------------------------|
+| Sun HotSpot | `‑XX:+UseConcMarkSweepGC` | `‑XX:CMSInitiatingOccupancyFraction=N` |
+| JRockit     | `-Xgc:gencon`             | `-XXgcTrigger:N`                       |
+| IBM         | `-Xgcpolicy:gencon`       | N/A                                    |
+
+For the `gfsh start server` command, pass these settings with the `--J` switch, for example: `‑‑J=‑XX:+UseConcMarkSweepGC`.
+
+The following is an example of setting JVM for an application:
+
+``` pre
+$ java app.MyApplication -Xms=30m -Xmx=30m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=60
+```
+
+**Note:** Do not use the `-XX:+UseCompressedStrings` and `-XX:+UseStringCache` JVM configuration properties when starting up servers. These JVM options can cause issues with data corruption and compatibility.
+
+Or, using `gfsh`:
+
+``` pre
+$ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
+--J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
+```
+
+## <a id="how_the_resource_manager_works" class="no-quick-link"></a>Using the Geode Resource Manager
+
+The Geode resource manager works with your JVM's tenured garbage collector to control heap use and protect your member from hangs and crashes due to memory overload.
+
+<a id="how_the_resource_manager_works__section_53E80B61991447A2915E8A754383B32D"></a>
+The Geode resource manager prevents the cache from consuming too much memory by evicting old data. If the garbage collector is unable to keep up, the resource manager refuses additions to the cache until the collector has freed an adequate amount of memory.
+
+The resource manager has two threshold settings, each expressed as a percentage of the total tenured heap. Both are disabled by default.
+
+  1.  **Eviction Threshold**. Above this, the manager orders evictions for all regions with `eviction-attributes` set to `lru-heap-percentage`. This prompts dedicated background evictions, independent of any application threads and it also tells all application threads adding data to the regions to evict at least as much data as they add. The JVM garbage collector removes the evicted data, reducing heap use. The evictions continue until the manager determines that heap use is again below the eviction threshold.
+
+    The resource manager enforces eviction thresholds only on regions whose LRU eviction policies are based on heap percentage. Regions whose eviction policies based on entry count or memory size use other mechanisms to manage evictions. See [Eviction](../../developing/eviction/chapter_overview.html) for more detail regarding eviction policies.
+
+  2.  **Critical Threshold**. Above this, all activity that might add data to the cache is refused. This threshold is set above the eviction threshold and is intended to allow the eviction and GC work to catch up. This JVM, all other JVMs in the distributed system, and all clients to the system receive `LowMemoryException` for operations that would add to this critical member's heap consumption. Activities that fetch or reduce data are allowed. For a list of refused operations, see the Javadocs for the `ResourceManager` method `setCriticalHeapPercentage`.
+
+    Critical threshold is enforced on all regions, regardless of LRU eviction policy, though it can be set to zero to disable its effect.
+
+<img src="../../images/DataManagement-9.png" id="how_the_resource_manager_works__image_C3568D47EE1B4F2C9F0742AE9C291BF1" class="image" />
+
+When heap use passes the eviction threshold in either direction, the manager logs an info-level message.
+
+When heap use exceeds the critical threshold, the manager logs an error-level message. Avoid exceeding the critical threshold. Once identified as critical, the Geode member becomes a read-only member that refuses cache updates for all of its regions, including incoming distributed updates.
+
+For more information, see `org.apache.geode.cache.control.ResourceManager` in the online API documentation.
+
+## <a id="how_the_resource_manager_works__section_EA5E52E65923486488A71E3E6F0DE9DA" class="no-quick-link"></a>How Background Eviction Is Performed
+
+When the manager kicks off evictions:
+
+1.  From all regions in the local cache that are configured for heap LRU eviction, the background eviction manager creates a randomized list containing one entry for each partitioned region bucket (primary or secondary) and one entry for each non-partitioned region. So each partitioned region bucket is treated the same as a single, non-partitioned region.
+
+2.  The background eviction manager starts four evictor threads for each processor on the local machine. The manager passes each thread its share of the bucket/region list. The manager divides the bucket/region list as evenly as possible by count, and not by memory consumption.
+
+3.  Each thread iterates round-robin over its bucket/region list, evicting one LRU entry per bucket/region until the resource manager sends a signal to stop evicting.
+
+See also [Memory Requirements for Cached Data](../../reference/topics/memory_requirements_for_cache_data.html#calculating_memory_requirements).
+
+## <a id="configuring_resource_manager_controlling_heap_use" class="no-quick-link"></a>Controlling Heap Use with the Resource Manager
+
+Resource manager behavior is closely tied to the triggering of Garbage Collection (GC) activities, the use of concurrent garbage collectors in the JVM, and the number of parallel GC threads used for concurrency.
+
+<a id="configuring_resource_manager__section_B47A78E7BA0048C89FBBDB7441C308BE"></a>
+The recommendations provided here for using the manager assume you have a solid understanding of your Java VM's heap management and garbage collection service.
+
+The resource manager is available for use in any Apache Geode member, but you may not want to activate it everywhere. For some members it might be better to occasionally restart after a hang or OME crash than to evict data and/or refuse distributed caching activities. Also, members that do not risk running past their memory limits would not benefit from the overhead the resource manager consumes. Cache servers are often configured to use the manager because they generally host more data and have more data activity than other members, requiring greater responsiveness in data cleanup and collection.
+
+For the members where you want to activate the resource manager:
+
+1.  Configure Geode for heap LRU management.
+
+2.  Set the JVM GC tuning parameters to handle heap and garbage collection in conjunction with the Geode manager.
+
+3.  Monitor and tune heap LRU configurations and your GC configurations.
+
+4.  Before going into production, run your system tests with application behavior and data loads that approximate your target systems so you can tune as well as possible for production needs.
+
+5.  In production, keep monitoring and tuning to meet changing needs.
+
+## <a id="configuring_resource_manager__section_4949882892DA46F6BB8588FA97037F45" class="no-quick-link"></a>Configure Geode for Heap LRU Management
+
+The configuration terms used here are `cache.xml` elements and attributes, but you can also configure through `gfsh` and the `org.apache.geode.cache.control.ResourceManager` and `Region` APIs.
+
+1.  When starting up your server, set `initial-heap` and `max-heap` to the same value.
+
+2.  Set the `resource-manager` `critical-heap-percentage` threshold. This should be as as close to 100 as possible while still low enough so the manager's response can prevent the member from hanging or getting `OutOfMemoryError`. The threshold is zero (no threshold) by default.
+
+    **Note:** When you set this threshold, it also enables a query monitoring feature that prevents most out-of-memory exceptions when executing queries or creating indexes. See [Monitoring Queries for Low Memory](../../developing/querying_basics/monitor_queries_for_low_memory.html#topic_685CED6DE7D0449DB8816E8ABC1A6E6F).
+
+3.  Set the `resource-manager` `eviction-heap-percentage` threshold to a value lower than the critical threshold. This should be as high as possible while still low enough to prevent your member from reaching the critical threshold. The threshold is zero (no threshold) by default.
+
+4.  Decide which regions will participate in heap eviction and set their `eviction-attributes` to `lru-heap-percentage`. See [Eviction](../../developing/eviction/chapter_overview.html). The regions you configure for eviction should have enough data activity for the evictions to be useful and should contain data your application can afford to delete or offload to disk.
+
+<a id="configuring_resource_manager__section_5D88064B75C643B0849BBD4345A6671B"></a>
+
+gfsh example:
+
+``` pre
+gfsh>start server --name=server1 --initial-heap=30m --max-heap=30m \
+--critical-heap-percentage=80 --eviction-heap-percentage=60
+```
+
+cache.xml example:
+
+``` pre
+<cache>
+<region refid="REPLICATE_HEAP_LRU" />
+...
+<resource-manager critical-heap-percentage="80" eviction-heap-percentage="60"/>
+</cache>
+```
+
+**Note:** The `resource-manager` specification must appear after the region declarations in your cache.xml file.
+
+## <a id="set_jvm_gc_tuning_params" class="no-quick-link"></a>Set the JVM GC Tuning Parameters
+
+If your JVM allows, configure it to initiate concurrent mark-sweep (CMS) garbage collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when Geode is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
+
+## <a id="configuring_resource_manager__section_DE1CC494C2B547B083AA00821250972A" class="no-quick-link"></a>Monitor and Tune Heap LRU Configurations
+
+In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire distributed system. To stay below critical, tune so that the Geode eviction and the JVM's GC respond adequately when the eviction threshold is reached.
+
+Use the statistics provided by your JVM to make sure your memory and GC settings are sufficient for your needs.
+
+The Geode `ResourceManagerStats` provide information about memory use and the manager thresholds and eviction activities.
+
+If your application spikes above the critical threshold on a regular basis, try lowering the eviction threshold. If the application never goes near critical, you might raise the eviction threshold to gain more usable memory without the overhead of unneeded evictions or GC cycles.
+
+The settings that will work well for your system depend on a number of factors, including these:
+
+ - The size of the data objects you store in the cache
+Very large data objects can be evicted and garbage collected relatively quickly. The same amount of space in use by many small objects takes more processing effort to clear and might require lower thresholds to allow eviction and GC activities to keep up.
+
+ - Application behavior
+Applications that quickly put a lot of data into the cache can more easily overrun the eviction and GC capabilities. Applications that operate more slowly may be more easily offset by eviction and GC efforts, possibly allowing you to set your thresholds higher than in the more volatile system.
+
+ - Your choice of JVM
+Each JVM has its own GC behavior, which affects how efficiently the collector can operate, how quickly it kicks in when needed, and other factors.
+
+## <a id="resource_manager_example_configurations" class="no-quick-link"></a>Resource Manager Example Configurations
+
+<a id="resource_manager_example_configurations__section_B50C552B114D47F3A63FC906EB282024"></a>
+These examples set the critical threshold to 85 percent of the tenured heap and the eviction threshold to 75 percent. The region `bigDataStore` is configured to participate in the resource manager's eviction activities.
+
+-   gfsh Example:
+
+    ``` pre
+    gfsh>start server --name=server1 --initial-heap=30MB --max-heap=30MB \
+    --critical-heap-percentage=85 --eviction-heap-percentage=75
+    ```
+
+    ``` pre
+    gfsh>create region --name=bigDataStore --type=PARTITION_HEAP_LRU
+    ```
+
+-   XML:
+
+    ``` pre
+    <cache>
+    <region name="bigDataStore" refid="PARTITION_HEAP_LRU"/>
+    ...
+    <resource-manager critical-heap-percentage="85" eviction-heap-percentage="75"/>
+    </cache>
+    ```
+
+    **Note:** The `resource-manager` specification must appear after the region declarations in your cache.xml file.
+
+-   Java:
+
+    ``` pre
+    Cache cache = CacheFactory.create();
+
+    ResourceManager rm = cache.getResourceManager();
+    rm.setCriticalHeapPercentage(85);
+    rm.setEvictionHeapPercentage(75);
+
+    RegionFactory rf =
+      cache.createRegionFactory(RegionShortcut.PARTITION_HEAP_LRU);
+      Region region = rf.create("bigDataStore");
+    ```
+
+## <a id="resource_manager_example_configurations__section_95497FDF114A4DC8AC5D899E05E324E5" class="no-quick-link"></a>Use Case for the Example Code
+
+This is one possible scenario for the configuration used in the examples:
+
+-   A 64-bit Java VM with 8 Gb of heap space on a 4 CPU system running Linux.
+-   The data region bigDataStore has approximately 2-3 million small values with average entry size of 512 bytes. So approximately 4-6 Gb of the heap is for region storage.
+-   The member hosting the region also runs an application that may take up to 1 Gb of the heap.
+-   The application must never run out of heap space and has been crafted such that data loss in the region is acceptable if the heap space becomes limited due to application issues, so the default `lru-heap-percentage` action destroy is suitable.
+-   The application's service guarantee makes it very intolerant of `OutOfMemoryException` errors. Testing has shown that leaving 15% head room above the critical threshold when adding data to the region gives 99.5% uptime with no `OutOfMemoryException` errors, when configured with the CMS garbage collector using `-XX:CMSInitiatingOccupancyFraction=70`.

@@ -154,15 +154,6 @@ task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
   }
 }
 
-task distHibernate(type: Zip, dependsOn: ':extensions/geode-modules-hibernate:assemble') {
-  archiveName = "Apache_Geode_Modules-${version}-Hibernate.zip"
-
-  into('lib') {
-    from getJarArtifact(':extensions/geode-modules')
-    from getJarArtifact(':extensions/geode-modules-hibernate')
-  }
-}
-
 task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:assemble') {
   archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
 
@@ -204,11 +195,10 @@ task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble',
 dependencies {
   moduleDistOutputs distTcServer.outputs.files
   moduleDistOutputs distTcServer30.outputs.files
-  moduleDistOutputs distHibernate.outputs.files
   moduleDistOutputs distAppServer.outputs.files
   moduleDistOutputs distTomcat.outputs.files
 }
 
-task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distHibernate', 'distAppServer'])
+task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distAppServer'])
 
 build.dependsOn dist

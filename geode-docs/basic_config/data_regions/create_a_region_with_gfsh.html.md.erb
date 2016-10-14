@@ -1,0 +1,55 @@
+---
+title:  Creating a Region with gfsh
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+A simple and fast way to create a data region in the Apache Geode cache is to use the `gfsh` command-line tool.
+
+Before you start, configure your `Cache` or `ClientCache` and determine the region shortcut and other attributes settings your region needs.
+
+Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined. The requirements for consistency between region attributes are detailed in the online Java API documentation.
+
+1.  
+
+    Start a `gfsh` prompt. 
+2.  
+
+    Connect to a server that is currently acting as a JMX Manager node. 
+3.  
+
+    Enter the `create region` command providing any desired region attributes as arguments. 
+    For example:
+    ``` pre
+    gfsh>create region --name=region1 --type=REPLICATE
+    ```
+
+4.  
+
+    Add data into the region by using the [import data](../../tools_modules/gfsh/command-pages/import.html#topic_jw2_2ld_2l) command or [put](../../tools_modules/gfsh/command-pages/put.html) gfsh command. 
+5.  
+
+    After you modify data in the region you can use the [export data](../../tools_modules/gfsh/command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734) command to generate a snapshot of the current region's data for later use. 
+6.  
+
+    Export the configuration files of your server so that you can save your region's configuration and recreate the region with the same attributes the next time you start up your cache server. See [export config](../../tools_modules/gfsh/command-pages/export.html#topic_C7C69306F93743459E65D46537F4A1EE) for details. 
+
+    **Note:**
+    The cluster configuration service, which is enabled by default, automatically saves the configuration on the locators in the distributed system. After you use the gfsh create region command, any new servers that you start that attach to the same locator receive the same configuration. You can also create alternate configurations within a distributed system by specifying a group when creating the region and starting servers. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+
+

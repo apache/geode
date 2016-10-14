@@ -1,0 +1,42 @@
+---
+title:  Configuring Partitioned Regions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Plan the configuration and ongoing management of your partitioned region for host and accessor members and configure the regions for startup.
+
+<a id="configure_partitioned_regions__section_241583D88E244AB6AB5CD05BF55F6A0A"></a>
+Before you begin, understand [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+1.  Start your region configuration using one of the `PARTITION` region shortcut settings. See [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html).
+2.  If you need high availability for your partitioned region, configure for that. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
+3.  Estimate the amount of space needed for the region. If you use redundancy, this is the max for all primary and secondary copies stored in the member. For example, with redundancy of one, each region data entry requires twice the space than with no redundancy, because the entry is stored twice. See [Memory Requirements for Cached Data](../../reference/topics/memory_requirements_for_cache_data.html#calculating_memory_requirements).
+4.  Configure the total number of buckets for the region. This number must be the same for colocated regions. See [Configuring the Number of Buckets for a Partitioned Region](configuring_bucket_for_pr.html#configuring_total_buckets).
+5.  Configure your members' data storage and data loading for the region:
+    1.  You can have members with no local data storage and members with varying amounts of storage. Determine the max memory available in your different member types for this region. These will be set in the `partition-attributes` `local-max-memory`. This is the only setting in `partition-attributes` that can vary between members. Use these max values and your estimates for region memory requirements to help you figure how many members to start out with for the region.
+    2.  For members that store data for the region (`local-max-memory` greater than 0), define a data loader. See [Implement a Data Loader](../outside_data_sources/implementing_data_loaders.html#implementing_data_loaders).
+    3.  If you have members with no local data storage (`local-max-memory` set to 0), review your system startup/shutdown procedures. Make sure there is always at least one member with local data storage running when any members with no storage are running.
+
+6.  If you want to custom partition the data in your region or colocate data between multiple regions, code and configure accordingly. See [Understanding Custom Partitioning and Data Colocation](custom_partitioning_and_data_colocation.html#custom_partitioning_and_data_colocation).
+7.  Plan your partition rebalancing strategy and configure and program for that. See [Rebalancing Partitioned Region Data](rebalancing_pr_data.html#rebalancing_pr_data).
+
+**Note:**
+To configure a partitioned region using gfsh, see [gfsh Command Help](../../tools_modules/gfsh/gfsh_command_index.html#concept_C291647179C5407A876CC7FCF91CF756).
+
+

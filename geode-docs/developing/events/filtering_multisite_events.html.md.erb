@@ -1,0 +1,126 @@
+---
+title:  Filtering Events for Multi-Site (WAN) Distribution
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between Geode sites.
+
+You can implement and deploy two different types of filter for multi-site events:
+
+-   `GatewayEventFilter`. A `GatewayEventFilter` implementation determines whether a region event is placed in a gateway sender queue and/or whether an event in a gateway queue is distributed to a remote site. You can optionally add one or more `GatewayEventFilter` implementations to a gateway sender, etiher in the `cache.xml` configuration file or using the Java API.
+
+    Geode makes a synchronous call to the filter's `beforeEnqueue` method before it places a region event in the gateway sender queue. The filter returns a boolean value that specifies whether the event should be added to the queue.
+
+    Geode asynchronously calls the filter's `beforeTransmit` method to determine whether the gateway sender dispatcher thread should distribute the event to a remote gateway receiver.
+
+    For events that are distributed to another site, Geode calls the listener's `afterAcknowledgement` method to indicate that is has received an ack from the remote site after the event was received.
+
+-   GatewayTransportFilter. Use a `GatewayTransportFilter` implementation to process the TCP stream that sends a batch of events that is distributed from one Geode cluster to another over a WAN. A `GatewayTransportFilter` is typically used to perform encryption or compression on the data that distributed. You install the same `GatewayTransportFilter` implementation on both a gateway sender and gateway receiver.
+
+    When a gateway sender processes a batch of events for distribution, Geode delivers the stream to the `getInputStream` method of a configured `GatewayTransportFilter` implementation. The filter processes and returns the stream, which is then transmitted to the gateway receiver. When the gateway receiver receives the batch, Geode calls the `getOutputStream` method of a configured filter, which again processes and returns the stream so that the events can be applied in the local cluster.
+
+## <a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7" class="no-quick-link"></a>Configuring Multi-Site Event Filters
+
+You install a `GatewayEventFilter` implementation to a configured gateway sender in order to decide which events are queued and distributed. You install a `GatewayTransportFilter` implementation to both a gateway sender and a gateway receiver to process the stream of batched events that are distributed between two sites:
+
+-   **XML example**
+
+    ``` pre
+    <cache>
+      <gateway-sender id="remoteA" parallel="true" remote-distributed-system-id="1"> 
+        <gateway-event-filter>
+          <class-name>org.apache.geode.util.SampleEventFilter</class-name>
+          <parameter name="param1">
+            <string>"value1"</string>
+          </parameter>
+        </gateway-event-filter>
+        <gateway-transport-filter>
+          <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
+          <parameter name="param1">
+            <string>"value1"</string>
+          </parameter>
+        </gateway-transport-filter>
+      </gateway-sender> 
+    </cache>
+    ```
+
+    ``` pre
+    <cache>
+      ...
+      <gateway-receiver start-port="1530" end-port="1551"> 
+        <gateway-transport-filter>
+          <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
+          <parameter name="param1">
+            <string>"value1"</string>
+          </parameter>
+        </gateway-transport-filter>
+      </gateway-receiver>
+    </cache>
+    ```
+
+-   **gfsh example**
+
+    ``` pre
+    gfsh>create gateway-sender --id=remoteA --parallel=true --remote-distributed-id="1" 
+    --gateway-event-filter=org.apache.geode.util.SampleEventFilter 
+    --gateway-transport-filter=org.apache.geode.util.SampleTransportFilter
+    ```
+
+    See [create gateway-sender](../../tools_modules/gfsh/command-pages/create.html#topic_hg2_bjz_ck).
+
+    ``` pre
+    gfsh>create gateway-receiver --start-port=1530 --end-port=1551 \
+    --gateway-transport-filter=org.apache.geode.util.SampleTransportFilter
+    ```
+
+    **Note:**
+    You cannot specify parameters and values for the Java class you specify with the `--gateway-transport-filter` option.
+
+    See [create gateway-receiver](../../tools_modules/gfsh/command-pages/create.html#topic_a4x_pb1_dk).
+
+-   **API example**
+
+    ``` pre
+    Cache cache = new CacheFactory().create();
+
+    GatewayEventFilter efilter = new SampleEventFilter();
+    GatewayTransportFilter tfilter = new SampleTransportFilter();
+
+    GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
+    gateway.setParallel(true);
+    gateway.addGatewayEventFilter(efilter);
+    gateway.addTransportFilter(tfilter);
+    GatewaySender sender = gateway.create("remoteA", "1");
+    sender.start();
+    ```
+
+    ``` pre
+    Cache cache = new CacheFactory().create();
+
+    GatewayTransportFilter tfilter = new SampleTransportFilter();
+
+    GatewayReceiverFactory gateway = cache.createGatewayReceiverFactory();
+    gateway.setStartPort(1530);
+    gateway.setEndPort(1551);
+    gateway.addTransportFilter(tfilter);
+    GatewayReceiver receiver = gateway.create();
+    receiver.start();
+    ```
+
+

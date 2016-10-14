@@ -51,7 +51,7 @@ rat {
     // IDE
     'etc/eclipseFormatterProfile.xml',
     'etc/intellijIdeaCodeStyle.xml',
-    'etc/eclipseOrganizeImports.importorder', 
+    'etc/eclipseOrganizeImports.importorder',
     '**/.project',
     '**/.classpath',
     '**/.settings/**',
@@ -88,10 +88,16 @@ rat {
     '**/*.pdf',
     '**/*.png',
     '**/*.ser',
+    '**/*.svg',
     '**/*.truststore',
     '**/*.xls',
     '**/publickeyfile',
     '**/*.dat',
+
+    // Geode docs
+    'geode-book/Gemfile.lock',
+    'geode-book/output/**',
+    'geode-book/final_app/**',
 
     // other text files
     'geode-spark-connector/project/plugins.sbt',

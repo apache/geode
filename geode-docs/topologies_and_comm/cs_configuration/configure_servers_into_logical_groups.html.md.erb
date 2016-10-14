@@ -1,0 +1,54 @@
+---
+title:  Organizing Servers Into Logical Member Groups
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In a client/server configuration, by putting servers into logical member groups, you can control which servers your clients use and target specific servers for specific data or tasks. You can configure servers to manage different data sets or to direct specific client traffic to a subset of servers, such as those directly connected to a back-end database.
+
+<a id="configure_servers_into_logical_groups__section_411EA6C46AD4456C987C0759A05340F2"></a>
+You can also define member groups to deploy JARs in parallel or to perform administrative commands across a member group.
+
+To add servers to a member group, you can configure the following:
+
+1.  Add the member group names to the `gemfire.properties` file for the server. For example:
+
+    ``` pre
+    groups=Portfolios,ManagementGroup1
+    ```
+
+    A server can belong to more than one member group. If specifying multiple group membership for the server, use a comma-separated list. Alternatively, if you are using the `gfsh` command interface to start up the server, provide a group name as a parameter:
+
+    ``` pre
+    gfsh>start server --name=server1 \
+    --group=Portfolios,ManagementGroup1
+    ```
+
+2.  To configure a client to connect to a specific member group, modify the client's `cache.xml` file to define a distinct pool for each `server-group` and assign the pools to the corresponding client regions:
+
+    ``` pre
+    <pool name="PortfolioPool" server-group="Portfolios" ...
+      <locator host="lucy" port="41111">
+      ...
+    </pool>
+       ...
+    <region name="clientRegion" ... 
+      <region-attributes pool-name="PortfolioPool" ...
+    ```
+
+

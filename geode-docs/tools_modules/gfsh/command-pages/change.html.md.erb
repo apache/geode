@@ -1,0 +1,98 @@
+---
+title: change loglevel
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_E74ED23CB60342538B2175C326E7D758"></a>
+
+Changes the logging level on specified members.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+change loglevel --loglevel=value [--members=value(nullvalue)*] [--groups=value(nullvalue)*]
+```
+
+<a id="topic_E74ED23CB60342538B2175C326E7D758__table_2277A2CE8F6E4731B45FEFA2B1366DB6"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Change Loglevel Parameters</span></caption>
+<colgroup>
+<col width="25%" />
+<col width="50%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-members</span></td>
+<td>Name or ID of one or more Geode distributed system member(s) whose logging level you want to change.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-groups</span></td>
+<td>One or more group names. The logging level changes for all members of these groups.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-loglevel</span></td>
+<td><em>Required.</em> Log level to change. Valid options are:
+<ul>
+<li><code class="ph codeph">all</code></li>
+<li><code class="ph codeph">finest</code></li>
+<li><code class="ph codeph">finer</code></li>
+<li><code class="ph codeph">fine</code></li>
+<li><code class="ph codeph">config</code></li>
+<li><code class="ph codeph">info</code></li>
+<li><code class="ph codeph">warning</code></li>
+<li><code class="ph codeph">error</code></li>
+<li><code class="ph codeph">severe</code></li>
+<li><code class="ph codeph">none</code></li>
+</ul></td>
+<td> </td>
+</tr>
+</tbody>
+</table>
+
+<span class="tablecap">Table 1. Change Loglevel Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh>change loglevel --loglevel=severe --members=server1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>change loglevel --loglevel=severe --members=server1
+
+Summary
+
+                Member            | Changed log-level
+--------------------------------- | -----------------
+192.0.2.0(server1:3060)<v1>:24653 | true
+```

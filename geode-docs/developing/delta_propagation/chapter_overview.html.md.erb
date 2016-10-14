@@ -1,0 +1,48 @@
+---
+title:  Delta Propagation
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Delta propagation allows you to reduce the amount of data you send over the network by including only changes to objects rather than the entire object.
+
+-   **[How Delta Propagation Works](how_delta_propagation_works.html)**
+
+    Delta propagation reduces the amount of data you send over the network. You do this by only sending the change, or delta, information about an object, instead of sending the entire changed object. If you do not use cloning when applying the deltas, you can also expect to generate less garbage in your receiving JVMs.
+
+-   **[When to Avoid Delta Propagation](when_to_use_delta_prop.html)**
+
+    Generally, the larger your objects and the smaller the deltas, the greater the benefits of using delta propagation. Partitioned regions with higher redundancy levels generally benefit more from delta propagation. However, in some application scenarios, delta propagation does not show any significant benefits. On occasion it results in performance degradation.
+
+-   **[Delta Propagation Properties](delta_propagation_properties.html)**
+
+    This topic describes the properties that can be used to configure delta propagation.
+
+-   **[Implementing Delta Propagation](implementing_delta_propagation.html)**
+
+    By default, delta propagation is enabled in your distributed system. When enabled, delta propagation is used for objects that implement `org.apache.geode.Delta`. You program the methods to store and extract delta information for your entries and to apply received delta information.
+
+-   **[Errors In Delta Propagation](errors_in_delta_propagation.html)**
+
+    This topic lists the errors that can occur when using delta propagation.
+
+-   **[Delta Propagation Example](delta_propagation_example.html)**
+
+    This topic provides an example of delta propagation.
+
+

@@ -1,0 +1,683 @@
+---
+title: Developing REST Applications
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_lvp_cd5_m4"></a>
+
+
+This section provides guidelines on writing REST client applications for Geode.
+
+You can browse, query, update and delete data stored in your Geode deployment. You can also manage and execute pre-deployed functions on Geode members.
+
+-   **[Working with Regions](../rest_apps/develop_rest_apps.html#topic_qhs_f25_m4)**
+
+    The Geode REST APIs provide basic CRUD (create, read, update and delete) operations for data entries stored in your regions.
+
+-   **[Working with Queries](../rest_apps/develop_rest_apps.html#topic_fcn_g25_m4)**
+
+    Geode supports the use of queries to extract data from its regions. Using REST APIs, you can create and execute either prepared or ad-hoc queries on Geode regions. You can also update and delete prepared queries.
+
+-   **[Working with Functions](../rest_apps/develop_rest_apps.html#topic_rbc_h25_m4)**
+
+    Geode REST APIs support the discovery and execution of predefined Geode functions on your cluster deployments.
+
+## <a id="topic_qhs_f25_m4" class="no-quick-link"></a>Working with Regions
+
+The Geode REST APIs provide basic CRUD (create, read, update and delete) operations for data entries stored in your regions.
+
+Regions are the resources of the Geode REST API. Each region represents a resource or a collection of resources.
+
+You cannot create or delete the regions themselves with the REST APIs, but you can work with the data stored within predefined Geode regions. Use the [gfsh](../tools_modules/gfsh/chapter_overview.html) command utility to add, configure or delete regions in your Geode deployment. Any additions or modifications to regions made through `gfsh` are then accessible by the REST APIs.
+
+## Listing Available Regions
+
+The main resource endpoint to the Geode API is [GET /gemfire-api/v1](get_regions.html#topic_itv_mg5_m4). Use this endpoint to discover which regions are available in your cluster.
+
+Example call:
+
+``` pre
+curl -i http://localhost:7070/gemfire-api/v1
+```
+
+Example response:
+
+``` pre
+Accept: application/json
+Response Payload: application/json
+
+200 OK
+Server: Apache-Coyote/1.1
+Location: http://localhost:7070/gemfire-api/v1
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 18 Jan 2014 20:05:47 GMT
+{
+    "regions": [
+        {
+            "name": "customers",
+            "type": "REPLICATE",
+            "key-constraint": "java.lang.String",
+            "value-constraint": "org.apache.geode.pdx.PdxInstance"
+        },
+        {
+            "name": "items",
+            "type": "REPLICATE",
+            "key-constraint": null,
+            "value-constraint": null
+        },
+        {
+            "name": "orders",
+            "type": "PARTITION",
+            "key-constraint": null,
+            "value-constraint": null
+        },
+        {
+            "name": "primitiveKVStore",
+            "type": "PARTITION",
+            "key-constraint": null,
+            "value-constraint": null
+        },
+        {
+            "name": "empty_region",
+            "type": "EMPTY",
+            "key-constraint": "java.lang.String",
+            "value-constraint": "org.apache.geode.pdx.PdxInstance"
+        }
+    ]
+}
+```
+
+Each region listed in the response includes the following region attributes:
+
+-   **name**. Name of the region.
+-   **type**. Type of region. For example, REPLICATE, PARTITION, or EMPTY. See [Region Types](../developing/region_options/region_types.html#region_types) for more information.
+-   **key-constraint**. If defined, the fully qualified class name of the key's type. Otherwise, null.
+-   **value-constraint**. If defined, the fully qualified class name of the value's type. Otherwise, null.
+
+If no resources (regions) are available in the cluster, the call returns a 404 NOT FOUND error.
+
+## Reading Region Data
+
+You can read data from a region by using any of the following REST-enabled mechanisms:
+
+-   **GET /gemfire-api/v1/{region}?limit=ALL** - Read all entries in a region
+-   **GET /gemfire-api/v1/{region}?limit=*N*** - Read a limited number of entries in a region
+-   **GET /gemfire-api/v1/{region}/keys** - List all keys in a region
+-   **GET /gemfire-api/v1/{region}/{keys}** - Read data for specific key or keys in a region
+
+**Reading Entries**
+
+To read entries in a region, use the following REST endpoint:
+
+``` pre
+GET /gemfire-api/v1/{region}?[limit={<number>|ALL}]
+```
+
+For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/items
+```
+
+To read all entries in the region, specify instead:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/items?limit=ALL
+```
+
+To read 80 entries from the region, specify:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/items?limit=80
+```
+
+Setting the limit parameter is optional. If you do not specify a limit, the request will return 50 results by default. The returned order of the results is not guaranteed; however, the response values (JSON) are specified in the same order as the list of comma-separated keys returned in the "Content-location" header.
+
+**Reading Keys**
+
+To list all keys in a region, use the following endpoint:
+
+``` pre
+/gemfire-api/v1/{region}/keys
+```
+
+For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/items/keys
+```
+
+You can use the returned key to perform additional operations on the keys such as read, update or delete their values.
+
+**Reading Entries By Key**
+
+To obtain data for a specific key or set of keys, use the following endpoints:
+
+``` pre
+GET /gemfire-api/v1/{region}/{key1}
+```
+
+or
+
+``` pre
+GET /gemfire-api/v1/{region}/{key1},{key2},...,{keyN}
+```
+
+where you specify keys in a comma-delimited list.
+
+For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/items/1
+
+http://localhost:7070/gemfire-api/v1/items/1,3,5
+```
+
+If one or more of the keys you provide in the list of keys is missing from the region, you will receive a 400 BAD STATUS error response.
+
+If you are providing multiple keys, you can also use the `ignoreMissingKey=true` parameter to prevent 400 errors. Any non-existing keys will instead return a null response. For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/items/1,3,5?ignoreMissingKey=true
+```
+
+## Adding or Modifying Region Data
+
+To add data to a region, you have several options:
+
+-   Create new a brand new entry (both key and value) in a region
+-   Update or insert a value for a key (if the key does not exist, it will be created)
+-   Update (replace) data for a key if and only if the key already exists in region
+-   Compare existing value for a key before replacing value
+-   Update or insert multiple values in the region for a set of provided keys
+
+**Adding entries**
+
+To add a new key and value to a region, you can use the following endpoint:
+
+``` pre
+POST /gemfire-api/v1/{region}?key=<key>
+```
+
+This endpoint only puts the entry into the region **if the specified key does not already exist**. If the key already exists, the request will fail with a 409 CONFLICT error.
+
+**Note:**
+If you do not specify a key for this request, a String representation of a numerical key will be generated automatically for you.
+
+Specify the value for the new entry in the request body. For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/orders?key=2
+```
+
+``` pre
+Request Payload: application/json
+POST /gemfire-api/v1/orders?key=2
+
+Accept: application/json
+Content-Type: application/json
+{
+    "@type":  "org.apache.geode.web.rest.domain.Order",
+     "purchaseOrderNo": 112,
+     "customerId": 1012,
+     "description":  "Purchase Order for myCompany",
+     "orderDate":  "02/10/2014",
+     "deliveryDate":  "02/20/2014",
+     "contact":  "John Doe",
+     "email":  "John.Doe@example.com",
+     "phone":  "01-2048096",
+     "totalPrice": 225,
+     "items": [
+        {
+             "itemNo": 1,
+             "description":  "Product2, PartA",
+             "quantity": 10,
+             "unitPrice": 5,
+             "totalPrice": 50
+        },
+        {
+             "itemNo": 2,
+             "description":  "Product2, PartB",
+             "quantity": 20,
+             "unitPrice": 20,
+             "totalPrice": 400
+        }
+    ]
+}
+```
+
+Note that in the example above, `@type` is used to declare the value-constraint for the new entry. This declaration is required to provide interoperability between Java cache clients and REST clients.
+
+Alternately, you can also use the following endpoint to create a new entry:
+
+``` pre
+PUT /gemfire/v1/{region}/{key}
+```
+
+This endpoint will add the entry if the key does not exist. If the key already exists, the operation will update the entry.
+
+``` pre
+http://localhost:7070/gemfire-api/v1/orders/2
+```
+
+``` pre
+Request Payload: application/json
+PUT /gemfire-api/v1/orders/2
+Request Payload: application/json
+Content-Type: application/json
+Accept: application/json
+{
+    "@type": "org.apache.geode.web.rest.domain.Order",
+     "purchaseOrderNo": 1121,
+     "customerId": 1012,
+     "description":  "Order for XYZ Corp",
+     "orderDate":  "02/10/2014",
+     "deliveryDate":  "02/20/2014",
+     "contact":  "Pie Doe",
+     "email":  "pie.doe@example.com",
+     "phone":  "01-2048096",
+     "totalPrice": 225,
+     "items": [
+        {
+             "itemNo": 1,
+             "description": "Product-100",
+             "quantity": 10,
+             "unitPrice": 5,
+             "totalPrice": 50
+        }
+    ]
+}
+```
+
+**Modifying existing entries**
+
+Geode provides three different options for this type of operation. To update a value for the key, you can use:
+
+``` pre
+PUT /gemfire/v1/{region}/{key}
+PUT /gemfire/v1{region}/{key}?op=REPLACE
+PUT /gemfire/v1{region}/{key}?op=CAS
+```
+
+If you do not specify a parameter to the PUT operation, the request which will add or update the entry regardless of whether the key already exists in the region. See the example above.
+
+``` pre
+http://localhost:7070/gemfire-api/v1/orders/2
+```
+
+If you specify the op=REPLACE parameter, the request which will explicitly perform a Cache replace operation and will verify that the key exists before replacing the value. If the key does not exist in the specified region, you will receive a 404 NOT FOUND error. This operation is idempotent, meaning multiple identical requests will have the same effect as the initial request.
+
+``` pre
+http://localhost:7070/gemfire-api/v1/orders/2?op=REPLACE
+```
+
+If you specify the op=CAS parameter, the value will only be replaced with the `@new` value only if the specified `@old` value matches the current value of the key in the region. If the `@old` value does not match the current value, then a 409 CONFLICT error is thrown. If you receive a 409 CONFLICT error, you can call the `GET /gemfire-api/v1/{region}/{key}` endpoint to get an updated copy of the value. This operation is not idempotent and multiple identical requests will not have the same effect as the initial request. You can use this type of REST call to achieve a similar effect as optimistic locking.
+
+``` pre
+http://localhost:7070/gemfire-api/v1/orders/2?op=REPLACE
+```
+
+``` pre
+Request Payload: application/json
+
+PUT /gemfire-api/v1/orders/2?op=CAS
+
+Accept: application/json
+Content-Type: application/json
+{
+    "@old": {
+         "@type":  "org.apache.geode.web.rest.domain.Order",
+         "purchaseOrderNo": 1121,
+         "customerId": 1012,
+         "description":  "Order for  XYZ Corp",
+         "orderDate":  "02/10/2014",
+         "deliveryDate":  "02/20/2014",
+         "contact":  "Jelly Bean",
+         "email":  "jelly.bean@example.com",
+         "phone":  "01-2048096",
+         "items": [
+            {
+                 "itemNo": 1,
+                 "description":  "Product-100",
+                 "quantity": 12,
+                 "unitPrice": 5,
+                 "totalPrice": 60
+            }
+        ],
+         "totalPrice": 225
+    },
+     "@new ": {
+         "@type":  "org.apache.geode.web.rest.domain.Order",
+         "purchaseOrderNo": 1121,
+         "customerId": 1013,
+         "description":  "Order for  New Corp",
+         "orderDate":  "02/10/2014",
+         "deliveryDate":  "02/25/2014",
+         "contact":  "Vanilla Bean",
+         "email":  "vanillabean@example.com",
+         "phone":  "01-2048096",
+         "items": [
+            {
+                 "itemNo": 12345,
+                 "description":  "part 123",
+                 "quantity": 12,
+                 "unitPrice": 29.99,
+                 "totalPrice": 149.95
+            }
+        ],
+         "totalPrice": 149.95
+    }
+}
+```
+
+**Adding or updating multiple values for a set of keys**
+
+To update multiple values for keys, use:
+
+``` pre
+PUT /gemfire-api/v1/{region}/{key1},{key2},...,{keyN}
+```
+
+This REST call will update any keys that already exist and insert values for any keys that do not exist in the region.
+
+## Deleting Region Data
+
+There are three options for deleting data in a region using REST APIs:
+
+-   Delete all the data in the region
+-   Delete the data associated with a particular key
+-   Delete the data associated with a set of keys
+
+**Deleting all data**
+
+To delete all data in the region, use the following endpoint:
+
+``` pre
+DELETE /gemfire-api/v1/{region}
+```
+
+For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/items
+```
+
+Note that this does not delete the region itself, but instead all the entries in the region.
+
+**Deleting data based on key**
+
+Use:
+
+``` pre
+DELETE /gemfire-api/v1/{region}/{key}
+```
+
+or
+
+``` pre
+DELETE /gemfire-api/v1/{region}/{key}{key1},{key2},...{keyN}
+```
+
+If any of the supplied keys are not found in the region, the request will fail and return a 404 NOT FOUND ERROR.
+
+## <a id="topic_fcn_g25_m4" class="no-quick-link"></a>Working with Queries
+
+Geode supports the use of queries to extract data from its regions. Using REST APIs, you can create and execute either prepared or ad-hoc queries on Geode regions. You can also update and delete prepared queries.
+
+## Listing Queries
+
+To find out which predefined and named queries are available in your deployment, use the following endpoint:
+
+``` pre
+GET /gemfire-api/v1/queries
+```
+
+All queries that have been predefined and assigned IDs in Geode are listed.
+
+## <a id="topic_fcn_g25_m4__section_t4h_wtp_y4" class="no-quick-link"></a>Creating a New Query
+
+To create a query, use the following endpoint:
+
+``` pre
+POST /gemfire-api/v1/queries?id=<queryId>&q=<OQL-statement>
+```
+
+Here are some examples:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/queries?id=selectOffers&q="SELECT DISTINCT c FROM /customers c, /orders o WHERE o.totalprice < $1 AND c.customerId = o.customerId"
+```
+
+**Note:**
+The query must be provided as a URL parameter. You cannot specify OQL in the request body at this time.
+
+You can specify query bind parameters ($1) in your predefined queries and then pass in values at runtime.
+
+To update this query at a later time, use the [PUT operation](#topic_fcn_g25_m4__section_oj1_b5p_y4) described below.
+
+## <a id="topic_fcn_g25_m4__section_b1p_wtp_y4" class="no-quick-link"></a>Executing a Prepared Query
+
+To run a prepared query, use:
+
+``` pre
+POST /gemfire-api/v1/queries/{queryId}
+```
+
+Specify the queryId in the URL. All query argument must be passed in the request body. For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/queries/selectOrders
+```
+
+``` pre
+Request Payload: OQL bind parameter values HTTP message body of media type application/json
+POST /gemfire-api/v1/queries/selectOrders
+Accept: application/json
+Content-Type: application/json
+
+[
+    {
+         "@type": "int",
+         "@value": 2
+    },
+    {
+         "@type": "double",
+         "@value": 110.00
+    }
+]
+
+Response Payload: application/json
+
+200 OK
+Content-Length: <#-of-bytes>
+Content-Type: application/json
+
+[
+    {
+        "description": "Purchase order for company - B",
+        "totalPrice": 350,
+        "purchaseOrderNo": 1112,
+        "customerId": 102,
+        "deliveryDate": "Thu Feb 20 00:00:00 IST 2014",
+        "contact": "John Doe",
+        "email": "jDoe@example.com",
+        "phone": "01-2048096",
+        "items": [
+            {
+                "description": "Product-AAAA",
+                "quantity": 10,
+                "itemNo": 1,
+                "unitPrice": 20,
+                "totalPrice": 200,
+                "type-class": "org.apache.geode.web.rest.domain.Item"
+            },
+            {
+                "description": "Product-BBB",
+                "quantity": 15,
+                "itemNo": 2,
+                "unitPrice": 10,
+                "totalPrice": 150,
+                "type-class": "org.apache.geode.web.rest.domain.Item"
+            }
+        ],
+        "orderDate": "Mon Feb 10 00:00:00 IST 2014",
+        "type-class": "org.apache.geode.web.rest.domain.Order"
+    },
+    {...},
+    {...}
+}
+```
+
+Another example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/queries/selectOrders
+```
+
+``` pre
+Request Payload: OQL bind parameter values HTTP message body of media type application/json
+POST /gemfire-api/v1/queries/selectCustomer
+Accept: application/json
+Content-Type: application/json
+{
+    "args": [
+        {
+            "@type": "int",
+            "@value": 101
+        }
+    ]
+}
+
+Response-Payload: application/json
+
+200 Ok
+Content-Length: 140
+Content-Type: application/json
+[
+    {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "customerId": 101,
+        "type-class": "org.apache.geode.web.rest.domain.Customer"
+    }
+]
+```
+
+## <a id="topic_fcn_g25_m4__section_oj1_b5p_y4" class="no-quick-link"></a>Modifying a Prepared Query
+
+To modify an existing prepared query, use the following endpoint:
+
+``` pre
+PUT /gemfire-api/v1/queries/{queryId}
+```
+
+Here are some examples:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/queries/selectOffers&q="SELECT DISTINCT c FROM /customers c, /orders o WHERE o.totalprice < $1 AND c.customerId = o.customerId"
+```
+
+You can specify query bind parameters ($1) in your predefined queries, and then pass in values at runtime.
+
+A PUT operation will only succeed if the specified queryId already exists (for example, created with the [POST operation](#topic_fcn_g25_m4__section_t4h_wtp_y4) above.) If the queryId does already exist, you will receive a 404 response - "Named query (selectKey456) does not exist!"
+
+## <a id="topic_fcn_g25_m4__section_igg_b5p_y4" class="no-quick-link"></a>Deleting a Prepared Query
+
+To delete an existing prepared query, use the following endpoint:
+
+``` pre
+DELETE /gemfire-api/v1/queries/{queryId}
+```
+
+## <a id="topic_fcn_g25_m4__section_wbk_b5p_y4" class="no-quick-link"></a>Executing an Ad-Hoc Query
+
+To run an unnamed query, use the following endpoint:
+
+``` pre
+GET /gemfire-api/v1/queries/adhoc?q=<OQL-statement>
+```
+
+Provide the OQL query string directly in the URL enclosed in single quotes.
+
+For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/queries/adhoc?q="SELECT * FROM /customers"
+```
+
+## <a id="topic_rbc_h25_m4" class="no-quick-link"></a>Working with Functions
+
+Geode REST APIs support the discovery and execution of predefined Geode functions on your cluster deployments.
+
+Before you can access functions using REST APIs, you must have already defined and registered the functions in your Geode deployment. Additionally, any domain objects that are being accessed by the functions must be available on the CLASSPATH of the server running the REST endpoint service.
+
+You can do the following with functions:
+
+-   List all functions available in the Geode cluster.
+-   Execute a function, optionally specifying the region and members and/or member groups that are targeted by the function
+
+## Listing Functions
+
+To list all functions that are currently registered and deployed in the Geode cluster, use the following endpoint:
+
+``` pre
+GET /gemfire-api/v1/functions
+```
+
+The list of returned functions includes the functionId, which you can use to execute the function as described in the next section.
+
+## Executing Functions
+
+To execute a function on a Geode cluster, use the following endpoint:
+
+``` pre
+POST /gemfire-api/v1/functions/{functionId}?[&onRegion=regionname|&onMembers=member1,member2,...,memberN|&onGroups=group1,group2,...,groupN]
+```
+
+You have the option to target a specific region and members or member groups when executing your function. If you do not specify these parameters, the function will execute on all members that are hosting data in the entire cluster by default. Function arguments are passed in the request body.
+
+For example:
+
+``` pre
+http://localhost:7070/gemfire-api/v1/functions/AddFreeItemToOrders
+```
+
+``` pre
+Request Payload: application/json
+POST /gemfire-api/v1/functions/AddFreeItemToOrders
+Accept: application/json
+Content-Type: application/json
+
+[
+    {
+        "@type": "double",
+        "@value": 210
+    },
+    {
+        "@type": "org.apache.geode.web.rest.domain.Item",
+        "itemNo": "599",
+        "description": "Part X Free on Bumper Offer",
+        "quantity": "2",
+        "unitprice": "5",
+        "totalprice": "10.00"
+     }
+]
+```
+
+In the above example, the `Item` domain object must be in the CLASSPATH of all members receiving the function. If the object is not defined, the function will fail with an `Internal Server` error. Look for `ClassNotFoundException`s in the stack trace.

@@ -1,0 +1,36 @@
+---
+title:  Configuring Disk Stores
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In addition to the disk stores you specify, Apache Geode has a default disk store that it uses when disk use is configured with no disk store name specified. You can modify default disk store behavior.
+
+-   **[Designing and Configuring Disk Stores](../../managing/disk_storage/using_disk_stores.html)**
+
+    You define disk stores in your cache, then you assign them to your regions and queues by setting the `disk-store-name` attribute in your region and queue configurations.
+
+-   **[Disk Store Configuration Parameters](../../managing/disk_storage/disk_store_configuration_params.html)**
+
+    You define your disk stores by using the `gfsh create disk-store` command or in `<disk-store>` subelements of your cache declaration in `cache.xml`. All disk stores are available for use by all of your regions and queues.
+
+-   **[Modifying the Default Disk Store](../../managing/disk_storage/using_the_default_disk_store.html)**
+
+    You can modify the behavior of the default disk store by specifying the attributes you want for the disk store named "DEFAULT".
+
+
