@@ -586,6 +586,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName(), 1000 ));
   }
   
+
   @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException(SocketException.class.getName()); // for Connection reset

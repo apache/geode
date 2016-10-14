@@ -20,16 +20,7 @@ package org.apache.geode.rest.internal.web.controllers;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
-import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.NotAuthorizedException;
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.authc.AuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -37,6 +28,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
+import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.security.NotAuthorizedException;
 
 
 /**
@@ -122,32 +121,6 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
   public String handleException(final HttpRequestMethodNotSupportedException e) {
     return convertErrorAsJson(e.getMessage());
-  }
- 
-  /**
-   * Handles an AuthenticationFailedException thrown by a REST API web service endpoint, HTTP request handler method.
-   * <p/>
-   * @param cause the Exception causing the error.
-   * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
-   */
-  @ExceptionHandler(AuthenticationFailedException.class)
-  @ResponseBody
-  @ResponseStatus(HttpStatus.UNAUTHORIZED)
-  public String handleException(final AuthenticationFailedException cause) {
-    return convertErrorAsJson(cause.getMessage());
-  }
-
-  /**
-   * Handles an AuthenticationException thrown by a REST API web service endpoint, HTTP request handler method.
-   * <p/>
-   * @param cause the Exception causing the error.
-   * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
-   */
-  @ExceptionHandler(AuthenticationException.class)
-  @ResponseBody
-  @ResponseStatus(HttpStatus.UNAUTHORIZED)
-  public String handleException(final AuthenticationException cause) {
-    return convertErrorAsJson(cause.getMessage());
   }
 
   /**

@@ -15,23 +15,20 @@
  * limitations under the License.
  *
  */
+package org.apache.geode.tools.pulse.tests.ui;
 
-package org.apache.geode.rest.internal.web.security;
+import org.apache.geode.test.junit.categories.UITest;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.AuthorityUtils;
+@Category(UITest.class)
+@FixMethodOrder(MethodSorters.JVM)
+public class PulseNoAuthTest extends PulseAbstractTest {
 
-class GeodeAuthentication extends UsernamePasswordAuthenticationToken {
-  /**
-   * This constructor should only be used by <code>AuthenticationManager</code> or <code>AuthenticationProvider</code>
-   * implementations that are satisfied with producing a trusted (i.e. {@link #isAuthenticated()} = <code>true</code>)
-   * authentication token.
-   * @param principal
-   * @param credentials
-   */
-  public GeodeAuthentication(final Object principal,
-                             final Object credentials) {
-    super(principal, credentials, AuthorityUtils.NO_AUTHORITIES);
+  @BeforeClass
+  public static void beforeClassSetup() throws Exception {
+    setUpServer("admin", "admin", null);
   }
-
 }

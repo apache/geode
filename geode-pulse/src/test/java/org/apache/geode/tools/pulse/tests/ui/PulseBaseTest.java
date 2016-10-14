@@ -1,5 +1,4 @@
 /*
- *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +15,8 @@
  * limitations under the License.
  *
  */
-package org.apache.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse.tests.ui;
 
-import static org.apache.geode.tools.pulse.tests.PulseAbstractTest.*;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
@@ -34,6 +32,12 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import org.apache.geode.tools.pulse.tests.JMXProperties;
+import org.apache.geode.tools.pulse.tests.Member;
+import org.apache.geode.tools.pulse.tests.PulseTestData;
+import org.apache.geode.tools.pulse.tests.PulseTestLocators;
+import org.apache.geode.tools.pulse.tests.Region;
+
 public class PulseBaseTest {
 
   public static int maxWaitTime = 20;
@@ -41,10 +45,10 @@ public class PulseBaseTest {
   WebElement element = null;
 
 	public WebElement findElementUsingId(String id) {
-		return driver.findElement(By.id(id));
+		return PulseAbstractTest.driver.findElement(By.id(id));
 	}
 	public WebElement findElementUsingXpath(String xpath) {
-		return driver.findElement(By.xpath(xpath));
+		return PulseAbstractTest.driver.findElement(By.xpath(xpath));
 	}
 
 	public void clickElementUsingId(String id) {
@@ -73,17 +77,17 @@ public class PulseBaseTest {
 	}
 
 	public void waitForElement(WebElement element) {
-		driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
-		WebDriverWait wait = new WebDriverWait(driver, 20);
+		PulseAbstractTest.driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+		WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, 20);
 		wait.until(ExpectedConditions.visibilityOf(element));
 	}
 
 	public WebElement findElementById(String id) {
-		return driver.findElement(By.id(id));
+		return PulseAbstractTest.driver.findElement(By.id(id));
 	}
 
 	public WebElement findElementByXpath(String xpath) {
-		return driver.findElement(By.xpath(xpath));
+		return PulseAbstractTest.driver.findElement(By.xpath(xpath));
 	}
 
 	public String getTextUsingXpath(String xpath) {
@@ -135,13 +139,13 @@ public class PulseBaseTest {
 	}
 
 	public void validateServerGroupGridData() {
-		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='memberListSG']/tbody/tr"));
+		List<WebElement> serverGridRows = PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberListSG']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
 			for (int i = 0; i <= 6; i++) {
-				gridDataFromUI[x][i] = driver.findElement(
+				gridDataFromUI[x][i] = PulseAbstractTest.driver.findElement(
 						By.xpath("//table[@id='memberListSG']/tbody/tr[" + j + "]/td[" + (i + 1) + "]")).getText();
 			}
 		}
@@ -179,13 +183,13 @@ public class PulseBaseTest {
 	}
 
 	public void validateRedundancyZonesGridData() {
-		List<WebElement> rzGridRows = driver.findElements(By.xpath("//table[@id='memberListRZ']/tbody/tr"));
+		List<WebElement> rzGridRows = PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberListRZ']/tbody/tr"));
 		int rowsCount = rzGridRows.size();
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
 			for (int i = 0; i <= 6; i++) {
-				gridDataFromUI[x][i] = driver.findElement(
+				gridDataFromUI[x][i] = PulseAbstractTest.driver.findElement(
 						By.xpath("//table[@id='memberListRZ']/tbody/tr[" + j + "]/td[" + (i + 1) + "]")).getText();
 			}
 		}
@@ -226,13 +230,13 @@ public class PulseBaseTest {
 	}
 
 	public void validateTopologyGridData() {
-		List<WebElement> rzGridRows = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
+		List<WebElement> rzGridRows = PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 		int rowsCount = rzGridRows.size();
 		String[][] gridDataFromUI = new String[rowsCount][8];
 
 		for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
 			for (int i = 0; i <= 7; i++) {
-				gridDataFromUI[x][i] = driver.findElement(
+				gridDataFromUI[x][i] = PulseAbstractTest.driver.findElement(
 						By.xpath("//table[@id='memberList']/tbody/tr[" + j + "]/td[" + (i + 1) + "]")).getText();
 			}
 		}
@@ -260,17 +264,17 @@ public class PulseBaseTest {
 	}
 
 	public void validateDataPrespectiveGridData() {
-		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='regionsList']/tbody/tr"));
+		List<WebElement> serverGridRows = PulseAbstractTest.driver.findElements(By.xpath("//table[@id='regionsList']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
 			for (int i = 0; i <= 6; i++) {
 				if (i < 5) {
-					gridDataFromUI[x][i] = driver.findElement(
+					gridDataFromUI[x][i] = PulseAbstractTest.driver.findElement(
 							By.xpath("//table[@id='regionsList']/tbody/tr[" + j + "]/td[" + (i + 1) + "]")).getText();
 				} else if (i == 5) {
-					gridDataFromUI[x][i] = driver.findElement(
+					gridDataFromUI[x][i] = PulseAbstractTest.driver.findElement(
 							By.xpath("//table[@id='regionsList']/tbody/tr[" + j + "]/td[" + (i + 4) + "]")).getText();
 				}
 			}
@@ -299,13 +303,13 @@ public class PulseBaseTest {
 	}
 
 	public void validateRegionDetailsGridData() {
-		List<WebElement> serverGridRows = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
+		List<WebElement> serverGridRows = PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 		int rowsCount = serverGridRows.size();
 		String[][] gridDataFromUI = new String[rowsCount][7];
 
 		for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
 			for (int i = 0; i < 2; i++) {
-				gridDataFromUI[x][i] = driver.findElement(
+				gridDataFromUI[x][i] = PulseAbstractTest.driver.findElement(
 						By.xpath("//table[@id='memberList']/tbody/tr[" + j + "]/td[" + (i + 1) + "]")).getText();
 			}
 		}
@@ -408,27 +412,27 @@ public class PulseBaseTest {
 	}
 
 	public void verifyElementPresentById(String id) {
-		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id(id)));
 	}
 
 	public void verifyElementPresentByLinkText(String lnkText) {
-		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.linkText(lnkText)));
 	}
 
 	public void verifyElementPresentByXpath(String xpath) {
-		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(xpath)));
 	}
 
 	public void verifyTextPresrntById(String id, String text) {
-		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id(id), text));
 	}
 
 	public void verifyTextPresrntByXpath(String xpath, String text) {
-		WebDriverWait wait = new WebDriverWait(driver, maxWaitTime, 500);
+		WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
 		wait.until(ExpectedConditions.textToBePresentInElementLocated(By.xpath(xpath), text));
 	}
 
@@ -440,20 +444,20 @@ public class PulseBaseTest {
 
 	public void mouseReleaseById(String id){
 		verifyElementPresentById(id);
-		Actions action = new Actions(driver);
-		WebElement we = driver.findElement(By.id(id));
+		Actions action = new Actions(PulseAbstractTest.driver);
+		WebElement we = PulseAbstractTest.driver.findElement(By.id(id));
 		action.moveToElement(we).release().perform();
 	}
 	public void mouseClickAndHoldOverElementById(String id) {
 		verifyElementPresentById(id);
-		Actions action = new Actions(driver);
-		WebElement we = driver.findElement(By.id(id));
+		Actions action = new Actions(PulseAbstractTest.driver);
+		WebElement we = PulseAbstractTest.driver.findElement(By.id(id));
 		action.moveToElement(we).clickAndHold().perform();
 	}
 
 	public void mouseOverElementByXpath(String xpath) {
-		Actions action = new Actions(driver);
-		WebElement we = driver.findElement(By.xpath(xpath));
+		Actions action = new Actions(PulseAbstractTest.driver);
+		WebElement we = PulseAbstractTest.driver.findElement(By.xpath(xpath));
 		action.moveToElement(we).build().perform();
 	}
 
@@ -687,7 +691,7 @@ public class PulseBaseTest {
 	}
 
 	public List<WebElement> getRegionsFromDataBrowser(){
-		List<WebElement> regionList = driver.findElements(By.xpath("//span[starts-with(@ID,'treeDemo_')][contains(@id,'_span')]"));
+		List<WebElement> regionList = PulseAbstractTest.driver.findElements(By.xpath("//span[starts-with(@ID,'treeDemo_')][contains(@id,'_span')]"));
 		return regionList;
 	}
 }

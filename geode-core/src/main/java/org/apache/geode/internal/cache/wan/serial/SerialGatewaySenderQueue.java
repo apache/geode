@@ -1301,22 +1301,32 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     protected void basicDestroy(final EntryEventImpl event,
         final boolean cacheWrite, Object expectedOldValue)
         throws EntryNotFoundException, CacheWriterException, TimeoutException {
-
-      super.basicDestroy(event, cacheWrite, expectedOldValue);
-      GatewaySenderEventImpl.release(event.getRawOldValue());
+      try {
+        super.basicDestroy(event, cacheWrite, expectedOldValue);
+      } finally {
+        GatewaySenderEventImpl.release(event.getRawOldValue());
+      }
     }
     @Override
     protected boolean virtualPut(EntryEventImpl event, boolean ifNew,
         boolean ifOld, Object expectedOldValue, boolean requireOldValue,
         long lastModified, boolean overwriteDestroyed) throws TimeoutException,
         CacheWriterException {
-      boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
-          requireOldValue, lastModified, overwriteDestroyed);
-
-      if (success) {
+      try {
+        boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
+            requireOldValue, lastModified, overwriteDestroyed);
+        if (!success) {
+          //release offheap reference if GatewaySenderEventImpl is not put into 
+          //the region queue
+          GatewaySenderEventImpl.release(event.getRawNewValue());
+        }
+        return success;
+      } finally {
+        //GatewaySenderQueue probably only adding new events into the queue.
+        //Add the finally block just in case if there actually is an update 
+        //in the sender queue or occurs in the the future.
         GatewaySenderEventImpl.release(event.getRawOldValue());
       }
-      return success;
     }
   }
 }

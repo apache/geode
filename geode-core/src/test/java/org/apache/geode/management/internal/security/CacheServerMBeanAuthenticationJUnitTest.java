@@ -24,6 +24,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -34,8 +36,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
   private CacheServerMXBean bean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -46,7 +47,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");
     bean.fetchLoadProbe();

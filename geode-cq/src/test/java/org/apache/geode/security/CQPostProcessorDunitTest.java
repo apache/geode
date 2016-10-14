@@ -17,7 +17,10 @@
 
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.junit.Assert.*;
+
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -40,9 +43,12 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({ DistributedTest.class, SecurityTest.class })
 public class CQPostProcessorDunitTest extends AbstractSecureServerDUnitTest {
 
-  public CQPostProcessorDunitTest(){
-    this.postProcessor = SamplePostProcessor.class;
+  public Properties getProperties(){
+    Properties  properties = super.getProperties();
+    properties.setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    return properties;
   }
+
 
   @Test
   public void testPostProcess(){

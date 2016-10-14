@@ -33,6 +33,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * 
@@ -73,9 +74,9 @@ public class ServerFunctionExecutor extends AbstractExecution {
     this.args = args;
   }
   
-  private ServerFunctionExecutor(ServerFunctionExecutor sfe, ResultCollector rs) {
+  private ServerFunctionExecutor(ServerFunctionExecutor sfe, ResultCollector collector) {
     this(sfe);
-    this.rc = rs;
+    this.rc = collector != null ? new SynchronizedResultCollector(collector): collector;
   }
   
   private ServerFunctionExecutor(ServerFunctionExecutor sfe, MemberMappedArgument argument) {

@@ -235,6 +235,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     Assert.assertEquals(0, customCollector.getResult().size());
   }
 
+  @Category(FlakyTest.class) // GEODE-1981
   @Test
   public void customCollectorReturnsResultOfSendException() {
     ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {

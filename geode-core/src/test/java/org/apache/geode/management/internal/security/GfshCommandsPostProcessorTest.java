@@ -16,30 +16,46 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.internal.Assert.*;
 
-import org.apache.geode.security.templates.SamplePostProcessor;
+import java.util.Properties;
+
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
+import org.apache.geode.security.templates.SamplePostProcessor;
+import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ IntegrationTest.class, SecurityTest.class })
 public class GfshCommandsPostProcessorTest {
 
-  protected static int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  protected static int jmxPort  = AvailablePortHelper.getRandomAvailableTCPPort();
+  static Properties properties = new Properties(){{
+    setProperty(JMX_MANAGER_PORT, jmxPort+"");
+    setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    setProperty("security-json", "org/apache/geode/management/internal/security/cacheServer.json");
+  }};
 
   private HeadlessGfsh gfsh = null;
 
-  @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxPort, "org/apache/geode/management/internal/security/cacheServer.json", SamplePostProcessor.class);
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    ServerStarter serverStarter = new ServerStarter(properties);
+    serverStarter.startServer();
+    serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
+  }
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort);
@@ -50,7 +66,7 @@ public class GfshCommandsPostProcessorTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testGetPostProcess() throws Exception {
     gfsh.executeCommand("put --region=region1 --key=key1 --value=value1");
     gfsh.executeCommand("put --region=region1 --key=key2 --value=value2");

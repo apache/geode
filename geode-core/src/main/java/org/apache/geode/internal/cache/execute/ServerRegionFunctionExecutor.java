@@ -30,6 +30,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
+import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
@@ -103,7 +104,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     this.region = serverRegionFunctionExecutor.region;
     this.filter.clear();
     this.filter.addAll(serverRegionFunctionExecutor.filter);
-    this.rc = rc;
+    this.rc = rc != null ? new SynchronizedResultCollector(rc) : null;
     this.executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 

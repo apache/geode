@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.tools.pulse.tests;
 
-import org.apache.geode.test.junit.categories.UITest;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
+package org.apache.geode.test.dunit.rules;
 
-@Category(UITest.class)
-@FixMethodOrder(MethodSorters.JVM)
-public class PulseAuthTest extends PulseAbstractTest {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-  @BeforeClass
-  public static void beforeClassSetup() throws Exception {
-    setUpServer("pulseUser", "12345", "pulse-auth.json");
-  }
+/**
+ * This annotation is intended to be used with {@link MBeanServerConnectionRule} in order to configure a per-test JMX
+ * connection with a specific user and password.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+public @interface ConnectionConfiguration {
+  String user();
+  String password();
 }

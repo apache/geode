@@ -25,10 +25,11 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
 
 /**
- * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
+ * Class which eases the creation of MBeans for security testing. When combined with {@link ConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
  */
 public class GfshShellConnectionRule extends DescribedExternalResource {
@@ -53,7 +54,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   }
 
   protected void before(Description description) throws Throwable {
-    JMXConnectionConfiguration config = description.getAnnotation(JMXConnectionConfiguration.class);
+    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
     if(config==null)
       return;
 

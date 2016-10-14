@@ -48,6 +48,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Client health stats check
@@ -174,6 +175,7 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
     helper.stopManagingNode(managingNode);
   }
   
+  @Category(FlakyTest.class) // GEODE-337
   @Test
   public void testStatsMatchWithSize() throws Exception {
     // start a server

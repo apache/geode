@@ -16,7 +16,7 @@
  */
 package org.apache.geode.tools.pulse.testbed.driver;
 
-import static org.apache.geode.tools.pulse.tests.PulseAbstractTest.*;
+import static org.apache.geode.tools.pulse.tests.ui.PulseAbstractTest.*;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
@@ -31,7 +31,8 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -77,7 +78,13 @@ public class PulseUITest {
 
     pulseURL = "http://" + host + ":" + port + context;
     Thread.sleep(1000); //wait till tomcat settles down
-    driver = new FirefoxDriver();
+
+    DesiredCapabilities capabilities = new DesiredCapabilities();
+    capabilities.setJavascriptEnabled(true);
+    capabilities.setCapability("takesScreenshot", true);
+    capabilities.setCapability("phantomjs.page.settings.userAgent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:16.0) Gecko/20121026 Firefox/16.0");
+
+    driver = new PhantomJSDriver(capabilities);
     driver.manage().window().maximize();//required to make all elements visible
 
     Thread.sleep(5000); //wait till pulse starts polling threads...

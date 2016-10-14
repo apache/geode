@@ -18,20 +18,21 @@
 
 package org.apache.geode.rest.internal.web.security;
 
-import org.apache.shiro.subject.Subject;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.GemFireSecurityException;
 
 
 @Component
 public class GeodeAuthenticationProvider implements AuthenticationProvider {
+  private SecurityService securityService = SecurityService.getSecurityService();
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -39,18 +40,16 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider {
     String password = authentication.getCredentials().toString();
 
     try {
-      Subject subject = IntegratedSecurityService.getSecurityService().login(username, password);
-      if (subject != null) {
-        return new GeodeAuthentication(subject.getPrincipal(), authentication.getCredentials());
-      }
-    } catch (AuthenticationFailedException authFailedEx) {
-      throw new BadCredentialsException("Invalid username or password");
+      securityService.login(username, password);
+      return new UsernamePasswordAuthenticationToken(username, password, AuthorityUtils.NO_AUTHORITIES);
     }
-    return authentication;
+    catch (GemFireSecurityException e){
+      throw new BadCredentialsException(e.getLocalizedMessage(), e);
+    }
   }
 
   @Override
   public boolean supports(Class<?> authentication) {
-    return authentication.equals(UsernamePasswordAuthenticationToken.class);
+    return authentication.isAssignableFrom(UsernamePasswordAuthenticationToken.class);
   }
 }

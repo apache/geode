@@ -26,6 +26,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -37,8 +39,7 @@ public class MemberMBeanSecurityJUnitTest {
   private MemberMXBean bean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -49,7 +50,7 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "super-user", password = "1234567")
+  @ConnectionConfiguration(user = "super-user", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.shutDownMember();
     bean.compactAllDiskStores();
@@ -67,7 +68,7 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
+  @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testClusterAdmin() throws Exception {
     assertThatThrownBy(() -> bean.compactAllDiskStores()).hasMessageContaining(TestCommand.dataManage.toString());
     bean.shutDownMember();
@@ -84,7 +85,7 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testDataAdmin() throws Exception {
     bean.compactAllDiskStores();
     assertThatThrownBy(() -> bean.shutDownMember()).hasMessageContaining(TestCommand.clusterManage.toString());
@@ -94,7 +95,7 @@ public class MemberMBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testDataUser() throws Exception {
     assertThatThrownBy(() -> bean.shutDownMember()).hasMessageContaining(TestCommand.clusterManage.toString());
     assertThatThrownBy(() -> bean.createManager()).hasMessageContaining(TestCommand.clusterManage.toString());

@@ -952,7 +952,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    * Request the shared configuration from the locator(s) which have the Cluster config service running
    */
   public ConfigurationResponse requestSharedConfiguration() {
-    //Request the shared configuration from the locator(s)
     final DistributionConfig config = this.system.getConfig();
 
     if (!(dm instanceof DistributionManager))
@@ -964,6 +963,9 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       || Locator.getLocator() !=null )
       return null;
 
+    // can't simply return null if server is not using shared configuration, since we need to find out
+    // if the locator is running in secure mode or not, if yes, then we need to throw an exception if server is not using cluster config
+
     Map<InternalDistributedMember, Collection<String>> scl = this.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
 
     //If there are no locators with Shared configuration, that means the system has been started without shared configuration
@@ -973,7 +975,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       return null;
     }
 
-    String groupsString = config.getGroups();
+
     ConfigurationResponse response = null;
     List<String> locatorConnectionStrings = getSharedConfigLocatorConnectionStringList();
 

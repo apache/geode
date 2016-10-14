@@ -1031,6 +1031,7 @@ public class InternalDistributedMember
     int port = in.readInt();
 
     this.hostName = DataSerializer.readString(in);
+    
     this.hostName = SocketCreator.resolve_dns? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
 
     int flags = in.readUnsignedByte();
@@ -1210,7 +1211,11 @@ public class InternalDistributedMember
   }
 
   public String getHost() {
-    return this.netMbr.getInetAddress().getCanonicalHostName();
+    return this.hostName;
+  }
+  
+  public void setHost(String h) {
+    this.hostName = h;
   }
 
   public int getProcessId() {

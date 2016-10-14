@@ -60,8 +60,8 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   public ResourcePermission(String resource, String operation, String regionName, String key) {
-    this((resource==null) ? Resource.NULL : Resource.valueOf(resource),
-      (operation == null) ? Operation.NULL : Operation.valueOf(operation),
+    this((resource==null) ? Resource.NULL : Resource.valueOf(resource.toUpperCase()),
+      (operation == null) ? Operation.NULL : Operation.valueOf(operation.toUpperCase()),
       regionName,
       key);
   }

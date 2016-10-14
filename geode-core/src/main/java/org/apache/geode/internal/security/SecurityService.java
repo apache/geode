@@ -20,6 +20,9 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -27,8 +30,6 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
 
 public interface SecurityService {
 
@@ -52,6 +53,8 @@ public interface SecurityService {
   void authorizeRegionRead(String regionName);
   void authorizeRegionRead(String regionName, String key);
   void authorize(String resource, String operation);
+  void authorize(String resource, String operation, String regionName);
+  void authorize(String resource, String operation, String regionName, String key);
   void authorize(ResourcePermission context);
   void initSecurity(Properties securityProps);
   void close();

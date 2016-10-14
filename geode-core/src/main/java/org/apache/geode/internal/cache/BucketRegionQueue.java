@@ -257,34 +257,38 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       boolean ifOld, Object expectedOldValue, boolean requireOldValue,
       long lastModified, boolean overwriteDestroyed) throws TimeoutException,
       CacheWriterException {
-    boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
-        requireOldValue, lastModified, overwriteDestroyed);
-
-    if (success) {
-      GatewaySenderEventImpl.release(event.getRawOldValue());
-
-      if (getPartitionedRegion().getColocatedWith() == null) {
-        return success;
-      }
-
-      if (getPartitionedRegion().isConflationEnabled() && this.getBucketAdvisor().isPrimary()) {
-        Object object = event.getNewValue();
-        Long key = (Long)event.getKey();
-        if (object instanceof Conflatable) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Key :{} , Object : {} is conflatable", key, object);
-          }
-          // TODO: TO optimize by destroying on primary and secondary separately
-          // in case of conflation
-          conflateOldEntry((Conflatable)object, key);
-        } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Object : {} is not conflatable", object);
+    try {
+      boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
+          requireOldValue, lastModified, overwriteDestroyed);
+  
+      if (success) {
+        if (getPartitionedRegion().getColocatedWith() == null) {
+          return success;
+        }
+  
+        if (getPartitionedRegion().isConflationEnabled() && this.getBucketAdvisor().isPrimary()) {
+          Object object = event.getNewValue();
+          Long key = (Long)event.getKey();
+          if (object instanceof Conflatable) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Key :{} , Object : {} is conflatable", key, object);
+            }
+            // TODO: TO optimize by destroying on primary and secondary separately
+            // in case of conflation
+            conflateOldEntry((Conflatable)object, key);
+          } else {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Object : {} is not conflatable", object);
+            }
           }
         }
+      } else {
+        GatewaySenderEventImpl.release(event.getRawNewValue());
       }
+      return success;
+    } finally {
+      GatewaySenderEventImpl.release(event.getRawOldValue());
     }
-    return success;
   }
 
   private void conflateOldEntry(Conflatable object, Long tailKey) {
@@ -357,9 +361,12 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     if (getPartitionedRegion().isConflationEnabled()) {
       removeIndex((Long)event.getKey());
     }
-    super.basicDestroy(event, cacheWrite, expectedOldValue);
+    try {
+      super.basicDestroy(event, cacheWrite, expectedOldValue);
+    } finally {
+      GatewaySenderEventImpl.release(event.getRawOldValue());
+    }
 
-    GatewaySenderEventImpl.release(event.getRawOldValue());
     // Primary buckets should already remove the key while peeking
     if (!this.getBucketAdvisor().isPrimary()) {
       if (logger.isDebugEnabled()) {

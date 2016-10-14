@@ -40,6 +40,8 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -49,7 +51,7 @@ public class MBeanSecurityJUnitTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -58,7 +60,7 @@ public class MBeanSecurityJUnitTest {
    * No user can call createBean or unregisterBean of GemFire Domain
    */
   @Test
-  @JMXConnectionConfiguration(user = "super-user", password = "1234567")
+  @ConnectionConfiguration(user = "super-user", password = "1234567")
   public void testNoAccessWithWhoever() throws Exception{
     MBeanServerConnection con = connectionRule.getMBeanServerConnection();
     assertThatThrownBy(
@@ -79,7 +81,7 @@ public class MBeanSecurityJUnitTest {
    * looks like everyone can query for beans, but the AccessControlMXBean is filtered from the result
    */
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testQueryBean() throws MalformedObjectNameException, IOException {
     MBeanServerConnection con = connectionRule.getMBeanServerConnection();
     Set<ObjectInstance> objects = con.queryMBeans(ObjectName.getInstance(ResourceConstants.OBJECT_NAME_ACCESSCONTROL), null);
@@ -106,7 +108,7 @@ public class MBeanSecurityJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testServerSideCalls(){
     // calls through ManagementService is not going through authorization checks
     ManagementService service = ManagementService.getManagementService(serverRule.getCache());

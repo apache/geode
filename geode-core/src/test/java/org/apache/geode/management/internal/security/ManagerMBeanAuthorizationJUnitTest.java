@@ -33,6 +33,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.ManagerMXBean;
 import org.apache.geode.management.internal.beans.ManagerMBean;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -44,8 +46,7 @@ public class ManagerMBeanAuthorizationJUnitTest {
   private ManagerMXBean managerMXBean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -64,7 +65,7 @@ public class ManagerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "cluster-admin", password = "1234567")
+  @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     managerMXBean.setPulseURL("foo");
     managerMXBean.start();
@@ -73,7 +74,7 @@ public class ManagerMBeanAuthorizationJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testSomeAccess() throws Exception {
     assertThatThrownBy(() -> managerMXBean.start()).hasMessageContaining(TestCommand.clusterManage.toString());
     assertThatThrownBy(() -> managerMXBean.getPulseURL()).hasMessageContaining(TestCommand.clusterWrite.toString());

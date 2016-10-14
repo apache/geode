@@ -32,6 +32,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -47,8 +49,7 @@ public class GatewayReceiverMBeanSecurityTest {
   private GatewayReceiverMXBean bean;
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -72,7 +73,7 @@ public class GatewayReceiverMBeanSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
+  @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.getAverageBatchProcessingTime();
     bean.getBindAddress();
@@ -83,7 +84,7 @@ public class GatewayReceiverMBeanSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testNoAccess() throws Exception {
     assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut()).hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.start()).hasMessageContaining(TestCommand.dataManage.toString());

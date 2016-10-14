@@ -89,6 +89,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1979
   @Test
   public void basicClusterConfigDirWithTwoLocators() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);

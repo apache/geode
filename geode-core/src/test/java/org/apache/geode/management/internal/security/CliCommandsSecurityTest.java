@@ -30,6 +30,8 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -43,8 +45,7 @@ public class CliCommandsSecurityTest {
   private List<TestCommand> commands = TestCommand.getCommands();
 
   @ClassRule
-  public static JsonAuthorizationCacheStartRule serverRule = new JsonAuthorizationCacheStartRule(
-      jmxManagerPort, "org/apache/geode/management/internal/security/cacheServer.json");
+  public static CacheServerStartupRule serverRule = CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -55,7 +56,7 @@ public class CliCommandsSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "stranger", password = "1234567")
+  @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess(){
    for (TestCommand command:commands) {
      // skip query commands since query commands are only available in client shell
@@ -77,7 +78,7 @@ public class CliCommandsSecurityTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "super-user", password = "1234567")
+  @ConnectionConfiguration(user = "super-user", password = "1234567")
   public void testAdminUser() throws Exception {
     for (TestCommand command:commands) {
       LogService.getLogger().info("processing: "+command.getCommand());

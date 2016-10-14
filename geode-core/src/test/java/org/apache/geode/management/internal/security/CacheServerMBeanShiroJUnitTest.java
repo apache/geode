@@ -16,28 +16,40 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Properties;
+
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({ IntegrationTest.class, SecurityTest.class })
 public class CacheServerMBeanShiroJUnitTest {
-
-  private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+  static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+  static Properties properties = new Properties(){{
+    setProperty(JMX_MANAGER_PORT, jmxManagerPort+"");
+    setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+  }};
 
   private CacheServerMXBean bean;
 
-  @ClassRule
-  public static ShiroCacheStartRule serverRule = new ShiroCacheStartRule(jmxManagerPort, "shiro.ini");
+  @BeforeClass
+  public static void before() throws Exception {
+    ServerStarter serverStarter = new ServerStarter(properties);
+    serverStarter.startServer();
+  }
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
@@ -48,7 +60,7 @@ public class CacheServerMBeanShiroJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "root", password = "secret")
+  @ConnectionConfiguration(user = "root", password = "secret")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");
     bean.executeContinuousQuery("bar");
@@ -61,7 +73,7 @@ public class CacheServerMBeanShiroJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "guest", password = "guest")
+  @ConnectionConfiguration(user = "guest", password = "guest")
   public void testNoAccess() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar")).hasMessageContaining(TestCommand.dataRead.toString());
@@ -74,7 +86,7 @@ public class CacheServerMBeanShiroJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "regionAReader", password = "password")
+  @ConnectionConfiguration(user = "regionAReader", password = "password")
   public void testRegionAccess() throws Exception{
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());
@@ -84,7 +96,7 @@ public class CacheServerMBeanShiroJUnitTest {
   }
 
   @Test
-  @JMXConnectionConfiguration(user = "dataReader", password = "12345")
+  @ConnectionConfiguration(user = "dataReader", password = "12345")
   public void testDataRead() throws Exception{
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());

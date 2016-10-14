@@ -23,11 +23,13 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -36,20 +38,26 @@ public class JavaRmiServerNameTest {
   private static final String JMX_HOST = "myHostname";
 
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+  static Properties properties = new Properties(){{
+    setProperty(JMX_MANAGER_PORT, AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET)+"");
+    setProperty("jmx-manager-hostname-for-clients", JMX_HOST);
+  }};
+
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    ServerStarter serverStarter = new ServerStarter(properties);
+    serverStarter.startServer();
+  }
 
   //https://issues.apache.org/jira/browse/GEODE-1548
   @Test
   public void testThatJavaRmiServerNameGetsSet() {
-    Properties properties = new Properties();
-    properties.put(LOCATORS, "");
-    properties.put(MCAST_PORT, "0");
-    properties.put(JMX_MANAGER, "true");
-    properties.put(JMX_MANAGER_START, "true");
-    properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
-    properties.put("jmx-manager-hostname-for-clients", JMX_HOST);
-
-    new CacheFactory(properties).create();
     assertEquals(JMX_HOST, System.getProperty("java.rmi.server.hostname"));
+  }
+
+  @After
+  public void after(){
+    System.setProperty("java.rmi.server.hostname", "");
   }
 
 }
