@@ -73,6 +73,7 @@ public class EntryEventImpl
   // PACKAGE FIELDS //
   public transient LocalRegion region;
   private transient RegionEntry re;
+  private transient ExpiryTask expiryTask;
 
   protected KeyInfo keyInfo;
 
@@ -2852,5 +2853,13 @@ public class EntryEventImpl
 
   public boolean isOldValueOffHeap() {
     return isOffHeapReference(this.oldValue);
+  }
+
+  public ExpiryTask getExpiryTask() {
+    return expiryTask;
+  }
+
+  public void setExpiryTask(ExpiryTask expiryTask) {
+    this.expiryTask = expiryTask;
   }
 }

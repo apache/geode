@@ -8717,13 +8717,24 @@ public class LocalRegion extends AbstractRegion
       }
     }
   }
+  
+  void cancelExpiryTask(RegionEntry re) {
+    cancelExpiryTask(re, null);
+  }
 
-  void cancelExpiryTask(RegionEntry re)
+  void cancelExpiryTask(RegionEntry re, ExpiryTask expiryTask)
   {
-    EntryExpiryTask oldTask = this.entryExpiryTasks.remove(re);
-    if (oldTask != null) {
-      if (oldTask.cancel()) {
+    if (expiryTask != null) {
+      this.entryExpiryTasks.remove(re, expiryTask);
+      if (expiryTask.cancel()) {
         this.cache.getExpirationScheduler().incCancels();
+      }
+    } else {
+      EntryExpiryTask oldTask = this.entryExpiryTasks.remove(re);
+      if (oldTask != null) {
+        if (oldTask.cancel()) {
+          this.cache.getExpirationScheduler().incCancels();
+        }
       }
     }
   }

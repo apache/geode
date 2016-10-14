@@ -1513,9 +1513,9 @@ public abstract class AbstractRegionMap implements RegionMap {
           } finally {
             if (opCompleted) {
               if (re != null) {
-                owner.cancelExpiryTask(re);
+                owner.cancelExpiryTask(re, event.getExpiryTask());
               } else if (tombstone != null) {
-                owner.cancelExpiryTask(tombstone);
+                owner.cancelExpiryTask(tombstone, event.getExpiryTask());
               }
             }
           }
