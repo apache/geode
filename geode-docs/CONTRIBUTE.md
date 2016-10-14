@@ -6,6 +6,8 @@ Apache Geode welcomes your contributions to the community's documentation effort
 - [Working with Images and Graphics](#working-with-images-and-graphics)
 - [Writing Guidelines](#writing-guidelines)
 
+For instructions on building the documentation locally, see `../geode-book/README.md`.
+
 ## Working with Markdown Files
 
 You can edit markdown files in any text editor. For more, read [Daring Fireball's Markdown Syntax page](https://daringfireball.net/projects/markdown/syntax).
@@ -23,13 +25,9 @@ The Wikipedia page [Comparison of Vector Graphics Editors](http://en.wikipedia.o
 The most important advice we can provide for working with the Apache Geode docs is to spend some time becoming familiar with the existing source files and the structure of the project directory. In particular, note the following conventions and tips:
 
 - Top-level subdirectories organize topics into "books": basic_config, configuring, developing, etc.
-
 - Use lowercase characters for all file and directory names. Separate words in filenames with an underscore (`_`) character.
-
 - Use the `.md` file extension for topic files.
-
 - Add new topics to the existing directories by subject type. Only create a new directory if you are starting a new subject or a new book.
-
 - To start a new topic, you can make a copy of an existing file with similar content and edit it.
-
 - Use the appropriate document type for the content you are writing. Create multiple topics if you are writing overview, procedural, and reference content.
+- To edit elements in the navigation pane (the "subnav") that appears on the left side of the documentation, navigate to `../geode-book/master_middleman/source/subnavs/geode-subnav.md`.
