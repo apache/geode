@@ -31,6 +31,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -126,9 +127,12 @@ import org.apache.geode.security.GemFireSecurityException;
  * not directly access this Region; instead use the methods on this factory.
  * </ul>
  * @since GemFire 4.3
+ * @deprecated This class is deprecated. Use {@link FunctionService} to create regions on
+ * other members instead.
  *
  */
 @SuppressWarnings("deprecation")
+@Deprecated
 public abstract class DynamicRegionFactory  {
 
   public static final String dynamicRegionListName = "__DynamicRegions";
