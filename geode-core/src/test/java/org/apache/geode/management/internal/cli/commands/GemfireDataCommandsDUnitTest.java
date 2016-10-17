@@ -91,7 +91,6 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 @SuppressWarnings("serial")
 public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
-  private static final long serialVersionUID = 1L;
   private static final String REGION_NAME = "FunctionCommandsReplicatedRegion";
   private static final String REBALANCE_REGION_NAME = "GemfireDataCommandsDUnitTestRegion";
   private static final String REBALANCE_REGION2_NAME = "GemfireDataCommandsDUnitTestRegion2";
@@ -522,6 +521,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     validateResult(cmdResult, true);
   }
 
+  @Category(FlakyTest.class) // GEODE-2006
   @Test
   public void testSelectCommand() {
     setupForSelect();
