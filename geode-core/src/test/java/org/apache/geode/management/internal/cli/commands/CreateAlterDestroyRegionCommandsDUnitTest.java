@@ -785,6 +785,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   /**
    * Asserts that creating, altering and destroying regions correctly updates the shared configuration.
    */
+  @Category(FlakyTest.class) // GEODE-2009
   @Test
   public void testCreateAlterDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
