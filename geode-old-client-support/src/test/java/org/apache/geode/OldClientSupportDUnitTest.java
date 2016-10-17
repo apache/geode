@@ -102,8 +102,8 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
     }
   }
   
-  private Object instantiate(Class aClass) throws Exception {
-    Constructor c = null;
+  private Object instantiate(Class<?> aClass) throws Exception {
+    Constructor<?> c = null;
     try {
       c = aClass.getConstructor();
       return c.newInstance();

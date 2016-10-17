@@ -22,6 +22,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.internal.CqQueryVsdStats;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
@@ -2987,10 +2988,10 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
                 && !queueRemovalMessageList.isEmpty()) { // messages exist
               QueueRemovalMessage qrm = new QueueRemovalMessage();
               qrm.resetRecipients();
-              List<CacheServerImpl> servers = this.cache.getCacheServers();
+              List<CacheServer> servers = this.cache.getCacheServers();
               List<DistributedMember> recipients = new LinkedList();
-              for (CacheServerImpl server: servers) {
-                recipients.addAll(server.getCacheServerAdvisor().adviseBridgeServers());
+              for (CacheServer server: servers) {
+                recipients.addAll(CacheServerImpl.class.cast(server).getCacheServerAdvisor().adviseBridgeServers());
               }
               qrm.setRecipients(recipients);
               qrm.setMessagesList(queueRemovalMessageList);

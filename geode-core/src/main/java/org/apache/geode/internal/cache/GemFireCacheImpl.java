@@ -4015,7 +4015,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     }
   }
 
-  public List getCacheServers() {
+  public List<CacheServer> getCacheServers() {
     List cacheServersWithoutReceiver = null;
     if (!allCacheServers.isEmpty()) {
     Iterator allCacheServersIterator = allCacheServers.iterator();

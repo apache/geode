@@ -200,10 +200,10 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyFullValueRequestsFromClients(Long expected)
       throws Exception {
-    List<CacheServerImpl> servers = ((GemFireCacheImpl)cache).getCacheServers();
+    List<CacheServer> servers = ((GemFireCacheImpl)cache).getCacheServers();
     assertEquals("expected one server but found these: " + servers, 1, servers.size());
 
-    CacheClientProxy[] proxies = servers.get(0).getAcceptor().getCacheClientNotifier()
+    CacheClientProxy[] proxies = CacheServerImpl.class.cast(servers.get(0)).getAcceptor().getCacheClientNotifier()
         .getClientProxies().toArray(new CacheClientProxy[0]);
     
     // find the proxy for the client that processed the CQs - it will have

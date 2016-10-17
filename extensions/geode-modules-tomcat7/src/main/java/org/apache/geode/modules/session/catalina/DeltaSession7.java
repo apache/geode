@@ -535,8 +535,7 @@ public class DeltaSession7 extends StandardSession implements DataSerializable, 
     }
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  protected ConcurrentMap readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
+  protected ConcurrentMap<String, Object> readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
     return DataSerializer.readObject(in);
   }
 
