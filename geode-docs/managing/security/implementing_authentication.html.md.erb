@@ -77,6 +77,7 @@ sender or receiver.
 
 ## How a Cache Client Sets Its Credential
 
+<!--  Revised for GEODE-1883
 In order to connect with a locator or a server that does authentication,
 a client will need to set its credential, composed of the two properties
 `security-username` and `security-password`.
@@ -93,6 +94,27 @@ as in the example
 The user name and password are stored in the clear, so the
 `gfsecurity.properties` file must be protected by restricting access with
 file system permissions.
+To accomplish this:
+
+- Implement the `getCredentials` method of the `AuthInitialize` interface
+for the client.
+This callback's location is defined in the property `security-client-auth-init`,
+as in the example
+
+     ``` pre
+     security-client-auth-init=com.example.security.ClientAuthInitialize
+     ```
+The implementation of `getCredentials` may then acquire values for
+the properties `security-username` and `security-password` in whatever way
+it wishes.
+It might look up values in a database or another external resource,
+or it might prompt for values.
+-->
+
+In order to connect with a locator or a server that does authentication,
+a client will need to set its credential, composed of the two properties
+`security-username` and `security-password`.
+To accomplish this:
 
 - Implement the `getCredentials` method of the `AuthInitialize` interface
 for the client.
