@@ -496,25 +496,20 @@ public class PRHARedundancyProvider
    *           redundancy.
    * @throws PartitionedRegionException
    *           if d-lock can not be acquired to create bucket.
-   * 
+   * @throws PartitionOfflineException
+   *           if persistent data recovery is not complete for a partitioned
+   *           region referred to in the query.
    */
   public InternalDistributedMember
     createBucketAtomically(final int bucketId,
                            final int newBucketSize,
                            final long startTime,
                            final boolean finishIncompleteCreation, String partitionName) throws PartitionedRegionStorageException,
-                                    PartitionedRegionException
+                                    PartitionedRegionException, PartitionOfflineException
   {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    if (!prRegion.isRecoveredFromDisk()) {
-      prRegion.getDistributionAdvisor();
-      Set<PersistentID> persistIds = new HashSet(prRegion.getRegionAdvisor().advisePersistentMembers().values());
-      persistIds.removeAll(prRegion.getRegionAdvisor().adviseInitializedPersistentMembers().values());
-      throw new PartitionOfflineException(persistIds, LocalizedStrings.PRHARedundancyProvider_PARTITIONED_REGION_0_OFFLINE_HAS_UNRECOVERED_PERSISTENT_DATA_1
-          .toLocalizedString(new Object[] { prRegion.getFullPath(), persistIds}));
-    }
-
+    prRegion.checkPROffline();
     
     // If there are insufficient stores throw *before* we try acquiring the
     // (very expensive) bucket lock or the (somewhat expensive) monitor on this

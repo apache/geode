@@ -34,6 +34,7 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.util.*;
@@ -583,7 +584,7 @@ public class DefaultQuery implements Query {
   }
 
 
-  private QueryExecutor checkQueryOnPR(Object[] parameters) throws RegionNotFoundException {
+  private QueryExecutor checkQueryOnPR(Object[] parameters) throws RegionNotFoundException, PartitionOfflineException {
 
     // check for PartititionedRegions. If a PartitionedRegion is referred to in the query,
     // then the following restrictions apply:
@@ -603,14 +604,7 @@ public class DefaultQuery implements Query {
         throw new RegionNotFoundException(LocalizedStrings.DefaultQuery_REGION_NOT_FOUND_0.toLocalizedString(regionPath));
       }
       if (rgn instanceof QueryExecutor) {
-
-        if (((PartitionedRegion)rgn).getDataPolicy().withPersistence() && !((PartitionedRegion)rgn).isRecoveredFromDisk()) {
-          ((PartitionedRegion)rgn).getDistributionAdvisor();
-          Set<PersistentID> persistIds = new HashSet(((PartitionedRegion)rgn).getRegionAdvisor().advisePersistentMembers().values());
-          persistIds.removeAll(((PartitionedRegion)rgn).getRegionAdvisor().adviseInitializedPersistentMembers().values());
-          throw new PartitionOfflineException(persistIds, LocalizedStrings.PRHARedundancyProvider_PARTITIONED_REGION_0_OFFLINE_HAS_UNRECOVERED_PERSISTENT_DATA_1
-              .toLocalizedString(new Object[] { ((PartitionedRegion)rgn).getFullPath(), persistIds}));
-        }
+        ((PartitionedRegion)rgn).checkPROffline();
         prs.add((QueryExecutor)rgn);
       }
     }

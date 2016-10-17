@@ -89,6 +89,9 @@ public interface Query {
    * @throws QueryExecutionLowMemoryException
    *         If the query gets canceled due to low memory conditions and
    *         the resource manager critical heap percentage has been set
+   * @throws PartitionOfflineException
+   *         If persistent data recovery is not complete for a partitioned
+   *         region referred to in the query.
    */
   public Object execute()
     throws FunctionDomainException, TypeMismatchException, NameResolutionException,
