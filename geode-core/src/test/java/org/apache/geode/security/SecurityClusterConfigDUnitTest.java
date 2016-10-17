@@ -68,7 +68,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
     // initial security properties should only contain initial set of values
     ServerStarter serverStarter = new ServerStarter(props);
-    serverStarter.startServer(lsRule.getLocatorPort(0));
+    serverStarter.startServer(lsRule.getPort(0));
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
@@ -90,7 +90,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
     // initial security properties should only contain initial set of values
     ServerStarter serverStarter = new ServerStarter(props);
-    serverStarter.startServer(lsRule.getLocatorPort(0));
+    serverStarter.startServer(lsRule.getPort(0));
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
@@ -112,7 +112,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     // initial security properties should only contain initial set of values
     ServerStarter serverStarter = new ServerStarter(props);
 
-    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getLocatorPort(0)))
+    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
       .isInstanceOf(GemFireConfigException.class)
       .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
         .toLocalizedString());
@@ -132,7 +132,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     // initial security properties should only contain initial set of values
     ServerStarter serverStarter = new ServerStarter(props);
 
-    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getLocatorPort(0)))
+    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
       .isInstanceOf(GemFireConfigException.class)
       .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION
                                                        .toLocalizedString());
@@ -151,7 +151,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
     ServerStarter serverStarter = new ServerStarter(props);
 
-    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getLocatorPort(0)))
+    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
       .isInstanceOf(GemFireConfigException.class)
       .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2
                                                        .toLocalizedString());

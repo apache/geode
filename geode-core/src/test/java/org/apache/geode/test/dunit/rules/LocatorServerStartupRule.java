@@ -41,7 +41,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   private Host host = getHost(0);
 
-  public int[] locatorPorts = new int[4];
+  public int[] ports = new int[4];
 
 
   // these are only avaialbe in each VM
@@ -75,7 +75,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       locatorStarter.startLocator();
       return locatorStarter.locator.getPort();
     });
-    locatorPorts[index] = locatorPort;
+    ports[index] = locatorPort;
     return locatorVM;
   }
 
@@ -98,10 +98,12 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   public VM getServerVM(int index, Properties properties, int locatorPort) {
     VM nodeVM = getNodeVM(index);
     properties.setProperty(NAME, "server-"+index);
-    nodeVM.invoke(() -> {
+    int port = nodeVM.invoke(() -> {
       serverStarter = new ServerStarter(properties);
       serverStarter.startServer(locatorPort);
+      return serverStarter.server.getPort();
     });
+    ports[index] = port;
     return nodeVM;
   }
 
@@ -116,8 +118,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return host.getVM(index);
   }
 
-  public int getLocatorPort(int index){
-    return locatorPorts[index];
+  public int getPort(int index){
+    return ports[index];
   }
 
 

@@ -58,7 +58,7 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
     VM server = lsRule.getNodeVM(1);
     server.invoke(()->{
       ServerStarter serverStarter = new ServerStarter(props);
-      assertThatThrownBy(()->serverStarter.startServer(lsRule.getLocatorPort(0))).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Security check failed. Authentication error. Please check your credentials");
+      assertThatThrownBy(()->serverStarter.startServer(lsRule.getPort(0))).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Security check failed. Authentication error. Please check your credentials");
     });
   }
 
@@ -73,7 +73,7 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
     VM server = lsRule.getNodeVM(1);
     server.invoke(()->{
       ServerStarter serverStarter = new ServerStarter(props);
-      assertThatThrownBy(()->serverStarter.startServer(lsRule.getLocatorPort(0))).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("user not authorized for CLUSTER:MANAGE");
+      assertThatThrownBy(()->serverStarter.startServer(lsRule.getPort(0))).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("user not authorized for CLUSTER:MANAGE");
     });
 
 

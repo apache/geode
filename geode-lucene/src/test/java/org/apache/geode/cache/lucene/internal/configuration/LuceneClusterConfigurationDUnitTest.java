@@ -241,7 +241,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     if (addGroup) {
       nodeProperties.setProperty(GROUPS, groupName);
     }
-    return ls.getServerVM(vmIndex, nodeProperties, ls.getLocatorPort(0));
+    return ls.getServerVM(vmIndex, nodeProperties, ls.getPort(0));
   }
 
   private VM startLocatorWithClusterConfigurationEnabled() throws Exception {

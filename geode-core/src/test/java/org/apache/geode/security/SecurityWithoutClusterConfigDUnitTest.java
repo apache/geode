@@ -70,7 +70,7 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
 
     // initial security properties should only contain initial set of values
     ServerStarter serverStarter = new ServerStarter(props);
-    serverStarter.startServer(lsRule.getLocatorPort(0));
+    serverStarter.startServer(lsRule.getPort(0));
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
     assertEquals(3, ds.getSecurityProperties().size());
 
