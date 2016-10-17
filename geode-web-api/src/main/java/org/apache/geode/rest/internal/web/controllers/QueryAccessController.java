@@ -137,7 +137,7 @@ public class QueryAccessController extends AbstractBaseController {
     @ApiResponse( code = 409, message = "QueryId already assigned to other query." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )
   } )
-  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
+  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> create(@RequestParam("id") final String queryId,
                                   @RequestParam(value = "q", required = false) String oqlInUrl,
                                   @RequestBody(required = false) final String oqlInBody)
@@ -234,7 +234,7 @@ public class QueryAccessController extends AbstractBaseController {
   } )
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
-  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
+  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<String> runNamedQuery(@PathVariable("query") String queryId,
                                               @RequestBody String arguments)
   {
@@ -310,7 +310,7 @@ public class QueryAccessController extends AbstractBaseController {
     @ApiResponse( code = 404, message = "queryId does not exist." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )   
   } )
-  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
+  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> update( @PathVariable("query") final String queryId,
                                    @RequestParam(value = "q", required = false) String oqlInUrl,
                                    @RequestBody(required = false) final String oqlInBody) {

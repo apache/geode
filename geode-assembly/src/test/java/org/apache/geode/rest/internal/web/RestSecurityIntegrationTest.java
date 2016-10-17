@@ -138,7 +138,7 @@ public class RestSecurityIntegrationTest {
     assertEquals(401, getCode(response));
     response = doPost("/queries?id=0&q=", "stranger", "1234567", "");
     assertEquals(403, getCode(response));
-    response = doPost("/queries?id=0&q=", "dataWriter", "1234567", "");
+    response = doPost("/queries?id=0&q=", "dataReader", "1234567", "");
     // because we're only testing the security of the endpoint, not the endpoint functionality, a 500 is acceptable
     assertEquals(500, getCode(response));
   }
@@ -149,7 +149,7 @@ public class RestSecurityIntegrationTest {
     assertEquals(401, getCode(response));
     response = doPost("/queries/id", "stranger", "1234567", "{\"id\" : \"foo\"}");
     assertEquals(403, getCode(response));
-    response = doPost("/queries/id", "dataWriter", "1234567", "{\"id\" : \"foo\"}");
+    response = doPost("/queries/id", "dataReader", "1234567", "{\"id\" : \"foo\"}");
     // because we're only testing the security of the endpoint, not the endpoint functionality, a 500 is acceptable
     assertEquals(500, getCode(response));
   }
@@ -160,7 +160,7 @@ public class RestSecurityIntegrationTest {
     assertEquals(401, getCode(response));
     response = doPut("/queries/id", "stranger", "1234567", "{\"id\" : \"foo\"}");
     assertEquals(403, getCode(response));
-    response = doPut("/queries/id", "dataWriter", "1234567", "{\"id\" : \"foo\"}");
+    response = doPut("/queries/id", "dataReader", "1234567", "{\"id\" : \"foo\"}");
     // We should get a 404 because we're trying to update a query that doesn't exist
     assertEquals(404, getCode(response));
   }
