@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.ArrayList;
@@ -48,21 +47,20 @@ import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 
-
 /**
  * The CommonCrudController serves REST Requests related to listing regions, 
  * listing keys in region, delete keys or delete all data in region.
- * <p/>
+ *
  * @since GemFire 8.0
  */
-
 @SuppressWarnings("unused")
 public abstract class CommonCrudController extends AbstractBaseController {
   
   private static final Logger logger = LogService.getLogger();
   
   /**
-   * list all available resources (Regions) in the GemFire cluster
+   * List all available resources (Regions) in the GemFire cluster
+   *
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
@@ -89,7 +87,8 @@ public abstract class CommonCrudController extends AbstractBaseController {
   
   /**
    * List all keys for the given region in the GemFire cluster
-   * @param region gemfire region
+   *
+   * @param  region gemfire region
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/keys",
@@ -122,8 +121,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
   
   /**
    * Delete data for single key or specific keys in region
-   * @param region gemfire region
-   * @param keys for which data is requested
+   *
+   * @param  region gemfire region
+   * @param  keys for which data is requested
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/{keys}",
@@ -153,7 +153,8 @@ public abstract class CommonCrudController extends AbstractBaseController {
 
   /**
    * Delete all data in region
-   * @param region gemfire region
+   *
+   * @param  region gemfire region
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}")
@@ -180,8 +181,8 @@ public abstract class CommonCrudController extends AbstractBaseController {
   }
 
   /**
-   * Ping is not secured so that it may not be used to determine a valid username/password
-   * @return
+   * Ping is not secured so that it may not be used to determine a valid
+   * username/password
    */
   @RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, value = "/ping")
   @ApiOperation(
