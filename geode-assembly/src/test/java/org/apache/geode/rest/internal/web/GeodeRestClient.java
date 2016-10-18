@@ -15,13 +15,6 @@
 
 package org.apache.geode.rest.internal.web;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -45,6 +38,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONTokener;
 import org.junit.Assert;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 
 public class GeodeRestClient {
 
@@ -86,9 +86,11 @@ public class GeodeRestClient {
     return doRequest(getRequest, username, password);
   }
 
-  public HttpResponse doGet(String uri) throws MalformedURLException {
-    return doGet(uri, null, null);
+  public HttpResponse doGetRequest(String url) throws MalformedURLException {
+    HttpGet getRequest = new HttpGet(url);
+    return doRequest(getRequest, null, null);
   }
+
 
   public HttpResponse doDelete(String uri, String username, String password)
       throws MalformedURLException {
@@ -123,7 +125,7 @@ public class GeodeRestClient {
     return new JSONTokener(str.toString());
   }
 
-  private HttpResponse doRequest(HttpRequestBase request, String username, String password)
+  public HttpResponse doRequest(HttpRequestBase request, String username, String password)
       throws MalformedURLException {
     HttpHost targetHost = new HttpHost(HOSTNAME, restPort, PROTOCOL);
     CloseableHttpClient httpclient = HttpClients.custom().build();

@@ -14,11 +14,20 @@
  */
 package org.apache.geode.rest.internal.web;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
-
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,12 +37,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.http.MediaType;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import java.util.Properties;
 
 
 @Category({IntegrationTest.class, SecurityTest.class})

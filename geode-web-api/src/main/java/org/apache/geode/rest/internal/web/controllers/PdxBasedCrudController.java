@@ -14,14 +14,16 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.RegionData;
+import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,12 +38,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
-import org.apache.geode.rest.internal.web.controllers.support.RegionData;
-import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on
