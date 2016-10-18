@@ -94,7 +94,7 @@ public class RestSecurityIntegrationTest {
   @Test
   public void testFunctions() throws Exception {
     String json = "{\"@type\":\"double\",\"@value\":210}";
-
+    Thread.sleep(500000);
     HttpResponse response = doGet("/functions", "unknown-user", "1234567");
     assertEquals(401, getCode(response));
     response = doGet("/functions", "stranger", "1234567");

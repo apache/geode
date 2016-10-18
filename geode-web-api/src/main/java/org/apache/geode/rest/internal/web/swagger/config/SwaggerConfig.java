@@ -20,21 +20,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import com.mangofactory.swagger.configuration.JacksonScalaSupport;
 import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
-import com.mangofactory.swagger.configuration.SpringSwaggerModelConfig;
 import com.mangofactory.swagger.configuration.SwaggerGlobalSettings;
 import com.mangofactory.swagger.core.SwaggerApiResourceListing;
+import com.mangofactory.swagger.models.dto.ApiInfo;
+import com.mangofactory.swagger.models.dto.AuthorizationType;
+import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
 import com.mangofactory.swagger.scanners.ApiListingReferenceScanner;
-import com.wordnik.swagger.model.ApiInfo;
-import com.wordnik.swagger.model.AuthorizationType;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 @Configuration
 @ComponentScan(basePackages = "com.mangofactory.swagger")
@@ -44,16 +43,25 @@ public class SwaggerConfig {
   protected static final List<String> DEFAULT_INCLUDE_PATTERNS = Arrays
       .asList("/.*");
 
-  protected static final String SWAGGER_GROUP = "gemfireApi";
+  protected static final String SWAGGER_GROUP = "apacheGeode";
 
   @Autowired
   private SpringSwaggerConfig springSwaggerConfig;
 
-  @Autowired
-  private SpringSwaggerModelConfig springSwaggerModelConfig;
-
   @Value("${app.docs}")
   private String docsLocation;
+
+  @SuppressWarnings("SpringJavaAutowiringInspection")
+  @Autowired
+  public void setSpringSwaggerConfig(SpringSwaggerConfig springSwaggerConfig) {
+    this.springSwaggerConfig = springSwaggerConfig;
+  }
+
+  @Bean
+  public SwaggerSpringMvcPlugin customImplementation() {
+
+    return new SwaggerSpringMvcPlugin(this.springSwaggerConfig).apiInfo(apiInfo());
+  }
 
   /**
    * API Info as it appears on the Swagger-UI page
@@ -69,20 +77,6 @@ public class SwaggerConfig {
   }
 
   /**
-   * Adds the Jackson Scala module to the MappingJackson2HttpMessageConverter
-   * registered with Spring. Swagger core models are Scala so we need to be able
-   * to convert to JSON. Also registers some custom serializers needed to
-   * transform Swagger models to Swagger-UI required JSON format.
-   */
-  @Bean
-  public JacksonScalaSupport jacksonScalaSupport() {
-    JacksonScalaSupport jacksonScalaSupport = new JacksonScalaSupport();
-    // set to false to disable
-    jacksonScalaSupport.setRegisterScalaModule(true);
-    return jacksonScalaSupport;
-  }
-
-  /**
    * Configure a SwaggerApiResourceListing for each Swagger instance within your
    * app. e.g. 1. private 2. external APIs 3. ..., required to be a Spring bean
    * as Spring will call the postConstruct method to bootstrap Swagger scanning.
@@ -93,8 +87,7 @@ public class SwaggerConfig {
     // ApiListingReferenceScanner
     // Note that swaggerCache() is by DefaultSwaggerController to serve the
     // Swagger JSON
-    SwaggerApiResourceListing swaggerApiResourceListing = new SwaggerApiResourceListing(
-        springSwaggerConfig.swaggerCache(), SWAGGER_GROUP);
+    SwaggerApiResourceListing swaggerApiResourceListing = new SwaggerApiResourceListing(springSwaggerConfig.swaggerCache(), SWAGGER_GROUP);
 
     // set required Swagger settings
     swaggerApiResourceListing.setSwaggerGlobalSettings(swaggerGlobalSettings());
@@ -108,12 +101,10 @@ public class SwaggerConfig {
 
     // every SwaggerApiResourceListing needs an ApiListingReferenceScanner to
     // scan the Spring RequestMappings
-    swaggerApiResourceListing
-        .setApiListingReferenceScanner(apiListingReferenceScanner());
+    swaggerApiResourceListing.setApiListingReferenceScanner(apiListingReferenceScanner());
 
     // global authorization - see the Swagger documentation
-    swaggerApiResourceListing.setAuthorizationTypes(Collections
-        .<AuthorizationType> emptyList());
+    swaggerApiResourceListing.setAuthorizationTypes(Collections.<AuthorizationType>emptyList());
 
     return swaggerApiResourceListing;
   }
@@ -128,8 +119,6 @@ public class SwaggerConfig {
         .defaultResponseMessages());
     swaggerGlobalSettings.setIgnorableParameterTypes(springSwaggerConfig
         .defaultIgnorableParameterTypes());
-    swaggerGlobalSettings.setParameterDataTypes(springSwaggerModelConfig
-        .defaultParameterDataTypes());
     return swaggerGlobalSettings;
   }
 
