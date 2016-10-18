@@ -19,7 +19,10 @@ package org.apache.geode.distributed.internal.deadlock;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
@@ -314,13 +317,37 @@ public class DeadlockDetector {
       System.exit(-1);
     }
 
-    ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+    ObjectInputStream ois = new DDObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
     DependencyGraph graph = (DependencyGraph) ois.readObject();
 
     return graph;
   }
-  
-  
+
+  private static class DDObjectInputStream extends ObjectInputStream {
+
+    /**
+     * Creates a new <code>DDObjectInputStream</code> that delegates
+     * its behavior to a given <code>InputStream</code>.
+     */
+    public DDObjectInputStream(InputStream stream) throws IOException {
+      super(stream);
+    }
+
+    @Override
+    protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+
+      String className = desc.getName();
+      if (className.startsWith("com.gemstone.gemfire")) {
+        className = "org.apache.geode" + className.substring("com.gemstone.gemfire".length());
+      } try {
+        Class clazz = Class.forName(className);
+        return clazz;
+      } catch (ClassNotFoundException ex) {
+        return super.resolveClass(desc);
+      }
+    }
+  }
+
   private static void printHelp() {
     System.out.println("DeadlockDetector reads serialized graphs of the state of the distributed");
     System.out.println("system created by collectDependencies.");
