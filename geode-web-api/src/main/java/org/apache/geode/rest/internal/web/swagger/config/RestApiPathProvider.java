@@ -16,20 +16,21 @@
  */
 package org.apache.geode.rest.internal.web.swagger.config;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.lang.StringUtils;
-import com.mangofactory.swagger.core.SwaggerPathProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.servlet.ServletContext;
 import java.net.UnknownHostException;
 
+import javax.servlet.ServletContext;
+
+import com.mangofactory.swagger.paths.SwaggerPathProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.net.SocketCreator;
+
 @SuppressWarnings("unused")
-public class RestApiPathProvider implements SwaggerPathProvider {
+public class RestApiPathProvider extends SwaggerPathProvider {
 
   @Autowired
   private ServletContext servletContext;
@@ -74,22 +75,50 @@ public class RestApiPathProvider implements SwaggerPathProvider {
     return defaultPathProvider.getApiResourcePrefix();
   }
 
+  /**
+   * For relative SwaggerPathProviders this is typically '/' meaning relative to the swagger ui page serving the
+   * documentation. The swagger specification recommends that this should be an absolute URL.
+   * <p>
+   * Corresponds to the base path attribute of a swagger api declaration.
+   * This is the actual base path serving the api (not the swagger documentation)
+   * @return the applications base uri
+   */
   @Override
-  public String getAppBasePath() {
-    return UriComponentsBuilder.fromHttpUrl(docsLocation)
-        .path(servletContext.getContextPath()).build().toString();
+  protected String applicationPath() {
+    return null;
   }
 
+  /**
+   * The base path to the swagger api documentation.
+   * <p>
+   * Typically docs are served from &lt;yourApp&gt;/api-docs so a relative resourceListing path will omit the api-docs
+   * segment.
+   * E.g.
+   * Relative: "path": "/"
+   * Absolute: "path": "http://localhost:8080/api-docs"
+   * @return the documentation base path
+   */
   @Override
-  public String getSwaggerDocumentationBasePath() {
-    return UriComponentsBuilder.fromHttpUrl(getAppBasePath())
-        .pathSegment("api-docs/").build().toString();
+  protected String getDocumentationPath() {
+    return null;
   }
 
-  @Override
-  public String getRequestMappingEndpoint(String requestMappingPattern) {
-    return defaultPathProvider.getRequestMappingEndpoint(requestMappingPattern);
-  }
+  //  @Override
+  //  public String getAppBasePath() {
+  //    return UriComponentsBuilder.fromHttpUrl(docsLocation)
+  //        .path(servletContext.getContextPath()).build().toString();
+  //  }
+  //
+  //  @Override
+  //  public String getSwaggerDocumentationBasePath() {
+  //    return UriComponentsBuilder.fromHttpUrl(getAppBasePath())
+  //        .pathSegment("api-docs/").build().toString();
+  //  }
+  //
+  //  @Override
+  //  public String getRequestMappingEndpoint(String requestMappingPattern) {
+  //    return defaultPathProvider.getRequestMappingEndpoint(requestMappingPattern);
+  //  }
 
   public void setDefaultPathProvider(
       final SwaggerPathProvider defaultSwaggerPathProvider) {
