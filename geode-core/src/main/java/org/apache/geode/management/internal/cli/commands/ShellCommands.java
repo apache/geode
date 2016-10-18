@@ -88,14 +88,6 @@ import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
 
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
 /**
  *
  * @since GemFire 7.0
@@ -200,7 +192,7 @@ public class ShellCommands implements CommandMarker {
     try {
       if (userName != null && userName.length() > 0) {
         if (passwordToUse == null || passwordToUse.length() == 0) {
-          passwordToUse = this.readPassword(gfsh, "password: ");
+          passwordToUse = gfsh.readPassword(CliStrings.CONNECT__PASSWORD + ": ");
         }
         if (passwordToUse == null || passwordToUse.length() == 0) {
           return ResultBuilder.createConnectionErrorResult(CliStrings.CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED);
@@ -282,8 +274,8 @@ public class ShellCommands implements CommandMarker {
 
       // otherwise, prompt for username and password and retry the conenction
       try {
-        userName = this.readText(gfsh, "username: ");
-        passwordToUse = this.readPassword(gfsh, "password: ");
+        userName = gfsh.readText(CliStrings.CONNECT__USERNAME + ": ");
+        passwordToUse = gfsh.readPassword(CliStrings.CONNECT__PASSWORD + ": ");
         return httpConnect(sslConfigProps, useSsl, url, userName, passwordToUse);
       }
       catch (IOException ioe) {
@@ -370,8 +362,8 @@ public class ShellCommands implements CommandMarker {
 
       // otherwise, prompt for username and password and retry the conenction
       try {
-        userName = this.readText(gfsh, "username: ");
-        passwordToUse = this.readPassword(gfsh, "password: ");
+        userName = gfsh.readText(CliStrings.CONNECT__USERNAME + ": ");
+        passwordToUse = gfsh.readPassword(CliStrings.CONNECT__PASSWORD + ": ");
         return jmxConnect(sslConfigProps, hostPortToConnect, null, useSsl, userName, passwordToUse, gfSecurityPropertiesPath, true);
       }
       catch (IOException ioe) {
@@ -522,7 +514,7 @@ public class ShellCommands implements CommandMarker {
 
       if (numTimesPrompted > 0) {
         //NOTE: sslConfigProps map was empty
-        keystoreToUse = readText(gfshInstance, CliStrings.CONNECT__KEY_STORE + ": ");
+        keystoreToUse = gfshInstance.readText(CliStrings.CONNECT__KEY_STORE + ": ");
       }
       if (keystoreToUse != null && keystoreToUse.length() > 0) {
         if (keystorePasswordToUse == null || keystorePasswordToUse.length() == 0) {
@@ -530,7 +522,7 @@ public class ShellCommands implements CommandMarker {
           keystorePasswordToUse = sslConfigProps.get(Gfsh.SSL_KEYSTORE_PASSWORD);
           if (keystorePasswordToUse == null || keystorePasswordToUse.length() == 0) {
             // not even in properties file, prompt user for it
-            keystorePasswordToUse = readPassword(gfshInstance, CliStrings.CONNECT__KEY_STORE_PASSWORD + ": ");
+            keystorePasswordToUse = gfshInstance.readPassword(CliStrings.CONNECT__KEY_STORE_PASSWORD + ": ");
             sslConfigProps.put(Gfsh.SSL_KEYSTORE_PASSWORD, keystorePasswordToUse);
           }
         }
@@ -541,7 +533,7 @@ public class ShellCommands implements CommandMarker {
       }
 
       if (numTimesPrompted > 0) {
-        truststoreToUse = readText(gfshInstance, CliStrings.CONNECT__TRUST_STORE + ": ");
+        truststoreToUse = gfshInstance.readText(CliStrings.CONNECT__TRUST_STORE + ": ");
       }
       if (truststoreToUse != null && truststoreToUse.length() > 0) {
         if (truststorePasswordToUse == null || truststorePasswordToUse.length() == 0) {
@@ -549,7 +541,7 @@ public class ShellCommands implements CommandMarker {
           truststorePasswordToUse = sslConfigProps.get(Gfsh.SSL_TRUSTSTORE_PASSWORD);
           if (truststorePasswordToUse == null || truststorePasswordToUse.length() == 0) {
             // not even in properties file, prompt user for it
-            truststorePasswordToUse = readPassword(gfshInstance, CliStrings.CONNECT__TRUST_STORE_PASSWORD + ": ");
+            truststorePasswordToUse = gfshInstance.readPassword(CliStrings.CONNECT__TRUST_STORE_PASSWORD + ": ");
             sslConfigProps.put(Gfsh.SSL_TRUSTSTORE_PASSWORD, truststorePasswordToUse);
           }
         }
@@ -560,7 +552,7 @@ public class ShellCommands implements CommandMarker {
       }
 
       if (numTimesPrompted > 0) {
-        sslCiphersToUse = readText(gfshInstance, CliStrings.CONNECT__SSL_CIPHERS + ": ");
+        sslCiphersToUse = gfshInstance.readText(CliStrings.CONNECT__SSL_CIPHERS + ": ");
       }
       if (sslCiphersToUse != null && sslCiphersToUse.length() > 0) {
         //sslConfigProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslCiphersToUse);
@@ -568,7 +560,7 @@ public class ShellCommands implements CommandMarker {
       }
 
       if (numTimesPrompted > 0) {
-        sslProtocolsToUse = readText(gfshInstance, CliStrings.CONNECT__SSL_PROTOCOLS + ": ");
+        sslProtocolsToUse = gfshInstance.readText(CliStrings.CONNECT__SSL_PROTOCOLS + ": ");
       }
       if (sslProtocolsToUse != null && sslProtocolsToUse.length() > 0) {
         //sslConfigProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslProtocolsToUse);
@@ -583,24 +575,6 @@ public class ShellCommands implements CommandMarker {
 
   private static String getGfshLogsCheckMessage(String logFilePath) {
     return CliStrings.format(CliStrings.GFSH__PLEASE_CHECK_LOGS_AT_0, logFilePath);
-  }
-
-  private String readText(Gfsh gfsh, String textToPrompt) throws IOException {
-    if (!gfsh.isHeadlessMode() || !gfsh.isQuietMode()) {
-      return gfsh.interact(textToPrompt);
-    }
-    else {
-      return null;
-    }
-  }
-
-  private String readPassword(Gfsh gfsh, String textToPrompt) throws IOException {
-    if (!gfsh.isHeadlessMode() || !gfsh.isQuietMode()) {
-      return gfsh.readWithMask(textToPrompt, '*');
-    }
-    else {
-      return null;
-    }
   }
 
   /* package-private */

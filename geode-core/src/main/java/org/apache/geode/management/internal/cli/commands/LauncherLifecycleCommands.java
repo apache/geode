@@ -17,6 +17,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__PASSWORD;
 
 import java.awt.Desktop;
 import java.io.BufferedReader;
@@ -115,6 +116,7 @@ import org.apache.geode.management.internal.cli.util.VisualVmNotFoundException;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
 
 /**
@@ -1498,11 +1500,28 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS,
            unspecifiedDefaultValue = CacheServer.HTTP_SERVICE_DEFAULT_BIND_ADDRESS,
            help = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP)
-           final String httpServiceBindAddress)
+      final String httpServiceBindAddress,
+          @CliOption(key = CliStrings.START_SERVER__USERNAME,
+           unspecifiedDefaultValue = "",
+           help = CliStrings.START_SERVER__USERNAME__HELP)
+      final String userName,
+          @CliOption(key = START_SERVER__PASSWORD,
+           unspecifiedDefaultValue = "",
+           help = CliStrings.START_SERVER__PASSWORD__HELP)
+      String passwordToUse)
   // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
   {
-
     try {
+      // prompt for password is username is specified in the command
+      if (!StringUtils.isBlank(userName)) {
+        if (StringUtils.isBlank(passwordToUse)) {
+          passwordToUse = getGfsh().readPassword(START_SERVER__PASSWORD + ": ");
+        }
+        if (StringUtils.isBlank(passwordToUse)) {
+          return ResultBuilder.createConnectionErrorResult(CliStrings.START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED);
+        }
+      }
+
       if (workingDirectory == null) {
         // attempt to use or make sub-directory using memberName...
         File serverWorkingDirectory = new File(memberName);
@@ -1560,10 +1579,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfireProperties.setProperty(USE_CLUSTER_CONFIGURATION, StringUtils.valueOf(requestSharedConfiguration, Boolean.TRUE.toString()));
       gemfireProperties.setProperty(LOCK_MEMORY, StringUtils.valueOf(lockMemory, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(OFF_HEAP_MEMORY_SIZE, StringUtils.valueOf(offHeapMemorySize, StringUtils.EMPTY_STRING));
-
       gemfireProperties.setProperty(START_DEV_REST_API, StringUtils.valueOf(startRestApi, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(HTTP_SERVICE_PORT,  StringUtils.valueOf(httpServicePort, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS,  StringUtils.valueOf(httpServiceBindAddress, StringUtils.EMPTY_STRING));
+      // if username is specified in the command line, it will overwrite what's set in the properties file
+      if(!StringUtils.isBlank(userName)){
+        gemfireProperties.setProperty(ResourceConstants.USER_NAME, userName);
+        gemfireProperties.setProperty(ResourceConstants.PASSWORD, passwordToUse);
+      }
 
 
       // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH argument

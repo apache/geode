@@ -19,6 +19,32 @@ package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -27,14 +53,31 @@ import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.AbstractCacheServer;
+import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.CacheServerLauncher;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.process.*;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.process.ConnectionFailedException;
+import org.apache.geode.internal.process.ControlNotificationHandler;
+import org.apache.geode.internal.process.ControllableProcess;
+import org.apache.geode.internal.process.FileAlreadyExistsException;
+import org.apache.geode.internal.process.MBeanInvocationFailedException;
+import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessController;
+import org.apache.geode.internal.process.ProcessControllerFactory;
+import org.apache.geode.internal.process.ProcessControllerParameters;
+import org.apache.geode.internal.process.ProcessLauncherContext;
+import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.StartupStatusListener;
+import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -42,25 +85,8 @@ import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.pdx.PdxSerializer;
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying a GemFire Cache
@@ -729,6 +755,14 @@ public class ServerLauncher extends AbstractLauncher<String> {
         this.running.set(true);
 
         return new ServerState(this, Status.ONLINE);
+      }
+      catch(AuthenticationRequiredException e){
+        failOnStart(e);
+        throw new AuthenticationRequiredException("user/password required. Please start your server with --user and --password. "+ e.getMessage());
+      }
+      catch(GemFireSecurityException e){
+        failOnStart(e);
+        throw new GemFireSecurityException(e.getMessage());
       }
       catch (IOException e) {
         failOnStart(e);

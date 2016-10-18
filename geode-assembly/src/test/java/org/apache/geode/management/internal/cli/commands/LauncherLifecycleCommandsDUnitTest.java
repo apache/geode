@@ -437,6 +437,28 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  public void testStartServerFailsFastOnMissingPassword() throws IOException {
+
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
+
+    String pathName = getClass().getSimpleName().concat("_").concat(getTestMethodName());
+    final File workingDirectory = temporaryFolder.newFolder(pathName);
+
+    command.addOption(CliStrings.START_SERVER__NAME, pathName);
+    command.addOption(CliStrings.START_SERVER__DIR, workingDirectory.getCanonicalPath());
+    command.addOption(CliStrings.START_SERVER__USERNAME, "test");
+
+    CommandResult result = executeCommand(command.toString());
+
+    assertNotNull(result);
+    assertEquals(Result.Status.ERROR, result.getStatus());
+
+    String resultString = toString(result);
+
+    assertTrue(resultString, resultString.contains("password must be specified"));
+  }
+
+  @Test
   public void test005StartServerFailsFastOnMissingGemFireSecurityPropertiesFile() throws IOException {
     String gemfireSecuritiesPropertiesFile = "/path/to/missing/gemfire-securities.properties";
 

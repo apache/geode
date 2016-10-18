@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -36,6 +35,18 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import jline.Terminal;
+import jline.console.ConsoleReader;
+import org.springframework.shell.core.AbstractShell;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.JLineLogHandler;
+import org.springframework.shell.core.JLineShell;
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ShellStatus.Status;
 
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.GemFireVersion;
@@ -61,19 +72,6 @@ import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
 import org.apache.geode.management.internal.cli.shell.unsafe.GfshSignalHandler;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
-
-import org.springframework.shell.core.AbstractShell;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.JLineLogHandler;
-import org.springframework.shell.core.JLineShell;
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ShellStatus.Status;
-
-import jline.Terminal;
-import jline.console.ConsoleReader;
 
 /**
  * Extends an interactive shell provided by <a
@@ -322,6 +320,21 @@ public class Gfsh extends JLineShell {
 
   public AbstractSignalNotificationHandler getSignalHandler() {
     return signalHandler;
+  }
+
+  public String readPassword(String textToPrompt) throws IOException {
+    if(isHeadlessMode && isQuietMode())
+      return null;
+
+    return readWithMask(textToPrompt, '*');
+  }
+
+  public String readText(String textToPrompt) throws IOException {
+    if(isHeadlessMode && isQuietMode())
+      return null;
+
+    return interact(textToPrompt);
+
   }
 
   /**
