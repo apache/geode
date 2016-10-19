@@ -2,15 +2,20 @@
 
 This directory contains the source files for the project website. Website content is written in [Markdown](https://help.github.com/articles/markdown-basics) and the site files are generated from that source by a tool called [Pandoc](http://johnmacfarlane.net/pandoc).
 
-Source files for the website are in ``${geode-project-dir}/geode-site/website/content``
+Source files for the website are in `${geode-project-dir}/geode-site/website/content`.
 
-Generated files for the website are in ``${geode-project-dir}/geode-site/content``
+Generated files for the website are in `${geode-project-dir}/geode-site/content`.
+
+NOTE: To make changes to the [Apache Geode User Guide](http://geode.incubator.apache.org/docs/guide/About_Geode.html):
+
+- See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for information about contributing to the documentation source files.
+- See `${geode-project-dir}/geode-book/README.md` for information about building a local version of the guide and adding it to the website.
 
 The website is updated by a "sync" tool that monitors the __asf-site__ branch 
 of our Git repo, so after making changes you must place your updated source
 and generated files on the __asf-site__ branch and push.
 The content will be published to the
-[Geode website](http://geode.incubator.apache.org) after a 5-20 minute delay.
+Geode website](http://geode.incubator.apache.org) after a 5-20 minute delay.
 
 ## Prerequisites
 
@@ -36,12 +41,14 @@ Install Nanoc and other Ruby Gems needed:
 Source files for the website are in
 ``${geode-project-dir}/geode-site/website/content``.
 When changing the actual content of the site, find the Markdown files that you
-need to edit under the ``${geode-project-dir}/geode-site/website/content/docs``
+need to edit under the `${geode-project-dir}/geode-site/website/content/`
 directory and make your change.
 
 If you need to change the layout or styling of the site,
 then you will probably need to change an HTML, JS or CSS file 
 within the ``${geode-project-dir}/geode-site/website/content`` directory.
+
+NOTE: The [Apache Geode User Guide](http://geode.incubator.apache.org/docs/guide/About_Geode.html) source files are in `${geode-project-dir}/geode-docs/`. See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for more information.
 
 ### 2. Locally generate the site and test your changes
 
@@ -53,9 +60,10 @@ file to place the locally built website into the
 With a cwd of ``${geode-project-dir}/geode-site/website``:
 
     $ nanoc compile
-
 Run ``git status`` and you should see your changes plus any updated files
 under the ``${geode-project-dir}/content`` directory.
+
+NOTE: Whether or not you have made changes to the Apache Geode User Guide, you must now build the User Guide and move the User Guide files to the Geode website. For instructions, see `${geode-project-dir}/geode-book/README.md`.
 
 To view your changes locally, use the view command to start a local web server. Check the website at [http://0.0.0.0:3000](http://0.0.0.0:3000)
 
@@ -76,18 +84,16 @@ top level, ``${geode-project-dir}``, of the __asf-site__ branch.
 Here is one way to accomplish this:
 
 1. On the __develop__ branch
-    
+
         $ cd geode-site/website
         $ nanoc compile
         $ cd ../content
         $ tar cvf new-website-content.tar .
-        $ mv new-website-content.tar ~/Desktop/.
-The move of the TAR file is not necessary, but helps to clarify this example.
+        $ mv new-website-content.tar ~/Desktop/
 
-2. Expand the TAR file at the top level of the __asf-site__ branch
+2. Expand the TAR file at the top level of the __asf-site__ branch (cwd should be ${geode-project-dir}:
 
-        $ cd ..                  (cwd should be ${geode-project-dir})
-        $ checkout asf-site
+        $ git checkout asf-site
         $ tar xvf ~/Desktop/new-website-content.tar
 
 3. Commit and push on the __asf-site__ branch
