@@ -72,7 +72,7 @@ public class DUnitLauncher {
   private static final int DEBUGGING_VM_NUM = -1;
   private static final int LOCATOR_VM_NUM = -2;
 
-  static final long STARTUP_TIMEOUT = 30 * 1000;
+  static final long STARTUP_TIMEOUT = 120 * 1000;
   private static final String SUSPECT_FILENAME = "dunit_suspect.log";
   private static File DUNIT_SUSPECT_FILE;
 
