@@ -1245,7 +1245,11 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
   </xsd:complexType>
   <xsd:complexType name="dynamic-region-factory-type">
     <xsd:annotation>
+      <xsd:appinfo>deprecated</xsd:appinfo>
       <xsd:documentation>
+        dynamic-region-factory is deprecated. Use functions to create regions dynamically
+        instead.
+
         A "dynamic-region-factory" element configures a dynamic region factory for
         this cache. If this optional element is missing then the cache does not
         support dynamic regions.
