@@ -16,80 +16,20 @@
  */
 package org.apache.geode.rest.internal.web;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 
 @Category({ IntegrationTest.class, SecurityTest.class })
-public class RestSecurityIntegrationTest {
-
-  protected static final String REGION_NAME = "AuthRegion";
-
-  public final static String PROTOCOL = "http";
-  public final static String HOSTNAME = "localhost";
-  public final static String CONTEXT = "/geode/v1";
-
-  private static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();
-  static Properties properties = new Properties() {{
-    setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/management/internal/security/clientServer.json");
-    setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    setProperty(START_DEV_REST_API, "true");
-    setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-    setProperty(HTTP_SERVICE_PORT, restPort + "");
-  }};
-
-  @ClassRule
-  public static ServerStarter serverStarter = new ServerStarter(properties);
-
-  @BeforeClass
-  public static void before() throws Exception {
-    serverStarter.startServer();
-    serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
-  }
+public class RestSecurityIntegrationTest extends AbstractRestTest {
 
   @Test
   public void testFunctions() throws Exception {
@@ -223,7 +163,7 @@ public class RestSecurityIntegrationTest {
     assertEquals("A '200 - OK' was expected", 200, getCode(response));
 
     assertTrue(isOK(response));
-    JSONObject jsonObject = new JSONObject(getResponseBody(response));
+    JSONObject jsonObject = new JSONObject(getResponseBodyJson(response));
     JSONArray regions = jsonObject.getJSONArray("regions");
     assertNotNull(regions);
     assertTrue(regions.length() > 0);
@@ -388,52 +328,10 @@ public class RestSecurityIntegrationTest {
     assertTrue(isOK(response));
   }
 
-  protected HttpResponse doHEAD(String query, String username, String password) throws MalformedURLException {
-    HttpHead httpHead = new HttpHead(CONTEXT + query);
-    return doRequest(httpHead, username, password);
-  }
 
-
-  protected HttpResponse doPost(String query, String username, String password, String body) throws MalformedURLException {
-    HttpPost httpPost = new HttpPost(CONTEXT + query);
-    httpPost.addHeader("content-type", "application/json");
-    httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
-    return doRequest(httpPost, username, password);
-  }
-
-
-  protected HttpResponse doPut(String query, String username, String password, String body) throws MalformedURLException {
-    HttpPut httpPut = new HttpPut(CONTEXT + query);
-    httpPut.addHeader("content-type", "application/json");
-    httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
-    return doRequest(httpPut, username, password);
-  }
-
-  protected HttpResponse doGet(String uri, String username, String password) throws MalformedURLException {
-    HttpGet getRequest = new HttpGet(CONTEXT + uri);
-    return doRequest(getRequest, username, password);
-  }
-
-  protected HttpResponse doDelete(String uri, String username, String password) throws MalformedURLException {
-    HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
-    return doRequest(httpDelete, username, password);
-  }
-
-  /**
-   * Check the HTTP status of the response and return if it's within the OK range
-   *
-   * @param response The HttpResponse message received from the server
-   *
-   * @return true if the status code is a 2XX-type code (200-299), otherwise false
-   */
-  protected boolean isOK(HttpResponse response) {
-    int returnCode = response.getStatusLine().getStatusCode();
-    return (returnCode < 300 && returnCode >= 200);
-  }
 
   /**
    * Check the HTTP status of the response and return true if a 401
-   *
    * @param response The HttpResponse message received from the server
    *
    * @return true if the status code is 401, otherwise false
@@ -441,56 +339,5 @@ public class RestSecurityIntegrationTest {
   protected boolean isUnauthorized(HttpResponse response) {
     int returnCode = response.getStatusLine().getStatusCode();
     return returnCode == 401;
-  }
-
-  /**
-   * Retrieve the status code of the HttpResponse
-   *
-   * @param response The HttpResponse message received from the server
-   *
-   * @return a numeric value
-   */
-  protected int getCode(HttpResponse response) {
-    return response.getStatusLine().getStatusCode();
-  }
-
-  protected JSONTokener getResponseBody(HttpResponse response) throws IOException {
-    HttpEntity entity = response.getEntity();
-    InputStream content = entity.getContent();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-    String line;
-    StringBuilder str = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      str.append(line);
-    }
-    return new JSONTokener(str.toString());
-  }
-
-  private HttpResponse doRequest(HttpRequestBase request, String username, String password) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(HOSTNAME, this.restPort, PROTOCOL);
-    CloseableHttpClient httpclient = HttpClients.custom().build();
-    HttpClientContext clientContext = HttpClientContext.create();
-    // if username is null, do not put in authentication
-    if (username != null) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
-      httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-      AuthCache authCache = new BasicAuthCache();
-      BasicScheme basicAuth = new BasicScheme();
-      authCache.put(targetHost, basicAuth);
-      clientContext.setCredentialsProvider(credsProvider);
-      clientContext.setAuthCache(authCache);
-    }
-
-    try {
-      return httpclient.execute(targetHost, request, clientContext);
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-      fail("Rest GET should not have thrown ClientProtocolException!");
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Rest GET Request should not have thrown IOException!");
-    }
-    return null;
   }
 }

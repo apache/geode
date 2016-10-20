@@ -19,10 +19,10 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -63,7 +63,7 @@ import org.apache.geode.rest.internal.web.util.ValidationUtils;
  */
 
 @Controller("queryController")
-@Api(value = "queries", description = "Rest api for gemfire query execution", produces = MediaType.APPLICATION_JSON_VALUE)
+@Api(value = "queries", description = "query execution", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequestMapping(QueryAccessController.REST_API_VERSION + "/queries")
 @SuppressWarnings("unused")
 public class QueryAccessController extends AbstractBaseController {
@@ -130,9 +130,8 @@ public class QueryAccessController extends AbstractBaseController {
     notes = "Prepare the specified parametrized query and assign the corresponding ID for lookup",
     response  = void.class
   )
-  @ApiResponses( {
-    @ApiResponse( code = 201, message = "Successfully created." ),
-    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
+  @ApiResponses({
+    @ApiResponse( code = 201, message = "Successfully created." ), @ApiResponse(code = 401, message = "Invalid Username or Password."),
     @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 409, message = "QueryId already assigned to other query." ),
     @ApiResponse( code = 500, message = "GemFire throws an error or exception." )
