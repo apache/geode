@@ -16,6 +16,10 @@
  */
 package org.apache.geode.management.internal.cli.i18n;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.text.MessageFormat;
+
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -23,10 +27,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-
-import java.text.MessageFormat;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**-
  *  * Contains 'String' constants used as key to the Localized strings to be used
@@ -2203,6 +2203,11 @@ public class CliStrings {
   public static final String START_SERVER__HTTP_SERVICE_PORT__HELP = "Port on which HTTP Service will listen on";
   public static final String START_SERVER__HTTP_SERVICE_BIND_ADDRESS = "http-service-bind-address";
   public static final String START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP = "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
+  public static final String START_SERVER__USERNAME = "user";
+  public static final String START_SERVER__USERNAME__HELP = "User name to securely connect to the cluster. If the --password parameter is not specified then it will be prompted for.";
+  public static final String START_SERVER__PASSWORD = "password";
+  public static final String START_SERVER__PASSWORD__HELP = "Password to securely connect to the cluster.";
+  public static final String START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED = "password must be specified.";
   /**
    * Creates a MessageFormat with the given pattern and uses it to format the given argument.
    *

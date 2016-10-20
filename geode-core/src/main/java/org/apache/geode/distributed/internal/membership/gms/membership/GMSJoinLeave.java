@@ -41,6 +41,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
@@ -70,8 +72,8 @@ import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMess
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the
@@ -412,6 +414,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       if (failReason.contains("Rejecting the attempt of a member using an older version")
           || failReason.contains("15806")) {
         throw new SystemConnectException(failReason);
+      }
+      else if(failReason.contains("Failed to find credentials")){
+        throw new AuthenticationRequiredException(failReason);
       }
       throw new GemFireSecurityException(failReason);
     }
