@@ -30,7 +30,7 @@
 #   item, use the pattern “/about/*/”; “/about/*” will also select the parent,
 #   because “*” matches zero or more characters.
 
-passthrough /\/(bootstrap|css|font|images|images_svg|img|js|static|stylesheets)\/.*/
+passthrough /\/(bootstrap|css|font|img|js|static)\/.*/
 
 compile '/docs/*' do
   @docs = true
