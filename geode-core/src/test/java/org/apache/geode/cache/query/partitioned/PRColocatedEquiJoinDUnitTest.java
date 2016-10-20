@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -1341,6 +1342,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
 
 
   @Test
+  @Category(FlakyTest.class) // GEODE-2022
   public void testRRPRLocalQueryingWithHetroIndexes() throws Exception {
 
     Host host = Host.getHost(0);
