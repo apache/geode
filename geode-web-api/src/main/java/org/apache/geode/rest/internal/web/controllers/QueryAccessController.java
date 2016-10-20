@@ -91,7 +91,7 @@ public class QueryAccessController extends AbstractBaseController {
    * list all parametrized Queries created in a Gemfire data node
    * @return result as a JSON document.
    */
-  @RequestMapping(method = RequestMethod.GET,  produces = { MediaType.APPLICATION_JSON_VALUE })
+  @RequestMapping(method = RequestMethod.GET,  produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
   @ApiOperation(
     value = "list all parametrized queries",
     notes = "List all parametrized queries by id/name",
@@ -165,7 +165,7 @@ public class QueryAccessController extends AbstractBaseController {
    * @param oql OQL query string to be executed
    * @return query result as a JSON document
    */
-  @RequestMapping(method = RequestMethod.GET, value = "/adhoc", produces = { MediaType.APPLICATION_JSON_VALUE })
+  @RequestMapping(method = RequestMethod.GET, value = "/adhoc", produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
   @ApiOperation(
     value = "run an adhoc query",
     notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter",

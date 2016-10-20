@@ -86,7 +86,7 @@ public class FunctionAccessController extends AbstractBaseController {
    *
    * @return result as a JSON document.
    */
-  @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
+  @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
   @ApiOperation(
       value = "list all functions",
       notes = "list all functions available in the GemFire cluster",

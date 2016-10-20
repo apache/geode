@@ -134,7 +134,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @param limit total number of entries requested
    * @return JSON document
    */
-  @RequestMapping(method = RequestMethod.GET, value = "/{region}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(method = RequestMethod.GET, value = "/{region}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(
     value = "read all data for region",
     notes = "Read all data for region. Use limit param to get fixed or limited number of entries.",
@@ -213,7 +213,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
-                  produces = MediaType.APPLICATION_JSON_VALUE)
+                  produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(
     value = "read data for specific keys",
     notes = "Read data for specific set of keys in region.",

@@ -63,7 +63,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    *
    * @return JSON document containing result
    */
-  @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+  @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(
     value = "list all resources (Regions)",
     notes = "List all available resources (Regions) in the GemFire cluster",
@@ -92,7 +92,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/keys",
-                  produces = { MediaType.APPLICATION_JSON_VALUE } )
+                  produces = { MediaType.APPLICATION_JSON_UTF8_VALUE } )
   @ApiOperation(
     value = "list all keys",
     notes = "List all keys in region",
@@ -198,7 +198,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
     return new ResponseEntity<>(HttpStatus.OK);
   }
   
-  @RequestMapping(method = { RequestMethod.GET }, value = "/servers")
+  @RequestMapping(method = { RequestMethod.GET }, value = "/servers", produces = { MediaType.APPLICATION_JSON_UTF8_VALUE } )
   @ApiOperation(
     value = "fetch all REST enabled servers in the DS",
     notes = "Find all gemfire node where developer REST service is up and running!",
