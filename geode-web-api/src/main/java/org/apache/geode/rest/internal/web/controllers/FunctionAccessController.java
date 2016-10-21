@@ -26,6 +26,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
+import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.http.HttpHeaders;
@@ -43,19 +53,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
-import org.apache.geode.rest.internal.web.util.JSONUtils;
-
 /**
  * The FunctionsController class serving REST Requests related to the function execution
+ *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
  */
@@ -65,10 +65,10 @@ import org.apache.geode.rest.internal.web.util.JSONUtils;
 @RequestMapping(FunctionAccessController.REST_API_VERSION + "/functions")
 @SuppressWarnings("unused")
 public class FunctionAccessController extends AbstractBaseController {
-  private static final Logger logger = LogService.getLogger();
 
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Gets the version of the REST API implemented by this @Controller.
@@ -87,16 +87,13 @@ public class FunctionAccessController extends AbstractBaseController {
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-  @ApiOperation(
-      value = "list all functions",
-      notes = "list all functions available in the GemFire cluster",
-      response = void.class
-  )
+  @ApiOperation(value = "list all functions", notes = "list all functions available in the GemFire cluster", response = void.class)
   @ApiResponses({
-      @ApiResponse(code = 200, message = "OK."), @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")
-  })
+                  @ApiResponse(code = 200, message = "OK."),
+                  @ApiResponse(code = 401, message = "Invalid Username or Password."),
+                  @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
+                  @ApiResponse(code = 500, message = "GemFire throws an error or exception.")
+                })
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
@@ -115,42 +112,37 @@ public class FunctionAccessController extends AbstractBaseController {
    * Arguments to the function are passed as JSON string in the request body.
    *
    * @param functionId represents function to be executed
-   * @param region     list of regions on which function to be executed.
-   * @param members    list of nodes on which function to be executed.
-   * @param groups     list of groups on which function to be executed.
-   * @param filter     list of keys which the function will use to determine on which node to execute the function.
+   * @param region list of regions on which function to be executed.
+   * @param members list of nodes on which function to be executed.
+   * @param groups list of groups on which function to be executed.
+   * @param filter list of keys which the function will use to determine on which node to execute the function.
    * @param argsInBody function argument as a JSON document
+   *
    * @return result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId}", produces = { MediaType.APPLICATION_JSON_VALUE })
-  @ApiOperation(
-      value = "execute function",
-      notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified",
-      response = void.class
-  )
+  @ApiOperation(value = "execute function", notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified", response = void.class)
   @ApiResponses({
-      @ApiResponse(code = 200, message = "OK."),
-      @ApiResponse( code = 401, message = "Invalid Username or Password." ),
-      @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
-      @ApiResponse(code = 500, message = "if GemFire throws an error or exception"),
-      @ApiResponse(code = 400, message = "if Function arguments specified as JSON document in the request body is invalid")
-  })
+                  @ApiResponse(code = 200, message = "OK."),
+                  @ApiResponse(code = 401, message = "Invalid Username or Password."),
+                  @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
+                  @ApiResponse(code = 500, message = "if GemFire throws an error or exception"),
+                  @ApiResponse(code = 400, message = "if Function arguments specified as JSON document in the request body is invalid")
+                })
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
   public ResponseEntity<String> execute(@PathVariable("functionId") String functionId,
-      @RequestParam(value = "onRegion", required = false) String region,
-      @RequestParam(value = "onMembers", required = false) final String[] members,
-      @RequestParam(value = "onGroups", required = false) final String[] groups,
-      @RequestParam(value = "filter", required = false) final String[] filter,
-      @RequestBody(required = false) final String argsInBody
-  ) {
+                                        @RequestParam(value = "onRegion", required = false) String region,
+                                        @RequestParam(value = "onMembers", required = false) final String[] members,
+                                        @RequestParam(value = "onGroups", required = false) final String[] groups,
+                                        @RequestParam(value = "filter", required = false) final String[] filter,
+                                        @RequestBody(required = false) final String argsInBody) {
     Execution function = null;
     functionId = decode(functionId);
 
     if (StringUtils.hasText(region)) {
-      logger.debug("Executing Function ({}) with arguments ({}) on Region ({})...", functionId,
-        ArrayUtils.toString(argsInBody), region);
+      logger.debug("Executing Function ({}) with arguments ({}) on Region ({})...", functionId, ArrayUtils.toString(argsInBody), region);
 
 
       region = decode(region);
@@ -160,8 +152,8 @@ public class FunctionAccessController extends AbstractBaseController {
         throw new GemfireRestException(String.format("The Region identified by name (%1$s) could not found!", region), fe);
       }
     } else if (ArrayUtils.isNotEmpty(members)) {
-      logger.debug("Executing Function ({}) with arguments ({}) on Member ({})...", functionId,
-            ArrayUtils.toString(argsInBody), ArrayUtils.toString(members));
+      logger.debug("Executing Function ({}) with arguments ({}) on Member ({})...", functionId, ArrayUtils.toString(argsInBody), ArrayUtils
+        .toString(members));
 
       try {
         function = FunctionService.onMembers(getMembers(members));
@@ -169,8 +161,8 @@ public class FunctionAccessController extends AbstractBaseController {
         throw new GemfireRestException("Could not found the specified members in distributed system!", fe);
       }
     } else if (ArrayUtils.isNotEmpty(groups)) {
-      logger.debug("Executing Function ({}) with arguments ({}) on Groups ({})...", functionId,
-            ArrayUtils.toString(argsInBody), ArrayUtils.toString(groups));
+      logger.debug("Executing Function ({}) with arguments ({}) on Groups ({})...", functionId, ArrayUtils.toString(argsInBody), ArrayUtils
+        .toString(groups));
 
       try {
         function = FunctionService.onMembers(groups);
@@ -179,8 +171,7 @@ public class FunctionAccessController extends AbstractBaseController {
       }
     } else {
       //Default case is to execute function on all existing data node in DS, document this.
-      logger.debug("Executing Function ({}) with arguments ({}) on all Members...", functionId,
-            ArrayUtils.toString(argsInBody));
+      logger.debug("Executing Function ({}) with arguments ({}) on all Members...", functionId, ArrayUtils.toString(argsInBody));
 
       try {
         function = FunctionService.onMembers(getAllMembersInDS());
@@ -190,8 +181,7 @@ public class FunctionAccessController extends AbstractBaseController {
     }
 
     if (!ArrayUtils.isEmpty(filter)) {
-      logger.debug("Executing Function ({}) with filter ({})", functionId,
-            ArrayUtils.toString(filter));
+      logger.debug("Executing Function ({}) with filter ({})", functionId, ArrayUtils.toString(filter));
 
       Set filter1 = ArrayUtils.asSet(filter);
       function = function.withFilter(filter1);

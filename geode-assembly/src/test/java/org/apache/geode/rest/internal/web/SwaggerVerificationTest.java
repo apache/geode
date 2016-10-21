@@ -20,14 +20,13 @@ package org.apache.geode.rest.internal.web;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 

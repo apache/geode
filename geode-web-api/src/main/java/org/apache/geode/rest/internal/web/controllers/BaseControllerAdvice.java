@@ -20,6 +20,13 @@ package org.apache.geode.rest.internal.web.controllers;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
+import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.security.NotAuthorizedException;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,18 +36,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
-import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.security.NotAuthorizedException;
-
 
 /**
  * The CrudControllerAdvice class handles exception thrown while serving the REST request
  * <p/>
+ *
  * @since GemFire 8.0
  */
 
@@ -48,19 +48,21 @@ import org.apache.geode.security.NotAuthorizedException;
 @SuppressWarnings("unused")
 public class BaseControllerAdvice extends AbstractBaseController {
 
-  private static final Logger logger = LogService.getLogger();
-  
   protected static final String REST_API_VERSION = "/v1";
-   
+  private static final Logger logger = LogService.getLogger();
+
   @Override
   protected String getRestApiVersion() {
     return REST_API_VERSION;
   }
+
   /**
    * Handles both ResourceNotFoundExceptions and specifically, RegionNotFoundExceptions, occurring when a resource
    * or a Region (a.k.a. resource) does not exist in GemFire.
    * <p/>
+   *
    * @param e the RuntimeException thrown when the accessed/requested resource does not exist in GemFire.
+   *
    * @return the String message from the RuntimeException.
    */
   @ExceptionHandler({ RegionNotFoundException.class, ResourceNotFoundException.class })
@@ -73,7 +75,9 @@ public class BaseControllerAdvice extends AbstractBaseController {
   /**
    * Handles MalformedJsonFoundException, occurring when REST service encounters incorrect or malformed JSON document
    * <p/>
+   *
    * @param e the RuntimeException thrown when malformed JSON is encounterd.
+   *
    * @return the String message from the RuntimeException.
    */
   @ExceptionHandler({ MalformedJsonException.class })
@@ -82,11 +86,13 @@ public class BaseControllerAdvice extends AbstractBaseController {
   public String handleException(final RuntimeException e) {
     return convertErrorAsJson(e.getMessage());
   }
-  
+
   /**
    * Handles any GemfireRestException thrown by a REST API web service endpoint, HTTP request handler method.
    * <p/>
+   *
    * @param ge the GemfireRestException thrown when it found problem processing REST request.
+   *
    * @return the String message from the RuntimeException.
    */
   @ExceptionHandler(GemfireRestException.class)
@@ -95,11 +101,13 @@ public class BaseControllerAdvice extends AbstractBaseController {
   public String handleException(final GemfireRestException ge) {
     return convertErrorAsJson(ge);
   }
-  
+
   /**
    * Handles any DataTypeNotSupportedException thrown by a REST API web service endpoint, HTTP request handler method.
    * <p/>
+   *
    * @param tns the DataTypeNotSupportedException thrown if problem occurs in cache values to JSON conversion.
+   *
    * @return the String message from the RuntimeException.
    */
   @ExceptionHandler(DataTypeNotSupportedException.class)
@@ -108,12 +116,14 @@ public class BaseControllerAdvice extends AbstractBaseController {
   public String handleException(final DataTypeNotSupportedException tns) {
     return convertErrorAsJson(tns.getMessage());
   }
-  
+
   /**
-   * Handles HttpRequestMethodNotSupportedException thrown by a REST API web service when request is 
+   * Handles HttpRequestMethodNotSupportedException thrown by a REST API web service when request is
    * received with unsupported HTTP method.
    * <p/>
+   *
    * @param e the HttpRequestMethodNotSupportedException thrown when REST request is received with NOT support methods.
+   *
    * @return the String message from the RuntimeException.
    */
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -126,7 +136,9 @@ public class BaseControllerAdvice extends AbstractBaseController {
   /**
    * Handles an AccessDenied Exception thrown by a REST API web service endpoint, HTTP request handler method.
    * <p/>
+   *
    * @param cause the Exception causing the error.
+   *
    * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
    */
   @ExceptionHandler(AccessDeniedException.class)
@@ -139,7 +151,9 @@ public class BaseControllerAdvice extends AbstractBaseController {
   /**
    * Handles an NotAuthorized Exception thrown by a GeodeSecurityUtil.
    * <p/>
+   *
    * @param cause the Exception causing the error.
+   *
    * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
    */
   @ExceptionHandler(NotAuthorizedException.class)
@@ -152,7 +166,9 @@ public class BaseControllerAdvice extends AbstractBaseController {
   /**
    * Handles any Exception thrown by a REST API web service endpoint, HTTP request handler method.
    * <p/>
+   *
    * @param cause the Exception causing the error.
+   *
    * @return a ResponseEntity with an appropriate HTTP status code (500 - Internal Server Error) and HTTP response body
    * containing the stack trace of the Exception.
    */
@@ -164,7 +180,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
     cause.printStackTrace(new PrintWriter(stackTraceWriter));
     final String stackTrace = stackTraceWriter.toString();
 
-    if(logger.isDebugEnabled()){
+    if (logger.isDebugEnabled()) {
       logger.debug(stackTrace);
     }
 
