@@ -25,10 +25,12 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.assertj.core.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import util.TestException;
@@ -45,6 +47,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -53,10 +56,13 @@ import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
+import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
 
 /**
  * Test for co-located PR transactions.
@@ -316,16 +322,139 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   protected void createPRWithCoLocation(String prName, String coLocatedWith) {
+    setAttributes(prName, coLocatedWith);
+    createPartitionedRegion(attributeObjects);
+  }
+  
+  protected void setAttributes(String prName, String coLocatedWith) {
     this.regionName = prName;
     this.colocatedWith = coLocatedWith;
     this.isPartitionResolver = new Boolean(true);
     this.attributeObjects = new Object[] { regionName, redundancy, localMaxmemory,
         totalNumBuckets, colocatedWith, isPartitionResolver, getEnableConcurrency() };
-    createPartitionedRegion(attributeObjects);
   }
 
   protected boolean getEnableConcurrency() {
     return false;
+  }
+  
+  /**
+   * This method executes a transaction with get on non colocated entries and 
+   * expects the transaction to fail with TransactionDataNotColocatedException.
+   * @param bucketRedundancy redundancy for the colocated PRs
+   */
+  protected void baiscPRTXWithNonColocatedGet(int bucketRedundancy) {
+    dataStore1.invoke(runGetCache);
+    dataStore2.invoke(runGetCache);
+    redundancy = new Integer(bucketRedundancy);
+    localMaxmemory = new Integer(50);
+    totalNumBuckets = new Integer(2);
+    
+    setAttributes(CustomerPartitionedRegionName, null);
+
+    dataStore1.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
+    dataStore2.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
+
+    // Put the customer 1-2 in CustomerPartitionedRegion
+    dataStore1.invoke(() -> PRColocationDUnitTest.putCustomerPartitionedRegion(CustomerPartitionedRegionName, 2));
+
+    dataStore1.invoke(verifyNonColocated);
+    dataStore2.invoke(verifyNonColocated);
+    
+    dataStore1.invoke(getTx);
+  }
+  
+
+  @SuppressWarnings("serial")
+  private SerializableRunnable verifyNonColocated = new SerializableRunnable("verifyNonColocated") {
+    @Override
+    public void run() throws PRLocallyDestroyedException, ForceReattemptException {
+      containsKeyLocally();
+    }
+  };
+  
+  @SuppressWarnings("serial")
+  private SerializableRunnable getTx = new SerializableRunnable("getTx") {
+    @Override
+    public void run() {
+      performGetTx();
+    }
+  };
+
+  
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private void containsKeyLocally() throws PRLocallyDestroyedException, ForceReattemptException {
+    PartitionedRegion pr = (PartitionedRegion) basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+    
+    CustId cust1 = new CustId(1);
+    CustId cust2 = new CustId(2);
+    int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
+    int bucketId2 = pr.getKeyInfo(cust2).getBucketId();
+    
+    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
+    Set localBucket1Keys;
+    Set localBucket2Keys;
+    assertTrue(localPrimaryBucketList.size() == 1);
+    for (int bucketId: localPrimaryBucketList) {
+      if (bucketId == bucketId1) {
+        //primary bucket has cust1
+        localBucket1Keys = pr.getDataStore().getKeysLocally(bucketId1, false);
+        for (Object key: localBucket1Keys) {
+          LogService.getLogger().info("local key set contains " + key);
+        }
+        assertTrue(localBucket1Keys.size() == 1);
+      } else {
+        localBucket2Keys = pr.getDataStore().getKeysLocally(bucketId2, false);
+        for (Object key: localBucket2Keys) {
+          LogService.getLogger().info("local key set contains " + key);
+        }
+        assertTrue(localBucket2Keys.size() == 1);
+      }
+    }
+  }
+  
+  @SuppressWarnings("unchecked")
+  private void performGetTx() {
+    PartitionedRegion pr = (PartitionedRegion) basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+    CacheTransactionManager mgr = pr.getCache().getCacheTransactionManager();
+    CustId cust1 = new CustId(1);
+    CustId cust2 = new CustId(2);
+    int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
+    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
+    assertTrue(localPrimaryBucketList.size() == 1);
+    boolean isCust1Local = (Integer)localPrimaryBucketList.get(0) == bucketId1;
+
+    //touch first get on remote node -- using TXStateStub
+    Assertions.assertThatThrownBy(()-> getTx(!isCust1Local, mgr, pr, cust1, cust2))
+    .isInstanceOf(TransactionDataNotColocatedException.class);
+
+   //touch first get on local node-- using TXState
+    Assertions.assertThatThrownBy(()-> getTx(isCust1Local, mgr, pr, cust1, cust2))
+    .isInstanceOf(TransactionDataNotColocatedException.class);
+  }
+  
+  private void getTx(boolean doCust1First, CacheTransactionManager mgr, PartitionedRegion pr, CustId cust1, CustId cust2) {
+    CustId first = doCust1First ? cust1 : cust2;
+    CustId second = !doCust1First ? cust1 : cust2;
+    
+    mgr.begin();
+    boolean doRollback = true;
+    try {
+      pr.get(first);
+      pr.get(second);
+      doRollback = false;
+    } finally {
+      if (doRollback) {
+        mgr.rollback();
+      } else {
+        mgr.commit();
+      }
+    }
+  }
+  
+  @Test
+  public void testTxWithNonColocatedGet() {
+    baiscPRTXWithNonColocatedGet(0);
   }
   
   @Test

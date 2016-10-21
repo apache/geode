@@ -4105,6 +4105,12 @@ public class PartitionedRegion extends LocalRegion implements
             retryTime.waitToRetryNode();
           }
         } else {
+          if (prce instanceof BucketNotFoundException) {
+            TransactionException ex = new TransactionDataNotColocatedException(LocalizedStrings.
+                PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION.toLocalizedString(key));
+            ex.initCause(prce);
+            throw ex;
+          }
           Throwable cause = prce.getCause();
           if (cause instanceof PrimaryBucketException) {
             throw (PrimaryBucketException)cause;

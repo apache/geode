@@ -37,6 +37,11 @@ public class PRDistTXWithVersionsDUnitTest extends PRTransactionWithVersionsDUni
     return props;
   }
   
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
+  @Test
+  public void testTxWithNonColocatedGet() {
+  }
+  
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Override
   @Test

@@ -2388,11 +2388,15 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     assertTrue("Region should have failed to close. regionName = " + partitionedRegionName , exceptionThrown);    
   }
   public static void putCustomerPartitionedRegion(String partitionedRegionName) {
+    putCustomerPartitionedRegion(partitionedRegionName, 10);
+  }
+  
+  public static void putCustomerPartitionedRegion(String partitionedRegionName, int numOfRecord) {
     assertNotNull(basicGetCache());
     Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR
         + partitionedRegionName);
     assertNotNull(partitionedregion);
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= numOfRecord; i++) {
       CustId custid = new CustId(i);
       Customer customer = new Customer("name" + i, "Address" + i);
       try {
