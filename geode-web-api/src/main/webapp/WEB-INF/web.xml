@@ -23,7 +23,7 @@ limitations under the License.
   <display-name>GemFire Developer REST API</display-name>
 
   <description>
-    Web deployment descriptor declaring the developer REST API for GemFire.
+    Web deployment descriptor declaring the developer REST API for Geode.
   </description>
 
   <filter>

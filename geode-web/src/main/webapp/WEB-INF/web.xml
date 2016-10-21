@@ -23,7 +23,7 @@ limitations under the License.
   <display-name>GemFire Management and Monitoring REST API</display-name>
 
   <description>
-    Web deployment descriptor declaring the Management REST API for GemFire.
+    Web deployment descriptor declaring the Management REST API for Geode.
   </description>
 
   <filter>

@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -53,8 +53,7 @@ import org.apache.geode.rest.internal.web.util.ArrayUtils;
  */
 
 @Controller("pdxCrudController")
-@Api(value = "region",
-     description = "region CRUD operations")
+@Api(value = "region", description = "CRUD operations on regions")
 @RequestMapping(PdxBasedCrudController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class PdxBasedCrudController extends CommonCrudController {
@@ -86,9 +85,8 @@ public class PdxBasedCrudController extends CommonCrudController {
     notes = "Create (put-if-absent) data in region",
     response  = void.class
   )
-  @ApiResponses( {
-    @ApiResponse( code = 201, message = "Created."),
-    @ApiResponse( code = 400, message = "Data specified (JSON doc) in the request body is invalid." ),
+  @ApiResponses({
+    @ApiResponse( code = 201, message = "Created."), @ApiResponse(code = 400, message = "Data specified (JSON doc) in the request body is invalid."),
     @ApiResponse( code = 401, message = "Invalid Username or Password." ),
     @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
     @ApiResponse( code = 404, message = "Region does not exist." ),

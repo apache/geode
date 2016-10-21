@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.http.HttpHeaders;
@@ -59,21 +59,17 @@ public abstract class CommonCrudController extends AbstractBaseController {
   private static final Logger logger = LogService.getLogger();
   
   /**
-   * List all available resources (Regions) in the GemFire cluster
+   * List all available resources (Regions) in the Geode cluster
    *
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
   @ApiOperation(
-    value = "list all resources (Regions)",
-    notes = "List all available resources (Regions) in the GemFire cluster",
+    value = "list all resources (Regions)", notes = "List all available resources (Regions) in the Geode cluster",
     response  = void.class
   )
-  @ApiResponses( {
-    @ApiResponse( code = 200, message = "OK." ),
-    @ApiResponse( code = 401, message = "Invalid Username or Password." ),
-    @ApiResponse( code = 403, message = "Insufficient privileges for operation." ),
-    @ApiResponse( code = 500, message = "GemFire throws an error or exception." )
+  @ApiResponses({
+                  @ApiResponse(code = 200, message = "OK."), @ApiResponse(code = 401, message = "Invalid Username or Password."), @ApiResponse(code = 403, message = "Insufficient privileges for operation."), @ApiResponse(code = 500, message = "GemFire throws an error or exception.")
   } )
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> regions() {
