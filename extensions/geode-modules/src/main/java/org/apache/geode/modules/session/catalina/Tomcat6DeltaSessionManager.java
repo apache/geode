@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.session.catalina;
 
 import org.apache.catalina.LifecycleException;
@@ -28,10 +26,12 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
   protected LifecycleSupport lifecycle = new LifecycleSupport(this);
 
   /**
-   * Prepare for the beginning of active use of the public methods of this component.  This method should be called
-   * after <code>configure()</code>, and before any of the public methods of the component are utilized.
+   * Prepare for the beginning of active use of the public methods of this component. This method
+   * should be called after <code>configure()</code>, and before any of the public methods of the
+   * component are utilized.
    *
-   * @throws LifecycleException if this component detects a fatal error that prevents this component from being used
+   * @throws LifecycleException if this component detects a fatal error that prevents this component
+   *         from being used
    */
   @Override
   public void start() throws LifecycleException {
@@ -65,8 +65,8 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
   }
 
   /**
-   * Gracefully terminate the active use of the public methods of this component.  This method should be the last one
-   * called on a given instance of this component.
+   * Gracefully terminate the active use of the public methods of this component. This method should
+   * be the last one called on a given instance of this component.
    *
    * @throws LifecycleException if this component detects a fatal error that needs to be reported
    */
@@ -114,8 +114,8 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
   }
 
   /**
-   * Get the lifecycle listeners associated with this lifecycle. If this Lifecycle has no listeners registered, a
-   * zero-length array is returned.
+   * Get the lifecycle listeners associated with this lifecycle. If this Lifecycle has no listeners
+   * registered, a zero-length array is returned.
    */
   @Override
   public LifecycleListener[] findLifecycleListeners() {

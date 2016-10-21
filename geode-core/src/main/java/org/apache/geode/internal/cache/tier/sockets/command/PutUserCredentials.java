@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -26,7 +24,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class PutUserCredentials extends BaseCommand {
-  
+
   private final static PutUserCredentials singleton = new PutUserCredentials();
 
   public static Command getCommand() {
@@ -37,9 +35,9 @@ public class PutUserCredentials extends BaseCommand {
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     boolean isSecureMode = msg.isSecureMode();
-    
-   // if (!isSecureMode)
-     //client has not send secuirty header, need to send exception and log this in security (file)
+
+    // if (!isSecureMode)
+    // client has not send secuirty header, need to send exception and log this in security (file)
 
     if (isSecureMode) {
 
@@ -53,17 +51,16 @@ public class PutUserCredentials extends BaseCommand {
           writeResponse(uniqueId, null, msg, false, servConn);
         } catch (GemFireSecurityException gfse) {
           if (servConn.getSecurityLogWriter().warningEnabled()) {
-            servConn.getSecurityLogWriter().warning(LocalizedStrings.ONE_ARG,
-                servConn.getName() + ": Security exception: " + gfse.toString()
-                + (gfse.getCause() != null ? ", caused by: "
-                    + gfse.getCause().toString() : ""));
+            servConn.getSecurityLogWriter().warning(LocalizedStrings.ONE_ARG, servConn.getName()
+                + ": Security exception: " + gfse.toString()
+                + (gfse.getCause() != null ? ", caused by: " + gfse.getCause().toString() : ""));
           }
           writeException(msg, gfse, false, servConn);
         } catch (Exception ex) {
           if (servConn.getLogWriter().warningEnabled()) {
-            servConn.getLogWriter().warning(LocalizedStrings
-                .CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
-                    new Object[] {servConn.getProxyID(), ""}, ex);
+            servConn.getLogWriter().warning(
+                LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
+                new Object[] {servConn.getProxyID(), ""}, ex);
           }
           writeException(msg, ex, false, servConn);
         } finally {

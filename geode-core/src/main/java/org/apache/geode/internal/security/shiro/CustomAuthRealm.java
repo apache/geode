@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.security.shiro;
 
@@ -39,8 +37,8 @@ public class CustomAuthRealm extends AuthorizingRealm {
   private SecurityManager securityManager = null;
 
   /**
-   * The caller must invoke {@link org.apache.geode.security.SecurityManager#init(Properties)}
-   * prior to instantiating CustomAuthRealm.
+   * The caller must invoke {@link org.apache.geode.security.SecurityManager#init(Properties)} prior
+   * to instantiating CustomAuthRealm.
    *
    * @param securityManager instance of SecurityManager which has already been initialized
    */
@@ -56,14 +54,16 @@ public class CustomAuthRealm extends AuthorizingRealm {
    * @param securityProperties the security properties to initialize SecurityManager with
    */
   public CustomAuthRealm(String authenticatorFactory, Properties securityProperties) {
-    this.securityManager = SecurityService.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
+    this.securityManager =
+        SecurityService.getObjectOfTypeFromClassName(authenticatorFactory, SecurityManager.class);
     this.securityManager.init(securityProperties);
   }
 
   @Override
-  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
+      throws AuthenticationException {
     GeodeAuthenticationToken authToken = (GeodeAuthenticationToken) token;
-    Object principal  = securityManager.authenticate(authToken.getProperties());
+    Object principal = securityManager.authenticate(authToken.getProperties());
     return new SimpleAuthenticationInfo(principal, authToken.getCredentials(), REALM_NAME);
 
   }
@@ -77,7 +77,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
   @Override
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
     ResourcePermission context = (ResourcePermission) permission;
-    Serializable principal = (Serializable)principals.getPrimaryPrincipal();
+    Serializable principal = (Serializable) principals.getPrimaryPrincipal();
     return securityManager.authorize(principal, context);
   }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -51,11 +49,9 @@ public class RequestEventValue extends BaseCommand {
     return singleton;
   }
 
-  private RequestEventValue() {
-  }
+  private RequestEventValue() {}
 
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
     Part eventIDPart = null, valuePart = null;
     EventID event = null;
     Object callbackArg = null;
@@ -67,20 +63,18 @@ public class RequestEventValue extends BaseCommand {
     // Retrieve the data from the message parts
     int parts = msg.getNumberOfParts();
     eventIDPart = msg.getPart(0);
-    
+
     if (eventIDPart == null) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.RequestEventValue_0_THE_EVENT_ID_FOR_THE_GET_EVENT_VALUE_REQUEST_IS_NULL, servConn.getName()));
-      errMessage
-          .append(" The event id for the get event value request is null.");
-      writeErrorResponse(msg, MessageType.REQUESTDATAERROR, errMessage
-          .toString(), servConn);
+      logger.warn(LocalizedMessage.create(
+          LocalizedStrings.RequestEventValue_0_THE_EVENT_ID_FOR_THE_GET_EVENT_VALUE_REQUEST_IS_NULL,
+          servConn.getName()));
+      errMessage.append(" The event id for the get event value request is null.");
+      writeErrorResponse(msg, MessageType.REQUESTDATAERROR, errMessage.toString(), servConn);
       servConn.setAsTrue(RESPONDED);
-    }
-    else {
+    } else {
       try {
-        event = (EventID)eventIDPart.getObject();
-      }
-      catch (Exception e) {
+        event = (EventID) eventIDPart.getObject();
+      } catch (Exception e) {
         writeException(msg, e, false, servConn);
         servConn.setAsTrue(RESPONDED);
         return;
@@ -91,67 +85,67 @@ public class RequestEventValue extends BaseCommand {
           if (valuePart != null) {
             callbackArg = valuePart.getObject();
           }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           writeException(msg, e, false, servConn);
           servConn.setAsTrue(RESPONDED);
           return;
         }
       }
       if (logger.isTraceEnabled()) {
-        logger.trace("{}: Received get event value request ({} bytes) from {}", servConn.getName(), msg.getPayloadLength(), servConn.getSocketString());
+        logger.trace("{}: Received get event value request ({} bytes) from {}", servConn.getName(),
+            msg.getPayloadLength(), servConn.getSocketString());
       }
       CacheClientNotifier ccn = servConn.getAcceptor().getCacheClientNotifier();
       // Get the ha container.
-      HAContainerWrapper haContainer = (HAContainerWrapper)ccn.getHaContainer();
+      HAContainerWrapper haContainer = (HAContainerWrapper) ccn.getHaContainer();
       if (haContainer == null) {
         String reason = " was not found during get event value request";
         writeRegionDestroyedEx(msg, "ha container", reason, servConn);
         servConn.setAsTrue(RESPONDED);
-      }
-      else {
+      } else {
         Object[] valueAndIsObject = new Object[2];
         try {
           Object data = haContainer.get(new HAEventWrapper(event));
 
           if (data == null) {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.RequestEventValue_UNABLE_TO_FIND_A_CLIENT_UPDATE_MESSAGE_FOR_0, event));
+            logger.warn(LocalizedMessage.create(
+                LocalizedStrings.RequestEventValue_UNABLE_TO_FIND_A_CLIENT_UPDATE_MESSAGE_FOR_0,
+                event));
             String msgStr = "No value found for " + event + " in " + haContainer.getName();
             writeErrorResponse(msg, MessageType.REQUEST_EVENT_VALUE_ERROR, msgStr, servConn);
             servConn.setAsTrue(RESPONDED);
             return;
-          }
-          else {
+          } else {
             if (logger.isDebugEnabled()) {
               logger.debug("Value retrieved for event {}", event);
             }
-            Object val = ((ClientUpdateMessageImpl)data).getValueToConflate();
+            Object val = ((ClientUpdateMessageImpl) data).getValueToConflate();
             if (!(val instanceof byte[])) {
-              if(val instanceof CachedDeserializable) {
+              if (val instanceof CachedDeserializable) {
                 val = ((CachedDeserializable) val).getSerializedValue();
               } else {
                 val = CacheServerHelper.serialize(val);
               }
-              ((ClientUpdateMessageImpl)data).setLatestValue(val);
+              ((ClientUpdateMessageImpl) data).setLatestValue(val);
             }
             valueAndIsObject[0] = val;
-            valueAndIsObject[1] = Boolean.valueOf(((ClientUpdateMessageImpl)data).valueIsObject());
+            valueAndIsObject[1] = Boolean.valueOf(((ClientUpdateMessageImpl) data).valueIsObject());
           }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           writeException(msg, e, false, servConn);
           servConn.setAsTrue(RESPONDED);
           return;
         }
 
         Object data = valueAndIsObject[0];
-        boolean isObject = (Boolean)valueAndIsObject[1];
+        boolean isObject = (Boolean) valueAndIsObject[1];
 
         writeResponse(data, callbackArg, msg, isObject, servConn);
         servConn.setAsTrue(RESPONDED);
         ccn.getClientProxy(servConn.getProxyID()).getStatistics().incDeltaFullMessagesSent();
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Wrote get event value response back to {} for ha container {}", servConn.getName(), servConn.getSocketString(), haContainer.getName());
+          logger.debug("{}: Wrote get event value response back to {} for ha container {}",
+              servConn.getName(), servConn.getSocketString(), haContainer.getName());
         }
       }
     }

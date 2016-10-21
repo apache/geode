@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -43,30 +41,25 @@ import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
 import org.apache.geode.internal.Version;
 
 /**
- * The n - way merge results returns a sorted results on the cumulative sorted
- * results for partitioned region based query
+ * The n - way merge results returns a sorted results on the cumulative sorted results for
+ * partitioned region based query
  * 
  *
  */
-public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
-    DataSerializableFixedID {
+public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSerializableFixedID {
   private CollectionType collectionType;
   private Collection<E> data;
   private boolean isDistinct;
 
-  public NWayMergeResults() {
-  }
+  public NWayMergeResults() {}
 
-  public NWayMergeResults(Collection<? extends Collection<E>> sortedResults,
-      boolean isDistinct, int limit,
-      List<CompiledSortCriterion> orderByAttribs, ExecutionContext context,
+  public NWayMergeResults(Collection<? extends Collection<E>> sortedResults, boolean isDistinct,
+      int limit, List<CompiledSortCriterion> orderByAttribs, ExecutionContext context,
       ObjectType elementType) {
 
     this.isDistinct = isDistinct;
-    this.collectionType = new CollectionTypeImpl(Ordered.class,
-        elementType);
-    this.data = new NWayMergeResultsCollection(sortedResults, limit,
-        orderByAttribs, context);
+    this.collectionType = new CollectionTypeImpl(Ordered.class, elementType);
+    this.data = new NWayMergeResultsCollection(sortedResults, limit, orderByAttribs, context);
 
   }
 
@@ -102,14 +95,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
 
   @Override
   public boolean add(E e) {
-    throw new UnsupportedOperationException(
-        "Addition to collection not supported");
+    throw new UnsupportedOperationException("Addition to collection not supported");
   }
 
   @Override
   public boolean remove(Object o) {
-    throw new UnsupportedOperationException(
-        "Removal from collection not supported");
+    throw new UnsupportedOperationException("Removal from collection not supported");
   }
 
   @Override
@@ -119,26 +110,22 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
 
   @Override
   public boolean addAll(Collection<? extends E> c) {
-    throw new UnsupportedOperationException(
-        "Addition to collection not supported");
+    throw new UnsupportedOperationException("Addition to collection not supported");
   }
 
   @Override
   public boolean removeAll(Collection<?> c) {
-    throw new UnsupportedOperationException(
-        "Removal from collection not supported");
+    throw new UnsupportedOperationException("Removal from collection not supported");
   }
 
   @Override
   public boolean retainAll(Collection<?> c) {
-    throw new UnsupportedOperationException(
-        "Removal from collection not supported");
+    throw new UnsupportedOperationException("Removal from collection not supported");
   }
 
   @Override
   public void clear() {
-    throw new UnsupportedOperationException(
-        "Removal from collection not supported");
+    throw new UnsupportedOperationException("Removal from collection not supported");
 
   }
 
@@ -154,8 +141,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
     }
     // expensive!!
     int count = 0;
-    for (Iterator<E> itr = this.iterator()/* this.base.iterator() */; itr
-        .hasNext();) {
+    for (Iterator<E> itr = this.iterator()/* this.base.iterator() */; itr.hasNext();) {
       E v = itr.next();
       if (element == null ? v == null : element.equals(v)) {
         count++;
@@ -190,13 +176,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
     private final OrderByComparator comparator;
     private final int limit;
 
-    public NWayMergeResultsCollection(
-        Collection<? extends Collection<E>> sortedResults, int limit,
+    public NWayMergeResultsCollection(Collection<? extends Collection<E>> sortedResults, int limit,
         List<CompiledSortCriterion> orderByAttribs, ExecutionContext context) {
       this.sortedResults = sortedResults;
       this.limit = limit;
-      this.comparator = new OrderByComparator(orderByAttribs,
-          collectionType.getElementType(), context);
+      this.comparator =
+          new OrderByComparator(orderByAttribs, collectionType.getElementType(), context);
 
     }
 
@@ -226,9 +211,9 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
     }
 
     /*
-     * @Override public boolean isEmpty() { boolean isEmpty = true; for
-     * (SelectResults<E> result : this.sortedResults) { isEmpty =
-     * result.isEmpty(); if (!isEmpty) { break; } } return isEmpty; }
+     * @Override public boolean isEmpty() { boolean isEmpty = true; for (SelectResults<E> result :
+     * this.sortedResults) { isEmpty = result.isEmpty(); if (!isEmpty) { break; } } return isEmpty;
+     * }
      */
 
     @Override
@@ -255,8 +240,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
         Iterator<? extends Collection<E>> listIter = sortedResults.iterator();
         int index = 0;
         while (listIter.hasNext()) {
-          IteratorWrapper<E> temp = new IteratorWrapper<E>(listIter.next()
-              .iterator());
+          IteratorWrapper<E> temp = new IteratorWrapper<E>(listIter.next().iterator());
           this.iterators[index++] = temp;
           // initialize
           temp.move();
@@ -314,8 +298,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
           }
           E temp = this.iterators[j].get();
 
-          int compareResult = compare(currentOptima, temp); 
-              
+          int compareResult = compare(currentOptima, temp);
+
           if (compareResult > 0) {
             currentOptima = temp;
             indexOfIteratorForOptima = j;
@@ -324,13 +308,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
         this.lastReturnedIteratorIndex = indexOfIteratorForOptima;
         return currentOptima;
       }
-      
+
       protected int compare(E obj1, E obj2) {
         return collectionType.getElementType().isStructType() ? comparator
-            .compare(((StructImpl) obj1).getFieldValues(),
-                ((StructImpl) obj2).getFieldValues()) : comparator.compare(
-            obj1, obj2);
-            
+            .compare(((StructImpl) obj1).getFieldValues(), ((StructImpl) obj2).getFieldValues())
+            : comparator.compare(obj1, obj2);
+
       }
 
       @Override
@@ -382,8 +365,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
       private Boolean cachedHasNext = null;
       private boolean uninitialized = true;
 
-      NWayMergeDistinctIterator() {
-      }
+      NWayMergeDistinctIterator() {}
 
       @Override
       public boolean hasNext() {
@@ -392,7 +374,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
         }
         boolean hasNext = false;
         for (int i = 0; i < this.iterators.length; ++i) {
-          if (this.uninitialized) {            
+          if (this.uninitialized) {
             hasNext = !this.iterators[i].EOF;
             if (hasNext) {
               break;
@@ -403,8 +385,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
                 this.iterators[i].move();
                 if (this.iterators[i].EOF) {
                   break;
-                }// else if (!this.lastReturned.equals(this.iterators[i].get()))
-                 // {
+                } // else if (!this.lastReturned.equals(this.iterators[i].get()))
+                  // {
                 else if (compare(lastReturned, this.iterators[i].get()) != 0) {
                   hasNext = true;
                   break;
@@ -416,8 +398,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
                   break;
                 } // else if
                   // (!this.iterators[i].get().equals(this.lastReturned)) {
-                else if (compare(this.iterators[i].get(),
-                    this.lastReturned) != 0) {
+                else if (compare(this.iterators[i].get(), this.lastReturned) != 0) {
                   hasNext = true;
                   break;
                 } else {
@@ -432,7 +413,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
         return hasNext;
       }
 
-      
+
 
       @Override
       public E next() {
@@ -451,7 +432,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
 
     }
 
-    
+
   }
 
   @Override
@@ -462,17 +443,17 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     ObjectType elementType = (ObjectType) DataSerializer.readObject(in);
-    this.collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType );
+    this.collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType);
     boolean isStruct = elementType.isStructType();
     this.isDistinct = DataSerializer.readPrimitiveBoolean(in);
     long size = in.readLong();
     this.data = new ArrayList<E>((int) size);
     long numLeft = size;
     while (numLeft > 0) {
-      if(isStruct) {
+      if (isStruct) {
         Object[] fields = DataSerializer.readObjectArray(in);
-        this.data.add((E)new StructImpl((StructTypeImpl) elementType, fields));
-      }else {
+        this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
+      } else {
         E element = DataSerializer.readObject(in);
         this.data.add(element);
       }
@@ -497,11 +478,11 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
     Iterator<E> iter = this.iterator();
     int numElements = 0;
     while (iter.hasNext()) {
-      E data = iter.next();      
-      if(isStruct) {
-        Object[] fields = ((Struct)data).getFieldValues();
+      E data = iter.next();
+      if (isStruct) {
+        Object[] fields = ((Struct) data).getFieldValues();
         DataSerializer.writeObjectArray(fields, out);
-      }else {
+      } else {
         DataSerializer.writeObject(data, hdos);
       }
       ++numElements;
@@ -513,8 +494,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder("NWayMergeResults:: isDistinct="
-        + this.isDistinct).append(":");
+    StringBuilder builder =
+        new StringBuilder("NWayMergeResults:: isDistinct=" + this.isDistinct).append(":");
     builder.append('[');
     Iterator<E> iter = this.iterator();
     while (iter.hasNext()) {
@@ -527,18 +508,18 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered,
 
   @Override
   public Comparator comparator() {
-    if(this.data instanceof NWayMergeResults.NWayMergeResultsCollection) {
-      return ((NWayMergeResultsCollection)this.data).comparator;
-    }else {
+    if (this.data instanceof NWayMergeResults.NWayMergeResultsCollection) {
+      return ((NWayMergeResultsCollection) this.data).comparator;
+    } else {
       return null;
     }
   }
 
   @Override
   public boolean dataPreordered() {
-    if(this.data instanceof NWayMergeResults.NWayMergeResultsCollection) {
+    if (this.data instanceof NWayMergeResults.NWayMergeResultsCollection) {
       return false;
-    }else {
+    } else {
       return true;
     }
   }

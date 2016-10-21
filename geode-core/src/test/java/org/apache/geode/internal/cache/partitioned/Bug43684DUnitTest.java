@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -49,8 +47,8 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * TODO This doesn't really test the optimised RI behaviour but only that RI
- * works. But there must be other tests doing the same.
+ * TODO This doesn't really test the optimised RI behaviour but only that RI works. But there must
+ * be other tests doing the same.
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
@@ -99,17 +97,17 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testRIWithSingleKeyOnRR()  throws Exception {
+  public void testRIWithSingleKeyOnRR() throws Exception {
     doRegisterInterest("KEY_1", null, numBuckets, true, false);
   }
 
   @Test
-  public void testRIWithAllKeysOnRR()  throws Exception {
+  public void testRIWithAllKeysOnRR() throws Exception {
     doRegisterInterest(null, null, numBuckets, true, false);
   }
 
   @Test
-  public void testRIWithKeyListOnRR()  throws Exception {
+  public void testRIWithKeyListOnRR() throws Exception {
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("KEY_0");
     riKeys.add("KEY_1");
@@ -118,27 +116,27 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
     riKeys.add("KEY_6");
     riKeys.add("KEY_7");
     riKeys.add("KEY_9");
-    
+
     doRegisterInterest(riKeys, null, numBuckets, true, false);
   }
 
   @Test
-  public void testRIWithRegularExpressionOnRR()  throws Exception{
+  public void testRIWithRegularExpressionOnRR() throws Exception {
     doRegisterInterest(null, "^[X][_].*", numBuckets, true, false);
   }
 
   @Test
-  public void testRIWithSingleKeyOnPR()  throws Exception {
+  public void testRIWithSingleKeyOnPR() throws Exception {
     doRegisterInterest("KEY_1", null);
   }
 
   @Test
-  public void testRIWithAllKeysOnPR()  throws Exception {
+  public void testRIWithAllKeysOnPR() throws Exception {
     doRegisterInterest(null, null);
   }
 
   @Test
-  public void testRIWithKeyListOnPR()  throws Exception {
+  public void testRIWithKeyListOnPR() throws Exception {
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("KEY_0");
     riKeys.add("KEY_1");
@@ -147,32 +145,32 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
     riKeys.add("KEY_6");
     riKeys.add("KEY_7");
     riKeys.add("KEY_9");
-    
+
     doRegisterInterest(riKeys, null);
   }
 
   @Test
-  public void testRIWithRegularExpressionOnPR()  throws Exception{
+  public void testRIWithRegularExpressionOnPR() throws Exception {
     doRegisterInterest(null, "^[X][_].*");
   }
 
   @Test
-  public void testRIWithMoreEntriesOnPR()  throws Exception{
+  public void testRIWithMoreEntriesOnPR() throws Exception {
     doRegisterInterest(null, null, 5147, false, false);
   }
 
   @Test
-  public void testRIWithSingleKeyOnEmptyPrimaryOnPR()  throws Exception {
+  public void testRIWithSingleKeyOnEmptyPrimaryOnPR() throws Exception {
     doRegisterInterest("KEY_1", null, numBuckets, false, true);
   }
 
   @Test
-  public void testRIWithAllKeysOnEmptyPrimaryOnPR()  throws Exception {
+  public void testRIWithAllKeysOnEmptyPrimaryOnPR() throws Exception {
     doRegisterInterest(null, null, numBuckets, false, true);
   }
 
   @Test
-  public void testRIWithKeyListOnEmptyPrimaryOnPR()  throws Exception {
+  public void testRIWithKeyListOnEmptyPrimaryOnPR() throws Exception {
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("KEY_0");
     riKeys.add("KEY_1");
@@ -181,17 +179,17 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
     riKeys.add("KEY_6");
     riKeys.add("KEY_7");
     riKeys.add("KEY_9");
-    
+
     doRegisterInterest(riKeys, null, numBuckets, false, true);
   }
 
   @Test
-  public void testRIWithRegularExpressionOnEmptyPrimaryOnPR()  throws Exception{
+  public void testRIWithRegularExpressionOnEmptyPrimaryOnPR() throws Exception {
     doRegisterInterest(null, "^[X][_].*", numBuckets, false, true);
   }
 
   @Test
-  public void testNativeClientIssueOnPR()  throws Exception{
+  public void testNativeClientIssueOnPR() throws Exception {
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("OPKEY_0");
     riKeys.add("OPKEY_1");
@@ -215,8 +213,10 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
   }
 
   @SuppressWarnings("rawtypes")
-  private void doRegisterInterest(Object keys, String regEx, Integer numOfPuts, Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
-    int port1 = (Integer)server1.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, isPrimaryEmpty));
+  private void doRegisterInterest(Object keys, String regEx, Integer numOfPuts,
+      Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
+    int port1 = (Integer) server1
+        .invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, isPrimaryEmpty));
     server2.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
     server3.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
 
@@ -227,13 +227,16 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
     client1.invoke(() -> Bug43684DUnitTest.registerInterest(keys, regEx));
 
     server1.invoke(() -> Bug43684DUnitTest.closeCache());
-    int size = keys != null ? (keys instanceof List ? ((List)keys).size() : 1) : regEx == null ? numOfPuts : regexNum;
+    int size = keys != null ? (keys instanceof List ? ((List) keys).size() : 1)
+        : regEx == null ? numOfPuts : regexNum;
     client1.invoke(() -> Bug43684DUnitTest.verifyResponse(size));
   }
 
   @SuppressWarnings("rawtypes")
-  private void doRegisterInterest2(Object keys, Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
-    int port1 = (Integer)server1.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, isPrimaryEmpty));
+  private void doRegisterInterest2(Object keys, Boolean isReplicated, Boolean isPrimaryEmpty)
+      throws Exception {
+    int port1 = (Integer) server1
+        .invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, isPrimaryEmpty));
     server2.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
     server3.invoke(() -> Bug43684DUnitTest.createServerCache(isReplicated, false));
 
@@ -250,47 +253,49 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
   }
 
   @SuppressWarnings("rawtypes")
-  public static Integer createServerCache(Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
+  public static Integer createServerCache(Boolean isReplicated, Boolean isPrimaryEmpty)
+      throws Exception {
     disconnectFromDS();
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId()
-        + ".gfs");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId() + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     CacheFactory cf = new CacheFactory(props);
-    cache = (GemFireCacheImpl)cf.create();
+    cache = (GemFireCacheImpl) cf.create();
 
     RegionFactory rf;
     if (isReplicated) {
-      RegionShortcut rs = isPrimaryEmpty ? RegionShortcut.REPLICATE_PROXY : RegionShortcut.REPLICATE;
+      RegionShortcut rs =
+          isPrimaryEmpty ? RegionShortcut.REPLICATE_PROXY : RegionShortcut.REPLICATE;
       rf = cache.createRegionFactory(rs);
     } else {
-      RegionShortcut rs = isPrimaryEmpty ? RegionShortcut.PARTITION_PROXY : RegionShortcut.PARTITION;
+      RegionShortcut rs =
+          isPrimaryEmpty ? RegionShortcut.PARTITION_PROXY : RegionShortcut.PARTITION;
       rf = cache.createRegionFactory(rs);
-      rf.setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(numBuckets).create());
+      rf.setPartitionAttributes(
+          new PartitionAttributesFactory().setTotalNumBuckets(numBuckets).create());
     }
     rf.create(REGION_NAME);
-    CacheServerImpl server = (CacheServerImpl)cache.addCacheServer();
+    CacheServerImpl server = (CacheServerImpl) cache.addCacheServer();
     server.setPort(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
     server.start();
     return server.getPort();
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public static void createClientCache(Host host, Integer port) {
     disconnectFromDS();
     Properties props = new Properties();
-    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
-        + ".gfs");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId() + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.addPoolServer(host.getHostName(), port).setPoolSubscriptionEnabled(true);
-    cache = (GemFireCacheImpl)ccf.create();
+    cache = (GemFireCacheImpl) ccf.create();
     ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
     crf.create(REGION_NAME);
   }
-     
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public static void registerInterest(Object keys, String regEx) {
     Region region = cache.getRegion(REGION_NAME);
     if (keys == null && regEx == null) {
@@ -302,8 +307,8 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
       region.registerInterestRegex(regEx);
     }
   }
-  
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
   public static void doPuts(Integer num, String regex, int regexNum) throws Exception {
     Region r = cache.getRegion(REGION_NAME);
     for (int i = 0; i < num; i++) {
@@ -316,20 +321,20 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({"rawtypes", "unchecked"})
   public static void doOps() throws Exception {
     Region r = cache.getRegion(REGION_NAME);
     for (int i = 0; i < 14; i++) {
       r.create("OPKEY_" + i, "OPVALUE__" + i);
     }
-    
+
     for (int i = 7; i < 14; i++) {
       r.destroy("OPKEY_" + i);
     }
   }
 
   public static void verifyResponse2() throws Exception {
-    LocalRegion r = (LocalRegion)cache.getRegion(REGION_NAME);
+    LocalRegion r = (LocalRegion) cache.getRegion(REGION_NAME);
     for (int i = 0; i < 7; i++) {
       assertTrue(r.containsKey("OPKEY_" + i));
     }
@@ -340,12 +345,12 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void verifyResponse(Integer size) throws Exception {
-    LocalRegion r = (LocalRegion)cache.getRegion(REGION_NAME);
+    LocalRegion r = (LocalRegion) cache.getRegion(REGION_NAME);
     assertEquals(size.intValue(), r.size());
   }
 
   public static void getLocally() throws Exception {
-    LocalRegion r = (LocalRegion)cache.getRegion(REGION_NAME);
+    LocalRegion r = (LocalRegion) cache.getRegion(REGION_NAME);
     for (int i = 0; i < numBuckets; i++) {
       RegionEntry e = r.getRegionEntry("KEY_" + i);
       cache.getLoggerI18n().info(LocalizedStrings.DEBUG, e._getValue());

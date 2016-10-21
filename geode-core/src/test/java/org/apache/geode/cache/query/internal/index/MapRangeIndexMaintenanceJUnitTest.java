@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -46,14 +44,14 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  */
 @Category(IntegrationTest.class)
-public class MapRangeIndexMaintenanceJUnitTest{
+public class MapRangeIndexMaintenanceJUnitTest {
 
   static QueryService qs;
   static Region region;
   static Index keyIndex1;
-  
+
   public static final int NUM_BKTS = 20;
-  public static final String INDEX_NAME = "keyIndex1"; 
+  public static final String INDEX_NAME = "keyIndex1";
 
   @Before
   public void setUp() throws Exception {
@@ -67,9 +65,9 @@ public class MapRangeIndexMaintenanceJUnitTest{
   }
 
   @Test
-  public void testNullMapKeysInIndexOnLocalRegionForCompactMap() throws Exception{
+  public void testNullMapKeysInIndexOnLocalRegionForCompactMap() throws Exception {
 
-    //Create Partition Region
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -81,35 +79,36 @@ public class MapRangeIndexMaintenanceJUnitTest{
     }
     assertEquals(100, region.size());
     qs = CacheUtils.getQueryService();
-    
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio p");
-    
+
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio p");
+
     assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
 
-    //Let MapRangeIndex remove values for key 1.
+    // Let MapRangeIndex remove values for key 1.
     Portfolio p = new Portfolio(1, 1);
     p.positions = new HashMap();
     region.put(1, p);
-    
-    //Now mapkeys are null for key 1
+
+    // Now mapkeys are null for key 1
     try {
       region.invalidate(1);
     } catch (NullPointerException e) {
       fail("Test Failed! region.destroy got NullPointerException!");
     }
-    
-    //Now mapkeys are null for key 1
+
+    // Now mapkeys are null for key 1
     try {
       region.destroy(1);
     } catch (NullPointerException e) {
       fail("Test Failed! region.destroy got NullPointerException!");
     }
   }
-  
+
   @Test
-  public void testNullMapKeysInIndexOnLocalRegion() throws Exception{
+  public void testNullMapKeysInIndexOnLocalRegion() throws Exception {
     IndexManager.TEST_RANGEINDEX_ONLY = true;
-    //Create Partition Region
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -121,24 +120,25 @@ public class MapRangeIndexMaintenanceJUnitTest{
     }
     assertEquals(100, region.size());
     qs = CacheUtils.getQueryService();
-    
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
-    
+
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+
     assertTrue(keyIndex1 instanceof MapRangeIndex);
 
-    //Let MapRangeIndex remove values for key 1.
+    // Let MapRangeIndex remove values for key 1.
     Portfolio p = new Portfolio(1, 1);
     p.positions = new HashMap();
     region.put(1, p);
-    
-    //Now mapkeys are null for key 1
+
+    // Now mapkeys are null for key 1
     try {
       region.invalidate(1);
     } catch (NullPointerException e) {
       fail("Test Failed! region.destroy got NullPointerException!");
     }
-    
-    //Now mapkeys are null for key 1
+
+    // Now mapkeys are null for key 1
     try {
       region.destroy(1);
     } catch (NullPointerException e) {
@@ -148,12 +148,13 @@ public class MapRangeIndexMaintenanceJUnitTest{
 
   /**
    * Test index object's comapreTo Function implementation correctness for indexes.
+   * 
    * @throws Exception
    */
   @Test
-  public void testDuplicateKeysInCompactRangeIndexOnLocalRegion() throws Exception{
+  public void testDuplicateKeysInCompactRangeIndexOnLocalRegion() throws Exception {
 
-    //Create Partition Region
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -163,34 +164,32 @@ public class MapRangeIndexMaintenanceJUnitTest{
     map1.put("IBM", new TestObject("IBM", 2));
     p.positions = map1;
     region = CacheUtils.createRegion("portfolio", af.create(), false);
-    
+
     qs = CacheUtils.getQueryService();
-    
+
     keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
-    
+
     assertTrue(keyIndex1 instanceof CompactMapRangeIndex);
 
-    //Put duplicate TestObject with "IBM" name.
+    // Put duplicate TestObject with "IBM" name.
     region.put(Integer.toString(1), p);
     Portfolio p2 = new Portfolio(2, 2);
     HashMap map2 = new HashMap();
     map2.put("YHOO", new TestObject("YHOO", 3));
     map2.put("IBM", new TestObject("IBM", 2));
-    
+
     p2.positions = map2;
     region.put(Integer.toString(2), p2);
 
-    //Following destroy fails if fix for 44123 is not there.
+    // Following destroy fails if fix for 44123 is not there.
     try {
       region.destroy(Integer.toString(1));
     } catch (NullPointerException e) {
       fail("Test Failed! region.destroy got NullPointerException!");
     } catch (Exception ex) {
       if (ex instanceof IndexMaintenanceException) {
-        if (! ex.getCause().getMessage()
-            .contains("compareTo function is errorneous")) {
-          fail("Test Failed! Did not get expected exception IMQException."
-              + ex.getMessage());
+        if (!ex.getCause().getMessage().contains("compareTo function is errorneous")) {
+          fail("Test Failed! Did not get expected exception IMQException." + ex.getMessage());
         }
       } else {
         ex.printStackTrace();
@@ -198,16 +197,17 @@ public class MapRangeIndexMaintenanceJUnitTest{
       }
     }
   }
-  
+
   /**
    * Test index object's comapreTo Function implementation correctness for indexes.
+   * 
    * @throws Exception
    */
   @Test
-  public void testDuplicateKeysInRangeIndexOnLocalRegion() throws Exception{
+  public void testDuplicateKeysInRangeIndexOnLocalRegion() throws Exception {
     IndexManager.TEST_RANGEINDEX_ONLY = true;
 
-    //Create Partition Region
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -217,34 +217,32 @@ public class MapRangeIndexMaintenanceJUnitTest{
     map1.put("IBM", new TestObject("IBM", 2));
     p.positions = map1;
     region = CacheUtils.createRegion("portfolio", af.create(), false);
-    
+
     qs = CacheUtils.getQueryService();
-    
+
     keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
-    
+
     assertTrue(keyIndex1 instanceof MapRangeIndex);
 
-    //Put duplicate TestObject with "IBM" name.
+    // Put duplicate TestObject with "IBM" name.
     region.put(Integer.toString(1), p);
     Portfolio p2 = new Portfolio(2, 2);
     HashMap map2 = new HashMap();
     map2.put("YHOO", new TestObject("YHOO", 3));
     map2.put("IBM", new TestObject("IBM", 2));
-    
+
     p2.positions = map2;
     region.put(Integer.toString(2), p2);
 
-    //Following destroy fails if fix for 44123 is not there.
+    // Following destroy fails if fix for 44123 is not there.
     try {
       region.destroy(Integer.toString(1));
     } catch (NullPointerException e) {
       fail("Test Failed! region.destroy got NullPointerException!");
     } catch (Exception ex) {
       if (ex instanceof IndexMaintenanceException) {
-        if (! ex.getCause().getMessage()
-            .contains("compareTo function is errorneous")) {
-          fail("Test Failed! Did not get expected exception IMQException."
-              + ex.getMessage());
+        if (!ex.getCause().getMessage().contains("compareTo function is errorneous")) {
+          fail("Test Failed! Did not get expected exception IMQException." + ex.getMessage());
         }
       } else {
         ex.printStackTrace();
@@ -260,62 +258,69 @@ public class MapRangeIndexMaintenanceJUnitTest{
     af.setScope(Scope.LOCAL);
 
     region = CacheUtils.createRegion("portfolio", af.create(), false);
-    qs = CacheUtils.getQueryService();   
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    qs = CacheUtils.getQueryService();
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
     assertTrue("Index should be a MapRangeIndex ", keyIndex1 instanceof MapRangeIndex);
-   
+
     if (region.size() == 0) {
       for (int i = 1; i <= 100; i++) {
         // add some string objects generating UNDEFINEDs as index keys
-        if(i % 2 == 0) {
-          region.put(Integer.toString(i), "Portfolio-"+ i);
+        if (i % 2 == 0) {
+          region.put(Integer.toString(i), "Portfolio-" + i);
         } else {
           region.put(Integer.toString(i), new Portfolio(i, i));
         }
       }
     }
     assertEquals(100, region.size());
-    
+
     qs.removeIndexes();
-   
+
     // recreate index to verify they get updated correctly
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
     assertTrue("Index should be a MapRangeIndex ", keyIndex1 instanceof MapRangeIndex);
-    
+
   }
-  
+
   @Test
   public void testUndefinedForCompactMapRangeIndex() throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
     region = CacheUtils.createRegion("portfolio", af.create(), false);
-    qs = CacheUtils.getQueryService();   
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
-    assertTrue("Index should be a CompactMapRangeIndex ", keyIndex1 instanceof CompactMapRangeIndex);
-   
+    qs = CacheUtils.getQueryService();
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    assertTrue("Index should be a CompactMapRangeIndex ",
+        keyIndex1 instanceof CompactMapRangeIndex);
+
     if (region.size() == 0) {
       for (int i = 1; i <= 100; i++) {
         // add some string objects generating UNDEFINEDs as index keys
-        if(i % 2 == 0) {
-          region.put(Integer.toString(i), "Portfolio-"+ i);
+        if (i % 2 == 0) {
+          region.put(Integer.toString(i), "Portfolio-" + i);
         } else {
           region.put(Integer.toString(i), new Portfolio(i, i));
         }
       }
     }
     assertEquals(100, region.size());
-    
+
     qs.removeIndexes();
-   
+
     // recreate index to verify they get updated correctly
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
-    assertTrue("Index should be a CompactMapRangeIndex ", keyIndex1 instanceof CompactMapRangeIndex);
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, "positions['SUN', 'IBM']", "/portfolio ");
+    assertTrue("Index should be a CompactMapRangeIndex ",
+        keyIndex1 instanceof CompactMapRangeIndex);
   }
 
   @Test
-  public void testNullMapValuesInIndexOnLocalRegionForCompactMap() throws Exception{
-    region = CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+  public void testNullMapValuesInIndexOnLocalRegionForCompactMap() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
     qs = CacheUtils.getQueryService();
     keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio ");
 
@@ -333,15 +338,17 @@ public class MapRangeIndexMaintenanceJUnitTest{
     p3.positions.put("SUN", null);
     region.put(3, p3);
     region.put(3, p3);
-    
-    SelectResults result = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
+
+    SelectResults result = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
     assertEquals(1, result.size());
   }
 
   @Test
-  public void testNullMapValuesInIndexOnLocalRegionForMap() throws Exception{
+  public void testNullMapValuesInIndexOnLocalRegionForMap() throws Exception {
     IndexManager.TEST_RANGEINDEX_ONLY = true;
-    region = CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
     qs = CacheUtils.getQueryService();
     keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio ");
 
@@ -357,14 +364,16 @@ public class MapRangeIndexMaintenanceJUnitTest{
     p3.positions = new HashMap();
     p3.positions.put("SUN", null);
     region.put(3, p3);
-    
-    SelectResults result = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
+
+    SelectResults result = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
     assertEquals(1, result.size());
   }
 
   @Test
-  public void updatingAMapFieldWithDifferentKeysShouldRemoveOldKeysThatAreNoLongerPresent() throws Exception {
-    //Create Partition Region
+  public void updatingAMapFieldWithDifferentKeysShouldRemoveOldKeysThatAreNoLongerPresent()
+      throws Exception {
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -387,14 +396,16 @@ public class MapRangeIndexMaintenanceJUnitTest{
     map2.put("NEW_KEY", 1);
     region.put(1, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery(
+            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+        .execute();
     assertEquals(0, results.size());
   }
 
   @Test
   public void updatingAMapFieldSameKeysSameValuesShouldUpdateCorrectly() throws Exception {
-    //Create Partition Region
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -418,14 +429,17 @@ public class MapRangeIndexMaintenanceJUnitTest{
     map2.put("IBM", 2);
     region.put(1, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery(
+            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+        .execute();
     assertEquals(1, results.size());
   }
 
   @Test
-  public void updatingAMapFieldWithNoKeysShouldRemoveOldKeysThatAreNoLongerPresent() throws Exception {
-    //Create Partition Region
+  public void updatingAMapFieldWithNoKeysShouldRemoveOldKeysThatAreNoLongerPresent()
+      throws Exception {
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -445,14 +459,16 @@ public class MapRangeIndexMaintenanceJUnitTest{
     p2.positions = map2;
     region.put(1, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery(
+            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+        .execute();
     assertEquals(0, results.size());
   }
 
   @Test
   public void updatingEmptyMapToMapWithKeysShouldIndexNewKeysCorrectly() throws Exception {
-    //Create Partition Region
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -472,8 +488,10 @@ public class MapRangeIndexMaintenanceJUnitTest{
     map2.put("IBM", 2);
     region.put(1, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery(
+            "select * from /portfolio p where p.positions['SUN'] = 1 OR p.positions['IBM'] = 2")
+        .execute();
     assertEquals(1, results.size());
   }
 
@@ -494,8 +512,8 @@ public class MapRangeIndexMaintenanceJUnitTest{
     keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
     region.put(1, p);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
   }
 
@@ -518,21 +536,22 @@ public class MapRangeIndexMaintenanceJUnitTest{
     Portfolio p2 = new Portfolio(1, 1);
     HashMap map2 = new HashMap();
     p2.positions = map2;
-    map2.put("SUN",3);
-    map2.put("IBM",4);
+    map2.put("SUN", 3);
+    map2.put("IBM", 4);
     region.put(1, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(0, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
-                                              .execute();
+        .execute();
     assertEquals(1, results.size());
   }
 
   @Test
-  public void updatingWithSameKeysDifferentValuesAfterRemovingShouldReinsertIndexMappings() throws Exception {
+  public void updatingWithSameKeysDifferentValuesAfterRemovingShouldReinsertIndexMappings()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -553,34 +572,35 @@ public class MapRangeIndexMaintenanceJUnitTest{
     map2.put("GOOG", 1);
     region.put(1, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(0, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",3);
-    map3.put("IBM",4);
+    map3.put("SUN", 3);
+    map3.put("IBM", 4);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+        .execute();
     assertEquals(0, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
-                                .execute();
+    results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
 
     assertEquals(0, results.size());
   }
 
   @Test
-  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappings() throws Exception {
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappings()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -595,40 +615,41 @@ public class MapRangeIndexMaintenanceJUnitTest{
     region.put(1, p1);
 
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
 
     region.destroy(1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+        .execute();
     assertEquals(0, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",3);
-    map3.put("IBM",4);
+    map3.put("SUN", 3);
+    map3.put("IBM", 4);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(0, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
-                                .execute();
+    results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
 
     assertEquals(0, results.size());
   }
 
   @Test
-  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingInplaceModificationShouldReinsertIndexMappings() throws Exception {
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingInplaceModificationShouldReinsertIndexMappings()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -644,46 +665,46 @@ public class MapRangeIndexMaintenanceJUnitTest{
 
 
 
-
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
 
     map1.remove("SUN");
     map1.remove("IBM");
-    map1.put("GOOG",1);
+    map1.put("GOOG", 1);
 
-    region.put(1,p1);
+    region.put(1, p1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                               .execute();
+        .execute();
     assertEquals(0, results.size());
 
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",3);
-    map3.put("IBM",4);
+    map3.put("SUN", 3);
+    map3.put("IBM", 4);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(0, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
-                                .execute();
+    results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
 
     assertEquals(0, results.size());
   }
 
   @Test
-  public void updatingWithSameKeysSameValuesAfterRemovingShouldReinsertIndexMappings() throws Exception {
+  public void updatingWithSameKeysSameValuesAfterRemovingShouldReinsertIndexMappings()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -698,8 +719,8 @@ public class MapRangeIndexMaintenanceJUnitTest{
     region.put(1, p1);
 
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
 
     Portfolio p2 = new Portfolio(1, 1);
@@ -710,28 +731,29 @@ public class MapRangeIndexMaintenanceJUnitTest{
 
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+        .execute();
     assertEquals(0, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",1);
-    map3.put("IBM",2);
+    map3.put("SUN", 1);
+    map3.put("IBM", 2);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+        .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
   }
 
   @Test
-  public void updatingWithSameKeysSameValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappings() throws Exception {
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappings()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -745,35 +767,36 @@ public class MapRangeIndexMaintenanceJUnitTest{
     p1.positions = map1;
     region.put(1, p1);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
 
     region.destroy(1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+        .execute();
     assertEquals(0, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",1);
-    map3.put("IBM",2);
+    map3.put("SUN", 1);
+    map3.put("IBM", 2);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
   }
 
   @Test
-  public void updatingWithSameKeysSameValuesAfterRemovingUsingInPlaceModificationShouldReinsertIndexMappings() throws Exception {
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingInPlaceModificationShouldReinsertIndexMappings()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -787,8 +810,8 @@ public class MapRangeIndexMaintenanceJUnitTest{
     p1.positions = map1;
     region.put(1, p1);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
 
     map1.remove("SUN");
@@ -798,29 +821,30 @@ public class MapRangeIndexMaintenanceJUnitTest{
     region.put(1, p1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+        .execute();
     assertEquals(0, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",1);
-    map3.put("IBM",2);
+    map3.put("SUN", 1);
+    map3.put("IBM", 2);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
   }
 
 
   @Test
-  public void updatingWithSameKeysSameValuesAfterRemovingShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+  public void updatingWithSameKeysSameValuesAfterRemovingShouldReinsertIndexMappingsWithTwoRegionPuts()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -841,8 +865,8 @@ public class MapRangeIndexMaintenanceJUnitTest{
     p2.positions = map1;
     region.put(2, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(2, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
@@ -853,28 +877,29 @@ public class MapRangeIndexMaintenanceJUnitTest{
 
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
     Portfolio p4 = new Portfolio(1, 1);
     HashMap map4 = new HashMap();
     p4.positions = map4;
-    map4.put("SUN",1);
-    map4.put("IBM",2);
+    map4.put("SUN", 1);
+    map4.put("IBM", 2);
     region.put(1, p4);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(2, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
-                                .execute();
+        .execute();
     assertEquals(2, results.size());
 
   }
 
   @Test
-  public void updatingWithSameKeysSameValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappingsWithTwoRegionPuts()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -896,35 +921,36 @@ public class MapRangeIndexMaintenanceJUnitTest{
     region.put(2, p2);
 
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(2, results.size());
 
     region.destroy(1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",1);
-    map3.put("IBM",2);
+    map3.put("SUN", 1);
+    map3.put("IBM", 2);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(2, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
-                                .execute();
+        .execute();
     assertEquals(2, results.size());
 
   }
 
   @Test
-  public void updatingWithSameKeysSameValuesAfterRemovingUsingInPlaceModificationShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+  public void updatingWithSameKeysSameValuesAfterRemovingUsingInPlaceModificationShouldReinsertIndexMappingsWithTwoRegionPuts()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -946,8 +972,8 @@ public class MapRangeIndexMaintenanceJUnitTest{
     region.put(2, p2);
 
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(2, results.size());
 
     map1.remove("SUN");
@@ -957,28 +983,29 @@ public class MapRangeIndexMaintenanceJUnitTest{
     region.put(1, p1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",1);
-    map3.put("IBM",2);
+    map3.put("SUN", 1);
+    map3.put("IBM", 2);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(2, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['IBM'] = 2")
-                                .execute();
+        .execute();
     assertEquals(2, results.size());
 
   }
 
   @Test
-  public void updatingWithSameKeysDifferentValuesAfterRemovingShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+  public void updatingWithSameKeysDifferentValuesAfterRemovingShouldReinsertIndexMappingsWithTwoRegionPuts()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -996,8 +1023,8 @@ public class MapRangeIndexMaintenanceJUnitTest{
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",5);
-    map3.put("IBM",6);
+    map3.put("SUN", 5);
+    map3.put("IBM", 6);
     region.put(2, p3);
 
 
@@ -1007,34 +1034,35 @@ public class MapRangeIndexMaintenanceJUnitTest{
     map2.put("GOOG", 1);
     region.put(1, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(0, results.size());
 
     Portfolio p4 = new Portfolio(1, 1);
     HashMap map4 = new HashMap();
     p4.positions = map4;
-    map4.put("SUN",3);
-    map4.put("IBM",4);
+    map4.put("SUN", 3);
+    map4.put("IBM", 4);
     region.put(1, p4);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(0, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
-                                .execute();
+    results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
 
     assertEquals(0, results.size());
   }
 
   @Test
-  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingRegionDestroyShouldReinsertIndexMappingsWithTwoRegionPuts()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -1056,40 +1084,41 @@ public class MapRangeIndexMaintenanceJUnitTest{
     region.put(2, p2);
 
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
 
     region.destroy(1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(0, results.size());
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",3);
-    map3.put("IBM",4);
+    map3.put("SUN", 3);
+    map3.put("IBM", 4);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(0, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
-                                .execute();
+    results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
 
     assertEquals(0, results.size());
   }
 
   @Test
-  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingInplaceModificationShouldReinsertIndexMappingsWithTwoRegionPuts() throws Exception {
+  public void updatingWithSameKeysDifferentValuesAfterRemovingUsingInplaceModificationShouldReinsertIndexMappingsWithTwoRegionPuts()
+      throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     region = CacheUtils.createRegion("portfolio", af.create(), false);
@@ -1111,47 +1140,47 @@ public class MapRangeIndexMaintenanceJUnitTest{
     p2.positions = map2;
     region.put(2, p2);
 
-    SelectResults results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                              .execute();
+    SelectResults results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = 1").execute();
     assertEquals(1, results.size());
 
     map1.remove("SUN");
     map1.remove("IBM");
-    map1.put("GOOG",1);
+    map1.put("GOOG", 1);
 
-    region.put(1,p1);
+    region.put(1, p1);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(0, results.size());
 
 
     Portfolio p3 = new Portfolio(1, 1);
     HashMap map3 = new HashMap();
     p3.positions = map3;
-    map3.put("SUN",3);
-    map3.put("IBM",4);
+    map3.put("SUN", 3);
+    map3.put("IBM", 4);
     region.put(1, p3);
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 1")
-                                .execute();
+        .execute();
     assertEquals(0, results.size());
 
     results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['SUN'] = 3")
-                                .execute();
+        .execute();
     assertEquals(1, results.size());
 
 
-    results = (SelectResults) qs.newQuery("select * from /portfolio p where p.positions['GOOG'] = 1")
-                                .execute();
+    results = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['GOOG'] = 1").execute();
 
     assertEquals(0, results.size());
   }
 
 
   /**
-   * TestObject with wrong comareTo() implementation implementation.
-   * Which throws NullPointer while removing mapping from a MapRangeIndex.
+   * TestObject with wrong comareTo() implementation implementation. Which throws NullPointer while
+   * removing mapping from a MapRangeIndex.
    *
    */
   public class TestObject implements Cloneable, Comparable {
@@ -1160,15 +1189,16 @@ public class MapRangeIndexMaintenanceJUnitTest{
       this.name = name;
       this.id = id;
     }
+
     String name;
     int id;
-    
+
     @Override
     public int compareTo(Object o) {
-      if (id == ((TestObject)o).id)
+      if (id == ((TestObject) o).id)
         return 0;
       else
-        return id > ((TestObject)o).id ? -1 : 1;
+        return id > ((TestObject) o).id ? -1 : 1;
     }
   }
 }

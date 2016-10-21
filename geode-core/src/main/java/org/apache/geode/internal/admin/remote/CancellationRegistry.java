@@ -1,20 +1,18 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
+
 package org.apache.geode.internal.admin.remote;
 
 import java.util.*;
@@ -22,15 +20,14 @@ import org.apache.geode.distributed.internal.membership.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * This class provides a way for a {@link CancellationMessage} to find its prey.
- * An {@link AdminRequest} that implements {@link Cancellable} should register
- * with this class before doing any work, and deregister just before returning
- * it's response.
+ * This class provides a way for a {@link CancellationMessage} to find its prey. An
+ * {@link AdminRequest} that implements {@link Cancellable} should register with this class before
+ * doing any work, and deregister just before returning it's response.
  */
 public class CancellationRegistry {
   private static CancellationRegistry internalRef;
   private Map map = new HashMap();
-  
+
   private CancellationRegistry() {}
 
   public synchronized static CancellationRegistry getInstance() {
@@ -42,9 +39,9 @@ public class CancellationRegistry {
 
   public synchronized void cancelMessage(InternalDistributedMember console, int msgId) {
     Key key = new Key(console, msgId);
-    AdminRequest msg = (AdminRequest)map.get(key);
+    AdminRequest msg = (AdminRequest) map.get(key);
     if (msg instanceof Cancellable) {
-      ((Cancellable)msg).cancel();
+      ((Cancellable) msg).cancel();
     }
   }
 
@@ -66,7 +63,8 @@ public class CancellationRegistry {
 
     public Key(InternalDistributedMember console, int msgId) {
       if (console == null) {
-        throw new NullPointerException(LocalizedStrings.CancellationRegistry_NULL_CONSOLE.toLocalizedString());
+        throw new NullPointerException(
+            LocalizedStrings.CancellationRegistry_NULL_CONSOLE.toLocalizedString());
       }
 
       this.console = console;
@@ -75,11 +73,11 @@ public class CancellationRegistry {
 
     @Override
     public boolean equals(Object other) {
-      if (this == other) return true;
+      if (this == other)
+        return true;
       if (other instanceof Key) {
-        Key toTest = (Key)other;
-        return (toTest.console.equals(this.console) &&
-                toTest.msgId == this.msgId);
+        Key toTest = (Key) other;
+        return (toTest.console.equals(this.console) && toTest.msgId == this.msgId);
       }
       return false;
     }

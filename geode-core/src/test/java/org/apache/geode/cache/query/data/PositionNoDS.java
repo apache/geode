@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.data;
 
@@ -24,8 +22,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-public class PositionNoDS implements Serializable, Comparable{
-  private long avg20DaysVol=0;
+public class PositionNoDS implements Serializable, Comparable {
+  private long avg20DaysVol = 0;
   private String bondRating;
   private double convRatio;
   private String country;
@@ -44,8 +42,8 @@ public class PositionNoDS implements Serializable, Comparable{
   private int pid;
   public static int cnt = 0;
   public int portfolioId = 0;
-  
-  /* public no-arg constructor required for DataSerializable */  
+
+  /* public no-arg constructor required for DataSerializable */
   public PositionNoDS() {}
 
   public PositionNoDS(String id, double out) {
@@ -56,75 +54,75 @@ public class PositionNoDS implements Serializable, Comparable{
     pid = cnt++;
     this.mktValue = cnt;
   }
-  
+
   public boolean equals(Object o) {
-    if (!(o instanceof PositionNoDS)) return false;
-    return this.secId.equals(((PositionNoDS)o).secId);
+    if (!(o instanceof PositionNoDS))
+      return false;
+    return this.secId.equals(((PositionNoDS) o).secId);
   }
-  
+
   public int hashCode() {
     return this.secId.hashCode();
   }
-  
-  
+
+
   public static void resetCounter() {
     cnt = 0;
   }
-  
+
   public double getMktValue() {
     return this.mktValue;
   }
-  
-  public String getSecId(){
+
+  public String getSecId() {
     return secId;
   }
-  
-  public int getId(){
+
+  public int getId() {
     return pid;
   }
-  
-  public double getSharesOutstanding(){
+
+  public double getSharesOutstanding() {
     return sharesOutstanding;
   }
-  
-  public String toString(){
-    return "Position [secId=" + this.secId + " out=" + this.sharesOutstanding
-           + " type=" + this.secType + " id=" + this.pid + " mktValue="
-           + this.mktValue + "]";
+
+  public String toString() {
+    return "Position [secId=" + this.secId + " out=" + this.sharesOutstanding + " type="
+        + this.secType + " id=" + this.pid + " mktValue=" + this.mktValue + "]";
   }
-  
-  public Set getSet(int size){
+
+  public Set getSet(int size) {
     Set set = new HashSet();
-    for(int i=0;i<size;i++){
-      set.add(""+i);
+    for (int i = 0; i < size; i++) {
+      set.add("" + i);
     }
     return set;
   }
-  
-  public Set getCol(){
+
+  public Set getCol() {
     Set set = new HashSet();
-    for(int i=0;i<2;i++){
-      set.add(""+i);
+    for (int i = 0; i < 2; i++) {
+      set.add("" + i);
     }
     return set;
   }
-  
-  public int getPid(){
+
+  public int getPid() {
     return pid;
   }
-  
-  
 
 
-  public int compareTo(Object o)
-  {
-    if( o == this) {
+
+  public int compareTo(Object o) {
+    if (o == this) {
       return 0;
-    }else {
-      if (this.pid == ((PositionNoDS)o).pid) return 0;
-      else return this.pid < ((PositionNoDS)o).pid ? -1:1;
+    } else {
+      if (this.pid == ((PositionNoDS) o).pid)
+        return 0;
+      else
+        return this.pid < ((PositionNoDS) o).pid ? -1 : 1;
     }
-     
-  } 
-  
+
+  }
+
 }

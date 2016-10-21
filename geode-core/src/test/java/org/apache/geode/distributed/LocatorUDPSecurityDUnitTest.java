@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -40,24 +38,23 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
+public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
 
-  public LocatorUDPSecurityDUnitTest() {
-  }
-  
-  
+  public LocatorUDPSecurityDUnitTest() {}
+
+
   @Override
   protected void addDSProps(Properties p) {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
   }
-  
+
   @Override
   @Category(FlakyTest.class)
   @Test
   public void testStartTwoLocators() throws Exception {
     super.testStartTwoLocators();
   }
-  
+
   @Test
   public void testLocatorWithUDPSecurityButServer() throws Exception {
     disconnectAllFromDS();
@@ -66,8 +63,7 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    final int port =
-        AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
     final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
     final String uniqueName = getUniqueName();
@@ -81,7 +77,7 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
           locProps.setProperty(MEMBER_TIMEOUT, "1000");
           locProps.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-          addDSProps(locProps);  
+          addDSProps(locProps);
           Locator.startLocatorAndDS(port, logFile, locProps);
         } catch (IOException ex) {
           org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port, ex);
@@ -94,10 +90,10 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, locators);
       props.setProperty(MEMBER_TIMEOUT, "1000");
-     // addDSProps(props);
+      // addDSProps(props);
       system = (InternalDistributedSystem) DistributedSystem.connect(props);
-      
-    } catch(GemFireConfigException gce){
+
+    } catch (GemFireConfigException gce) {
       Assert.assertTrue(gce.getMessage().contains("Rejecting findCoordinatorRequest"));
     } finally {
       vm0.invoke(getStopLocatorRunnable());

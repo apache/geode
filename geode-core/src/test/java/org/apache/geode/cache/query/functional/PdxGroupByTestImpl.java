@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.functional;
 
@@ -44,10 +42,9 @@ import org.apache.geode.cache.query.internal.aggregate.AbstractAggregator;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 
-public abstract class PdxGroupByTestImpl implements
-    GroupByTestInterface {
+public abstract class PdxGroupByTestImpl implements GroupByTestInterface {
 
-  String queries[] = { "select  p.status as status, p.ID from /portfolio p where p.ID > 0 "// ResultSet
+  String queries[] = {"select  p.status as status, p.ID from /portfolio p where p.ID > 0 "// ResultSet
 
   };
 
@@ -63,7 +60,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, p.ID from /portfolio p where p.ID > 0 group by status, p.ID ";
+    String queryStr =
+        "select  p.status as status, p.ID from /portfolio p where p.ID > 0 group by status, p.ID ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -96,15 +94,15 @@ public abstract class PdxGroupByTestImpl implements
 
   @Override
   @Test
-  public void testConvertibleGroupByQuery_refer_column_alias_Bug520141()
-      throws Exception {
+  public void testConvertibleGroupByQuery_refer_column_alias_Bug520141() throws Exception {
     Region region = this.createRegion("portfolio", PortfolioPdx.class);
     for (int i = 1; i < 200; ++i) {
       PortfolioPdx pf = new PortfolioPdx(i);
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.shortID as short_id  from /portfolio p where p.ID >= 0 group by short_id ";
+    String queryStr =
+        "select  p.shortID as short_id  from /portfolio p where p.ID >= 0 group by short_id ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     SelectResults<Struct> results = (SelectResults<Struct>) query.execute();
@@ -126,7 +124,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i % 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, Count(*) as countt from /portfolio p where p.ID > 0 group by status ";
+    String queryStr =
+        "select  p.status as status, Count(*) as countt from /portfolio p where p.ID > 0 group by status ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -180,7 +179,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i % 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, count(distinct p.shortID) as countt from /portfolio p where p.ID > 0 group by status ";
+    String queryStr =
+        "select  p.status as status, count(distinct p.shortID) as countt from /portfolio p where p.ID > 0 group by status ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -210,11 +210,9 @@ public abstract class PdxGroupByTestImpl implements
       assertEquals("String", fieldTypes[0].getSimpleClassName());
       assertEquals("Integer", fieldTypes[1].getSimpleClassName());
       if (struct.get("status").equals("active")) {
-        assertEquals(distinctShortIDActive.size(),
-            ((Integer) struct.get("countt")).intValue());
+        assertEquals(distinctShortIDActive.size(), ((Integer) struct.get("countt")).intValue());
       } else if (struct.get("status").equals("inactive")) {
-        assertEquals(distinctShortIDInactive.size(),
-            ((Integer) struct.get("countt")).intValue());
+        assertEquals(distinctShortIDInactive.size(), ((Integer) struct.get("countt")).intValue());
       } else {
         fail("unexpected value of status");
       }
@@ -237,7 +235,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, COUNT(distinct p.shortID) as countt from /portfolio p where p.ID > 0 group by status ";
+    String queryStr =
+        "select  p.status as status, COUNT(distinct p.shortID) as countt from /portfolio p where p.ID > 0 group by status ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -267,11 +266,9 @@ public abstract class PdxGroupByTestImpl implements
       assertEquals("String", fieldTypes[0].getSimpleClassName());
       assertEquals("Integer", fieldTypes[1].getSimpleClassName());
       if (struct.get("status").equals("active")) {
-        assertEquals(distinctShortIDActive.size(),
-            ((Integer) struct.get("countt")).intValue());
+        assertEquals(distinctShortIDActive.size(), ((Integer) struct.get("countt")).intValue());
       } else if (struct.get("status").equals("inactive")) {
-        assertEquals(distinctShortIDInactive.size(),
-            ((Integer) struct.get("countt")).intValue());
+        assertEquals(distinctShortIDInactive.size(), ((Integer) struct.get("countt")).intValue());
       } else {
         fail("unexpected value of status");
       }
@@ -294,7 +291,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, Sum(p.ID) as summ from /portfolio p where p.ID > 0 group by status ";
+    String queryStr =
+        "select  p.status as status, Sum(p.ID) as summ from /portfolio p where p.ID > 0 group by status ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -349,7 +347,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, SUM (distinct p.shortID) as summ from /portfolio p where p.ID > 0 group by status ";
+    String queryStr =
+        "select  p.status as status, SUM (distinct p.shortID) as summ from /portfolio p where p.ID > 0 group by status ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -482,8 +481,7 @@ public abstract class PdxGroupByTestImpl implements
     }
 
     Number avgActive = AbstractAggregator.downCast(sumIDActive / numActive);
-    Number avgInactive = AbstractAggregator.downCast(sumIDInactive
-        / numInactive);
+    Number avgInactive = AbstractAggregator.downCast(sumIDInactive / numInactive);
 
     while (iter.hasNext()) {
       Struct struct = (Struct) iter.next();
@@ -549,10 +547,8 @@ public abstract class PdxGroupByTestImpl implements
       sumInactive += shortt.doubleValue();
     }
 
-    Number avgActive = AbstractAggregator.downCast(sumActive
-        / sumIDActiveSet.size());
-    Number avgInactive = AbstractAggregator.downCast(sumInactive
-        / sumIDInactiveSet.size());
+    Number avgActive = AbstractAggregator.downCast(sumActive / sumIDActiveSet.size());
+    Number avgInactive = AbstractAggregator.downCast(sumInactive / sumIDInactiveSet.size());
 
     while (iter.hasNext()) {
       Struct struct = (Struct) iter.next();
@@ -598,7 +594,7 @@ public abstract class PdxGroupByTestImpl implements
         "select   p.shortID as shid,  avg( p.ID) as average from /portfolio p where p.ID > 0 group by shid order by  avg(p.ID) desc, shid asc",
         "select   p.shortID as shid,  avg( p.ID) as average from /portfolio p where p.ID > 0 group by shid order by  avg(p.ID) desc, shid desc",
         "select   p.status as status,  p.shortID as shid  from /portfolio p where p.ID > 0 group by status, shid order by  shid desc",
-        "select   p.shortID as shid,  count(*) as countt  from /portfolio p where p.ID > 0 group by p.shortID order by  count(*) desc" };
+        "select   p.shortID as shid,  count(*) as countt  from /portfolio p where p.ID > 0 group by p.shortID order by  count(*) desc"};
     Object[][] r = new Object[queries.length][2];
     QueryService qs = CacheUtils.getQueryService();
     for (int i = 0; i < queries.length; ++i) {
@@ -624,8 +620,9 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select   p.status as status,  avg(distinct element(select iter.shortID from /portfolio iter where iter.ID = p.ID) ) as average from "
-        + "/portfolio p where p.ID > 0 group by status";
+    String queryStr =
+        "select   p.status as status,  avg(distinct element(select iter.shortID from /portfolio iter where iter.ID = p.ID) ) as average from "
+            + "/portfolio p where p.ID > 0 group by status";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -656,10 +653,8 @@ public abstract class PdxGroupByTestImpl implements
       sumInactive += shortt.doubleValue();
     }
 
-    Number avgActive = AbstractAggregator.downCast(sumActive
-        / sumIDActiveSet.size());
-    Number avgInactive = AbstractAggregator.downCast(sumInactive
-        / sumIDInactiveSet.size());
+    Number avgActive = AbstractAggregator.downCast(sumActive / sumIDActiveSet.size());
+    Number avgInactive = AbstractAggregator.downCast(sumInactive / sumIDInactiveSet.size());
 
     while (iter.hasNext()) {
       Struct struct = (Struct) iter.next();
@@ -693,7 +688,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, Max(p.ID) as Maxx from /portfolio p where p.ID > 0 group by status ";
+    String queryStr =
+        "select  p.status as status, Max(p.ID) as Maxx from /portfolio p where p.ID > 0 group by status ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -765,8 +761,9 @@ public abstract class PdxGroupByTestImpl implements
       }
     }
 
-    String queryStr = "select  p.status as status, p.shortID as shortID, sum(p.ID) as summ from /portfolio p"
-        + " where p.ID > 0 group by status, shortID ";
+    String queryStr =
+        "select  p.status as status, p.shortID as shortID, sum(p.ID) as summ from /portfolio p"
+            + " where p.ID > 0 group by status, shortID ";
 
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
@@ -809,7 +806,8 @@ public abstract class PdxGroupByTestImpl implements
       pf.shortID = (short) ((short) i / 5);
       region.put("key-" + i, pf);
     }
-    String queryStr = "select  p.status as status, Min(p.ID) as Minn from /portfolio p where p.ID > 0 group by status ";
+    String queryStr =
+        "select  p.status as status, Min(p.ID) as Minn from /portfolio p where p.ID > 0 group by status ";
     QueryService qs = CacheUtils.getQueryService();
     Query query = qs.newQuery(queryStr);
     CompiledSelect cs = ((DefaultQuery) query).getSelect();
@@ -871,7 +869,7 @@ public abstract class PdxGroupByTestImpl implements
     }
     QueryService qs = CacheUtils.getQueryService();
     String[] queries = {
-        "select pos.secId from  /portfolio  p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) group by pos.secId  ",// 6
+        "select pos.secId from  /portfolio  p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) group by pos.secId  ", // 6
         "select pos.secId , count(pos.ID) from /portfolio p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ",// 7
 
     };
@@ -917,8 +915,7 @@ public abstract class PdxGroupByTestImpl implements
     }
     StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
 
-    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true,
-        queries);
+    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, queries);
   }
 
   @Test
@@ -930,7 +927,8 @@ public abstract class PdxGroupByTestImpl implements
       region.put("key-" + i, pf);
     }
     QueryService qs = CacheUtils.getQueryService();
-    String[] queries = { "select  count(distinct pos.secId) from /portfolio p, p.positions.values pos where  pos.secId > 'APPL' ",// 10
+    String[] queries = {
+        "select  count(distinct pos.secId) from /portfolio p, p.positions.values pos where  pos.secId > 'APPL' ",// 10
 
     };
     Object r[][] = new Object[queries.length][2];
@@ -950,8 +948,7 @@ public abstract class PdxGroupByTestImpl implements
       }
     }
     // Create Indexes
-    qs.createIndex("secIdIndex", "pos.secId",
-        "/portfolio p, p.positions.values pos");
+    qs.createIndex("secIdIndex", "pos.secId", "/portfolio p, p.positions.values pos");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -976,8 +973,7 @@ public abstract class PdxGroupByTestImpl implements
     }
     StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
 
-    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true,
-        queries);
+    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, queries);
 
   }
 
@@ -991,19 +987,22 @@ public abstract class PdxGroupByTestImpl implements
       region.put("key-" + i, pf);
     }
     QueryService qs = CacheUtils.getQueryService();
-    String queryStr = "select pos.secId as a, count( *) as x from /portfolio p, p.positions.values pos group by a  limit 5 ";
+    String queryStr =
+        "select pos.secId as a, count( *) as x from /portfolio p, p.positions.values pos group by a  limit 5 ";
     Query q = qs.newQuery(queryStr);
 
     SelectResults sr = (SelectResults) q.execute();
     assertEquals(5, sr.size());
 
-    queryStr = "select pos.secId as a, count(*) as x from /portfolio p, p.positions.values pos group by a  limit 0 ";
+    queryStr =
+        "select pos.secId as a, count(*) as x from /portfolio p, p.positions.values pos group by a  limit 0 ";
     q = qs.newQuery(queryStr);
 
     sr = (SelectResults) q.execute();
     assertEquals(0, sr.size());
 
-    queryStr = "select pos.secId as a, count(*) as x from /portfolio p, p.positions.values pos group by a  order by count(*) limit 5 ";
+    queryStr =
+        "select pos.secId as a, count(*) as x from /portfolio p, p.positions.values pos group by a  order by count(*) limit 5 ";
     q = qs.newQuery(queryStr);
 
     sr = (SelectResults) q.execute();

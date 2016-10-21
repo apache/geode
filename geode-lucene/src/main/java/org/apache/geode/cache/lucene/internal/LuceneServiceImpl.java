@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal;
@@ -76,7 +72,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private IndexListener managementListener;
 
   public LuceneServiceImpl() {
-    
+
   }
 
   public void init(final Cache cache) {
@@ -107,7 +103,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   public static String getUniqueIndexName(String indexName, String regionPath) {
     if (!regionPath.startsWith("/")) {
-      regionPath = "/"+regionPath;
+      regionPath = "/" + regionPath;
     }
     String name = indexName + "#" + regionPath.replace('/', '_');
     return name;
@@ -115,39 +111,39 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   @Override
   public void createIndex(String indexName, String regionPath, String... fields) {
-    if(fields == null || fields.length == 0) {
+    if (fields == null || fields.length == 0) {
       throw new IllegalArgumentException("At least one field must be indexed");
     }
     StandardAnalyzer analyzer = new StandardAnalyzer();
-    
+
     createIndex(indexName, regionPath, analyzer, null, fields);
   }
-  
+
   @Override
-  public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers) {
-    if(fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
+  public void createIndex(String indexName, String regionPath,
+      Map<String, Analyzer> fieldAnalyzers) {
+    if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
       throw new IllegalArgumentException("At least one field must be indexed");
     }
     Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzers);
     Set<String> fieldsSet = fieldAnalyzers.keySet();
-    String[] fields = (String[])fieldsSet.toArray(new String[fieldsSet.size()]);
+    String[] fields = (String[]) fieldsSet.toArray(new String[fieldsSet.size()]);
 
     createIndex(indexName, regionPath, analyzer, fieldAnalyzers, fields);
   }
 
-  public void createIndex(final String indexName, String regionPath,
-      final Analyzer analyzer, final Map<String, Analyzer> fieldAnalyzers,
-      final String... fields) {
+  public void createIndex(final String indexName, String regionPath, final Analyzer analyzer,
+      final Map<String, Analyzer> fieldAnalyzers, final String... fields) {
 
-    if(!regionPath.startsWith("/")) {
+    if (!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
     }
 
     registerDefinedIndex(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath),
-                                new LuceneIndexCreationProfile(indexName, regionPath, fields, analyzer, fieldAnalyzers));
+        new LuceneIndexCreationProfile(indexName, regionPath, fields, analyzer, fieldAnalyzers));
 
     Region region = cache.getRegion(regionPath);
-    if(region != null) {
+    if (region != null) {
       definedIndexMap.remove(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath));
       throw new IllegalStateException("The lucene index must be created before region");
     }
@@ -155,24 +151,27 @@ public class LuceneServiceImpl implements InternalLuceneService {
     final String dataRegionPath = regionPath;
     cache.addRegionListener(new RegionListener() {
       @Override
-      public RegionAttributes beforeCreate(Region parent, String regionName,
-          RegionAttributes attrs, InternalRegionArguments internalRegionArgs) {
+      public RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
+          InternalRegionArguments internalRegionArgs) {
         RegionAttributes updatedRA = attrs;
         String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
 
-        if(path.equals(dataRegionPath)) {
+        if (path.equals(dataRegionPath)) {
 
           if (!attrs.getDataPolicy().withPartitioning()) {
             // replicated region
-            throw new UnsupportedOperationException("Lucene indexes on replicated regions are not supported");
+            throw new UnsupportedOperationException(
+                "Lucene indexes on replicated regions are not supported");
           }
 
-          //For now we cannot support eviction with local destroy.
-          //Eviction with overflow to disk still needs to be supported
+          // For now we cannot support eviction with local destroy.
+          // Eviction with overflow to disk still needs to be supported
           EvictionAttributes evictionAttributes = attrs.getEvictionAttributes();
           EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
-          if (evictionAlgorithm != EvictionAlgorithm.NONE && evictionAttributes.getAction().isLocalDestroy()) {
-            throw new UnsupportedOperationException("Lucene indexes on regions with eviction and action local destroy are not supported");
+          if (evictionAlgorithm != EvictionAlgorithm.NONE
+              && evictionAttributes.getAction().isLocalDestroy()) {
+            throw new UnsupportedOperationException(
+                "Lucene indexes on regions with eviction and action local destroy are not supported");
           }
 
           String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, dataRegionPath);
@@ -183,14 +182,15 @@ public class LuceneServiceImpl implements InternalLuceneService {
           }
 
           // Add index creation profile
-          internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName, dataRegionPath, fields, analyzer, fieldAnalyzers));
+          internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName,
+              dataRegionPath, fields, analyzer, fieldAnalyzers));
         }
         return updatedRA;
       }
-      
+
       @Override
       public void afterCreate(Region region) {
-        if(region.getFullPath().equals(dataRegionPath)) {
+        if (region.getFullPath().equals(dataRegionPath)) {
           afterDataRegionCreated(indexName, analyzer, dataRegionPath, fieldAnalyzers, fields);
           cache.removeRegionListener(this);
         }
@@ -204,9 +204,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
    * 
    * Public because this is called by the Xml parsing code
    */
-  public void afterDataRegionCreated(final String indexName,
-      final Analyzer analyzer, final String dataRegionPath,
-      final Map<String, Analyzer> fieldAnalyzers, final String... fields) {
+  public void afterDataRegionCreated(final String indexName, final Analyzer analyzer,
+      final String dataRegionPath, final Map<String, Analyzer> fieldAnalyzers,
+      final String... fields) {
     LuceneIndexImpl index = createIndexRegions(indexName, dataRegionPath);
     index.setSearchableFields(fields);
     index.setAnalyzer(analyzer);
@@ -217,19 +217,20 @@ public class LuceneServiceImpl implements InternalLuceneService {
       this.managementListener.afterIndexCreated(index);
     }
   }
-  
+
   private LuceneIndexImpl createIndexRegions(String indexName, String regionPath) {
     Region dataregion = this.cache.getRegion(regionPath);
     if (dataregion == null) {
-      logger.info("Data region "+regionPath+" not found");
+      logger.info("Data region " + regionPath + " not found");
       return null;
     }
-    //Convert the region name into a canonical form
+    // Convert the region name into a canonical form
     regionPath = dataregion.getFullPath();
     return luceneIndexFactory.create(indexName, regionPath, cache);
   }
 
-  private void registerDefinedIndex(final String regionAndIndex, final LuceneIndexCreationProfile luceneIndexCreationProfile) {
+  private void registerDefinedIndex(final String regionAndIndex,
+      final LuceneIndexCreationProfile luceneIndexCreationProfile) {
     if (definedIndexMap.containsKey(regionAndIndex) || indexMap.containsKey(regionAndIndex))
       throw new IllegalArgumentException("Lucene index already exists in region");
     definedIndexMap.put(regionAndIndex, luceneIndexCreationProfile);
@@ -238,7 +239,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   @Override
   public LuceneIndex getIndex(String indexName, String regionPath) {
     Region region = cache.getRegion(regionPath);
-    if(region == null) {
+    if (region == null) {
       return null;
     }
     return indexMap.get(getUniqueIndexName(indexName, region.getFullPath()));
@@ -253,7 +254,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public void destroyIndex(LuceneIndex index) {
     LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
     indexMap.remove(getUniqueIndexName(index.getName(), index.getRegionPath()));
-//    indexImpl.close();
+    // indexImpl.close();
   }
 
   @Override
@@ -273,54 +274,43 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   @Override
   public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
-    //This is called when CacheCreation (source) is turned into a GemfireCacheImpl (target)
-    //nothing to do there.
+    // This is called when CacheCreation (source) is turned into a GemfireCacheImpl (target)
+    // nothing to do there.
   }
 
-  public void registerIndex(LuceneIndex index){
-    String regionAndIndex = getUniqueIndexName(index.getName(), index.getRegionPath()); 
-    if( !indexMap.containsKey( regionAndIndex )) {
+  public void registerIndex(LuceneIndex index) {
+    String regionAndIndex = getUniqueIndexName(index.getName(), index.getRegionPath());
+    if (!indexMap.containsKey(regionAndIndex)) {
       indexMap.put(regionAndIndex, index);
     }
     definedIndexMap.remove(regionAndIndex);
   }
 
-  public void unregisterIndex(final String region){
-    if( indexMap.containsKey( region )) indexMap.remove( region );
+  public void unregisterIndex(final String region) {
+    if (indexMap.containsKey(region))
+      indexMap.remove(region);
   }
 
-  /**Public for test purposes */
+  /** Public for test purposes */
   public static void registerDataSerializables() {
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_CHUNK_KEY,
-        ChunkKey.class);
-    
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_FILE,
-        File.class);
-    
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
-        LuceneFunctionContext.class);
-    
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
-        StringQueryProvider.class);
-    
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
-        TopEntriesCollectorManager.class);
-    
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_ENTRY_SCORE,
-        EntryScore.class);
-    
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_TOP_ENTRIES,
-        TopEntries.class);
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 
-    DSFIDFactory.registerDSFID(
-        DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_FILE, File.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
+        LuceneFunctionContext.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
+        StringQueryProvider.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
+        TopEntriesCollectorManager.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_ENTRY_SCORE, EntryScore.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES, TopEntries.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
         TopEntriesCollector.class);
   }
 
@@ -329,6 +319,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public LuceneIndexCreationProfile getDefinedIndex(String indexName, String regionPath) {
-    return definedIndexMap.get(getUniqueIndexName(indexName , regionPath));
+    return definedIndexMap.get(getUniqueIndexName(indexName, regionPath));
   }
 }

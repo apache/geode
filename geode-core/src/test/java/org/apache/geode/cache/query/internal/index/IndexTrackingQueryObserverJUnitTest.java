@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -51,11 +49,11 @@ public class IndexTrackingQueryObserverJUnitTest {
   static Region region;
   static Index keyIndex1;
   static IndexInfo regionMap;
-  
+
   private static final String queryStr = "select * from /portfolio where ID > 0";
   public static final int NUM_BKTS = 20;
-  public static final String INDEX_NAME = "keyIndex1"; 
-    
+  public static final String INDEX_NAME = "keyIndex1";
+
   @Before
   public void setUp() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
@@ -70,11 +68,11 @@ public class IndexTrackingQueryObserverJUnitTest {
   }
 
   @Test
-  public void testIndexInfoOnPartitionedRegion() throws Exception{
-    //Query VERBOSE has to be true for the test
+  public void testIndexInfoOnPartitionedRegion() throws Exception {
+    // Query VERBOSE has to be true for the test
     assertEquals("true", System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE"));
-    
-    //Create Partition Region
+
+    // Create Partition Region
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     paf.setTotalNumBuckets(NUM_BKTS);
     AttributesFactory af = new AttributesFactory();
@@ -88,43 +86,43 @@ public class IndexTrackingQueryObserverJUnitTest {
     }
     assertEquals(100, region.size());
     qs = CacheUtils.getQueryService();
-    
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME,
-        IndexType.FUNCTIONAL, "ID", "/portfolio ");
-    
+
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID", "/portfolio ");
+
     assertTrue(keyIndex1 instanceof PartitionedIndex);
 
     Query query = qs.newQuery(queryStr);
 
-    //Inject TestHook in QueryObserver before running query.
+    // Inject TestHook in QueryObserver before running query.
     IndexTrackingTestHook th = new IndexTrackingTestHook(region, NUM_BKTS);
     QueryObserver observer = QueryObserverHolder.getInstance();
     assertTrue(QueryObserverHolder.hasObserver());
-    
-    ((IndexTrackingQueryObserver)observer).setTestHook(th);
-    
-    SelectResults results = (SelectResults)query.execute();
-    
-    //The query should return all elements in region.
+
+    ((IndexTrackingQueryObserver) observer).setTestHook(th);
+
+    SelectResults results = (SelectResults) query.execute();
+
+    // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    
-        //Check results size of Map.
-    regionMap = ((IndexTrackingTestHook)th).getRegionMap();
+
+    // Check results size of Map.
+    regionMap = ((IndexTrackingTestHook) th).getRegionMap();
     Collection<Integer> rslts = regionMap.getResults().values();
     int totalResults = 0;
-    for (Integer i : rslts){
+    for (Integer i : rslts) {
       totalResults += i.intValue();
     }
     assertEquals(results.size(), totalResults);
-    QueryObserverHolder.reset();    
+    QueryObserverHolder.reset();
   }
 
   @Test
-  public void testIndexInfoOnLocalRegion() throws Exception{
-    //Query VERBOSE has to be true for the test
+  public void testIndexInfoOnLocalRegion() throws Exception {
+    // Query VERBOSE has to be true for the test
     assertEquals("true", System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE"));
-    
-    //Create Partition Region
+
+    // Create Partition Region
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
 
@@ -136,31 +134,31 @@ public class IndexTrackingQueryObserverJUnitTest {
     }
     assertEquals(100, region.size());
     qs = CacheUtils.getQueryService();
-    
-    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME,
-        IndexType.FUNCTIONAL, "ID", "/portfolio ");
-    
+
+    keyIndex1 =
+        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID", "/portfolio ");
+
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
 
     Query query = qs.newQuery(queryStr);
 
-    //Inject TestHook in QueryObserver before running query.
+    // Inject TestHook in QueryObserver before running query.
     IndexTrackingTestHook th = new IndexTrackingTestHook(region, 0);
     QueryObserver observer = QueryObserverHolder.getInstance();
     assertTrue(QueryObserverHolder.hasObserver());
-    
-    ((IndexTrackingQueryObserver)observer).setTestHook(th);
-    
-    SelectResults results = (SelectResults)query.execute();
-    
-    //The query should return all elements in region.
+
+    ((IndexTrackingQueryObserver) observer).setTestHook(th);
+
+    SelectResults results = (SelectResults) query.execute();
+
+    // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    
-    regionMap = ((IndexTrackingTestHook)th).getRegionMap();
+
+    regionMap = ((IndexTrackingTestHook) th).getRegionMap();
     Object rslts = regionMap.getResults().get(region.getFullPath());
     assertTrue(rslts instanceof Integer);
-    
-    assertEquals(results.size(), ((Integer)rslts).intValue());
+
+    assertEquals(results.size(), ((Integer) rslts).intValue());
   }
 
 }

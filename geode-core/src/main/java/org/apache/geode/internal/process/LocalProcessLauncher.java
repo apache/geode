@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.process;
 
@@ -38,31 +36,32 @@ import java.io.IOException;
  */
 public final class LocalProcessLauncher {
 
-  public static final String PROPERTY_IGNORE_IS_PID_ALIVE = DistributionConfig.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";
-  
+  public static final String PROPERTY_IGNORE_IS_PID_ALIVE =
+      DistributionConfig.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";
+
   private final int pid;
   private final File pidFile;
-  
+
   /**
-   * Constructs a new ProcessLauncher. Parses this process's RuntimeMXBean name 
-   * for the pid (process id).
+   * Constructs a new ProcessLauncher. Parses this process's RuntimeMXBean name for the pid (process
+   * id).
    * 
    * @param pidFile the file to create and write pid into
    * @param force if true then the pid file will be replaced if it already exists
    * 
    * @throws FileAlreadyExistsException if the pid file already exists and force is false
    * @throws IOException if unable to write pid (process id) to pid file
-   * @throws PidUnavailableException if the pid cannot be parsed from the RuntimeMXBean name 
+   * @throws PidUnavailableException if the pid cannot be parsed from the RuntimeMXBean name
    * 
    * @see java.lang.management.RuntimeMXBean
    */
-  public LocalProcessLauncher(final File pidFile, final boolean force) 
+  public LocalProcessLauncher(final File pidFile, final boolean force)
       throws FileAlreadyExistsException, IOException, PidUnavailableException {
     this.pid = ProcessUtils.identifyPid();
     this.pidFile = pidFile;
     writePid(force);
   }
-  
+
   /**
    * Returns the process id (pid).
    * 
@@ -71,7 +70,7 @@ public final class LocalProcessLauncher {
   public int getPid() {
     return this.pid;
   }
-  
+
   /**
    * Returns the pid file.
    * 
@@ -80,7 +79,7 @@ public final class LocalProcessLauncher {
   public File getPidFile() {
     return this.pidFile;
   }
-  
+
   /**
    * Delete the pid file now. {@link java.io.File#deleteOnExit()} is set on the pid file.
    */
@@ -91,7 +90,7 @@ public final class LocalProcessLauncher {
   /**
    * Creates a new pid file and writes this process's pid into it.
    * 
-   * @param force if true then the pid file will be replaced if it already exists it 
+   * @param force if true then the pid file will be replaced if it already exists it
    * 
    * @throws FileAlreadyExistsException if the pid file already exists and force is false
    * @throws IOException if unable to create or write to the file
@@ -102,7 +101,7 @@ public final class LocalProcessLauncher {
       int otherPid = 0;
       try {
         otherPid = ProcessUtils.readPid(this.pidFile);
-      } catch(IOException e) {
+      } catch (IOException e) {
         // suppress
       } catch (NumberFormatException e) {
         // suppress
@@ -112,8 +111,8 @@ public final class LocalProcessLauncher {
         ignorePidFile = !ProcessUtils.isProcessAlive(otherPid);
       }
       if (!ignorePidFile) {
-        throw new FileAlreadyExistsException("Pid file already exists: " + this.pidFile + 
-            " for " + (otherPid > 0 ? "process " + otherPid : "unknown process"));
+        throw new FileAlreadyExistsException("Pid file already exists: " + this.pidFile + " for "
+            + (otherPid > 0 ? "process " + otherPid : "unknown process"));
       }
     }
     this.pidFile.deleteOnExit();
@@ -122,7 +121,7 @@ public final class LocalProcessLauncher {
     writer.flush();
     writer.close();
   }
-  
+
   private static boolean ignoreIsPidAlive() {
     return Boolean.getBoolean(PROPERTY_IGNORE_IS_PID_ALIVE);
   }

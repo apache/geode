@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -109,17 +107,17 @@ public interface GatewayReceiverMXBean {
    * Returns the configured end port.
    */
   public int getEndPort();
-  
+
   /**
    * Returns a list of names for the transport filters in use.
    */
   public String[] getGatewayTransportFilters();
-  
+
   /**
    * Returns the number of sockets accepted and used for client to server messaging.
    */
   public int getClientConnectionCount();
-  
+
   /**
    * Returns the number of client virtual machines connected and acting as a gateway.
    */
@@ -136,8 +134,7 @@ public interface GatewayReceiverMXBean {
   public long getPutRequestAvgLatency();
 
   /**
-   * Returns the total number of client connections that timed out and were
-   * closed.
+   * Returns the total number of client connections that timed out and were closed.
    */
   public int getTotalConnectionsTimedOut();
 
@@ -147,8 +144,8 @@ public interface GatewayReceiverMXBean {
   public int getTotalFailedConnectionAttempts();
 
   /**
-   * Returns the current number of connections waiting for a thread to start
-   * processing their message.
+   * Returns the current number of connections waiting for a thread to start processing their
+   * message.
    */
   public int getThreadQueueSize();
 
@@ -158,26 +155,25 @@ public interface GatewayReceiverMXBean {
   public int getConnectionThreads();
 
   /**
-   * Returns the load from client to server connections as reported by the load
-   * probe installed in this server.
+   * Returns the load from client to server connections as reported by the load probe installed in
+   * this server.
    */
   public double getConnectionLoad();
 
   /**
-   * Returns the estimate of how much load is added for each new connection as
-   * reported by the load probe installed in this server.
+   * Returns the estimate of how much load is added for each new connection as reported by the load
+   * probe installed in this server.
    */
   public double getLoadPerConnection();
 
   /**
-   * Returns the load from queues as reported by the load probe installed in
-   * this server.
+   * Returns the load from queues as reported by the load probe installed in this server.
    */
   public double getQueueLoad();
 
   /**
-   * Returns the estimate of how much load is added for each new queue as
-   * reported by the load probe installed in this server.
+   * Returns the estimate of how much load is added for each new queue as reported by the load probe
+   * installed in this server.
    */
   public double getLoadPerQueue();
 
@@ -190,7 +186,7 @@ public interface GatewayReceiverMXBean {
    * Returns the rate of put requests.
    */
   public float getPutRequestRate();
-  
+
   /**
    * Returns the total number of bytes sent to clients.
    */
@@ -202,11 +198,11 @@ public interface GatewayReceiverMXBean {
   public long getTotalReceivedBytes();
 
   /**
-   * Returns a list of the host and port information for gateway senders connected to
-   * this gateway receiver.
+   * Returns a list of the host and port information for gateway senders connected to this gateway
+   * receiver.
    */
-  public String[] getConnectedGatewaySenders();  
-  
+  public String[] getConnectedGatewaySenders();
+
   /**
    * Returns the average batch processing time (in milliseconds).
    */

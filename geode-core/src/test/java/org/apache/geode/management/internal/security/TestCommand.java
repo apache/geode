@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.security;
 
@@ -31,8 +29,10 @@ public class TestCommand {
   public static ResourcePermission dataManage = new ResourcePermission("DATA", "MANAGE");
 
   public static ResourcePermission regionARead = new ResourcePermission("DATA", "READ", "RegionA");
-  public static ResourcePermission regionAWrite = new ResourcePermission("DATA", "WRITE", "RegionA");
-  public static ResourcePermission regionAManage = new ResourcePermission("DATA", "MANAGE", "RegionA");
+  public static ResourcePermission regionAWrite =
+      new ResourcePermission("DATA", "WRITE", "RegionA");
+  public static ResourcePermission regionAManage =
+      new ResourcePermission("DATA", "MANAGE", "RegionA");
 
   public static ResourcePermission clusterRead = new ResourcePermission("CLUSTER", "READ");
   public static ResourcePermission clusterWrite = new ResourcePermission("CLUSTER", "WRITE");
@@ -40,7 +40,7 @@ public class TestCommand {
 
   private static List<TestCommand> testCommands = new ArrayList<>();
 
-  static{
+  static {
     init();
   }
 
@@ -65,15 +65,15 @@ public class TestCommand {
     return this.permission;
   }
 
-  public static List<TestCommand> getCommands(){
+  public static List<TestCommand> getCommands() {
     return testCommands;
   }
 
-  public static List<TestCommand> getPermittedCommands(Permission permission){
+  public static List<TestCommand> getPermittedCommands(Permission permission) {
     List<TestCommand> result = new ArrayList<>();
     for (TestCommand testCommand : testCommands) {
       ResourcePermission cPerm = testCommand.getPermission();
-      if(cPerm!=null && permission.implies(cPerm)){
+      if (cPerm != null && permission.implies(cPerm)) {
         result.add(testCommand);
       }
     }
@@ -90,15 +90,17 @@ public class TestCommand {
     createTestCommand("describe config --member=Member1", clusterRead);
     createTestCommand("export config --member=member1", clusterRead);
 
-    //CreateAlterDestroyRegionCommands
+    // CreateAlterDestroyRegionCommands
     createTestCommand("alter region --name=RegionA --eviction-max=5000", regionAManage);
     createTestCommand("create region --name=region12 --type=REPLICATE", dataManage);
     createTestCommand("destroy region --name=value", dataManage);
 
-    //Data Commands
+    // Data Commands
     createTestCommand("rebalance --include-region=RegionA", dataManage);
-    createTestCommand("export data --region=RegionA --file=export.txt --member=exportMember", regionARead);
-    createTestCommand("import data --region=RegionA --file=import.txt --member=importMember", regionAWrite);
+    createTestCommand("export data --region=RegionA --file=export.txt --member=exportMember",
+        regionARead);
+    createTestCommand("import data --region=RegionA --file=import.txt --member=importMember",
+        regionAWrite);
     createTestCommand("put --key=key1 --value=value1 --region=RegionA", regionAWrite);
     createTestCommand("get --key=key1 --region=RegionA", regionARead);
     createTestCommand("remove --region=RegionA --key=key1", regionAWrite);
@@ -106,7 +108,8 @@ public class TestCommand {
     createTestCommand("locate entry --key=k1 --region=RegionA", regionARead);
 
     // Deploy commands
-    //createTestCommand("deploy --jar=group1_functions.jar --group=Group1", dataManage); // TODO: this command will fail in GfshCommandsSecurityTest at interceptor for jar file checking
+    // createTestCommand("deploy --jar=group1_functions.jar --group=Group1", dataManage); // TODO:
+    // this command will fail in GfshCommandsSecurityTest at interceptor for jar file checking
     createTestCommand("undeploy --group=Group1", dataManage);
 
     // Diskstore Commands
@@ -127,33 +130,38 @@ public class TestCommand {
 
     // DurableClientCommands
     createTestCommand("close durable-client --durable-client-id=client1", dataManage);
-    createTestCommand("close durable-cq --durable-client-id=client1 --durable-cq-name=cq1", dataManage);
+    createTestCommand("close durable-cq --durable-client-id=client1 --durable-cq-name=cq1",
+        dataManage);
     createTestCommand("show subscription-queue-size --durable-client-id=client1", clusterRead);
     createTestCommand("list durable-cqs --durable-client-id=client1", clusterRead);
 
-    //ExportIMportSharedConfigurationCommands
-    createTestCommand("export cluster-configuration --zip-file-name=mySharedConfig.zip", clusterRead);
+    // ExportIMportSharedConfigurationCommands
+    createTestCommand("export cluster-configuration --zip-file-name=mySharedConfig.zip",
+        clusterRead);
     createTestCommand("import cluster-configuration --zip-file-name=value.zip", clusterManage);
 
-    //FunctionCommands
-    //createTestCommand("destroy function --id=InterestCalculations", dataManage);
+    // FunctionCommands
+    // createTestCommand("destroy function --id=InterestCalculations", dataManage);
     createTestCommand("execute function --id=InterestCalculations --group=Group1", dataWrite);
     createTestCommand("list functions", clusterRead);
 
-    //GfshHelpCommands
+    // GfshHelpCommands
     createTestCommand("hint", null);
     createTestCommand("help", null);
 
-    //IndexCommands
+    // IndexCommands
     createTestCommand("clear defined indexes", dataManage);
     createTestCommand("create defined indexes", dataManage);
-    createTestCommand("create index --name=myKeyIndex --expression=region1.Id --region=RegionA --type=key", regionAManage);
-    createTestCommand("define index --name=myIndex1 --expression=exp1 --region=/RegionA", regionAManage);
+    createTestCommand(
+        "create index --name=myKeyIndex --expression=region1.Id --region=RegionA --type=key",
+        regionAManage);
+    createTestCommand("define index --name=myIndex1 --expression=exp1 --region=/RegionA",
+        regionAManage);
     createTestCommand("destroy index --member=server2", dataManage);
     createTestCommand("destroy index --region=RegionA --member=server2", regionAManage);
     createTestCommand("list indexes", clusterRead);
 
-    //LauncherLifecycleCommands
+    // LauncherLifecycleCommands
     createTestCommand("start jconsole", null);
     createTestCommand("start jvisualvm", null);
     createTestCommand("start locator --name=locator1", null);
@@ -162,10 +170,10 @@ public class TestCommand {
     createTestCommand("start vsd", null);
     createTestCommand("status locator", null);
     createTestCommand("status server", null);
-    //createTestCommand("stop locator --name=locator1", clusterManage);
-    //createTestCommand("stop server --name=server1", clusterManage);
+    // createTestCommand("stop locator --name=locator1", clusterManage);
+    // createTestCommand("stop server --name=server1", clusterManage);
 
-    //MemberCommands
+    // MemberCommands
     createTestCommand("describe member --name=server1", clusterRead);
     createTestCommand("list members", clusterRead);
 
@@ -182,13 +190,15 @@ public class TestCommand {
 
     // PDX Commands
     createTestCommand("configure pdx --read-serialized=true", dataManage);
-    //createTestCommand("pdx rename --old=org.apache --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1", dataManage);
+    // createTestCommand("pdx rename --old=org.apache --new=com.pivotal --disk-store=ds1
+    // --disk-dirs=/diskDir1", dataManage);
 
     // Queue Commands
-    createTestCommand("create async-event-queue --id=myAEQ --listener=myApp.myListener", dataManage);
+    createTestCommand("create async-event-queue --id=myAEQ --listener=myApp.myListener",
+        dataManage);
     createTestCommand("list async-event-queues", clusterRead);
 
-    //RegionCommands
+    // RegionCommands
     createTestCommand("describe region --name=value", clusterRead);
     createTestCommand("list regions", dataRead);
 
@@ -206,7 +216,8 @@ public class TestCommand {
     createTestCommand("sh ls", null);
 
     // WAN Commands
-    createTestCommand("create gateway-sender --id=sender1 --remote-distributed-system-id=2", dataManage);
+    createTestCommand("create gateway-sender --id=sender1 --remote-distributed-system-id=2",
+        dataManage);
     createTestCommand("start gateway-sender --id=sender1", dataManage);
     createTestCommand("pause gateway-sender --id=sender1", dataManage);
     createTestCommand("resume gateway-sender --id=sender1", dataManage);
@@ -219,10 +230,10 @@ public class TestCommand {
     createTestCommand("status gateway-receiver", clusterRead);
     createTestCommand("status gateway-sender --id=sender1", clusterRead);
 
-    //ShellCommand
+    // ShellCommand
     createTestCommand("disconnect", null);
 
-    //Misc commands
-    //createTestCommand("shutdown", clusterManage);
+    // Misc commands
+    // createTestCommand("shutdown", clusterManage);
   };
 }

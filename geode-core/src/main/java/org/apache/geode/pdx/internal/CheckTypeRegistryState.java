@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal;
 
@@ -32,8 +30,8 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.PdxInitializationException;
 
-public class CheckTypeRegistryState extends HighPriorityDistributionMessage 
-          implements MessageWithReply {
+public class CheckTypeRegistryState extends HighPriorityDistributionMessage
+    implements MessageWithReply {
   private int processorId;
 
   public CheckTypeRegistryState() {
@@ -54,11 +52,11 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
     try {
       replyProcessor.waitForReplies();
     } catch (ReplyException e) {
-      if(e.getCause() instanceof PdxInitializationException) {
-        throw new PdxInitializationException("Bad PDX configuration on member "
-            + e.getSender() + ": " + e.getCause().getMessage(), e.getCause());
-      }
-      else {
+      if (e.getCause() instanceof PdxInitializationException) {
+        throw new PdxInitializationException(
+            "Bad PDX configuration on member " + e.getSender() + ": " + e.getCause().getMessage(),
+            e.getCause());
+      } else {
         throw new InternalGemFireError("Unexpected exception", e);
       }
     } catch (InterruptedException e) {
@@ -71,17 +69,17 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
     ReplyException e = null;
     try {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if(cache != null && !cache.isClosed()) {
+      if (cache != null && !cache.isClosed()) {
         TypeRegistry pdxRegistry = cache.getPdxRegistry();
-        if(pdxRegistry != null) {
+        if (pdxRegistry != null) {
           TypeRegistration registry = pdxRegistry.getTypeRegistration();
-          if(registry instanceof PeerTypeRegistration) {
+          if (registry instanceof PeerTypeRegistration) {
             PeerTypeRegistration peerRegistry = (PeerTypeRegistration) registry;
             peerRegistry.verifyConfiguration();
           }
         }
       }
-    } catch(Exception ex) {
+    } catch (Exception ex) {
       e = new ReplyException(ex);
     } finally {
       ReplyMessage rm = new ReplyMessage();

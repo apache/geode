@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.memcached;
 
@@ -54,8 +52,7 @@ import net.spy.memcached.MemcachedClient;
  * Test for binary protocol
  */
 @Category(IntegrationTest.class)
-public class GemcachedBinaryClientJUnitTest extends
-    GemcachedDevelopmentJUnitTest {
+public class GemcachedBinaryClientJUnitTest extends GemcachedDevelopmentJUnitTest {
 
   @Override
   protected Protocol getProtocol() {
@@ -63,8 +60,7 @@ public class GemcachedBinaryClientJUnitTest extends
   }
 
   @Override
-  protected MemcachedClient createMemcachedClient() throws IOException,
-      UnknownHostException {
+  protected MemcachedClient createMemcachedClient() throws IOException, UnknownHostException {
     List<InetSocketAddress> addrs = new ArrayList<InetSocketAddress>();
     addrs.add(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
     MemcachedClient client = new MemcachedClient(new BinaryConnectionFactory(), addrs);
@@ -76,7 +72,7 @@ public class GemcachedBinaryClientJUnitTest extends
     MemcachedClient client = createMemcachedClient();
     assertTrue(client.set("key", 0, "value".getBytes()).get());
     client.set("exceptionkey", 0, "exceptionvalue").get();
-    
+
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     Region region = cache.getRegion(GemFireMemcachedServer.REGION_NAME);
     region.getAttributesMutator().setCacheWriter(new CacheWriterAdapter() {
@@ -86,6 +82,7 @@ public class GemcachedBinaryClientJUnitTest extends
           throw new RuntimeException("ExpectedStrings: Cache writer exception");
         }
       }
+
       @Override
       public void beforeUpdate(EntryEvent event) throws CacheWriterException {
         if (event.getKey().equals(KeyWrapper.getWrappedKey("exceptionkey".getBytes()))) {
@@ -107,13 +104,13 @@ public class GemcachedBinaryClientJUnitTest extends
   public void testCacheLoaderException() throws Exception {
     MemcachedClient client = createMemcachedClient();
     assertTrue(client.set("key", 0, "value").get());
-    
+
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     Region region = cache.getRegion(GemFireMemcachedServer.REGION_NAME);
     region.getAttributesMutator().setCacheLoader(new CacheLoader() {
       @Override
-      public void close() {
-      }
+      public void close() {}
+
       @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
         if (helper.getKey().equals(KeyWrapper.getWrappedKey("exceptionkey".getBytes()))) {
@@ -131,14 +128,14 @@ public class GemcachedBinaryClientJUnitTest extends
     }
     assertEquals("value", client.get("key"));
   }
-  
+
   @Override
   public void testDecr() throws Exception {
     super.testDecr();
     MemcachedClient client = createMemcachedClient();
     assertEquals(0, client.decr("decrkey", 999));
   }
-  
+
   @Override
   public void testFlushDelay() throws Exception {
     // for some reason the server never gets expiration bits from the

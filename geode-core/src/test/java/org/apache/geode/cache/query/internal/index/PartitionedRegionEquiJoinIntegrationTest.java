@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -37,33 +35,32 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegrationTest {
- 
+
   @Override
   protected void createRegions() {
     region1 = createPartitionRegion("region1");
     region2 = createColocatedPartitionRegion("region2", "region1");
     FunctionService.registerFunction(equijoinTestFunction);
   }
-  
+
   @Override
   protected void createAdditionalRegions() throws Exception {
     region3 = createColocatedPartitionRegion("region3", "region1");
     region4 = createColocatedPartitionRegion("region4", "region1");
   }
- 
+
   @Test
   public void testSingleFilterWithSingleEquijoinNestedQuery() throws Exception {
     createRegions();
 
-    String[] queries = new String[]{
-        "select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid or c.pkid in set (1,2,3,4)",
-    };
-    
+    String[] queries = new String[] {
+        "select * from /region1 c, /region2 s where c.pkid=1 and c.pkid = s.pkid or c.pkid in set (1,2,3,4)",};
+
     for (int i = 0; i < 1000; i++) {
-      region1.put( i, new Customer(i, i));
-      region2.put( i, new Customer(i, i));
+      region1.put(i, new Customer(i, i));
+      region2.put(i, new Customer(i, i));
     }
-    
+
     executeQueriesWithIndexCombinations(queries);
   }
 
@@ -73,23 +70,25 @@ public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegratio
         .setPartitionAttributes(paf.create());
     return factory.create(regionName);
   }
- 
+
   public Region createColocatedPartitionRegion(String regionName, final String colocatedRegion) {
-     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setColocatedWith(colocatedRegion);
-    RegionFactory factory = CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(paf.create());
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setColocatedWith(colocatedRegion);
+    RegionFactory factory = CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .setPartitionAttributes(paf.create());
     return factory.create(regionName);
   }
-  
+
 
   @Override
   protected Object[] executeQueries(String[] queries) {
-    ResultCollector collector = FunctionService.onRegion(region1).withArgs(queries).execute(equijoinTestFunction.getId());
+    ResultCollector collector =
+        FunctionService.onRegion(region1).withArgs(queries).execute(equijoinTestFunction.getId());
     Object result = collector.getResult();
-    return (Object[])((ArrayList)result).get(0);
+    return (Object[]) ((ArrayList) result).get(0);
   }
-  
-  Function equijoinTestFunction = new Function(){
+
+  Function equijoinTestFunction = new Function() {
     @Override
     public boolean hasResult() {
       return true;
@@ -100,14 +99,13 @@ public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegratio
       try {
         String[] queries = (String[]) context.getArguments();
         QueryService qs = CacheUtils.getCache().getQueryService();
-        
+
         Object[] results = new SelectResults[queries.length];
         for (int i = 0; i < queries.length; i++) {
-          results[i] = qs.newQuery(queries[i]).execute((RegionFunctionContext)context);
+          results[i] = qs.newQuery(queries[i]).execute((RegionFunctionContext) context);
         }
         context.getResultSender().lastResult(results);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         e.printStackTrace();
       }
     }

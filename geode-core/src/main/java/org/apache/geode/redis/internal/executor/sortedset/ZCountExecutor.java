@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
@@ -98,7 +96,10 @@ public class ZCountExecutor extends SortedSetExecutor {
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), count));
   }
 
-  private int getCount(ByteArrayWrapper key, Region<ByteArrayWrapper, DoubleWrapper> keyRegion, ExecutionHandlerContext context, double start, double stop, boolean startInclusive, boolean stopInclusive) throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
+  private int getCount(ByteArrayWrapper key, Region<ByteArrayWrapper, DoubleWrapper> keyRegion,
+      ExecutionHandlerContext context, double start, double stop, boolean startInclusive,
+      boolean stopInclusive) throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException {
     if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY)
       return keyRegion.size();
     else if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY)
@@ -112,17 +113,17 @@ public class ZCountExecutor extends SortedSetExecutor {
       } else {
         query = getQuery(key, SortedSetQuery.ZCOUNTNINF, context);
       }
-      params = new Object[]{stop};
+      params = new Object[] {stop};
     } else if (stop == Double.POSITIVE_INFINITY) {
       if (startInclusive) {
         query = getQuery(key, SortedSetQuery.ZCOUNTPINFI, context);
       } else {
         query = getQuery(key, SortedSetQuery.ZCOUNTPINF, context);
       }
-      params = new Object[]{start};
+      params = new Object[] {start};
     } else {
       if (startInclusive) {
-        if(stopInclusive) {
+        if (stopInclusive) {
           query = getQuery(key, SortedSetQuery.ZCOUNTSTISI, context);
         } else {
           query = getQuery(key, SortedSetQuery.ZCOUNTSTI, context);
@@ -134,7 +135,7 @@ public class ZCountExecutor extends SortedSetExecutor {
           query = getQuery(key, SortedSetQuery.ZCOUNT, context);
         }
       }
-      params = new Object[]{start, stop};
+      params = new Object[] {start, stop};
     }
 
     SelectResults<?> results = (SelectResults<?>) query.execute(params);

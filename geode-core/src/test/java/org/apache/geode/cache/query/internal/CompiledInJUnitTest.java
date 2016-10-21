@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -45,10 +43,10 @@ public class CompiledInJUnitTest {
     elm = mock(CompiledValue.class);
     colln = mock(CompiledValue.class);
   }
-  
+
   @Test
   public void testEnumsShouldCompareCorrectlyToACollectionOfOnePdxEnumInfo() throws Exception {
-    Object[] objectValues = new Object[] { createPdxInstanceEnumInfo(EnumForTest.ONE, 1)};
+    Object[] objectValues = new Object[] {createPdxInstanceEnumInfo(EnumForTest.ONE, 1)};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(EnumForTest.ONE);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
 
@@ -56,10 +54,11 @@ public class CompiledInJUnitTest {
     Object result = compiledIn.evaluate(context);
     assertTrue((Boolean) result);
   }
-  
+
   @Test
-  public void testEnumsShouldNotCompareCorrectlyIfNotInCollectionOfPdxInstanceEnum() throws Exception {
-    Object[] objectValues = new Object[] { createPdxInstanceEnumInfo(EnumForTest.ONE, 1)};
+  public void testEnumsShouldNotCompareCorrectlyIfNotInCollectionOfPdxInstanceEnum()
+      throws Exception {
+    Object[] objectValues = new Object[] {createPdxInstanceEnumInfo(EnumForTest.ONE, 1)};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(EnumForTest.TWO);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
 
@@ -67,10 +66,11 @@ public class CompiledInJUnitTest {
     Object result = compiledIn.evaluate(context);
     assertFalse((Boolean) result);
   }
-  
+
   @Test
   public void testEnumsShouldCompareCorrectlyToACollectionOfPdxEnums() throws Exception {
-    Object[] objectValues = new Object[] { createPdxInstanceEnumInfo(EnumForTest.ONE, 1), createPdxInstanceEnumInfo(EnumForTest.TWO, 1)};
+    Object[] objectValues = new Object[] {createPdxInstanceEnumInfo(EnumForTest.ONE, 1),
+        createPdxInstanceEnumInfo(EnumForTest.TWO, 1)};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(EnumForTest.ONE);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
 
@@ -78,21 +78,22 @@ public class CompiledInJUnitTest {
     Object result = compiledIn.evaluate(context);
     assertTrue((Boolean) result);
   }
-  
+
   @Test
   public void testPdxEnumsShouldCompareCorrectlyToACollectionOfOneEnum() throws Exception {
-    Object[] objectValues = new Object[] { EnumForTest.ONE};
-    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(createPdxInstanceEnumInfo(EnumForTest.ONE, 1));
+    Object[] objectValues = new Object[] {EnumForTest.ONE};
+    when(elm.evaluate(isA(ExecutionContext.class)))
+        .thenReturn(createPdxInstanceEnumInfo(EnumForTest.ONE, 1));
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
     assertTrue((Boolean) result);
   }
-  
+
   @Test
   public void testShouldNotThrowTypeMismatchWithNullElementAndObjectArray() throws Exception {
-    Object[] objectValues = new Object[] { true, true };
+    Object[] objectValues = new Object[] {true, true};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(null);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(objectValues);
 
@@ -102,7 +103,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testTypeMismatchWithNullElementAndPrimitiveArray() throws Exception {
-    boolean[] booleanValues = new boolean[] { true, true };
+    boolean[] booleanValues = new boolean[] {true, true};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(null);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(booleanValues);
 
@@ -117,7 +118,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesFalseForStringAgainstShortArray() throws Exception {
-    short[] shortValues = new short[] { 1, 1 };
+    short[] shortValues = new short[] {1, 1};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn("1");
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(shortValues);
 
@@ -128,7 +129,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueForFloatAgainstShortArray() throws Exception {
-    short[] shortValues = new short[] { 1, 1 };
+    short[] shortValues = new short[] {1, 1};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(new Float(1.0));
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(shortValues);
 
@@ -139,7 +140,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueForShortAgainstShortArray() throws Exception {
-    short[] shortValues = new short[] { 1, 2 };
+    short[] shortValues = new short[] {1, 2};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(1);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(shortValues);
 
@@ -150,7 +151,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueForIntegerAgainstShortArray() throws Exception {
-    short[] shortValues = new short[] { 1, 2 };
+    short[] shortValues = new short[] {1, 2};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(new Integer(1));
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(shortValues);
 
@@ -161,7 +162,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesFalseForStringAgainstBooleanArray() throws Exception {
-    boolean[] booleanValues = new boolean[] { true, true };
+    boolean[] booleanValues = new boolean[] {true, true};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn("true");
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(booleanValues);
 
@@ -172,7 +173,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesFalseWithBooleanArrayNotMatchingBooleanElement() throws Exception {
-    boolean[] booleanValues = new boolean[] { true, true };
+    boolean[] booleanValues = new boolean[] {true, true};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(false);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(booleanValues);
 
@@ -183,7 +184,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithBooleanArrayMatchingBooleanElement() throws Exception {
-    boolean[] booleanValues = new boolean[] { true, true };
+    boolean[] booleanValues = new boolean[] {true, true};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(true);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(booleanValues);
 
@@ -194,7 +195,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithBooleanArrayMatchingBooleanFalseElement() throws Exception {
-    boolean[] booleanValues = new boolean[] { false, false };
+    boolean[] booleanValues = new boolean[] {false, false};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(false);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(booleanValues);
 
@@ -205,7 +206,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithCharArrayMatchingCharElement() throws Exception {
-    char[] charValues = new char[] { 'a', 'b', '1' };
+    char[] charValues = new char[] {'a', 'b', '1'};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn('a');
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(charValues);
 
@@ -216,7 +217,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWitCharArrayNotMatchingCharElement() throws Exception {
-    char[] charValues = new char[] { 'a', 'b', '1' };
+    char[] charValues = new char[] {'a', 'b', '1'};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn('c');
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(charValues);
 
@@ -227,7 +228,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testStringDoesNotMatchCharElements() throws Exception {
-    char[] charValues = new char[] { 'a', 'b', '1' };
+    char[] charValues = new char[] {'a', 'b', '1'};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn("a");
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(charValues);
 
@@ -238,7 +239,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testIntegerDoesNotMatchCharElements() throws Exception {
-    char[] charValues = new char[] { 'a', 'b', '1' };
+    char[] charValues = new char[] {'a', 'b', '1'};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(97);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(charValues);
 
@@ -249,7 +250,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesFalseWithByteArrayNotMatchingIntegerElement() throws Exception {
-    byte[] byteValues = new byte[] { 127, 2, 3 };
+    byte[] byteValues = new byte[] {127, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(127);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(byteValues);
 
@@ -260,7 +261,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesFalseWithByteArrayNotMatchingLargerIntegerElement() throws Exception {
-    byte[] byteValues = new byte[] { 127, 2, 3 };
+    byte[] byteValues = new byte[] {127, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(128);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(byteValues);
 
@@ -271,7 +272,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithByteArrayMatchingByteElement() throws Exception {
-    byte[] byteValues = new byte[] { 1, 2, 3 };
+    byte[] byteValues = new byte[] {1, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn((Byte.valueOf("1")));
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(byteValues);
 
@@ -282,7 +283,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluateNotMatchingLongElement() throws Exception {
-    long[] longValues = new long[] { 1, 2, 3 };
+    long[] longValues = new long[] {1, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(4L);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(longValues);
 
@@ -293,7 +294,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithLongArrayMatchingLongElement() throws Exception {
-    long[] longValues = new long[] { 1, 2, 3 };
+    long[] longValues = new long[] {1, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(1L);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(longValues);
 
@@ -304,7 +305,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithSecondElementOfLongArrayMatchingLongElement() throws Exception {
-    long[] longValues = new long[] { 1, 2, 3 };
+    long[] longValues = new long[] {1, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(2L);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(longValues);
 
@@ -315,7 +316,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithLongArrayMatchingAndDoubleElement() throws Exception {
-    long[] longValues = new long[] { 1, 2, 3 };
+    long[] longValues = new long[] {1, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(1D);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(longValues);
 
@@ -326,7 +327,7 @@ public class CompiledInJUnitTest {
 
   @Test
   public void testEvaluatesTrueWithLongArrayMatchingAndIntegerElement() throws Exception {
-    long[] longValues = new long[] { 1, 2, 3 };
+    long[] longValues = new long[] {1, 2, 3};
     when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(new Integer(1));
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(longValues);
 
@@ -446,11 +447,13 @@ public class CompiledInJUnitTest {
     Object result = compiledIn.evaluate(context);
     assertNotNull(result);
   }
-  
+
   private PdxInstanceEnumInfo createPdxInstanceEnumInfo(Enum<?> e, int enumId) {
     EnumInfo ei = new EnumInfo(e);
     return (PdxInstanceEnumInfo) ei.getPdxInstance(enumId);
   }
-  
-  private enum EnumForTest {ONE, TWO, THREE};
+
+  private enum EnumForTest {
+    ONE, TWO, THREE
+  };
 }

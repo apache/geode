@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis;
 
@@ -50,7 +48,7 @@ public class ListsJUnitTest {
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    //cf.set("log-file", "redis.log");
+    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -73,7 +71,7 @@ public class ListsJUnitTest {
     }
     String[] stringArray = strings.toArray(new String[strings.size()]);
     jedis.rpush(key, stringArray);
-    
+
 
     for (int i = 0; i < elements; i++) {
       String gemString = jedis.lindex(key, i);
@@ -135,7 +133,7 @@ public class ListsJUnitTest {
 
     for (int i = 0; i < elements; i++) {
       List<String> range = jedis.lrange(key, 0, i);
-      assertEquals(range, strings.subList(0, i+1));
+      assertEquals(range, strings.subList(0, i + 1));
     }
 
     for (int i = 0; i < elements; i++) {
@@ -159,7 +157,7 @@ public class ListsJUnitTest {
     for (int i = elements - 1; i >= 0; i--) {
       jedis.ltrim(key, 0, i);
       List<String> range = jedis.lrange(key, 0, -1);
-      assertEquals(range, strings.subList(0, i+1));
+      assertEquals(range, strings.subList(0, i + 1));
     }
     jedis.rpop(key);
     jedis.rpush(key, stringArray);
@@ -235,7 +233,7 @@ public class ListsJUnitTest {
     StringBuilder rString = new StringBuilder();
     for (int i = 0; i < length; i++)
       rString.append((char) (rand.nextInt(57) + 65));
-    //return rString.toString();
+    // return rString.toString();
     return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }
 

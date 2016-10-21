@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal.unsafe;
 
@@ -21,8 +19,8 @@ import java.lang.reflect.Field;
 import sun.misc.Unsafe;
 
 /**
- * This class wraps the sun.misc.Unsafe class which is only available on Sun JVMs.
- * It is also available on other JVMs (like IBM).
+ * This class wraps the sun.misc.Unsafe class which is only available on Sun JVMs. It is also
+ * available on other JVMs (like IBM).
  * 
  *
  */
@@ -40,7 +38,7 @@ public class UnsafeWrapper {
     }
     unsafe = tmp;
   }
-  
+
   public long objectFieldOffset(Field f) {
     return this.unsafe.objectFieldOffset(f);
   }
@@ -48,6 +46,7 @@ public class UnsafeWrapper {
   public int getInt(Object o, long offset) {
     return this.unsafe.getInt(o, offset);
   }
+
   public int getIntVolatile(Object o, long offset) {
     return this.unsafe.getIntVolatile(o, offset);
   }
@@ -62,9 +61,11 @@ public class UnsafeWrapper {
   public void putInt(Object o, long offset, int v) {
     this.unsafe.putInt(o, offset, v);
   }
+
   public void putIntVolatile(Object o, long offset, int v) {
     this.unsafe.putIntVolatile(o, offset, v);
   }
+
   public boolean compareAndSwapInt(Object o, long offset, int expected, int v) {
     return this.unsafe.compareAndSwapInt(o, offset, expected, v);
   }
@@ -104,6 +105,7 @@ public class UnsafeWrapper {
   public long getLong(Object o, long offset) {
     return this.unsafe.getLong(o, offset);
   }
+
   public long getLongVolatile(Object o, long offset) {
     return this.unsafe.getLongVolatile(o, offset);
   }
@@ -111,9 +113,11 @@ public class UnsafeWrapper {
   public void putLong(Object o, long offset, long v) {
     this.unsafe.putLong(o, offset, v);
   }
+
   public void putLongVolatile(Object o, long offset, long v) {
     this.unsafe.putLongVolatile(o, offset, v);
   }
+
   public boolean compareAndSwapLong(Object o, long offset, long expected, long v) {
     return this.unsafe.compareAndSwapLong(o, offset, expected, v);
   }
@@ -141,42 +145,49 @@ public class UnsafeWrapper {
   public void putObject(Object o, long offset, Object v) {
     this.unsafe.putObject(o, offset, v);
   }
-  
+
   public Object allocateInstance(Class<?> c) throws InstantiationException {
     return this.unsafe.allocateInstance(c);
   }
-  
+
   public long allocateMemory(long size) {
     return this.unsafe.allocateMemory(size);
   }
+
   public byte getByte(long addr) {
     return this.unsafe.getByte(addr);
   }
+
   public void putByte(long addr, byte value) {
     this.unsafe.putByte(addr, value);
   }
-  
- 
-  
+
+
+
   public void copyMemory(Object o1, long addr1, Object o2, long addr2, long size) {
     this.unsafe.copyMemory(o1, addr1, o2, addr2, size);
   }
+
   public void copyMemory(long src, long dst, long size) {
     this.unsafe.copyMemory(src, dst, size);
   }
+
   public void freeMemory(long addr) {
     this.unsafe.freeMemory(addr);
   }
+
   public int arrayBaseOffset(Class c) {
     return this.unsafe.arrayBaseOffset(c);
   }
+
   public int arrayScaleIndex(Class c) {
     return this.unsafe.arrayIndexScale(c);
   }
+
   public long fieldOffset(Field f) {
     return this.unsafe.objectFieldOffset(f);
   }
-  
+
   public int getPageSize() {
     return this.unsafe.pageSize();
   }

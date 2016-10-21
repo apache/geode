@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.bean.stats;
 
@@ -45,8 +43,8 @@ import org.apache.geode.test.dunit.VM;
 /**
  */
 @Category(DistributedTest.class)
-public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
-  
+public class DistributedSystemStatsDUnitTest extends ManagementTestBase {
+
   private static final long serialVersionUID = 1L;
 
   public DistributedSystemStatsDUnitTest() {
@@ -57,12 +55,12 @@ public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
   public void testDistributedSystemStats() throws Exception {
     initManagement(true);
 
-    for(VM vm : managedNodeList){
+    for (VM vm : managedNodeList) {
       setDiskStats(vm);
     }
     verifyDiskStats(managingNode);
   }
-  
+
   @SuppressWarnings("serial")
   public void setDiskStats(VM vm1) throws Exception {
     vm1.invoke(new SerializableRunnable("Set Member Stats") {
@@ -87,13 +85,13 @@ public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
     vm1.invoke(new SerializableRunnable("Set Member Stats") {
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        
+
         SystemManagementService service = (SystemManagementService) getManagementService();
         DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         assertNotNull(bean);
-        Set<DistributedMember> otherMemberSet = cache.getDistributionManager()
-            .getOtherNormalDistributionManagerIds();
-         
+        Set<DistributedMember> otherMemberSet =
+            cache.getDistributionManager().getOtherNormalDistributionManagerIds();
+
         for (DistributedMember member : otherMemberSet) {
           ObjectName memberMBeanName;
           try {

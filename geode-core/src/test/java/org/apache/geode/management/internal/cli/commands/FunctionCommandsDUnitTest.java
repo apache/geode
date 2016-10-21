@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -46,7 +44,8 @@ import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
- * Dunit class for testing gemfire function commands : execute function, destroy function, list function
+ * Dunit class for testing gemfire function commands : execute function, destroy function, list
+ * function
  */
 @Category(DistributedTest.class)
 public class FunctionCommandsDUnitTest extends CliCommandTestBase {
@@ -68,7 +67,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create("RegionOne");
         for (int i = 0; i < 10; i++) {
           region.put("key" + (i + 200), "value" + (i + 200));
@@ -88,7 +88,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create("RegionOne");
         for (int i = 0; i < 10000; i++) {
           region.put("key" + (i + 400), "value" + (i + 400));
@@ -118,7 +119,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testExecuteFunctionWithNoRegionOnManager stringResult : " + strCmdResult);
+      getLogWriter()
+          .info("testExecuteFunctionWithNoRegionOnManager stringResult : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       assertTrue(strCmdResult.contains("Execution summary"));
     } else {
@@ -139,7 +141,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
-        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            getCache().createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create(REGION_NAME);
         assertNotNull(region);
         FunctionService.registerFunction(function);
@@ -167,16 +170,17 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
-        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            getCache().createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create(REGION_NAME);
         assertNotNull(region);
         FunctionService.registerFunction(function);
       }
     });
 
-    String command = "execute function --id=" + function.getId() + " --region=" + REGION_NAME +
-        " --arguments=arg1,arg2" +
-        " --result-collector=" + ToUpperResultCollector.class.getName();
+    String command = "execute function --id=" + function.getId() + " --region=" + REGION_NAME
+        + " --arguments=arg1,arg2" + " --result-collector="
+        + ToUpperResultCollector.class.getName();
     getLogWriter().info("testExecuteFunctionOnRegion command=" + command);
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
@@ -201,7 +205,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create(REGION_ONE);
         for (int i = 0; i < 10; i++) {
           region.put("key" + (i + 200), "value" + (i + 200));
@@ -217,11 +222,13 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
         @Override
         public boolean done() {
           final ManagementService service = ManagementService.getManagementService(getCache());
-          final DistributedRegionMXBean bean = service.getDistributedRegionMXBean(Region.SEPARATOR + REGION_ONE);
+          final DistributedRegionMXBean bean =
+              service.getDistributedRegionMXBean(Region.SEPARATOR + REGION_ONE);
           if (bean == null) {
             return false;
           } else {
-            getLogWriter().info("Probing for checkRegionMBeans testExecuteFunctionOnRegionBug51480 finished");
+            getLogWriter()
+                .info("Probing for checkRegionMBeans testExecuteFunctionOnRegionBug51480 finished");
             return true;
           }
         }
@@ -232,8 +239,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
         }
       };
       waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
-      DistributedRegionMXBean bean = ManagementService.getManagementService(getCache()).getDistributedRegionMXBean(
-          Region.SEPARATOR + REGION_ONE);
+      DistributedRegionMXBean bean = ManagementService.getManagementService(getCache())
+          .getDistributedRegionMXBean(Region.SEPARATOR + REGION_ONE);
       assertNotNull(bean);
     }
   };
@@ -242,7 +249,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   public void testExecuteFunctionOnRegionBug51480() {
     setupForBug51480();
 
-    //check if DistributedRegionMXBean is available so that command will not fail
+    // check if DistributedRegionMXBean is available so that command will not fail
     final VM manager = Host.getHost(0).getVM(0);
     manager.invoke(checkRegionMBeans);
 
@@ -282,7 +289,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
-        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            getCache().createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create(REGION_NAME);
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
         assertNotNull(region);
@@ -313,7 +321,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
-        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            getCache().createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create(REGION_NAME);
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
         assertNotNull(region);
@@ -346,7 +355,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
-        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            getCache().createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create(REGION_NAME);
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
         assertNotNull(region);
@@ -382,7 +392,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
-        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            getCache().createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create(REGION_NAME);
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
         assertNotNull(region);
@@ -390,8 +401,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    String command = "execute function --id=" + function.getId() + " --arguments=\"arg1,arg2\"" +
-        " --result-collector=" + ToUpperResultCollector.class.getName();
+    String command = "execute function --id=" + function.getId() + " --arguments=\"arg1,arg2\""
+        + " --result-collector=" + ToUpperResultCollector.class.getName();
 
     getLogWriter().info("testExecuteFunctionOnMembersWithArgs command=" + command);
     CommandResult cmdResult = executeCommand(command);
@@ -407,7 +418,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1563: JMX RMI (java.rmi.NoSuchObjectException: no such object in table)
+  @Category(FlakyTest.class) // GEODE-1563: JMX RMI (java.rmi.NoSuchObjectException: no such object
+                             // in table)
   @Test
   public void testExecuteFunctionOnGroups() {
     Properties localProps = new Properties();
@@ -448,7 +460,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
-        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            getCache().createRegionFactory(RegionShortcut.REPLICATE);
         Region region = dataRegionFactory.create(REGION_NAME);
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
         assertNotNull(region);
@@ -456,7 +469,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    String command = "execute function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=Group1,Group2";
+    String command =
+        "execute function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=Group1,Group2";
     getLogWriter().info("testExecuteFunctionOnGroups command=" + command);
     CommandResult cmdResult = executeCommand(command);
     getLogWriter().info("testExecuteFunctionOnGroups cmdResult=" + cmdResult);
@@ -533,7 +547,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    String command = "destroy function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=Group1,Group2";
+    String command =
+        "destroy function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=Group1,Group2";
     getLogWriter().info("testDestroyOnGroups command=" + command);
     CommandResult cmdResult = executeCommand(command);
     getLogWriter().info("testDestroyOnGroups cmdResult=" + cmdResult);
@@ -546,9 +561,11 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       fail("testDestroyOnGroups exception=" + e);
     }
     assertNotNull(content);
-    assertTrue(content.equals(
-        "[\"Destroyed " + TestFunction.TEST_FUNCTION1 + " Successfully on " + vm1id + "," + vm2id + "\"]") || content.equals(
-        "[\"Destroyed " + TestFunction.TEST_FUNCTION1 + " Successfully on " + vm2id + "," + vm1id + "\"]"));
+    assertTrue(content
+        .equals("[\"Destroyed " + TestFunction.TEST_FUNCTION1 + " Successfully on " + vm1id + ","
+            + vm2id + "\"]")
+        || content.equals("[\"Destroyed " + TestFunction.TEST_FUNCTION1 + " Successfully on "
+            + vm2id + "," + vm1id + "\"]"));
   }
 
   @Test

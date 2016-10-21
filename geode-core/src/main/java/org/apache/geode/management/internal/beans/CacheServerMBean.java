@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -24,8 +22,8 @@ import org.apache.geode.management.ClientQueueDetail;
 import org.apache.geode.management.ServerLoadData;
 
 /**
- * Represents the GemFire CacheServer . Provides data and notifications about
- * server, subscriptions,durable queues and indices
+ * Represents the GemFire CacheServer . Provides data and notifications about server,
+ * subscriptions,durable queues and indices
  * 
  * 
  */
@@ -60,12 +58,12 @@ public class CacheServerMBean extends NotificationBroadcasterSupport implements 
   }
 
   @Override
-  public String[] getClientIds() throws Exception{
+  public String[] getClientIds() throws Exception {
     return bridge.listClientIds();
   }
 
   @Override
-  public ClientHealthStatus showClientStats(String clientId) throws Exception{
+  public ClientHealthStatus showClientStats(String clientId) throws Exception {
     return bridge.showClientStats(clientId);
   }
 
@@ -167,7 +165,7 @@ public class CacheServerMBean extends NotificationBroadcasterSupport implements 
     return bridge.getMessageTimeToLive();
   }
 
-  
+
   @Override
   public int getPort() {
     return bridge.getPort();
@@ -225,13 +223,13 @@ public class CacheServerMBean extends NotificationBroadcasterSupport implements 
   }
 
   @Override
-  public void removeIndex(String indexName) throws Exception{
+  public void removeIndex(String indexName) throws Exception {
     bridge.removeIndex(indexName);
   }
 
   @Override
   @Deprecated
-  public void stopContinuousQuery(String queryName) throws Exception{
+  public void stopContinuousQuery(String queryName) throws Exception {
     bridge.stopContinuousQuery(queryName);
   }
 
@@ -273,14 +271,14 @@ public class CacheServerMBean extends NotificationBroadcasterSupport implements 
 
   @Override
   public int getNumClientNotificationRequests() {
-   return bridge.getNumClientNotificationRequests();
+    return bridge.getNumClientNotificationRequests();
   }
-  
+
   public CacheServerBridge getBridge() {
     return bridge;
   }
-  
-  public void stopMonitor(){
+
+  public void stopMonitor() {
     bridge.stopMonitor();
   }
 
@@ -305,12 +303,12 @@ public class CacheServerMBean extends NotificationBroadcasterSupport implements 
   }
 
   @Override
-  public ClientQueueDetail[] showClientQueueDetails() throws Exception{
+  public ClientQueueDetail[] showClientQueueDetails() throws Exception {
     return bridge.getClientQueueDetails();
   }
-  
+
   @Override
-  public ClientQueueDetail showClientQueueDetails(String clientId) throws Exception{
+  public ClientQueueDetail showClientQueueDetails(String clientId) throws Exception {
     return bridge.getClientQueueDetail(clientId);
   }
 }

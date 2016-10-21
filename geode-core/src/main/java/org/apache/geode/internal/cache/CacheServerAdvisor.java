@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -32,12 +30,11 @@ import org.apache.geode.internal.InternalDataSerializer;
 
 
 /**
- * Used to give advice to a cache server.
- * Cache server currently need to know about controller's
+ * Used to give advice to a cache server. Cache server currently need to know about controller's
  *
  */
 public class CacheServerAdvisor extends GridAdvisor {
-  
+
   private CacheServerAdvisor(DistributionAdvisee server) {
     super(server);
   }
@@ -55,11 +52,10 @@ public class CacheServerAdvisor extends GridAdvisor {
 
   /** Instantiate new distribution profile for this member */
   @Override
-  protected Profile instantiateProfile(
-      InternalDistributedMember memberId, int version) {
+  protected Profile instantiateProfile(InternalDistributedMember memberId, int version) {
     return new CacheServerProfile(memberId, version);
   }
-  
+
   /**
    * Describes a cache server for distribution purposes.
    */
@@ -70,8 +66,7 @@ public class CacheServerAdvisor extends GridAdvisor {
     private long loadPollInterval;
 
     /** for internal use, required for DataSerializer.readObject */
-    public CacheServerProfile() {
-    }
+    public CacheServerProfile() {}
 
     public CacheServerProfile(InternalDistributedMember memberId, int version) {
       super(memberId, version);
@@ -86,18 +81,19 @@ public class CacheServerAdvisor extends GridAdvisor {
     public String[] getGroups() {
       return this.groups;
     }
+
     public void setGroups(String[] groups) {
       this.groups = groups;
     }
-    
+
     public ServerLoad getInitialLoad() {
       return initialLoad;
     }
-    
+
     public int getMaxConnections() {
       return maxConnections;
     }
-    
+
     public void setMaxConnections(int maxConnections) {
       this.maxConnections = maxConnections;
     }
@@ -105,24 +101,25 @@ public class CacheServerAdvisor extends GridAdvisor {
     public void setInitialLoad(ServerLoad initialLoad) {
       this.initialLoad = initialLoad;
     }
+
     public long getLoadPollInterval() {
       return this.loadPollInterval;
     }
+
     public void setLoadPollInterval(long v) {
       this.loadPollInterval = v;
     }
 
     /**
-     * Used to process an incoming cache server profile. Any controller in this
-     * vm needs to be told about this incoming new cache server. The reply
-     * needs to contain any controller(s) that exist in this vm.
+     * Used to process an incoming cache server profile. Any controller in this vm needs to be told
+     * about this incoming new cache server. The reply needs to contain any controller(s) that exist
+     * in this vm.
      * 
      * @since GemFire 5.7
      */
     @Override
-    public void processIncoming(DistributionManager dm, String adviseePath,
-        boolean removeProfile, boolean exchangeProfiles,
-        final List<Profile> replyProfiles) {
+    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
+        boolean exchangeProfiles, final List<Profile> replyProfiles) {
       // tell local controllers about this cache server
       tellLocalControllers(removeProfile, exchangeProfiles, replyProfiles);
       // for QRM messaging we need cache servers to know about each other

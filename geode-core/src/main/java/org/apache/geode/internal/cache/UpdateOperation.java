@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -55,10 +53,9 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.EN
  * Handles distribution messaging for updating an entry in a region.
  *
  */
-public class UpdateOperation extends AbstractUpdateOperation
-{
+public class UpdateOperation extends AbstractUpdateOperation {
   private static final Logger logger = LogService.getLogger();
-  
+
   /** Creates a new instance of UpdateOperation */
   public UpdateOperation(EntryEventImpl event, long lastModifiedTime) {
     super(event, lastModifiedTime);
@@ -75,8 +72,7 @@ public class UpdateOperation extends AbstractUpdateOperation
   }
 
   @Override
-  protected CacheOperationMessage createMessage()
-  {
+  protected CacheOperationMessage createMessage() {
     EntryEventImpl ev = getEvent();
     if (ev.isBridgeEvent()) {
       UpdateWithContextMessage mssgwithContxt = new UpdateWithContextMessage();
@@ -84,18 +80,15 @@ public class UpdateOperation extends AbstractUpdateOperation
       // class
       mssgwithContxt.clientID = ev.getContext();
       return mssgwithContxt;
-    }
-    else {
+    } else {
       return new UpdateMessage();
     }
   }
 
   @Override
-  protected void initMessage(CacheOperationMessage msg,
-      DirectReplyProcessor p)
-  {
+  protected void initMessage(CacheOperationMessage msg, DirectReplyProcessor p) {
     super.initMessage(msg, p);
-    UpdateMessage m = (UpdateMessage)msg;
+    UpdateMessage m = (UpdateMessage) msg;
     EntryEventImpl ev = getEvent();
     m.event = ev;
     m.eventId = ev.getEventId();
@@ -107,20 +100,18 @@ public class UpdateOperation extends AbstractUpdateOperation
   @Override
   protected void initProcessor(CacheOperationReplyProcessor p, CacheOperationMessage msg) {
     if (processor != null) {
-      if(msg instanceof UpdateWithContextMessage){
-        processor.msg = new UpdateWithContextMessage((UpdateWithContextMessage)msg); 
+      if (msg instanceof UpdateWithContextMessage) {
+        processor.msg = new UpdateWithContextMessage((UpdateWithContextMessage) msg);
+      } else {
+        processor.msg = new UpdateMessage((UpdateMessage) msg);
       }
-      else{  
-      processor.msg = new UpdateMessage((UpdateMessage)msg);
-      } 
     }
   }
 
   public static class UpdateMessage extends AbstractUpdateMessage implements NewValueImporter {
 
     /**
-     * Indicates if and when the new value should be deserialized on the the
-     * receiver
+     * Indicates if and when the new value should be deserialized on the the receiver
      */
     protected byte deserializationPolicy;
 
@@ -132,7 +123,7 @@ public class UpdateOperation extends AbstractUpdateOperation
 
     protected byte[] newValue;
 
-    @Unretained(ENTRY_EVENT_NEW_VALUE) 
+    @Unretained(ENTRY_EVENT_NEW_VALUE)
     protected transient Object newValueObj;
 
     private byte[] deltaBytes;
@@ -144,10 +135,10 @@ public class UpdateOperation extends AbstractUpdateOperation
     static final int HAS_DELTA_WITH_FULL_VALUE = getNextByteMask(HAS_EVENTID);
 
     private Long tailKey = 0L;
-    
-    public UpdateMessage() {
-    }
-    /**  
+
+    public UpdateMessage() {}
+
+    /**
      * copy constructor
      */
     public UpdateMessage(UpdateMessage upMsg) {
@@ -171,69 +162,61 @@ public class UpdateOperation extends AbstractUpdateOperation
       this.sendDelta = upMsg.sendDelta;
       this.sender = upMsg.sender;
       this.processor = upMsg.processor;
-      this.filterRouting = upMsg.filterRouting; 
-      this.needsRouting = upMsg.needsRouting; 
+      this.filterRouting = upMsg.filterRouting;
+      this.needsRouting = upMsg.needsRouting;
       this.versionTag = upMsg.versionTag;
     }
-    
+
     @Override
-    public ConflationKey getConflationKey()
-    {
-      if (!super.regionAllowsConflation || this.directAck
-          || getProcessorId() != 0) {
+    public ConflationKey getConflationKey() {
+      if (!super.regionAllowsConflation || this.directAck || getProcessorId() != 0) {
         // if the publisher's region attributes do not support conflation
         // or if it is an ack region
         // then don't even bother with a conflation key
         return null;
-      }
-      else {
+      } else {
         // only conflate if it is not a create
         // and we don't want an ack
-        return new ConflationKey(this.key, super.regionPath, getOperation()
-            .isUpdate());
+        return new ConflationKey(this.key, super.regionPath, getOperation().isUpdate());
       }
     }
 
     @Override
     @Retained
-    protected InternalCacheEvent createEvent(DistributedRegion rgn)
-        throws EntryNotFoundException {
+    protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {
-      ev.setEventId(this.eventId);
-      
-      ev.setDeltaBytes(this.deltaBytes);
+        ev.setEventId(this.eventId);
 
-      if (hasDelta()) {
-        this.newValueObj = null;
-        // New value will be set once it is generated with fromDelta() inside
-        // EntryEventImpl.processDeltaBytes()
-        ev.setNewValue(this.newValueObj);
-      }
-      else {
-        setNewValueInEvent(this.newValue, this.newValueObj, ev,
-            this.deserializationPolicy);
-      }
-      if (this.filterRouting != null) {
-        ev.setLocalFilterInfo(this.filterRouting
-            .getFilterInfo(rgn.getMyId()));
-      }
-      ev.setTailKey(tailKey);
+        ev.setDeltaBytes(this.deltaBytes);
 
-      ev.setVersionTag(this.versionTag);
-      
-      ev.setInhibitAllNotifications(this.inhibitAllNotifications);
-      
-      evReturned = true;
-      return ev;
+        if (hasDelta()) {
+          this.newValueObj = null;
+          // New value will be set once it is generated with fromDelta() inside
+          // EntryEventImpl.processDeltaBytes()
+          ev.setNewValue(this.newValueObj);
+        } else {
+          setNewValueInEvent(this.newValue, this.newValueObj, ev, this.deserializationPolicy);
+        }
+        if (this.filterRouting != null) {
+          ev.setLocalFilterInfo(this.filterRouting.getFilterInfo(rgn.getMyId()));
+        }
+        ev.setTailKey(tailKey);
+
+        ev.setVersionTag(this.versionTag);
+
+        ev.setInhibitAllNotifications(this.inhibitAllNotifications);
+
+        evReturned = true;
+        return ev;
       } finally {
         if (!evReturned) {
           ev.release();
         }
       }
     }
-    
+
     @Override
     boolean processReply(final ReplyMessage replyMessage, CacheOperationReplyProcessor processor) {
       ReplyException ex = replyMessage.getException();
@@ -245,12 +228,10 @@ public class UpdateOperation extends AbstractUpdateOperation
           final UpdateMessage updateMsg;
           final DM dm = this.event.getRegion().getDistributionManager();
           if (this instanceof UpdateWithContextMessage) {
-            updateMsg = new UpdateOperation.UpdateWithContextMessage(
-                (UpdateWithContextMessage)this);
-          }
-          else {
-            updateMsg = new UpdateOperation.UpdateMessage(
-                (UpdateMessage)this);
+            updateMsg =
+                new UpdateOperation.UpdateWithContextMessage((UpdateWithContextMessage) this);
+          } else {
+            updateMsg = new UpdateOperation.UpdateMessage((UpdateMessage) this);
           }
           Runnable sendMessage = new Runnable() {
             public void run() {
@@ -261,12 +242,12 @@ public class UpdateOperation extends AbstractUpdateOperation
                 updateMsg.setSendDelta(false);
                 updateMsg.setSendDeltaWithFullValue(false);
                 if (logger.isDebugEnabled()) {
-                  logger.debug("Sending full object ({}) to {}", updateMsg, replyMessage.getSender());
+                  logger.debug("Sending full object ({}) to {}", updateMsg,
+                      replyMessage.getSender());
                 }
                 dm.putOutgoing(updateMsg);
               }
-              updateMsg.event.getRegion().getCachePerfStats()
-                  .incDeltaFullValuesSent();
+              updateMsg.event.getRegion().getCachePerfStats().incDeltaFullValuesSent();
             }
 
             @Override
@@ -274,12 +255,11 @@ public class UpdateOperation extends AbstractUpdateOperation
               return "Sending full object {" + updateMsg.toString() + "}";
             }
           };
-          
+
           if (processor.isExpectingDirectReply()) {
             sendMessage.run();
           } else {
-            dm.getWaitingThreadPool().execute(
-                sendMessage);
+            dm.getWaitingThreadPool().execute(sendMessage);
           }
           return false;
         }
@@ -288,16 +268,16 @@ public class UpdateOperation extends AbstractUpdateOperation
     }
 
     /**
-     * Utility to set the new value in the EntryEventImpl based on the given
-     * deserialization value; also called from QueuedOperation
+     * Utility to set the new value in the EntryEventImpl based on the given deserialization value;
+     * also called from QueuedOperation
      */
-    static void setNewValueInEvent(byte[] newValue, Object newValueObj,
-        EntryEventImpl event, byte deserializationPolicy) {
+    static void setNewValueInEvent(byte[] newValue, Object newValueObj, EntryEventImpl event,
+        byte deserializationPolicy) {
       if (newValue == null) {
         // in an UpdateMessage this results from a create(key, null) call,
         // set local invalid flag in event if this is a normal region. Otherwise
         // it should be a distributed invalid.
-        if(event.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+        if (event.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
           event.setLocalInvalid(true);
         }
         event.setNewValue(newValue);
@@ -313,19 +293,18 @@ public class UpdateOperation extends AbstractUpdateOperation
           event.setNewValue(newValue);
           break;
         default:
-          throw new InternalGemFireError(LocalizedStrings
-              .UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY_0
+          throw new InternalGemFireError(
+              LocalizedStrings.UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY_0
                   .toLocalizedString(Byte.valueOf(deserializationPolicy)));
       }
     }
 
     @Retained
-    protected EntryEventImpl createEntryEvent(DistributedRegion rgn)
-    {
+    protected EntryEventImpl createEntryEvent(DistributedRegion rgn) {
       Object argNewValue = null;
       final boolean originRemote = true, generateCallbacks = true;
-      @Retained EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key,
-          argNewValue, // oldValue,
+      @Retained
+      EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key, argNewValue, // oldValue,
           this.callbackArg, originRemote, getSender(), generateCallbacks);
       setOldValueInEvent(result);
       result.setTailKey(this.tailKey);
@@ -352,16 +331,13 @@ public class UpdateOperation extends AbstractUpdateOperation
         } else {
           buff.append("; ").append(bytes.length).append(" delta bytes");
         }
-      }
-      else if (this.newValueObj != null) {
+      } else if (this.newValueObj != null) {
         buff.append("; newValueObj=");
         buff.append(this.newValueObj);
-      }
-      else {
+      } else {
         buff.append("; newValue=");
         // buff.append(this.newValue);
-        buff.append(newValue == null ? "null" : "(" + newValue.length
-            + " bytes)");
+        buff.append(newValue == null ? "null" : "(" + newValue.length + " bytes)");
       }
       if (this.eventId != null) {
         buff.append("; eventId=").append(this.eventId);
@@ -370,14 +346,12 @@ public class UpdateOperation extends AbstractUpdateOperation
       buff.append(deserializationPolicyToString(this.deserializationPolicy));
     }
 
-    public int getDSFID()
-    {
+    public int getDSFID() {
       return UPDATE_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       final byte extraFlags = in.readByte();
       final boolean hasEventId = (extraFlags & HAS_EVENTID) != 0;
@@ -386,21 +360,18 @@ public class UpdateOperation extends AbstractUpdateOperation
         InternalDataSerializer.invokeFromData(this.eventId, in);
 
         boolean hasTailKey = in.readBoolean();
-        if (hasTailKey){
+        if (hasTailKey) {
           this.tailKey = in.readLong();
         }
-      }
-      else {
+      } else {
         this.eventId = null;
       }
       this.key = DataSerializer.readObject(in);
 
-      this.deserializationPolicy = (byte)(extraFlags
-          & DESERIALIZATION_POLICY_MASK);
+      this.deserializationPolicy = (byte) (extraFlags & DESERIALIZATION_POLICY_MASK);
       if (hasDelta()) {
         this.deltaBytes = DataSerializer.readByteArray(in);
-      }
-      else {
+      } else {
         this.newValue = DataSerializer.readByteArray(in);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           this.deltaBytes = DataSerializer.readByteArray(in);
@@ -409,15 +380,15 @@ public class UpdateOperation extends AbstractUpdateOperation
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException
-    {
-      DistributedRegion region = (DistributedRegion)this.event.getRegion();
+    public void toData(DataOutput out) throws IOException {
+      DistributedRegion region = (DistributedRegion) this.event.getRegion();
       setDeltaFlag(region);
       super.toData(out);
 
       byte extraFlags = this.deserializationPolicy;
-      if (this.eventId != null) extraFlags |= HAS_EVENTID;
-      if (this.deserializationPolicy != DistributedCacheOperation.DESERIALIZATION_POLICY_NONE 
+      if (this.eventId != null)
+        extraFlags |= HAS_EVENTID;
+      if (this.deserializationPolicy != DistributedCacheOperation.DESERIALIZATION_POLICY_NONE
           && this.sendDeltaWithFullValue && this.event.getDeltaBytes() != null) {
         extraFlags |= HAS_DELTA_WITH_FULL_VALUE;
       }
@@ -431,13 +402,11 @@ public class UpdateOperation extends AbstractUpdateOperation
           // then we are surely considering Paralle Gateway
           if (!pr.isParallelWanEnabled()) {
             out.writeBoolean(false);
-          }
-          else {
+          } else {
             out.writeBoolean(true);
             out.writeLong(this.event.getTailKey());
           }
-        }
-        else {
+        } else {
           out.writeBoolean(false);
         }
       }
@@ -447,7 +416,8 @@ public class UpdateOperation extends AbstractUpdateOperation
         DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
         this.event.getRegion().getCachePerfStats().incDeltasSent();
       } else {
-        DistributedCacheOperation.writeValue(this.deserializationPolicy, this.newValueObj, this.newValue, out);
+        DistributedCacheOperation.writeValue(this.deserializationPolicy, this.newValueObj,
+            this.newValue, out);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
         }
@@ -461,35 +431,31 @@ public class UpdateOperation extends AbstractUpdateOperation
 
     private void setDeltaFlag(DistributedRegion region) {
       try {
-        if (region != null
-            && region.getSystem().getConfig().getDeltaPropagation()
-            && this.sendDelta && !region.scope.isDistributedNoAck()
-            && this.event.getDeltaBytes() != null) {
-            setHasDelta(true);
-            return;
+        if (region != null && region.getSystem().getConfig().getDeltaPropagation() && this.sendDelta
+            && !region.scope.isDistributedNoAck() && this.event.getDeltaBytes() != null) {
+          setHasDelta(true);
+          return;
         }
         setHasDelta(false);
       } catch (RuntimeException re) {
         throw new InvalidDeltaException(
             LocalizedStrings.DistributionManager_CAUGHT_EXCEPTION_WHILE_SENDING_DELTA
-                .toLocalizedString(), re);
+                .toLocalizedString(),
+            re);
       }
     }
 
     @Override
-    public List getOperations()
-    {
+    public List getOperations() {
       byte[] valueBytes = null;
       Object valueObj = null;
       if (this.newValueObj != null) {
         valueBytes = EntryEventImpl.serialize(this.newValueObj);
-      }
-      else {
+      } else {
         valueBytes = this.newValue;
       }
-      return Collections.singletonList(new QueuedOperation(getOperation(),
-          this.key, valueBytes, valueObj, this.deserializationPolicy,
-          this.callbackArg));
+      return Collections.singletonList(new QueuedOperation(getOperation(), this.key, valueBytes,
+          valueObj, this.deserializationPolicy, this.callbackArg));
     }
 
     public boolean hasBridgeContext() {
@@ -509,16 +475,20 @@ public class UpdateOperation extends AbstractUpdateOperation
     public void setSendDeltaWithFullValue(boolean bool) {
       this.sendDeltaWithFullValue = bool;
     }
+
     @Override
     public boolean prefersNewSerialized() {
       return true;
     }
+
     @Override
     public boolean isUnretainedNewReferenceOk() {
       return true;
     }
+
     @Override
-    public void importNewObject(@Unretained(ENTRY_EVENT_NEW_VALUE) Object nv, boolean isSerialized) {
+    public void importNewObject(@Unretained(ENTRY_EVENT_NEW_VALUE) Object nv,
+        boolean isSerialized) {
       if (nv == null) {
         this.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
         this.newValue = null;
@@ -529,6 +499,7 @@ public class UpdateOperation extends AbstractUpdateOperation
         this.newValueObj = nv;
       }
     }
+
     @Override
     public void importNewBytes(byte[] nv, boolean isSerialized) {
       if (!isSerialized) {
@@ -538,33 +509,30 @@ public class UpdateOperation extends AbstractUpdateOperation
     }
   }
 
-  public static final class UpdateWithContextMessage extends UpdateMessage
-  {
+  public static final class UpdateWithContextMessage extends UpdateMessage {
 
     protected transient ClientProxyMembershipID clientID;
 
     @Override
     @Retained
-    final public EntryEventImpl createEntryEvent(DistributedRegion rgn)
-    {
+    final public EntryEventImpl createEntryEvent(DistributedRegion rgn) {
       // Object oldValue = null;
       final Object argNewValue = null;
       // boolean localLoad = false, netLoad = false, netSearch = false,
       // distributed = true;
       final boolean originRemote = true, generateCallbacks = true;
-      @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
-          argNewValue, this.callbackArg, originRemote, getSender(),
-          generateCallbacks);
+      @Retained
+      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key, argNewValue,
+          this.callbackArg, originRemote, getSender(), generateCallbacks);
       ev.setContext(this.clientID);
       setOldValueInEvent(ev);
       return ev;
       // localLoad, netLoad, netSearch,
       // distributed, this.isExpiration, originRemote, this.context);
     }
-    
-    public UpdateWithContextMessage() {
-    }
-    
+
+    public UpdateWithContextMessage() {}
+
     public UpdateWithContextMessage(UpdateWithContextMessage msg) {
       super(msg);
       this.clientID = msg.clientID;
@@ -577,22 +545,18 @@ public class UpdateOperation extends AbstractUpdateOperation
     }
 
     @Override
-    public int getDSFID()
-    {
+    public int getDSFID() {
       return UPDATE_WITH_CONTEXT_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException
-    {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.clientID = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException
-    {
+    public void toData(DataOutput out) throws IOException {
       super.toData(out);
       DataSerializer.writeObject(this.clientID, out);
     }

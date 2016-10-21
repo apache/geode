@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.parser.preprocessor;
 
@@ -54,32 +52,27 @@ public class PreprocessorUtilsJUnitTest {
     String input = " command argument1 argument2 ";
     TrimmedInput trim = PreprocessorUtils.trim(input);
     assertEquals("No of spaces removed", 1, trim.getNoOfSpacesRemoved());
-    assertEquals("input after trimming", "command argument1 argument2",
-        trim.getString());
+    assertEquals("input after trimming", "command argument1 argument2", trim.getString());
 
     input = "   command   argument1   argument2 ";
     trim = PreprocessorUtils.trim(input);
     assertEquals("No of spaces removed", 7, trim.getNoOfSpacesRemoved());
-    assertEquals("input after trimming", "command argument1 argument2",
-        trim.getString());
+    assertEquals("input after trimming", "command argument1 argument2", trim.getString());
 
     input = "command argument1 argument2 -- -- - - - -- -- -- -- -- --- --------- - - - --- --";
     trim = PreprocessorUtils.trim(input);
     assertEquals("No of spaces removed", 0, trim.getNoOfSpacesRemoved());
-    assertEquals("input after trimming", "command argument1 argument2",
-        trim.getString());
+    assertEquals("input after trimming", "command argument1 argument2", trim.getString());
 
     input = "command argument1 argument2 --";
     trim = PreprocessorUtils.trim(input);
     assertEquals("No of spaces removed", 0, trim.getNoOfSpacesRemoved());
-    assertEquals("input after trimming", "command argument1 argument2",
-        trim.getString());
+    assertEquals("input after trimming", "command argument1 argument2", trim.getString());
 
     input = "command argument1 argument2 -";
     trim = PreprocessorUtils.trim(input);
     assertEquals("No of spaces removed", 0, trim.getNoOfSpacesRemoved());
-    assertEquals("input after trimming", "command argument1 argument2",
-        trim.getString());
+    assertEquals("input after trimming", "command argument1 argument2", trim.getString());
   }
 
   /**
@@ -111,8 +104,7 @@ public class PreprocessorUtilsJUnitTest {
   public void testContainsOnlyWhiteSpaces() {
     assertTrue(PreprocessorUtils
         .containsOnlyWhiteSpaces("                                                  "));
-    assertFalse(PreprocessorUtils
-        .containsOnlyWhiteSpaces("              d       "));
+    assertFalse(PreprocessorUtils.containsOnlyWhiteSpaces("              d       "));
   }
 
   /**

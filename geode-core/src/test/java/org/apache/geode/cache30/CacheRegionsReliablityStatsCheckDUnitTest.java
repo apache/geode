@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -46,21 +44,21 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCase {
 
   /**
-   * The tests check to see if all the reliablity stats are working
-   * fine and asserts their values to constants.
+   * The tests check to see if all the reliablity stats are working fine and asserts their values to
+   * constants.
    */
-	@Test
+  @Test
   public void testRegionsReliablityStats() throws Exception {
     final String rr1 = "roleA";
     final String regionNoAccess = "regionNoAccess";
     final String regionLimitedAccess = "regionLimitedAccess";
     final String regionFullAccess = "regionFullAccess";
-    //final String regionNameRoleA = "roleA";
-    String requiredRoles[] = { rr1 };
+    // final String regionNameRoleA = "roleA";
+    String requiredRoles[] = {rr1};
     Cache myCache = getCache();
 
-    MembershipAttributes ra = new MembershipAttributes(requiredRoles,
-        LossAction.NO_ACCESS, ResumptionAction.NONE);
+    MembershipAttributes ra =
+        new MembershipAttributes(requiredRoles, LossAction.NO_ACCESS, ResumptionAction.NONE);
 
     AttributesFactory fac = new AttributesFactory();
     fac.setMembershipAttributes(ra);
@@ -70,8 +68,7 @@ public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCa
     RegionAttributes attr = fac.create();
     myCache.createRegion(regionNoAccess, attr);
 
-    ra = new MembershipAttributes(requiredRoles,
-        LossAction.LIMITED_ACCESS, ResumptionAction.NONE);
+    ra = new MembershipAttributes(requiredRoles, LossAction.LIMITED_ACCESS, ResumptionAction.NONE);
     fac = new AttributesFactory();
     fac.setMembershipAttributes(ra);
     fac.setScope(Scope.DISTRIBUTED_ACK);
@@ -79,8 +76,7 @@ public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCa
     attr = fac.create();
     myCache.createRegion(regionLimitedAccess, attr);
 
-    ra = new MembershipAttributes(requiredRoles,
-        LossAction.FULL_ACCESS, ResumptionAction.NONE);
+    ra = new MembershipAttributes(requiredRoles, LossAction.FULL_ACCESS, ResumptionAction.NONE);
     fac = new AttributesFactory();
     fac.setMembershipAttributes(ra);
     fac.setScope(Scope.DISTRIBUTED_ACK);
@@ -93,14 +89,14 @@ public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCa
     assertEquals(stats.getReliableRegionsMissingNoAccess(), 1);
     assertEquals(stats.getReliableRegionsMissingLimitedAccess(), 1);
     assertEquals(stats.getReliableRegionsMissingFullAccess(), 1);
-    assertEquals(stats.getReliableRegionsMissing(), (stats.getReliableRegionsMissingNoAccess() +
-        stats.getReliableRegionsMissingLimitedAccess() + stats.getReliableRegionsMissingFullAccess()));
+    assertEquals(stats.getReliableRegionsMissing(),
+        (stats.getReliableRegionsMissingNoAccess() + stats.getReliableRegionsMissingLimitedAccess()
+            + stats.getReliableRegionsMissingFullAccess()));
 
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(1);
 
-    SerializableRunnable roleAPlayer = new CacheSerializableRunnable(
-        "ROLEAPLAYER") {
+    SerializableRunnable roleAPlayer = new CacheSerializableRunnable("ROLEAPLAYER") {
       public void run2() throws CacheException {
 
         Properties props = new Properties();
@@ -127,8 +123,9 @@ public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCa
     assertEquals(stats.getReliableRegionsMissingNoAccess(), 0);
     assertEquals(stats.getReliableRegionsMissingLimitedAccess(), 0);
     assertEquals(stats.getReliableRegionsMissingFullAccess(), 0);
-    assertEquals(stats.getReliableRegionsMissing(), (stats.getReliableRegionsMissingNoAccess() +
-        stats.getReliableRegionsMissingLimitedAccess() + stats.getReliableRegionsMissingFullAccess()));
+    assertEquals(stats.getReliableRegionsMissing(),
+        (stats.getReliableRegionsMissingNoAccess() + stats.getReliableRegionsMissingLimitedAccess()
+            + stats.getReliableRegionsMissingFullAccess()));
 
   }
 

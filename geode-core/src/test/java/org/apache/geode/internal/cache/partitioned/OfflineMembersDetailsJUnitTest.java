@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -38,16 +36,17 @@ public class OfflineMembersDetailsJUnitTest {
   @Test
   public void testSerialization() throws Exception {
     Set<PersistentMemberID>[] offlineMembers = new Set[5];
-    for(int i =0; i < offlineMembers.length; i++) {
+    for (int i = 0; i < offlineMembers.length; i++) {
       offlineMembers[i] = new HashSet<PersistentMemberID>();
-      offlineMembers[i].add(new PersistentMemberID(DiskStoreID.random(), InetAddress.getLocalHost(), "a", System.currentTimeMillis(),(short)0));
+      offlineMembers[i].add(new PersistentMemberID(DiskStoreID.random(), InetAddress.getLocalHost(),
+          "a", System.currentTimeMillis(), (short) 0));
     }
-    OfflineMemberDetailsImpl details = new OfflineMemberDetailsImpl(offlineMembers );
-    
+    OfflineMemberDetailsImpl details = new OfflineMemberDetailsImpl(offlineMembers);
+
     ByteArrayOutputStream boas = new ByteArrayOutputStream();
     DataOutput out = new DataOutputStream(boas);
     details.toData(out);
-    
+
     OfflineMemberDetailsImpl details2 = new OfflineMemberDetailsImpl();
     details2.fromData(new DataInputStream(new ByteArrayInputStream(boas.toByteArray())));
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.jmx.internal;
 
@@ -26,17 +24,17 @@ import org.apache.commons.modeler.OperationInfo;
 import org.apache.commons.modeler.ManagedBean;
 
 /**
- * Extends ManagedBean to allow for dynamically creating new instances of
- * ManagedBean based on an existing instance of ManagedBean.
+ * Extends ManagedBean to allow for dynamically creating new instances of ManagedBean based on an
+ * existing instance of ManagedBean.
  * 
  * @since GemFire 5.0.1
  */
 public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
   private static final long serialVersionUID = 4051924500150228160L;
-  
+
   public DynamicManagedBean(ManagedBean managed) {
     super();
-    
+
     this.attributes = managed.getAttributes();
     this.className = managed.getClassName();
     this.constructors = managed.getConstructors();
@@ -48,9 +46,11 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
     this.notifications = managed.getNotifications();
     this.operations = managed.getOperations();
     this.type = managed.getType();
-    
-    /* we don't use modelerType and it's nice to remove it to keep the list of 
-       attributes cleaned up...*/
+
+    /*
+     * we don't use modelerType and it's nice to remove it to keep the list of attributes cleaned
+     * up...
+     */
     removeAttribute("modelerType");
   }
 
@@ -70,22 +70,23 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
           attributesList.add(this.attributes[i]);
         }
       }
-      this.attributes = (AttributeInfo[]) 
-          attributesList.toArray(new AttributeInfo[attributesList.size()]);
-      
-      /* super.info should be nulled out anytime the structure is changed,
-       * such as altering the attributes, operations, or notifications
+      this.attributes =
+          (AttributeInfo[]) attributesList.toArray(new AttributeInfo[attributesList.size()]);
+
+      /*
+       * super.info should be nulled out anytime the structure is changed, such as altering the
+       * attributes, operations, or notifications
        *
-       * however super.info is private, so we need the following hack to cause
-       * the super class to null it out for us...
+       * however super.info is private, so we need the following hack to cause the super class to
+       * null it out for us...
        */
       setType(this.type); // causes this in super: "this.info = null;"
     }
   }
 
   /**
-   * Removes the operation with the given name from thie
-   * <code>ManageBean</code>'s operation descriptor list.
+   * Removes the operation with the given name from thie <code>ManageBean</code>'s operation
+   * descriptor list.
    *
    * @since GemFire 4.0
    */
@@ -101,14 +102,15 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
           operationsList.add(this.operations[i]);
         }
       }
-      this.operations = (OperationInfo[]) 
-          operationsList.toArray(new OperationInfo[operationsList.size()]);
-      
-      /* super.info should be nulled out anytime the structure is changed,
-       * such as altering the operations, operations, or notifications
+      this.operations =
+          (OperationInfo[]) operationsList.toArray(new OperationInfo[operationsList.size()]);
+
+      /*
+       * super.info should be nulled out anytime the structure is changed, such as altering the
+       * operations, operations, or notifications
        *
-       * however super.info is private, so we need the following hack to cause
-       * the super class to null it out for us...
+       * however super.info is private, so we need the following hack to cause the super class to
+       * null it out for us...
        */
       setType(this.type); // causes this in super: "this.info = null;"
     }

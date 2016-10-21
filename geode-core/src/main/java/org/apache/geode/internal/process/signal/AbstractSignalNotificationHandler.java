@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.process.signal;
@@ -28,6 +26,7 @@ import java.util.Set;
 /**
  * The AbstractSignalNotificationHandler class...
  * </p>
+ * 
  * @see org.apache.geode.internal.process.signal.Signal
  * @see org.apache.geode.internal.process.signal.SignalEvent
  * @see org.apache.geode.internal.process.signal.SignalListener
@@ -42,19 +41,18 @@ public abstract class AbstractSignalNotificationHandler {
 
   // Based on Open BSD OS Signals...
   static {
-    final String[] SIGNAL_NAMES_ARRAY = new String[] {
-      "", "HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT", "EMT", "FPE", "KILL", "BUS", "SEGV", "SYS", "PIPE", "ALRM",
-      "TERM", "URG", "STOP", "TSTP", "CONT", "CHLD", "TTIN", "TTOU", "IO", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH",
-      "INFO", "USR1", "USR2"
-    };
+    final String[] SIGNAL_NAMES_ARRAY =
+        new String[] {"", "HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT", "EMT", "FPE", "KILL", "BUS",
+            "SEGV", "SYS", "PIPE", "ALRM", "TERM", "URG", "STOP", "TSTP", "CONT", "CHLD", "TTIN",
+            "TTOU", "IO", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH", "INFO", "USR1", "USR2"};
 
     SIGNAL_NAMES = Collections.unmodifiableList(Arrays.asList(SIGNAL_NAMES_ARRAY));
   }
 
   protected static final SignalListener LOGGING_SIGNAL_LISTENER = new SignalListener() {
     public void handle(final SignalEvent event) {
-      System.out.printf("Logging SignalListener Received Signal '%1$s' (%2$d)%n", event.getSignal().getName(),
-        event.getSignal().getNumber());
+      System.out.printf("Logging SignalListener Received Signal '%1$s' (%2$d)%n",
+          event.getSignal().getName(), event.getSignal().getNumber());
     }
   };
 
@@ -65,22 +63,25 @@ public abstract class AbstractSignalNotificationHandler {
   };
 
   // Map used to register SignalListeners with SignalHandlers...
-  private final Map<Signal, Set<SignalListener>> signalListeners = Collections.synchronizedMap(
-    new HashMap<Signal, Set<SignalListener>>(Signal.values().length));
+  private final Map<Signal, Set<SignalListener>> signalListeners =
+      Collections.synchronizedMap(new HashMap<Signal, Set<SignalListener>>(Signal.values().length));
 
-  protected static void assertNotNull(final Object obj, final String message, final Object... arguments) {
+  protected static void assertNotNull(final Object obj, final String message,
+      final Object... arguments) {
     if (obj == null) {
       throw new NullPointerException(String.format(message, arguments));
     }
   }
 
-  protected static void assertState(final boolean state, final String message, final Object... arguments) {
+  protected static void assertState(final boolean state, final String message,
+      final Object... arguments) {
     if (!state) {
       throw new IllegalStateException(String.format(message, arguments));
     }
   }
 
-  protected static void assertValidArgument(final boolean valid, final String message, final Object... arguments) {
+  protected static void assertValidArgument(final boolean valid, final String message,
+      final Object... arguments) {
     if (!valid) {
       throw new IllegalArgumentException(String.format(message, arguments));
     }
@@ -91,7 +92,7 @@ public abstract class AbstractSignalNotificationHandler {
       signalListeners.put(signal, Collections.synchronizedSet(new HashSet<SignalListener>()));
     }
     // NOTE uncomment for debugging purposes...
-    //registerListener(LOGGING_SIGNAL_LISTENER);
+    // registerListener(LOGGING_SIGNAL_LISTENER);
   }
 
   public boolean hasListeners(final Signal signal) {
@@ -109,7 +110,8 @@ public abstract class AbstractSignalNotificationHandler {
   }
 
   public boolean isListening(final SignalListener listener, final Signal signal) {
-    assertNotNull(signal, "The signal to determine whether the listener is registered listening for cannot be null!");
+    assertNotNull(signal,
+        "The signal to determine whether the listener is registered listening for cannot be null!");
     return signalListeners.get(signal).contains(listener);
   }
 
@@ -129,7 +131,8 @@ public abstract class AbstractSignalNotificationHandler {
   }
 
   public boolean registerListener(final SignalListener listener) {
-    assertNotNull(listener, "The SignalListener to register, listening for all signals cannot be null!");
+    assertNotNull(listener,
+        "The SignalListener to register, listening for all signals cannot be null!");
 
     boolean registered = false;
 
@@ -142,8 +145,9 @@ public abstract class AbstractSignalNotificationHandler {
 
   public boolean registerListener(final SignalListener listener, final Signal signal) {
     assertNotNull(signal, "The signal to register the listener for cannot be null!");
-    assertNotNull(listener, "The SignalListener being registered to listen for '%1$s' signals cannot be null!",
-      signal.getName());
+    assertNotNull(listener,
+        "The SignalListener being registered to listen for '%1$s' signals cannot be null!",
+        signal.getName());
 
     return signalListeners.get(signal).add(listener);
   }

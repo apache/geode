@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
@@ -40,34 +38,34 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   private byte[] messengerData;
   private int requestId;
   private byte[] secretPk;
-    
+
   public JoinResponseMessage(InternalDistributedMember memberID, NetView view, int requestId) {
     this.currentView = view;
     this.memberID = memberID;
     this.requestId = requestId;
     setRecipient(memberID);
   }
-  
+
   public JoinResponseMessage(InternalDistributedMember memberID, byte[] sPk, int requestId) {
     this.memberID = memberID;
     this.requestId = requestId;
     this.secretPk = sPk;
     setRecipient(memberID);
   }
-  
+
   public JoinResponseMessage(String rejectionMessage, int requestId) {
     this.rejectionMessage = rejectionMessage;
     this.requestId = requestId;
   }
-  
+
   public JoinResponseMessage() {
     // no-arg constructor for serialization
   }
-  
+
   public byte[] getSecretPk() {
     return secretPk;
   }
-  
+
   public int getRequestId() {
     return requestId;
   }
@@ -75,19 +73,19 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   public NetView getCurrentView() {
     return currentView;
   }
-  
+
   public InternalDistributedMember getMemberID() {
     return memberID;
   }
-  
+
   public String getRejectionMessage() {
     return rejectionMessage;
   }
-  
+
   public byte[] getMessengerData() {
     return this.messengerData;
   }
-  
+
   public void setMessengerData(byte[] data) {
     this.messengerData = data;
   }
@@ -96,15 +94,14 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
   public void process(DistributionManager dm) {
     throw new IllegalStateException("JoinResponse is not intended to be executed");
   }
-  
+
   @Override
   public String toString() {
-    return getShortClassName() + "("+memberID + "; "
-        + (currentView==null? "" : currentView.toString())
-        + (rejectionMessage==null? "" : ("; "+rejectionMessage))
-        + ")";
+    return getShortClassName() + "(" + memberID + "; "
+        + (currentView == null ? "" : currentView.toString())
+        + (rejectionMessage == null ? "" : ("; " + rejectionMessage)) + ")";
   }
-  
+
   @Override
   public Version[] getSerializationVersions() {
     return null;
@@ -159,13 +156,14 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
         return false;
     } else if (!rejectionMessage.equals(other.rejectionMessage))
       return false;
-    //as we are not sending as part of JoinResposne
-    /*if (requestId != other.requestId)
-      return false;*/
+    // as we are not sending as part of JoinResposne
+    /*
+     * if (requestId != other.requestId) return false;
+     */
     if (!Arrays.equals(secretPk, other.secretPk))
       return false;
     return true;
   }
 
-  
+
 }

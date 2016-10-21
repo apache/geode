@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.data;
 
@@ -28,7 +26,7 @@ import org.apache.geode.pdx.PdxWriter;
 
 
 public class PositionPdx implements Serializable, PdxSerializable, Comparable {
-  private long avg20DaysVol=0;
+  private long avg20DaysVol = 0;
   private String bondRating;
   private double convRatio;
   private String country;
@@ -47,13 +45,13 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
   private int pid;
   public static int cnt = 0;
   public int portfolioId = 0;
-  
+
   public static int numInstance = 0;
-  
-  /* public no-arg constructor required for DataSerializable */  
+
+  /* public no-arg constructor required for DataSerializable */
   public PositionPdx() {
     this.numInstance++;
-    //GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
+    // GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG"));
   }
 
   public PositionPdx(String id, double out) {
@@ -64,67 +62,67 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
     pid = cnt++;
     this.mktValue = cnt;
     this.numInstance++;
-    //GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG" + this.secId));
+    // GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG" + this.secId));
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof PositionPdx)) return false;
-    return this.secId.equals(((PositionPdx)o).secId);
+    if (!(o instanceof PositionPdx))
+      return false;
+    return this.secId.equals(((PositionPdx) o).secId);
   }
-  
+
   @Override
   public int hashCode() {
     return this.secId.hashCode();
   }
-  
-  
+
+
   public static void resetCounter() {
     cnt = 0;
   }
-  
+
   public double getMktValue() {
     return this.mktValue;
   }
-  
-  public String getSecId(){
+
+  public String getSecId() {
     return secId;
   }
-  
-  public int getId(){
+
+  public int getId() {
     return pid;
   }
-  
-  public double getSharesOutstanding(){
+
+  public double getSharesOutstanding() {
     return sharesOutstanding;
   }
-  
-  public String toString(){
-    return "PositionPdx [secId=" + this.secId + " out=" + this.sharesOutstanding
-           + " type=" + this.secType + " id=" + this.pid + " mktValue="
-           + this.mktValue + "]";
+
+  public String toString() {
+    return "PositionPdx [secId=" + this.secId + " out=" + this.sharesOutstanding + " type="
+        + this.secType + " id=" + this.pid + " mktValue=" + this.mktValue + "]";
   }
-  
-  public Set getSet(int size){
+
+  public Set getSet(int size) {
     Set set = new HashSet();
-    for(int i=0;i<size;i++){
-      set.add(""+i);
+    for (int i = 0; i < size; i++) {
+      set.add("" + i);
     }
     return set;
   }
-  
-  public Set getCol(){
+
+  public Set getCol() {
     Set set = new HashSet();
-    for(int i=0;i<2;i++){
-      set.add(""+i);
+    for (int i = 0; i < 2; i++) {
+      set.add("" + i);
     }
     return set;
   }
-  
+
   public int getPid() {
     return pid;
   }
-  
+
   public void fromData(PdxReader in) {
     this.avg20DaysVol = in.readLong("avg20DaysVol");
     this.bondRating = in.readString("bondRating");
@@ -143,13 +141,14 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
     this.volatility = in.readLong("volatility");
     this.pid = in.readInt("pid");
     this.portfolioId = in.readInt("portfolioId");
-    //GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG fromData() " + this.secId));    
+    // GemFireCacheImpl.getInstance().getLoggerI18n().fine(new Exception("DEBUG fromData() " +
+    // this.secId));
   }
-  
+
   public void toData(PdxWriter out) {
-    out.writeLong("avg20DaysVol",this.avg20DaysVol);
+    out.writeLong("avg20DaysVol", this.avg20DaysVol);
     out.writeString("bondRating", this.bondRating);
-    out.writeDouble("convRatio",this.convRatio);
+    out.writeDouble("convRatio", this.convRatio);
     out.writeString("country", this.country);
     out.writeDouble("delta", this.delta);
     out.writeLong("industry", this.industry);
@@ -166,17 +165,16 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
     out.writeInt("portfolioId", this.portfolioId);
     // Identity Field.
     out.markIdentityField("secId");
- }
+  }
 
 
-  public int compareTo(Object o)
-  {
-    if( o == this || ((PositionPdx)o).secId.equals(this.secId)) {
+  public int compareTo(Object o) {
+    if (o == this || ((PositionPdx) o).secId.equals(this.secId)) {
       return 0;
     } else {
-      return this.pid < ((PositionPdx)o).pid ? -1:1;
+      return this.pid < ((PositionPdx) o).pid ? -1 : 1;
     }
-     
-  } 
-  
+
+  }
+
 }

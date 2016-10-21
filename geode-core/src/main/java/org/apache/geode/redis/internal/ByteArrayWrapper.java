@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal;
 
@@ -25,10 +23,9 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 
 /**
- * This class is a wrapper for the any Regions that need to store a 
- * byte[]. The only data this an instance will store is a byte[]
- * for the data but it is also serializable and comparable so it is able to be used
- * in querying
+ * This class is a wrapper for the any Regions that need to store a byte[]. The only data this an
+ * instance will store is a byte[] for the data but it is also serializable and comparable so it is
+ * able to be used in querying
  * 
  *
  */
@@ -53,12 +50,10 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   /**
    * Empty constructor for serialization
    */
-  public ByteArrayWrapper() {
-  }
+  public ByteArrayWrapper() {}
 
   /**
-   * Default constructor constructs a ValueWrapper
-   * and initialize the {@link #value}
+   * Default constructor constructs a ValueWrapper and initialize the {@link #value}
    * 
    * @param value
    */
@@ -97,6 +92,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   /**
    * Getter for the length of the {@link #value} array
+   * 
    * @return The length of the value array
    */
   public int length() {
@@ -104,8 +100,8 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   }
 
   /**
-   * Hash code for byte[] wrapped by this object,
-   * the actual hashcode is determined by Arrays.hashCode(byte[])
+   * Hash code for byte[] wrapped by this object, the actual hashcode is determined by
+   * Arrays.hashCode(byte[])
    */
   @Override
   public int hashCode() {
@@ -114,9 +110,8 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
 
   /**
-   * This equals is neither symmetric and therefore not transitive, 
-   * because a String with the same underlying bytes is considered
-   * equal. Clearly calling {@link String#equals(Object)} would not 
+   * This equals is neither symmetric and therefore not transitive, because a String with the same
+   * underlying bytes is considered equal. Clearly calling {@link String#equals(Object)} would not
    * yield the same result
    */
   @Override
@@ -130,8 +125,8 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   }
 
   /**
-   * This is a byte to byte comparator, it is not lexicographical but purely compares
-   * byte by byte values
+   * This is a byte to byte comparator, it is not lexicographical but purely compares byte by byte
+   * values
    */
   @Override
   public int compareTo(ByteArrayWrapper other) {
@@ -140,9 +135,8 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   }
 
   /**
-   * Private helper method to compare two byte arrays, A.compareTo(B). The comparison
-   * is basically numerical, for each byte index, the byte representing the greater
-   * value will be the greater
+   * Private helper method to compare two byte arrays, A.compareTo(B). The comparison is basically
+   * numerical, for each byte index, the byte representing the greater value will be the greater
    * 
    * @param A byte[]
    * @param B byte[]

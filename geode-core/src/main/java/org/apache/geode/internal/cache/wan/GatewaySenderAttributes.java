@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan;
 
@@ -64,23 +62,23 @@ public class GatewaySenderAttributes {
   public String id;
 
   public int remoteDs = GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
-  
+
   public LocatorDiscoveryCallback locatorDiscoveryCallback;
-  
-  public boolean isDiskSynchronous = GatewaySender.DEFAULT_DISK_SYNCHRONOUS; 
-  
+
+  public boolean isDiskSynchronous = GatewaySender.DEFAULT_DISK_SYNCHRONOUS;
+
   public OrderPolicy policy;
-  
+
   public int dispatcherThreads = GatewaySender.DEFAULT_DISPATCHER_THREADS;
-  
+
   public int parallelism = GatewaySender.DEFAULT_PARALLELISM_REPLICATED_REGION;
 
   public boolean isParallel = GatewaySender.DEFAULT_IS_PARALLEL;
-  
+
   public boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
-  
+
   public boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
-  
+
   public boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
 
   public boolean forwardExpirationDestroy = GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY;
@@ -88,11 +86,11 @@ public class GatewaySenderAttributes {
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
-  
+
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
   }
-  
+
   public int getSocketReadTimeout() {
     return this.socketReadTimeout;
   }
@@ -140,7 +138,7 @@ public class GatewaySenderAttributes {
   public LocatorDiscoveryCallback getGatewayLocatoDiscoveryCallback() {
     return this.locatorDiscoveryCallback;
   }
-  
+
   public boolean isManualStart() {
     return this.manualStart;
   }
@@ -148,11 +146,11 @@ public class GatewaySenderAttributes {
   public boolean isParallel() {
     return this.isParallel;
   }
-  
+
   public boolean isForInternalUse() {
     return this.isForInternalUse;
   }
-  
+
   public void addGatewayEventFilter(GatewayEventFilter filter) {
     this.eventFilters.add(filter);
   }
@@ -179,18 +177,20 @@ public class GatewaySenderAttributes {
 
   public int getParallelismForReplicatedRegion() {
     return parallelism;
-  }    
-    
+  }
+
   public OrderPolicy getOrderPolicy() {
     return policy;
   }
-  
+
   public boolean isBucketSorted() {
     return this.isBucketSorted;
   }
+
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
     return this.eventSubstitutionFilter;
   }
+
   public boolean isMetaQueue() {
     return this.isMetaQueue;
   }

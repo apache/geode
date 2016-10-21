@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -31,8 +29,8 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * 
- * Retrieves {@link ClientPartitionAdvisor} related information for the
- * specified PartitionedRegion from one of the servers
+ * Retrieves {@link ClientPartitionAdvisor} related information for the specified PartitionedRegion
+ * from one of the servers
  * 
  * 
  * @since GemFire 6.5
@@ -41,7 +39,7 @@ import org.apache.geode.internal.logging.LogService;
 public class GetClientPartitionAttributesOp {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private GetClientPartitionAttributesOp() {
     // no instances allowed
   }
@@ -50,15 +48,17 @@ public class GetClientPartitionAttributesOp {
   public static ClientPartitionAdvisor execute(ExecutablePool pool, String regionFullPath) {
     AbstractOp op = new GetClientPartitionAttributesOpImpl(regionFullPath);
     if (logger.isDebugEnabled()) {
-      logger.debug("GetClientPartitionAttributesOp#execute : Sending GetClientPartitionAttributesOp Message: {} for region: {} to server using pool: {}", op.getMessage(), regionFullPath, pool);
+      logger.debug(
+          "GetClientPartitionAttributesOp#execute : Sending GetClientPartitionAttributesOp Message: {} for region: {} to server using pool: {}",
+          op.getMessage(), regionFullPath, pool);
     }
-    
-    ClientPartitionAdvisor advisor = (ClientPartitionAdvisor)pool.execute(op);
+
+    ClientPartitionAdvisor advisor = (ClientPartitionAdvisor) pool.execute(op);
 
     if (advisor != null) {
-      advisor.setServerGroup(((PoolImpl)pool).getServerGroup());
+      advisor.setServerGroup(((PoolImpl) pool).getServerGroup());
     }
-    
+
     return advisor;
   }
 
@@ -73,9 +73,7 @@ public class GetClientPartitionAttributesOp {
     }
 
     @Override
-    protected void processSecureBytes(Connection cnx, Message message)
-        throws Exception {
-    }
+    protected void processSecureBytes(Connection cnx, Message message) throws Exception {}
 
     @Override
     protected boolean needsUserId() {
@@ -101,48 +99,50 @@ public class GetClientPartitionAttributesOp {
         case MessageType.RESPONSE_CLIENT_PARTITION_ATTRIBUTES:
           final boolean isDebugEnabled = logger.isDebugEnabled();
           if (isDebugEnabled) {
-            logger.debug("GetClientPartitionAttributesOpImpl#processResponse: received message of type : {}", MessageType.getString(msg.getMessageType()));
+            logger.debug(
+                "GetClientPartitionAttributesOpImpl#processResponse: received message of type : {}",
+                MessageType.getString(msg.getMessageType()));
           }
           int bucketCount;
           String colocatedWith;
           String partitionResolverName = null;
-          Set<FixedPartitionAttributes> fpaSet = null; 
-          bucketCount = (Integer)msg.getPart(0).getObject();
-          colocatedWith = (String)msg.getPart(1).getObject();
+          Set<FixedPartitionAttributes> fpaSet = null;
+          bucketCount = (Integer) msg.getPart(0).getObject();
+          colocatedWith = (String) msg.getPart(1).getObject();
           if (msg.getNumberOfParts() == 4) {
-            partitionResolverName = (String)msg.getPart(2).getObject();
-            fpaSet = (Set<FixedPartitionAttributes>)msg.getPart(3).getObject();
-          }
-          else if (msg.getNumberOfParts() == 3) {
+            partitionResolverName = (String) msg.getPart(2).getObject();
+            fpaSet = (Set<FixedPartitionAttributes>) msg.getPart(3).getObject();
+          } else if (msg.getNumberOfParts() == 3) {
             Object obj = msg.getPart(2).getObject();
-            if(obj instanceof String){
-              partitionResolverName = (String)obj;
-            }else{
-              fpaSet = (Set<FixedPartitionAttributes>)obj;
+            if (obj instanceof String) {
+              partitionResolverName = (String) obj;
+            } else {
+              fpaSet = (Set<FixedPartitionAttributes>) obj;
             }
-          }
-          else if(bucketCount==-1){              
-              return null;
+          } else if (bucketCount == -1) {
+            return null;
           }
           if (isDebugEnabled) {
-            logger.debug("GetClientPartitionAttributesOpImpl#processResponse: received all the results from server successfully.");
+            logger.debug(
+                "GetClientPartitionAttributesOpImpl#processResponse: received all the results from server successfully.");
           }
-          ClientPartitionAdvisor advisor = new ClientPartitionAdvisor(bucketCount, colocatedWith,
-                partitionResolverName, fpaSet);
+          ClientPartitionAdvisor advisor =
+              new ClientPartitionAdvisor(bucketCount, colocatedWith, partitionResolverName, fpaSet);
           return advisor;
 
         case MessageType.EXCEPTION:
           if (logger.isDebugEnabled()) {
-            logger.debug("GetClientPartitionAttributesOpImpl#processResponse: received message of type EXCEPTION");
+            logger.debug(
+                "GetClientPartitionAttributesOpImpl#processResponse: received message of type EXCEPTION");
           }
           Part part = msg.getPart(0);
           Object obj = part.getObject();
-          String s = "While performing  GetClientPartitionAttributesOp "+  ((Throwable)obj).getMessage();
+          String s =
+              "While performing  GetClientPartitionAttributesOp " + ((Throwable) obj).getMessage();
           throw new ServerOperationException(s, (Throwable) obj);
         default:
-          throw new InternalGemFireError(
-              LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
-                  .toLocalizedString(Integer.valueOf(msg.getMessageType())));
+          throw new InternalGemFireError(LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
+              .toLocalizedString(Integer.valueOf(msg.getMessageType())));
       }
     }
 

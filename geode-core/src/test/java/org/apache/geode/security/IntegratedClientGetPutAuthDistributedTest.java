@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security;
 
@@ -34,7 +32,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class, FlakyTest.class })
+@Category({DistributedTest.class, SecurityTest.class, FlakyTest.class})
 public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureServerDUnitTest {
 
   @Test
@@ -48,14 +46,14 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureSer
     keys.add("key2");
 
     // client1 connects to server as a user not authorized to do any operations
-    AsyncInvocation ai1 =  client1.invokeAsync(()->{
+    AsyncInvocation ai1 = client1.invokeAsync(() -> {
       ClientCache cache = createClientCache("stranger", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
 
       assertNotAuthorized(() -> region.put("key3", "value3"), "DATA:WRITE:AuthRegion:key3");
       assertNotAuthorized(() -> region.get("key3"), "DATA:READ:AuthRegion:key3");
 
-      //putall
+      // putall
       assertNotAuthorized(() -> region.putAll(allValues), "DATA:WRITE:AuthRegion");
 
       // not authorized for either keys, get no record back
@@ -67,7 +65,7 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureSer
 
 
     // client2 connects to user as a user authorized to use AuthRegion region
-    AsyncInvocation ai2 =  client2.invokeAsync(()->{
+    AsyncInvocation ai2 = client2.invokeAsync(() -> {
       ClientCache cache = createClientCache("authRegionUser", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
 
@@ -87,7 +85,7 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureSer
     });
 
     // client3 connects to user as a user authorized to use key1 in AuthRegion region
-    AsyncInvocation ai3 =  client3.invokeAsync(()->{
+    AsyncInvocation ai3 = client3.invokeAsync(() -> {
       ClientCache cache = createClientCache("key1User", "1234567", serverPort);
       Region region = cache.getRegion(REGION_NAME);
 

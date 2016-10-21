@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -44,8 +42,7 @@ public class GetDurableCQs extends BaseCQCommand {
     return singleton;
   }
 
-  private GetDurableCQs() {
-  }
+  private GetDurableCQs() {}
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
@@ -59,15 +56,16 @@ public class GetDurableCQs extends BaseCQCommand {
     servConn.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received {} request from {}", servConn.getName(), MessageType.getString(msg.getMessageType()), servConn.getSocketString());
+      logger.debug("{}: Received {} request from {}", servConn.getName(),
+          MessageType.getString(msg.getMessageType()), servConn.getSocketString());
     }
 
     DefaultQueryService qService = null;
     CqService cqServiceForExec = null;
 
     try {
-      qService = (DefaultQueryService) ((GemFireCacheImpl) crHelper.getCache())
-          .getLocalQueryService();
+      qService =
+          (DefaultQueryService) ((GemFireCacheImpl) crHelper.getCache()).getLocalQueryService();
 
       this.securityService.authorizeClusterRead();
 
@@ -91,7 +89,8 @@ public class GetDurableCQs extends BaseCQCommand {
         Object durableCqName = it.next();
         durableCqList.add(durableCqName);
         if (isTraceEnabled) {
-          logger.trace("{}: getDurableCqsResponse <{}>; list size was {}", servConn.getName(), durableCqName, durableCqList.size());
+          logger.trace("{}: getDurableCqsResponse <{}>; list size was {}", servConn.getName(),
+              durableCqName, durableCqList.size());
         }
         if (durableCqList.size() == maximumChunkSize) {
           // Send the chunk and clear the list
@@ -103,8 +102,7 @@ public class GetDurableCQs extends BaseCQCommand {
       sendDurableCqsResponseChunk(durableCqList, true, servConn);
 
     } catch (CqException cqe) {
-      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(),
-          cqe, servConn);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", msg.getTransactionId(), cqe, servConn);
       return;
     } catch (Exception e) {
       writeChunkedException(msg, e, false, servConn);
@@ -112,8 +110,8 @@ public class GetDurableCQs extends BaseCQCommand {
     }
   }
 
-  private void sendDurableCqsResponseChunk(List list, boolean lastChunk,
-      ServerConnection servConn) throws IOException {
+  private void sendDurableCqsResponseChunk(List list, boolean lastChunk, ServerConnection servConn)
+      throws IOException {
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
 
     chunkedResponseMsg.setNumberOfParts(1);
@@ -121,7 +119,9 @@ public class GetDurableCQs extends BaseCQCommand {
     chunkedResponseMsg.addObjPart(list, zipValues);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sending {} durableCQs response chunk{}", servConn.getName(), (lastChunk ? " last " : " "), (logger.isTraceEnabled() ? " keys=" + list + " chunk=<" + chunkedResponseMsg + ">" : ""));
+      logger.debug("{}: Sending {} durableCQs response chunk{}", servConn.getName(),
+          (lastChunk ? " last " : " "),
+          (logger.isTraceEnabled() ? " keys=" + list + " chunk=<" + chunkedResponseMsg + ">" : ""));
     }
 
     chunkedResponseMsg.sendChunk(servConn);

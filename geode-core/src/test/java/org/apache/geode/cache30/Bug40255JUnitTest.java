@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -42,8 +40,10 @@ import static org.junit.Assert.assertNotNull;
 @Ignore("Test is broken and was named Bug40255JUnitDisabledTest")
 public class Bug40255JUnitTest {
 
-  private static final String BUG_40255_XML = Bug40255JUnitTest.class.getResource("bug40255xmlparameterization.xml").getFile();
-  private static final String BUG_40255_PROPS = Bug40255JUnitTest.class.getResource("bug40255_gemfire.properties").getFile();
+  private static final String BUG_40255_XML =
+      Bug40255JUnitTest.class.getResource("bug40255xmlparameterization.xml").getFile();
+  private static final String BUG_40255_PROPS =
+      Bug40255JUnitTest.class.getResource("bug40255_gemfire.properties").getFile();
 
   private static final String ATTR_PROPERTY_STRING = "region.disk.store";
 
@@ -67,7 +67,7 @@ public class Bug40255JUnitTest {
   Cache cache;
 
   @Test
-  public void testResolveReplacePropertyStringForLonerCache(){
+  public void testResolveReplacePropertyStringForLonerCache() {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -77,7 +77,7 @@ public class Bug40255JUnitTest {
     System.setProperty(ATTR_PROPERTY_STRING, ATTR_PROPERTY_VALUE);
     System.setProperty(ELEMENT_PROPERTY_STRING, ELEMENT_PROPERTY_VALUE);
     System.setProperty(CONCAT_ELEMENT_PROPERTY_STRING, CONCAT_ELEMENT_PROPERTY_VALUE);
-    
+
     // create the directory where data is going to be stored
     File dir = new File("persistData1");
     dir.mkdir();
@@ -88,16 +88,17 @@ public class Bug40255JUnitTest {
     Region exampleRegion = this.cache.getRegion("example-region");
     RegionAttributes<Object, Object> attrs = exampleRegion.getAttributes();
 
-    //Check if disk store got same name as passed in system properties in setup().
+    // Check if disk store got same name as passed in system properties in setup().
     assertEquals(attrs.getDiskStoreName(), System.getProperty(ATTR_PROPERTY_STRING));
-    assertNotNull(exampleRegion.get(ELEMENT_PROPERTY_VALUE+CONCAT_ELEMENT_PROPERTY_VALUE));
-    assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE+CONCAT_ELEMENT_PROPERTY_VALUE), ELEMENT_KEY_VALUE);
+    assertNotNull(exampleRegion.get(ELEMENT_PROPERTY_VALUE + CONCAT_ELEMENT_PROPERTY_VALUE));
+    assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE + CONCAT_ELEMENT_PROPERTY_VALUE),
+        ELEMENT_KEY_VALUE);
     assertNotNull(exampleRegion.get(ELEMENT_PROPERTY_VALUE));
     assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE), CONCAT_ELEMENT_PROPERTY_VALUE);
   }
 
   @Test
-  public void testResolveReplacePropertyStringForNonLonerCache(){
+  public void testResolveReplacePropertyStringForNonLonerCache() {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "10333");
     props.setProperty(LOCATORS, "");
@@ -107,7 +108,7 @@ public class Bug40255JUnitTest {
     System.setProperty(ATTR_PROPERTY_STRING, ATTR_PROPERTY_VALUE);
     System.setProperty(ELEMENT_PROPERTY_STRING, ELEMENT_PROPERTY_VALUE);
     System.setProperty(CONCAT_ELEMENT_PROPERTY_STRING, CONCAT_ELEMENT_PROPERTY_VALUE);
-    
+
     // create the directory where data is going to be stored
     File dir = new File("persistData1");
     dir.mkdir();
@@ -118,10 +119,11 @@ public class Bug40255JUnitTest {
     Region exampleRegion = this.cache.getRegion("example-region");
     RegionAttributes<Object, Object> attrs = exampleRegion.getAttributes();
 
-    //Check if disk store got same name as passed in system properties in setup().
+    // Check if disk store got same name as passed in system properties in setup().
     assertEquals(attrs.getDiskStoreName(), System.getProperty(ATTR_PROPERTY_STRING));
-    assertNotNull(exampleRegion.get(ELEMENT_PROPERTY_VALUE+CONCAT_ELEMENT_PROPERTY_VALUE));
-    assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE+CONCAT_ELEMENT_PROPERTY_VALUE), ELEMENT_KEY_VALUE);
+    assertNotNull(exampleRegion.get(ELEMENT_PROPERTY_VALUE + CONCAT_ELEMENT_PROPERTY_VALUE));
+    assertEquals(exampleRegion.get(ELEMENT_PROPERTY_VALUE + CONCAT_ELEMENT_PROPERTY_VALUE),
+        ELEMENT_KEY_VALUE);
   }
 
   @After
@@ -137,6 +139,5 @@ public class Bug40255JUnitTest {
   }
 
   @Before
-  public void setUp() throws Exception {
-  }
+  public void setUp() throws Exception {}
 }

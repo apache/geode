@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.query.internal.types;
@@ -24,74 +22,73 @@ import org.apache.geode.DataSerializer;
 
 /**
  * Implementation of CollectionType
+ * 
  * @since GemFire 4.0
  */
-public final class MapTypeImpl extends CollectionTypeImpl
-implements MapType {
+public final class MapTypeImpl extends CollectionTypeImpl implements MapType {
   private static final long serialVersionUID = -705688605389537058L;
   private ObjectType keyType;
-  
+
   /**
-  * Empty constructor to satisfy <code>DataSerializer</code> requirements
+   * Empty constructor to satisfy <code>DataSerializer</code> requirements
    */
-  public MapTypeImpl() {
-  }
+  public MapTypeImpl() {}
 
   /** Creates a new instance of ObjectTypeImpl */
   public MapTypeImpl(Class clazz, ObjectType keyType, ObjectType valueType) {
     super(clazz, valueType);
     this.keyType = keyType;
   }
-  
+
   public MapTypeImpl(String className, ObjectType keyType, ObjectType valueType)
-  throws ClassNotFoundException {
+      throws ClassNotFoundException {
     super(className, valueType);
     this.keyType = keyType;
   }
-  
-  @Override  
+
+  @Override
   public boolean equals(Object obj) {
-    return super.equals(obj) &&
-            (obj instanceof MapTypeImpl) &&
-            this.keyType.equals(((MapTypeImpl)obj).keyType);
+    return super.equals(obj) && (obj instanceof MapTypeImpl)
+        && this.keyType.equals(((MapTypeImpl) obj).keyType);
   }
-  
-  @Override  
+
+  @Override
   public int hashCode() {
     return super.hashCode() ^ this.keyType.hashCode();
   }
-  
-  @Override  
-  public String toString(){
-    return resolveClass().getName() +
-            "<key:" + this.keyType.resolveClass().getName() +
-            ",value:" + getElementType().resolveClass().getName() + ">";
+
+  @Override
+  public String toString() {
+    return resolveClass().getName() + "<key:" + this.keyType.resolveClass().getName() + ",value:"
+        + getElementType().resolveClass().getName() + ">";
   }
-  
-  @Override  
-  public boolean isMapType() { return true; }
+
+  @Override
+  public boolean isMapType() {
+    return true;
+  }
 
   public ObjectType getKeyType() {
     return this.keyType;
   }
 
   public StructType getEntryType() {
-    ObjectType[] fieldTypes = new ObjectType[] { this.keyType, getElementType() };
-    return new StructTypeImpl( new String[] { "key", "value" }, fieldTypes);
+    ObjectType[] fieldTypes = new ObjectType[] {this.keyType, getElementType()};
+    return new StructTypeImpl(new String[] {"key", "value"}, fieldTypes);
   }
-  
-  @Override  
+
+  @Override
   public int getDSFID() {
     return MAP_TYPE_IMPL;
   }
 
-  @Override  
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.keyType = (ObjectType)DataSerializer.readObject(in);
+    this.keyType = (ObjectType) DataSerializer.readObject(in);
   }
-  
-  @Override  
+
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.keyType, out);

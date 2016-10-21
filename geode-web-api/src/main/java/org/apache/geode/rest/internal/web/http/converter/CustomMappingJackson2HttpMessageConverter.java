@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.rest.internal.web.http.converter;
 
@@ -34,35 +32,30 @@ import org.springframework.util.Assert;
  * @since GemFire 0.0.1
  */
 @SuppressWarnings("unused")
-public class CustomMappingJackson2HttpMessageConverter extends
-    MappingJackson2HttpMessageConverter {
+public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter {
 
   protected static final int INITIAL_BYTE_ARRAY_BUFFER_SIZE = 8192;
 
   @Override
-  protected void writeInternal(final Object object,
-      final HttpOutputMessage outputMessage) throws IOException,
-      HttpMessageNotWritableException {
-    HttpOutputMessageWrapper outputMessageWrapper = new BufferingHttpOutputMessageWrapper(
-        outputMessage);
+  protected void writeInternal(final Object object, final HttpOutputMessage outputMessage)
+      throws IOException, HttpMessageNotWritableException {
+    HttpOutputMessageWrapper outputMessageWrapper =
+        new BufferingHttpOutputMessageWrapper(outputMessage);
     super.writeInternal(object, outputMessageWrapper);
     outputMessageWrapper.flush();
   }
 
-  protected static final class BufferingHttpOutputMessageWrapper implements
-      HttpOutputMessageWrapper {
+  protected static final class BufferingHttpOutputMessageWrapper
+      implements HttpOutputMessageWrapper {
 
     private final ByteArrayOutputStream outputStream;
 
     private final HttpOutputMessage httpOutputMessage;
 
-    protected BufferingHttpOutputMessageWrapper(
-        final HttpOutputMessage httpOutputMessage) {
-      Assert.notNull(httpOutputMessage,
-          "The HttpOutputMessage instance to wrap must not be null!");
+    protected BufferingHttpOutputMessageWrapper(final HttpOutputMessage httpOutputMessage) {
+      Assert.notNull(httpOutputMessage, "The HttpOutputMessage instance to wrap must not be null!");
       this.httpOutputMessage = httpOutputMessage;
-      this.outputStream = new ByteArrayOutputStream(
-          INITIAL_BYTE_ARRAY_BUFFER_SIZE);
+      this.outputStream = new ByteArrayOutputStream(INITIAL_BYTE_ARRAY_BUFFER_SIZE);
     }
 
     @Override
@@ -87,12 +80,12 @@ public class CustomMappingJackson2HttpMessageConverter extends
   }
 
   /**
-   * While sound idea in theory to "count the bytes as you stream/write", thus
-   * preserving memory, this does not work in practice since the HTTP headers
-   * must be written to the HTTP output stream response before the body!
+   * While sound idea in theory to "count the bytes as you stream/write", thus preserving memory,
+   * this does not work in practice since the HTTP headers must be written to the HTTP output stream
+   * response before the body!
    */
-  protected static class ContentLengthAccessibleHttpOutputMessageWrapper implements
-      HttpOutputMessageWrapper {
+  protected static class ContentLengthAccessibleHttpOutputMessageWrapper
+      implements HttpOutputMessageWrapper {
 
     private final ByteCountingOutputStream outputStream;
 
@@ -100,11 +93,9 @@ public class CustomMappingJackson2HttpMessageConverter extends
 
     protected ContentLengthAccessibleHttpOutputMessageWrapper(
         final HttpOutputMessage httpOutputMessage) throws IOException {
-      Assert.notNull(httpOutputMessage,
-          "The HttpOutputMessage instance to wrap must not be null!");
+      Assert.notNull(httpOutputMessage, "The HttpOutputMessage instance to wrap must not be null!");
       this.httpOutputMessage = httpOutputMessage;
-      this.outputStream = new ByteCountingOutputStream(
-          this.httpOutputMessage.getBody());
+      this.outputStream = new ByteCountingOutputStream(this.httpOutputMessage.getBody());
     }
 
     @Override
@@ -141,8 +132,7 @@ public class CustomMappingJackson2HttpMessageConverter extends
     private final OutputStream outputStream;
 
     protected ByteCountingOutputStream(final OutputStream outputStream) {
-      Assert
-          .notNull(outputStream, "The OutputStream to wrap must not be null!");
+      Assert.notNull(outputStream, "The OutputStream to wrap must not be null!");
       this.outputStream = outputStream;
     }
 

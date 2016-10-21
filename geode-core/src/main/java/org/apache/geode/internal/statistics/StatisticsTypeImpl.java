@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -23,8 +21,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Gathers together a number of {@link StatisticDescriptor statistics}
- * into one logical type.
+ * Gathers together a number of {@link StatisticDescriptor statistics} into one logical type.
  *
  * @see Statistics
  *
@@ -54,87 +51,77 @@ public class StatisticsTypeImpl implements StatisticsType {
   /** Contains the number of double statistics in this type. */
   private final int doubleStatCount;
 
-  /////////////////////  Static Methods  /////////////////////
+  ///////////////////// Static Methods /////////////////////
 
   /**
    * @see StatisticsTypeXml#read(Reader, StatisticsTypeFactory)
    */
-  public static StatisticsType[] fromXml(Reader reader,
-                                         StatisticsTypeFactory factory)
-    throws IOException {
+  public static StatisticsType[] fromXml(Reader reader, StatisticsTypeFactory factory)
+      throws IOException {
     return (new StatisticsTypeXml()).read(reader, factory);
   }
 
-  //////////////////////  Constructors  //////////////////////
+  ////////////////////// Constructors //////////////////////
 
   /**
-   * Creates a new <code>StatisticsType</code> with the given name,
-   * description, and statistics.
+   * Creates a new <code>StatisticsType</code> with the given name, description, and statistics.
    *
-   * @param name
-   *        The name of this statistics type (for example,
-   *        <code>"DatabaseStatistics"</code>)
-   * @param description
-   *        A description of this statistics type (for example,
-   *        "Information about the application's use of the
-   *        database").
-   * @param stats
-   *        Descriptions of the individual statistics grouped together
-   *        in this statistics type.
+   * @param name The name of this statistics type (for example, <code>"DatabaseStatistics"</code>)
+   * @param description A description of this statistics type (for example, "Information about the
+   *        application's use of the database").
+   * @param stats Descriptions of the individual statistics grouped together in this statistics
+   *        type.
    *
-   * @throws NullPointerException
-   *         If either <code>name</code> or <code>stats</code> is
+   * @throws NullPointerException If either <code>name</code> or <code>stats</code> is
    *         <code>null</code>.
    */
-  public StatisticsTypeImpl(String name, String description,
-                            StatisticDescriptor[] stats) {
+  public StatisticsTypeImpl(String name, String description, StatisticDescriptor[] stats) {
     this(name, description, stats, false);
   }
 
   /**
-   * Creates a new <code>StatisticsType</code> with the given name,
-   * description, and statistics.
+   * Creates a new <code>StatisticsType</code> with the given name, description, and statistics.
    *
-   * @param name
-   *        The name of this statistics type (for example,
-   *        <code>"DatabaseStatistics"</code>)
-   * @param description
-   *        A description of this statistics type (for example,
-   *        "Information about the application's use of the
-   *        database").
-   * @param stats
-   *        Descriptions of the individual statistics grouped together
-   *        in this statistics type.
-   * @param wrapsSharedClass
-   *        True if this type is a wrapper around a SharedClass??.
-   *        False if its a dynamic type created at run time.        
+   * @param name The name of this statistics type (for example, <code>"DatabaseStatistics"</code>)
+   * @param description A description of this statistics type (for example, "Information about the
+   *        application's use of the database").
+   * @param stats Descriptions of the individual statistics grouped together in this statistics
+   *        type.
+   * @param wrapsSharedClass True if this type is a wrapper around a SharedClass??. False if its a
+   *        dynamic type created at run time.
    *
-   * @throws NullPointerException
-   *         If either <code>name</code> or <code>stats</code> is
+   * @throws NullPointerException If either <code>name</code> or <code>stats</code> is
    *         <code>null</code>.
    */
-  public StatisticsTypeImpl(String name, String description,
-                            StatisticDescriptor[] stats, boolean wrapsSharedClass) {
+  public StatisticsTypeImpl(String name, String description, StatisticDescriptor[] stats,
+      boolean wrapsSharedClass) {
     if (name == null) {
-      throw new NullPointerException(LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTICS_TYPE_NAME.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTICS_TYPE_NAME
+              .toLocalizedString());
     }
 
     if (stats == null) {
-      throw new NullPointerException(LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTIC_DESCRIPTORS.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTIC_DESCRIPTORS
+              .toLocalizedString());
     }
     if (stats.length > StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE) {
-      throw new IllegalArgumentException(LocalizedStrings.StatisticsTypeImpl_THE_REQUESTED_DESCRIPTOR_COUNT_0_EXCEEDS_THE_MAXIMUM_WHICH_IS_1.toLocalizedString(new Object[] {Integer.valueOf(stats.length), Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)}));
+      throw new IllegalArgumentException(
+          LocalizedStrings.StatisticsTypeImpl_THE_REQUESTED_DESCRIPTOR_COUNT_0_EXCEEDS_THE_MAXIMUM_WHICH_IS_1
+              .toLocalizedString(new Object[] {Integer.valueOf(stats.length),
+                  Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)}));
     }
 
     this.name = name;
     this.description = description;
     this.stats = stats;
-    this.statsMap = new HashMap(stats.length*2);
+    this.statsMap = new HashMap(stats.length * 2);
     int intCount = 0;
     int longCount = 0;
     int doubleCount = 0;
-    for (int i=0; i < stats.length; i++) {
-      StatisticDescriptorImpl sd = (StatisticDescriptorImpl)stats[i];
+    for (int i = 0; i < stats.length; i++) {
+      StatisticDescriptorImpl sd = (StatisticDescriptorImpl) stats[i];
       if (sd.getTypeCode() == StatisticDescriptorImpl.INT) {
         if (!wrapsSharedClass) {
           sd.setId(intCount);
@@ -153,7 +140,9 @@ public class StatisticsTypeImpl implements StatisticsType {
       }
       Object previousValue = statsMap.put(stats[i].getName(), sd);
       if (previousValue != null) {
-        throw new IllegalArgumentException(LocalizedStrings.StatisticsTypeImpl_DUPLICATE_STATISTICDESCRIPTOR_NAMED_0.toLocalizedString(stats[i].getName()));
+        throw new IllegalArgumentException(
+            LocalizedStrings.StatisticsTypeImpl_DUPLICATE_STATISTICDESCRIPTOR_NAMED_0
+                .toLocalizedString(stats[i].getName()));
       }
     }
     this.intStatCount = intCount;
@@ -161,7 +150,7 @@ public class StatisticsTypeImpl implements StatisticsType {
     this.doubleStatCount = doubleCount;
   }
 
-  //////////////////////  StatisticsType Methods  //////////////////////
+  ////////////////////// StatisticsType Methods //////////////////////
 
   public final String getName() {
     return this.name;
@@ -174,20 +163,22 @@ public class StatisticsTypeImpl implements StatisticsType {
   public final StatisticDescriptor[] getStatistics() {
     return this.stats;
   }
-  
+
   public final int nameToId(String name) {
     return nameToDescriptor(name).getId();
   }
 
   public final StatisticDescriptor nameToDescriptor(String name) {
-    StatisticDescriptorImpl stat = (StatisticDescriptorImpl)statsMap.get(name);
+    StatisticDescriptorImpl stat = (StatisticDescriptorImpl) statsMap.get(name);
     if (stat == null) {
-      throw new IllegalArgumentException(LocalizedStrings.StatisticsTypeImpl_THERE_IS_NO_STATISTIC_NAMED_0.toLocalizedString(name));
+      throw new IllegalArgumentException(
+          LocalizedStrings.StatisticsTypeImpl_THERE_IS_NO_STATISTIC_NAMED_0
+              .toLocalizedString(name));
     }
     return stat;
   }
 
-  //////////////////////  Instance Methods  //////////////////////
+  ////////////////////// Instance Methods //////////////////////
 
   /**
    * Gets the number of statistics in this type that are ints.
@@ -195,12 +186,14 @@ public class StatisticsTypeImpl implements StatisticsType {
   public int getIntStatCount() {
     return this.intStatCount;
   }
+
   /**
    * Gets the number of statistics in this type that are longs.
    */
   public int getLongStatCount() {
     return this.longStatCount;
   }
+
   /**
    * Gets the number of statistics that are doubles.
    */
@@ -208,10 +201,10 @@ public class StatisticsTypeImpl implements StatisticsType {
     return this.doubleStatCount;
   }
 
-//  @Override
-//  public String toString() {
-//    return "StatisticType with " + this.stats.length + " stats";
-//  }
+  // @Override
+  // public String toString() {
+  // return "StatisticType with " + this.stats.length + " stats";
+  // }
 
   @Override
   public String toString() {
@@ -223,11 +216,12 @@ public class StatisticsTypeImpl implements StatisticsType {
     sb.append("}");
     return sb.toString();
   }
-  
+
   @Override
   public int hashCode() {
     return getName().hashCode();
   }
+
   @Override
   public boolean equals(Object o) {
     if (o == null) {
@@ -236,7 +230,7 @@ public class StatisticsTypeImpl implements StatisticsType {
     if (!(o instanceof StatisticsType)) {
       return false;
     }
-    StatisticsType other = (StatisticsType)o;
+    StatisticsType other = (StatisticsType) o;
     if (!getName().equals(other.getName())) {
       return false;
     }
@@ -248,7 +242,7 @@ public class StatisticsTypeImpl implements StatisticsType {
     if (myStats.length != yourStats.length) {
       return false;
     }
-    for (int i=0; i < myStats.length; i++) {
+    for (int i = 0; i < myStats.length; i++) {
       if (!myStats[i].equals(yourStats[i])) {
         return false;
       }

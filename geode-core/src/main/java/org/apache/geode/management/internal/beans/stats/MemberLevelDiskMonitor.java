@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans.stats;
 
@@ -33,7 +31,7 @@ import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor.Defaul
  * 
  *
  */
-public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
+public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
 
 
   private volatile long diskReadBytes = 0;
@@ -52,10 +50,10 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
 
   private volatile int queueSize = 0;
 
-  
+
   private Map<Statistics, ValueMonitor> monitors;
-  
-  private Map<Statistics ,MemberLevelDiskStatisticsListener > listeners;
+
+  private Map<Statistics, MemberLevelDiskStatisticsListener> listeners;
 
   public MemberLevelDiskMonitor(String name) {
     super(name);
@@ -64,7 +62,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
   }
 
   @Override
-  public void addStatisticsToMonitor(Statistics stats) { 
+  public void addStatisticsToMonitor(Statistics stats) {
     ValueMonitor diskMonitor = new ValueMonitor();
     MemberLevelDiskStatisticsListener listener = new MemberLevelDiskStatisticsListener();
     diskMonitor.addListener(listener);
@@ -72,7 +70,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
     monitors.put(stats, diskMonitor);
     listeners.put(stats, listener);
   }
-  
+
   @Override
   public void removeStatisticsFromMonitor(Statistics stats) {
     ValueMonitor monitor = monitors.remove(stats);
@@ -85,7 +83,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
     }
     listener.decreaseDiskStoreStats(stats);
   }
-  
+
   @Override
   public void stopListener() {
     for (Statistics stat : listeners.keySet()) {
@@ -129,13 +127,13 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
   private class MemberLevelDiskStatisticsListener implements StatisticsListener {
 
     DefaultHashMap statsMap = new DefaultHashMap();
-    
+
     private boolean removed = false;
 
     @Override
     public void handleNotification(StatisticsNotification notification) {
       synchronized (statsMap) {
-        if(removed){
+        if (removed) {
           return;
         }
         for (StatisticId statId : notification) {
@@ -147,7 +145,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
           } catch (StatisticNotFoundException e) {
             value = 0;
           }
-          log(name,value);
+          log(name, value);
 
           Number deltaValue = computeDelta(statsMap, name, value);
           statsMap.put(name, value);
@@ -159,11 +157,11 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
     }
 
     /**
-     * Only decrease those values which can both increase and decrease and not
-     * values which can only increase like read/writes
+     * Only decrease those values which can both increase and decrease and not values which can only
+     * increase like read/writes
      * 
-     * Remove last sample value from the aggregate. Last Sampled value can be
-     * obtained from the DefaultHashMap for the disk
+     * Remove last sample value from the aggregate. Last Sampled value can be obtained from the
+     * DefaultHashMap for the disk
      * 
      * @param stats
      */
@@ -171,9 +169,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
     public void decreaseDiskStoreStats(Statistics stats) {
       synchronized (statsMap) {
         queueSize -= statsMap.get(StatsKey.DISK_QUEUE_SIZE).intValue();
-        backupsInProgress -= statsMap.get(StatsKey.BACKUPS_IN_PROGRESS)
-            .intValue();
-        ;
+        backupsInProgress -= statsMap.get(StatsKey.BACKUPS_IN_PROGRESS).intValue();;
         removed = true;
 
       }
@@ -181,9 +177,8 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
     }
 
   };
-  
-  private Number computeDelta(DefaultHashMap statsMap, String name,
-      Number currentValue) {
+
+  private Number computeDelta(DefaultHashMap statsMap, String name, Number currentValue) {
     if (name.equals(StatsKey.DISK_READ_BYTES)) {
       Number prevValue = statsMap.get(StatsKey.DISK_READ_BYTES).longValue();
       Number deltaValue = currentValue.longValue() - prevValue.longValue();
@@ -194,19 +189,16 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor{
       Number deltaValue = currentValue.longValue() - prevValue.longValue();
       return deltaValue;
     }
-    
+
     if (name.equals(StatsKey.DISK_WRITEN_BYTES)) {
       Number prevValue = statsMap.get(StatsKey.DISK_WRITEN_BYTES).longValue();
       Number deltaValue = currentValue.longValue() - prevValue.longValue();
       return deltaValue;
     }
-    if (name.equals(StatsKey.BACKUPS_IN_PROGRESS)) { 
+    if (name.equals(StatsKey.BACKUPS_IN_PROGRESS)) {
       /**
-       *  A negative value is also OK. 
-       * previous backup_in_progress = 5
-       * curr_backup_in_progress = 2
-       * delta = -3
-       * delta should be added to aggregate backup in progress
+       * A negative value is also OK. previous backup_in_progress = 5 curr_backup_in_progress = 2
+       * delta = -3 delta should be added to aggregate backup in progress
        */
       Number prevValue = statsMap.get(StatsKey.BACKUPS_IN_PROGRESS).longValue();
       Number deltaValue = currentValue.longValue() - prevValue.longValue();

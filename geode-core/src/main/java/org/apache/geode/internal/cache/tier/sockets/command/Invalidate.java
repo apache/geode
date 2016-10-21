@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -50,7 +48,8 @@ public class Invalidate extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+      throws IOException, InterruptedException {
     Part regionNamePart = null, keyPart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
@@ -68,7 +67,7 @@ public class Invalidate extends BaseCommand {
     regionNamePart = msg.getPart(0);
     keyPart = msg.getPart(1);
     eventPart = msg.getPart(2);
-    //    callbackArgPart = null; (redundant assignment)
+    // callbackArgPart = null; (redundant assignment)
     if (msg.getNumberOfParts() > 3) {
       callbackArgPart = msg.getPart(3);
       try {
@@ -88,19 +87,26 @@ public class Invalidate extends BaseCommand {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug(servConn.getName() + ": Received invalidate request (" + msg.getPayloadLength() + " bytes) from " + servConn
-        .getSocketString() + " for region " + regionName + " key " + key);
+      logger.debug(servConn.getName() + ": Received invalidate request (" + msg.getPayloadLength()
+          + " bytes) from " + servConn.getSocketString() + " for region " + regionName + " key "
+          + key);
     }
 
     // Process the invalidate request
     if (key == null || regionName == null) {
       if (key == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand__THE_INPUT_KEY_FOR_THE_0_REQUEST_IS_NULL, "invalidate"));
-        errMessage.append(LocalizedStrings.BaseCommand__THE_INPUT_KEY_FOR_THE_0_REQUEST_IS_NULL.toLocalizedString("invalidate"));
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.BaseCommand__THE_INPUT_KEY_FOR_THE_0_REQUEST_IS_NULL, "invalidate"));
+        errMessage.append(LocalizedStrings.BaseCommand__THE_INPUT_KEY_FOR_THE_0_REQUEST_IS_NULL
+            .toLocalizedString("invalidate"));
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL, "invalidate"));
-        errMessage.append(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL.toLocalizedString("invalidate"));
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL,
+            "invalidate"));
+        errMessage
+            .append(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL
+                .toLocalizedString("invalidate"));
       }
       writeErrorResponse(msg, MessageType.DESTROY_DATA_ERROR, errMessage.toString(), servConn);
       servConn.setAsTrue(RESPONDED);
@@ -108,7 +114,8 @@ public class Invalidate extends BaseCommand {
     }
     LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST.toLocalizedString(regionName, "invalidate");
+      String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST
+          .toLocalizedString(regionName, "invalidate");
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -129,16 +136,17 @@ public class Invalidate extends BaseCommand {
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
-        InvalidateOperationContext invalidateContext = authzRequest.invalidateAuthorize(regionName, key, callbackArg);
+        InvalidateOperationContext invalidateContext =
+            authzRequest.invalidateAuthorize(regionName, key, callbackArg);
         callbackArg = invalidateContext.getCallbackArg();
       }
       EventIDHolder clientEvent = new EventIDHolder(eventId);
 
       // msg.isRetry might be set by v7.0 and later clients
       if (msg.isRetry()) {
-        //            if (logger.isDebugEnabled()) {
-        //              logger.debug("DEBUG: encountered isRetry in Invalidate");
-        //            }
+        // if (logger.isDebugEnabled()) {
+        // logger.debug("DEBUG: encountered isRetry in Invalidate");
+        // }
         clientEvent.setPossibleDuplicate(true);
         if (region.getAttributes().getConcurrencyChecksEnabled()) {
           // recover the version tag from other servers
@@ -155,9 +163,9 @@ public class Invalidate extends BaseCommand {
     } catch (EntryNotFoundException e) {
       // Don't send an exception back to the client if this
       // exception happens. Just log it and continue.
-      logger.info(LocalizedMessage.create(LocalizedStrings.BaseCommand_DURING_0_NO_ENTRY_WAS_FOUND_FOR_KEY_1, new Object[] {
-        "invalidate", key
-      }));
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.BaseCommand_DURING_0_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
+          new Object[] {"invalidate", key}));
     } catch (RegionDestroyedException rde) {
       writeException(msg, rde, false, servConn);
       servConn.setAsTrue(RESPONDED);
@@ -176,7 +184,8 @@ public class Invalidate extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION, servConn.getName()), e);
+        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION,
+            servConn.getName()), e);
       }
       return;
     }
@@ -200,20 +209,19 @@ public class Invalidate extends BaseCommand {
     }
     servConn.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent invalidate response for region {} key {}", servConn.getName(), regionName, key);
+      logger.debug("{}: Sent invalidate response for region {} key {}", servConn.getName(),
+          regionName, key);
     }
     stats.incWriteInvalidateResponseTime(DistributionStats.getStatTime() - start);
   }
 
-  protected void writeReply(Message origMsg, ServerConnection servConn, VersionTag tag) throws IOException {
+  protected void writeReply(Message origMsg, ServerConnection servConn, VersionTag tag)
+      throws IOException {
     writeReply(origMsg, servConn);
   }
 
-  protected void writeReplyWithRefreshMetadata(Message origMsg,
-                                               ServerConnection servConn,
-                                               PartitionedRegion pr,
-                                               byte nwHop,
-                                               VersionTag tag) throws IOException {
+  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection servConn,
+      PartitionedRegion pr, byte nwHop, VersionTag tag) throws IOException {
     writeReplyWithRefreshMetadata(origMsg, servConn, pr, nwHop);
   }
 }

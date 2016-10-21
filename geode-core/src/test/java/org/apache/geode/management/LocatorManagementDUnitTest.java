@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -67,8 +65,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   }
 
   /**
-   * When plan is to start Distributed System later so that the system can use
-   * this locator
+   * When plan is to start Distributed System later so that the system can use this locator
    */
   @Test
   public void testPeerLocation() throws Exception {
@@ -80,8 +77,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     String host0 = getServerHostName(host);
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
     props.setProperty(JMX_MANAGER_START, "false");
     props.setProperty(JMX_MANAGER_PORT, "0");
@@ -89,7 +85,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     createCache(managingNode, props);
     startManagingNode(managingNode);
     DistributedMember locatorMember = getMember(locator);
-    remoteLocatorMBeanExist(managingNode,locatorMember);
+    remoteLocatorMBeanExist(managingNode, locatorMember);
 
   }
 
@@ -103,8 +99,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     String host0 = getServerHostName(host);
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
     props.setProperty(JMX_MANAGER_START, "false");
     props.setProperty(JMX_MANAGER_PORT, "0");
@@ -112,7 +107,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     createCache(managingNode, props);
     startManagingNode(managingNode);
     DistributedMember locatorMember = getMember(locator);
-    remoteLocatorMBeanExist(managingNode,locatorMember);
+    remoteLocatorMBeanExist(managingNode, locatorMember);
 
   }
 
@@ -158,11 +153,10 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
     Host host = Host.getHost(0);
     String host0 = getServerHostName(host);
-    
+
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
 
     createCache(managedNode2, props);
@@ -180,8 +174,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
 
     createCache(managedNode2, props);
@@ -191,11 +184,9 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   }
 
   /**
-   * Starts a locator with given configuration.
-   * If DS is already started it will use the same DS
+   * Starts a locator with given configuration. If DS is already started it will use the same DS
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
   protected Integer startLocator(final VM vm, final boolean isPeer, final int port) {
 
@@ -235,8 +226,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates a persistent region
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
   protected String stopLocator(VM vm) {
 
@@ -254,19 +244,16 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates a persistent region
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
-  protected void locatorMBeanExist(VM vm, final int locPort,
-      final boolean isPeer) {
+  protected void locatorMBeanExist(VM vm, final int locPort, final boolean isPeer) {
 
     vm.invoke(new SerializableCallable("Locator MBean created") {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
@@ -282,8 +269,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates a persistent region
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
   protected void remoteLocatorMBeanExist(VM vm, final DistributedMember member) {
 
@@ -291,8 +277,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         LocatorMXBean bean = MBeanUtil.getLocatorMbeanProxy(member);
         assertNotNull(bean);
@@ -308,8 +293,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates a persistent region
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
   protected void listManagers(VM vm, final int locPort, final boolean isPeer) {
 
@@ -318,8 +302,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         final LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
@@ -346,19 +329,16 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates a persistent region
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
-  protected void listWillingManagers(VM vm, final int locPort,
-      final boolean isPeer) {
+  protected void listWillingManagers(VM vm, final int locPort, final boolean isPeer) {
 
     vm.invoke(new SerializableCallable("List Willing Managers") {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         final LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
@@ -381,15 +361,16 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
       }
     });
   }
-  
-  /** get the host name to use for a server cache in client/server dunit
-   * testing
+
+  /**
+   * get the host name to use for a server cache in client/server dunit testing
+   * 
    * @param host
    * @return the host name
    */
   public static String getServerHostName(Host host) {
-    return System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address") != null ?
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address")
+    return System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address") != null
+        ? System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address")
         : host.getHostName();
   }
 

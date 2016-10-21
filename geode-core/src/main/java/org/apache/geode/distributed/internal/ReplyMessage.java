@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.distributed.internal;
@@ -32,70 +30,64 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * A message that acknowledges that an operation completed
- * successfully, or threw a CacheException.  Note that even though
- * this message has a <code>processorId</code>, it is not a {@link
- * MessageWithReply} because it is sent in <b>reply</b> to another
- * message. 
+ * A message that acknowledges that an operation completed successfully, or threw a CacheException.
+ * Note that even though this message has a <code>processorId</code>, it is not a
+ * {@link MessageWithReply} because it is sent in <b>reply</b> to another message.
  *
  *
  */
-public class ReplyMessage extends HighPriorityDistributionMessage  {
+public class ReplyMessage extends HighPriorityDistributionMessage {
   private static final Logger logger = LogService.getLogger();
-  
+
   /** The shared obj id of the ReplyProcessor */
   protected int processorId;
-  
+
   protected boolean ignored = false;
-  
+
   protected boolean closed = false;
-  
+
   private boolean returnValueIsException;
-  
+
   private Object returnValue;
-  
+
   private transient boolean sendViaJGroups;
-    
+
   protected transient boolean internal;
-  
+
   public void setProcessorId(int id) {
     this.processorId = id;
   }
-  
+
   @Override
   public boolean sendViaUDP() {
     return this.sendViaJGroups;
   }
-  
+
   public void setException(ReplyException ex) {
     this.returnValue = ex;
     this.returnValueIsException = true;
   }
-  
+
   public void setReturnValue(Object o) {
     this.returnValue = o;
     this.returnValueIsException = false;
   }
-  
+
   /** ReplyMessages are always processed in-line, though subclasses are not */
-  @Override  
+  @Override
   public boolean getInlineProcess() {
     return this.getClass().equals(ReplyMessage.class);
   }
-  
+
   /** Send an ack */
-  public static void send(InternalDistributedMember recipient, int processorId, 
-                          ReplyException exception,
-                          ReplySender dm) {
+  public static void send(InternalDistributedMember recipient, int processorId,
+      ReplyException exception, ReplySender dm) {
     send(recipient, processorId, exception, dm, false);
   }
-  
+
   /** Send an ack */
-  public static void send(InternalDistributedMember recipient, int processorId, 
-                          ReplyException exception,
-                          ReplySender dm,
-                          boolean internal) 
-  {
+  public static void send(InternalDistributedMember recipient, int processorId,
+      ReplyException exception, ReplySender dm, boolean internal) {
     Assert.assertTrue(recipient != null, "Sending a ReplyMessage to ALL");
     ReplyMessage m = new ReplyMessage();
 
@@ -105,9 +97,11 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
       m.returnValueIsException = true;
     }
     if (exception != null && logger.isDebugEnabled()) {
-      if (exception.getCause() != null && (exception.getCause() instanceof EntryNotFoundException)) {
+      if (exception.getCause() != null
+          && (exception.getCause() instanceof EntryNotFoundException)) {
         logger.debug("Replying with entry-not-found: {}", exception.getCause().getMessage());
-      } else if (exception.getCause() != null && (exception.getCause() instanceof ConcurrentCacheModificationException)) {
+      } else if (exception.getCause() != null
+          && (exception.getCause() instanceof ConcurrentCacheModificationException)) {
         logger.debug("Replying with concurrent-modification-exception");
       } else {
         logger.debug("Replying with exception: " + m, exception);
@@ -116,12 +110,10 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
     m.setRecipient(recipient);
     dm.putOutgoing(m);
   }
-  
+
   /** Send an ack */
-  public static void send(InternalDistributedMember recipient, int processorId, 
-                          Object returnValue,
-                          ReplySender dm) 
-  {
+  public static void send(InternalDistributedMember recipient, int processorId, Object returnValue,
+      ReplySender dm) {
     Assert.assertTrue(recipient != null, "Sending a ReplyMessage to ALL");
     ReplyMessage m = new ReplyMessage();
 
@@ -134,22 +126,15 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
     dm.putOutgoing(m);
   }
 
-  public static void send(InternalDistributedMember recipient, int processorId, 
-                          ReplyException exception,
-                          ReplySender dm,
-                          boolean ignored,
-                          boolean closed, 
-                          boolean sendViaJGroups) {
+  public static void send(InternalDistributedMember recipient, int processorId,
+      ReplyException exception, ReplySender dm, boolean ignored, boolean closed,
+      boolean sendViaJGroups) {
     send(recipient, processorId, exception, dm, ignored, false, false, false);
   }
-  
-  public static void send(InternalDistributedMember recipient, int processorId, 
-                          ReplyException exception,
-                          ReplySender dm,
-                          boolean ignored,
-                          boolean closed, 
-                          boolean sendViaJGroups,
-                          boolean internal) {
+
+  public static void send(InternalDistributedMember recipient, int processorId,
+      ReplyException exception, ReplySender dm, boolean ignored, boolean closed,
+      boolean sendViaJGroups, boolean internal) {
     Assert.assertTrue(recipient != null, "Sending a ReplyMessage to ALL");
     ReplyMessage m = new ReplyMessage();
 
@@ -168,37 +153,39 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
         } else {
           logger.debug("Replying with ignored=true and exception: {}", m, exception);
         }
-      }
-      else if (exception != null) {
-        if (exception.getCause() != null && (exception.getCause() instanceof EntryNotFoundException)) {
+      } else if (exception != null) {
+        if (exception.getCause() != null
+            && (exception.getCause() instanceof EntryNotFoundException)) {
           logger.debug("Replying with entry-not-found: {}", exception.getCause().getMessage());
-        } else if (exception.getCause() != null && (exception.getCause() instanceof ConcurrentCacheModificationException)) {
+        } else if (exception.getCause() != null
+            && (exception.getCause() instanceof ConcurrentCacheModificationException)) {
           logger.debug("Replying with concurrent-modification-exception");
         } else {
           logger.debug("Replying with exception: {}", m, exception);
         }
-      }
-      else if (ignored) {
+      } else if (ignored) {
         logger.debug("Replying with ignored=true: {}", m);
       }
     }
-    
+
     m.setRecipient(recipient);
     dm.putOutgoing(m);
   }
-  
-  
-  
+
+
+
   /**
-   * Processes this message.  This method is invoked by the receiver
-   * of the message if the message is not direct ack. If the message
-   * is a direct ack, the process(dm, ReplyProcessor) method is invoked instead.
+   * Processes this message. This method is invoked by the receiver of the message if the message is
+   * not direct ack. If the message is a direct ack, the process(dm, ReplyProcessor) method is
+   * invoked instead.
+   * 
    * @param dm the distribution manager that is processing the message.
    */
-  @Override  
+  @Override
   protected final void process(final DistributionManager dm) {
     dmProcess(dm);
   }
+
   public final void dmProcess(final DM dm) {
     final long startTime = getTimestamp();
     ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
@@ -206,7 +193,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
       this.process(dm, processor);
 
       if (DistributionStats.enableClockStats) {
-        dm.getStats().incReplyMessageTime(DistributionStats.getStatTime()-startTime);
+        dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
       }
     } catch (RuntimeException ex) {
       if (processor != null) {
@@ -215,16 +202,17 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
       throw ex;
     }
   }
-  
+
   /**
-   * @param dm 
+   * @param dm
    * @param processor
    */
   public void process(final DM dm, ReplyProcessor21 processor) {
-    if (processor == null) return;
+    if (processor == null)
+      return;
     processor.process(ReplyMessage.this);
   }
-  
+
   public Object getReturnValue() {
     if (this.returnValueIsException) {
       return null;
@@ -235,7 +223,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
 
   public ReplyException getException() {
     if (this.returnValueIsException) {
-      ReplyException exception = (ReplyException)this.returnValue;
+      ReplyException exception = (ReplyException) this.returnValue;
       if (exception != null) {
         InternalDistributedMember sendr = getSender();
         if (sendr != null) {
@@ -247,23 +235,23 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
       return null;
     }
   }
-  
+
   public boolean getIgnored() {
     return this.ignored;
   }
-  
+
   public boolean getClosed() {
     return this.closed;
   }
 
-  //////////////////////  Utility Methods  //////////////////////
+  ////////////////////// Utility Methods //////////////////////
 
   public int getDSFID() {
     return REPLY_MESSAGE;
   }
-  
+
   // 8 bits in a byte
-  
+
   // keeping this consistent with HAS_PROCESSOR_ID in PartitionMessage etc
   public static final byte PROCESSOR_ID_FLAG = 0x01;
   public static final byte IGNORED_FLAG = 0x02;
@@ -272,16 +260,16 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
   public static final byte HAS_TX_CHANGES = 0x10;
   public static final byte TIME_STATS_SET = 0x20;
   public static final byte OBJECT_FLAG = 0x40;
-  public static final byte INTERNAL_FLAG = (byte)0x80;
+  public static final byte INTERNAL_FLAG = (byte) 0x80;
 
   private static final boolean testFlag(byte status, byte flag) {
     return (status & flag) != 0;
   }
 
-  @Override  
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    
+
     byte status = 0;
     if (this.ignored) {
       status |= IGNORED_FLAG;
@@ -309,23 +297,22 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
     }
   }
 
-  @Override  
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     byte status = in.readByte();
-    this.ignored = testFlag(status,IGNORED_FLAG);
-    this.closed = testFlag(status,CLOSED_FLAG);
-    if (testFlag(status,PROCESSOR_ID_FLAG)) {
+    this.ignored = testFlag(status, IGNORED_FLAG);
+    this.closed = testFlag(status, CLOSED_FLAG);
+    if (testFlag(status, PROCESSOR_ID_FLAG)) {
       this.processorId = in.readInt();
     }
-    if (testFlag(status,EXCEPTION_FLAG)) {
+    if (testFlag(status, EXCEPTION_FLAG)) {
       this.returnValue = DataSerializer.readObject(in);
       this.returnValueIsException = true;
-    } else if (testFlag(status,OBJECT_FLAG)) {
+    } else if (testFlag(status, OBJECT_FLAG)) {
       this.returnValue = DataSerializer.readObject(in);
     }
-    this.internal = testFlag(status,INTERNAL_FLAG);
+    this.internal = testFlag(status, INTERNAL_FLAG);
   }
 
   protected StringBuilder getStringBuilder() {
@@ -340,18 +327,18 @@ public class ReplyMessage extends HighPriorityDistributionMessage  {
       if (ex.getCause() != null && ex.getCause() instanceof InvalidDeltaException) {
         sb.append(" with request for full value");
       } else {
-      sb.append(" with exception ");
-      sb.append(ex);
-    }
+        sb.append(" with exception ");
+        sb.append(ex);
+      }
     }
     return sb;
   }
-  
+
   public boolean isInternal() {
     return this.internal;
   }
 
-  @Override  
+  @Override
   public String toString() {
     return getStringBuilder().toString();
   }

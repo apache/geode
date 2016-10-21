@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -39,14 +37,14 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class PRDataStoreMemoryJUnitTest {
-  
+
   private static DistributedSystem sys;
-  
+
   private static Cache cache;
 
   @Before
   public void setUp() throws Exception {
-    //  Connect to a DS and create a Cache.
+    // Connect to a DS and create a Cache.
     sys = DistributedSystem.connect(getDistributedSystemProperties());
     cache = CacheFactory.create(sys);
   }
@@ -61,43 +59,42 @@ public class PRDataStoreMemoryJUnitTest {
     dsProps.setProperty(MCAST_PORT, "0");
     return dsProps;
   }
-  
+
   protected PartitionAttributes<?, ?> definePartitionAttributes() {
-    return new PartitionAttributesFactory()
-        .setRedundantCopies(0)
-        .setLocalMaxMemory(10)
-        .create();
+    return new PartitionAttributesFactory().setRedundantCopies(0).setLocalMaxMemory(10).create();
   }
-  
+
   protected RegionFactory<?, ?> defineRegionFactory() {
-    return new RegionFactory()
-        .setPartitionAttributes(definePartitionAttributes());
+    return new RegionFactory().setPartitionAttributes(definePartitionAttributes());
   }
-  
+
   @Test
   public void testCurrentAllocatedMemory() throws Exception {
-    PartitionedRegion regionAck1 = (PartitionedRegion)defineRegionFactory()
-      .create("testCurrentAllocatedemory");
+    PartitionedRegion regionAck1 =
+        (PartitionedRegion) defineRegionFactory().create("testCurrentAllocatedemory");
 
     assertEquals(0, regionAck1.getDataStore().currentAllocatedMemory());
 
     Integer val1 = new Integer(16);
     regionAck1.put(new Integer(1), val1);
-    Object storedVal = regionAck1.getBucketRegion(new Integer(1)).getRegionEntry(new Integer(1))._getValue();
+    Object storedVal =
+        regionAck1.getBucketRegion(new Integer(1)).getRegionEntry(new Integer(1))._getValue();
     final int size1 = CachedDeserializableFactory.calcMemSize(storedVal);
     int size = size1;
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());
 
-    byte[] val2 =  new byte[1000];
+    byte[] val2 = new byte[1000];
     regionAck1.put(new Integer(2), val2);
-    storedVal = regionAck1.getBucketRegion(new Integer(2)).getRegionEntry(new Integer(2))._getValue();
+    storedVal =
+        regionAck1.getBucketRegion(new Integer(2)).getRegionEntry(new Integer(2))._getValue();
     final int size2 = CachedDeserializableFactory.calcMemSize(storedVal);
     size += size2;
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());
 
     String val3 = "0123456789";
     regionAck1.put(new Integer(3), val3);
-    storedVal = regionAck1.getBucketRegion(new Integer(3)).getRegionEntry(new Integer(3))._getValue();
+    storedVal =
+        regionAck1.getBucketRegion(new Integer(3)).getRegionEntry(new Integer(3))._getValue();
     final int size3 = CachedDeserializableFactory.calcMemSize(storedVal);
     size += size3;
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());
@@ -105,10 +102,10 @@ public class PRDataStoreMemoryJUnitTest {
     long beforeSize = regionAck1.getDataStore().currentAllocatedMemory();
     regionAck1.invalidate(new Integer(3));
     size -= size3;
-    assertEquals("beforeSize=" + beforeSize
-                 + " expectedSize=" + size
-                 + " afterSize=" + regionAck1.getDataStore().currentAllocatedMemory(),
-                 size, regionAck1.getDataStore().currentAllocatedMemory());
+    assertEquals(
+        "beforeSize=" + beforeSize + " expectedSize=" + size + " afterSize="
+            + regionAck1.getDataStore().currentAllocatedMemory(),
+        size, regionAck1.getDataStore().currentAllocatedMemory());
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());
     regionAck1.destroy(new Integer(3));
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());

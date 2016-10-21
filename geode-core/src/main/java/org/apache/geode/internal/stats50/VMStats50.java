@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.stats50;
 
@@ -48,8 +46,8 @@ import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * Statistics related to a Java VM.
- * This version is hardcoded to use 1.5 MXBean stats from java.lang.management.
+ * Statistics related to a Java VM. This version is hardcoded to use 1.5 MXBean stats from
+ * java.lang.management.
  */
 public class VMStats50 implements VMStatsContract {
   private final static Logger logger = LogService.getLogger(VMStats50.class.getName());
@@ -60,13 +58,13 @@ public class VMStats50 implements VMStatsContract {
   private final static MemoryMXBean memBean;
   private final static OperatingSystemMXBean osBean;
   /**
-   * This is actually an instance of UnixOperatingSystemMXBean but this class
-   * is not available on Windows so needed to make this a runtime check.
+   * This is actually an instance of UnixOperatingSystemMXBean but this class is not available on
+   * Windows so needed to make this a runtime check.
    */
   private final static Object unixBean;
   private final static Method getMaxFileDescriptorCount;
   private final static Method getOpenFileDescriptorCount;
-  private final static Method getProcessCpuTime;  
+  private final static Method getProcessCpuTime;
   private final static ThreadMXBean threadBean;
 
   private final static int pendingFinalizationCountId;
@@ -77,7 +75,7 @@ public class VMStats50 implements VMStatsContract {
   private final static int peakThreadsId;
   private final static int threadsId;
   private final static int threadStartsId;
-  
+
   private final static int cpusId;
   private final static int freeMemoryId;
   private final static int totalMemoryId;
@@ -92,22 +90,24 @@ public class VMStats50 implements VMStatsContract {
   private final static StatisticsType gcType;
   private final static int gc_collectionsId;
   private final static int gc_collectionTimeId;
-  private final Map<GarbageCollectorMXBean,Statistics> gcMap = new HashMap<GarbageCollectorMXBean,Statistics>();
+  private final Map<GarbageCollectorMXBean, Statistics> gcMap =
+      new HashMap<GarbageCollectorMXBean, Statistics>();
 
   private final static StatisticsType mpType;
   private final static int mp_l_initMemoryId;
   private final static int mp_l_maxMemoryId;
   private final static int mp_l_usedMemoryId;
   private final static int mp_l_committedMemoryId;
-//   private final static int mp_gc_initMemoryId;
-//   private final static int mp_gc_maxMemoryId;
+  // private final static int mp_gc_initMemoryId;
+  // private final static int mp_gc_maxMemoryId;
   private final static int mp_gc_usedMemoryId;
-//   private final static int mp_gc_committedMemoryId;
+  // private final static int mp_gc_committedMemoryId;
   private final static int mp_usageThresholdId;
   private final static int mp_collectionUsageThresholdId;
   private final static int mp_usageExceededId;
   private final static int mp_collectionUsageExceededId;
-  private final Map<MemoryPoolMXBean,Statistics> mpMap = new HashMap<MemoryPoolMXBean,Statistics>();
+  private final Map<MemoryPoolMXBean, Statistics> mpMap =
+      new HashMap<MemoryPoolMXBean, Statistics>();
 
   private final static int unix_fdLimitId;
   private final static int unix_fdsOpenId;
@@ -115,8 +115,10 @@ public class VMStats50 implements VMStatsContract {
 
   private long threadStartCount = 0;
   private long[] allThreadIds = null;
-  private final static boolean THREAD_STATS_ENABLED = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableThreadStats");
-  private final Map<Long,ThreadStatInfo> threadMap = THREAD_STATS_ENABLED ? new HashMap<Long,ThreadStatInfo>() : null;
+  private final static boolean THREAD_STATS_ENABLED =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableThreadStats");
+  private final Map<Long, ThreadStatInfo> threadMap =
+      THREAD_STATS_ENABLED ? new HashMap<Long, ThreadStatInfo>() : null;
   private final static StatisticsType threadType;
   private final static int thread_blockedId;
   private final static int thread_lockOwnerId;
@@ -138,33 +140,32 @@ public class VMStats50 implements VMStatsContract {
       Method m3 = null;
       Object bean = null;
       try {
-        Class c = ClassPathLoader.getLatest().forName("com.sun.management.UnixOperatingSystemMXBean");
+        Class c =
+            ClassPathLoader.getLatest().forName("com.sun.management.UnixOperatingSystemMXBean");
         if (c.isInstance(osBean)) {
-          m1 = c.getMethod("getMaxFileDescriptorCount", new Class[]{});
-          m2 = c.getMethod("getOpenFileDescriptorCount", new Class[]{});
+          m1 = c.getMethod("getMaxFileDescriptorCount", new Class[] {});
+          m2 = c.getMethod("getOpenFileDescriptorCount", new Class[] {});
           bean = osBean;
         } else {
           // leave them null
         }
         // Always set ProcessCpuTime
-        m3 = osBean.getClass().getMethod("getProcessCpuTime", new Class[]{});
-        if (m3!=null) {
-          m3.setAccessible( true );
+        m3 = osBean.getClass().getMethod("getProcessCpuTime", new Class[] {});
+        if (m3 != null) {
+          m3.setAccessible(true);
         }
-      }
-      catch (VirtualMachineError err) {
-	SystemFailure.initiateFailure(err);
-	// If this ever returns, rethrow the error.  We're poisoned
-	// now, so don't let this thread continue.
-	throw err;
-      }
-     catch (Throwable ex) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above).  However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
+      } catch (VirtualMachineError err) {
+        SystemFailure.initiateFailure(err);
+        // If this ever returns, rethrow the error. We're poisoned
+        // now, so don't let this thread continue.
+        throw err;
+      } catch (Throwable ex) {
+        // Whenever you catch Error or Throwable, you must also
+        // catch VirtualMachineError (see above). However, there is
+        // _still_ a possibility that you are dealing with a cascading
+        // error condition, so you also need to check to see if the JVM
+        // is still usable:
+        SystemFailure.checkFailure();
         // must be on a platform that does not support unix mxbean
         bean = null;
         m1 = null;
@@ -197,52 +198,38 @@ public class VMStats50 implements VMStatsContract {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     List<StatisticDescriptor> sds = new ArrayList<StatisticDescriptor>();
     sds.add(f.createIntGauge("pendingFinalization",
-                             "Number of objects that are pending finalization in the java VM.",
-                             "objects"));
-    sds.add(f.createIntGauge("daemonThreads",
-                             "Current number of live daemon threads in this VM.",
-                             "threads"));
+        "Number of objects that are pending finalization in the java VM.", "objects"));
+    sds.add(f.createIntGauge("daemonThreads", "Current number of live daemon threads in this VM.",
+        "threads"));
     sds.add(f.createIntGauge("threads",
-                             "Current number of live threads (both daemon and non-daemon) in this VM.",
-                             "threads"));
-    sds.add(f.createIntGauge("peakThreads",
-                             "High water mark of live threads in this VM.",
-                             "threads"));
+        "Current number of live threads (both daemon and non-daemon) in this VM.", "threads"));
+    sds.add(
+        f.createIntGauge("peakThreads", "High water mark of live threads in this VM.", "threads"));
     sds.add(f.createLongCounter("threadStarts",
-                                "Total number of times a thread has been started since this vm started.",
-                                "threads"));
-    sds.add(f.createIntGauge("cpus",
-                             "Number of cpus available to the java VM on its machine.",
-                             "cpus", true));
-    sds.add(f.createLongCounter("loadedClasses",
-                                "Total number of classes loaded since vm started.",
-                                "classes"));
+        "Total number of times a thread has been started since this vm started.", "threads"));
+    sds.add(f.createIntGauge("cpus", "Number of cpus available to the java VM on its machine.",
+        "cpus", true));
+    sds.add(f.createLongCounter("loadedClasses", "Total number of classes loaded since vm started.",
+        "classes"));
     sds.add(f.createLongCounter("unloadedClasses",
-                                "Total number of classes unloaded since vm started.",
-                                "classes", true));
+        "Total number of classes unloaded since vm started.", "classes", true));
     sds.add(f.createLongGauge("freeMemory",
-                              "An approximation fo the total amount of memory currently available for future allocated objects, measured in bytes.",
-                              "bytes", true));
+        "An approximation fo the total amount of memory currently available for future allocated objects, measured in bytes.",
+        "bytes", true));
     sds.add(f.createLongGauge("totalMemory",
-                              "The total amount of memory currently available for current and future objects, measured in bytes.",
-                              "bytes"));
+        "The total amount of memory currently available for current and future objects, measured in bytes.",
+        "bytes"));
     sds.add(f.createLongGauge("maxMemory",
-                              "The maximum amount of memory that the VM will attempt to use, measured in bytes.",
-                              "bytes", true));
-   sds.add(f.createLongCounter("processCpuTime",
-                              "CPU timed used by the process in nanoseconds.",
-                              "nanoseconds"));
+        "The maximum amount of memory that the VM will attempt to use, measured in bytes.", "bytes",
+        true));
+    sds.add(f.createLongCounter("processCpuTime", "CPU timed used by the process in nanoseconds.",
+        "nanoseconds"));
     if (unixBean != null) {
-      sds.add(f.createLongGauge("fdLimit",
-                                "Maximum number of file descriptors",
-                                "fds", true));
-      sds.add(f.createLongGauge("fdsOpen",
-                                "Current number of open file descriptors",
-                                "fds"));
+      sds.add(f.createLongGauge("fdLimit", "Maximum number of file descriptors", "fds", true));
+      sds.add(f.createLongGauge("fdsOpen", "Current number of open file descriptors", "fds"));
     }
-    vmType = f.createType("VMStats",
-                          "Stats available on a 1.5 java virtual machine.",
-                          sds.toArray(new StatisticDescriptor[sds.size()]));
+    vmType = f.createType("VMStats", "Stats available on a 1.5 java virtual machine.",
+        sds.toArray(new StatisticDescriptor[sds.size()]));
     pendingFinalizationCountId = vmType.nameToId("pendingFinalization");
     loadedClassesId = vmType.nameToId("loadedClasses");
     unloadedClassesId = vmType.nameToId("unloadedClasses");
@@ -263,125 +250,101 @@ public class VMStats50 implements VMStatsContract {
       unix_fdsOpenId = -1;
     }
 
-    memoryUsageType = f.createType("VMMemoryUsageStats",
-                          "Stats available on a 1.5 memory usage area",
-                          new StatisticDescriptor[] {
-                            f.createLongGauge("initMemory",
-                                              "Initial memory the vm requested from the operating system for this area",
-                                              "bytes"),
-                            f.createLongGauge("maxMemory",
-                                              "The maximum amount of memory this area can have in bytes.",
-                                              "bytes"),
-                            f.createLongGauge("usedMemory",
-                                              "The amount of used memory for this area, measured in bytes.",
-                                              "bytes"),
-                            f.createLongGauge("committedMemory",
-                                              "The amount of committed memory for this area, measured in bytes.",
-                                              "bytes")
-                          });
+    memoryUsageType =
+        f.createType("VMMemoryUsageStats", "Stats available on a 1.5 memory usage area",
+            new StatisticDescriptor[] {f.createLongGauge("initMemory",
+                "Initial memory the vm requested from the operating system for this area", "bytes"),
+                f.createLongGauge("maxMemory",
+                    "The maximum amount of memory this area can have in bytes.", "bytes"),
+                f.createLongGauge("usedMemory",
+                    "The amount of used memory for this area, measured in bytes.", "bytes"),
+                f.createLongGauge("committedMemory",
+                    "The amount of committed memory for this area, measured in bytes.", "bytes")});
     mu_initMemoryId = memoryUsageType.nameToId("initMemory");
     mu_maxMemoryId = memoryUsageType.nameToId("maxMemory");
     mu_usedMemoryId = memoryUsageType.nameToId("usedMemory");
     mu_committedMemoryId = memoryUsageType.nameToId("committedMemory");
 
-    gcType = f.createType("VMGCStats",
-                          "Stats available on a 1.5 garbage collector",
-                          new StatisticDescriptor[] {
-                            f.createLongCounter("collections",
-                                              "Total number of collections this garbage collector has done.",
-                                              "operations"),
-                            f.createLongCounter("collectionTime",
-                                              "Approximate elapsed time spent doing collections by this garbage collector.",
-                                              "milliseconds"),
-                          });
+    gcType = f.createType("VMGCStats", "Stats available on a 1.5 garbage collector",
+        new StatisticDescriptor[] {
+            f.createLongCounter("collections",
+                "Total number of collections this garbage collector has done.", "operations"),
+            f.createLongCounter("collectionTime",
+                "Approximate elapsed time spent doing collections by this garbage collector.",
+                "milliseconds"),});
     gc_collectionsId = gcType.nameToId("collections");
     gc_collectionTimeId = gcType.nameToId("collectionTime");
 
-    mpType = f.createType("VMMemoryPoolStats",
-                          "Stats available on a 1.5 memory pool",
-                          new StatisticDescriptor[] {
-                            f.createLongGauge("currentInitMemory",
-                                              "Initial memory the vm requested from the operating system for this pool",
-                                              "bytes"),
-                            f.createLongGauge("currentMaxMemory",
-                                              "The maximum amount of memory this pool can have in bytes.",
-                                              "bytes"),
-                            f.createLongGauge("currentUsedMemory",
-                                              "The estimated amount of used memory currently in use for this pool, measured in bytes.",
-                                              "bytes"),
-                            f.createLongGauge("currentCommittedMemory",
-                                              "The amount of committed memory for this pool, measured in bytes.",
-                                              "bytes"),
-//                             f.createLongGauge("collectionInitMemory",
-//                                               "Initial memory the vm requested from the operating system for this pool",
-//                                               "bytes"),
-//                             f.createLongGauge("collectionMaxMemory",
-//                                               "The maximum amount of memory this pool can have in bytes.",
-//                                               "bytes"),
-                            f.createLongGauge("collectionUsedMemory",
-                                              "The estimated amount of used memory after that last garbage collection of this pool, measured in bytes.",
-                                              "bytes"),
-//                             f.createLongGauge("collectionCommittedMemory",
-//                                               "The amount of committed memory for this pool, measured in bytes.",
-//                                               "bytes"),
-                            f.createLongGauge("collectionUsageThreshold",
-                                              "The collection usage threshold for this pool in bytes",
-                                              "bytes"),
-                            f.createLongCounter("collectionUsageExceeded",
-                                                "Total number of times the garbage collector detected that memory usage in this pool exceeded the collectionUsageThreshold",
-                                                "exceptions"),
-                            f.createLongGauge("usageThreshold",
-                                              "The usage threshold for this pool in bytes",
-                                              "bytes"),
-                            f.createLongCounter("usageExceeded",
-                                                "Total number of times that memory usage in this pool exceeded the usageThreshold",
-                                                "exceptions")
-                          });
+    mpType =
+        f.createType("VMMemoryPoolStats", "Stats available on a 1.5 memory pool",
+            new StatisticDescriptor[] {f.createLongGauge("currentInitMemory",
+                "Initial memory the vm requested from the operating system for this pool", "bytes"),
+                f.createLongGauge("currentMaxMemory",
+                    "The maximum amount of memory this pool can have in bytes.", "bytes"),
+                f.createLongGauge("currentUsedMemory",
+                    "The estimated amount of used memory currently in use for this pool, measured in bytes.",
+                    "bytes"),
+                f.createLongGauge("currentCommittedMemory",
+                    "The amount of committed memory for this pool, measured in bytes.", "bytes"),
+                // f.createLongGauge("collectionInitMemory",
+                // "Initial memory the vm requested from the operating system for this pool",
+                // "bytes"),
+                // f.createLongGauge("collectionMaxMemory",
+                // "The maximum amount of memory this pool can have in bytes.",
+                // "bytes"),
+                f.createLongGauge("collectionUsedMemory",
+                    "The estimated amount of used memory after that last garbage collection of this pool, measured in bytes.",
+                    "bytes"),
+                // f.createLongGauge("collectionCommittedMemory",
+                // "The amount of committed memory for this pool, measured in bytes.",
+                // "bytes"),
+                f.createLongGauge("collectionUsageThreshold",
+                    "The collection usage threshold for this pool in bytes", "bytes"),
+                f.createLongCounter("collectionUsageExceeded",
+                    "Total number of times the garbage collector detected that memory usage in this pool exceeded the collectionUsageThreshold",
+                    "exceptions"),
+                f.createLongGauge("usageThreshold", "The usage threshold for this pool in bytes",
+                    "bytes"),
+                f.createLongCounter("usageExceeded",
+                    "Total number of times that memory usage in this pool exceeded the usageThreshold",
+                    "exceptions")});
     mp_l_initMemoryId = mpType.nameToId("currentInitMemory");
     mp_l_maxMemoryId = mpType.nameToId("currentMaxMemory");
     mp_l_usedMemoryId = mpType.nameToId("currentUsedMemory");
     mp_l_committedMemoryId = mpType.nameToId("currentCommittedMemory");
-    //mp_gc_initMemoryId = mpType.nameToId("collectionInitMemory");
-    //mp_gc_maxMemoryId = mpType.nameToId("collectionMaxMemory");
+    // mp_gc_initMemoryId = mpType.nameToId("collectionInitMemory");
+    // mp_gc_maxMemoryId = mpType.nameToId("collectionMaxMemory");
     mp_gc_usedMemoryId = mpType.nameToId("collectionUsedMemory");
-    //mp_gc_committedMemoryId = mpType.nameToId("collectionCommittedMemory");
+    // mp_gc_committedMemoryId = mpType.nameToId("collectionCommittedMemory");
     mp_usageThresholdId = mpType.nameToId("usageThreshold");
     mp_collectionUsageThresholdId = mpType.nameToId("collectionUsageThreshold");
     mp_usageExceededId = mpType.nameToId("usageExceeded");
     mp_collectionUsageExceededId = mpType.nameToId("collectionUsageExceeded");
 
     if (THREAD_STATS_ENABLED) {
-      threadType = f.createType("VMThreadStats",
-                                "Stats available on a 1.5 thread",
-                                new StatisticDescriptor[] {
-                                  f.createLongCounter("blocked",
-                                                      "Total number of times this thread blocked to enter or reenter a monitor",
-                                                      "operations"),
-                                  f.createLongCounter("blockedTime",
-                                                      "Total amount of elapsed time, approximately, that this thread has spent blocked to enter or reenter a monitor. May need to be enabled by setting -Dgemfire.enableContentionTime=true",
-                                                      "milliseconds"),
-                                  f.createLongGauge("lockOwner",
-                                                    "The thread id that owns the lock that this thread is blocking on.",
-                                                    "threadId"),
-                                  f.createIntGauge("inNative",
-                                                   "1 if the thread is in native code.",
-                                                   "boolean"),
-                                  f.createIntGauge("suspended",
-                                                   "1 if this thread is suspended",
-                                                   "boolean"),
-                                  f.createLongCounter("waited",
-                                                      "Total number of times this thread waited for notification.",
-                                                      "operations"),
-                                  f.createLongCounter("waitedTime",
-                                                      "Total amount of elapsed time, approximately, that this thread has spent waiting for notification. May need to be enabled by setting -Dgemfire.enableContentionTime=true",
-                                                      "milliseconds"),
-                                  f.createLongCounter("cpuTime",
-                                                      "Total cpu time for this thread.  May need to be enabled by setting -Dgemfire.enableCpuTime=true.",
-                                                      "nanoseconds"),
-                                  f.createLongCounter("userTime",
-                                                      "Total user time for this thread. May need to be enabled by setting -Dgemfire.enableCpuTime=true.",
-                                                      "nanoseconds"),
-                                });
+      threadType = f.createType("VMThreadStats", "Stats available on a 1.5 thread",
+          new StatisticDescriptor[] {
+              f.createLongCounter("blocked",
+                  "Total number of times this thread blocked to enter or reenter a monitor",
+                  "operations"),
+              f.createLongCounter("blockedTime",
+                  "Total amount of elapsed time, approximately, that this thread has spent blocked to enter or reenter a monitor. May need to be enabled by setting -Dgemfire.enableContentionTime=true",
+                  "milliseconds"),
+              f.createLongGauge("lockOwner",
+                  "The thread id that owns the lock that this thread is blocking on.", "threadId"),
+              f.createIntGauge("inNative", "1 if the thread is in native code.", "boolean"),
+              f.createIntGauge("suspended", "1 if this thread is suspended", "boolean"),
+              f.createLongCounter("waited",
+                  "Total number of times this thread waited for notification.", "operations"),
+              f.createLongCounter("waitedTime",
+                  "Total amount of elapsed time, approximately, that this thread has spent waiting for notification. May need to be enabled by setting -Dgemfire.enableContentionTime=true",
+                  "milliseconds"),
+              f.createLongCounter("cpuTime",
+                  "Total cpu time for this thread.  May need to be enabled by setting -Dgemfire.enableCpuTime=true.",
+                  "nanoseconds"),
+              f.createLongCounter("userTime",
+                  "Total user time for this thread. May need to be enabled by setting -Dgemfire.enableCpuTime=true.",
+                  "nanoseconds"),});
       thread_blockedId = threadType.nameToId("blocked");
       thread_waitedId = threadType.nameToId("waited");
       thread_lockOwnerId = threadType.nameToId("lockOwner");
@@ -404,7 +367,7 @@ public class VMStats50 implements VMStatsContract {
       thread_userTimeId = -1;
     }
   }
-  
+
   private final Statistics vmStats;
   private final Statistics heapMemStats;
   private final Statistics nonHeapMemStats;
@@ -418,7 +381,7 @@ public class VMStats50 implements VMStatsContract {
     this.vmStats = f.createStatistics(vmType, "vmStats", id);
     this.heapMemStats = f.createStatistics(memoryUsageType, "vmHeapMemoryStats", id);
     this.nonHeapMemStats = f.createStatistics(memoryUsageType, "vmNonHeapMemoryStats", id);
-    initMemoryPools();  //Fix for #40424
+    initMemoryPools(); // Fix for #40424
     initGC();
   }
 
@@ -426,6 +389,7 @@ public class VMStats50 implements VMStatsContract {
     long curStarts = threadBean.getTotalStartedThreadCount();
     return curStarts > this.threadStartCount;
   }
+
   private void refreshThreads() {
     if (!THREAD_STATS_ENABLED) {
       return;
@@ -435,13 +399,14 @@ public class VMStats50 implements VMStatsContract {
       this.threadStartCount = threadBean.getTotalStartedThreadCount();
     }
     ThreadInfo[] threadInfos = threadBean.getThreadInfo(this.allThreadIds, 0);
-    for (int i=0; i < threadInfos.length; i++) {
+    for (int i = 0; i < threadInfos.length; i++) {
       long id = this.allThreadIds[i];
       ThreadInfo item = threadInfos[i];
       if (item != null) {
         ThreadStatInfo tsi = threadMap.get(id);
         if (tsi == null) {
-          threadMap.put(id, new ThreadStatInfo(item, this.f.createStatistics(threadType, item.getThreadName()+'-'+ item.getThreadId(), this.id)));
+          threadMap.put(id, new ThreadStatInfo(item, this.f.createStatistics(threadType,
+              item.getThreadName() + '-' + item.getThreadId(), this.id)));
         } else {
           tsi.ti = item;
         }
@@ -452,9 +417,9 @@ public class VMStats50 implements VMStatsContract {
         }
       }
     }
-    Iterator<Map.Entry<Long,ThreadStatInfo>> it = threadMap.entrySet().iterator();
+    Iterator<Map.Entry<Long, ThreadStatInfo>> it = threadMap.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<Long,ThreadStatInfo> me = it.next();
+      Map.Entry<Long, ThreadStatInfo> me = it.next();
       long id = me.getKey();
       ThreadStatInfo tsi = me.getValue();
       ThreadInfo ti = tsi.ti;
@@ -462,8 +427,8 @@ public class VMStats50 implements VMStatsContract {
       s.setLong(thread_blockedId, ti.getBlockedCount());
       s.setLong(thread_lockOwnerId, ti.getLockOwnerId());
       s.setLong(thread_waitedId, ti.getWaitedCount());
-      s.setInt(thread_inNativeId, ti.isInNative()?1:0);
-      s.setInt(thread_suspendedId, ti.isSuspended()?1:0);
+      s.setInt(thread_inNativeId, ti.isInNative() ? 1 : 0);
+      s.setInt(thread_suspendedId, ti.isSuspended() ? 1 : 0);
       if (threadBean.isThreadContentionMonitoringSupported()
           && threadBean.isThreadContentionMonitoringEnabled()) {
         s.setLong(thread_blockedTimeId, ti.getBlockedTime());
@@ -475,17 +440,20 @@ public class VMStats50 implements VMStatsContract {
       }
     }
   }
+
   /**
-   * This set is used to workaround a JRockit bug 36348 in which getCollectionUsage
-   * throws OperationUnsupportedException instead of returning null.
+   * This set is used to workaround a JRockit bug 36348 in which getCollectionUsage throws
+   * OperationUnsupportedException instead of returning null.
    */
   private final HashSet<String> collectionUsageUnsupported = new HashSet<String>();
+
   /**
    * Returns true if collection usage is not supported on the given bean.
    */
   private boolean isCollectionUsageUnsupported(MemoryPoolMXBean mp) {
     return this.collectionUsageUnsupported.contains(mp.getName());
   }
+
   /**
    * Remember that the given bean does not support collection usage.
    */
@@ -497,16 +465,17 @@ public class VMStats50 implements VMStatsContract {
     List<MemoryPoolMXBean> l = ManagementFactory.getMemoryPoolMXBeans();
     for (MemoryPoolMXBean item : l) {
       if (item.isValid() && !mpMap.containsKey(item)) {
-        mpMap.put(item, this.f.createStatistics(mpType, item.getName()+'-'+item.getType(), this.id));
+        mpMap.put(item,
+            this.f.createStatistics(mpType, item.getName() + '-' + item.getType(), this.id));
       }
     }
   }
 
   private void refreshMemoryPools() {
     boolean reInitPools = false;
-    Iterator<Map.Entry<MemoryPoolMXBean,Statistics>> it = mpMap.entrySet().iterator();
+    Iterator<Map.Entry<MemoryPoolMXBean, Statistics>> it = mpMap.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<MemoryPoolMXBean,Statistics> me = it.next();
+      Map.Entry<MemoryPoolMXBean, Statistics> me = it.next();
       MemoryPoolMXBean mp = me.getKey();
       Statistics s = me.getValue();
       if (!mp.isValid()) {
@@ -521,12 +490,14 @@ public class VMStats50 implements VMStatsContract {
           // to workaround JRockit bug 36348 just ignore this and try the next pool
           continue;
         } catch (InternalError ie) {
-          // Somebody saw an InternalError once but I have no idea how to reproduce it. Was this a race between
+          // Somebody saw an InternalError once but I have no idea how to reproduce it. Was this a
+          // race between
           // mp.isValid() and mp.getUsage()? Perhaps.
           s.close();
           it.remove();
           reInitPools = true;
-          logger.warn("Accessing MemoryPool '{}' threw an Internal Error: {}", mp.getName(), ie.getMessage());
+          logger.warn("Accessing MemoryPool '{}' threw an Internal Error: {}", mp.getName(),
+              ie.getMessage());
           continue;
         }
         s.setLong(mp_l_initMemoryId, mu.getInit());
@@ -548,15 +519,15 @@ public class VMStats50 implements VMStatsContract {
           } catch (IllegalArgumentException ex) {
             // Yet another JRockit bug in which its code catches an assertion
             // about the state of their bean stat values being inconsistent.
-            //  See bug 36348.
+            // See bug 36348.
             this.setCollectionUsageUnsupported(mp);
           }
         }
         if (mu != null) {
-          //s.setLong(mp_gc_initMemoryId, mu.getInit());
+          // s.setLong(mp_gc_initMemoryId, mu.getInit());
           s.setLong(mp_gc_usedMemoryId, mu.getUsed());
-          //s.setLong(mp_gc_committedMemoryId, mu.getCommitted());
-          //s.setLong(mp_gc_maxMemoryId, mu.getMax());
+          // s.setLong(mp_gc_committedMemoryId, mu.getCommitted());
+          // s.setLong(mp_gc_maxMemoryId, mu.getMax());
           if (mp.isCollectionUsageThresholdSupported()) {
             s.setLong(mp_collectionUsageThresholdId, mp.getCollectionUsageThreshold());
             s.setLong(mp_collectionUsageExceededId, mp.getCollectionUsageThresholdCount());
@@ -579,9 +550,9 @@ public class VMStats50 implements VMStatsContract {
   }
 
   private void refreshGC() {
-    Iterator<Map.Entry<GarbageCollectorMXBean,Statistics>> it = gcMap.entrySet().iterator();
+    Iterator<Map.Entry<GarbageCollectorMXBean, Statistics>> it = gcMap.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<GarbageCollectorMXBean,Statistics> me = it.next();
+      Map.Entry<GarbageCollectorMXBean, Statistics> me = it.next();
       GarbageCollectorMXBean gc = me.getKey();
       Statistics s = me.getValue();
       if (!gc.isValid()) {
@@ -593,7 +564,7 @@ public class VMStats50 implements VMStatsContract {
       }
     }
   }
-  
+
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
     this.vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
@@ -610,20 +581,18 @@ public class VMStats50 implements VMStatsContract {
 
     // Compute processCpuTime separately, if not accessible ignore
     try {
-      if (getProcessCpuTime!=null) {
-        Object v = getProcessCpuTime.invoke(osBean, new Object[]{});
-        this.vmStats.setLong(processCpuTimeId, ((Long)v).longValue());
+      if (getProcessCpuTime != null) {
+        Object v = getProcessCpuTime.invoke(osBean, new Object[] {});
+        this.vmStats.setLong(processCpuTimeId, ((Long) v).longValue());
       }
-    }
-    catch (VirtualMachineError err) {
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
-    }
-    catch (Throwable ex) {
+    } catch (Throwable ex) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
@@ -632,24 +601,22 @@ public class VMStats50 implements VMStatsContract {
 
     if (unixBean != null) {
       try {
-        Object v = getMaxFileDescriptorCount.invoke(unixBean, new Object[]{});
-        this.vmStats.setLong(unix_fdLimitId, ((Long)v).longValue());
-        v = getOpenFileDescriptorCount.invoke(unixBean, new Object[]{});
-        this.vmStats.setLong(unix_fdsOpenId, ((Long)v).longValue());
-      }
-      catch (VirtualMachineError err) {
-	SystemFailure.initiateFailure(err);
-	// If this ever returns, rethrow the error.  We're poisoned
-	// now, so don't let this thread continue.
-	throw err;
-      }
-     catch (Throwable ex) {
-	// Whenever you catch Error or Throwable, you must also
-	// catch VirtualMachineError (see above).  However, there is
-	// _still_ a possibility that you are dealing with a cascading
-	// error condition, so you also need to check to see if the JVM
-	// is still usable:
-	SystemFailure.checkFailure();
+        Object v = getMaxFileDescriptorCount.invoke(unixBean, new Object[] {});
+        this.vmStats.setLong(unix_fdLimitId, ((Long) v).longValue());
+        v = getOpenFileDescriptorCount.invoke(unixBean, new Object[] {});
+        this.vmStats.setLong(unix_fdsOpenId, ((Long) v).longValue());
+      } catch (VirtualMachineError err) {
+        SystemFailure.initiateFailure(err);
+        // If this ever returns, rethrow the error. We're poisoned
+        // now, so don't let this thread continue.
+        throw err;
+      } catch (Throwable ex) {
+        // Whenever you catch Error or Throwable, you must also
+        // catch VirtualMachineError (see above). However, there is
+        // _still_ a possibility that you are dealing with a cascading
+        // error condition, so you also need to check to see if the JVM
+        // is still usable:
+        SystemFailure.checkFailure();
       }
     }
 
@@ -659,13 +626,14 @@ public class VMStats50 implements VMStatsContract {
     refreshMemoryPools();
     refreshThreads();
   }
+
   private void refresh(Statistics stats, MemoryUsage mu) {
     stats.setLong(mu_initMemoryId, mu.getInit());
     stats.setLong(mu_usedMemoryId, mu.getUsed());
     stats.setLong(mu_committedMemoryId, mu.getCommitted());
     stats.setLong(mu_maxMemoryId, mu.getMax());
   }
-  
+
   public void close() {
     this.heapMemStats.close();
     this.nonHeapMemStats.close();
@@ -673,7 +641,7 @@ public class VMStats50 implements VMStatsContract {
     closeStatsMap(this.mpMap);
     closeStatsMap(this.gcMap);
   }
-  
+
   private void closeStatsMap(Map<?, Statistics> map) {
     for (Statistics s : map.values()) {
       s.close();
@@ -683,15 +651,17 @@ public class VMStats50 implements VMStatsContract {
   private static class ThreadStatInfo {
     public ThreadInfo ti;
     public final Statistics s;
+
     public ThreadStatInfo(ThreadInfo ti, Statistics s) {
       this.ti = ti;
       this.s = s;
     }
   }
+
   public static StatisticsType getType() {
     return vmType;
   }
-  
+
   public Statistics getVMStats() {
     return vmStats;
   }
@@ -715,7 +685,7 @@ public class VMStats50 implements VMStatsContract {
   public static StatisticsType getThreadType() {
     return threadType;
   }
-  
+
   public static StatisticsType getMemoryUsageType() {
     return memoryUsageType;
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -44,9 +42,9 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
- * @since GemFire  8.1
+ * @since GemFire 8.1
  */
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
@@ -67,12 +65,12 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   public final void postSetUpCliCommandTestBase() throws Exception {
     this.jks = new File(getResourcePath(getClass(), "/ssl/trusted.keystore"));
   }
-  
+
   @Override
   protected final void preTearDownCliCommandTestBase() throws Exception {
     destroyDefaultSetup();
   }
-  
+
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     sslInfoHolder.set(null);
@@ -112,7 +110,7 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(serverProps);
   }
@@ -123,11 +121,11 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
-  
+
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
@@ -139,11 +137,11 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL");
-    
+
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
@@ -155,11 +153,11 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLS");
-    
+
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
@@ -171,11 +169,11 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.1");
-    
+
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
@@ -187,11 +185,11 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
-    
+
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
@@ -203,11 +201,11 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL,TLSv1.2");
-    
+
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
@@ -221,14 +219,17 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
 
-    //Its bad to hard code here. But using SocketFactory.getDefaultCiphers() somehow is not working with the option 
-    //"https.cipherSuites" which is required to restrict cipher suite with HttpsURLConnection
-    //Keeping the below code for further investigation on different Java versions ( 7 & 8) @TODO
-    
-    /*SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-    
-    sslContext.init(null, null, new java.security.SecureRandom());
-    String[] cipherSuites = sslContext.getSocketFactory().getSupportedCipherSuites();*/
+    // Its bad to hard code here. But using SocketFactory.getDefaultCiphers() somehow is not working
+    // with the option
+    // "https.cipherSuites" which is required to restrict cipher suite with HttpsURLConnection
+    // Keeping the below code for further investigation on different Java versions ( 7 & 8) @TODO
+
+    /*
+     * SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+     * 
+     * sslContext.init(null, null, new java.security.SecureRandom()); String[] cipherSuites =
+     * sslContext.getSocketFactory().getSupportedCipherSuites();
+     */
 
     localProps.setProperty(HTTP_SERVICE_SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
 
@@ -237,7 +238,7 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
     clientProps.setProperty(CONNECT__SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
     clientProps.setProperty(CONNECT__SSL_PROTOCOLS, "TLSv1.2");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
@@ -246,25 +247,27 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSSLWithMultipleCipherSuite() throws Exception {
     System.setProperty("javax.net.debug", "ssl,handshake,failure");
-    
+
     Properties localProps = new Properties();
     localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
     localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
-    localProps.setProperty(HTTP_SERVICE_SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_EMPTY_RENEGOTIATION_INFO_SCSV");
-    
+    localProps.setProperty(HTTP_SERVICE_SSL_CIPHERS,
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_EMPTY_RENEGOTIATION_INFO_SCSV");
+
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
     clientProps.setProperty(CONNECT__SSL_PROTOCOLS, "TLSv1.2");
-    
+
     sslInfoHolder.set(clientProps);
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
 
   @Override
-  protected void connect(final String host, final int jmxPort, final int httpPort, final HeadlessGfsh shell) {
+  protected void connect(final String host, final int jmxPort, final int httpPort,
+      final HeadlessGfsh shell) {
     assertNotNull(host);
     assertNotNull(shell);
 
@@ -280,36 +283,42 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
         return true;
       }
     });
-    
+
     endpoint = "https://" + host + ":" + httpPort + urlContext + "/v1";
-    
+
     command.addOption(CONNECT__USE_HTTP, Boolean.TRUE.toString());
     command.addOption(CONNECT__URL, endpoint);
-    command.addOption(CONNECT__USE_SSL,Boolean.TRUE.toString());
+    command.addOption(CONNECT__USE_SSL, Boolean.TRUE.toString());
 
-    if(sslInfoHolder.get().getProperty(CONNECT__KEY_STORE) != null){
+    if (sslInfoHolder.get().getProperty(CONNECT__KEY_STORE) != null) {
       command.addOption(CONNECT__KEY_STORE, sslInfoHolder.get().getProperty(CONNECT__KEY_STORE));
     }
-    if(sslInfoHolder.get().getProperty(CONNECT__KEY_STORE_PASSWORD) != null){
-      command.addOption(CONNECT__KEY_STORE_PASSWORD, sslInfoHolder.get().getProperty(CONNECT__KEY_STORE_PASSWORD));
+    if (sslInfoHolder.get().getProperty(CONNECT__KEY_STORE_PASSWORD) != null) {
+      command.addOption(CONNECT__KEY_STORE_PASSWORD,
+          sslInfoHolder.get().getProperty(CONNECT__KEY_STORE_PASSWORD));
     }
-    if(sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE) != null){
-      command.addOption(CONNECT__TRUST_STORE, sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE));
+    if (sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE) != null) {
+      command.addOption(CONNECT__TRUST_STORE,
+          sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE));
     }
-    if(sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE_PASSWORD) != null){
-      command.addOption(CONNECT__TRUST_STORE_PASSWORD, sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE_PASSWORD));
+    if (sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE_PASSWORD) != null) {
+      command.addOption(CONNECT__TRUST_STORE_PASSWORD,
+          sslInfoHolder.get().getProperty(CONNECT__TRUST_STORE_PASSWORD));
     }
-    if(sslInfoHolder.get().getProperty(CONNECT__SSL_PROTOCOLS) != null){
-      command.addOption(CONNECT__SSL_PROTOCOLS, sslInfoHolder.get().getProperty(CONNECT__SSL_PROTOCOLS));
+    if (sslInfoHolder.get().getProperty(CONNECT__SSL_PROTOCOLS) != null) {
+      command.addOption(CONNECT__SSL_PROTOCOLS,
+          sslInfoHolder.get().getProperty(CONNECT__SSL_PROTOCOLS));
     }
-    if(sslInfoHolder.get().getProperty(CONNECT__SSL_CIPHERS) != null){
-      command.addOption(CONNECT__SSL_CIPHERS, sslInfoHolder.get().getProperty(CONNECT__SSL_CIPHERS));
+    if (sslInfoHolder.get().getProperty(CONNECT__SSL_CIPHERS) != null) {
+      command.addOption(CONNECT__SSL_CIPHERS,
+          sslInfoHolder.get().getProperty(CONNECT__SSL_CIPHERS));
     }
 
     CommandResult result = executeCommand(shell, command.toString());
 
     if (!shell.isConnectedAndReady()) {
-      fail("Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
+      fail("Connect command failed to connect to manager " + endpoint + " result="
+          + commandResultToString(result));
     }
 
     info("Successfully connected to managing node using HTTPS");

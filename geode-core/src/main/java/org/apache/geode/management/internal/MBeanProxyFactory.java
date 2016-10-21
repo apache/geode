@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -35,16 +33,16 @@ import org.apache.geode.management.ManagementException;
 /**
  * Instance of this class is responsible for proxy creation/deletion etc.
  * 
- * If a member is added/removed proxy factory is responsible for creating
- * removing the corresponding proxies for that member.
+ * If a member is added/removed proxy factory is responsible for creating removing the corresponding
+ * proxies for that member.
  * 
- * It also maintains a proxy repository {@link MBeanProxyInfoRepository} for
- * quick access to the proxy instances
+ * It also maintains a proxy repository {@link MBeanProxyInfoRepository} for quick access to the
+ * proxy instances
  * 
  * 
  */
 public class MBeanProxyFactory {
-  private static final Logger logger = LogService.getLogger();  
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Proxy repository contains several indexes to search proxies in an efficient manner.
@@ -69,8 +67,8 @@ public class MBeanProxyFactory {
    * @param jmxAdapter adapter to interface between JMX and GemFire
    * @param service management service
    */
-  public MBeanProxyFactory(RemoteFilterChain remoteFilterChain,
-      MBeanJMXAdapter jmxAdapter, SystemManagementService service) {
+  public MBeanProxyFactory(RemoteFilterChain remoteFilterChain, MBeanJMXAdapter jmxAdapter,
+      SystemManagementService service) {
 
     this.remoteFilterChain = remoteFilterChain;
     this.jmxAdapter = jmxAdapter;
@@ -82,22 +80,18 @@ public class MBeanProxyFactory {
    * Creates a single proxy and adds a {@link ProxyInfo} to proxy repository
    * {@link MBeanProxyInfoRepository}
    * 
-   * @param member
-   *          {@link org.apache.geode.distributed.DistributedMember}
-   * @param objectName
-   *          {@link javax.management.ObjectName} of the Bean
-   * @param monitoringRegion
-   *          monitoring region containing the proxies
+   * @param member {@link org.apache.geode.distributed.DistributedMember}
+   * @param objectName {@link javax.management.ObjectName} of the Bean
+   * @param monitoringRegion monitoring region containing the proxies
    * @throws ManagementException
    */
   public void createProxy(DistributedMember member, ObjectName objectName,
-      Region<String, Object> monitoringRegion,Object newVal) {
+      Region<String, Object> monitoringRegion, Object newVal) {
 
     try {
 
       /*
-       * Check the complete filter chain to evaluate the applicability of the
-       * MBean
+       * Check the complete filter chain to evaluate the applicability of the MBean
        */
 
       if (remoteFilterChain.isFiltered(objectName, member, "")) {
@@ -109,27 +103,27 @@ public class MBeanProxyFactory {
       }
 
       Class interfaceClass = ClassLoadUtil
-          .classFromName(((FederationComponent) monitoringRegion
-              .get(objectName.toString())).getMBeanInterfaceClass());
+          .classFromName(((FederationComponent) monitoringRegion.get(objectName.toString()))
+              .getMBeanInterfaceClass());
 
-      Object object = MBeanProxyInvocationHandler.newProxyInstance(member,
-          monitoringRegion, objectName, interfaceClass);
+      Object object = MBeanProxyInvocationHandler.newProxyInstance(member, monitoringRegion,
+          objectName, interfaceClass);
 
       jmxAdapter.registerMBeanProxy(object, objectName);
-      
+
       if (logger.isDebugEnabled()) {
         logger.debug("Registered ObjectName : {}", objectName);
       }
 
       ProxyInfo proxyInfo = new ProxyInfo(interfaceClass, object, objectName);
       proxyRepo.addProxyToRepository(member, proxyInfo);
-      
-      service.afterCreateProxy(objectName, interfaceClass, object, (FederationComponent)newVal);      
-      
+
+      service.afterCreateProxy(objectName, interfaceClass, object, (FederationComponent) newVal);
+
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Created for : {}", objectName);
-      }     
-      
+      }
+
     } catch (ClassNotFoundException e) {
       throw new ManagementException(e);
     } catch (IntrospectionException e) {
@@ -141,26 +135,22 @@ public class MBeanProxyFactory {
   }
 
   /**
-   * This method will create all the proxies for a given DistributedMember. It
-   * does not throw any exception to its caller. It handles the error and logs
-   * error messages
+   * This method will create all the proxies for a given DistributedMember. It does not throw any
+   * exception to its caller. It handles the error and logs error messages
    * 
    * It will be called from GII or when a member joins the system
    * 
-   * @param member
-   *          {@link org.apache.geode.distributed.DistributedMember}
-   * @param monitoringRegion
-   *          monitoring region containing the proxies
+   * @param member {@link org.apache.geode.distributed.DistributedMember}
+   * @param monitoringRegion monitoring region containing the proxies
    */
-  public void createAllProxies(DistributedMember member,
-      Region<String, Object> monitoringRegion) {
+  public void createAllProxies(DistributedMember member, Region<String, Object> monitoringRegion) {
 
     if (logger.isDebugEnabled()) {
       logger.debug("Creating proxy for: {}", member.getId());
     }
     /*
-     * Check for member and server group filters if the member is filtered no
-     * need to proceed further
+     * Check for member and server group filters if the member is filtered no need to proceed
+     * further
      */
 
     if (remoteFilterChain.isServerGroupFiltered("")) {
@@ -201,10 +191,10 @@ public class MBeanProxyFactory {
           logger.debug("Creating proxy for ObjectName: " + objectName.toString());
         }
 
-        createProxy(member, objectName, monitoringRegion, monitoringRegion
-            .get(objectName.toString()));
+        createProxy(member, objectName, monitoringRegion,
+            monitoringRegion.get(objectName.toString()));
       } catch (ManagementException e) {
-          logger.warn("Create Proxy failed for {} with exception {}", objectName, e.getMessage(), e);
+        logger.warn("Create Proxy failed for {} with exception {}", objectName, e.getMessage(), e);
         continue;
       } catch (Exception e) {
         logger.warn("Create Proxy failed for {} with exception {}", objectName, e.getMessage(), e);
@@ -216,10 +206,9 @@ public class MBeanProxyFactory {
 
   /**
    * Removes all proxies for a given member
-   * @param member
-   *          {@link org.apache.geode.distributed.DistributedMember}
-   * @param monitoringRegion
-   *          monitoring region containing the proxies
+   * 
+   * @param member {@link org.apache.geode.distributed.DistributedMember}
+   * @param monitoringRegion monitoring region containing the proxies
    */
   public void removeAllProxies(DistributedMember member, Region<String, Object> monitoringRegion) {
 
@@ -251,13 +240,10 @@ public class MBeanProxyFactory {
   /**
    * Removes the proxy
    * 
-   * @param member
-   *          {@link org.apache.geode.distributed.DistributedMember}
-   * @param objectName
-   *          {@link javax.management.ObjectName} of the Bean
+   * @param member {@link org.apache.geode.distributed.DistributedMember}
+   * @param objectName {@link javax.management.ObjectName} of the Bean
    */
-  public void removeProxy(DistributedMember member, ObjectName objectName,
-      Object oldVal) {
+  public void removeProxy(DistributedMember member, ObjectName objectName, Object oldVal) {
 
     try {
       if (logger.isDebugEnabled()) {
@@ -268,12 +254,12 @@ public class MBeanProxyFactory {
         ProxyInfo proxyInfo = proxyRepo.findProxyInfo(objectName);
         proxyRepo.removeProxy(member, objectName);
         if (proxyInfo != null) {
-          service.afterRemoveProxy(objectName, proxyInfo.getProxyInterface(), proxyInfo.getProxyInstance(),
-              (FederationComponent)oldVal);
+          service.afterRemoveProxy(objectName, proxyInfo.getProxyInterface(),
+              proxyInfo.getProxyInstance(), (FederationComponent) oldVal);
         }
         jmxAdapter.unregisterMBean(objectName);
-        
-        if (logger.isDebugEnabled())  {
+
+        if (logger.isDebugEnabled()) {
           logger.debug("Removed proxy for ObjectName: {}", objectName);
         }
       }
@@ -281,15 +267,17 @@ public class MBeanProxyFactory {
     } catch (Exception e) {
       if (!(e.getCause() instanceof InstanceNotFoundException)) {
         logger.warn("Could not remove proxy for Member {} due to {}", member, e.getMessage(), e);
-      }     
+      }
     }
   }
 
-  public void updateProxy(ObjectName objectName, ProxyInfo proxyInfo, Object newObject, Object oldObject) {
+  public void updateProxy(ObjectName objectName, ProxyInfo proxyInfo, Object newObject,
+      Object oldObject) {
     try {
       if (proxyInfo != null) {
         Class interfaceClass = proxyInfo.getProxyInterface();
-        service.afterUpdateProxy(objectName, interfaceClass, proxyInfo.getProxyInstance(),(FederationComponent)newObject, (FederationComponent)oldObject);
+        service.afterUpdateProxy(objectName, interfaceClass, proxyInfo.getProxyInstance(),
+            (FederationComponent) newObject, (FederationComponent) oldObject);
       }
     } catch (Exception e) {
       throw new ManagementException(e);
@@ -297,36 +285,31 @@ public class MBeanProxyFactory {
   }
 
   /**
-   * Find a particular proxy instance for a {@link javax.management.ObjectName}
-   * , {@link org.apache.geode.distributed.DistributedMember} and interface
-   * class If the proxy interface does not implement the given interface class a
-   * {@link java.lang.ClassCastException}. will be thrown
+   * Find a particular proxy instance for a {@link javax.management.ObjectName} ,
+   * {@link org.apache.geode.distributed.DistributedMember} and interface class If the proxy
+   * interface does not implement the given interface class a {@link java.lang.ClassCastException}.
+   * will be thrown
    * 
-   * @param objectName
-   *          {@link javax.management.ObjectName} of the MBean
-   * @param interfaceClass
-   *          interface class implemented by proxy
+   * @param objectName {@link javax.management.ObjectName} of the MBean
+   * @param interfaceClass interface class implemented by proxy
    * @return an instance of proxy exposing the given interface
    */
-  public <T> T findProxy(ObjectName objectName,
-      Class<T> interfaceClass) {
+  public <T> T findProxy(ObjectName objectName, Class<T> interfaceClass) {
 
 
-      return proxyRepo.findProxyByName(objectName, interfaceClass);
-   
+    return proxyRepo.findProxyByName(objectName, interfaceClass);
+
 
   }
-  
+
   public ProxyInfo findProxyInfo(ObjectName objectName) {
     return proxyRepo.findProxyInfo(objectName);
   }
 
   /**
-   * Find a set of proxies given a
-   * {@link org.apache.geode.distributed.DistributedMember}
+   * Find a set of proxies given a {@link org.apache.geode.distributed.DistributedMember}
    * 
-   * @param member
-   *          {@link org.apache.geode.distributed.DistributedMember}
+   * @param member {@link org.apache.geode.distributed.DistributedMember}
    * @return a set of {@link javax.management.ObjectName}
    */
   public Set<ObjectName> findAllProxies(DistributedMember member) {
@@ -337,15 +320,13 @@ public class MBeanProxyFactory {
 
   /**
    * This will return the last updated time of the proxyMBean
-
-   * @param objectName
-   *          {@link javax.management.ObjectName} of the MBean
+   * 
+   * @param objectName {@link javax.management.ObjectName} of the MBean
    * @return last updated time of the proxy
    */
   public long getLastUpdateTime(ObjectName objectName) {
 
-    ProxyInterface proxyObj = findProxy(objectName,
-        ProxyInterface.class);
+    ProxyInterface proxyObj = findProxy(objectName, ProxyInterface.class);
 
     return proxyObj.getLastRefreshedTime();
 

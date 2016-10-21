@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
@@ -33,6 +31,7 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   enum messageType {
     INSTALL, PREPARE, SYNC
   }
+
   private NetView view;
   private Object credentials;
   private messageType kind;
@@ -40,21 +39,22 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
 
   public InstallViewMessage(NetView view, Object credentials, boolean preparing) {
     this.view = view;
-    this.kind = preparing? messageType.PREPARE : messageType.INSTALL;
+    this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
   }
 
-  public InstallViewMessage(NetView view, Object credentials, int previousViewId, boolean preparing) {
+  public InstallViewMessage(NetView view, Object credentials, int previousViewId,
+      boolean preparing) {
     this.view = view;
-    this.kind = preparing? messageType.PREPARE : messageType.INSTALL;
+    this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
     this.previousViewId = previousViewId;
   }
-  
+
   public InstallViewMessage() {
     // no-arg constructor for serialization
   }
-  
+
   public boolean isRebroadcast() {
     return kind == messageType.SYNC;
   }
@@ -105,9 +105,9 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
 
   @Override
   public String toString() {
-    return "InstallViewMessage(type="+this.kind+"; Current ViewID="+view.getViewId()+"; Previous View ID="+previousViewId+"; "+this.view
-            +"; cred="+(credentials==null?"null": "not null")
-             +")";
+    return "InstallViewMessage(type=" + this.kind + "; Current ViewID=" + view.getViewId()
+        + "; Previous View ID=" + previousViewId + "; " + this.view + "; cred="
+        + (credentials == null ? "null" : "not null") + ")";
   }
 
   @Override
@@ -134,5 +134,5 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
     } else if (!view.equals(other.view))
       return false;
     return true;
-  }  
+  }
 }

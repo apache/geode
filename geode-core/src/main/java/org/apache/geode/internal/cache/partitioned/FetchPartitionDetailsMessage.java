@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -45,22 +43,18 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 public class FetchPartitionDetailsMessage extends PartitionMessage {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private volatile boolean internal;
   private LoadProbe loadProbe;
   private boolean fetchOfflineMembers;
-  
+
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
    */
-  public FetchPartitionDetailsMessage() {
-  }
+  public FetchPartitionDetailsMessage() {}
 
-  private FetchPartitionDetailsMessage(
-      Set<InternalDistributedMember> recipients, 
-      int regionId, 
-      ReplyProcessor21 processor,
-      boolean internal, boolean fetchOfflineMembers, LoadProbe probe) {
+  private FetchPartitionDetailsMessage(Set<InternalDistributedMember> recipients, int regionId,
+      ReplyProcessor21 processor, boolean internal, boolean fetchOfflineMembers, LoadProbe probe) {
     super(recipients, regionId, processor);
     this.internal = internal;
     this.fetchOfflineMembers = fetchOfflineMembers;
@@ -68,37 +62,33 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   }
 
   /**
-   * Sends a message to fetch {@link 
-   * org.apache.geode.cache.partition.PartitionMemberInfo
+   * Sends a message to fetch {@link org.apache.geode.cache.partition.PartitionMemberInfo
    * PartitionMemberDetails} for the specified <code>PartitionedRegion</code>.
    * 
    * @param recipients the members to fetch PartitionMemberDetails from
    * @param region the PartitionedRegion to fetch member details for
-   * @param fetchOfflineMembers 
+   * @param fetchOfflineMembers
    * @return the processor used to fetch the PartitionMemberDetails
    */
-  public static FetchPartitionDetailsResponse send(
-      Set<InternalDistributedMember> recipients, 
-      PartitionedRegion region,
-      boolean internal, boolean fetchOfflineMembers, LoadProbe probe) {
-    
+  public static FetchPartitionDetailsResponse send(Set<InternalDistributedMember> recipients,
+      PartitionedRegion region, boolean internal, boolean fetchOfflineMembers, LoadProbe probe) {
+
     Assert.assertTrue(recipients != null && !recipients.isEmpty(),
         "FetchPartitionDetailsMessage NULL recipient");
-    
-    FetchPartitionDetailsResponse response = new FetchPartitionDetailsResponse(
-        region.getSystem(), recipients, region);
-    FetchPartitionDetailsMessage msg = new FetchPartitionDetailsMessage(
-        recipients, region.getPRId(), response, internal, fetchOfflineMembers, probe);
 
-    /*Set<InternalDistributedMember> failures =*/ 
+    FetchPartitionDetailsResponse response =
+        new FetchPartitionDetailsResponse(region.getSystem(), recipients, region);
+    FetchPartitionDetailsMessage msg = new FetchPartitionDetailsMessage(recipients,
+        region.getPRId(), response, internal, fetchOfflineMembers, probe);
+
+    /* Set<InternalDistributedMember> failures = */
     region.getDistributionManager().putOutgoing(msg);
 
     region.getPrStats().incPartitionMessagesSent();
     return response;
   }
 
-  public FetchPartitionDetailsMessage(DataInput in) 
-  throws IOException, ClassNotFoundException {
+  public FetchPartitionDetailsMessage(DataInput in) throws IOException, ClassNotFoundException {
     fromData(in);
   }
 
@@ -110,23 +100,20 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
 
   @Override
   protected final boolean operateOnPartitionedRegion(DistributionManager dm,
-                                                     PartitionedRegion region, 
-                                                     long startTime) 
-                                              throws ForceReattemptException {
-    
-    PartitionMemberInfoImpl details = (PartitionMemberInfoImpl)
-        region.getRedundancyProvider().buildPartitionMemberDetails(
-            this.internal, this.loadProbe);
-    OfflineMemberDetails offlineDetails; 
-    if(this.internal && this.fetchOfflineMembers) {
+      PartitionedRegion region, long startTime) throws ForceReattemptException {
+
+    PartitionMemberInfoImpl details = (PartitionMemberInfoImpl) region.getRedundancyProvider()
+        .buildPartitionMemberDetails(this.internal, this.loadProbe);
+    OfflineMemberDetails offlineDetails;
+    if (this.internal && this.fetchOfflineMembers) {
       offlineDetails = region.getRedundancyProvider().fetchOfflineMembers();
     } else {
       offlineDetails = new OfflineMemberDetailsImpl(new Set[0]);
     }
     region.getPrStats().endPartitionMessagesProcessing(startTime);
-    FetchPartitionDetailsReplyMessage.send(
-        getSender(), getProcessorId(), details, dm, offlineDetails, null);
-    
+    FetchPartitionDetailsReplyMessage.send(getSender(), getProcessorId(), details, dm,
+        offlineDetails, null);
+
     // Unless there was an exception thrown, this message handles sending the
     // response
     return false;
@@ -158,13 +145,12 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     DataSerializer.writeObject(loadProbe, out);
   }
 
-  public static final class FetchPartitionDetailsReplyMessage 
-  extends ReplyMessage {
-    
+  public static final class FetchPartitionDetailsReplyMessage extends ReplyMessage {
+
     static final byte NO_PARTITION = 0;
     static final byte OK = 1;
     static final byte OK_INTERNAL = 2;
-    
+
     private long configuredMaxMemory;
     private long size;
     private int bucketCount;
@@ -172,22 +158,21 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     private PRLoad prLoad;
     private long[] bucketSizes;
     private OfflineMemberDetails offlineDetails;
-    
+
     /**
      * Empty constructor to conform to DataSerializable interface
      */
-    public FetchPartitionDetailsReplyMessage() {
-    }
+    public FetchPartitionDetailsReplyMessage() {}
 
     public FetchPartitionDetailsReplyMessage(DataInput in)
         throws IOException, ClassNotFoundException {
       fromData(in);
     }
 
-    private FetchPartitionDetailsReplyMessage(int processorId,
-        PartitionMemberInfoImpl details, OfflineMemberDetails offlineDetails, ReplyException re) {
+    private FetchPartitionDetailsReplyMessage(int processorId, PartitionMemberInfoImpl details,
+        OfflineMemberDetails offlineDetails, ReplyException re) {
       this.processorId = processorId;
-      
+
       this.configuredMaxMemory = details.getConfiguredMaxMemory();
       this.size = details.getSize();
       this.bucketCount = details.getBucketCount();
@@ -195,21 +180,20 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
       this.prLoad = details.getPRLoad();
       this.bucketSizes = details.getBucketSizes();
       this.offlineDetails = offlineDetails;
-      
+
       setException(re);
     }
 
-    /** Send an ack 
-     * @param offlineDetails */
-    public static void send(InternalDistributedMember recipient,
-                            int processorId, 
-                            PartitionMemberInfoImpl details, 
-                            DM dm, 
-                            OfflineMemberDetails offlineDetails, 
-                            ReplyException re) {
-      Assert.assertTrue(recipient != null,
-          "FetchPartitionDetailsReplyMessage NULL recipient");
-      FetchPartitionDetailsReplyMessage m = 
+    /**
+     * Send an ack
+     * 
+     * @param offlineDetails
+     */
+    public static void send(InternalDistributedMember recipient, int processorId,
+        PartitionMemberInfoImpl details, DM dm, OfflineMemberDetails offlineDetails,
+        ReplyException re) {
+      Assert.assertTrue(recipient != null, "FetchPartitionDetailsReplyMessage NULL recipient");
+      FetchPartitionDetailsReplyMessage m =
           new FetchPartitionDetailsReplyMessage(processorId, details, offlineDetails, re);
       m.setRecipient(recipient);
       dm.putOutgoing(m);
@@ -219,7 +203,9 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     public void process(final DM dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "FetchPartitionDetailsReplyMessage process invoking reply processor with processorId: {}", this.processorId);
+        logger.trace(LogMarker.DM,
+            "FetchPartitionDetailsReplyMessage process invoking reply processor with processorId: {}",
+            this.processorId);
       }
 
       if (processor == null) {
@@ -239,18 +225,13 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     InternalPartitionDetails unmarshalPartitionMemberDetails() {
       if (this.configuredMaxMemory == 0) {
         return null;
-      }
-      else {
+      } else {
         if (this.prLoad == null) {
-          return new PartitionMemberInfoImpl(
-              getSender(), this.configuredMaxMemory, this.size, 
+          return new PartitionMemberInfoImpl(getSender(), this.configuredMaxMemory, this.size,
               this.bucketCount, this.primaryCount);
-        }
-        else {
-          return new PartitionMemberInfoImpl(
-              getSender(), this.configuredMaxMemory, this.size, 
-              this.bucketCount, this.primaryCount,
-              this.prLoad, this.bucketSizes);
+        } else {
+          return new PartitionMemberInfoImpl(getSender(), this.configuredMaxMemory, this.size,
+              this.bucketCount, this.primaryCount, this.prLoad, this.bucketSizes);
         }
       }
     }
@@ -260,15 +241,13 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
       super.toData(out);
       if (this.configuredMaxMemory == 0) {
         out.writeByte(NO_PARTITION);
-      }
-      else {
+      } else {
         if (this.prLoad == null) {
           out.writeByte(OK);
-        }
-        else {
+        } else {
           out.writeByte(OK_INTERNAL);
         }
-        
+
         out.writeLong(this.configuredMaxMemory);
         out.writeLong(this.size);
         out.writeInt(this.bucketCount);
@@ -287,8 +266,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       byte flag = in.readByte();
       if (flag != NO_PARTITION) {
@@ -308,37 +286,31 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("FetchPartitionDetailsReplyMessage ")
-        .append("processorid=").append(this.processorId)
-        .append(" reply to sender ").append(this.getSender())
-        .append(" returning configuredMaxMemory=").append(this.configuredMaxMemory)
-        .append(" size=").append(this.size)
-        .append(" bucketCount=").append(this.bucketCount)
-        .append(" primaryCount=").append(this.primaryCount)
-        .append(" prLoad=").append(this.prLoad)
-        .append(" bucketSizes=").append(Arrays.toString(this.bucketSizes));
+      sb.append("FetchPartitionDetailsReplyMessage ").append("processorid=")
+          .append(this.processorId).append(" reply to sender ").append(this.getSender())
+          .append(" returning configuredMaxMemory=").append(this.configuredMaxMemory)
+          .append(" size=").append(this.size).append(" bucketCount=").append(this.bucketCount)
+          .append(" primaryCount=").append(this.primaryCount).append(" prLoad=").append(this.prLoad)
+          .append(" bucketSizes=").append(Arrays.toString(this.bucketSizes));
       return sb.toString();
     }
   }
 
   /**
-   * A processor to capture the value returned by {@link 
-   * org.apache.geode.internal.cache.partitioned.FetchPartitionDetailsMessage.FetchPartitionDetailsReplyMessage}
+   * A processor to capture the value returned by
+   * {@link org.apache.geode.internal.cache.partitioned.FetchPartitionDetailsMessage.FetchPartitionDetailsReplyMessage}
    * 
    */
-  public static class FetchPartitionDetailsResponse extends
-      PartitionResponse {
-    
-    private final Set<InternalPartitionDetails> allDetails = 
+  public static class FetchPartitionDetailsResponse extends PartitionResponse {
+
+    private final Set<InternalPartitionDetails> allDetails =
         new HashSet<InternalPartitionDetails>();
-    private OfflineMemberDetails offlineDetails; 
+    private OfflineMemberDetails offlineDetails;
 
     final PartitionedRegion partitionedRegion;
 
-    public FetchPartitionDetailsResponse(
-        InternalDistributedSystem ds,
-        Set<InternalDistributedMember> recipients, 
-        PartitionedRegion theRegion) {
+    public FetchPartitionDetailsResponse(InternalDistributedSystem ds,
+        Set<InternalDistributedMember> recipients, PartitionedRegion theRegion) {
       super(ds, recipients);
       partitionedRegion = theRegion;
     }
@@ -347,44 +319,41 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     public void process(DistributionMessage msg) {
       try {
         if (msg instanceof FetchPartitionDetailsReplyMessage) {
-          FetchPartitionDetailsReplyMessage reply = 
-              (FetchPartitionDetailsReplyMessage)msg;
+          FetchPartitionDetailsReplyMessage reply = (FetchPartitionDetailsReplyMessage) msg;
           InternalPartitionDetails details = reply.unmarshalPartitionMemberDetails();
           if (details != null) {
-            synchronized(allDetails) {
+            synchronized (allDetails) {
               this.allDetails.add(details);
-              //This just picks the offline details from the last member to return
+              // This just picks the offline details from the last member to return
               this.offlineDetails = reply.offlineDetails;
             }
             if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.debug("FetchPartitionDetailsResponse return details is {}",  details);
+              logger.debug("FetchPartitionDetailsResponse return details is {}", details);
             }
-          }
-          else if (logger.isTraceEnabled(LogMarker.DM)) {
+          } else if (logger.isTraceEnabled(LogMarker.DM)) {
             logger.debug("FetchPartitionDetailsResponse ignoring null details");
           }
         }
-      }
-      finally {
+      } finally {
         super.process(msg);
       }
     }
 
     /**
-     * Ignore any incoming exception from other VMs, we just want an
-     * acknowledgement that the message was processed.
+     * Ignore any incoming exception from other VMs, we just want an acknowledgement that the
+     * message was processed.
      */
     @Override
     protected void processException(ReplyException ex) {
       logger.debug("FetchPartitionDetailsResponse ignoring exception {}", ex.getMessage(), ex);
     }
-    
+
     /**
      * @return set of all PartitionMemberDetails
      */
     public Set<InternalPartitionDetails> waitForResponse() {
       waitForRepliesUninterruptibly();
-      synchronized(allDetails) {
+      synchronized (allDetails) {
         return this.allDetails;
       }
     }

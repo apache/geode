@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.lang;
 
@@ -27,9 +25,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and functionality of the ClassUtils
- * class.
+ * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and
+ * functionality of the ClassUtils class.
  * <p/>
+ * 
  * @see org.apache.geode.internal.lang.ClassUtils
  * @see org.junit.Assert
  * @see org.junit.Test
@@ -40,15 +39,15 @@ public class ClassUtilsJUnitTest {
 
   @Test
   public void testForNameWithExistingClass() {
-    assertEquals(Object.class, ClassUtils.forName("java.lang.Object", new RuntimeException("unexpected")));
+    assertEquals(Object.class,
+        ClassUtils.forName("java.lang.Object", new RuntimeException("unexpected")));
   }
 
   @Test(expected = RuntimeException.class)
   public void testForNameWithNonExistingClass() {
     try {
       ClassUtils.forName("com.mycompany.non.existing.Class", new RuntimeException("expected"));
-    }
-    catch (RuntimeException expected) {
+    } catch (RuntimeException expected) {
       assertEquals("expected", expected.getMessage());
       throw expected;
     }
@@ -62,9 +61,9 @@ public class ClassUtilsJUnitTest {
   @Test(expected = IllegalArgumentException.class)
   public void testForNameWithEmptyClassName() {
     try {
-      ClassUtils.forName(StringUtils.EMPTY_STRING, new IllegalArgumentException("Empty Class Name!"));
-    }
-    catch (IllegalArgumentException expected) {
+      ClassUtils.forName(StringUtils.EMPTY_STRING,
+          new IllegalArgumentException("Empty Class Name!"));
+    } catch (IllegalArgumentException expected) {
       assertEquals("Empty Class Name!", expected.getMessage());
       throw expected;
     }
@@ -74,8 +73,7 @@ public class ClassUtilsJUnitTest {
   public void testForNameWithBlankClassName() {
     try {
       ClassUtils.forName("  ", new IllegalArgumentException("Blank Class Name!"));
-    }
-    catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException expected) {
       assertEquals("Blank Class Name!", expected.getMessage());
       throw expected;
     }
@@ -148,7 +146,8 @@ public class ClassUtilsJUnitTest {
 
   @Test
   public void testIsNotInstanceOfWithMultipleTypes() {
-    assertTrue(ClassUtils.isNotInstanceOf("test", Boolean.class, Character.class, Integer.class, Double.class));
+    assertTrue(ClassUtils.isNotInstanceOf("test", Boolean.class, Character.class, Integer.class,
+        Double.class));
   }
 
   @Test
@@ -158,7 +157,8 @@ public class ClassUtilsJUnitTest {
 
   @Test
   public void testIsNotInstanceOfWithMultipleCompatibleTypes() {
-    assertFalse(ClassUtils.isNotInstanceOf(1, Double.class, Float.class, Integer.class, Long.class, Number.class));
+    assertFalse(ClassUtils.isNotInstanceOf(1, Double.class, Float.class, Integer.class, Long.class,
+        Number.class));
   }
 
 }

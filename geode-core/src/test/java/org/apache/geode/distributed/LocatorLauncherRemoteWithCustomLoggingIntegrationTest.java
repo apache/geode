@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -46,7 +44,8 @@ import org.junit.runners.Parameterized;
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest extends AbstractLocatorLauncherRemoteIntegrationTestCase {
+public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest
+    extends AbstractLocatorLauncherRemoteIntegrationTestCase {
 
   private File customConfigFile;
 
@@ -64,11 +63,13 @@ public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest extends Abstr
     final List<String> jvmArguments = getJvmArguments();
 
     final List<String> command = new ArrayList<String>();
-    command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
+    command
+        .add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
       command.add(jvmArgument);
     }
-    command.add("-D" + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + "=" + this.customConfigFile.getCanonicalPath());
+    command.add("-D" + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + "="
+        + this.customConfigFile.getCanonicalPath());
     command.add("-cp");
     command.add(System.getProperty("java.class.path"));
     command.add(LocatorLauncher.class.getName());
@@ -78,13 +79,15 @@ public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest extends Abstr
     command.add("--redirect-output");
 
     this.process = new ProcessBuilder(command).directory(new File(this.workingDirectory)).start();
-    this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream()).inputListener(new ToSystemOut()).build().start();
-    this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream()).inputListener(new ToSystemOut()).build().start();
+    this.processOutReader =
+        new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream())
+            .inputListener(new ToSystemOut()).build().start();
+    this.processErrReader =
+        new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream())
+            .inputListener(new ToSystemOut()).build().start();
 
     int pid = 0;
-    this.launcher = new LocatorLauncher.Builder()
-            .setWorkingDirectory(workingDirectory)
-            .build();
+    this.launcher = new LocatorLauncher.Builder().setWorkingDirectory(workingDirectory).build();
     try {
       waitForLocatorToStart(this.launcher);
 
@@ -95,15 +98,17 @@ public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest extends Abstr
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
-      final String logFileName = getUniqueName()+".log";
-      assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
+      final String logFileName = getUniqueName() + ".log";
+      assertTrue("Log file should exist: " + logFileName,
+          new File(this.temporaryFolder.getRoot(), logFileName).exists());
 
       // check the status
       final LocatorLauncher.LocatorState locatorState = this.launcher.status();
       assertNotNull(locatorState);
       assertEquals(AbstractLauncher.Status.ONLINE, locatorState.getStatus());
 
-      assertThat(systemOutRule.getLog()).contains("log4j.configurationFile = " + this.customConfigFile.getCanonicalPath());
+      assertThat(systemOutRule.getLog())
+          .contains("log4j.configurationFile = " + this.customConfigFile.getCanonicalPath());
       assertThat(systemOutRule.getLog()).contains(CONFIG_LAYOUT_PREFIX);
 
     } catch (Throwable e) {

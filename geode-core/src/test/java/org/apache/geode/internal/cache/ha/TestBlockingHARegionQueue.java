@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -23,17 +21,17 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.internal.logging.LogService;
+
 /**
  * Test class for Blocking HA region queue functionalities
- *  
+ * 
  * 
  * 
  */
 
-//TODO:Asif: Modify the test to allow working with the new class containing 
-//ReadWrite lock functionality
-public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQueue
-{
+// TODO:Asif: Modify the test to allow working with the new class containing
+// ReadWrite lock functionality
+public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQueue {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -51,16 +49,15 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
   }
 
   /**
-   * Does a put and a notifyAll() multiple threads can possibly be waiting on
-   * this queue to put
+   * Does a put and a notifyAll() multiple threads can possibly be waiting on this queue to put
+   * 
    * @throws CacheException
    * @throws InterruptedException
    * 
    * @return boolean whether object was successfully put onto the queue
    */
 
-  public boolean put(Object object) throws CacheException, InterruptedException
-  {
+  public boolean put(Object object) throws CacheException, InterruptedException {
     boolean putDone = super.put(object);
 
     if (takeFirst) {
@@ -75,21 +72,21 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
   }
 
   /**
-   * blocking peek. This method will not return till it has acquired a
-   * legitimate object from teh queue.
-   * @throws InterruptedException 
+   * blocking peek. This method will not return till it has acquired a legitimate object from teh
+   * queue.
+   * 
+   * @throws InterruptedException
    */
 
-  public Object peek() throws  InterruptedException
-  {
+  public Object peek() throws InterruptedException {
     Object object = null;
     while (true) {
 
       if (takeWhenPeekInProgress) {
-        try{
-        this.take();
-        }catch (CacheException ce) {
-          throw new RuntimeException(ce){};
+        try {
+          this.take();
+        } catch (CacheException ce) {
+          throw new RuntimeException(ce) {};
         }
         this.takeWhenPeekInProgress = false;
       }
@@ -102,8 +99,7 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
             boolean interrupted = Thread.interrupted();
             try {
               forWaiting.wait();
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
               interrupted = true;
               /** ignore* */
               if (logger.isDebugEnabled()) {
@@ -114,13 +110,11 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
                 Thread.currentThread().interrupt();
               }
             }
-          }
-          else {
+          } else {
             break;
           }
         }
-      }
-      else {
+      } else {
         break;
       }
     }

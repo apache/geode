@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.security;
 
@@ -36,7 +34,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 /**
  * Integration tests for {@link IntegratedSecurityService} using shiro.ini
  */
-@Category({ IntegrationTest.class, SecurityTest.class })
+@Category({IntegrationTest.class, SecurityTest.class})
 public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   protected static Properties props = new Properties();
@@ -44,17 +42,17 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   private SecurityService securityService = SecurityService.getSecurityService();
 
   @BeforeClass
-  public static void beforeClass() throws Exception{
+  public static void beforeClass() throws Exception {
     props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
   }
 
   @Before
-  public void before(){
+  public void before() {
     securityService.initSecurity(props);
   }
 
   @Test
-  public void testRoot(){
+  public void testRoot() {
     this.securityService.login("root", "secret");
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -67,7 +65,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   }
 
   @Test
-  public void testGuest(){
+  public void testGuest() {
     this.securityService.login("guest", "guest");
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -82,7 +80,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   }
 
   @Test
-  public void testRegionAReader(){
+  public void testRegionAReader() {
     this.securityService.login("regionAReader", "password");
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -97,7 +95,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   }
 
   @Test
-  public void testRegionAUser(){
+  public void testRegionAUser() {
     this.securityService.login("regionAUser", "password");
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -112,7 +110,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   }
 
   @Test
-  public void testDataReader(){
+  public void testDataReader() {
     this.securityService.login("dataReader", "12345");
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -127,7 +125,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   }
 
   @Test
-  public void testReader(){
+  public void testReader() {
     this.securityService.login("reader", "12345");
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
@@ -141,7 +139,8 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
     this.securityService.logout();
   }
 
-  private void assertNotAuthorized(ResourcePermission context){
-    assertThatThrownBy(()-> this.securityService.authorize(context)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
+  private void assertNotAuthorized(ResourcePermission context) {
+    assertThatThrownBy(() -> this.securityService.authorize(context))
+        .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
   }
 }

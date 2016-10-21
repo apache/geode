@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.client.internal;
@@ -28,8 +26,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
- * TXSynchronizationOp sends JTA beforeCompletion and afterCompletion
- * messages to the server pool.
+ * TXSynchronizationOp sends JTA beforeCompletion and afterCompletion messages to the server pool.
  * 
  *
  */
@@ -46,12 +43,13 @@ public class TXSynchronizationOp {
    * @param type - BEFORE_COMPLETION or AFTER_COMPLETION
    * @return the server's commit message
    */
-  public static TXCommitMessage execute(InternalPool pool, int status, int txId, CompletionType type) {
+  public static TXCommitMessage execute(InternalPool pool, int status, int txId,
+      CompletionType type) {
     Impl impl = new Impl(status, txId, type);
     pool.execute(impl);
     return impl.tXCommitMessageResponse;
   }
-  
+
   static class Impl extends AbstractOp {
 
     private int status;
@@ -63,7 +61,7 @@ public class TXSynchronizationOp {
      * @param type
      */
     public Impl(int status, int txId, CompletionType type) {
-      super(MessageType.TX_SYNCHRONIZATION, (type==CompletionType.AFTER_COMPLETION)? 3 : 2);
+      super(MessageType.TX_SYNCHRONIZATION, (type == CompletionType.AFTER_COMPLETION) ? 3 : 2);
       this.status = status;
       this.type = type;
       getMessage().addIntPart(type.ordinal());
@@ -72,36 +70,38 @@ public class TXSynchronizationOp {
         getMessage().addIntPart(status);
       }
     }
-    
+
     @Override
     public String toString() {
-      return "TXSynchronization(threadTxId=" + TXManagerImpl.getCurrentTXUniqueId()
-      +"; "+this.type + "; status=" + this.status + ")";
+      return "TXSynchronization(threadTxId=" + TXManagerImpl.getCurrentTXUniqueId() + "; "
+          + this.type + "; status=" + this.status + ")";
     }
 
     @Override
-  protected void processAck(Message msg, String opName)
-    throws Exception
-  {
-    final int msgType = msg.getMessageType();
-    if (msgType == MessageType.REPLY) {
-      return;
-    } else {
-      Part part = msg.getPart(0);
-      if (msgType == MessageType.EXCEPTION) {
-        Throwable t = (Throwable) part.getObject();
-        if (t instanceof CommitConflictException ||
-            t instanceof SynchronizationCommitConflictException) {
-          throw (GemFireException)t;
+    protected void processAck(Message msg, String opName) throws Exception {
+      final int msgType = msg.getMessageType();
+      if (msgType == MessageType.REPLY) {
+        return;
+      } else {
+        Part part = msg.getPart(0);
+        if (msgType == MessageType.EXCEPTION) {
+          Throwable t = (Throwable) part.getObject();
+          if (t instanceof CommitConflictException
+              || t instanceof SynchronizationCommitConflictException) {
+            throw (GemFireException) t;
+          }
         }
+        super.processAck(msg, opName);
       }
-      super.processAck(msg, opName);
     }
-  }
 
-    
-    /* (non-Javadoc)
-     * @see org.apache.geode.cache.client.internal.AbstractOp#processResponse(org.apache.geode.internal.cache.tier.sockets.Message)
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.apache.geode.cache.client.internal.AbstractOp#processResponse(org.apache.geode.internal.
+     * cache.tier.sockets.Message)
      */
     @Override
     protected Object processResponse(Message msg) throws Exception {
@@ -110,18 +110,20 @@ public class TXSynchronizationOp {
           processAck(msg, type.toString());
         } catch (ServerOperationException e) {
           if (e.getCause() instanceof SynchronizationCommitConflictException) {
-            throw (SynchronizationCommitConflictException)e.getCause();
+            throw (SynchronizationCommitConflictException) e.getCause();
           }
         }
         return null;
       } else {
-        TXCommitMessage rcs = (TXCommitMessage)processObjResponse(msg, this.type.toString());
+        TXCommitMessage rcs = (TXCommitMessage) processObjResponse(msg, this.type.toString());
         this.tXCommitMessageResponse = rcs;
         return rcs;
       }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.cache.client.internal.AbstractOp#isErrorResponse(int)
      */
     @Override
@@ -129,23 +131,23 @@ public class TXSynchronizationOp {
       return msgType == MessageType.REQUESTDATAERROR;
     }
 
-    @Override  
+    @Override
     protected long startAttempt(ConnectionStats stats) {
       return stats.startTxSynchronization();
     }
-    @Override  
+
+    @Override
     protected void endSendAttempt(ConnectionStats stats, long start) {
       stats.endTxSynchronizationSend(start, hasFailed());
     }
-    @Override  
+
+    @Override
     protected void endAttempt(ConnectionStats stats, long start) {
       stats.endTxSynchronization(start, hasTimedOut(), hasFailed());
     }
 
     @Override
-    protected void processSecureBytes(Connection cnx, Message message)
-        throws Exception {
-    }
+    protected void processSecureBytes(Connection cnx, Message message) throws Exception {}
 
     @Override
     protected boolean needsUserId() {

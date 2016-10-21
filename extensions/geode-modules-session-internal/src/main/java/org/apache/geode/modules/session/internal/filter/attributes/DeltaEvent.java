@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
@@ -33,8 +31,7 @@ import java.io.IOException;
  */
 public class DeltaEvent implements DataSerializable {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(DeltaEvent.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(DeltaEvent.class.getName());
   /**
    * The event is either an update (true) or a remove (false)
    */
@@ -49,15 +46,13 @@ public class DeltaEvent implements DataSerializable {
   /**
    * Constructor for de-serialization only
    */
-  public DeltaEvent() {
-  }
+  public DeltaEvent() {}
 
   /**
-   * Constructor which creates a 'deferred' event. This is used when the value
-   * should only be applied when the object is serialized.
+   * Constructor which creates a 'deferred' event. This is used when the value should only be
+   * applied when the object is serialized.
    *
-   * @param session   the session from which the value ultimately will be
-   *                  retrieved
+   * @param session the session from which the value ultimately will be retrieved
    * @param attribute the name of the attribute
    */
   public DeltaEvent(GemfireHttpSession session, String attribute) {
@@ -110,8 +105,7 @@ public class DeltaEvent implements DataSerializable {
   }
 
   @Override
-  public void fromData(
-      DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     update = in.readBoolean();
     name = DataSerializer.readString(in);
     value = DataSerializer.readObject(in);

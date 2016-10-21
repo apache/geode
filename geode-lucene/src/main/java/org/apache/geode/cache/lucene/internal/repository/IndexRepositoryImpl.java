@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.repository;
@@ -39,22 +35,23 @@ import java.util.function.IntSupplier;
  * A repository that writes to a single lucene index writer
  */
 public class IndexRepositoryImpl implements IndexRepository {
-  
+
   private static final boolean APPLY_ALL_DELETES = System
       .getProperty(DistributionConfig.GEMFIRE_PREFIX + "IndexRepository.APPLY_ALL_DELETES", "true")
       .equalsIgnoreCase("true");
-  
+
   private final IndexWriter writer;
   private final LuceneSerializer serializer;
   private final SearcherManager searcherManager;
-  private Region<?,?> region;
-  private Region<?,?> userRegion;
+  private Region<?, ?> region;
+  private Region<?, ?> userRegion;
   private LuceneIndexStats stats;
   private DocumentCountSupplier documentCountSupplier;
 
   private static final Logger logger = LogService.getLogger();
-  
-  public IndexRepositoryImpl(Region<?,?> region, IndexWriter writer, LuceneSerializer serializer, LuceneIndexStats stats, Region<?, ?> userRegion) throws IOException {
+
+  public IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
+      LuceneIndexStats stats, Region<?, ?> userRegion) throws IOException {
     this.region = region;
     this.userRegion = userRegion;
     this.writer = writer;
@@ -110,11 +107,11 @@ public class IndexRepositoryImpl implements IndexRepository {
     try {
       TopDocs docs = searcher.search(query, limit);
       totalHits = docs.totalHits;
-      for(ScoreDoc scoreDoc : docs.scoreDocs) {
+      for (ScoreDoc scoreDoc : docs.scoreDocs) {
         Document doc = searcher.doc(scoreDoc.doc);
         Object key = SerializerUtil.getKey(doc);
         if (logger.isDebugEnabled()) {
-          logger.debug("query found doc:"+doc+":"+scoreDoc);
+          logger.debug("query found doc:" + doc + ":" + scoreDoc);
         }
         collector.collect(key, scoreDoc.score);
       }
@@ -158,8 +155,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     stats.removeDocumentsSupplier(documentCountSupplier);
     try {
       writer.close();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       logger.warn("Unable to clean up index repository", e);
     }
   }
@@ -167,14 +163,14 @@ public class IndexRepositoryImpl implements IndexRepository {
   private class DocumentCountSupplier implements IntSupplier {
     @Override
     public int getAsInt() {
-      if(isClosed()) {
+      if (isClosed()) {
         stats.removeDocumentsSupplier(this);
         return 0;
       }
       try {
         return writer.numDocs();
-      } catch(AlreadyClosedException e) {
-        //ignore
+      } catch (AlreadyClosedException e) {
+        // ignore
         return 0;
       }
     }

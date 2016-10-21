@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -30,9 +28,9 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
- * This ExecutionContext will be used ONLY for querying because this
- * is a bit heavt-weight context whose life is longer in JVM than
- * {@link ExecutionContext} which will be used ONLY for index updates.
+ * This ExecutionContext will be used ONLY for querying because this is a bit heavt-weight context
+ * whose life is longer in JVM than {@link ExecutionContext} which will be used ONLY for index
+ * updates.
  *
  * @since GemFire 7.0
  */
@@ -43,20 +41,20 @@ public class QueryExecutionContext extends ExecutionContext {
   private IntOpenHashSet successfulBuckets;
 
   private boolean cqQueryContext = false;
-  
-  
+
+
   private List bucketList;
-  
+
   private boolean indexUsed = false;
-  
+
   /**
    * stack used to determine which execCache to currently be using
    */
   private final Stack execCacheStack = new Stack();
-  
+
   /**
-   * a map that stores general purpose maps for caching data that is valid 
-   * for one query execution only
+   * a map that stores general purpose maps for caching data that is valid for one query execution
+   * only
    */
   private final Map execCaches = new HashMap();
 
@@ -64,13 +62,13 @@ public class QueryExecutionContext extends ExecutionContext {
    * This map stores PdxString corresponding to the bind argument
    */
   private Map<Integer, PdxString> bindArgumentToPdxStringMap;
-  
+
   /**
    * List of query index names that the user has hinted on using
    */
-  
+
   private ArrayList<String> hints = null;
-  
+
   /**
    * @param bindArguments
    * @param cache
@@ -79,7 +77,7 @@ public class QueryExecutionContext extends ExecutionContext {
     super(bindArguments, cache);
   }
 
-  
+
 
   /**
    * @param bindArguments
@@ -96,16 +94,16 @@ public class QueryExecutionContext extends ExecutionContext {
   // query execution
   void cachePut(Object key, Object value) {
     if (key.equals(CompiledValue.QUERY_INDEX_HINTS)) {
-      setHints((ArrayList)value);
+      setHints((ArrayList) value);
       return;
     }
-    //execCache can be empty in cases where we are doing adds to indexes
-    //in that case, we use a default execCache
+    // execCache can be empty in cases where we are doing adds to indexes
+    // in that case, we use a default execCache
     int scopeId = -1;
     if (!execCacheStack.isEmpty()) {
       scopeId = (Integer) execCacheStack.peek();
     }
-    Map execCache = (Map)execCaches.get(scopeId);
+    Map execCache = (Map) execCaches.get(scopeId);
     if (execCache == null) {
       execCache = new HashMap();
       execCaches.put(scopeId, execCache);
@@ -116,15 +114,15 @@ public class QueryExecutionContext extends ExecutionContext {
   public Object cacheGet(Object key) {
     return cacheGet(key, null);
   }
-  
+
   public Object cacheGet(Object key, Object defaultValue) {
-    //execCache can be empty in cases where we are doing adds to indexes
-    //in that case, we use a default execCache
+    // execCache can be empty in cases where we are doing adds to indexes
+    // in that case, we use a default execCache
     int scopeId = -1;
     if (!execCacheStack.isEmpty()) {
       scopeId = (Integer) execCacheStack.peek();
     }
-    Map execCache = (Map)execCaches.get(scopeId);
+    Map execCache = (Map) execCaches.get(scopeId);
     if (execCache == null) {
       return defaultValue;
     }
@@ -137,7 +135,7 @@ public class QueryExecutionContext extends ExecutionContext {
   public void pushExecCache(int scopeNum) {
     execCacheStack.push(scopeNum);
   }
-  
+
   public void popExecCache() {
     execCacheStack.pop();
   }
@@ -145,7 +143,7 @@ public class QueryExecutionContext extends ExecutionContext {
   /**
    * Added to reset the state from the last execution. This is added for CQs only.
    */
-  public void reset(){
+  public void reset() {
     super.reset();
     this.execCacheStack.clear();
   }
@@ -153,12 +151,12 @@ public class QueryExecutionContext extends ExecutionContext {
   int nextFieldNum() {
     return this.nextFieldNum++;
   }
-  
-  public void setCqQueryContext(boolean cqQuery){
+
+  public void setCqQueryContext(boolean cqQuery) {
     this.cqQueryContext = cqQuery;
   }
 
-  public boolean isCqQueryContext(){
+  public boolean isCqQueryContext() {
     return this.cqQueryContext;
   }
 
@@ -166,7 +164,7 @@ public class QueryExecutionContext extends ExecutionContext {
   public Query getQuery() {
     return query;
   }
-  
+
   public void setBucketList(List list) {
     this.bucketList = list;
     this.successfulBuckets = new IntOpenHashSet();
@@ -175,65 +173,64 @@ public class QueryExecutionContext extends ExecutionContext {
   public List getBucketList() {
     return this.bucketList;
   }
-  
+
   public void addToSuccessfulBuckets(int bId) {
     this.successfulBuckets.add(bId);
   }
-  
+
   public int[] getSuccessfulBuckets() {
     return this.successfulBuckets.toIntArray();
   }
-  
+
   /**
    * creates new PdxString from String and caches it
    */
-  public PdxString getSavedPdxString(int index){
-    if(bindArgumentToPdxStringMap == null){
+  public PdxString getSavedPdxString(int index) {
+    if (bindArgumentToPdxStringMap == null) {
       bindArgumentToPdxStringMap = new HashMap<Integer, PdxString>();
-    } 
-    
-    PdxString pdxString = bindArgumentToPdxStringMap.get(index-1);
-    if(pdxString == null){
-      pdxString = new PdxString((String)bindArguments[index-1]);
-      bindArgumentToPdxStringMap.put(index-1, pdxString);
+    }
+
+    PdxString pdxString = bindArgumentToPdxStringMap.get(index - 1);
+    if (pdxString == null) {
+      pdxString = new PdxString((String) bindArguments[index - 1]);
+      bindArgumentToPdxStringMap.put(index - 1, pdxString);
     }
     return pdxString;
-    
+
   }
-  
+
   public boolean isIndexUsed() {
     return indexUsed;
   }
-  
+
   void setIndexUsed(boolean indexUsed) {
     this.indexUsed = indexUsed;
   }
-  
+
   public void setHints(ArrayList<String> hints) {
     this.hints = new ArrayList();
     this.hints.addAll(hints);
   }
-  
+
   /**
    * @param indexName of index to check if in the hinted list
    * @return true if the index name was hinted by the user
    */
   public boolean isHinted(String indexName) {
-    return hints != null? hints.contains(indexName):false;
+    return hints != null ? hints.contains(indexName) : false;
   }
-  
+
   /**
-   * Hint size is used for filter ordering.
-   * Smaller values have preference
+   * Hint size is used for filter ordering. Smaller values have preference
    */
   public int getHintSize(String indexName) {
     return -(hints.size() - hints.indexOf(indexName));
   }
-  
+
   public boolean hasHints() {
     return hints != null;
   }
-  
+
   public boolean hasMultiHints() {
     return hints != null && hints.size() > 1;
   }

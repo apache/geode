@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security.templates;
 
@@ -52,17 +50,20 @@ public class LdapUserAuthenticator implements Authenticator {
   }
 
   @Override
-  public void init(final Properties securityProps, final LogWriter systemLogWriter, final LogWriter securityLogWriter) throws AuthenticationFailedException {
+  public void init(final Properties securityProps, final LogWriter systemLogWriter,
+      final LogWriter securityLogWriter) throws AuthenticationFailedException {
     logger.info("Initializing LdapUserAuthenticator with {}", securityProps);
 
     this.ldapServer = securityProps.getProperty(LDAP_SERVER_NAME);
     if (this.ldapServer == null || this.ldapServer.length() == 0) {
-      throw new AuthenticationFailedException("LdapUserAuthenticator: LDAP server property [" + LDAP_SERVER_NAME + "] not specified");
+      throw new AuthenticationFailedException(
+          "LdapUserAuthenticator: LDAP server property [" + LDAP_SERVER_NAME + "] not specified");
     }
 
     this.baseDomainName = securityProps.getProperty(LDAP_BASEDN_NAME);
     if (this.baseDomainName == null || this.baseDomainName.length() == 0) {
-      throw new AuthenticationFailedException("LdapUserAuthenticator: LDAP base DN property [" + LDAP_BASEDN_NAME + "] not specified");
+      throw new AuthenticationFailedException(
+          "LdapUserAuthenticator: LDAP base DN property [" + LDAP_BASEDN_NAME + "] not specified");
     }
 
     final String sslName = securityProps.getProperty(LDAP_SSL_NAME);
@@ -77,7 +78,8 @@ public class LdapUserAuthenticator implements Authenticator {
   public Principal authenticate(final Properties credentials, final DistributedMember member) {
     final String userName = credentials.getProperty(UserPasswordAuthInit.USER_NAME);
     if (userName == null) {
-      throw new AuthenticationFailedException("LdapUserAuthenticator: user name property [" + UserPasswordAuthInit.USER_NAME + "] not provided");
+      throw new AuthenticationFailedException("LdapUserAuthenticator: user name property ["
+          + UserPasswordAuthInit.USER_NAME + "] not provided");
     }
 
     String password = credentials.getProperty(UserPasswordAuthInit.PASSWORD);
@@ -95,13 +97,15 @@ public class LdapUserAuthenticator implements Authenticator {
       final DirContext ctx = new InitialDirContext(env);
       ctx.close();
     } catch (Exception e) {
-      throw new AuthenticationFailedException("LdapUserAuthenticator: Failure with provided username, password combination for user name: " + userName, e);
+      throw new AuthenticationFailedException(
+          "LdapUserAuthenticator: Failure with provided username, password combination for user name: "
+              + userName,
+          e);
     }
 
     return new UsernamePrincipal(userName);
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 }

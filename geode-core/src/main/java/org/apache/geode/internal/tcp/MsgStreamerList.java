@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.tcp;
@@ -27,9 +25,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * Encapsulates a set of {@link MsgStreamer}s and {@link VersionedMsgStreamer}s
- * requiring possibly different serializations for different versions of
- * product.
+ * Encapsulates a set of {@link MsgStreamer}s and {@link VersionedMsgStreamer}s requiring possibly
+ * different serializations for different versions of product.
  * 
  * @since GemFire 7.1
  */
@@ -49,8 +46,7 @@ public final class MsgStreamerList implements BaseMsgStreamer {
    * {@inheritDoc}
    */
   @Override
-  public void reserveConnections(long startTime, long ackTimeout,
-      long ackSDTimeout) {
+  public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout) {
     for (MsgStreamer streamer : this.streamers) {
       streamer.reserveConnections(startTime, ackTimeout, ackSDTimeout);
     }
@@ -106,9 +102,8 @@ public final class MsgStreamerList implements BaseMsgStreamer {
     List<Object> sentCons = Collections.emptyList();
     for (MsgStreamer streamer : this.streamers) {
       if (sentCons.size() == 0) {
-        sentCons = (List<Object>)streamer.getSentConnections();
-      }
-      else {
+        sentCons = (List<Object>) streamer.getSentConnections();
+      } else {
         sentCons.addAll(streamer.getSentConnections());
       }
     }
@@ -124,16 +119,14 @@ public final class MsgStreamerList implements BaseMsgStreamer {
     for (MsgStreamer streamer : this.streamers) {
       if (ce == null) {
         ce = streamer.getConnectExceptions();
-      }
-      else {
+      } else {
         // loop through all failures and add to base ConnectionException
         ConnectExceptions e = streamer.getConnectExceptions();
         if (e != null) {
           List<?> members = e.getMembers();
           List<?> exs = e.getCauses();
           for (int i = 0; i < exs.size(); i++) {
-            ce.addFailure((InternalDistributedMember)members.get(i),
-                (Throwable)exs.get(i));
+            ce.addFailure((InternalDistributedMember) members.get(i), (Throwable) exs.get(i));
           }
         }
       }
@@ -154,8 +147,7 @@ public final class MsgStreamerList implements BaseMsgStreamer {
       } catch (IOException e) {
         if (ex == null) {
           ex = e;
-        }
-        else {
+        } else {
           // log the exception and move on to close others
           logger.fatal("Unknown error closing streamer: {}", e.getMessage(), e);
         }

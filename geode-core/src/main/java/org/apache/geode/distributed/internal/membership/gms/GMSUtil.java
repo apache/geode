@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
@@ -29,10 +27,10 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.net.SocketCreator;
 
 public class GMSUtil {
-  
+
   public static List<InetSocketAddress> parseLocators(String locatorsString, String bindAddress) {
     InetAddress addr = null;
-    
+
     try {
       if (bindAddress == null || bindAddress.trim().length() == 0) {
         addr = SocketCreator.getLocalHost();
@@ -44,17 +42,18 @@ public class GMSUtil {
     }
     return parseLocators(locatorsString, addr);
   }
-  
-  
-  public static List<InetSocketAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
-    List<InetSocketAddress> result= new ArrayList<>(2);
+
+
+  public static List<InetSocketAddress> parseLocators(String locatorsString,
+      InetAddress bindAddress) {
+    List<InetSocketAddress> result = new ArrayList<>(2);
     String host;
     int port;
     boolean checkLoopback = (bindAddress != null);
     boolean isLoopback = (checkLoopback && bindAddress.isLoopbackAddress());
 
-    StringTokenizer parts=new StringTokenizer(locatorsString, ",");
-    while(parts.hasMoreTokens()) {
+    StringTokenizer parts = new StringTokenizer(locatorsString, ",");
+    while (parts.hasMoreTokens()) {
       try {
         String str = parts.nextToken();
         host = str.substring(0, str.indexOf('['));
@@ -67,24 +66,24 @@ public class GMSUtil {
           idx = host.lastIndexOf('@');
         }
         if (idx >= 0) {
-          host = host.substring(idx+1, host.length());
+          host = host.substring(idx + 1, host.length());
         }
 
         int startIdx = str.indexOf('[') + 1;
         int endIdx = str.indexOf(']');
-        port=Integer.parseInt(str.substring(startIdx, endIdx));
+        port = Integer.parseInt(str.substring(startIdx, endIdx));
         InetSocketAddress isa = new InetSocketAddress(host, port);
 
         if (checkLoopback) {
-          if (isLoopback && !isa.getAddress().isLoopbackAddress()) { 
-            throw new GemFireConfigException("This process is attempting to join with a loopback address ("
-               +bindAddress+") using a locator that does not have a local address ("
-               +isa+").  On Unix this usually means that /etc/hosts is misconfigured.");
+          if (isLoopback && !isa.getAddress().isLoopbackAddress()) {
+            throw new GemFireConfigException(
+                "This process is attempting to join with a loopback address (" + bindAddress
+                    + ") using a locator that does not have a local address (" + isa
+                    + ").  On Unix this usually means that /etc/hosts is misconfigured.");
           }
         }
         result.add(isa);
-      }
-      catch(NumberFormatException e) {
+      } catch (NumberFormatException e) {
         // this shouldn't happen because the config has already been parsed and
         // validated
       }
@@ -94,8 +93,7 @@ public class GMSUtil {
   }
 
   /**
-   * replaces all occurrences of a given string in the properties argument with the
-   * given value
+   * replaces all occurrences of a given string in the properties argument with the given value
    */
   public static String replaceStrings(String properties, String property, String value) {
     StringBuilder sb = new StringBuilder();
@@ -114,24 +112,23 @@ public class GMSUtil {
 
 
   /**
-   * Formats the bytes in a buffer into hex octets, 50 per
-   * line
+   * Formats the bytes in a buffer into hex octets, 50 per line
    */
   public static String formatBytes(byte[] buf, int startIndex, int length) {
     StringBuilder w = new StringBuilder(20000);
     int count = 0;
-    for (int i=startIndex; i<length; i++, count++) {
-      String s = Integer.toHexString(buf[i]&0xff);
+    for (int i = startIndex; i < length; i++, count++) {
+      String s = Integer.toHexString(buf[i] & 0xff);
       if (s.length() == 1) {
         w.append('0');
       }
       w.append(s).append(' ');
-      if ( (count%50) == 49 ) {
+      if ((count % 50) == 49) {
         w.append("\n");
       }
     }
     return w.toString();
   }
-  
+
 
 }

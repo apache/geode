@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -67,7 +65,8 @@ public class ClassPathLoaderIntegrationTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, "false");
-    System.setProperty(ClassPathLoader.EXT_LIB_DIR_PARENT_PROPERTY, this.temporaryFolder.getRoot().getAbsolutePath());
+    System.setProperty(ClassPathLoader.EXT_LIB_DIR_PARENT_PROPERTY,
+        this.temporaryFolder.getRoot().getAbsolutePath());
 
     this.tempFile = this.temporaryFolder.newFile("tempFile1.tmp");
     FileOutputStream fos = new FileOutputStream(this.tempFile);
@@ -143,7 +142,8 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that <tt>getResourceAsStream</tt> works with custom loader from {@link ClassPathLoader}.
+   * Verifies that <tt>getResourceAsStream</tt> works with custom loader from
+   * {@link ClassPathLoader}.
    */
   @Test
   public void testGetResourceAsStreamWithCustomLoader() throws Exception {
@@ -282,8 +282,8 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that JAR files found in the extlib directory will be correctly
-   * added to the {@link ClassPathLoader}.
+   * Verifies that JAR files found in the extlib directory will be correctly added to the
+   * {@link ClassPathLoader}.
    */
   @Test
   public void testJarsInExtLib() throws Exception {
@@ -298,9 +298,11 @@ public class ClassPathLoaderIntegrationTest {
     final ClassBuilder classBuilder = new ClassBuilder();
 
     writeJarBytesToFile(new File(EXT_LIB_DIR, "ClassPathLoaderJUnit1.jar"),
-            classBuilder.createJarFromClassContent("com/cpljunit1/ClassPathLoaderJUnit1", "package com.cpljunit1; public class ClassPathLoaderJUnit1 {}"));
+        classBuilder.createJarFromClassContent("com/cpljunit1/ClassPathLoaderJUnit1",
+            "package com.cpljunit1; public class ClassPathLoaderJUnit1 {}"));
     writeJarBytesToFile(new File(subdir, "ClassPathLoaderJUnit2.jar"),
-            classBuilder.createJarFromClassContent("com/cpljunit2/ClassPathLoaderJUnit2", "package com.cpljunit2; public class ClassPathLoaderJUnit2 {}"));
+        classBuilder.createJarFromClassContent("com/cpljunit2/ClassPathLoaderJUnit2",
+            "package com.cpljunit2; public class ClassPathLoaderJUnit2 {}"));
 
     ClassPathLoader classPathLoader = ClassPathLoader.createWithDefaults(false);
     try {
@@ -318,18 +320,20 @@ public class ClassPathLoaderIntegrationTest {
     assertNotNull(classPathLoader.getResource("com/cpljunit2/ClassPathLoaderJUnit2.class"));
 
     Enumeration<URL> urls = classPathLoader.getResources("com/cpljunit1");
-    if  (!urls.hasMoreElements()) {
+    if (!urls.hasMoreElements()) {
       fail("Resources should return one element");
     }
   }
 
   /**
-   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is broken. This verifies
-   * that all custom loaders are checked and that the custom loaders are all checked before TCCL.
+   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is
+   * broken. This verifies that all custom loaders are checked and that the custom loaders are all
+   * checked before TCCL.
    */
   @Test
   public void testGetResourceAsStreamWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceAsStreamWithMultipleCustomLoaders");
+    System.out
+        .println("\nStarting ClassPathLoaderTest#testGetResourceAsStreamWithMultipleCustomLoaders");
 
     // create DCL such that the 3rd loader should find the resource
     // first custom loader becomes parent which won't find anything
@@ -354,8 +358,9 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is broken. This verifies
-   * that all custom loaders are checked and that the custom loaders are all checked before TCCL.
+   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is
+   * broken. This verifies that all custom loaders are checked and that the custom loaders are all
+   * checked before TCCL.
    */
   @Test
   public void testGetResourceWithMultipleCustomLoaders() throws Exception {
@@ -383,8 +388,9 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that the 3rd custom loader will get the resources. Parent cannot find it and TCCL is broken. This verifies
-   * that all custom loaders are checked and that the custom loaders are all checked before TCCL.
+   * Verifies that the 3rd custom loader will get the resources. Parent cannot find it and TCCL is
+   * broken. This verifies that all custom loaders are checked and that the custom loaders are all
+   * checked before TCCL.
    */
   @Test
   public void testGetResourcesWithMultipleCustomLoaders() throws Exception {
@@ -430,16 +436,16 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Custom class loader which uses BCEL to always dynamically generate a class for any class name it tries to load.
+   * Custom class loader which uses BCEL to always dynamically generate a class for any class name
+   * it tries to load.
    */
   private class GeneratingClassLoader extends ClassLoader {
 
     /**
-     * Currently unused but potentially useful for some future test. This causes this loader to only generate a class
-     * that the parent could not find.
+     * Currently unused but potentially useful for some future test. This causes this loader to only
+     * generate a class that the parent could not find.
      *
-     * @param parent
-     *          the parent class loader to check with first
+     * @param parent the parent class loader to check with first
      */
     @SuppressWarnings("unused")
     public GeneratingClassLoader(ClassLoader parent) {
@@ -455,7 +461,8 @@ public class ClassPathLoaderIntegrationTest {
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-      ClassGen cg = new ClassGen(name, "java.lang.Object", "<generated>", Constants.ACC_PUBLIC | Constants.ACC_SUPER, null);
+      ClassGen cg = new ClassGen(name, "java.lang.Object", "<generated>",
+          Constants.ACC_PUBLIC | Constants.ACC_SUPER, null);
       cg.addEmptyConstructor(Constants.ACC_PUBLIC);
       JavaClass jClazz = cg.getJavaClass();
       byte[] bytes = jClazz.getBytes();
@@ -492,7 +499,8 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Custom class loader which uses BCEL to always dynamically generate a class for any class name it tries to load.
+   * Custom class loader which uses BCEL to always dynamically generate a class for any class name
+   * it tries to load.
    */
   private class GeneratingClassLoader2 extends GeneratingClassLoader {
     @Override

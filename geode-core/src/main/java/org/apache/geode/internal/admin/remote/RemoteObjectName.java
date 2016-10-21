@@ -1,34 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
-   
+
+
 package org.apache.geode.internal.admin.remote;
 
 import org.apache.geode.*;
-//import org.apache.geode.cache.*;
-//import org.apache.geode.internal.*;
-//import org.apache.geode.internal.admin.*;
-//import org.apache.geode.distributed.internal.*;
+// import org.apache.geode.cache.*;
+// import org.apache.geode.internal.*;
+// import org.apache.geode.internal.admin.*;
+// import org.apache.geode.distributed.internal.*;
 import java.io.*;
-//import java.util.*;
+// import java.util.*;
 
 /**
- * Used to name an object in a region. This class is needed so that the
- * console will not need to load the user defined classes.
+ * Used to name an object in a region. This class is needed so that the console will not need to
+ * load the user defined classes.
  */
 public class RemoteObjectName implements DataSerializable {
   private static final long serialVersionUID = 5076319310507575418L;
@@ -53,9 +51,8 @@ public class RemoteObjectName implements DataSerializable {
       return false;
     }
     if (o instanceof RemoteObjectName) {
-      RemoteObjectName n = (RemoteObjectName)o;
-      return (hashCode == n.hashCode)
-        && className.equals(n.className) && value.equals(n.value);
+      RemoteObjectName n = (RemoteObjectName) o;
+      return (hashCode == n.hashCode) && className.equals(n.className) && value.equals(n.value);
     } else {
       // this should only happen on the server side when we are trying
       // to find the original object
@@ -68,7 +65,7 @@ public class RemoteObjectName implements DataSerializable {
       return value.equals(o.toString());
     }
   }
-  
+
   @Override
   public int hashCode() {
     return hashCode;
@@ -85,8 +82,7 @@ public class RemoteObjectName implements DataSerializable {
     out.writeInt(this.hashCode);
   }
 
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.className = DataSerializer.readString(in);
     this.value = DataSerializer.readString(in);
     this.hashCode = in.readInt();

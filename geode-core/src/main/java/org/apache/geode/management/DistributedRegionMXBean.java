@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -26,8 +24,7 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
- * MBean that provides access to information and management functionality for a
- * {@link Region}.
+ * MBean that provides access to information and management functionality for a {@link Region}.
  * 
  * @since GemFire 7.0
  * 
@@ -68,8 +65,7 @@ public interface DistributedRegionMXBean {
   /**
    * Returns a list of the names of the subregions.
    * 
-   * @param recursive
-   *          <code>true</code> to recursively traverse and find sub-regions.
+   * @param recursive <code>true</code> to recursively traverse and find sub-regions.
    */
   public String[] listSubRegionPaths(boolean recursive);
 
@@ -101,32 +97,32 @@ public interface DistributedRegionMXBean {
   public MembershipAttributesData listMembershipAttributes();
 
   /**
-   * Returns the time of the most recent modification.
-   * For partitioned region it will be -1. This feature is not supported for partitioned regions.
+   * Returns the time of the most recent modification. For partitioned region it will be -1. This
+   * feature is not supported for partitioned regions.
    */
   public long getLastModifiedTime();
 
   /**
-   * Returns the time of the most recent access.
-   * For partitioned region it will be -1. This feature is not supported for partitioned regions.
+   * Returns the time of the most recent access. For partitioned region it will be -1. This feature
+   * is not supported for partitioned regions.
    */
   public long getLastAccessedTime();
 
   /**
-   * Returns the number of times that a cache miss occurred.
-   * For partitioned region it will be -1. This feature is not supported for partitioned regions.
+   * Returns the number of times that a cache miss occurred. For partitioned region it will be -1.
+   * This feature is not supported for partitioned regions.
    */
   public long getMissCount();
 
   /**
-   * Returns the number of times that a hit occurred.
-   * For partitioned region it will be -1. This feature is not supported for partitioned regions.
+   * Returns the number of times that a hit occurred. For partitioned region it will be -1. This
+   * feature is not supported for partitioned regions.
    */
   public long getHitCount();
 
   /**
-   * Returns the hit to miss ratio.
-   * For partitioned region it will be -1. This feature is not supported for partitioned regions.
+   * Returns the hit to miss ratio. For partitioned region it will be -1. This feature is not
+   * supported for partitioned regions.
    */
   public float getHitRatio();
 
@@ -161,7 +157,7 @@ public interface DistributedRegionMXBean {
    * Returns the number of putAlls per second.
    */
   public float getPutAllRate();
-  
+
   /**
    * Returns the number of local puts per second.
    */
@@ -183,9 +179,9 @@ public interface DistributedRegionMXBean {
   public long getPutRemoteAvgLatency();
 
   /**
-   * Returns the current number of entries whose values are only on disk (not in 
-   * memory). Entries may not exist in memory if they have been overflowed to
-   * disk or not yet been faulted in after a recovery.
+   * Returns the current number of entries whose values are only on disk (not in memory). Entries
+   * may not exist in memory if they have been overflowed to disk or not yet been faulted in after a
+   * recovery.
    */
   public long getTotalEntriesOnlyOnDisk();
 
@@ -202,11 +198,12 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the number of entries per second for all disks.
    */
-  public float getDiskWritesRate();  
-  
+  public float getDiskWritesRate();
+
   /**
-   * Returns the current number of disk tasks (op-log compaction, asynchronous
-   * recoveries, etc) that are waiting for a thread to run.
+   * Returns the current number of disk tasks (op-log compaction, asynchronous recoveries, etc) that
+   * are waiting for a thread to run.
+   * 
    * @deprecated
    */
   public long getDiskTaskWaiting();
@@ -233,46 +230,40 @@ public interface DistributedRegionMXBean {
   public float getLruEvictionRate();
 
   /**
-   * Returns the rate of entries destroyed either by destroy cache operations or
-   * eviction.
+   * Returns the rate of entries destroyed either by destroy cache operations or eviction.
    */
   public float getLruDestroyRate();
-  
+
   /**
-   * Returns the number of buckets on this member. Only applicable for partitioned
-   * regions.
+   * Returns the number of buckets on this member. Only applicable for partitioned regions.
    */
   public int getBucketCount();
-  
+
   /**
-   * Returns the number of primary buckets on this member. Only applicable for
-   * partitioned regions.
+   * Returns the number of primary buckets on this member. Only applicable for partitioned regions.
    */
   public int getPrimaryBucketCount();
 
   /**
-   * Returns the number of buckets without full redundancy. Only applicable for
-   * partitioned regions.
+   * Returns the number of buckets without full redundancy. Only applicable for partitioned regions.
    */
   public int getNumBucketsWithoutRedundancy();
 
   /**
-   * Returns the total number of entries in all buckets. Only applicable for
-   * partitioned regions.
+   * Returns the total number of entries in all buckets. Only applicable for partitioned regions.
    */
   public int getTotalBucketSize();
 
   /**
-   * Returns the average number of entries in bucket. Only applicable for
-   * partitioned regions.
+   * Returns the average number of entries in bucket. Only applicable for partitioned regions.
    */
   public int getAvgBucketSize();
-  
+
   /**
    * Returns the total number of bytes used by all disks.
    */
   public long getDiskUsage();
-  
+
   /**
    * Returns the average number of read requests per second.
    */
@@ -282,7 +273,7 @@ public interface DistributedRegionMXBean {
    * Returns the average number of write requests per second.
    */
   public float getAverageWrites();
-  
+
   /**
    * Returns whether the Region sends data to a {@link GatewaySender}.
    * 
@@ -296,11 +287,10 @@ public interface DistributedRegionMXBean {
    * @return True if persistence is enabled, false otherwise.
    */
   public boolean isPersistentEnabled();
-  
+
   /**
-   * Returns the aggregate entry size (in megabytes) of all entries. This will
-   * provide a correct value only if the eviction algorithm has been set to
-   * {@link EvictionAlgorithm#LRU_MEMORY}.
+   * Returns the aggregate entry size (in megabytes) of all entries. This will provide a correct
+   * value only if the eviction algorithm has been set to {@link EvictionAlgorithm#LRU_MEMORY}.
    */
   public long getEntrySize();
 

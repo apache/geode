@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.functions;
 
@@ -39,7 +37,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  */
 public class FetchRegionAttributesFunction extends FunctionAdapter {
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final long serialVersionUID = 4366812590788342070L;
 
   private static final String ID = FetchRegionAttributesFunction.class.getName();
@@ -56,7 +54,8 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
     try {
       String regionPath = (String) context.getArguments();
       if (regionPath == null) {
-        throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
       }
       FetchRegionAttributesFunctionResult<?, ?> result = getRegionAttributes(regionPath);
       context.getResultSender().lastResult(result);
@@ -69,18 +68,22 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
   }
 
   @SuppressWarnings("deprecation")
-  public static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(String regionPath) {
+  public static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(
+      String regionPath) {
     Cache cache = CacheFactory.getAnyInstance();
     Region<K, V> foundRegion = cache.getRegion(regionPath);
 
     if (foundRegion == null) {
-      throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND, new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, regionPath}));
+      throw new IllegalArgumentException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
+          new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, regionPath}));
     }
 
-    // Using AttributesFactory to get the serializable RegionAttributes 
+    // Using AttributesFactory to get the serializable RegionAttributes
     // Is there a better way?
     AttributesFactory<K, V> afactory = new AttributesFactory<K, V>(foundRegion.getAttributes());
-    FetchRegionAttributesFunctionResult<K, V> result = new FetchRegionAttributesFunctionResult<K, V>(afactory);
+    FetchRegionAttributesFunctionResult<K, V> result =
+        new FetchRegionAttributesFunctionResult<K, V>(afactory);
     return result;
   }
 
@@ -88,7 +91,7 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
   public String getId() {
     return ID;
   }
-  
+
   public static class FetchRegionAttributesFunctionResult<K, V> implements Serializable {
     private static final long serialVersionUID = -3970828263897978845L;
 

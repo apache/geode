@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal;
 
@@ -38,8 +36,8 @@ import org.apache.geode.cache.query.Struct;
 public class Coder {
 
   /*
-   * Take no chances on char to byte conversions with default charsets on jvms, 
-   * so we'll hard code the UTF-8 symbol values as bytes here
+   * Take no chances on char to byte conversions with default charsets on jvms, so we'll hard code
+   * the UTF-8 symbol values as bytes here
    */
 
 
@@ -142,13 +140,14 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, List<String> items) {
+  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc,
+      List<String> items) {
     Iterator<String> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
-    while(it.hasNext()) {
+    while (it.hasNext()) {
       String next = it.next();
       response.writeByte(BULK_STRING_ID);
       response.writeBytes(intToBytes(next.length()));
@@ -159,13 +158,14 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, Collection<ByteArrayWrapper> items) {
+  public static final ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc,
+      Collection<ByteArrayWrapper> items) {
     Iterator<ByteArrayWrapper> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
-    while(it.hasNext()) {
+    while (it.hasNext()) {
       ByteArrayWrapper nextWrapper = it.next();
       if (nextWrapper != null) {
         response.writeByte(BULK_STRING_ID);
@@ -180,15 +180,16 @@ public class Coder {
     return response;
   }
 
-  public static final ByteBuf getKeyValArrayResponse(ByteBufAllocator alloc, Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> items) {
-    Iterator<Map.Entry<ByteArrayWrapper,ByteArrayWrapper>> it = items.iterator();
+  public static final ByteBuf getKeyValArrayResponse(ByteBufAllocator alloc,
+      Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> items) {
+    Iterator<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
 
     int size = 0;
     ByteBuf tmp = alloc.buffer();
-    while(it.hasNext()) {
-      Map.Entry<ByteArrayWrapper,ByteArrayWrapper> next = it.next();
+    while (it.hasNext()) {
+      Map.Entry<ByteArrayWrapper, ByteArrayWrapper> next = it.next();
       byte[] key;
       byte[] nextByteArray;
       try {
@@ -210,7 +211,7 @@ public class Coder {
       size++;
     }
 
-    response.writeBytes(intToBytes(size*2));
+    response.writeBytes(intToBytes(size * 2));
     response.writeBytes(CRLFar);
     response.writeBytes(tmp);
 
@@ -236,7 +237,7 @@ public class Coder {
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
 
-    while(it.hasNext()) {
+    while (it.hasNext()) {
       Object nextObject = it.next();
       if (nextObject instanceof String) {
         String next = (String) nextObject;
@@ -323,13 +324,14 @@ public class Coder {
     return buf;
   }
 
-  public static ByteBuf getBulkStringArrayResponseOfValues(ByteBufAllocator alloc, Collection<?> items) {
+  public static ByteBuf getBulkStringArrayResponseOfValues(ByteBufAllocator alloc,
+      Collection<?> items) {
     Iterator<?> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(Coder.ARRAY_ID);
     ByteBuf tmp = alloc.buffer();
     int size = 0;
-    while(it.hasNext()) {
+    while (it.hasNext()) {
       Object next = it.next();
       ByteArrayWrapper nextWrapper = null;
       if (next instanceof Entry) {
@@ -362,7 +364,8 @@ public class Coder {
     return response;
   }
 
-  public static ByteBuf zRangeResponse(ByteBufAllocator alloc, Collection<?> list, boolean withScores) {
+  public static ByteBuf zRangeResponse(ByteBufAllocator alloc, Collection<?> list,
+      boolean withScores) {
     if (list.isEmpty())
       return Coder.getEmptyArrayResponse(alloc);
 
@@ -371,7 +374,7 @@ public class Coder {
     ByteBuf tmp = alloc.buffer();
     int size = 0;
 
-    for(Object entry: list) {
+    for (Object entry : list) {
       ByteArrayWrapper key;
       DoubleWrapper score;
       if (entry instanceof Entry) {
@@ -459,8 +462,8 @@ public class Coder {
   }
 
   /*
-   * These toByte methods convert to byte arrays of the
-   * string representation of the input, not literal to byte
+   * These toByte methods convert to byte arrays of the string representation of the input, not
+   * literal to byte
    */
 
   public static byte[] intToBytes(int i) {
@@ -484,8 +487,9 @@ public class Coder {
   }
 
   /**
-   * A conversion where the byte array actually represents a string,
-   * so it is converted as a string not as a literal double
+   * A conversion where the byte array actually represents a string, so it is converted as a string
+   * not as a literal double
+   * 
    * @param bytes Array holding double
    * @return Parsed value
    * @throws NumberFormatException if bytes to string does not yield a convertible double
@@ -496,6 +500,7 @@ public class Coder {
 
   /**
    * Redis specific manner to parse floats
+   * 
    * @param d String holding double
    * @return Value of string
    * @throws NumberFormatException if the double cannot be parsed

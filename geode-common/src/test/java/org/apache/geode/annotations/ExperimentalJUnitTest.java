@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.annotations;
 
@@ -28,17 +26,16 @@ import org.apache.geode.experimental.nonexperimentalpackage.ClassInNonExperiment
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Unit tests for the <tt>Experimental</tt> annotation. Verifies that the
- * annotation can be applied to Interfaces, Classes, Public and Protected
- * Fields, Enums, Enum Constants, Public and Protected Methods, Packages,
- * and Constructors.
+ * Unit tests for the <tt>Experimental</tt> annotation. Verifies that the annotation can be applied
+ * to Interfaces, Classes, Public and Protected Fields, Enums, Enum Constants, Public and Protected
+ * Methods, Packages, and Constructors.
  */
 @Category(UnitTest.class)
 public class ExperimentalJUnitTest {
 
   private static final String FIELD_NAME = "field";
   private static final String METHOD_NAME = "method";
-  
+
   @Test
   public void shouldIdentifyExperimentalInterface() throws Exception {
     assertThat(isExperimental(RegularInterface.class)).isFalse();
@@ -50,29 +47,32 @@ public class ExperimentalJUnitTest {
     assertThat(isExperimental(RegularClass.class)).isFalse();
     assertThat(isExperimental(ExperimentalClass.class)).isTrue();
   }
-  
+
   @Test
   public void shouldIdentifyExperimentalPublicField() throws Exception {
     assertThat(isExperimental(RegularPublicField.class.getField(FIELD_NAME))).isFalse();
     assertThat(isExperimental(ExperimentalPublicField.class.getField(FIELD_NAME))).isTrue();
   }
-  
+
   @Test
   public void shouldIdentifyExperimentalProtectedField() throws Exception {
     assertThat(isExperimental(RegularProtectedField.class.getDeclaredField(FIELD_NAME))).isFalse();
-    assertThat(isExperimental(ExperimentalProtectedField.class.getDeclaredField(FIELD_NAME))).isTrue();
+    assertThat(isExperimental(ExperimentalProtectedField.class.getDeclaredField(FIELD_NAME)))
+        .isTrue();
   }
-  
+
   @Test
   public void shouldIdentifyExperimentalEnum() throws Exception {
     assertThat(isExperimental(RegularEnum.class)).isFalse();
     assertThat(isExperimental(ExperimentalEnum.class)).isTrue();
   }
-  
+
   @Test
   public void shouldIdentifyExperimentalEnumConstant() throws Exception {
-    assertThat(isExperimental(RegularEnumInstance.class.getField(RegularEnumInstance.THREE.name()))).isFalse();
-    assertThat(isExperimental(ExperimentalEnumInstance.class.getField(ExperimentalEnumInstance.THREE.name()))).isTrue();
+    assertThat(isExperimental(RegularEnumInstance.class.getField(RegularEnumInstance.THREE.name())))
+        .isFalse();
+    assertThat(isExperimental(
+        ExperimentalEnumInstance.class.getField(ExperimentalEnumInstance.THREE.name()))).isTrue();
   }
 
   @Test
@@ -83,8 +83,10 @@ public class ExperimentalJUnitTest {
 
   @Test
   public void shouldIdentifyExperimentalProtectedMethod() throws Exception {
-    assertThat(isExperimental(RegularProtectedMethod.class.getDeclaredMethod(METHOD_NAME))).isFalse();
-    assertThat(isExperimental(ExperimentalProtectedMethod.class.getDeclaredMethod(METHOD_NAME))).isTrue();
+    assertThat(isExperimental(RegularProtectedMethod.class.getDeclaredMethod(METHOD_NAME)))
+        .isFalse();
+    assertThat(isExperimental(ExperimentalProtectedMethod.class.getDeclaredMethod(METHOD_NAME)))
+        .isTrue();
   }
 
   @Test
@@ -92,7 +94,7 @@ public class ExperimentalJUnitTest {
     assertThat(isExperimental(ClassInNonExperimentalPackage.class.getPackage())).isFalse();
     assertThat(isExperimental(ClassInExperimentalPackage.class.getPackage())).isTrue();
   }
-  
+
   @Test
   public void shouldIdentifyExperimentalPublicConstructor() throws Exception {
     assertThat(isExperimental(RegularPublicConstructor.class.getConstructor())).isFalse();
@@ -108,7 +110,7 @@ public class ExperimentalJUnitTest {
   private static boolean isExperimental(final AnnotatedElement element) {
     return element.getAnnotation(Experimental.class) != null;
   }
-  
+
   public static interface RegularInterface {
   }
   @Experimental("This is an experimental interface")
@@ -128,7 +130,7 @@ public class ExperimentalJUnitTest {
     @Experimental("This is an experimental public field")
     public final boolean field = false;
   }
-  
+
   public static class RegularProtectedField {
     protected final boolean field = false;
   }
@@ -149,49 +151,39 @@ public class ExperimentalJUnitTest {
     ONE, TWO, THREE
   }
   public static enum ExperimentalEnumInstance {
-    ONE, 
-    TWO, 
-    @Experimental("This is an experimental enum constant")
+    ONE, TWO, @Experimental("This is an experimental enum constant")
     THREE
   }
-  
+
   public static class RegularPublicMethod {
-    public void method() {
-    }
+    public void method() {}
   }
   public static class ExperimentalPublicMethod {
     @Experimental("This is an experimental public method")
-    public void method() {
-    }
+    public void method() {}
   }
 
   public static class RegularProtectedMethod {
-    public void method() {
-    }
+    public void method() {}
   }
   public static class ExperimentalProtectedMethod {
     @Experimental("This is an experimental protected method")
-    protected void method() {
-    }
+    protected void method() {}
   }
-  
+
   public static class RegularPublicConstructor {
-    public RegularPublicConstructor() {
-    }
+    public RegularPublicConstructor() {}
   }
   public static class ExperimentalPublicConstructor {
     @Experimental("This is an experimental public constructor")
-    public ExperimentalPublicConstructor() {
-    }
+    public ExperimentalPublicConstructor() {}
   }
 
   public static class RegularProtectedConstructor {
-    public RegularProtectedConstructor() {
-    }
+    public RegularProtectedConstructor() {}
   }
   public static class ExperimentalProtectedConstructor {
     @Experimental("This is an experimental protected constructor")
-    public ExperimentalProtectedConstructor() {
-    }
+    public ExperimentalProtectedConstructor() {}
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -39,18 +37,18 @@ import static org.junit.Assert.*;
  */
 @Category(IntegrationTest.class)
 public class TXManagerImplJUnitTest {
-  
-  @Rule 
+
+  @Rule
   public TestName name = new TestName();
 
   protected Cache cache = null;
   protected Region region = null;
-  
+
   @Before
   public void setUp() throws Exception {
     createCache();
   }
-  
+
   protected void createCache() {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
@@ -58,15 +56,15 @@ public class TXManagerImplJUnitTest {
     cache = new CacheFactory(props).create();
     region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("testRegion");
   }
-  
+
   @After
   public void tearDown() throws Exception {
     cache.close();
   }
-  
+
   /**
-   * two threads suspend and resume a single transaction, while
-   * making changes. 
+   * two threads suspend and resume a single transaction, while making changes.
+   * 
    * @throws Exception
    */
   @Test
@@ -111,7 +109,7 @@ public class TXManagerImplJUnitTest {
     mgr.commit();
     assertEquals(3, region.size());
   }
-  
+
   @Test
   public void testResumeTimeout() throws Exception {
     final CacheTransactionManager mgr = cache.getCacheTransactionManager();
@@ -135,7 +133,7 @@ public class TXManagerImplJUnitTest {
     t.join();
     mgr.commit();
   }
-  
+
   @Test
   public void testMultipleSuspends() throws Exception {
     final CacheTransactionManager mgr = cache.getCacheTransactionManager();
@@ -179,7 +177,7 @@ public class TXManagerImplJUnitTest {
     assertEquals(3, region.size());
     mgr.commit();
   }
-  
+
   @Test
   public void testUnblockOnCommit() throws Exception {
     final CacheTransactionManager mgr = cache.getCacheTransactionManager();
@@ -210,11 +208,11 @@ public class TXManagerImplJUnitTest {
     long start = System.currentTimeMillis();
     mgr.commit();
     assertTrue("expected to wait for less than 100 millis, but waited for:"
-        +(System.currentTimeMillis() - start), latch2.await(100, TimeUnit.MILLISECONDS));
+        + (System.currentTimeMillis() - start), latch2.await(100, TimeUnit.MILLISECONDS));
     t1.join();
     t2.join();
   }
-  
+
   @Test
   public void testExists() {
     CacheTransactionManager mgr = cache.getCacheTransactionManager();
@@ -225,7 +223,7 @@ public class TXManagerImplJUnitTest {
     assertTrue(mgr.exists(txId));
     mgr.commit();
     assertFalse(mgr.exists(txId));
-    
+
     mgr.begin();
     txId = mgr.suspend();
     assertTrue(mgr.exists(txId));
@@ -234,7 +232,7 @@ public class TXManagerImplJUnitTest {
     mgr.rollback();
     assertFalse(mgr.exists(txId));
   }
-  
+
   @Test
   public void testEarlyoutOnTryResume() {
     CacheTransactionManager mgr = cache.getCacheTransactionManager();
@@ -242,7 +240,7 @@ public class TXManagerImplJUnitTest {
     TransactionId txId = mgr.suspend();
     mgr.resume(txId);
     mgr.commit();
-    
+
     long start = System.currentTimeMillis();
     mgr.tryResume(txId, 10, TimeUnit.SECONDS);
     assertTrue("did not expect tryResume to block", System.currentTimeMillis() - start < 100);
@@ -250,6 +248,7 @@ public class TXManagerImplJUnitTest {
 
   /**
    * test that timeout of Long.MAX_VALUE does not return immediately
+   * 
    * @throws Exception
    */
   @Test
@@ -283,13 +282,13 @@ public class TXManagerImplJUnitTest {
     AttributesFactory<String, String> af = new AttributesFactory<String, String>();
     af.setStatisticsEnabled(true);
     af.setEntryIdleTimeout(new ExpirationAttributes(5));
-    //region.getAttributesMutator().setEntryTimeToLive(new ExpirationAttributes(5));
+    // region.getAttributesMutator().setEntryTimeToLive(new ExpirationAttributes(5));
     region = cache.createRegion(name.getMethodName(), af.create());
     region.put("key", "value");
     mgr.begin();
     region.put("key", "value");
     final TransactionId txId = mgr.suspend();
-    
+
     Thread t = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -312,7 +311,7 @@ public class TXManagerImplJUnitTest {
     mgr.begin();
     region.put("key", "value");
     final TransactionId txId = mgr.suspend();
-    Thread.sleep(70*1000);
+    Thread.sleep(70 * 1000);
     try {
       mgr.resume(txId);
       fail("An expected exception was not thrown");

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -22,8 +20,8 @@ import java.util.Properties;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
- * This program is used to measure the amount of time it takes to
- * connect and re-connect to a {@link DistributedSystem}.
+ * This program is used to measure the amount of time it takes to connect and re-connect to a
+ * {@link DistributedSystem}.
  */
 public class DistributedSystemConnectPerf {
 
@@ -32,17 +30,14 @@ public class DistributedSystemConnectPerf {
 
   private static void usage(String s) {
     err.println("\n** " + s + "\n");
-    err.println("usage: java DistributedSystemConnectPerf " +
-                "[options] port iterations");
+    err.println("usage: java DistributedSystemConnectPerf " + "[options] port iterations");
     err.println("  port          Port on which locator runs");
-    err.println("  iterations    Number of times to " +
-                "connect/disconnect");
+    err.println("  iterations    Number of times to " + "connect/disconnect");
     err.println("Where options are:");
-    err.println("  -wait time    Time (in milliseconds) connection " +
-                "is open");
+    err.println("  -wait time    Time (in milliseconds) connection " + "is open");
     err.println("");
-    err.println("This program measures the amount of time it takes " +
-                "to connect/disconnect to a DistributedSystem");
+    err.println("This program measures the amount of time it takes "
+        + "to connect/disconnect to a DistributedSystem");
     err.println("");
 
     System.exit(1);
@@ -100,8 +95,7 @@ public class DistributedSystemConnectPerf {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(LOCATORS,
-                      "localhost[" + port + "]");
+    props.setProperty(LOCATORS, "localhost[" + port + "]");
 
     long totalConnect = 0;
     long totalDisconnect = 0;
@@ -111,8 +105,7 @@ public class DistributedSystemConnectPerf {
       DistributedSystem system = DistributedSystem.connect(props);
       long delta = System.currentTimeMillis() - start;
       totalConnect += delta;
-      out.println("** Connected to DistributedSystem " +
-                                 "(took " + delta + " ms)");
+      out.println("** Connected to DistributedSystem " + "(took " + delta + " ms)");
 
       Thread.sleep(wait);
 
@@ -120,15 +113,12 @@ public class DistributedSystemConnectPerf {
       system.disconnect();
       delta = System.currentTimeMillis() - start;
       totalDisconnect += delta;
-      out.println("** Disconnected from DistributedSystem " +
-                  "(took " + delta + " ms)");
+      out.println("** Disconnected from DistributedSystem " + "(took " + delta + " ms)");
 
     }
 
-    out.println("** Average connect time took: " +
-                (totalConnect / iterations) + " ms");
-    out.println("** Average disconnect time took: " +
-                (totalDisconnect / iterations) + " ms");
+    out.println("** Average connect time took: " + (totalConnect / iterations) + " ms");
+    out.println("** Average disconnect time took: " + (totalDisconnect / iterations) + " ms");
 
     System.exit(0);
   }

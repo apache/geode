@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -40,14 +38,14 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * Represents an operation that can be performed in a client by sending
- * a message to a server.
+ * Represents an operation that can be performed in a client by sending a message to a server.
+ * 
  * @since GemFire 5.7
  */
 public abstract class AbstractOp implements Op {
-  
+
   private static final Logger logger = LogService.getLogger();
-  
+
   private final Message msg;
 
   private boolean allowDuplicateMetadataRefresh;
@@ -63,22 +61,23 @@ public abstract class AbstractOp implements Op {
   protected Message getMessage() {
     return this.msg;
   }
+
   protected void initMessagePart() {
-    
+
   }
+
   /**
    * Sets the transaction id on the message
    */
   private void setMsgTransactionId() {
-    if (participateInTransaction()
-        && getMessage().getTransactionId() == TXManagerImpl.NOTX) {
+    if (participateInTransaction() && getMessage().getTransactionId() == TXManagerImpl.NOTX) {
       getMessage().setTransactionId(TXManagerImpl.getCurrentTXUniqueId());
     }
   }
 
   /**
-   * Attempts to send this operation's message out on the
-   * given connection
+   * Attempts to send this operation's message out on the given connection
+   * 
    * @param cnx the connection to use when sending
    * @throws Exception if the send fails
    */
@@ -89,8 +88,8 @@ public abstract class AbstractOp implements Op {
         logger.debug("Sending op={} using {}", getShortClassName(), cnx);
       }
     }
-    getMessage().setComms(cnx.getSocket(), cnx.getInputStream(),
-        cnx.getOutputStream(), cnx.getCommBuffer(), cnx.getStats());
+    getMessage().setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
+        cnx.getCommBuffer(), cnx.getStats());
     try {
       sendMessage(cnx);
     } finally {
@@ -98,16 +97,15 @@ public abstract class AbstractOp implements Op {
     }
   }
 
-  /** returns the class name w/o package information.  useful in logging */
+  /** returns the class name w/o package information. useful in logging */
   public String getShortClassName() {
     String cname = getClass().getName();
-    return cname.substring(getClass().getPackage().getName().length()+1);
+    return cname.substring(getClass().getPackage().getName().length() + 1);
   }
 
   /**
-   * New implementations of AbstractOp should override this method if the
-   * implementation should be excluded from client authentication. e.g.
-   * PingOp#sendMessage(Connection cnx)
+   * New implementations of AbstractOp should override this method if the implementation should be
+   * excluded from client authentication. e.g. PingOp#sendMessage(Connection cnx)
    * 
    * @see AbstractOp#needsUserId()
    * @see AbstractOp#processSecureBytes(Connection, Message)
@@ -122,23 +120,20 @@ public abstract class AbstractOp implements Op {
       if (UserAttributes.userAttributes.get() == null) { // single user mode
         userId = cnx.getServer().getUserId();
       } else { // multi user mode
-        Object id = UserAttributes.userAttributes.get().getServerToId().get(
-            cnx.getServer());
+        Object id = UserAttributes.userAttributes.get().getServerToId().get(cnx.getServer());
         if (id == null) {
           // This will ensure that this op is retried on another server, unless
           // the retryCount is exhausted. Fix for Bug 41501
-          throw new ServerConnectivityException(
-              "Connection error while authenticating user");
+          throw new ServerConnectivityException("Connection error while authenticating user");
         }
-        userId = (Long)id;
+        userId = (Long) id;
       }
       HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
       try {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
-        getMessage().setSecurePart(
-            ((ConnectionImpl)cnx).getHandShake().encryptBytes(
-                hdos.toByteArray()));
+        getMessage()
+            .setSecurePart(((ConnectionImpl) cnx).getHandShake().encryptBytes(hdos.toByteArray()));
       } finally {
         hdos.close();
       }
@@ -147,18 +142,18 @@ public abstract class AbstractOp implements Op {
   }
 
   /**
-   * Attempts to read a response to this operation by reading it from the
-   * given connection, and returning it.
+   * Attempts to read a response to this operation by reading it from the given connection, and
+   * returning it.
+   * 
    * @param cnx the connection to read the response from
-   * @return the result of the operation
-   *         or <code>null</code> if the operation has no result.
+   * @return the result of the operation or <code>null</code> if the operation has no result.
    * @throws Exception if the execute failed
    */
   protected Object attemptReadResponse(Connection cnx) throws Exception {
     Message msg = createResponseMessage();
     if (msg != null) {
-      msg.setComms(cnx.getSocket(), cnx.getInputStream(),
-          cnx.getOutputStream(), cnx.getCommBuffer(), cnx.getStats());
+      msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
+          cnx.getCommBuffer(), cnx.getStats());
       if (msg instanceof ChunkedMessage) {
         try {
           return processResponse(msg, cnx);
@@ -181,21 +176,21 @@ public abstract class AbstractOp implements Op {
   }
 
   /**
-   * New implementations of AbstractOp should override this method if the
-   * implementation should be excluded from client authentication. e.g.
-   * PingOp#processSecureBytes(Connection cnx, Message message)
+   * New implementations of AbstractOp should override this method if the implementation should be
+   * excluded from client authentication. e.g. PingOp#processSecureBytes(Connection cnx, Message
+   * message)
    * 
    * @see AbstractOp#sendMessage(Connection)
    * @see AbstractOp#needsUserId()
    * @see ServerConnection#updateAndGetSecurityPart()
    */
-  protected void processSecureBytes(Connection cnx, Message message)
-      throws Exception {
+  protected void processSecureBytes(Connection cnx, Message message) throws Exception {
     if (cnx.getServer().getRequiresCredentials()) {
       if (!message.isSecureMode()) {
         // This can be seen during shutdown
         if (logger.isDebugEnabled()) {
-          logger.trace(LogMarker.BRIDGE_SERVER, "Response message from {} for {} has no secure part.", cnx, this);
+          logger.trace(LogMarker.BRIDGE_SERVER,
+              "Response message from {} for {} has no secure part.", cnx, this);
         }
         return;
       }
@@ -206,49 +201,46 @@ public abstract class AbstractOp implements Op {
         }
         return;
       }
-      byte[] bytes = ((ConnectionImpl)cnx).getHandShake().decryptBytes(
-          partBytes);
+      byte[] bytes = ((ConnectionImpl) cnx).getHandShake().decryptBytes(partBytes);
       DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
       cnx.setConnectionID(dis.readLong());
     }
   }
 
   /**
-   * By default just create a normal one part msg.
-   * Subclasses can override this.
+   * By default just create a normal one part msg. Subclasses can override this.
    */
   protected Message createResponseMessage() {
     return new Message(1, Version.CURRENT);
   }
-  
+
   protected Object processResponse(Message m, Connection con) throws Exception {
     return processResponse(m);
   }
-  
+
   /**
-   * Processes the given response message returning the result, if any,
-   * of the processing.
+   * Processes the given response message returning the result, if any, of the processing.
+   * 
    * @return the result of processing the response; null if no result
-   * @throws Exception if response could not be processed or
-   * we received a response with a server exception.
+   * @throws Exception if response could not be processed or we received a response with a server
+   *         exception.
    */
   protected abstract Object processResponse(Message msg) throws Exception;
 
   /**
-   * Return true of <code>msgType</code> indicates the operation
-   * had an error on the server.
+   * Return true of <code>msgType</code> indicates the operation had an error on the server.
    */
   protected abstract boolean isErrorResponse(int msgType);
+
   /**
    * Process a response that contains an ack.
+   * 
    * @param msg the message containing the response
    * @param opName text describing this op
-   * @throws Exception if response could not be processed or
-   * we received a response with a server exception.
+   * @throws Exception if response could not be processed or we received a response with a server
+   *         exception.
    */
-  protected void processAck(Message msg, String opName)
-    throws Exception
-  {
+  protected void processAck(Message msg, String opName) throws Exception {
     final int msgType = msg.getMessageType();
     if (msgType == MessageType.REPLY) {
       return;
@@ -258,7 +250,7 @@ public abstract class AbstractOp implements Op {
         String s = ": While performing a remote " + opName;
         Throwable t = (Throwable) part.getObject();
         if (t instanceof PutAllPartialResultException) {
-          throw (PutAllPartialResultException)t;
+          throw (PutAllPartialResultException) t;
         } else {
           throw new ServerOperationException(s, t);
         }
@@ -268,22 +260,21 @@ public abstract class AbstractOp implements Op {
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type "
-                                       + MessageType.getString(msgType));
+        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
       }
     }
   }
+
   /**
    * Process a response that contains a single Object result.
+   * 
    * @param msg the message containing the response
    * @param opName text describing this op
    * @return the result of the response
-   * @throws Exception if response could not be processed or
-   * we received a response with a server exception.
+   * @throws Exception if response could not be processed or we received a response with a server
+   *         exception.
    */
-  protected final Object processObjResponse(Message msg, String opName)
-    throws Exception
-  {
+  protected final Object processObjResponse(Message msg, String opName) throws Exception {
     Part part = msg.getPart(0);
     final int msgType = msg.getMessageType();
     if (msgType == MessageType.RESPONSE) {
@@ -298,8 +289,7 @@ public abstract class AbstractOp implements Op {
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type "
-                                       + MessageType.getString(msgType));
+        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
       }
     }
   }
@@ -318,21 +308,23 @@ public abstract class AbstractOp implements Op {
   public interface ChunkHandler {
     /**
      * This method will be called once for every incoming chunk
+     * 
      * @param msg the current chunk to handle
      */
     public void handle(ChunkedMessage msg) throws Exception;
   }
+
   /**
    * Process a chunked response that contains a single Object result.
+   * 
    * @param msg the message containing the response
    * @param opName text describing this op
    * @param callback used to handle each chunks data
-   * @throws Exception if response could not be processed or
-   * we received a response with a server exception.
+   * @throws Exception if response could not be processed or we received a response with a server
+   *         exception.
    */
-  protected final void processChunkedResponse(ChunkedMessage msg, String opName, ChunkHandler callback)
-    throws Exception
-  {
+  protected final void processChunkedResponse(ChunkedMessage msg, String opName,
+      ChunkHandler callback) throws Exception {
     msg.readHeader();
     final int msgType = msg.getMessageType();
     if (msgType == MessageType.RESPONSE) {
@@ -354,8 +346,7 @@ public abstract class AbstractOp implements Op {
         Part part = msg.getPart(0);
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type "
-                                       + MessageType.getString(msgType));
+        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
       }
     }
   }
@@ -369,8 +360,11 @@ public abstract class AbstractOp implements Op {
    */
   protected boolean timedOut;
 
-  /* (non-Javadoc)
-   * @see org.apache.geode.cache.client.internal.Op#attempt(org.apache.geode.cache.client.internal.Connection)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.geode.cache.client.internal.Op#attempt(org.apache.geode.cache.client.internal.
+   * Connection)
    */
   public Object attempt(Connection cnx) throws Exception {
     this.failed = true;
@@ -397,23 +391,27 @@ public abstract class AbstractOp implements Op {
       endAttempt(cnx.getStats(), start);
     }
   }
+
   protected final boolean hasFailed() {
     return this.failed;
   }
+
   protected final boolean hasTimedOut() {
     return this.timedOut;
   }
+
   protected abstract long startAttempt(ConnectionStats stats);
+
   protected abstract void endSendAttempt(ConnectionStats stats, long start);
+
   protected abstract void endAttempt(ConnectionStats stats, long start);
 
   /**
-   * New implementations of AbstractOp should override this method to return
-   * false if the implementation should be excluded from client authentication.
-   * e.g. PingOp#needsUserId()
+   * New implementations of AbstractOp should override this method to return false if the
+   * implementation should be excluded from client authentication. e.g. PingOp#needsUserId()
    * <P/>
-   * Also, such an operation's <code>MessageType</code> must be added in the
-   * 'if' condition in {@link ServerConnection#updateAndGetSecurityPart()}
+   * Also, such an operation's <code>MessageType</code> must be added in the 'if' condition in
+   * {@link ServerConnection#updateAndGetSecurityPart()}
    * 
    * @return boolean
    * @see AbstractOp#sendMessage(Connection)
@@ -423,10 +421,11 @@ public abstract class AbstractOp implements Op {
   protected boolean needsUserId() {
     return true;
   }
-  
+
   /**
-   * Subclasses for AbstractOp should override this method to return
-   * false in this message should not participate in any existing transaction
+   * Subclasses for AbstractOp should override this method to return false in this message should
+   * not participate in any existing transaction
+   * 
    * @return true if the message should participate in transaction
    */
   protected boolean participateInTransaction() {
@@ -437,7 +436,7 @@ public abstract class AbstractOp implements Op {
   public boolean useThreadLocalConnection() {
     return true;
   }
-  
+
   public boolean isGatewaySenderOp() {
     return false;
   }

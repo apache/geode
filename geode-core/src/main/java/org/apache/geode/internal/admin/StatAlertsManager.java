@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin;
 
@@ -46,11 +44,10 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * The alert manager maintains the list of alert definitions (added by client
- * e.g GFMon 2.0).
+ * The alert manager maintains the list of alert definitions (added by client e.g GFMon 2.0).
  * 
- * It retrieved the value of statistic( defined in alert definition) and notify
- * alert aggregator sitting on admin VM
+ * It retrieved the value of statistic( defined in alert definition) and notify alert aggregator
+ * sitting on admin VM
  * 
  * @see StatAlertDefinition
  * @see StatAlert
@@ -60,7 +57,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  */
 public class StatAlertsManager {
   private static final Logger logger = LogService.getLogger();
-  
+
   /**
    * Instance for current DM
    * 
@@ -92,10 +89,11 @@ public class StatAlertsManager {
    * Provides life cycle support
    */
   protected final DistributionManager dm;
-  
+
   private StatAlertsManager(DistributionManager dm) {
     this.dm = dm;
-    logger.info(LocalizedMessage.create(LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATED));
+    logger.info(
+        LocalizedMessage.create(LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATED));
   }
 
   /**
@@ -111,17 +109,16 @@ public class StatAlertsManager {
     if (alertManager != null) {
       alertManager.close();
     }
-    
-    /* 
-     * Throw DistributedSystemDisconnectedException if cancel operation is in 
-     * progress 
+
+    /*
+     * Throw DistributedSystemDisconnectedException if cancel operation is in progress
      */
     dm.getCancelCriterion().checkCancelInProgress(null);
-    
+
     alertManager = new StatAlertsManager(dm);
     return alertManager;
   }
-  
+
   /**
    * Nullifies the StatAlertsManager instance.
    */
@@ -133,11 +130,8 @@ public class StatAlertsManager {
    * 
    * Update the alert's definition map
    * 
-   * @param defns
-   *                Alert definitions
-   * @param actionCode
-   *                Action to be performed like add , remove or update alert's
-   *                definition
+   * @param defns Alert definitions
+   * @param actionCode Action to be performed like add , remove or update alert's definition
    * 
    * @see UpdateAlertDefinitionMessage
    */
@@ -153,10 +147,8 @@ public class StatAlertsManager {
             logger.debug("Removed StatAlertDefinition: {}", defns[i].getName());
           }
         }
-      }
-      else {
-        StatAlertDefinition[] alertDefns = this
-            .createMemberStatAlertDefinition(dm, defns);
+      } else {
+        StatAlertDefinition[] alertDefns = this.createMemberStatAlertDefinition(dm, defns);
         StatAlertDefinition defn;
         for (int i = 0; i < alertDefns.length; i++) {
           defn = alertDefns[i];
@@ -176,30 +168,28 @@ public class StatAlertsManager {
     if (timer != null)
       timer.cancel();
 
-    // Get the swarm.  Currently rather UGLY.
+    // Get the swarm. Currently rather UGLY.
     InternalDistributedSystem system = dm.getSystem();
     if (system == null || system.getDistributionManager() != dm) {
       throw new org.apache.geode.distributed.DistributedSystemDisconnectedException(
           "This manager has been cancelled");
     }
     // start and schedule new timer
-    timer = new SystemTimer(system /*swarm*/, true);
+    timer = new SystemTimer(system /* swarm */, true);
 
     EvaluateAlertDefnsTask task = new EvaluateAlertDefnsTask();
     if (refreshAtFixedRate) {
       timer.scheduleAtFixedRate(task, 0, refreshInterval);
-    }
-    else {
+    } else {
       timer.schedule(task, 0, refreshInterval);
     }
   }
-  
+
   /**
-   * Set refresh time interval also cancel the previous {@link TimerTask} and
-   * create new timer task based on ner refresh time interval
+   * Set refresh time interval also cancel the previous {@link TimerTask} and create new timer task
+   * based on ner refresh time interval
    * 
-   * @param interval
-   *                Refresh time interval
+   * @param interval Refresh time interval
    */
   public synchronized void setRefreshTimeInterval(long interval) {
     refreshInterval = interval;
@@ -215,16 +205,16 @@ public class StatAlertsManager {
   }
 
   /**
-   * @return true if refresh for timer has to be fixed rate see
-   *         scheduleAtFixedRate method of {@link TimerTask}
+   * @return true if refresh for timer has to be fixed rate see scheduleAtFixedRate method of
+   *         {@link TimerTask}
    */
   public synchronized boolean isRefreshAtFixedRate() {
     return refreshAtFixedRate;
   }
 
   /**
-   * set true if refresh for timer has to be fixed rate see scheduleAtFixedRate
-   * method of {@link TimerTask}
+   * set true if refresh for timer has to be fixed rate see scheduleAtFixedRate method of
+   * {@link TimerTask}
    *
    * TODO never called
    * 
@@ -236,9 +226,8 @@ public class StatAlertsManager {
   }
 
   /**
-   * Query all the statistic defined by alert definition and notify alerts
-   * aggregator if at least one statistic value crosses the threshold defined in
-   * alert definition
+   * Query all the statistic defined by alert definition and notify alerts aggregator if at least
+   * one statistic value crosses the threshold defined in alert definition
    * 
    */
   protected StatAlert[] getAlerts() {
@@ -250,9 +239,8 @@ public class StatAlertsManager {
       StatAlert alert;
       Date now = new Date();
       while (iter.hasNext()) {
-        Integer key = (Integer)iter.next();
-        StatAlertDefinition defn = (StatAlertDefinition)alertDefinitionsMap
-            .get(key);
+        Integer key = (Integer) iter.next();
+        StatAlertDefinition defn = (StatAlertDefinition) alertDefinitionsMap.get(key);
         alert = defn.evaluateAndAlert();
         if (alert != null) {
           alert.setTime(now);
@@ -263,16 +251,15 @@ public class StatAlertsManager {
         }
       } // while
     } // synchronized
-    return (StatAlert[])alerts.toArray(new StatAlert[alerts.size()]);
+    return (StatAlert[]) alerts.toArray(new StatAlert[alerts.size()]);
   }
 
   /**
    * Convert {@link StatAlertDefinition }(Created by client like GFMon2.0) with
-   * {@link DummyStatisticInfoImpl} to StatAlertDefinition with
-   * {@link StatisticInfoImpl}
+   * {@link DummyStatisticInfoImpl} to StatAlertDefinition with {@link StatisticInfoImpl}
    */
-  private StatAlertDefinition[] createMemberStatAlertDefinition(
-      DistributionManager dm, StatAlertDefinition[] defns) {
+  private StatAlertDefinition[] createMemberStatAlertDefinition(DistributionManager dm,
+      StatAlertDefinition[] defns) {
     dm.getCancelCriterion().checkCancelInProgress(null);
 
     Statistics[] statistics;
@@ -293,9 +280,10 @@ public class StatAlertsManager {
         statistics = dm.getSystem().findStatisticsByTextId(textId);
         if (statistics.length == 0) {
           logger.error(LocalizedMessage.create(
-              LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATEMEMBERSTATALERTDEFINITION_STATISTICS_WITH_GIVEN_TEXTID_0_NOT_FOUND, textId));
+              LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATEMEMBERSTATALERTDEFINITION_STATISTICS_WITH_GIVEN_TEXTID_0_NOT_FOUND,
+              textId));
           skipDefinition = true;
-//          break;
+          // break;
           continue; // To print all errors
         }
 
@@ -304,7 +292,8 @@ public class StatAlertsManager {
         // Replace the actual StatInfo object
         statInfos[ii] = new StatisticInfoImpl(statistics[0], desc);
         if (logger.isDebugEnabled()) {
-          logger.debug("StatAlertsManager.createMemberStatAlertDefinition: created statInfo {}", statInfos[ii]);
+          logger.debug("StatAlertsManager.createMemberStatAlertDefinition: created statInfo {}",
+              statInfos[ii]);
         }
       } // for
 
@@ -312,20 +301,21 @@ public class StatAlertsManager {
         defn.setStatisticInfo(statInfos);
         result.add(defn);
         if (logger.isDebugEnabled()) {
-          logger.debug("StatAlertsManager.createMemberStatAlertDefinition :: {}", defns[i].getStringRepresentation());
+          logger.debug("StatAlertsManager.createMemberStatAlertDefinition :: {}",
+              defns[i].getStringRepresentation());
         }
-      }
-      else {
+      } else {
         if (logger.isDebugEnabled()) {
-          logger.debug("StatAlertsManager.createMemberStatAlertDefinition :: StatAlertDefinition {} is excluded", defn.getName());
+          logger.debug(
+              "StatAlertsManager.createMemberStatAlertDefinition :: StatAlertDefinition {} is excluded",
+              defn.getName());
         }
       }
     } // for
 
-    return (StatAlertDefinition[])
-        result.toArray(new StatAlertDefinition[result.size()]);
+    return (StatAlertDefinition[]) result.toArray(new StatAlertDefinition[result.size()]);
   }
-  
+
   /**
    * Shut down this instance
    */
@@ -352,16 +342,16 @@ public class StatAlertsManager {
     @Override
     public void run2() {
       final boolean isDebugEnabled = logger.isDebugEnabled();
-      
+
       synchronized (StatAlertsManager.this) {
         if (dm.getCancelCriterion().isCancelInProgress()) {
           return;
         }
-        
-        //start alert notification are supposed to send to all the 
-        //admin agents exists in the system.
-        //For the DS without agent, alert manager should not create 
-        //any alert notifications
+
+        // start alert notification are supposed to send to all the
+        // admin agents exists in the system.
+        // For the DS without agent, alert manager should not create
+        // any alert notifications
         Set adminMemberSet = dm.getAdminMemberSet();
         if (adminMemberSet == null || adminMemberSet.isEmpty())
           return;
@@ -383,18 +373,20 @@ public class StatAlertsManager {
           if (isDebugEnabled) {
             Iterator iterator = adminMemberSet.iterator();
             while (iterator.hasNext()) {
-              logger.debug("EvaluateAlertDefnsTask: sending {} alerts to {}", alerts.length, iterator.next());
+              logger.debug("EvaluateAlertDefnsTask: sending {} alerts to {}", alerts.length,
+                  iterator.next());
             }
           }
           request.setRecipients(adminMemberSet);
           dm.putOutgoing(request);
-        }
-        catch (CancelException e) {
+        } catch (CancelException e) {
           logger.debug("EvaluateAlertDefnsTask: system closed: {}", e.getMessage(), e);
           close();
-        }
-        catch (Exception e) {
-          logger.error(LocalizedMessage.create(LocalizedStrings.StatAlertsManager_EVALUATEALERTDEFNSTASK_FAILED_WITH_AN_EXCEPTION),  e);
+        } catch (Exception e) {
+          logger.error(
+              LocalizedMessage.create(
+                  LocalizedStrings.StatAlertsManager_EVALUATEALERTDEFNSTASK_FAILED_WITH_AN_EXCEPTION),
+              e);
           close();
         }
         if (isDebugEnabled) {

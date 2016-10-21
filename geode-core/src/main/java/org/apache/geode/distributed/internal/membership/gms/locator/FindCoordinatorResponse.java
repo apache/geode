@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
@@ -32,7 +30,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
-public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
+public class FindCoordinatorResponse extends HighPriorityDistributionMessage
     implements DataSerializableFixedID {
 
   private InternalDistributedMember coordinator;
@@ -43,15 +41,15 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   private boolean networkPartitionDetectionEnabled;
   private boolean usePreferredCoordinators;
   private boolean isShortForm;
-  private byte[] coordinatorPublicKey;  
+  private byte[] coordinatorPublicKey;
   private String rejectionMessage;
 
   private int requestId;
-  
+
   public FindCoordinatorResponse(InternalDistributedMember coordinator,
-      InternalDistributedMember senderId,
-      boolean fromView, NetView view, HashSet<InternalDistributedMember> registrants,
-      boolean networkPartitionDectionEnabled, boolean usePreferredCoordinators, byte[] pk) {
+      InternalDistributedMember senderId, boolean fromView, NetView view,
+      HashSet<InternalDistributedMember> registrants, boolean networkPartitionDectionEnabled,
+      boolean usePreferredCoordinators, byte[] pk) {
     this.coordinator = coordinator;
     this.senderId = senderId;
     this.fromView = fromView;
@@ -62,7 +60,7 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     this.isShortForm = false;
     this.coordinatorPublicKey = pk;
   }
-  
+
   public FindCoordinatorResponse(InternalDistributedMember coordinator,
       InternalDistributedMember senderId, byte[] pk, int requestId) {
     this.coordinator = coordinator;
@@ -71,11 +69,11 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     this.coordinatorPublicKey = pk;
     this.requestId = requestId;
   }
-  
+
   public FindCoordinatorResponse(String m) {
     this.rejectionMessage = m;
   }
-  
+
   public FindCoordinatorResponse() {
     // no-arg constructor for serialization
   }
@@ -83,15 +81,15 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   public byte[] getCoordinatorPublicKey() {
     return coordinatorPublicKey;
   }
-  
+
   public int getRequestId() {
     return requestId;
   }
-  
+
   public String getRejectionMessage() {
     return rejectionMessage;
   }
-  
+
   public boolean isNetworkPartitionDetectionEnabled() {
     return networkPartitionDetectionEnabled;
   }
@@ -103,38 +101,37 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   public InternalDistributedMember getCoordinator() {
     return coordinator;
   }
-  
+
   /**
-   * When the response comes from a locator via TcpClient this
-   * will return the locators member ID.  If the locator hasn't
-   * yet joined this may be null.
+   * When the response comes from a locator via TcpClient this will return the locators member ID.
+   * If the locator hasn't yet joined this may be null.
    */
   public InternalDistributedMember getSenderId() {
     return senderId;
   }
-  
+
   public boolean isFromView() {
     return fromView;
   }
-  
+
   public NetView getView() {
     return view;
   }
-  
+
   public Set<InternalDistributedMember> getRegistrants() {
     return registrants;
   }
-  
+
   @Override
   public String toString() {
-    if (this.isShortForm) { 
-      return "FindCoordinatorResponse(coordinator="+coordinator+")";
+    if (this.isShortForm) {
+      return "FindCoordinatorResponse(coordinator=" + coordinator + ")";
     } else {
-      return "FindCoordinatorResponse(coordinator="+coordinator+", fromView="+fromView+", viewId="+(view==null? "nul" : view.getViewId())
-        +", registrants=" + (registrants == null? 0 : registrants.size())
-        +", senderId=" + senderId
-        +", network partition detection enabled="+this.networkPartitionDetectionEnabled
-        +", locators preferred as coordinators="+this.usePreferredCoordinators+")";
+      return "FindCoordinatorResponse(coordinator=" + coordinator + ", fromView=" + fromView
+          + ", viewId=" + (view == null ? "nul" : view.getViewId()) + ", registrants="
+          + (registrants == null ? 0 : registrants.size()) + ", senderId=" + senderId
+          + ", network partition detection enabled=" + this.networkPartitionDetectionEnabled
+          + ", locators preferred as coordinators=" + this.usePreferredCoordinators + ")";
     }
   }
 
@@ -170,7 +167,7 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     senderId = DataSerializer.readObject(in);
     coordinatorPublicKey = InternalDataSerializer.readByteArray(in);
     rejectionMessage = InternalDataSerializer.readString(in);
-    isShortForm = in.readBoolean();    
+    isShortForm = in.readBoolean();
     if (!isShortForm) {
       fromView = in.readBoolean();
       networkPartitionDetectionEnabled = in.readBoolean();
@@ -212,9 +209,10 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
         return false;
     } else if (!registrants.equals(other.registrants))
       return false;
-    //as we are not sending requestId as part of FinDCoordinator resposne
-    /*if (requestId != other.requestId)
-      return false;*/
+    // as we are not sending requestId as part of FinDCoordinator resposne
+    /*
+     * if (requestId != other.requestId) return false;
+     */
     if (senderId == null) {
       if (other.senderId != null)
         return false;
@@ -230,5 +228,5 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     return true;
   }
 
-  
+
 }

@@ -1,22 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 //
-//  StreamingOperationOneTest.java
+// StreamingOperationOneTest.java
 //
 package org.apache.geode.distributed.internal.streaming;
 
@@ -52,7 +50,7 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testStreamingOneProviderNoExceptions() throws Exception {
-//    final String name = this.getUniqueName();
+    // final String name = this.getUniqueName();
 
     // ask another VM to connect to the distributed system
     // this will be the data provider, and get their member id at the same time
@@ -61,22 +59,24 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
 
     class IDGetter implements Serializable {
       InternalDistributedMember getMemberId() {
-        return (InternalDistributedMember)getSystem().getDistributedMember();
+        return (InternalDistributedMember) getSystem().getDistributedMember();
       }
     }
 
     // get the other member id that connected
-    InternalDistributedMember otherId = (InternalDistributedMember)vm0.invoke(new IDGetter(), "getMemberId");
+    InternalDistributedMember otherId =
+        (InternalDistributedMember) vm0.invoke(new IDGetter(), "getMemberId");
     Set setOfIds = Collections.singleton(otherId);
 
-    TestStreamingOperationOneProviderNoExceptions streamOp = new TestStreamingOperationOneProviderNoExceptions(getSystem());
+    TestStreamingOperationOneProviderNoExceptions streamOp =
+        new TestStreamingOperationOneProviderNoExceptions(getSystem());
     streamOp.getDataFromAll(setOfIds);
     assertTrue(streamOp.dataValidated);
   }
 
 
   // about 100 chunks worth of integers?
-  protected static final int NUM_INTEGERS = 32*1024 /* default socket buffer size*/ * 100 / 4;
+  protected static final int NUM_INTEGERS = 32 * 1024 /* default socket buffer size */ * 100 / 4;
 
   public static class TestStreamingOperationOneProviderNoExceptions extends StreamingOperation {
     ConcurrentMap chunkMap = new ConcurrentHashMap();
@@ -88,13 +88,15 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
     }
 
     protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
-      TestRequestStreamingMessageOneProviderNoExceptions msg = new TestRequestStreamingMessageOneProviderNoExceptions();
-      msg.processorId = processor==null? 0 : processor.getProcessorId();
+      TestRequestStreamingMessageOneProviderNoExceptions msg =
+          new TestRequestStreamingMessageOneProviderNoExceptions();
+      msg.processorId = processor == null ? 0 : processor.getProcessorId();
       msg.setRecipients(recipients);
       return msg;
     }
 
-    protected synchronized boolean processData(List objects, InternalDistributedMember sender, int sequenceNum, boolean lastInSequence) {
+    protected synchronized boolean processData(List objects, InternalDistributedMember sender,
+        int sequenceNum, boolean lastInSequence) {
       LogWriter logger = this.sys.getLogWriter();
 
       // assert that we haven't gotten this sequence number yet
@@ -136,10 +138,10 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
       LogWriter logger = this.sys.getLogWriter();
 
       // sort the input streams
-      for (Iterator itr = this.chunkMap.entrySet().iterator(); itr.hasNext(); ) {
-        Map.Entry entry = (Map.Entry)itr.next();
-        int seqNum = ((Integer)entry.getKey()).intValue();
-        objList = (List)entry.getValue();
+      for (Iterator itr = this.chunkMap.entrySet().iterator(); itr.hasNext();) {
+        Map.Entry entry = (Map.Entry) itr.next();
+        int seqNum = ((Integer) entry.getKey()).intValue();
+        objList = (List) entry.getValue();
         arrayOfLists[seqNum] = objList;
       }
 
@@ -148,7 +150,7 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
         Iterator itr = arrayOfLists[i].iterator();
         Integer nextInteger;
         while (itr.hasNext()) {
-          nextInteger = (Integer)itr.next();
+          nextInteger = (Integer) itr.next();
           if (nextInteger.intValue() != expectedInt) {
             logger.severe("nextInteger.intValue() != expectedInt");
             return;
@@ -159,26 +161,26 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
       }
       if (count != NUM_INTEGERS) {
         logger.severe("found " + count + " integers, expected " + NUM_INTEGERS);
-      }
-      else {
+      } else {
         this.dataValidated = true;
         logger.info("Received " + count + " integers in " + this.numChunks + " chunks");
       }
     }
   }
 
-  public static final class TestRequestStreamingMessageOneProviderNoExceptions extends StreamingOperation.RequestStreamingMessage {
+  public static final class TestRequestStreamingMessageOneProviderNoExceptions
+      extends StreamingOperation.RequestStreamingMessage {
     private int nextInt = -10;
     private int count = 0;
 
-    protected Object getNextReplyObject()
-    throws ReplyException {
+    protected Object getNextReplyObject() throws ReplyException {
       if (++count > NUM_INTEGERS) {
         return Token.END_OF_STREAM;
       }
       nextInt += 10;
       return new Integer(nextInt);
     }
+
     public int getDSFID() {
       return NO_FIXED_ID;
     }

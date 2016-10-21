@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management;
@@ -73,9 +71,10 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testConnectToLocatorWithSSL() throws Exception{
+  public void testConnectToLocatorWithSSL() throws Exception {
     Properties securityProps = new Properties();
-    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
+    securityProps.setProperty(SSL_ENABLED_COMPONENTS,
+        SecurableCommunicationChannel.LOCATOR.getConstant());
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
@@ -87,7 +86,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testConnectToLocatorWithLegacyClusterSSL() throws Exception{
+  public void testConnectToLocatorWithLegacyClusterSSL() throws Exception {
     Properties securityProps = new Properties();
     securityProps.setProperty(CLUSTER_SSL_ENABLED, "true");
     securityProps.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
@@ -100,7 +99,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testConnectToLocatorWithLegacyJMXSSL() throws Exception{
+  public void testConnectToLocatorWithLegacyJMXSSL() throws Exception {
     Properties securityProps = new Properties();
     securityProps.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
     securityProps.setProperty(JMX_MANAGER_SSL_KEYSTORE, jks.getCanonicalPath());
@@ -112,18 +111,18 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
     setUpLocatorAndConnect(securityProps);
   }
 
-  public void setUpLocatorAndConnect(Properties securityProps) throws Exception{
+  public void setUpLocatorAndConnect(Properties securityProps) throws Exception {
     // set up locator with cluster-ssl-*
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int locatorPort = ports[0];
     int jmxPort = ports[1];
 
-    locator.invoke(()->{
+    locator.invoke(() -> {
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.put(JMX_MANAGER, "true");
       props.put(JMX_MANAGER_START, "true");
-      props.put(JMX_MANAGER_PORT, jmxPort+"");
+      props.put(JMX_MANAGER_PORT, jmxPort + "");
       props.putAll(securityProps);
       Locator.startLocatorAndDS(locatorPort, folder.newFile("locator.log"), props);
     });
@@ -135,16 +134,18 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
     // run gfsh connect command in this vm
     CliUtil.isGfshVM = true;
     String shellId = getClass().getSimpleName();
-    HeadlessGfsh gfsh = new HeadlessGfsh(shellId, 30, folder.newFolder("gfsh_files").getCanonicalPath());
+    HeadlessGfsh gfsh =
+        new HeadlessGfsh(shellId, 30, folder.newFolder("gfsh_files").getCanonicalPath());
 
     // connect to the locator with the saved property file
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
     command.addOption(CliStrings.CONNECT__LOCATOR, "localhost[" + locatorPort + "]");
-    command.addOption(CliStrings.CONNECT__SECURITY_PROPERTIES, securityPropsFile.getCanonicalPath());
+    command.addOption(CliStrings.CONNECT__SECURITY_PROPERTIES,
+        securityPropsFile.getCanonicalPath());
 
     gfsh.executeCommand(command.toString());
-    CommandResult result = (CommandResult)gfsh.getResult();
-    assertEquals(Status.OK,result.getStatus());
+    CommandResult result = (CommandResult) gfsh.getResult();
+    assertEquals(Status.OK, result.getStatus());
     assertTrue(result.getContent().toString().contains("Successfully connected to"));
   }
 

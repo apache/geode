@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.security;
@@ -38,7 +36,7 @@ import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 
 public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
@@ -47,8 +45,10 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
 
   @Before
   public void before() throws Exception {
-    IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
-    IgnoredException.addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
+    IgnoredException
+        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toString());
+    IgnoredException
+        .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
@@ -57,7 +57,8 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
-  // if a secured locator is started without cluster config service, the server is free to use any security manager
+  // if a secured locator is started without cluster config service, the server is free to use any
+  // security manager
   // or no security manager at all. Currently this is valid, but not recommended.
   public void testStartServerWithClusterConfig() throws Exception {
 

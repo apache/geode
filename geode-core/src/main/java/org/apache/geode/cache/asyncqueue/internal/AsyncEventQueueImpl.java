@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.asyncqueue.internal;
 
@@ -34,26 +32,26 @@ import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderE
 public class AsyncEventQueueImpl implements AsyncEventQueue {
 
   private GatewaySender sender = null;
-  
+
   private AsyncEventListener asyncEventListener = null;
-    
+
   public static final String ASYNC_EVENT_QUEUE_PREFIX = "AsyncEventQueue_";
-  
+
   public AsyncEventQueueImpl(GatewaySender sender, AsyncEventListener eventListener) {
     this.sender = sender;
     this.asyncEventListener = eventListener;
   }
- 
+
   @Override
   public String getId() {
     return getAsyncEventQueueIdFromSenderId(this.sender.getId());
   }
-  
+
   @Override
   public AsyncEventListener getAsyncEventListener() {
     return asyncEventListener;
   }
-  
+
   @Override
   public List<GatewayEventFilter> getGatewayEventFilters() {
     return sender.getGatewayEventFilters();
@@ -73,12 +71,12 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   public String getDiskStoreName() {
     return sender.getDiskStoreName();
   }
-  
+
   @Override
   public int getBatchTimeInterval() {
     return sender.getBatchTimeInterval();
   }
-  
+
   @Override
   public boolean isBatchConflationEnabled() {
     return sender.isBatchConflationEnabled();
@@ -98,50 +96,50 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   public boolean isDiskSynchronous() {
     return sender.isDiskSynchronous();
   }
-  
+
   @Override
   public int getDispatcherThreads() {
     return sender.getDispatcherThreads();
   }
-  
+
   @Override
   public OrderPolicy getOrderPolicy() {
     return sender.getOrderPolicy();
   }
-  
+
   @Override
   public boolean isPrimary() {
     return ((AbstractGatewaySender) sender).isPrimary();
   }
-  
+
   @Override
   public int size() {
-	AbstractGatewaySenderEventProcessor eventProcessor = 
-	  ((AbstractGatewaySender) sender).getEventProcessor();
-	    
-	int size = 0;
-	if (eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor) {
-	  Set<RegionQueue> queues = 
-		((ConcurrentSerialGatewaySenderEventProcessor) eventProcessor).getQueues();
-	  Iterator<RegionQueue> itr = queues.iterator();
-	  while (itr.hasNext()) {
-		size = size + itr.next().size();
-	  }
-	} else {
-	  size = eventProcessor.getQueue().size();
-	}
-	return size;
+    AbstractGatewaySenderEventProcessor eventProcessor =
+        ((AbstractGatewaySender) sender).getEventProcessor();
+
+    int size = 0;
+    if (eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor) {
+      Set<RegionQueue> queues =
+          ((ConcurrentSerialGatewaySenderEventProcessor) eventProcessor).getQueues();
+      Iterator<RegionQueue> itr = queues.iterator();
+      while (itr.hasNext()) {
+        size = size + itr.next().size();
+      }
+    } else {
+      size = eventProcessor.getQueue().size();
+    }
+    return size;
   }
-  
+
   public GatewaySender getSender() {
     return this.sender;
   }
-  
+
   public AsyncEventQueueStats getStatistics() {
-     AbstractGatewaySender abstractSender =  (AbstractGatewaySender) this.sender;
-     return ((AsyncEventQueueStats) abstractSender.getStatistics());
+    AbstractGatewaySender abstractSender = (AbstractGatewaySender) this.sender;
+    return ((AsyncEventQueueStats) abstractSender.getStatistics());
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (obj == null) {
@@ -159,7 +157,7 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     }
     return false;
   }
-  
+
   @Override
   public int hashCode() {
     return getId().hashCode();
@@ -175,8 +173,7 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   public static String getAsyncEventQueueIdFromSenderId(String senderId) {
     if (!senderId.startsWith(ASYNC_EVENT_QUEUE_PREFIX)) {
       return senderId;
-    }
-    else {
+    } else {
       return senderId.substring(ASYNC_EVENT_QUEUE_PREFIX.length());
     }
   }
@@ -190,19 +187,19 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public boolean isMetaQueue() {
-    return ((AbstractGatewaySender)sender).getIsMetaQueue();
+    return ((AbstractGatewaySender) sender).getIsMetaQueue();
   }
 
   public void destroy() {
-    ((AbstractGatewaySender)this.sender).destroy();
+    ((AbstractGatewaySender) this.sender).destroy();
   }
 
-   public boolean isBucketSorted() {
+  public boolean isBucketSorted() {
     // TODO Auto-generated method stub
     return false;
   }
 
-   public boolean isForwardExpirationDestroy() {
-     return ((AbstractGatewaySender)this.sender).isForwardExpirationDestroy();
-   }
+  public boolean isForwardExpirationDestroy() {
+    return ((AbstractGatewaySender) this.sender).isForwardExpirationDestroy();
+  }
 }

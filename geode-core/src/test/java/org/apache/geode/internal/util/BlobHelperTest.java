@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util;
 
@@ -51,7 +49,8 @@ public class BlobHelperTest {
 
   private static final int HDOS_ALLOC_SIZE = 32;
 
-  private static final String CLASS_NOT_FOUND_MESSAGE = "ClassNotFoundSerialization.readObject fake exception";
+  private static final String CLASS_NOT_FOUND_MESSAGE =
+      "ClassNotFoundSerialization.readObject fake exception";
 
   private Map<Object, Object> mapWithTwoEntries;
 
@@ -81,7 +80,8 @@ public class BlobHelperTest {
 
   @Test
   public void deserializeBlobOfClassNotFoundSerializationThrowsEOFException() throws Exception {
-    assertThatThrownBy(() -> deserializeBlob(this.bytesOfClassNotFoundSerialization)).isExactlyInstanceOf(ClassNotFoundException.class);
+    assertThatThrownBy(() -> deserializeBlob(this.bytesOfClassNotFoundSerialization))
+        .isExactlyInstanceOf(ClassNotFoundException.class);
   }
 
   @Test
@@ -101,7 +101,8 @@ public class BlobHelperTest {
 
   @Test
   public void deserializeBlobOfZeroBytesThrowsEOFException() throws Exception {
-    assertThatThrownBy(() -> deserializeBlob(this.zeroBytes)).isExactlyInstanceOf(EOFException.class);
+    assertThatThrownBy(() -> deserializeBlob(this.zeroBytes))
+        .isExactlyInstanceOf(EOFException.class);
   }
 
   @Test
@@ -137,8 +138,7 @@ public class BlobHelperTest {
   @Test
   public void serializeToBlobUnserializableThrowsNotSerializableException() throws Exception {
     assertThatThrownBy(() -> serializeToBlob(new Object()))
-      .isExactlyInstanceOf(NotSerializableException.class)
-      .hasMessage(Object.class.getName());
+        .isExactlyInstanceOf(NotSerializableException.class).hasMessage(Object.class.getName());
   }
 
   @Test
@@ -150,12 +150,14 @@ public class BlobHelperTest {
 
   @Test
   public void serializeToNullNullThrowsNullPointerException() throws Exception {
-    assertThatThrownBy(() -> serializeTo(null, null)).isExactlyInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> serializeTo(null, null))
+        .isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void serializeToNullStreamThrowsNullPointerException() throws Exception {
-    assertThatThrownBy(() -> serializeTo(this.mapWithTwoEntries, null)).isExactlyInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> serializeTo(this.mapWithTwoEntries, null))
+        .isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -163,8 +165,7 @@ public class BlobHelperTest {
     HeapDataOutputStream hdos = createHeapDataOutputStream();
 
     assertThatThrownBy(() -> serializeTo(new Object(), hdos))
-      .isExactlyInstanceOf(NotSerializableException.class)
-      .hasMessage(Object.class.getName());
+        .isExactlyInstanceOf(NotSerializableException.class).hasMessage(Object.class.getName());
   }
 
   private HeapDataOutputStream createHeapDataOutputStream() {
@@ -172,7 +173,7 @@ public class BlobHelperTest {
   }
 
   private static class ClassNotFoundSerialization implements Serializable {
-    private void readObject(final ObjectInputStream in) throws ClassNotFoundException    {
+    private void readObject(final ObjectInputStream in) throws ClassNotFoundException {
       throw new ClassNotFoundException(CLASS_NOT_FOUND_MESSAGE);
     }
   }

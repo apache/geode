@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.process;
 
@@ -26,24 +24,26 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
 
 /**
- * Reads the InputStream per-byte instead of per-line. Uses BufferedReader.ready() 
- * to ensure that calls to read() will not block. Uses continueReadingMillis to
- * continue reading after the Process terminates in order to fully read the last
- * of that Process' output (such as a stack trace).
+ * Reads the InputStream per-byte instead of per-line. Uses BufferedReader.ready() to ensure that
+ * calls to read() will not block. Uses continueReadingMillis to continue reading after the Process
+ * terminates in order to fully read the last of that Process' output (such as a stack trace).
  * 
  * @since GemFire 8.2
  */
 public final class NonBlockingProcessStreamReader extends ProcessStreamReader {
   private static final Logger logger = LogService.getLogger();
 
-  /** millis to continue reading after Process terminates in order to fully read the last of its output */
+  /**
+   * millis to continue reading after Process terminates in order to fully read the last of its
+   * output
+   */
   private final long continueReadingMillis;
-  
+
   protected NonBlockingProcessStreamReader(final Builder builder) {
     super(builder);
     continueReadingMillis = builder.continueReadingMillis;
   }
-  
+
   @Override
   public void run() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -54,13 +54,13 @@ public final class NonBlockingProcessStreamReader extends ProcessStreamReader {
     BufferedReader reader = null;
     try {
       reader = new BufferedReader(new InputStreamReader(inputStream));
-      StringBuilder sb = new StringBuilder(); 
+      StringBuilder sb = new StringBuilder();
       boolean ready = false;
       int ch = 0;
       while (ch != -1) {
         while ((ready = reader.ready()) && (ch = reader.read()) != -1) {
-          sb.append((char)ch);
-          if ((char)ch == '\n') {
+          sb.append((char) ch);
+          if ((char) ch == '\n') {
             this.inputListener.notifyInputLine(sb.toString());
             sb = new StringBuilder();
           }

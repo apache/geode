@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.functions;
 
@@ -52,7 +50,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
-@PrepareForTest({ CacheFactory.class })
+@PrepareForTest({CacheFactory.class})
 public class GetRegionsFunctionJUnitTest {
 
   TestResultSender testResultSender = new TestResultSender();
@@ -111,12 +109,10 @@ public class GetRegionsFunctionJUnitTest {
   private static class TestResultSender implements ResultSender {
 
     @Override
-    public void lastResult(final Object lastResult) {
-    }
+    public void lastResult(final Object lastResult) {}
 
     @Override
-    public void sendResult(final Object oneResult) {
-    }
+    public void sendResult(final Object oneResult) {}
 
     @Override
     public void sendException(final Throwable t) {
@@ -124,4 +120,4 @@ public class GetRegionsFunctionJUnitTest {
     }
   }
 
-} 
+}

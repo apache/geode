@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal.management;
 
@@ -59,18 +57,19 @@ public class LuceneIndexMetrics {
   private final int documents;
 
   /**
-   * This constructor is to be used by internal JMX framework only. A user should
-   * not try to create an instance of this class.
+   * This constructor is to be used by internal JMX framework only. A user should not try to create
+   * an instance of this class.
    */
-  @ConstructorProperties( { "regionPath", "indexName", "queryExecutions", "queryExecutionTime", "queryRate",
-      "queryRateAverageLatency", "queryExecutionsInProgress", "queryExecutionTotalHits", "updates",
-      "updateTime", "updateRate", "updateRateAverageLatency", "updatesInProgress", "commits",
-      "commitTime", "commitRate", "commitRateAverageLatency", "commitsInProgress", "documents"
-  })
-  public LuceneIndexMetrics(String regionPath, String indexName, int queryExecutions, long queryExecutionTime,
-      float queryRate, long queryRateAverageLatency, int queryExecutionsInProgress, long queryExecutionTotalHits,
-      int updates, long updateTime, float updateRate, long updateRateAverageLatency, int updatesInProgress,
-      int commits, long commitTime, float commitRate, long commitRateAverageLatency, int commitsInProgress,
+  @ConstructorProperties({"regionPath", "indexName", "queryExecutions", "queryExecutionTime",
+      "queryRate", "queryRateAverageLatency", "queryExecutionsInProgress",
+      "queryExecutionTotalHits", "updates", "updateTime", "updateRate", "updateRateAverageLatency",
+      "updatesInProgress", "commits", "commitTime", "commitRate", "commitRateAverageLatency",
+      "commitsInProgress", "documents"})
+  public LuceneIndexMetrics(String regionPath, String indexName, int queryExecutions,
+      long queryExecutionTime, float queryRate, long queryRateAverageLatency,
+      int queryExecutionsInProgress, long queryExecutionTotalHits, int updates, long updateTime,
+      float updateRate, long updateRateAverageLatency, int updatesInProgress, int commits,
+      long commitTime, float commitRate, long commitRateAverageLatency, int commitsInProgress,
       int documents) {
     this.regionPath = regionPath;
     this.indexName = indexName;
@@ -171,48 +170,21 @@ public class LuceneIndexMetrics {
 
   @Override
   public String toString() {
-    return new StringBuilder()
-        .append(getClass().getSimpleName())
-        .append("[")
-        .append("regionPath=")
-        .append(this.regionPath)
-        .append("; indexName=")
-        .append(this.indexName)
-        .append("; queryExecutions=")
-        .append(this.queryExecutions)
-        .append("; queryExecutionTime=")
-        .append(this.queryExecutionTime)
-        .append("; queryRate=")
-        .append(this.queryRate)
-        .append("; queryRateAverageLatency=")
-        .append(this.queryRateAverageLatency)
-        .append("; queryExecutionsInProgress=")
-        .append(this.queryExecutionsInProgress)
-        .append("; queryExecutionTotalHits=")
-        .append(this.queryExecutionTotalHits)
-        .append("; updates=")
-        .append(this.updates)
-        .append("; updateTime=")
-        .append(this.updateTime)
-        .append("; updateRate=")
-        .append(this.updateRate)
-        .append("; updateRateAverageLatency=")
-        .append(this.updateRateAverageLatency)
-        .append("; updatesInProgress=")
-        .append(this.updatesInProgress)
-        .append("; commits=")
-        .append(this.commits)
-        .append("; commitTime=")
-        .append(this.commitTime)
-        .append("; commitRate=")
-        .append(this.commitRate)
-        .append("; commitRateAverageLatency=")
-        .append(this.commitRateAverageLatency)
-        .append("; commitsInProgress=")
-        .append(this.commitsInProgress)
-        .append("; documents=")
-        .append(this.documents)
-        .append("]")
+    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("regionPath=")
+        .append(this.regionPath).append("; indexName=").append(this.indexName)
+        .append("; queryExecutions=").append(this.queryExecutions).append("; queryExecutionTime=")
+        .append(this.queryExecutionTime).append("; queryRate=").append(this.queryRate)
+        .append("; queryRateAverageLatency=").append(this.queryRateAverageLatency)
+        .append("; queryExecutionsInProgress=").append(this.queryExecutionsInProgress)
+        .append("; queryExecutionTotalHits=").append(this.queryExecutionTotalHits)
+        .append("; updates=").append(this.updates).append("; updateTime=").append(this.updateTime)
+        .append("; updateRate=").append(this.updateRate).append("; updateRateAverageLatency=")
+        .append(this.updateRateAverageLatency).append("; updatesInProgress=")
+        .append(this.updatesInProgress).append("; commits=").append(this.commits)
+        .append("; commitTime=").append(this.commitTime).append("; commitRate=")
+        .append(this.commitRate).append("; commitRateAverageLatency=")
+        .append(this.commitRateAverageLatency).append("; commitsInProgress=")
+        .append(this.commitsInProgress).append("; documents=").append(this.documents).append("]")
         .toString();
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.util;
 
@@ -31,7 +29,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class HyphenFormatterTest {
 
   private HyphenFormatter formatter;
-  
+
   @Before
   public void setUp() {
     this.formatter = new HyphenFormatter();
@@ -75,25 +73,30 @@ public class HyphenFormatterTest {
 
   @Test
   public void valueWithHyphenWithoutQuotesFails() {
-    String cmd = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+    String cmd =
+        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
     String formattedCmd = this.formatter.formatCommand(cmd);
 
-    String expected = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+    String expected =
+        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
     assertThat(formattedCmd).isEqualTo(expected);
   }
 
   @Test
   public void valueWithHyphenWithoutQuotes() {
-    String cmd = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+    String cmd =
+        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
     String formattedCmd = this.formatter.formatCommand(cmd);
 
-    String expected = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+    String expected =
+        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
     assertThat(formattedCmd).isEqualTo(expected);
   }
 
   @Test
   public void nullShouldThrowNullPointerException() {
-    assertThatThrownBy(() -> this.formatter.formatCommand(null)).isExactlyInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> this.formatter.formatCommand(null))
+        .isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -115,7 +118,8 @@ public class HyphenFormatterTest {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --J=-Dbar=foo --group=locators";
     String formattedCmd = this.formatter.formatCommand(cmd);
 
-    String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=\"-Dbar=foo\" --group=locators";
+    String expected =
+        "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=\"-Dbar=foo\" --group=locators";
     assertThat(formattedCmd).isEqualTo(expected);
   }
 
@@ -124,7 +128,8 @@ public class HyphenFormatterTest {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --group=locators --J=-Dbar=foo";
     String formattedCmd = this.formatter.formatCommand(cmd);
 
-    String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\" --group=locators --J=\"-Dbar=foo\"";
+    String expected =
+        "start locator --name=loc1 --J=\"-Dfoo=bar\" --group=locators --J=\"-Dbar=foo\"";
     assertThat(formattedCmd).isEqualTo(expected);
   }
 
@@ -184,17 +189,21 @@ public class HyphenFormatterTest {
 
   @Test
   public void valueContainingMultipleJWithSpaces() {
-    String cmd = "start locator --name=loc1 --J=-Dfoo=this is a phrase             --J=\"-Dfoo=a short sentence\"";
+    String cmd =
+        "start locator --name=loc1 --J=-Dfoo=this is a phrase             --J=\"-Dfoo=a short sentence\"";
     String formattedCmd = this.formatter.formatCommand(cmd);
-    String expected = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase\" --J=\"-Dfoo=a short sentence\"";
+    String expected =
+        "start locator --name=loc1 --J=\"-Dfoo=this is a phrase\" --J=\"-Dfoo=a short sentence\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
 
   @Test
   public void valueContainingMultipleJWithSpaces2() {
-    String cmd = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
+    String cmd =
+        "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
     String formattedCmd = this.formatter.formatCommand(cmd);
-    String expected = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
+    String expected =
+        "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
 

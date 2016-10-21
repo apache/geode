@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -28,8 +26,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * {@link DistributedMember} of the GemFire distributed system.
  * 
  * <p>
- * ObjectName of the MBean
- * :GemFire:type=Member,member=&ltname-or-dist-member-id&gt
+ * ObjectName of the MBean :GemFire:type=Member,member=&ltname-or-dist-member-id&gt
  * 
  * <p>
  * There will be one instance of this MBean per GemFire node.
@@ -144,8 +141,7 @@ public interface MemberMXBean {
   /**
    * Returns the most recent log entries for the member.
    * 
-   * @param numberOfLines
-   *          Number of lines to return, up to a maximum of 100.
+   * @param numberOfLines Number of lines to return, up to a maximum of 100.
    */
   public String showLog(int numberOfLines);
 
@@ -164,7 +160,7 @@ public interface MemberMXBean {
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public String[] compactAllDiskStores();
-  
+
   /**
    * Creates a Manager MBean on this member.
    * 
@@ -172,19 +168,19 @@ public interface MemberMXBean {
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public boolean createManager();
-  
+
   /**
-   * Shuts down the member. This is an asynchronous call and it will 
-   * return immediately without waiting for a result.
+   * Shuts down the member. This is an asynchronous call and it will return immediately without
+   * waiting for a result.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public void shutDownMember();
-  
+
   /**
    * Returns JVM metrics.
    */
   public JVMMetrics showJVMMetrics();
-  
+
   /**
    * Returns operating system metrics.
    */
@@ -193,35 +189,29 @@ public interface MemberMXBean {
   /**
    * Executes a command on the member.
    * 
-   * @param commandString
-   *          Command to be executed.
+   * @param commandString Command to be executed.
    * 
    * @return Result of the execution in JSON format.
    */
   @ResourceOperation()
   String processCommand(String commandString);
-  
+
   /**
    * Executes a command on the member.
    * 
-   * @param commandString
-   *          Command to be execute.
-   * @param env
-   *          Environmental properties to use during command execution.
+   * @param commandString Command to be execute.
+   * @param env Environmental properties to use during command execution.
    * @return Result of the execution in JSON format.
    */
   @ResourceOperation()
   String processCommand(String commandString, Map<String, String> env);
-  
+
   /**
    * Executes a command on the member.
    * 
-   * @param commandString
-   *          Command to be execute.
-   * @param env
-   *          Environmental properties to use during command execution.
-   * @param binaryData
-   *          Binary data specific to the command being executed.
+   * @param commandString Command to be execute.
+   * @param env Environmental properties to use during command execution.
+   * @param binaryData Binary data specific to the command being executed.
    * @return Result of the execution in JSON format.
    */
   @ResourceOperation()
@@ -230,8 +220,7 @@ public interface MemberMXBean {
   /**
    * Returns the name of all disk stores in use by this member.
    * 
-   * @param includeRegionOwned
-   *          Whether to include disk stores owned by a region.
+   * @param includeRegionOwned Whether to include disk stores owned by a region.
    */
   public String[] listDiskStores(boolean includeRegionOwned);
 
@@ -241,8 +230,7 @@ public interface MemberMXBean {
   public GemFireProperties listGemFireProperties();
 
   /**
-   * Returns the name or IP address of the host on which this member is
-   * running.
+   * Returns the name or IP address of the host on which this member is running.
    */
   public String getHost();
 
@@ -250,17 +238,17 @@ public interface MemberMXBean {
    * Returns the name of this member.
    */
   public String getName();
-  
+
   /**
    * Returns the ID of this member.
    */
   public String getId();
-  
+
   /**
    * Returns the name of the member if it's been set, otherwise the ID.
    */
   public String getMember();
-  
+
   /**
    * Returns the names of the groups this member belongs to.
    */
@@ -280,7 +268,7 @@ public interface MemberMXBean {
    * Returns the GemFire version.
    */
   public String getVersion();
- 
+
   /**
    * Returns whether this member is attached to at least one Locator.
    * 
@@ -289,20 +277,18 @@ public interface MemberMXBean {
   public boolean isLocator();
 
   /**
-   * Returns the number of seconds that this member will wait for a
-   * distributed lock.
+   * Returns the number of seconds that this member will wait for a distributed lock.
    */
   public long getLockTimeout();
 
   /**
-   * Returns the number of second that this member will lease a distributed
-   * lock.
+   * Returns the number of second that this member will lease a distributed lock.
    */
   public long getLockLease();
 
   /**
-   * Any long-running GemFire process that was started with "start server" command from GFSH.
-   * It returns true even if that process has --disable-default-server=true.
+   * Any long-running GemFire process that was started with "start server" command from GFSH. It
+   * returns true even if that process has --disable-default-server=true.
    */
   public boolean isServer();
 
@@ -321,8 +307,8 @@ public interface MemberMXBean {
   public boolean isManager();
 
   /**
-   * Returns whether this member has created the Manager service (it may be
-   * created, but not running).
+   * Returns whether this member has created the Manager service (it may be created, but not
+   * running).
    * 
    * @return True if this member has created the Manager service, false otherwise.
    */
@@ -351,31 +337,33 @@ public interface MemberMXBean {
   public long getMemberUpTime();
 
   /**
-   * Returns the time (as a percentage) that this member's process time with
-   * respect to Statistics sample time interval. If process time between two
-   * sample time t1 & t2 is p1 and p2 
-   * cpuUsage = ((p2-p1) * 100) / ((t2-t1))
+   * Returns the time (as a percentage) that this member's process time with respect to Statistics
+   * sample time interval. If process time between two sample time t1 & t2 is p1 and p2 cpuUsage =
+   * ((p2-p1) * 100) / ((t2-t1))
    * 
-   * ProcessCpuTime is obtained from OperatingSystemMXBean.
-   * If process CPU time is not available in the platform it will be shown as -1
+   * ProcessCpuTime is obtained from OperatingSystemMXBean. If process CPU time is not available in
+   * the platform it will be shown as -1
    * 
    */
   public float getCpuUsage();
 
   /**
    * Returns the current size of the heap in megabytes.
+   * 
    * @deprecated Please use {@link #getUsedMemory()} instead.
    */
   public long getCurrentHeapSize();
 
   /**
    * Returns the maximum size of the heap in megabytes.
+   * 
    * @deprecated Please use {@link #getMaxMemory()} instead.
    */
   public long getMaximumHeapSize();
 
   /**
    * Returns the free heap size in megabytes.
+   * 
    * @deprecated Please use {@link #getFreeMemory()} instead.
    */
   public long getFreeHeapSize();
@@ -385,25 +373,25 @@ public interface MemberMXBean {
    * 
    */
   public long getMaxMemory();
-  
+
   /**
    * Returns the free heap size in megabytes.
    */
   public long getFreeMemory();
-  
+
   /**
    * Returns the current size of the heap in megabytes.
    */
   public long getUsedMemory();
-  
+
   /**
    * Returns the current threads.
    */
   public String[] fetchJvmThreads();
 
   /**
-   * Returns the maximum number of open file descriptors allowed for the member's
-   * host operating system.
+   * Returns the maximum number of open file descriptors allowed for the member's host operating
+   * system.
    */
   public long getFileDescriptorLimit();
 
@@ -426,13 +414,13 @@ public interface MemberMXBean {
    * Returns a list of all Region names.
    */
   public String[] listRegions();
-  
-  
+
+
   /**
    * Returns a list of all disk stores, including those owned by a Region.
    */
   public String[] getDiskStores();
-  
+
   /**
    * Returns a list of all root Region names.
    */
@@ -484,8 +472,8 @@ public interface MemberMXBean {
   public float getGetsRate();
 
   /**
-   * Returns the number of puts per second. Only includes puts done explicitly
-   * on this member's cache, not those pushed from another member.
+   * Returns the number of puts per second. Only includes puts done explicitly on this member's
+   * cache, not those pushed from another member.
    */
   public float getPutsRate();
 
@@ -498,7 +486,7 @@ public interface MemberMXBean {
    * Returns the number of creates per second.
    */
   public float getCreatesRate();
-  
+
   /**
    * Returns the number of destroys per second.
    */
@@ -515,30 +503,28 @@ public interface MemberMXBean {
   public long getCacheListenerCallsAvgLatency();
 
   /**
-   * Returns the total number of times that a load on this cache has completed,
-   * as a result of either a local get or a remote net load.
+   * Returns the total number of times that a load on this cache has completed, as a result of
+   * either a local get or a remote net load.
    */
   public int getTotalLoadsCompleted();
-  
+
   /**
    * Returns the average latency of a load.
    */
   public long getLoadsAverageLatency();
-  
+
   /**
-   * Returns the total number of times the a network load initiated by this cache
-   * has completed.
+   * Returns the total number of times the a network load initiated by this cache has completed.
    */
   public int getTotalNetLoadsCompleted();
-  
+
   /**
    * Returns the net load average latency.
    */
   public long getNetLoadsAverageLatency();
-  
+
   /**
-   * Returns the total number of times that a network search initiated by this cache 
-   * has completed.
+   * Returns the total number of times that a network search initiated by this cache has completed.
    */
   public int getTotalNetSearchCompleted();
 
@@ -546,10 +532,10 @@ public interface MemberMXBean {
    * Returns the net search average latency.
    */
   public long getNetSearchAverageLatency();
-  
+
   /**
-   * Returns the current number of disk tasks (op-log compaction, asynchronous
-   * recovery, etc.) that are waiting for a thread to run.
+   * Returns the current number of disk tasks (op-log compaction, asynchronous recovery, etc.) that
+   * are waiting for a thread to run.
    */
   public int getTotalDiskTasksWaiting();
 
@@ -584,8 +570,7 @@ public interface MemberMXBean {
   public float getFunctionExecutionRate();
 
   /**
-   * Returns the number of currently executing functions that will return
-   * resutls.
+   * Returns the number of currently executing functions that will return resutls.
    */
   public int getNumRunningFunctionsHavingResults();
 
@@ -613,20 +598,20 @@ public interface MemberMXBean {
    * Returns the average number of transactions committed per second.
    */
   public float getTransactionCommitsRate();
-  
+
 
   /**
-   * Returns the number of bytes reads per second from all the disks of the member. 
+   * Returns the number of bytes reads per second from all the disks of the member.
    */
   public float getDiskReadsRate();
 
   /**
-   * Returns the number of bytes written per second to disk to all the disks of the member. 
+   * Returns the number of bytes written per second to disk to all the disks of the member.
    */
   public float getDiskWritesRate();
 
   /**
-   * Returns the average disk flush latency time in nanoseconds. 
+   * Returns the average disk flush latency time in nanoseconds.
    */
   public long getDiskFlushAvgLatency();
 
@@ -634,12 +619,12 @@ public interface MemberMXBean {
    * Returns the number of backups currently in progress for all disk stores.
    */
   public int getTotalBackupInProgress();
-  
+
   /**
    * Returns the number of backups that have been completed.
    */
   public int getTotalBackupCompleted();
-  
+
   /**
    * Returns the number of threads waiting for a lock.
    */
@@ -654,7 +639,7 @@ public interface MemberMXBean {
    * Returns the number of lock services in use.
    */
   public int getTotalNumberOfLockService();
-  
+
   /**
    * Returns the number of locks for which this member is a granter.
    */
@@ -671,8 +656,7 @@ public interface MemberMXBean {
   public float getLruEvictionRate();
 
   /**
-   * Returns the rate of entries destroyed either by destroy cache operations or
-   * eviction.
+   * Returns the rate of entries destroyed either by destroy cache operations or eviction.
    */
   public float getLruDestroyRate();
 
@@ -682,50 +666,50 @@ public interface MemberMXBean {
   public int getInitialImagesInProgres();
 
   /**
-   * Returns the total amount of time spent performing a "get initial image"
-   * operation when creating a region.
+   * Returns the total amount of time spent performing a "get initial image" operation when creating
+   * a region.
    */
   public long getInitialImageTime();
 
   /**
-   * Return the number of keys received while performing a "get initial image"
-   * operation when creating a region.
+   * Return the number of keys received while performing a "get initial image" operation when
+   * creating a region.
    */
   public int getInitialImageKeysReceived();
-  
+
   /**
-   * Returns the average time (in nanoseconds) spent deserializing objects.
-   * Includes deserializations that result in a PdxInstance.
+   * Returns the average time (in nanoseconds) spent deserializing objects. Includes
+   * deserializations that result in a PdxInstance.
    */
   public long getDeserializationAvgLatency();
 
   /**
-   * Returns the average latency (in nanoseconds) spent deserializing objects.
-   * Includes deserializations that result in a PdxInstance.
+   * Returns the average latency (in nanoseconds) spent deserializing objects. Includes
+   * deserializations that result in a PdxInstance.
    */
   public long getDeserializationLatency();
 
   /**
-   * Returns the instantaneous rate of deserializing objects.
-   * Includes deserializations that result in a PdxInstance.
+   * Returns the instantaneous rate of deserializing objects. Includes deserializations that result
+   * in a PdxInstance.
    */
   public float getDeserializationRate();
 
   /**
-   * Returns the average time (in nanoseconds) spent serializing objects.
-   * Includes serializations that result in a PdxInstance.
+   * Returns the average time (in nanoseconds) spent serializing objects. Includes serializations
+   * that result in a PdxInstance.
    */
   public long getSerializationAvgLatency();
 
   /**
-   * Returns the average latency (in nanoseconds) spent serializing objects.
-   * Includes serializations that result in a PdxInstance.
+   * Returns the average latency (in nanoseconds) spent serializing objects. Includes serializations
+   * that result in a PdxInstance.
    */
   public long getSerializationLatency();
 
   /**
-   * Returns the instantaneous rate of serializing objects.
-   * Includes serializations that result in a PdxInstance.
+   * Returns the instantaneous rate of serializing objects. Includes serializations that result in a
+   * PdxInstance.
    */
   public float getSerializationRate();
 
@@ -743,24 +727,23 @@ public interface MemberMXBean {
    * Returns the total number of bytes used on all disks.
    */
   public long getTotalDiskUsage();
-  
+
   /**
    * Returns the number of threads in use.
    */
   public int getNumThreads();
-  
+
   /**
-   * Returns the system load average for the last minute. The system load
-   * average is the sum of the number of runnable entities queued to the
-   * available processors and the number of runnable entities running on the
-   * available processors averaged over a period of time.
+   * Returns the system load average for the last minute. The system load average is the sum of the
+   * number of runnable entities queued to the available processors and the number of runnable
+   * entities running on the available processors averaged over a period of time.
    * 
    * Pulse Attribute
    * 
    * @return The load average or a negative value if one is not available.
    */
   public double getLoadAverage();
-  
+
   /**
    * Returns the number of times garbage collection has occurred.
    */
@@ -769,8 +752,8 @@ public interface MemberMXBean {
   /**
    * Returns the amount of time (in milliseconds) spent on garbage collection.
    */
-  public long getGarbageCollectionTime();  
-  
+  public long getGarbageCollectionTime();
+
   /**
    * Returns the average number of reads per second.
    */
@@ -780,47 +763,48 @@ public interface MemberMXBean {
    * Returns the average writes per second, including both put and putAll operations.
    */
   public float getAverageWrites();
-  
+
   /**
-   * Returns the number JVM pauses (which may or may not include full garbage
-   * collection pauses) detected by GemFire.
+   * Returns the number JVM pauses (which may or may not include full garbage collection pauses)
+   * detected by GemFire.
    */
   public long getJVMPauses();
-  
-  
+
+
   /**
-   * Returns the underlying host's current cpuActive percentage 
+   * Returns the underlying host's current cpuActive percentage
    */
   public int getHostCpuUsage();
-  
+
   /**
    * 
-   * Returns true if a cache server is running on this member and able server requests from GemFire clients
+   * Returns true if a cache server is running on this member and able server requests from GemFire
+   * clients
    */
   public boolean isCacheServer();
-  
+
   /**
    * Returns the redundancy-zone of the member;
    */
   public String getRedundancyZone();
-  
+
   /**
-   * Returns current number of cache rebalance operations being directed by this process. 
+   * Returns current number of cache rebalance operations being directed by this process.
    */
   public int getRebalancesInProgress();
-  
+
   /**
    * Returns current number of threads waiting for a reply.
    */
   public int getReplyWaitsInProgress();
-  
+
   /**
-   * Returns total number of times waits for a reply have completed. 
+   * Returns total number of times waits for a reply have completed.
    */
   public int getReplyWaitsCompleted();
-  
+
   /**
-   * The current number of nodes in this distributed system visible to this member. 
+   * The current number of nodes in this distributed system visible to this member.
    */
   public int getVisibleNodes();
 
@@ -828,17 +812,17 @@ public interface MemberMXBean {
    * Returns the number of off heap objects.
    */
   public int getOffHeapObjects();
-  
+
   /**
    * Returns the size of the maximum configured off-heap memory in bytes.
    */
   public long getOffHeapMaxMemory();
-  
+
   /**
    * Returns the size of available (or unallocated) off-heap memory in bytes.
    */
   public long getOffHeapFreeMemory();
-  
+
   /**
    * Returns the size of utilized off-heap memory in bytes.
    */
@@ -848,7 +832,7 @@ public interface MemberMXBean {
    * Returns the percentage of off-heap memory fragmentation.
    */
   public int getOffHeapFragmentation();
-  
+
   /**
    * Returns the total time spent compacting in millseconds.
    */

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -128,20 +126,21 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
   public void testS2CDeltaPropagationCleanStats() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
-    Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE,
-        Scope.DISTRIBUTED_ACK, Boolean.TRUE};
-    int port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "createServerCache", args);
+    Object args[] =
+        new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
+    int port =
+        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
 
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys), Long.valueOf(updates)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys),
+        Long.valueOf(updates)));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
     waitForLastKey();
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(SERVER_TO_CLIENT),
-            Long.valueOf(numOfKeys * updates)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(
+        Integer.valueOf(SERVER_TO_CLIENT), Long.valueOf(numOfKeys * updates)));
     verifyDeltaReceiverStats(SERVER_TO_CLIENT, numOfKeys * updates, 0L);
   }
 
@@ -155,25 +154,24 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 25;
     long updates = 50;
     long errors = 100, errors2 = 34;
-    Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE,
-        Scope.DISTRIBUTED_ACK, Boolean.TRUE};
-    int port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "createServerCache", args);
+    Object args[] =
+        new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
+    int port =
+        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
 
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(Integer.valueOf(numOfKeys),
-            Long.valueOf(updates), Long.valueOf(errors)));
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(Integer.valueOf(numOfKeys), Long.valueOf(updates),
-            Long.valueOf(errors2), Boolean.FALSE));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(
+        Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(
+        Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors2), Boolean.FALSE));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
     waitForLastKey();
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(SERVER_TO_CLIENT),
-            Long.valueOf(2 * numOfKeys * updates - errors2)));
-    verifyDeltaReceiverStats(SERVER_TO_CLIENT, 2 * numOfKeys * updates - errors
-        - errors2, errors);
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(
+        Integer.valueOf(SERVER_TO_CLIENT), Long.valueOf(2 * numOfKeys * updates - errors2)));
+    verifyDeltaReceiverStats(SERVER_TO_CLIENT, 2 * numOfKeys * updates - errors - errors2, errors);
   }
 
   /**
@@ -183,8 +181,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
    */
   @Ignore("TODO")
   @Test
-  public void testS2CDeltaPropagationFailedStats2() throws Exception {
-  }
+  public void testS2CDeltaPropagationFailedStats2() throws Exception {}
 
   /**
    * No error or resending of delta.
@@ -195,24 +192,25 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
   public void testP2PDeltaPropagationCleanStats() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
-    Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE,
-        Scope.DISTRIBUTED_ACK, Boolean.TRUE};
+    Object args[] =
+        new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm2.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     // Only delta should get sent to vm1 and vm2
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys), Long.valueOf(updates)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys),
+        Long.valueOf(updates)));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
     vm1.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
     vm2.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER),
-            Long.valueOf(numOfKeys * updates)));
-    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(Integer.valueOf(PEER_TO_PEER),
-            Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
-    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(Integer.valueOf(PEER_TO_PEER),
-            Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest
+        .verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER), Long.valueOf(numOfKeys * updates)));
+    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
+        Integer.valueOf(PEER_TO_PEER), Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
+    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
+        Integer.valueOf(PEER_TO_PEER), Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
   }
 
   /**
@@ -225,16 +223,16 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 50, numOfkeys2 = 10;
     long updates = 50, updates2 = 50;
     long errors = 100, errors2 = 0;
-    Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE,
-        Scope.DISTRIBUTED_ACK, Boolean.TRUE};
+    Object args[] =
+        new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm2.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     // Only delta should get sent to vm1 and vm2
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(Integer.valueOf(numOfKeys),
-            Long.valueOf(updates), Long.valueOf(errors)));
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(Integer.valueOf(numOfkeys2), Long.valueOf(updates2),
-            Long.valueOf(errors2), Boolean.FALSE));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(
+        Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(
+        Integer.valueOf(numOfkeys2), Long.valueOf(updates2), Long.valueOf(errors2), Boolean.FALSE));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
 
     vm1.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
@@ -243,13 +241,12 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     long deltasSent = (numOfKeys * updates) + (numOfkeys2 * updates2) - errors2;
     long deltasProcessed = deltasSent - errors;
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasSent)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest
+        .verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasSent)));
     vm1.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-            Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed),
-            Long.valueOf(errors)));
+        Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed), Long.valueOf(errors)));
     vm2.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-            Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed),
-            Long.valueOf(errors)));
+        Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed), Long.valueOf(errors)));
   }
 
   /**
@@ -259,8 +256,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
    */
   @Ignore("TODO")
   @Test
-  public void testP2PDeltaPropagationFailedStats2() throws Exception {
-  }
+  public void testP2PDeltaPropagationFailedStats2() throws Exception {}
 
   /**
    * No error or resending of delta.
@@ -272,10 +268,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 50;
     long updates = 50;
 
-    Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE,
-        Scope.DISTRIBUTED_ACK, Boolean.TRUE};
-    Integer port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "createServerCache", args);
+    Object args[] =
+        new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
+    Integer port =
+        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     putCleanDelta(numOfKeys, updates);
@@ -285,14 +281,13 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, numOfKeys * updates);
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-            Integer.valueOf(CLIENT_TO_SERVER),
-            Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
+        Integer.valueOf(CLIENT_TO_SERVER), Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
 
     // Unrelated to Delta feature. Piggy-backing on existing test code
     // to validate fix for #49539.
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.doPuts( numOfKeys ));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.doPuts(numOfKeys));
     long clientOriginatedEvents = numOfKeys * updates + numOfKeys + 1;
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyCCPStatsBug49539( clientOriginatedEvents ));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyCCPStatsBug49539(clientOriginatedEvents));
   }
 
   /**
@@ -306,10 +301,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     long updates = 50;
     long errors = 100, errors2 = 13;
 
-    Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE,
-        Scope.DISTRIBUTED_ACK, Boolean.TRUE};
-    Integer port = (Integer)vm0.invoke(DeltaPropagationStatsDUnitTest.class,
-        "createServerCache", args);
+    Object args[] =
+        new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
+    Integer port =
+        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     putErrorDeltaForReceiver(numOfKeys, updates, errors);
@@ -323,8 +318,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, deltasSent);
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-            Integer.valueOf(CLIENT_TO_SERVER), Long.valueOf(deltasProcessed),
-            Long.valueOf(errors)));
+        Integer.valueOf(CLIENT_TO_SERVER), Long.valueOf(deltasProcessed), Long.valueOf(errors)));
   }
 
   /**
@@ -334,8 +328,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
    */
   @Ignore("TODO")
   @Test
-  public void testC2SDeltaPropagationFailedStats2() throws Exception {
-  }
+  public void testC2SDeltaPropagationFailedStats2() throws Exception {}
 
   public static void waitForLastKey() {
     WaitCriterion wc = new WaitCriterion() {
@@ -373,11 +366,9 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void putErrorDeltaForReceiver(Integer keys, Long updates,
-      Long errors) {
+  public static void putErrorDeltaForReceiver(Integer keys, Long updates, Long errors) {
     Region r = cache.getRegion(REGION_NAME);
-    assertTrue("Errors cannot be more than 1/3rd of total udpates",
-        (updates * keys) / 3 > errors);
+    assertTrue("Errors cannot be more than 1/3rd of total udpates", (updates * keys) / 3 > errors);
 
     for (int i = 0; i < keys; i++) {
       r.create(DELTA_KEY + i, new DeltaTestImpl());
@@ -404,11 +395,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     assertTrue("Error puts not exhausted", errors == 0);
   }
 
-  public static void putErrorDeltaForSender(Integer keys, Long updates,
-      Long errors, Boolean doCreate) {
+  public static void putErrorDeltaForSender(Integer keys, Long updates, Long errors,
+      Boolean doCreate) {
     Region r = cache.getRegion(REGION_NAME);
-    assertTrue("Errors cannot be more than 1/3rd of total updates",
-        (keys * updates) / 3 > errors);
+    assertTrue("Errors cannot be more than 1/3rd of total updates", (keys * updates) / 3 > errors);
 
     if (doCreate) {
       for (int i = 0; i < keys; i++) {
@@ -433,14 +423,12 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
         }
         try {
           r.put(DELTA_KEY + i, delta);
-          assertTrue(
-              "Expected an InvalidDeltaException to be thrown, but it wasn't!",
+          assertTrue("Expected an InvalidDeltaException to be thrown, but it wasn't!",
               delta.getIntVar() != DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
         } catch (InvalidDeltaException ide) {
           assertTrue("InvalidDeltaException not expected.",
               delta.getIntVar() == DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
-          cache.getLoggerI18n().fine(
-              "Recieved InvalidDeltaException as expected.");
+          cache.getLoggerI18n().fine("Recieved InvalidDeltaException as expected.");
         }
       }
     }
@@ -459,20 +447,19 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     r.create(LAST_KEY, "LAST_VALUE");
   }
 
-  public static void verifyDeltaSenderStats(Integer path,
-      Long expectedDeltasSent) {
+  public static void verifyDeltaSenderStats(Integer path, Long expectedDeltasSent) {
     long numOfDeltasSent = 0;
     long deltaTime = 0;
-    LocalRegion region = (LocalRegion)cache.getRegion(REGION_NAME);
+    LocalRegion region = (LocalRegion) cache.getRegion(REGION_NAME);
     if (path == PEER_TO_PEER) {
       numOfDeltasSent = region.getCachePerfStats().getDeltasSent();
       deltaTime = region.getCachePerfStats().getDeltasPreparedTime();
     } else if (path == SERVER_TO_CLIENT) {
-      CacheClientNotifier ccn = ((CacheServerImpl)cache.getCacheServers()
-          .toArray()[0]).getAcceptor().getCacheClientNotifier();
+      CacheClientNotifier ccn = ((CacheServerImpl) cache.getCacheServers().toArray()[0])
+          .getAcceptor().getCacheClientNotifier();
 
-      numOfDeltasSent = ((CacheClientProxy)ccn.getClientProxies().toArray()[0])
-          .getStatistics().getDeltaMessagesSent();
+      numOfDeltasSent = ((CacheClientProxy) ccn.getClientProxies().toArray()[0]).getStatistics()
+          .getDeltaMessagesSent();
       deltaTime = 1; // dummy assignment
     } else if (path == CLIENT_TO_SERVER) {
       numOfDeltasSent = region.getCachePerfStats().getDeltasSent();
@@ -484,25 +471,25 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     } else {
       fail("Invalid path code for delta propagation: " + path);
     }
-    assertTrue("Number of deltas sent was expected to be " + expectedDeltasSent
-        + " but is " + numOfDeltasSent, numOfDeltasSent == expectedDeltasSent
-    // C2S are intermittently failing with 1 less delta sent so allowing it
-        || numOfDeltasSent + 1 == expectedDeltasSent);
+    assertTrue(
+        "Number of deltas sent was expected to be " + expectedDeltasSent + " but is "
+            + numOfDeltasSent,
+        numOfDeltasSent == expectedDeltasSent
+            // C2S are intermittently failing with 1 less delta sent so allowing it
+            || numOfDeltasSent + 1 == expectedDeltasSent);
 
     // see bug #41879
     // assertTrue("Delta calculation is expected to take non-zero time",
     // deltaTime > 0);
   }
 
-  public static void verifyDeltaReceiverStats(Integer path,
-      Long expectedDeltasProcessed, Long expectedDeltaFailures) {
+  public static void verifyDeltaReceiverStats(Integer path, Long expectedDeltasProcessed,
+      Long expectedDeltaFailures) {
     long numOfDeltasProcessed = 0;
     long deltaTime = 0;
     long deltaFailures = 0;
-    if (path == PEER_TO_PEER || path == CLIENT_TO_SERVER
-        || path == SERVER_TO_CLIENT) {
-      CachePerfStats stats = ((DistributedRegion)cache.getRegion(REGION_NAME))
-          .getCachePerfStats();
+    if (path == PEER_TO_PEER || path == CLIENT_TO_SERVER || path == SERVER_TO_CLIENT) {
+      CachePerfStats stats = ((DistributedRegion) cache.getRegion(REGION_NAME)).getCachePerfStats();
 
       numOfDeltasProcessed = stats.getDeltaUpdates();
       deltaTime = stats.getDeltaUpdatesTime();
@@ -510,39 +497,33 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     } else {
       fail("Invalid path code for delta propagation: " + path);
     }
-    assertTrue("Number of deltas received was expected to be "
-        + expectedDeltasProcessed + " but is " + numOfDeltasProcessed,
-        numOfDeltasProcessed == expectedDeltasProcessed);
+    assertTrue("Number of deltas received was expected to be " + expectedDeltasProcessed
+        + " but is " + numOfDeltasProcessed, numOfDeltasProcessed == expectedDeltasProcessed);
 
     // It is possible for deltaTime to be zero depending on the system clock
     // resolution
-    assertTrue("Delta calculation is expected to be >= zero but was "
-        + deltaTime, deltaTime >= 0);
+    assertTrue("Delta calculation is expected to be >= zero but was " + deltaTime, deltaTime >= 0);
 
-    assertTrue("Number of delta failures was expected to be "
-        + expectedDeltaFailures + " but is " + deltaFailures,
-        deltaFailures == expectedDeltaFailures);
+    assertTrue("Number of delta failures was expected to be " + expectedDeltaFailures + " but is "
+        + deltaFailures, deltaFailures == expectedDeltaFailures);
   }
 
   public static void verifyCCPStatsBug49539(Long expected) {
-    int actual = CacheClientNotifier.getInstance().getClientProxies()
-        .iterator().next().getStatistics().getMessagesNotQueuedOriginator();
-    assertEquals(
-        "Bug #49539: stats do not match, expected messageNotQueuedOriginator: "
-            + expected + ", actual: " + actual, (long) expected, actual);
+    int actual = CacheClientNotifier.getInstance().getClientProxies().iterator().next()
+        .getStatistics().getMessagesNotQueuedOriginator();
+    assertEquals("Bug #49539: stats do not match, expected messageNotQueuedOriginator: " + expected
+        + ", actual: " + actual, (long) expected, actual);
   }
 
-  public static void createClientCache(String host, Integer port)
-      throws Exception {
+  public static void createClientCache(String host, Integer port) throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     cache = new DeltaPropagationStatsDUnitTest().createCache(props);
-    pool = PoolManager.createFactory().addServer(host, port)
-        .setThreadLocalConnections(true).setMinConnections(1)
-        .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
-        .setReadTimeout(10000).setSocketBufferSize(32768).create(
-            "DeltaPropagationStatsDunitTestPool");
+    pool = PoolManager.createFactory().addServer(host, port).setThreadLocalConnections(true)
+        .setMinConnections(1).setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
+        .setReadTimeout(10000).setSocketBufferSize(32768)
+        .create("DeltaPropagationStatsDunitTestPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.NORMAL);
@@ -563,18 +544,16 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   public static Integer createServerCache(Boolean flag) throws Exception {
     ConnectionTable.threadWantsSharedResources();
-    return createServerCache(flag, DataPolicy.DEFAULT, Scope.DISTRIBUTED_ACK,
-        false);
+    return createServerCache(flag, DataPolicy.DEFAULT, Scope.DISTRIBUTED_ACK, false);
   }
 
-  public static Integer createServerCache(Boolean flag, DataPolicy policy,
-      Scope scope, Boolean listener) throws Exception {
+  public static Integer createServerCache(Boolean flag, DataPolicy policy, Scope scope,
+      Boolean listener) throws Exception {
     ConnectionTable.threadWantsSharedResources();
     DeltaPropagationStatsDUnitTest test = new DeltaPropagationStatsDUnitTest();
     Properties props = new Properties();
     if (!flag) {
-      props
-          .setProperty(DELTA_PROPAGATION, "false");
+      props.setProperty(DELTA_PROPAGATION, "false");
     }
     cache = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();

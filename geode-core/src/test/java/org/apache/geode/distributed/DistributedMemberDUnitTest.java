@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -48,12 +46,11 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   protected void sleep(long millis) { // TODO: replace with Awaitility
     try {
       Thread.sleep(millis);
-    }
-    catch (InterruptedException e) {
+    } catch (InterruptedException e) {
       fail("interrupted");
     }
   }
-  
+
   /**
    * Tests default settings.
    */
@@ -68,22 +65,18 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
     InternalDistributedSystem system = getSystem(config);
     try {
-      assertTrue(system.getConfig().getRoles().equals(
-          DistributionConfig.DEFAULT_ROLES));
-      assertTrue(system.getConfig().getGroups().equals(
-          DistributionConfig.DEFAULT_ROLES));
-      assertTrue(system.getConfig().getName().equals(
-          DistributionConfig.DEFAULT_NAME));
+      assertTrue(system.getConfig().getRoles().equals(DistributionConfig.DEFAULT_ROLES));
+      assertTrue(system.getConfig().getGroups().equals(DistributionConfig.DEFAULT_ROLES));
+      assertTrue(system.getConfig().getName().equals(DistributionConfig.DEFAULT_NAME));
 
       DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();
-      
+
       Set roles = member.getRoles();
       assertEquals(0, roles.size());
       assertEquals("", member.getName());
       assertEquals(Collections.emptyList(), member.getGroups());
-    } 
-    finally {
+    } finally {
       system.disconnect();
     }
   }
@@ -101,24 +94,23 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
       DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();
-      
+
       assertEquals("nondefault", member.getName());
-    } 
-    finally {
+    } finally {
       system.disconnect();
     }
   }
 
   /**
-   * Tests the configuration of many Roles and groups in one vm.
-   * Confirms no runtime distinction between roles and groups.
+   * Tests the configuration of many Roles and groups in one vm. Confirms no runtime distinction
+   * between roles and groups.
    */
   @Test
   public void testRolesInOneVM() {
     final String rolesProp = "A,B,C";
     final String groupsProp = "D,E,F,G";
-    final List bothList = Arrays.asList(new String[] {"A","B","C","D","E","F","G"});
-    
+    final List bothList = Arrays.asList(new String[] {"A", "B", "C", "D", "E", "F", "G"});
+
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
@@ -129,21 +121,20 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     try {
       assertEquals(rolesProp, system.getConfig().getRoles());
       assertEquals(groupsProp, system.getConfig().getGroups());
-      
+
       DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();
-      
+
       Set roles = member.getRoles();
       assertEquals(bothList.size(), roles.size());
-      
+
       for (Iterator iter = roles.iterator(); iter.hasNext();) {
         Role role = (Role) iter.next();
         assertTrue(bothList.contains(role.getName()));
       }
-      
+
       assertEquals(bothList, member.getGroups());
-    } 
-    finally {
+    } finally {
       system.disconnect();
     }
   }
@@ -177,29 +168,29 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       }
     });
   }
-  
+
   /**
-   * Tests the configuration of one unique Role in each of four vms. Verifies 
-   * that each vm is aware of the other vms' Roles.
+   * Tests the configuration of one unique Role in each of four vms. Verifies that each vm is aware
+   * of the other vms' Roles.
    */
   @Test
   public void testRolesInAllVMs() {
     disconnectAllFromDS(); // or assertion on # members fails when run-dunit-tests
 
     // connect all four vms...
-    final String[] vmRoles = new String[] {"VM_A","VM_B","VM_C","VM_D"};
+    final String[] vmRoles = new String[] {"VM_A", "VM_B", "VM_C", "VM_D"};
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
         public void run() {
-          //disconnectFromDS();
+          // disconnectFromDS();
           Properties config = new Properties();
           config.setProperty(ROLES, vmRoles[vm]);
           getSystem(config);
         }
       });
     }
-    
+
     // validate roles from each vm...
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
@@ -208,24 +199,23 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           InternalDistributedSystem sys = getSystem();
           assertNotNull(sys.getConfig().getRoles());
           assertTrue(sys.getConfig().getRoles().equals(vmRoles[vm]));
-          
+
           DM dm = sys.getDistributionManager();
           InternalDistributedMember self = dm.getDistributionManagerId();
-          
+
           Set myRoles = self.getRoles();
           assertEquals(1, myRoles.size());
-          
+
           Role myRole = (Role) myRoles.iterator().next();
           assertTrue(vmRoles[vm].equals(myRole.getName()));
-          
+
           Set members = null;
           for (int i = 1; i <= 3; i++) {
             try {
               members = dm.getOtherNormalDistributionManagerIds();
               assertEquals(3, members.size());
               break;
-            }
-            catch (AssertionError e) { // TODO: delete this
+            } catch (AssertionError e) { // TODO: delete this
               if (i < 3) {
                 sleep(200);
               } else {
@@ -233,7 +223,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
               }
             }
           }
-          
+
           for (Iterator iterMembers = members.iterator(); iterMembers.hasNext();) {
             InternalDistributedMember member = (InternalDistributedMember) iterMembers.next();
             Set roles = member.getRoles();
@@ -259,12 +249,14 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   private static String makeOddEvenString(int vm) {
     return ((vm % 2) == 0) ? "EVENS" : "ODDS";
   }
+
   private static String makeGroupsString(int vm) {
     return "" + vm + ", " + makeOddEvenString(vm);
   }
+
   /**
-   * Tests the configuration of one unique group in each of four vms. Verifies 
-   * that each vm is aware of the other vms' groups.
+   * Tests the configuration of one unique group in each of four vms. Verifies that each vm is aware
+   * of the other vms' groups.
    */
   @Test
   public void testGroupsInAllVMs() {
@@ -275,14 +267,14 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
         public void run() {
-          //disconnectFromDS();
+          // disconnectFromDS();
           Properties config = new Properties();
           config.setProperty(GROUPS, makeGroupsString(vm));
           getSystem(config);
         }
       });
     }
-    
+
     // validate group from each vm...
     for (int i = 0; i < 4; i++) {
       final int vm = i;
@@ -291,22 +283,21 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           InternalDistributedSystem sys = getSystem();
           final String expectedMyGroup = makeGroupsString(vm);
           assertEquals(expectedMyGroup, sys.getConfig().getGroups());
-          
+
           DM dm = sys.getDistributionManager();
           DistributedMember self = sys.getDistributedMember();
-          
+
           List<String> myGroups = self.getGroups();
-          
-          assertEquals(Arrays.asList(""+vm, makeOddEvenString(vm)), myGroups);
-          
+
+          assertEquals(Arrays.asList("" + vm, makeOddEvenString(vm)), myGroups);
+
           Set<DistributedMember> members = null;
           for (int i = 1; i <= 3; i++) {
             try {
               members = dm.getOtherNormalDistributionManagerIds();
               assertEquals(3, members.size());
               break;
-            }
-            catch (AssertionError e) { // TODO: delete this
+            } catch (AssertionError e) { // TODO: delete this
               if (i < 3) {
                 sleep(200);
               } else {
@@ -324,7 +315,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           HashSet<DistributedMember> evens = new HashSet<DistributedMember>();
           HashSet<DistributedMember> odds = new HashSet<DistributedMember>();
           boolean isEvens = true;
-          for (String groupName: Arrays.asList("0", "1", "2", "3")) {
+          for (String groupName : Arrays.asList("0", "1", "2", "3")) {
             Set<DistributedMember> gm = sys.getGroupMembers(groupName);
             if (isEvens) {
               evens.addAll(gm);
@@ -332,7 +323,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
               odds.addAll(gm);
             }
             isEvens = !isEvens;
-            if (groupName.equals(""+vm)) {
+            if (groupName.equals("" + vm)) {
               assertEquals(Collections.singleton(self), gm);
             } else {
               assertEquals(1, gm.size());
@@ -346,17 +337,15 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       });
     }
   }
-  
+
   /**
-   * The method getId() returns a string that is used as a key identifier in
-   * the JMX and Admin APIs. This test asserts that it matches the expected 
-   * format. If you change DistributedMember.getId() or DistributedSystem.
-   * getMemberId() you will need to look closely at the format, decide if it
-   * is appropriate for JMX as the id for SystemMember mbeans and then adjust
-   * this test as needed.
+   * The method getId() returns a string that is used as a key identifier in the JMX and Admin APIs.
+   * This test asserts that it matches the expected format. If you change DistributedMember.getId()
+   * or DistributedSystem. getMemberId() you will need to look closely at the format, decide if it
+   * is appropriate for JMX as the id for SystemMember mbeans and then adjust this test as needed.
    *
-   * Changing the id can result in bad keys in JMX and can result in numerous
-   * errors in Admin/JMX tests.
+   * Changing the id can result in bad keys in JMX and can result in numerous errors in Admin/JMX
+   * tests.
    */
   @Test
   public void testGetId() {
@@ -370,11 +359,10 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
       DM dm = system.getDistributionManager();
       DistributedMember member = dm.getDistributionManagerId();
-      
+
       assertEquals(member.getId(), system.getMemberId());
       assertTrue(member.getId().contains("foobar"));
-    } 
-    finally {
+    } finally {
       system.disconnect();
     }
   }
@@ -403,9 +391,9 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           expected.add(member0);
           expected.add(member1);
           expected.add(member2);
-          
-          //Members will contain the locator as well. Just make sure it has
-          //the members we're looking for.
+
+          // Members will contain the locator as well. Just make sure it has
+          // the members we're looking for.
           assertTrue("Expected" + expected + " got " + members, members.containsAll(expected));
           assertEquals(4, members.size());
         } catch (UnknownHostException e) {
@@ -414,10 +402,10 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       }
     });
   }
-  
+
   private DistributedMember createSystemAndGetId(VM vm, final String name) {
     return (DistributedMember) vm.invoke(new SerializableCallable("create system and get member") {
-      
+
       @Override
       public Object call() throws Exception {
         Properties config = new Properties();
@@ -427,7 +415,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       }
     });
   }
-  
+
 }
-  
+
 

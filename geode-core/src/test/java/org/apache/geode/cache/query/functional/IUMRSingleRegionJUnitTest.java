@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
  * IUMRSingleRegionJUnitTest.java
@@ -46,7 +44,7 @@ import static org.junit.Assert.fail;
 public class IUMRSingleRegionJUnitTest {
 
   private static final String indexName = "queryTest";
-  
+
   private Cache cache;
   private Region region;
   private Index index;
@@ -151,13 +149,12 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       assertEquals("villageName", itr.next().toString());
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -188,8 +185,7 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       String temp;
@@ -203,8 +199,7 @@ public class IUMRSingleRegionJUnitTest {
           break;
         } else {
           fail("indices used do not match with those which are expected to be used"
-              + "<villageName> and <cityName> were expected but found "
-              + itr.next());
+              + "<villageName> and <cityName> were expected but found " + itr.next());
         }
       }
 
@@ -239,8 +234,7 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       String temp;
@@ -254,12 +248,11 @@ public class IUMRSingleRegionJUnitTest {
           break;
         } else {
           fail("indices used do not match with those which are expected to be used"
-              + "<cityName> and <stateName> were expected but found "
-              + itr.next());
+              + "<cityName> and <stateName> were expected but found " + itr.next());
         }
       }
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -289,13 +282,12 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       assertEquals("countryName2", itr.next().toString());
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -308,7 +300,8 @@ public class IUMRSingleRegionJUnitTest {
   public void testSelectBestIndex2() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR011
-    String sqlStr = "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.cities ct, d.villages v WHERE c.name = 'INDIA'";
+    String sqlStr =
+        "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.cities ct, d.villages v WHERE c.name = 'INDIA'";
 
     // query execution without Index.
     Query q = null;
@@ -325,13 +318,12 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       assertEquals("countryName1", itr.next().toString());
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -344,7 +336,8 @@ public class IUMRSingleRegionJUnitTest {
   public void testProjectionAttr1() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR012
-    String sqlStr = "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d WHERE d.name = 'PUNEDIST' AND s.name = 'GUJARAT'";
+    String sqlStr =
+        "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d WHERE d.name = 'PUNEDIST' AND s.name = 'GUJARAT'";
 
     // query execution without Index.
     Query q = null;
@@ -361,8 +354,7 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
 
       Iterator itr = observer.indexesUsed.iterator();
@@ -377,12 +369,11 @@ public class IUMRSingleRegionJUnitTest {
           break;
         } else {
           fail("indices used do not match with those which are expected to be used"
-              + "<districtName> and <stateName> were expected but found "
-              + itr.next());
+              + "<districtName> and <stateName> were expected but found " + itr.next());
         }
       }
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -395,7 +386,8 @@ public class IUMRSingleRegionJUnitTest {
   public void testCutDown1() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR013
-    String sqlStr = "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI'";
+    String sqlStr =
+        "SELECT DISTINCT * FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI'";
 
     // query execution without Index.
     Query q = null;
@@ -412,13 +404,12 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       assertEquals("cityName", itr.next().toString());
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -431,7 +422,8 @@ public class IUMRSingleRegionJUnitTest {
   public void testCutDown2() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR014
-    String sqlStr = "SELECT DISTINCT c.name, s.name, d.name, ct.name FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR ct.name = 'CHENNAI'";
+    String sqlStr =
+        "SELECT DISTINCT c.name, s.name, d.name, ct.name FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR ct.name = 'CHENNAI'";
 
     // query execution without Index.
     Query q = null;
@@ -448,13 +440,12 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       assertEquals("cityName", itr.next().toString());
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -467,7 +458,8 @@ public class IUMRSingleRegionJUnitTest {
   public void testCutDown3() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR015
-    String sqlStr = "SELECT DISTINCT c.name, s.name FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR s.name = 'GUJARAT'";
+    String sqlStr =
+        "SELECT DISTINCT c.name, s.name FROM /Countries c, c.states s, s.districts d, d.cities ct WHERE ct.name = 'MUMBAI' OR s.name = 'GUJARAT'";
 
     // query execution without Index.
     Query q = null;
@@ -484,8 +476,7 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
 
       Iterator itr = observer.indexesUsed.iterator();
@@ -500,12 +491,11 @@ public class IUMRSingleRegionJUnitTest {
           break;
         } else {
           fail("indices used do not match with those which are expected to be used"
-              + "<cityName> and <stateName> were expected but found "
-              + itr.next());
+              + "<cityName> and <stateName> were expected but found " + itr.next());
         }
       }
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -518,9 +508,10 @@ public class IUMRSingleRegionJUnitTest {
   public void testSelectAsFromClause() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR016
-    String sqlStr = "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, (SELECT DISTINCT * FROM "
-        + "/Countries c, c.states s, s.districts d, d.cities ct WHERE s.name = 'PUNJAB') itr1, "
-        + "s.districts d, d.cities ct WHERE ct.name = 'CHANDIGARH'";
+    String sqlStr =
+        "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, (SELECT DISTINCT * FROM "
+            + "/Countries c, c.states s, s.districts d, d.cities ct WHERE s.name = 'PUNJAB') itr1, "
+            + "s.districts d, d.cities ct WHERE ct.name = 'CHANDIGARH'";
 
     // query execution without Index.
     Query q = null;
@@ -537,8 +528,7 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
 
       Iterator itr = observer.indexesUsed.iterator();
@@ -553,12 +543,11 @@ public class IUMRSingleRegionJUnitTest {
           break;
         } else {
           fail("indices used do not match with those which are expected to be used"
-              + "<stateName> and <cityName> were expected but found "
-              + itr.next());
+              + "<stateName> and <cityName> were expected but found " + itr.next());
         }
       }
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -571,9 +560,10 @@ public class IUMRSingleRegionJUnitTest {
   public void testSelectAsWhereClause() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR017
-    String sqlStr = "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, s.districts d,"
-        + " d.cities ct WHERE ct.name = element (SELECT DISTINCT ct.name FROM /Countries c, c.states s, "
-        + "s.districts d, d.cities ct WHERE s.name = 'MAHARASHTRA' AND ct.name = 'PUNE')";
+    String sqlStr =
+        "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, s.districts d,"
+            + " d.cities ct WHERE ct.name = element (SELECT DISTINCT ct.name FROM /Countries c, c.states s, "
+            + "s.districts d, d.cities ct WHERE s.name = 'MAHARASHTRA' AND ct.name = 'PUNE')";
 
     // query execution without Index.
     Query q = null;
@@ -590,8 +580,7 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
 
       Iterator itr = observer.indexesUsed.iterator();
@@ -606,12 +595,11 @@ public class IUMRSingleRegionJUnitTest {
           break;
         } else {
           fail("indices used do not match with those which are expected to be used"
-              + "<stateName> and <cityName> were expected but found "
-              + itr.next());
+              + "<stateName> and <cityName> were expected but found " + itr.next());
         }
       }
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -624,8 +612,9 @@ public class IUMRSingleRegionJUnitTest {
   public void testFunctionUse1() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR018
-    String sqlStr = "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, s.districts d, "
-        + "d.cities ct, d.getVillages() v WHERE v.getName() = 'PUNJAB_VILLAGE1'";
+    String sqlStr =
+        "SELECT DISTINCT c.name, s.name, ct.name FROM /Countries c, c.states s, s.districts d, "
+            + "d.cities ct, d.getVillages() v WHERE v.getName() = 'PUNJAB_VILLAGE1'";
 
     // query execution without Index.
     Query q = null;
@@ -642,13 +631,12 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       assertEquals("villageName", itr.next().toString());
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -661,9 +649,10 @@ public class IUMRSingleRegionJUnitTest {
   public void testFunctionUse2() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR019
-    String sqlStr = "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM /Countries c, c.getStates() s, "
-        + "s.getDistricts() d, d.getCities() ct WHERE ct.getName() = 'PUNE' OR ct.name = 'CHANDIGARH' "
-        + "OR s.getName() = 'GUJARAT'";
+    String sqlStr =
+        "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM /Countries c, c.getStates() s, "
+            + "s.getDistricts() d, d.getCities() ct WHERE ct.getName() = 'PUNE' OR ct.name = 'CHANDIGARH' "
+            + "OR s.getName() = 'GUJARAT'";
 
     // query execution without Index.
     Query q = null;
@@ -680,8 +669,7 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
 
       Iterator itr = observer.indexesUsed.iterator();
@@ -696,12 +684,11 @@ public class IUMRSingleRegionJUnitTest {
           break;
         } else {
           fail("indices used do not match with those which are expected to be used"
-              + "<cityName> and <stateName> were expected but found "
-              + itr.next());
+              + "<cityName> and <stateName> were expected but found " + itr.next());
         }
       }
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -714,8 +701,9 @@ public class IUMRSingleRegionJUnitTest {
   public void testFunctionUse3() throws Exception {
     SelectResults rs[][] = new SelectResults[1][2];
     // Test Case No. IUMR020
-    String sqlStr = "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM /Countries c, "
-        + "c.states s, s.districts d WHERE d.name = 'MUMBAIDIST'";
+    String sqlStr =
+        "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM /Countries c, "
+            + "c.states s, s.districts d WHERE d.name = 'MUMBAIDIST'";
 
     // query execution without Index.
     Query q = null;
@@ -732,13 +720,12 @@ public class IUMRSingleRegionJUnitTest {
       rs[0][1] = (SelectResults) q.execute();
 
       if (!observer.isIndexesUsed) {
-        fail("------------ INDEX IS NOT USED FOR THE QUERY:: "
-            + q.getQueryString());
+        fail("------------ INDEX IS NOT USED FOR THE QUERY:: " + q.getQueryString());
       }
       Iterator itr = observer.indexesUsed.iterator();
       assertEquals("districtName", itr.next().toString());
 
-      areResultsMatching(rs, new String[] { sqlStr });
+      areResultsMatching(rs, new String[] {sqlStr});
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -814,32 +801,32 @@ public class IUMRSingleRegionJUnitTest {
       int temp;
       temp = i % 5;
       switch (temp) {
-      case 1:
-        region.put(new Integer(i), c1);
-        break;
+        case 1:
+          region.put(new Integer(i), c1);
+          break;
 
-      case 2:
-        region.put(new Integer(i), c2);
-        break;
+        case 2:
+          region.put(new Integer(i), c2);
+          break;
 
-      case 3:
-        region.put(new Integer(i), c3);
-        break;
+        case 3:
+          region.put(new Integer(i), c3);
+          break;
 
-      case 4:
-        region.put(new Integer(i), c4);
-        break;
+        case 4:
+          region.put(new Integer(i), c4);
+          break;
 
-      case 0:
-        region.put(new Integer(i), c5);
-        break;
+        case 0:
+          region.put(new Integer(i), c5);
+          break;
 
-      default:
-        CacheUtils.log("Nothing to add in region for: " + temp);
-        break;
+        default:
+          CacheUtils.log("Nothing to add in region for: " + temp);
+          break;
 
       }// end of switch
-    }// end of for
+    } // end of for
 
   }// end of populateData
 
@@ -857,8 +844,7 @@ public class IUMRSingleRegionJUnitTest {
         "/Countries c, c.states s, s.districts d, d.cities ct, d.villages v");
     qs.createIndex("countryName1", IndexType.FUNCTIONAL, "c.name",
         "/Countries c, c.states s, s.districts d, d.cities ct, d.villages v");
-    qs.createIndex("countryName2", IndexType.FUNCTIONAL, "c.name",
-        "/Countries c");
+    qs.createIndex("countryName2", IndexType.FUNCTIONAL, "c.name", "/Countries c");
 
   }// end of createIndex
 

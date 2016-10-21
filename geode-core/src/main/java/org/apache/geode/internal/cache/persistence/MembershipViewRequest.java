@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.persistence;
 
@@ -52,53 +50,56 @@ import org.apache.geode.internal.logging.LogService;
 /**
  *
  */
-public class MembershipViewRequest extends
-  DistributionMessage implements MessageWithReply {
+public class MembershipViewRequest extends DistributionMessage implements MessageWithReply {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private String regionPath;
   private int processorId;
   private boolean targetReinitializing;
 
   public MembershipViewRequest() {
-    
+
   }
-  
+
   public MembershipViewRequest(String regionPath, int processorId, boolean targetReinitializing) {
     this.regionPath = regionPath;
     this.processorId = processorId;
     this.targetReinitializing = targetReinitializing;
   }
 
-  public static PersistentMembershipView send(
-      InternalDistributedMember recipient, DM dm, String regionPath, boolean targetReinitializing) throws ReplyException {
-    MembershipViewRequestReplyProcessor processor = new MembershipViewRequestReplyProcessor(dm, recipient);
-    MembershipViewRequest msg = new MembershipViewRequest(regionPath, processor.getProcessorId(), targetReinitializing);
+  public static PersistentMembershipView send(InternalDistributedMember recipient, DM dm,
+      String regionPath, boolean targetReinitializing) throws ReplyException {
+    MembershipViewRequestReplyProcessor processor =
+        new MembershipViewRequestReplyProcessor(dm, recipient);
+    MembershipViewRequest msg =
+        new MembershipViewRequest(regionPath, processor.getProcessorId(), targetReinitializing);
     msg.setRecipient(recipient);
     dm.putOutgoing(msg);
     return processor.getResult();
   }
-  
-  public static Set<PersistentMembershipView> send(
-      Set<InternalDistributedMember> recipients, DM dm, String regionPath) throws ReplyException {
-    MembershipViewRequestReplyProcessor processor = new MembershipViewRequestReplyProcessor(dm, recipients);
-    MembershipViewRequest msg = new MembershipViewRequest(regionPath, processor.getProcessorId(), false);
+
+  public static Set<PersistentMembershipView> send(Set<InternalDistributedMember> recipients, DM dm,
+      String regionPath) throws ReplyException {
+    MembershipViewRequestReplyProcessor processor =
+        new MembershipViewRequestReplyProcessor(dm, recipients);
+    MembershipViewRequest msg =
+        new MembershipViewRequest(regionPath, processor.getProcessorId(), false);
     msg.setRecipients(recipients);
     dm.putOutgoing(msg);
     return processor.getResults();
   }
-  
-  @Override  
+
+  @Override
   final public int getProcessorType() {
-    return this.targetReinitializing ? DistributionManager.WAITING_POOL_EXECUTOR :
-                              DistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return this.targetReinitializing ? DistributionManager.WAITING_POOL_EXECUTOR
+        : DistributionManager.HIGH_PRIORITY_EXECUTOR;
   }
 
   @Override
   protected void process(DistributionManager dm) {
-    int initLevel = this.targetReinitializing ? LocalRegion.AFTER_INITIAL_IMAGE
-        : LocalRegion.ANY_INIT;
+    int initLevel =
+        this.targetReinitializing ? LocalRegion.AFTER_INITIAL_IMAGE : LocalRegion.ANY_INIT;
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
 
     PersistentMembershipView view = null;
@@ -110,43 +111,41 @@ public class MembershipViewRequest extends
       Cache cache = CacheFactory.getInstance(dm.getSystem());
       Region region = cache.getRegion(this.regionPath);
       PersistenceAdvisor persistenceAdvisor = null;
-      if(region instanceof DistributedRegion) {
+      if (region instanceof DistributedRegion) {
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
-      } else if ( region == null) {
-        Bucket proxy = PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(), this.regionPath, false);
-        if(proxy != null) {
+      } else if (region == null) {
+        Bucket proxy = PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(),
+            this.regionPath, false);
+        if (proxy != null) {
           persistenceAdvisor = proxy.getPersistenceAdvisor();
         }
       }
-      if(persistenceAdvisor != null) {
-        view= persistenceAdvisor.getMembershipView();
+      if (persistenceAdvisor != null) {
+        view = persistenceAdvisor.getMembershipView();
       }
     } catch (RegionDestroyedException e) {
-//      exception = new ReplyException(e);
+      // exception = new ReplyException(e);
       logger.debug("<RegionDestroyed> {}", this);
-    }
-    catch (CancelException e) {
-//      exception = new ReplyException(e);
+    } catch (CancelException e) {
+      // exception = new ReplyException(e);
       logger.debug("<CancelException> {}", this);
-    }
-    catch(VirtualMachineError e) {
+    } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    }
-    catch(Throwable t) {
+    } catch (Throwable t) {
       SystemFailure.checkFailure();
       exception = new ReplyException(t);
-    }
-    finally {
+    } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
       MembershipViewReplyMessage replyMsg = new MembershipViewReplyMessage();
       replyMsg.setRecipient(getSender());
       replyMsg.setProcessorId(processorId);
-      replyMsg.view= view;
+      replyMsg.view = view;
       if (logger.isDebugEnabled()) {
-        logger.debug("MembershipViewRequest returning view {} for region {}", view, this.regionPath);
+        logger.debug("MembershipViewRequest returning view {} for region {}", view,
+            this.regionPath);
       }
-      if(exception != null) {
+      if (exception != null) {
         replyMsg.setException(exception);
       }
       dm.putOutgoing(replyMsg);
@@ -156,10 +155,9 @@ public class MembershipViewRequest extends
   public int getDSFID() {
     return PERSISTENT_MEMBERSHIP_VIEW_REQUEST;
   }
-  
+
   @Override
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     processorId = in.readInt();
     regionPath = DataSerializer.readString(in);
@@ -173,31 +171,29 @@ public class MembershipViewRequest extends
     DataSerializer.writeString(regionPath, out);
     out.writeBoolean(targetReinitializing);
   }
-  
+
   private static class MembershipViewRequestReplyProcessor extends ReplyProcessor21 {
     private Set<PersistentMembershipView> views = new HashSet<PersistentMembershipView>();
 
-    
-    
-    public MembershipViewRequestReplyProcessor(DM dm,
-        InternalDistributedMember member) {
+
+
+    public MembershipViewRequestReplyProcessor(DM dm, InternalDistributedMember member) {
       super(dm, member);
     }
-    
-    public MembershipViewRequestReplyProcessor(DM dm,
-        Set<InternalDistributedMember> members) {
+
+    public MembershipViewRequestReplyProcessor(DM dm, Set<InternalDistributedMember> members) {
       super(dm, members);
     }
 
     public PersistentMembershipView getResult() {
       waitForRepliesUninterruptibly();
-      if(views.isEmpty()) {
-        //TODO prperist internationalize.
+      if (views.isEmpty()) {
+        // TODO prperist internationalize.
         throw new ReplyException("Member departed");
       }
       return views.iterator().next();
     }
-    
+
     public Set<PersistentMembershipView> getResults() {
       waitForRepliesUninterruptibly();
       return views;
@@ -205,13 +201,13 @@ public class MembershipViewRequest extends
 
     @Override
     public void process(DistributionMessage msg) {
-      if(msg instanceof MembershipViewReplyMessage) {
+      if (msg instanceof MembershipViewReplyMessage) {
         PersistentMembershipView view = ((MembershipViewReplyMessage) msg).view;
         if (logger.isDebugEnabled()) {
           logger.debug("MembershipViewReplyProcessor received {}", view);
         }
-        if(view != null) {
-          synchronized(this) {
+        if (view != null) {
+          synchronized (this) {
             this.views.add(view);
           }
         }
@@ -229,11 +225,10 @@ public class MembershipViewRequest extends
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       boolean hasView = in.readBoolean();
-      if(hasView) {
+      if (hasView) {
         view = new PersistentMembershipView();
         InternalDataSerializer.invokeFromData(view, in);
       }
@@ -242,7 +237,7 @@ public class MembershipViewRequest extends
     @Override
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
-      if(view == null) {
+      if (view == null) {
         out.writeBoolean(false);
       } else {
         out.writeBoolean(true);

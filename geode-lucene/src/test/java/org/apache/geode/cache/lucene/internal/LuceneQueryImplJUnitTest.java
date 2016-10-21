@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal;
@@ -71,7 +67,8 @@ public class LuceneQueryImplJUnitTest {
     when(execution.execute(anyString())).thenReturn((ResultCollector) collector);
 
     query = new LuceneQueryImpl<Object, Object>("index", region, provider, null, LIMIT, 20) {
-      @Override protected Execution onRegion() {
+      @Override
+      protected Execution onRegion() {
         return execution;
       }
     };
@@ -84,8 +81,7 @@ public class LuceneQueryImplJUnitTest {
 
     Map<String, String> getAllResult = new HashMap<String, String>();
     getAllResult.put("hi", "value");
-    when(region.getAll(eq(Collections.singletonList("hi"))))
-      .thenReturn(getAllResult);
+    when(region.getAll(eq(Collections.singletonList("hi")))).thenReturn(getAllResult);
   }
 
   @Test
@@ -121,9 +117,9 @@ public class LuceneQueryImplJUnitTest {
   @Test
   public void shouldReturnLuceneResultStructFromFindResults() throws LuceneQueryException {
     addValueToResults();
-    List<LuceneResultStruct<String,String>> result=new ArrayList<>();
-    result.add(new LuceneResultStructImpl("hi","value",5));
-    assertEquals(result,query.findResults());
+    List<LuceneResultStruct<String, String>> result = new ArrayList<>();
+    result.add(new LuceneResultStructImpl("hi", "value", 5));
+    assertEquals(result, query.findResults());
   }
 
   @Test
@@ -132,7 +128,8 @@ public class LuceneQueryImplJUnitTest {
     PageableLuceneQueryResults<Object, Object> results = query.findPages();
 
     verify(execution).execute(eq(LuceneFunction.ID));
-    ArgumentCaptor<LuceneFunctionContext> captor = ArgumentCaptor.forClass(LuceneFunctionContext.class);
+    ArgumentCaptor<LuceneFunctionContext> captor =
+        ArgumentCaptor.forClass(LuceneFunctionContext.class);
     verify(execution).withArgs(captor.capture());
     LuceneFunctionContext context = captor.getValue();
     assertEquals(LIMIT, context.getLimit());

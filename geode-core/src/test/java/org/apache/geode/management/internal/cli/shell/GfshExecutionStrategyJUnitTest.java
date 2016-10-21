@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.shell;
 
@@ -57,44 +55,47 @@ public class GfshExecutionStrategyJUnitTest {
   public void tearDown() {
     CommandManager.clearInstance();
   }
-  
+
   /**
    * tests execute method by executing dummy method command1
    */
   @Test
   public void testGfshExecutionStartegyExecute() throws Exception {
     CommandManager commandManager = CommandManager.getInstance();
-    assertNotNull("CommandManager should not be null.", commandManager);      
+    assertNotNull("CommandManager should not be null.", commandManager);
     commandManager.add(Commands.class.newInstance());
     GfshParser parser = new GfshParser(commandManager);
-    String[] command1Names = ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
-    String input =command1Names[0];
-    ParseResult parseResult = null;   
-    parseResult = parser.parse(input);  
-    String[] args = new String[] {command1Names[0]  };
-    Gfsh gfsh = Gfsh.getInstance(false, args, new GfshConfig());      
+    String[] command1Names =
+        ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class))
+            .value();
+    String input = command1Names[0];
+    ParseResult parseResult = null;
+    parseResult = parser.parse(input);
+    String[] args = new String[] {command1Names[0]};
+    Gfsh gfsh = Gfsh.getInstance(false, args, new GfshConfig());
     GfshExecutionStrategy gfshExecutionStrategy = new GfshExecutionStrategy(gfsh);
-    Result resultObject = (Result)gfshExecutionStrategy.execute(parseResult);     
-    String str  = resultObject.nextLine();      
-    assertTrue(str.trim().equals(COMMAND1_SUCESS));      
+    Result resultObject = (Result) gfshExecutionStrategy.execute(parseResult);
+    String str = resultObject.nextLine();
+    assertTrue(str.trim().equals(COMMAND1_SUCESS));
   }
-  
+
   /**
-   * tests isReadyForCommnads method by executing dummy method command1.
-   * TODO: this method is hard coded in source which may change in future. So this
-   * test should also be accordingly changed
+   * tests isReadyForCommnads method by executing dummy method command1. TODO: this method is hard
+   * coded in source which may change in future. So this test should also be accordingly changed
    */
   @Test
   public void testGfshExecutionStartegyIsReadyForCommands() throws Exception {
     CommandManager commandManager = CommandManager.getInstance();
     assertNotNull("CommandManager should not be null.", commandManager);
-    commandManager.add(Commands.class.newInstance());      
-    String[] command1Names = ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
-    String[] args = new String[] {command1Names[0]  };
-    Gfsh gfsh = Gfsh.getInstance(false, args, new GfshConfig());      
+    commandManager.add(Commands.class.newInstance());
+    String[] command1Names =
+        ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class))
+            .value();
+    String[] args = new String[] {command1Names[0]};
+    Gfsh gfsh = Gfsh.getInstance(false, args, new GfshConfig());
     GfshExecutionStrategy gfshExecutionStrategy = new GfshExecutionStrategy(gfsh);
-    boolean ready = gfshExecutionStrategy.isReadyForCommands();      
-    assertTrue(ready);      
+    boolean ready = gfshExecutionStrategy.isReadyForCommands();
+    assertTrue(ready);
   }
 
   /**
@@ -102,42 +103,35 @@ public class GfshExecutionStrategyJUnitTest {
    */
   public static class Commands implements CommandMarker {
 
-    @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)
-    @CliMetaData(shellOnly = true )
+    @CliCommand(value = {COMMAND1_NAME, COMMAND1_NAME_ALIAS}, help = COMMAND1_HELP)
+    @CliMetaData(shellOnly = true)
     @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result command1() {
-      return ResultBuilder.createInfoResult(COMMAND1_SUCESS);      
+      return ResultBuilder.createInfoResult(COMMAND1_SUCESS);
     }
 
-    @CliCommand(value = { COMMAND2_NAME })
-    @CliMetaData(shellOnly = false )
+    @CliCommand(value = {COMMAND2_NAME})
+    @CliMetaData(shellOnly = false)
     @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result command2() {
-      return ResultBuilder.createInfoResult(COMMAND2_SUCESS);      
+      return ResultBuilder.createInfoResult(COMMAND2_SUCESS);
     }
 
-    @CliCommand(value = { "testParamConcat" })
+    @CliCommand(value = {"testParamConcat"})
     @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-    public static Result testParamConcat(
-        @CliOption(key = { "string" })
-        String string,
-        @CliOption(key = { "stringArray" })
-        @CliMetaData(valueSeparator = ",")
-        String[] stringArray,
-        @CliOption(key = { "stringList" }, optionContext = ConverterHint.STRING_LIST)
-        @CliMetaData(valueSeparator = ",")
-        List<String> stringList, @CliOption(key = { "integer" })
-        Integer integer, @CliOption(key = { "colonArray" })
-        @CliMetaData(valueSeparator = ":")
-        String[] colonArray) {
+    public static Result testParamConcat(@CliOption(key = {"string"}) String string,
+        @CliOption(key = {"stringArray"}) @CliMetaData(valueSeparator = ",") String[] stringArray,
+        @CliOption(key = {"stringList"}, optionContext = ConverterHint.STRING_LIST) @CliMetaData(
+            valueSeparator = ",") List<String> stringList,
+        @CliOption(key = {"integer"}) Integer integer,
+        @CliOption(key = {"colonArray"}) @CliMetaData(valueSeparator = ":") String[] colonArray) {
       return null;
     }
 
-    @CliCommand(value = { "testMultiWordArg" })
+    @CliCommand(value = {"testMultiWordArg"})
     @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-    public static Result testMultiWordArg(@CliArgument(name = "arg1")
-    String arg1, @CliArgument(name = "arg2")
-    String arg2) {
+    public static Result testMultiWordArg(@CliArgument(name = "arg1") String arg1,
+        @CliArgument(name = "arg2") String arg2) {
       return null;
     }
   }

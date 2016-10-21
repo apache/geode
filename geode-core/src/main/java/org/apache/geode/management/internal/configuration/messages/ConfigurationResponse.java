@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.configuration.messages;
 
@@ -43,20 +41,20 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
  * Response containing the configuration requested by the {@link ConfigurationRequest}
  */
 public class ConfigurationResponse implements DataSerializableFixedID {
-  
-  private Map<String,Configuration> requestedConfiguration = new HashMap<String,Configuration>();
-  private byte [][]jarBytes;
+
+  private Map<String, Configuration> requestedConfiguration = new HashMap<String, Configuration>();
+  private byte[][] jarBytes;
   private String[] jarNames;
   private boolean failedToGetSharedConfig = false;
-  
+
   public ConfigurationResponse() {
-    
+
   }
-  
+
   public ConfigurationResponse(Map<String, Configuration> requestedConfiguration) {
     this.requestedConfiguration.putAll(requestedConfiguration);
   }
-  
+
   @Override
   public int getDSFID() {
     return DataSerializableFixedID.CONFIGURATION_RESPONSE;
@@ -64,7 +62,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeHashMap((HashMap<?,?>)requestedConfiguration, out);
+    DataSerializer.writeHashMap((HashMap<?, ?>) requestedConfiguration, out);
     DataSerializer.writeStringArray(jarNames, out);
     DataSerializer.writeArrayOfByteArrays(jarBytes, out);
     DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
@@ -85,13 +83,13 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   public void setRequestedConfiguration(Map<String, Configuration> requestedConfiguration) {
     this.requestedConfiguration = requestedConfiguration;
   }
-  
-  public void addConfiguration(Configuration configuration)  {
+
+  public void addConfiguration(Configuration configuration) {
     if (configuration != null) {
       this.requestedConfiguration.put(configuration.getConfigName(), configuration);
     }
   }
- 
+
   public String toString() {
     StringBuffer sb = new StringBuffer();
     Set<String> configNames = requestedConfiguration.keySet();
@@ -100,7 +98,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     }
     return sb.toString();
   }
-  
+
   public String describeConfig() {
     StringBuffer sb = new StringBuffer();
     if (requestedConfiguration.isEmpty()) {
@@ -108,49 +106,50 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     } else {
       Set<Entry<String, Configuration>> entries = requestedConfiguration.entrySet();
       Iterator<Entry<String, Configuration>> iter = entries.iterator();
-      
+
       while (iter.hasNext()) {
         Entry<String, Configuration> entry = iter.next();
         String configType = entry.getKey();
         Configuration config = entry.getValue();
-        
+
         if (config != null) {
           sb.append("\n***************************************************************");
           sb.append("\nConfiguration for  '" + configType + "'");
           sb.append("\n\nJar files to deployed");
 
-          Set<String>jarNames = config.getJarNames();
+          Set<String> jarNames = config.getJarNames();
           Iterator<String> jarIter = jarNames.iterator();
           int jarCounter = 0;
 
           while (jarIter.hasNext()) {
             sb.append("\n" + ++jarCounter + "." + jarIter.next());
           }
-          
+
           try {
             String cacheXmlContent = config.getCacheXmlContent();
             if (!StringUtils.isBlank(cacheXmlContent)) {
               sb.append("\n" + XmlUtils.prettyXml(cacheXmlContent));
             }
-          } catch (IOException | TransformerFactoryConfigurationError | TransformerException | SAXException | ParserConfigurationException e) {
+          } catch (IOException | TransformerFactoryConfigurationError | TransformerException
+              | SAXException | ParserConfigurationException e) {
             throw new InternalGemFireError(e);
           }
         }
-       
+
       }
     }
     return sb.toString();
   }
-  
-  
+
+
   public String[] getJarNames() {
     return this.jarNames;
   }
-  
+
   public byte[][] getJars() {
     return this.jarBytes;
   }
-  
+
   public void addJarsToBeDeployed(String[] jarNames, byte[][] jarBytes) {
     this.jarNames = jarNames;
     this.jarBytes = jarBytes;
@@ -158,7 +157,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
   // TODO Sourabh, please review for correctness
   public Version[] getSerializationVersions() {
-    return new Version[] { Version.CURRENT };
+    return new Version[] {Version.CURRENT};
   }
 
   public boolean failedToGetSharedConfig() {

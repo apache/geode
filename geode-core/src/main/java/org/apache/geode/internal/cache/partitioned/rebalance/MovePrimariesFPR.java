@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned.rebalance;
 
@@ -30,8 +28,8 @@ import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLo
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * A director to move primaries to improve the load balance of a
- * fixed partition region. This is most commonly used as an FPRDirector
+ * A director to move primaries to improve the load balance of a fixed partition region. This is
+ * most commonly used as an FPRDirector
  *
  */
 public class MovePrimariesFPR extends RebalanceDirectorAdapter {
@@ -56,16 +54,14 @@ public class MovePrimariesFPR extends RebalanceDirectorAdapter {
     makeFPRPrimaryForThisNode();
     return false;
   }
-  
+
   /**
-   * Move all primary from other to this 
+   * Move all primary from other to this
    */
   private void makeFPRPrimaryForThisNode() {
     PartitionedRegion partitionedRegion = model.getPartitionedRegion();
-    List<FixedPartitionAttributesImpl> FPAs = partitionedRegion
-        .getFixedPartitionAttributesImpl();
-    InternalDistributedMember targetId = partitionedRegion
-        .getDistributionManager().getId();
+    List<FixedPartitionAttributesImpl> FPAs = partitionedRegion.getFixedPartitionAttributesImpl();
+    InternalDistributedMember targetId = partitionedRegion.getDistributionManager().getId();
     Member target = model.getMember(targetId);
     for (Bucket bucket : model.getBuckets()) {
       if (bucket != null) {
@@ -76,25 +72,26 @@ public class MovePrimariesFPR extends RebalanceDirectorAdapter {
               // HACK: In case we don't know who is Primary at this time
               // we just set source as target too for stat purposes
 
-              source = (source == null || source == model.INVALID_MEMBER) ? target
-                   : source;
+              source = (source == null || source == model.INVALID_MEMBER) ? target : source;
               if (logger.isDebugEnabled()) {
-                logger.debug("PRLM#movePrimariesForFPR: For Bucket#{}, moving primary from source {} to target {}",
+                logger.debug(
+                    "PRLM#movePrimariesForFPR: For Bucket#{}, moving primary from source {} to target {}",
                     bucket.getId(), bucket.getPrimary(), target);
               }
-              
+
               boolean successfulMove = model.movePrimary(new Move(source, target, bucket));
               // We have to move the primary otherwise there is some problem!
               Assert.assertTrue(successfulMove,
                   " Fixed partitioned region not able to move the primary!");
               if (successfulMove) {
                 if (logger.isDebugEnabled()) {
-                  logger.debug("PRLM#movePrimariesForFPR: For Bucket#{}, moved primary from source {} to target {}",
+                  logger.debug(
+                      "PRLM#movePrimariesForFPR: For Bucket#{}, moved primary from source {} to target {}",
                       bucket.getId(), bucket.getPrimary(), target);
                 }
 
                 bucket.setPrimary(target, bucket.getPrimaryLoad());
-              } 
+              }
             }
           }
         }

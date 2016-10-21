@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -27,17 +25,14 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 /**
- * Provides the implementation of the <code>GemFireHealth</code>
- * administration API.  This class is responsible for {@linkplain
- * GemFireVM#addHealthListener sending} the {@link
- * GemFireHealthConfig}s to the remote member VM in which the health
- * is calcualted.
+ * Provides the implementation of the <code>GemFireHealth</code> administration API. This class is
+ * responsible for {@linkplain GemFireVM#addHealthListener sending} the {@link GemFireHealthConfig}s
+ * to the remote member VM in which the health is calcualted.
  *
  *
  * @since GemFire 3.5
  */
-public class GemFireHealthImpl
-  implements GemFireHealth, JoinLeaveListener, HealthListener {
+public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, HealthListener {
 
   /** The distributed system whose health is being monitored */
   private final GfManagerAgent agent;
@@ -45,12 +40,15 @@ public class GemFireHealthImpl
   /** The default configuration for checking GemFire health */
   protected GemFireHealthConfig defaultConfig;
 
-  /** Maps the name of a host to its <code>GemFireHealthConfig</code>.
-   * Note that the mappings are created lazily. */
+  /**
+   * Maps the name of a host to its <code>GemFireHealthConfig</code>. Note that the mappings are
+   * created lazily.
+   */
   private final Map hostConfigs;
 
-  /** Maps the name of a host to all of the members
-   * (<code>GemFireVM</code>s) that run on that host. */
+  /**
+   * Maps the name of a host to all of the members (<code>GemFireVM</code>s) that run on that host.
+   */
   private final Map hostMembers;
 
   /** The members that are known to be in {@link #OKAY_HEALTH}. */
@@ -65,28 +63,29 @@ public class GemFireHealthImpl
   /** Is this GemFireHealthImpl closed? */
   private boolean isClosed;
 
-  /** The configuration specifying how the health of the distributed
-   * system should be computed.  */
+  /**
+   * The configuration specifying how the health of the distributed system should be computed.
+   */
   protected volatile DistributedSystemHealthConfig dsHealthConfig;
 
   /** Monitors the health of the entire distributed system */
   private DistributedSystemHealthMonitor dsHealthMonitor = null;
 
-  /** The distributed system whose health is monitored by this
-   * <Code>GemFireHealth</code>. */
+  /**
+   * The distributed system whose health is monitored by this <Code>GemFireHealth</code>.
+   */
   private final AdminDistributedSystem system;
 
-  
-  ///////////////////////  Constructors  ///////////////////////
+
+  /////////////////////// Constructors ///////////////////////
 
   /**
-   * Creates a new <code>GemFireHealthImpl</code> that monitors the
-   * health of member of the given distributed system.
+   * Creates a new <code>GemFireHealthImpl</code> that monitors the health of member of the given
+   * distributed system.
    */
-  protected GemFireHealthImpl(GfManagerAgent agent,
-                              AdminDistributedSystem system) {
-//     agent.getDM().getLogger().info("Creating GemFireHealthImpl",
-//                                    new Exception("Stack trace"));
+  protected GemFireHealthImpl(GfManagerAgent agent, AdminDistributedSystem system) {
+    // agent.getDM().getLogger().info("Creating GemFireHealthImpl",
+    // new Exception("Stack trace"));
 
     this.agent = agent;
     this.system = system;
@@ -120,58 +119,53 @@ public class GemFireHealthImpl
     sb.append("; diagnosis=" + getDiagnosis());
     return sb.toString();
   }
-  //////////////////////  Instance Methods  //////////////////////
+  ////////////////////// Instance Methods //////////////////////
 
   /**
-   * Returns the <code>DistributedSystem</code> whose health this
-   * <code>GemFireHealth</code> monitors.
+   * Returns the <code>DistributedSystem</code> whose health this <code>GemFireHealth</code>
+   * monitors.
    */
   public AdminDistributedSystem getDistributedSystem() {
     return this.system;
   }
 
   /**
-   * A "template factory" method for creating a
-   * <code>DistributedSystemHealthConfig</code>. It can be overridden
-   * by subclasses to produce instances of different
+   * A "template factory" method for creating a <code>DistributedSystemHealthConfig</code>. It can
+   * be overridden by subclasses to produce instances of different
    * <code>DistributedSystemHealthConfig</code> implementations.
    */
-  protected DistributedSystemHealthConfig
-    createDistributedSystemHealthConfig() {
+  protected DistributedSystemHealthConfig createDistributedSystemHealthConfig() {
 
     return new DistributedSystemHealthConfigImpl();
   }
 
   /**
-   * A "template factory" method for creating a
-   * <code>GemFireHealthConfig</code>.  It can be overridden by
-   * subclasses to produce instances of different
-   * <code>GemFireHealthConfig</code> implementations.
+   * A "template factory" method for creating a <code>GemFireHealthConfig</code>. It can be
+   * overridden by subclasses to produce instances of different <code>GemFireHealthConfig</code>
+   * implementations.
    *
-   * @param hostName
-   *        The host whose health we are configuring
+   * @param hostName The host whose health we are configuring
    */
-  protected GemFireHealthConfig
-    createGemFireHealthConfig(String hostName) {
+  protected GemFireHealthConfig createGemFireHealthConfig(String hostName) {
 
     return new GemFireHealthConfigImpl(hostName);
   }
 
   /**
-   * Throws an {@link IllegalStateException} if this
-   * <code>GemFireHealthImpl</code> is closed.
+   * Throws an {@link IllegalStateException} if this <code>GemFireHealthImpl</code> is closed.
    */
   private void checkClosed() {
     if (this.isClosed) {
-      throw new IllegalStateException(LocalizedStrings.GemFireHealthImpl_CANNOT_ACCESS_A_CLOSED_GEMFIREHEALTH_INSTANCE.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.GemFireHealthImpl_CANNOT_ACCESS_A_CLOSED_GEMFIREHEALTH_INSTANCE
+              .toLocalizedString());
     }
   }
 
   /**
-   * Returns the overall health of GemFire.  Note that this method
-   * does not contact any of the member VMs.  Instead, it relies on
-   * the members to alert it of changes in its health via a {@link
-   * HealthListener}.
+   * Returns the overall health of GemFire. Note that this method does not contact any of the member
+   * VMs. Instead, it relies on the members to alert it of changes in its health via a
+   * {@link HealthListener}.
    */
   public GemFireHealth.Health getHealth() {
     checkClosed();
@@ -179,8 +173,8 @@ public class GemFireHealthImpl
   }
 
   /**
-   * Resets the overall health to be {@link #GOOD_HEALTH}.  It also
-   * resets the health in the member VMs.
+   * Resets the overall health to be {@link #GOOD_HEALTH}. It also resets the health in the member
+   * VMs.
    *
    * @see GemFireVM#resetHealthStatus
    */
@@ -192,10 +186,9 @@ public class GemFireHealthImpl
     this.poorHealth.clear();
 
     synchronized (this) {
-      for (Iterator iter = hostMembers.values().iterator();
-           iter.hasNext(); ) {
+      for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
         List members = (List) iter.next();
-        for (Iterator iter2 = members.iterator(); iter2.hasNext(); ) {
+        for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
           GemFireVM member = (GemFireVM) iter2.next();
           member.resetHealthStatus();
         }
@@ -204,8 +197,7 @@ public class GemFireHealthImpl
   }
 
   /**
-   * Aggregates the diagnoses from all members of the distributed
-   * system. 
+   * Aggregates the diagnoses from all members of the distributed system.
    */
   public String getDiagnosis() {
     checkClosed();
@@ -213,13 +205,11 @@ public class GemFireHealthImpl
     StringBuffer sb = new StringBuffer();
 
     synchronized (this) {
-      for (Iterator iter = hostMembers.values().iterator();
-           iter.hasNext(); ) {
+      for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
         List members = (List) iter.next();
-        for (Iterator iter2 = members.iterator(); iter2.hasNext(); ) {
+        for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
           GemFireVM member = (GemFireVM) iter2.next();
-          String[] diagnoses =
-            member.getHealthDiagnosis(this.overallHealth);
+          String[] diagnoses = member.getHealthDiagnosis(this.overallHealth);
           for (int i = 0; i < diagnoses.length; i++) {
             sb.append(diagnoses[i]).append("\n");;
           }
@@ -233,8 +223,7 @@ public class GemFireHealthImpl
   /**
    * Starts a new {@link DistributedSystemHealthMonitor}
    */
-  public void setDistributedSystemHealthConfig(DistributedSystemHealthConfig
-                                               config) {
+  public void setDistributedSystemHealthConfig(DistributedSystemHealthConfig config) {
     synchronized (this.hostConfigs) {
       // If too many threads are changing the health config, then we
       // will might get an OutOfMemoryError trying to start a new
@@ -247,17 +236,14 @@ public class GemFireHealthImpl
       this.dsHealthConfig = config;
 
       DistributedSystemHealthEvaluator eval =
-        new DistributedSystemHealthEvaluator(config, this.agent.getDM());
-      int interval =
-        this.getDefaultGemFireHealthConfig().getHealthEvaluationInterval();
-      this.dsHealthMonitor =
-        new DistributedSystemHealthMonitor(eval, this, interval);
+          new DistributedSystemHealthEvaluator(config, this.agent.getDM());
+      int interval = this.getDefaultGemFireHealthConfig().getHealthEvaluationInterval();
+      this.dsHealthMonitor = new DistributedSystemHealthMonitor(eval, this, interval);
       this.dsHealthMonitor.start();
     }
   }
 
-  public DistributedSystemHealthConfig
-    getDistributedSystemHealthConfig() {
+  public DistributedSystemHealthConfig getDistributedSystemHealthConfig() {
 
     checkClosed();
     return this.dsHealthConfig;
@@ -272,25 +258,25 @@ public class GemFireHealthImpl
     checkClosed();
 
     if (config.getHostName() != null) {
-      throw new IllegalArgumentException(LocalizedStrings.GemFireHealthImpl_THE_GEMFIREHEALTHCONFIG_FOR_FOR_0_CANNOT_SERVE_AS_THE_DEFAULT_HEALTH_CONFIG.toLocalizedString(config.getHostName()));
+      throw new IllegalArgumentException(
+          LocalizedStrings.GemFireHealthImpl_THE_GEMFIREHEALTHCONFIG_FOR_FOR_0_CANNOT_SERVE_AS_THE_DEFAULT_HEALTH_CONFIG
+              .toLocalizedString(config.getHostName()));
     }
 
     this.defaultConfig = config;
 
     synchronized (this) {
-      for (Iterator iter = this.hostMembers.entrySet().iterator();
-           iter.hasNext(); ) {
+      for (Iterator iter = this.hostMembers.entrySet().iterator(); iter.hasNext();) {
         Map.Entry entry = (Map.Entry) iter.next();
         InetAddress hostIpAddress = (InetAddress) entry.getKey();
         List members = (List) entry.getValue();
 
-        GemFireHealthConfig hostConfig =
-          (GemFireHealthConfig) hostConfigs.get(hostIpAddress);
+        GemFireHealthConfig hostConfig = (GemFireHealthConfig) hostConfigs.get(hostIpAddress);
         if (hostConfig == null) {
           hostConfig = config;
         }
 
-        for (Iterator iter2 = members.iterator(); iter2.hasNext(); ) {
+        for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
           GemFireVM member = (GemFireVM) iter2.next();
           Assert.assertTrue(member.getHost().equals(hostIpAddress));
           member.addHealthListener(this, hostConfig);
@@ -299,7 +285,7 @@ public class GemFireHealthImpl
     }
 
     // We only need to do this if the health monitoring interval has
-    // change.  This is probably not the most efficient way of doing
+    // change. This is probably not the most efficient way of doing
     // things.
     if (this.dsHealthConfig != null) {
       setDistributedSystemHealthConfig(this.dsHealthConfig);
@@ -309,14 +295,11 @@ public class GemFireHealthImpl
   /**
    * Returns the GemFireHealthConfig object for the given host name.
    * 
-   * @param hostName
-   *          host name for which the GemFire Health Config is needed
+   * @param hostName host name for which the GemFire Health Config is needed
    * 
-   * @throws IllegalArgumentException
-   *           if host with given name could not be found
+   * @throws IllegalArgumentException if host with given name could not be found
    */
-  public synchronized GemFireHealthConfig
-    getGemFireHealthConfig(String hostName){
+  public synchronized GemFireHealthConfig getGemFireHealthConfig(String hostName) {
 
     checkClosed();
 
@@ -326,11 +309,11 @@ public class GemFireHealthImpl
     } catch (UnknownHostException e) {
       throw new IllegalArgumentException(
           LocalizedStrings.GemFireHealthImpl_COULD_NOT_FIND_A_HOST_WITH_NAME_0
-              .toLocalizedString(hostName), e);
+              .toLocalizedString(hostName),
+          e);
     }
-    
-    GemFireHealthConfig config =
-      (GemFireHealthConfig) this.hostConfigs.get(hostIpAddress);
+
+    GemFireHealthConfig config = (GemFireHealthConfig) this.hostConfigs.get(hostIpAddress);
     if (config == null) {
       config = createGemFireHealthConfig(hostName);
       this.hostConfigs.put(hostIpAddress, config);
@@ -342,18 +325,14 @@ public class GemFireHealthImpl
   /**
    * Sets the GemFireHealthConfig object for the given host name.
    * 
-   * @param hostName
-   *          host name for which the GemFire Health Config is needed
-   * @param config
-   *          GemFireHealthConfig object to set
+   * @param hostName host name for which the GemFire Health Config is needed
+   * @param config GemFireHealthConfig object to set
    * 
-   * @throws IllegalArgumentException
-   *           if (1) given host name & the host name in the given config do not
-   *           match OR (2) host with given name could not be found OR (3) there
-   *           are no GemFire components running on the given host
+   * @throws IllegalArgumentException if (1) given host name & the host name in the given config do
+   *         not match OR (2) host with given name could not be found OR (3) there are no GemFire
+   *         components running on the given host
    */
-  public void setGemFireHealthConfig(String hostName,
-                                     GemFireHealthConfig config) {
+  public void setGemFireHealthConfig(String hostName, GemFireHealthConfig config) {
     checkClosed();
 
     synchronized (this) {
@@ -378,9 +357,10 @@ public class GemFireHealthImpl
       } catch (UnknownHostException e) {
         throw new IllegalArgumentException(
             LocalizedStrings.GemFireHealthImpl_COULD_NOT_FIND_A_HOST_WITH_NAME_0
-                .toLocalizedString(hostName), e);
+                .toLocalizedString(hostName),
+            e);
       }
-      
+
       List members = (List) this.hostMembers.get(hostIpAddress);
       if (members == null || members.isEmpty()) {
         throw new IllegalArgumentException(
@@ -388,7 +368,7 @@ public class GemFireHealthImpl
                 .toLocalizedString(hostName));
       }
 
-      for (Iterator iter = members.iterator(); iter.hasNext(); ) {
+      for (Iterator iter = members.iterator(); iter.hasNext();) {
         GemFireVM member = (GemFireVM) iter.next();
         member.addHealthListener(this, config);
       }
@@ -396,14 +376,14 @@ public class GemFireHealthImpl
   }
 
   /**
-   * Tells the members of the distributed system that we are no longer
-   * interested in monitoring their health.
+   * Tells the members of the distributed system that we are no longer interested in monitoring
+   * their health.
    *
    * @see GemFireVM#removeHealthListener
    */
-  public void close(){
+  public void close() {
     this.agent.removeJoinLeaveListener(this);
-    
+
     synchronized (this) {
       if (this.isClosed) {
         return;
@@ -417,10 +397,9 @@ public class GemFireHealthImpl
       }
 
       try {
-        for (Iterator iter = hostMembers.values().iterator();
-             iter.hasNext(); ) {
+        for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
           List members = (List) iter.next();
-          for (Iterator iter2 = members.iterator(); iter2.hasNext(); ) {
+          for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
             GemFireVM member = (GemFireVM) iter2.next();
             member.removeHealthListener();
           }
@@ -454,14 +433,12 @@ public class GemFireHealthImpl
 
   }
 
-  public synchronized void nodeJoined(GfManagerAgent source,
-                                      GemFireVM joined) {
+  public synchronized void nodeJoined(GfManagerAgent source, GemFireVM joined) {
     noteNewMember(joined);
 
     InetAddress hostIpAddress = joined.getHost();
 
-    GemFireHealthConfig config =
-      (GemFireHealthConfig) this.hostConfigs.get(hostIpAddress);
+    GemFireHealthConfig config = (GemFireHealthConfig) this.hostConfigs.get(hostIpAddress);
     if (config == null) {
       config = this.getDefaultGemFireHealthConfig();
     }
@@ -471,8 +448,7 @@ public class GemFireHealthImpl
   /**
    * Makes note of the newly-left member
    */
-  public synchronized void nodeLeft(GfManagerAgent source,
-                                    GemFireVM left) {
+  public synchronized void nodeLeft(GfManagerAgent source, GemFireVM left) {
     InetAddress hostIpAddress = left.getHost();
     List members = (List) this.hostMembers.get(hostIpAddress);
     if (members != null) {

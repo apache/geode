@@ -1,22 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 //
-//  StreamingPartitionOperationOneTest.java
+// StreamingPartitionOperationOneTest.java
 //
 package org.apache.geode.internal.cache.partitioned;
 
@@ -63,25 +61,25 @@ import org.apache.geode.test.dunit.VM;
 @Category(DistributedTest.class)
 public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase {
 
-	/* SerializableRunnable object to create PR */
-	CacheSerializableRunnable createPrRegionWithDS_DACK = new CacheSerializableRunnable("createPrRegionWithDS") {
+  /* SerializableRunnable object to create PR */
+  CacheSerializableRunnable createPrRegionWithDS_DACK =
+      new CacheSerializableRunnable("createPrRegionWithDS") {
 
-		public void run2() throws CacheException {
-			Cache cache = getCache();
-			AttributesFactory attr = new AttributesFactory();
-			PartitionAttributesFactory paf = new PartitionAttributesFactory();
-			paf.setTotalNumBuckets(5);
-			PartitionAttributes prAttr = paf.create();
-			attr.setPartitionAttributes(prAttr);
-			RegionAttributes regionAttribs = attr.create();
-			cache.createRegion("PR1",
-                                                    regionAttribs);
-		}
-	};
+        public void run2() throws CacheException {
+          Cache cache = getCache();
+          AttributesFactory attr = new AttributesFactory();
+          PartitionAttributesFactory paf = new PartitionAttributesFactory();
+          paf.setTotalNumBuckets(5);
+          PartitionAttributes prAttr = paf.create();
+          attr.setPartitionAttributes(prAttr);
+          RegionAttributes regionAttribs = attr.create();
+          cache.createRegion("PR1", regionAttribs);
+        }
+      };
 
   class IDGetter implements Serializable {
     InternalDistributedMember getMemberId() {
-      return (InternalDistributedMember)getSystem().getDistributedMember();
+      return (InternalDistributedMember) getSystem().getDistributedMember();
     }
   }
 
@@ -92,7 +90,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
 
   @Test
   public void testStreamingPartitionOneProviderNoExceptions() throws Exception {
-//    final String name = this.getUniqueName();
+    // final String name = this.getUniqueName();
 
     // ask another VM to connect to the distributed system
     // this will be the data provider, and get their member id at the same time
@@ -100,26 +98,26 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
     VM vm0 = host.getVM(0);
 
     // get the other member id that connected
-    InternalDistributedMember otherId = (InternalDistributedMember)vm0.invoke(new IDGetter(), "getMemberId");
+    InternalDistributedMember otherId =
+        (InternalDistributedMember) vm0.invoke(new IDGetter(), "getMemberId");
 
     vm0.invoke(createPrRegionWithDS_DACK);
 
     // also create the PR here so we can get the regionId
     createPrRegionWithDS_DACK.run2();
 
-    int regionId = ((PartitionedRegion)getCache().getRegion("PR1")).getPRId();
+    int regionId = ((PartitionedRegion) getCache().getRegion("PR1")).getPRId();
 
     Set setOfIds = Collections.singleton(otherId);
 
-    TestStreamingPartitionOperationOneProviderNoExceptions streamOp = new TestStreamingPartitionOperationOneProviderNoExceptions(getSystem(), regionId);
+    TestStreamingPartitionOperationOneProviderNoExceptions streamOp =
+        new TestStreamingPartitionOperationOneProviderNoExceptions(getSystem(), regionId);
     try {
       streamOp.getPartitionedDataFrom(setOfIds);
-    }
-    catch (VirtualMachineError e) {
+    } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    }
-    catch (Throwable t) {
+    } catch (Throwable t) {
       Assert.fail("getPartitionedDataFrom failed", t);
     }
     assertTrue(streamOp.dataValidated);
@@ -127,23 +125,28 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
 
 
   // about 100 chunks worth of integers?
-  protected static final int NUM_INTEGERS = 32*1024 /* default socket buffer size*/ * 100 / 4;
+  protected static final int NUM_INTEGERS = 32 * 1024 /* default socket buffer size */ * 100 / 4;
 
-  public static class TestStreamingPartitionOperationOneProviderNoExceptions extends StreamingPartitionOperation {
+  public static class TestStreamingPartitionOperationOneProviderNoExceptions
+      extends StreamingPartitionOperation {
     ConcurrentMap chunkMap = new ConcurrentHashMap();
     int numChunks = -1;
     volatile boolean dataValidated = false;
 
-    public TestStreamingPartitionOperationOneProviderNoExceptions(InternalDistributedSystem sys, int regionId) {
+    public TestStreamingPartitionOperationOneProviderNoExceptions(InternalDistributedSystem sys,
+        int regionId) {
       super(sys, regionId);
     }
 
     protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
-      TestStreamingPartitionMessageOneProviderNoExceptions msg = new TestStreamingPartitionMessageOneProviderNoExceptions(recipients, this.regionId, processor);
+      TestStreamingPartitionMessageOneProviderNoExceptions msg =
+          new TestStreamingPartitionMessageOneProviderNoExceptions(recipients, this.regionId,
+              processor);
       return msg;
     }
 
-    protected synchronized boolean processData(List objects, InternalDistributedMember sender, int sequenceNum, boolean lastInSequence) {
+    protected synchronized boolean processData(List objects, InternalDistributedMember sender,
+        int sequenceNum, boolean lastInSequence) {
       LogWriter logger = this.sys.getLogWriter();
 
       // assert that we haven't gotten this sequence number yet
@@ -185,10 +188,10 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       LogWriter logger = this.sys.getLogWriter();
 
       // sort the input streams
-      for (Iterator itr = this.chunkMap.entrySet().iterator(); itr.hasNext(); ) {
-        Map.Entry entry = (Map.Entry)itr.next();
-        int seqNum = ((Integer)entry.getKey()).intValue();
-        objList = (List)entry.getValue();
+      for (Iterator itr = this.chunkMap.entrySet().iterator(); itr.hasNext();) {
+        Map.Entry entry = (Map.Entry) itr.next();
+        int seqNum = ((Integer) entry.getKey()).intValue();
+        objList = (List) entry.getValue();
         arrayOfLists[seqNum] = objList;
       }
 
@@ -197,7 +200,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
         Iterator itr = arrayOfLists[i].iterator();
         Integer nextInteger;
         while (itr.hasNext()) {
-          nextInteger = (Integer)itr.next();
+          nextInteger = (Integer) itr.next();
           if (nextInteger.intValue() != expectedInt) {
             logger.severe("nextInteger.intValue() != expectedInt");
             return;
@@ -208,15 +211,15 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       }
       if (count != NUM_INTEGERS) {
         logger.severe("found " + count + " integers, expected " + NUM_INTEGERS);
-      }
-      else {
+      } else {
         this.dataValidated = true;
         logger.info("Received " + count + " integers in " + this.numChunks + " chunks");
       }
     }
   }
 
-  public static final class TestStreamingPartitionMessageOneProviderNoExceptions extends StreamingPartitionOperation.StreamingPartitionMessage {
+  public static final class TestStreamingPartitionMessageOneProviderNoExceptions
+      extends StreamingPartitionOperation.StreamingPartitionMessage {
     private int nextInt = -10;
     private int count = 0;
 
@@ -224,19 +227,20 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       super();
     }
 
-    public TestStreamingPartitionMessageOneProviderNoExceptions(Set recipients, int regionId, ReplyProcessor21 processor) {
+    public TestStreamingPartitionMessageOneProviderNoExceptions(Set recipients, int regionId,
+        ReplyProcessor21 processor) {
       super(recipients, regionId, processor);
     }
 
 
-    protected Object getNextReplyObject(PartitionedRegion pr)
-    throws ReplyException {
+    protected Object getNextReplyObject(PartitionedRegion pr) throws ReplyException {
       if (++count > NUM_INTEGERS) {
         return Token.END_OF_STREAM;
       }
       nextInt += 10;
       return new Integer(nextInt);
     }
+
     public int getDSFID() {
       return NO_FIXED_ID;
     }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
@@ -63,12 +61,12 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
- * TCP server which listens on a port and delegates requests to a request
- * handler. The server uses expects messages containing a global version number,
- * followed by a DataSerializable object
+ * TCP server which listens on a port and delegates requests to a request handler. The server uses
+ * expects messages containing a global version number, followed by a DataSerializable object
  * <p>
- * This code was factored out of GossipServer.java to allow multiple handlers to
- * share the same gossip server port.
+ * This code was factored out of GossipServer.java to allow multiple handlers to share the same
+ * gossip server port.
+ * 
  * @since GemFire 5.7
  */
 public class TcpServer {
@@ -78,16 +76,17 @@ public class TcpServer {
    * <p>
    * This should be incremented if the gossip message structures change
    * <p>
-   * 1000 - gemfire 5.5 - using java serialization
-   * 1001 - 5.7 - using DataSerializable and supporting server locator messages.
-   * 1002 - 7.1 - sending GemFire version along with GOSSIP_VERSION in each request.
+   * 1000 - gemfire 5.5 - using java serialization 1001 - 5.7 - using DataSerializable and
+   * supporting server locator messages. 1002 - 7.1 - sending GemFire version along with
+   * GOSSIP_VERSION in each request.
    * <p>
-   * with the addition of support for all old versions of clients you can no
-   * longer change this version number
+   * with the addition of support for all old versions of clients you can no longer change this
+   * version number
    */
   public final static int GOSSIPVERSION = 1002;
   // Don't change it ever. We did NOT send GemFire version in a Gossip request till 1001 version.
-  // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a GossipServer.
+  // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a
+  // GossipServer.
   public final static int OLDGOSSIPVERSION = 1001;
 
   private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
@@ -99,24 +98,28 @@ public class TcpServer {
   public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
-  private static int MAX_POOL_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100).intValue();
+  private static int MAX_POOL_SIZE = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100).intValue();
   private static int POOL_IDLE_TIMEOUT = 60 * 1000;
 
   private static final Logger log = LogService.getLogger();
 
-  protected/*GemStoneAddition*/ final/*GemStoneAddition*/ static int READ_TIMEOUT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000)
-                                                                                           .intValue();
-  //This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure the locator backlog.
+  protected/* GemStoneAddition */ final/* GemStoneAddition */ static int READ_TIMEOUT =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000)
+          .intValue();
+  // This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure
+  // the locator backlog.
   private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000).intValue();
-  private static final int BACKLOG = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG).intValue();
+  private static final int BACKLOG = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG).intValue();
 
   // private int port=7500;
   private final int port;
-  private/*GemStoneAddition*/ ServerSocket srv_sock = null;
+  private/* GemStoneAddition */ ServerSocket srv_sock = null;
   private InetAddress bind_address;
   private volatile boolean shuttingDown = false; // GemStoneAddition
   private final PoolStatHelper poolHelper;
-  private/*GemStoneAddition*/ final TcpHandler handler;
+  private/* GemStoneAddition */ final TcpHandler handler;
 
   private PooledExecutorWithDMStats executor;
   private final ThreadGroup threadGroup;
@@ -126,9 +129,8 @@ public class TcpServer {
   private SocketCreator socketCreator;
 
   /**
-   * GemStoneAddition - Initialize versions map.
-   * Warning: This map must be compatible with all GemFire versions being
-   * handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS
+   * GemStoneAddition - Initialize versions map. Warning: This map must be compatible with all
+   * GemFire versions being handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS
    * are same for then current GOSSIPVERSION should be used.
    *
    * @since GemFire 7.1
@@ -138,14 +140,9 @@ public class TcpServer {
     GOSSIP_TO_GEMFIRE_VERSION_MAP.put(OLDGOSSIPVERSION, Version.GFE_57.ordinal());
   }
 
-  public TcpServer(int port,
-                   InetAddress bind_address,
-                   Properties sslConfig,
-                   DistributionConfigImpl cfg,
-                   TcpHandler handler,
-                   PoolStatHelper poolHelper,
-                   ThreadGroup threadGroup,
-                   String threadName) {
+  public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
+      DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+      ThreadGroup threadGroup, String threadName) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -167,33 +164,39 @@ public class TcpServer {
     }
 
     if (this.socketCreator == null) {
-      this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
+      this.socketCreator =
+          SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
     } else {
       throw new RuntimeException("The socket Creator already exists");
     }
   }
 
-  private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper, final ThreadGroup threadGroup) {
+  private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper,
+      final ThreadGroup threadGroup) {
     ThreadFactory factory = new ThreadFactory() {
       private final AtomicInteger threadNum = new AtomicInteger();
 
       public Thread newThread(Runnable r) {
-        Thread thread = new Thread(threadGroup, r, "locator request thread[" + threadNum.incrementAndGet() + "]");
+        Thread thread = new Thread(threadGroup, r,
+            "locator request thread[" + threadNum.incrementAndGet() + "]");
         thread.setDaemon(true);
         return thread;
       }
     };
 
-    return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper, factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
+    return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper, factory,
+        POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
-  public void restarting(InternalDistributedSystem ds, GemFireCacheImpl cache, SharedConfiguration sharedConfig) throws IOException {
+  public void restarting(InternalDistributedSystem ds, GemFireCacheImpl cache,
+      SharedConfiguration sharedConfig) throws IOException {
     this.shuttingDown = false;
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();
     this.executor = createExecutor(this.poolHelper, this.threadGroup);
-    this.log.info("TcpServer@" + System.identityHashCode(this) + " restarting: completed.  Server thread=" + serverThread + "@" + System.identityHashCode(serverThread) + ";alive=" + serverThread
-      .isAlive());
+    this.log.info("TcpServer@" + System.identityHashCode(this)
+        + " restarting: completed.  Server thread=" + serverThread + "@"
+        + System.identityHashCode(serverThread) + ";alive=" + serverThread.isAlive());
   }
 
   public void start() throws IOException {
@@ -236,7 +239,8 @@ public class TcpServer {
   }
 
   public void join() throws InterruptedException {
-    //    this.log.info("TcpServer@"+System.identityHashCode(this)+" join() invoked.  Server thread="+serverThread+"@"+System.identityHashCode(serverThread)+";alive="+serverThread.isAlive());
+    // this.log.info("TcpServer@"+System.identityHashCode(this)+" join() invoked. Server
+    // thread="+serverThread+"@"+System.identityHashCode(serverThread)+";alive="+serverThread.isAlive());
     if (serverThread != null) {
       serverThread.join();
     }
@@ -255,8 +259,9 @@ public class TcpServer {
   }
 
   /**
-   * Returns the value of the bound port. If the server was initialized with a port of 0 indicating that any
-   * ephemeral port should be used, this method will return the actual bound port.
+   * Returns the value of the bound port. If the server was initialized with a port of 0 indicating
+   * that any ephemeral port should be used, this method will return the actual bound port.
+   * 
    * @return the port bound to this socket or 0 if the socket is closed or otherwise not connected
    */
   public int getPort() {
@@ -318,15 +323,15 @@ public class TcpServer {
       }
       handler.shutDown();
       synchronized (this) {
-        //        this.shutDown = true;
+        // this.shutDown = true;
         this.notifyAll();
       }
     }
   }
 
   /**
-   * fix for bug 33711 - client requests are spun off to another thread for
-   * processing. Requests are synchronized in processGossip.
+   * fix for bug 33711 - client requests are spun off to another thread for processing. Requests are
+   * synchronized in processGossip.
    */
   private void processRequest(final Socket sock) {
     Runnable clientTask = new Runnable() {
@@ -340,32 +345,34 @@ public class TcpServer {
           // if(log.isInfoEnabled()) log.info("accepted connection from " +
           // sock.getInetAddress() +
           // ':' + sock.getPort());
-          //sock.setSoLinger(true, 500);
+          // sock.setSoLinger(true, 500);
           sock.setSoTimeout(READ_TIMEOUT);
           try {
             input = new DataInputStream(sock.getInputStream());
           } catch (StreamCorruptedException e) {
             // bug 36679: Some garbage can be left on the socket stream
             // if a peer disappears at exactly the wrong moment.
-            log.debug("Discarding illegal request from " + (sock.getInetAddress().getHostAddress() + ":" + sock.getPort()), e);
+            log.debug("Discarding illegal request from "
+                + (sock.getInetAddress().getHostAddress() + ":" + sock.getPort()), e);
             return;
           }
 
           int gossipVersion = input.readInt();
           short versionOrdinal = Version.CURRENT_ORDINAL;
           // Create a versioned stream to remember sender's GemFire version
-          if (gossipVersion <= getCurrentGossipVersion() && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
+          if (gossipVersion <= getCurrentGossipVersion()
+              && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
             versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
-            //            if (gossipVersion < getCurrentGossipVersion()) {
-            //              if (log.isTraceEnabled()) {
-            //                log.debug(
-            //                    "Received request from "
-            //                        + sock.getInetAddress().getHostAddress()
-            //                        + " This locator is running: " + getCurrentGossipVersion()
-            //                        + ", but request was version: " + gossipVersion
-            //                        + ", version ordinal: " + versionOrdinal);
-            //              }
-            //            }
+            // if (gossipVersion < getCurrentGossipVersion()) {
+            // if (log.isTraceEnabled()) {
+            // log.debug(
+            // "Received request from "
+            // + sock.getInetAddress().getHostAddress()
+            // + " This locator is running: " + getCurrentGossipVersion()
+            // + ", but request was version: " + gossipVersion
+            // + ", version ordinal: " + versionOrdinal);
+            // }
+            // }
           }
           // Close the socket. We can not accept requests from a newer version
           else {
@@ -378,7 +385,8 @@ public class TcpServer {
           }
 
           if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
-            log.debug("Locator reading request from " + sock.getInetAddress() + " with version " + Version.fromOrdinal(versionOrdinal, false));
+            log.debug("Locator reading request from " + sock.getInetAddress() + " with version "
+                + Version.fromOrdinal(versionOrdinal, false));
           }
           input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
           request = DataSerializer.readObject(input);
@@ -387,10 +395,12 @@ public class TcpServer {
           }
           if (request instanceof ShutdownRequest) {
             shuttingDown = true;
-            //Don't call shutdown from within the worker thread, see java bug #6576792. This bug exists
-            // in the backport as well. Closing the socket will cause our acceptor thread to shutdown
-            //the executor
-            //executor.shutdown();
+            // Don't call shutdown from within the worker thread, see java bug #6576792. This bug
+            // exists
+            // in the backport as well. Closing the socket will cause our acceptor thread to
+            // shutdown
+            // the executor
+            // executor.shutdown();
             srv_sock.close();
             response = new ShutdownResponse();
           } else if (request instanceof InfoRequest) {
@@ -407,7 +417,8 @@ public class TcpServer {
           if (response != null) {
             DataOutputStream output = new DataOutputStream(sock.getOutputStream());
             if (versionOrdinal != Version.CURRENT_ORDINAL) {
-              output = new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
+              output =
+                  new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
             }
             DataSerializer.writeObject(response, output);
 
@@ -432,8 +443,8 @@ public class TcpServer {
             sender = sock.getInetAddress().getHostAddress();
           }
           if (ex instanceof IOException) {
-            //IOException could be caused by a client failure. Don't
-            //log with severe.
+            // IOException could be caused by a client failure. Don't
+            // log with severe.
             if (!sock.isClosed()) {
               log.info("Exception in processing request from " + sender, ex);
             }
@@ -443,12 +454,12 @@ public class TcpServer {
 
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
-          // If this ever returns, rethrow the error.  We're poisoned
+          // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable ex) {
           // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above).  However, there is
+          // catch VirtualMachineError (see above). However, there is
           // _still_ a possibility that you are dealing with a cascading
           // error condition, so you also need to check to see if the JVM
           // is still usable:
@@ -461,12 +472,12 @@ public class TcpServer {
             log.fatal("Exception in processing request from " + sender, ex);
           } catch (VirtualMachineError err) {
             SystemFailure.initiateFailure(err);
-            // If this ever returns, rethrow the error.  We're poisoned
+            // If this ever returns, rethrow the error. We're poisoned
             // now, so don't let this thread continue.
             throw err;
           } catch (Throwable t) {
             // Whenever you catch Error or Throwable, you must also
-            // catch VirtualMachineError (see above).  However, there is
+            // catch VirtualMachineError (see above). However, there is
             // _still_ a possibility that you are dealing with a cascading
             // error condition, so you also need to check to see if the JVM
             // is still usable:
@@ -512,6 +523,7 @@ public class TcpServer {
 
   /**
    * Returns GossipVersion for older Gemfire versions.
+   * 
    * @param ordinal
    *
    * @return gossip version

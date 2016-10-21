@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
@@ -54,7 +52,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ParallelGatewaySenderQueueJUnitTest {
-  
+
   private ParallelGatewaySenderQueue queue;
   private MetaRegionFactory metaRegionFactory;
   private GemFireCacheImpl cache;
@@ -74,7 +72,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
   }
 
   @Test
-  public void whenGatewayEventUnableToResolveFromOffHeapTheStatForNotQueuedConflatedShouldBeIncremented() throws Exception {
+  public void whenGatewayEventUnableToResolveFromOffHeapTheStatForNotQueuedConflatedShouldBeIncremented()
+      throws Exception {
     GatewaySenderStats stats = mockGatewaySenderStats();
 
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
@@ -87,7 +86,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
     BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
 
-    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory);
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
     List peeked = queue.peek(1, 1000);
@@ -102,7 +102,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
   }
 
   @Test
-  public void whenNullPeekedEventFromBucketRegionQueueTheStatForNotQueuedConflatedShouldBeIncremented() throws Exception {
+  public void whenNullPeekedEventFromBucketRegionQueueTheStatForNotQueuedConflatedShouldBeIncremented()
+      throws Exception {
     GatewaySenderStats stats = mockGatewaySenderStats();
 
     GatewaySenderEventImpl eventResolvesFromOffHeap = mock(GatewaySenderEventImpl.class);
@@ -113,7 +114,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
     BucketRegionQueue bucketRegionQueue = mockBucketRegionQueue(backingList);
 
-    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory);
+    TestableParallelGatewaySenderQueue queue = new TestableParallelGatewaySenderQueue(sender,
+        Collections.emptySet(), 0, 1, metaRegionFactory);
     queue.setMockedAbstractBucketRegionQueue(bucketRegionQueue);
 
     List peeked = queue.peek(1, 1000);
@@ -123,15 +125,16 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
   @Test
   public void testLocalSize() throws Exception {
-    ParallelGatewaySenderQueueMetaRegion mockMetaRegion = mock(ParallelGatewaySenderQueueMetaRegion.class);
+    ParallelGatewaySenderQueueMetaRegion mockMetaRegion =
+        mock(ParallelGatewaySenderQueueMetaRegion.class);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     when(mockMetaRegion.getDataStore()).thenReturn(dataStore);
-    when(dataStore.getSizeOfLocalPrimaryBuckets()).thenReturn(3); 
+    when(dataStore.getSizeOfLocalPrimaryBuckets()).thenReturn(3);
     when(metaRegionFactory.newMetataRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
     when(cache.createVMRegion(any(), any(), any())).thenReturn(mockMetaRegion);
-    
+
     queue.addShadowPartitionedRegionForUserPR(mockPR("region1"));
-    
+
     assertEquals(3, queue.localSize());
   }
 
@@ -143,15 +146,16 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(region.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     return region;
   }
-  
+
   private BucketRegionQueue mockBucketRegionQueue(final Queue backingList) {
     PartitionedRegion mockBucketRegion = mockPR("bucketRegion");
-    //These next mocked return calls are for when peek is called.  It ends up checking these on the mocked pr region
+    // These next mocked return calls are for when peek is called. It ends up checking these on the
+    // mocked pr region
     when(mockBucketRegion.getLocalMaxMemory()).thenReturn(100);
     when(mockBucketRegion.size()).thenReturn(backingList.size());
 
     BucketRegionQueue bucketRegionQueue = mock(BucketRegionQueue.class);
-    when (bucketRegionQueue.getPartitionedRegion()).thenReturn(mockBucketRegion);
+    when(bucketRegionQueue.getPartitionedRegion()).thenReturn(mockBucketRegion);
     when(bucketRegionQueue.peek()).thenAnswer((Answer) invocation -> backingList.poll());
     return bucketRegionQueue;
   }
@@ -163,17 +167,13 @@ public class ParallelGatewaySenderQueueJUnitTest {
     private BucketRegionQueue mockedAbstractBucketRegionQueue;
 
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
-                                              final Set<Region> userRegions,
-                                              final int idx,
-                                              final int nDispatcher) {
+        final Set<Region> userRegions, final int idx, final int nDispatcher) {
       super(sender, userRegions, idx, nDispatcher);
     }
 
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
-                                              final Set<Region> userRegions,
-                                              final int idx,
-                                              final int nDispatcher,
-                                              final MetaRegionFactory metaRegionFactory) {
+        final Set<Region> userRegions, final int idx, final int nDispatcher,
+        final MetaRegionFactory metaRegionFactory) {
       super(sender, userRegions, idx, nDispatcher, metaRegionFactory);
     }
 
@@ -182,7 +182,8 @@ public class ParallelGatewaySenderQueueJUnitTest {
       this.mockedAbstractBucketRegionQueue = mocked;
     }
 
-    public AbstractBucketRegionQueue getBucketRegion(final PartitionedRegion prQ, final int bucketId) {
+    public AbstractBucketRegionQueue getBucketRegion(final PartitionedRegion prQ,
+        final int bucketId) {
       return mockedAbstractBucketRegionQueue;
     }
 
@@ -202,14 +203,15 @@ public class ParallelGatewaySenderQueueJUnitTest {
     }
 
     @Override
-    protected BucketRegionQueue getBucketRegionQueueByBucketId(PartitionedRegion prQ, int bucketId) {
+    protected BucketRegionQueue getBucketRegionQueueByBucketId(PartitionedRegion prQ,
+        int bucketId) {
       return mockedAbstractBucketRegionQueue;
     }
 
-//    @Override
-//    public int localSizeForProcessor() {
-//      return 1;
-//    }
+    // @Override
+    // public int localSizeForProcessor() {
+    // return 1;
+    // }
   }
 
 }

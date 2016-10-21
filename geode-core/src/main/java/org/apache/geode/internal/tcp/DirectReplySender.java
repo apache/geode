@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.tcp;
 
@@ -37,13 +35,12 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * A reply sender which replies back directly to a dedicated socket
- * socket.
+ * A reply sender which replies back directly to a dedicated socket socket.
  *
  */
 class DirectReplySender implements ReplySender {
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final DMStats DUMMY_STATS = new DummyDMStats();
 
   private final Connection conn;
@@ -52,49 +49,45 @@ class DirectReplySender implements ReplySender {
   public DirectReplySender(Connection connection) {
     this.conn = connection;
   }
-  
+
   public Set putOutgoing(DistributionMessage msg) {
     Assert.assertTrue(!this.sentReply, "Trying to reply twice to a message");
-    //Using an ArrayList, rather than Collections.singletonList here, because the MsgStreamer
-    //mutates the list when it has exceptions.
-    
+    // Using an ArrayList, rather than Collections.singletonList here, because the MsgStreamer
+    // mutates the list when it has exceptions.
+
     // fix for bug #42199 - cancellation check
     this.conn.owner.getDM().getCancelCriterion().checkCancelInProgress(null);
-    
-    if(logger.isTraceEnabled(LogMarker.DM)) {
+
+    if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "Sending a direct reply {} to {}", msg, conn.getRemoteAddress());
     }
     ArrayList<Connection> conns = new ArrayList<Connection>(1);
     conns.add(conn);
-    MsgStreamer ms = (MsgStreamer)MsgStreamer.create(conns, msg, false,
-        DUMMY_STATS);
+    MsgStreamer ms = (MsgStreamer) MsgStreamer.create(conns, msg, false, DUMMY_STATS);
     try {
       ms.writeMessage();
       ConnectExceptions ce = ms.getConnectExceptions();
-      if(ce != null && !ce.getMembers().isEmpty()) {
+      if (ce != null && !ce.getMembers().isEmpty()) {
         Assert.assertTrue(ce.getMembers().size() == 1);
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DirectChannel_FAILURE_SENDING_DIRECT_REPLY, ce.getMembers().iterator().next()));
+        logger.warn(
+            LocalizedMessage.create(LocalizedStrings.DirectChannel_FAILURE_SENDING_DIRECT_REPLY,
+                ce.getMembers().iterator().next()));
         return Collections.singleton(ce.getMembers().iterator().next());
       }
       sentReply = true;
       return Collections.emptySet();
-    } 
-    catch (NotSerializableException e) {
+    } catch (NotSerializableException e) {
       throw new InternalGemFireException(e);
-    } 
-    catch (ToDataException e) {
+    } catch (ToDataException e) {
       // exception from user code
       throw e;
-    } 
-    catch (IOException ex) {
-      throw new InternalGemFireException(LocalizedStrings.DirectChannel_UNKNOWN_ERROR_SERIALIZING_MESSAGE.toLocalizedString(), ex);
-    }
-    finally {
+    } catch (IOException ex) {
+      throw new InternalGemFireException(
+          LocalizedStrings.DirectChannel_UNKNOWN_ERROR_SERIALIZING_MESSAGE.toLocalizedString(), ex);
+    } finally {
       try {
         ms.close();
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         throw new InternalGemFireException("Unknown error serializing message", e);
       }
     }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -66,10 +64,8 @@ public class LocatorJUnitTest {
 
   @Parameterized.Parameters
   public static Collection<Object> data() {
-    return Arrays.asList(new Object[] {
-        (IntSupplier) () -> 0,
-        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()
-    });
+    return Arrays.asList(new Object[] {(IntSupplier) () -> 0,
+        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()});
   }
 
   @Parameterized.Parameter
@@ -90,10 +86,10 @@ public class LocatorJUnitTest {
 
   @After
   public void tearDown() {
-    if(locator != null) {
+    if (locator != null) {
       locator.stop();
     }
-   assertEquals(false, Locator.hasLocator());
+    assertEquals(false, Locator.hasLocator());
   }
 
   /**
@@ -108,12 +104,15 @@ public class LocatorJUnitTest {
     dsprops.setProperty(JMX_MANAGER_START, "true");
     dsprops.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not needed
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not
+                                                                                          // needed
     try {
       locator = Locator.startLocatorAndDS(port, new File("testJmxManager.log"), dsprops);
-      List<JmxManagerProfile> alreadyManaging = GemFireCacheImpl.getInstance().getJmxManagerAdvisor().adviseAlreadyManaging();
+      List<JmxManagerProfile> alreadyManaging =
+          GemFireCacheImpl.getInstance().getJmxManagerAdvisor().adviseAlreadyManaging();
       assertEquals(1, alreadyManaging.size());
-      assertEquals(GemFireCacheImpl.getInstance().getMyId(), alreadyManaging.get(0).getDistributedMember());
+      assertEquals(GemFireCacheImpl.getInstance().getMyId(),
+          alreadyManaging.get(0).getDistributedMember());
     } finally {
       System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "enabledManagement");
     }
@@ -145,8 +144,8 @@ public class LocatorJUnitTest {
       locator.stop();
       fail("expected an exception");
     } catch (SystemConnectException expected) {
-      
-      for (int i=0; i<10; i++) {
+
+      for (int i = 0; i < 10; i++) {
         if (threadCount < Thread.activeCount()) {
           Thread.sleep(1000);
         }
@@ -154,8 +153,8 @@ public class LocatorJUnitTest {
       if (threadCount < Thread.activeCount()) {
         OSProcess.printStacks(0);
         fail("expected " + threadCount + " threads or fewer but found " + Thread.activeCount()
-            +".  Check log file for a thread dump.");
-        }
+            + ".  Check log file for a thread dump.");
+      }
     }
   }
 
@@ -165,8 +164,8 @@ public class LocatorJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     locator = Locator.startLocatorAndDS(port, tmpFile, null, props, false, true, null);
-   assertFalse(locator.isPeerLocator());
-   assertTrue(locator.isServerLocator());
+    assertFalse(locator.isPeerLocator());
+    assertTrue(locator.isServerLocator());
     Thread.sleep(1000);
     doServerLocation(locator.getPort());
   }
@@ -186,10 +185,10 @@ public class LocatorJUnitTest {
   }
 
   /**
-   * Make sure two ServerLocation objects on different hosts but with the same port
-   * are not equal
+   * Make sure two ServerLocation objects on different hosts but with the same port are not equal
    * <p/>
-   * TRAC #42040: LoadBalancing directs all traffic to a single cache server if all servers are started on the same port
+   * TRAC #42040: LoadBalancing directs all traffic to a single cache server if all servers are
+   * started on the same port
    */
   @Test
   public void testServerLocationOnDifferentHostsShouldNotTestEqual() {
@@ -202,14 +201,19 @@ public class LocatorJUnitTest {
 
   private void doServerLocation(int realPort) throws Exception {
     {
-      ClientConnectionRequest request = new ClientConnectionRequest(Collections.EMPTY_SET, "group1");
-      ClientConnectionResponse response = (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
+      ClientConnectionRequest request =
+          new ClientConnectionRequest(Collections.EMPTY_SET, "group1");
+      ClientConnectionResponse response = (ClientConnectionResponse) new TcpClient()
+          .requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
       assertEquals(null, response.getServer());
     }
 
     {
-      QueueConnectionRequest request = new QueueConnectionRequest(ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getAnyInstance()), 3, Collections.EMPTY_SET, "group1",true);
-      QueueConnectionResponse response = (QueueConnectionResponse) new TcpClient().requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
+      QueueConnectionRequest request = new QueueConnectionRequest(
+          ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getAnyInstance()),
+          3, Collections.EMPTY_SET, "group1", true);
+      QueueConnectionResponse response = (QueueConnectionResponse) new TcpClient()
+          .requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
       assertEquals(new ArrayList(), response.getServers());
       assertFalse(response.isDurableQueueFound());
     }

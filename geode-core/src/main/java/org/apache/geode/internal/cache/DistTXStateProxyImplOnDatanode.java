@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -30,14 +28,13 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
 
   private DistTXPrecommitMessage preCommitMessage = null;
   private boolean preCommitResponse = false;
-  
+
   public DistTXStateProxyImplOnDatanode(TXManagerImpl managerImpl, TXId id,
       InternalDistributedMember clientMember) {
     super(managerImpl, id, clientMember);
   }
 
-  public DistTXStateProxyImplOnDatanode(TXManagerImpl managerImpl, TXId id,
-      boolean isjta) {
+  public DistTXStateProxyImplOnDatanode(TXManagerImpl managerImpl, TXId id, boolean isjta) {
     super(managerImpl, id, isjta);
   }
 
@@ -71,27 +68,23 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
     }
     return this.realDeal;
   }
-  
-  private DistTXState getRealDeal()
-      throws UnsupportedOperationInTransactionException {
-    if (this.realDeal == null || !this.realDeal.isDistTx()
-        || !this.realDeal.isTxState()
+
+  private DistTXState getRealDeal() throws UnsupportedOperationInTransactionException {
+    if (this.realDeal == null || !this.realDeal.isDistTx() || !this.realDeal.isTxState()
         || this.realDeal.isCreatedOnDistTxCoordinator()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString(
-              "DistTXStateOnDatanode", this.realDeal != null ? this.realDeal
-                  .getClass().getSimpleName() : "null"));
+          LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistTXStateOnDatanode",
+              this.realDeal != null ? this.realDeal.getClass().getSimpleName() : "null"));
     }
     return (DistTXState) this.realDeal;
   }
-  
+
   @Override
-  public void precommit() throws CommitConflictException,
-      UnsupportedOperationInTransactionException {
+  public void precommit()
+      throws CommitConflictException, UnsupportedOperationInTransactionException {
     try {
       DistTXState txState = getRealDeal();
-      boolean retVal = txState.applyOpsOnRedundantCopy(
-          this.preCommitMessage.getSender(),
+      boolean retVal = txState.applyOpsOnRedundantCopy(this.preCommitMessage.getSender(),
           this.preCommitMessage.getSecondaryTransactionalOperations());
       if (retVal) {
         setCommitOnBehalfOfRemoteStub(true);
@@ -112,7 +105,7 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
   public boolean getPreCommitResponse() {
     return preCommitResponse;
   }
-  
+
   /*
    * Populate list of versions for each region while replying precommit
    */
@@ -120,9 +113,8 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
       TreeMap<String, ArrayList<DistTxThinEntryState>> entryStateSortedMap) {
     return getRealDeal().populateDistTxEntryStateList(entryStateSortedMap);
   }
-  
-  public void populateDistTxEntryStates(
-      ArrayList<ArrayList<DistTxThinEntryState>> entryEventList) {
+
+  public void populateDistTxEntryStates(ArrayList<ArrayList<DistTxThinEntryState>> entryEventList) {
     getRealDeal().setDistTxEntryStates(entryEventList);
   }
 }

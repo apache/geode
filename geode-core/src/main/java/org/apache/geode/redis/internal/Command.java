@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal;
 
@@ -22,9 +20,8 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 
 /**
- * The command class is used in holding a received Redis command. Each sent 
- * command resides in an instance of this class. This class is designed to be
- * used strictly by getter and setter methods.
+ * The command class is used in holding a received Redis command. Each sent command resides in an
+ * instance of this class. This class is designed to be used strictly by getter and setter methods.
  * 
  *
  */
@@ -37,14 +34,15 @@ public class Command {
   private ByteArrayWrapper bytes;
 
   /**
-   * Constructor for {@link Command}. Must initialize Command with a {@link SocketChannel}
-   * and a {@link List} of command elements
+   * Constructor for {@link Command}. Must initialize Command with a {@link SocketChannel} and a
+   * {@link List} of command elements
    * 
    * @param commandElems List of elements in command
    */
-  public Command (List<byte[]> commandElems) {
+  public Command(List<byte[]> commandElems) {
     if (commandElems == null || commandElems.isEmpty())
-      throw new IllegalArgumentException("List of command elements cannot be empty -> List:" + commandElems);
+      throw new IllegalArgumentException(
+          "List of command elements cannot be empty -> List:" + commandElems);
     this.commandElems = commandElems;
     this.response = null;
 
@@ -108,13 +106,11 @@ public class Command {
   }
 
   /**
-   * Convenience method to get a String representation of the key
-   * in a Redis command, always at the second position in the sent
-   * command array
+   * Convenience method to get a String representation of the key in a Redis command, always at the
+   * second position in the sent command array
    * 
-   * @return Returns the second element in the parsed command
-   * list, which is always the key for commands indicating
-   * a key
+   * @return Returns the second element in the parsed command list, which is always the key for
+   *         commands indicating a key
    */
   public String getStringKey() {
     if (this.commandElems.size() > 1) {
@@ -124,7 +120,7 @@ public class Command {
       } else if (this.key == null)
         this.key = this.bytes.toString();
       return this.key;
-    } else 
+    } else
       return null;
   }
 
@@ -133,7 +129,7 @@ public class Command {
       if (this.bytes == null)
         this.bytes = new ByteArrayWrapper(this.commandElems.get(1));
       return this.bytes;
-    } else 
+    } else
       return null;
   }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.security;
 
@@ -48,34 +46,45 @@ public class IntegratedSecurityServiceTest {
     String string = SecurityService.getObjectOfType(String.class.getName(), String.class);
     assertNotNull(string);
 
-    CharSequence charSequence = SecurityService.getObjectOfType(String.class.getName(), CharSequence.class);
+    CharSequence charSequence =
+        SecurityService.getObjectOfType(String.class.getName(), CharSequence.class);
     assertNotNull(charSequence);
 
-    assertThatThrownBy(() -> SecurityService.getObjectOfType("com.abc.testString", String.class)).isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> SecurityService.getObjectOfType("com.abc.testString", String.class))
+        .isInstanceOf(GemFireSecurityException.class);
 
-    assertThatThrownBy(() -> SecurityService.getObjectOfType(String.class.getName(), Boolean.class)).isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> SecurityService.getObjectOfType(String.class.getName(), Boolean.class))
+        .isInstanceOf(GemFireSecurityException.class);
 
-    assertThatThrownBy(() -> SecurityService.getObjectOfType("", String.class)).isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> SecurityService.getObjectOfType("", String.class))
+        .isInstanceOf(GemFireSecurityException.class);
 
-    assertThatThrownBy(() -> SecurityService.getObjectOfType(null, String.class)).isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> SecurityService.getObjectOfType(null, String.class))
+        .isInstanceOf(GemFireSecurityException.class);
 
-    assertThatThrownBy(() -> SecurityService.getObjectOfType("  ", String.class)).isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> SecurityService.getObjectOfType("  ", String.class))
+        .isInstanceOf(GemFireSecurityException.class);
   }
 
   @Test
   public void testGetObjectFromFactoryMethod() {
-    String string = SecurityService.getObjectOfType(Factories.class.getName() + ".getString", String.class);
+    String string =
+        SecurityService.getObjectOfType(Factories.class.getName() + ".getString", String.class);
     assertNotNull(string);
 
-    CharSequence charSequence = SecurityService.getObjectOfType(Factories.class.getName() + ".getString", String.class);
+    CharSequence charSequence =
+        SecurityService.getObjectOfType(Factories.class.getName() + ".getString", String.class);
     assertNotNull(charSequence);
 
-    assertThatThrownBy(() -> SecurityService.getObjectOfType(Factories.class.getName() + ".getStringNonStatic", String.class))
-      .isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> SecurityService
+        .getObjectOfType(Factories.class.getName() + ".getStringNonStatic", String.class))
+            .isInstanceOf(GemFireSecurityException.class);
 
-    assertThatThrownBy(() -> SecurityService.getObjectOfType(Factories.class.getName() + ".getNullString", String.class))
-      .isInstanceOf(GemFireSecurityException.class);
+    assertThatThrownBy(() -> SecurityService
+        .getObjectOfType(Factories.class.getName() + ".getNullString", String.class))
+            .isInstanceOf(GemFireSecurityException.class);
   }
+
   @Test
   public void testInitialSecurityFlags() {
     // initial state of IntegratedSecurityService
@@ -86,8 +95,10 @@ public class IntegratedSecurityServiceTest {
 
   @Test
   public void testInitWithSecurityManager() {
-    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.templates.SampleSecurityManager");
-    properties.setProperty(SampleSecurityManager.SECURITY_JSON, "org/apache/geode/security/templates/security.json");
+    properties.setProperty(SECURITY_MANAGER,
+        "org.apache.geode.security.templates.SampleSecurityManager");
+    properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+        "org/apache/geode/security/templates/security.json");
 
     securityService.initSecurity(properties);
 
@@ -128,21 +139,21 @@ public class IntegratedSecurityServiceTest {
     assertTrue(securityService.isPeerSecurityRequired());
   }
 
-  private static class Factories{
+  private static class Factories {
 
-    public static String getString(){
+    public static String getString() {
       return new String();
     }
 
-    public static String getNullString(){
+    public static String getNullString() {
       return null;
     }
 
-    public String getStringNonStatic(){
+    public String getStringNonStatic() {
       return new String();
     }
 
-    public static Boolean getBoolean(){
+    public static Boolean getBoolean() {
       return Boolean.TRUE;
     }
   }

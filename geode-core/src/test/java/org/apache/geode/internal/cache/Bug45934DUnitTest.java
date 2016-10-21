@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -59,11 +57,11 @@ public class Bug45934DUnitTest extends JUnit4CacheTestCase {
     Cache cache = getCache(cf);
 
     // 2. create normal region locally
-    RegionFactory<Integer, Integer> rf = cache.<Integer, Integer> createRegionFactory();
+    RegionFactory<Integer, Integer> rf = cache.<Integer, Integer>createRegionFactory();
     rf.setDataPolicy(DataPolicy.NORMAL);
     rf.setScope(Scope.DISTRIBUTED_ACK);
     Region<Integer, Integer> region = rf.create(name);
-    
+
     // 3. reset the error flag after initial failure
     AbstractUpdateOperation.test_InvalidVersionAction = new DelayedAction(new Runnable() {
       @Override
@@ -83,10 +81,10 @@ public class Bug45934DUnitTest extends JUnit4CacheTestCase {
     // 5. double check
     verifyLocal(region, count);
     verify(remote, name, count);
-    
+
     cache.close();
   }
-  
+
   private void createRemoteRegion(final VM remote, final String name) {
     SerializableCallable create = new SerializableCallable() {
       @Override
@@ -95,9 +93,9 @@ public class Bug45934DUnitTest extends JUnit4CacheTestCase {
         cf.set(MCAST_PORT, "45934");
         cf.set(CONSERVE_SOCKETS, "false");
 
-        getCache(cf).<Integer, Integer> createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT)
+        getCache(cf).<Integer, Integer>createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT)
             .create(name);
-        
+
         AbstractUpdateOperation.test_InvalidVersion = true;
         return null;
       }
@@ -122,7 +120,7 @@ public class Bug45934DUnitTest extends JUnit4CacheTestCase {
       assertEquals(i, (int) r.get(i));
     }
   }
-  
+
   private void verify(VM vm, final String name, final int count) {
     SerializableCallable verify = new SerializableCallable() {
       @Override

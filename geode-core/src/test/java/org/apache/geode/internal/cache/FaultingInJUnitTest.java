@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -25,8 +23,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Tests faulting in from current oplog, old oplog
- * and htree for different modes (overflow only, persist+overflow : Sync/Async)
+ * Tests faulting in from current oplog, old oplog and htree for different modes (overflow only,
+ * persist+overflow : Sync/Async)
  */
 @Category(IntegrationTest.class)
 public class FaultingInJUnitTest extends DiskRegionTestingBase {
@@ -34,7 +32,7 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
   private volatile boolean hasBeenNotified;
 
   private DiskRegionProperties diskProps = new DiskRegionProperties();
-  
+
   @Override
   protected final void postSetUp() throws Exception {
     deleteFiles();
@@ -43,7 +41,7 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
     this.hasBeenNotified = false;
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
   }
-  
+
   @Override
   protected final void preTearDown() throws Exception {
     closeDown();
@@ -91,12 +89,12 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
         region.getCache().getLogger().info("beforeGoingToCompact before sleep");
         try {
           Thread.sleep(1000);
-        }
-        catch (InterruptedException ignore) {
+        } catch (InterruptedException ignore) {
           fail("interrupted");
         }
         region.getCache().getLogger().info("beforeGoingToCompact after sleep");
       }
+
       public void afterHavingCompacted() {
         region.getCache().getLogger().info("afterHavingCompacted");
         synchronized (region) {
@@ -106,103 +104,102 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
       }
     });
     // first give time for possible async writes to be written to disk
-    ((LocalRegion)region).forceFlush();
+    ((LocalRegion) region).forceFlush();
     // no need to force roll or wait for compact if overflow only
-    if (((LocalRegion)region).getDiskRegion().isBackup()) {
+    if (((LocalRegion) region).getDiskRegion().isBackup()) {
       region.getCache().getLogger().info("before forceRolling");
-      region.forceRolling();    
+      region.forceRolling();
       region.getCache().getLogger().info("after forceRolling");
-      synchronized(region) {
+      synchronized (region) {
         while (!hasBeenNotified) {
           try {
             region.wait(9000);
             assertTrue(hasBeenNotified);
-          }
-          catch (InterruptedException e) {
-            fail("exception not expected"+e);
+          } catch (InterruptedException e) {
+            fail("exception not expected" + e);
           }
         }
       }
     }
 
     // make sure it was faulted out
-    assertEquals(null, ((LocalRegion)region).getValueInVM(new Integer(2)));
+    assertEquals(null, ((LocalRegion) region).getValueInVM(new Integer(2)));
     // and that the correct value will be faulted in
     verify100Int(false);
   }
 
   /**
-   * test OverflowOnly Sync Faultin  From CurrentOplog
+   * test OverflowOnly Sync Faultin From CurrentOplog
    */
   @Test
   public void testOverflowOnlyFaultinSyncFromCurrentOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
   public void testOverflowOnlyFaultinSyncFromOldOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, diskProps);
     faultInFromOldOplog();
   }
 
   @Test
   public void testOverflowOnlyFaultinSyncFromCompactedOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, diskProps);
     faultInFromCompactedOplog();
   }
 
   @Test
   public void testOverflowOnlyFaultinAsyncFromCurrentOplog() {
-    region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
   public void testOverflowOnlyFaultinAsyncFromOldOplog() {
-    region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
     faultInFromOldOplog();
   }
 
   @Test
   public void testOverflowOnlyFaultinAsyncFromCompactedOplog() {
-    region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
     faultInFromCompactedOplog();
   }
-  
+
   @Test
   public void testOverflowAndPersistFaultinSyncFromCurrentOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
   public void testOverflowAndPersistFaultinSyncFromOldOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
     faultInFromOldOplog();
   }
 
   @Test
   public void testOverflowAndPersistFaultinSyncFromCompactedOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
     faultInFromCompactedOplog();
   }
 
   @Test
   public void testOverflowAndPersistFaultinAsyncFromCurrentOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
   public void testOverflowAndPersistFaultinAsyncFromOldOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
     faultInFromOldOplog();
   }
 
   @Test
   public void testOverflowAndPersistFaultinAsyncFromCompactedOplog() {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
+    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
     faultInFromCompactedOplog();
   }
 }

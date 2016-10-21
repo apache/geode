@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.distributed;
@@ -47,9 +43,9 @@ import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * {@link LuceneFunction} coordinates text search on a member. It receives text search query from the coordinator
- * and arguments like region and buckets. It invokes search on the local index and provides a result collector. The
- * locally collected results are sent to the search coordinator.
+ * {@link LuceneFunction} coordinates text search on a member. It receives text search query from
+ * the coordinator and arguments like region and buckets. It invokes search on the local index and
+ * provides a result collector. The locally collected results are sent to the search coordinator.
  */
 public class LuceneFunction extends FunctionAdapter implements InternalEntity {
   private static final long serialVersionUID = 1L;
@@ -64,7 +60,8 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
 
     Region region = ctx.getDataSet();
 
-    LuceneFunctionContext<IndexResultCollector> searchContext = (LuceneFunctionContext) ctx.getArguments();
+    LuceneFunctionContext<IndexResultCollector> searchContext =
+        (LuceneFunctionContext) ctx.getArguments();
     if (searchContext == null) {
       throw new IllegalArgumentException("Missing search context");
     }
@@ -73,9 +70,10 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
     if (queryProvider == null) {
       throw new IllegalArgumentException("Missing query provider");
     }
-    
+
     LuceneService service = LuceneServiceProvider.get(region.getCache());
-    InternalLuceneIndex index = (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+    InternalLuceneIndex index =
+        (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(), region.getFullPath());
     RepositoryManager repoManager = index.getRepositoryManager();
 
     Query query = null;
@@ -107,7 +105,7 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
       }
       TopEntriesCollector mergedResult = (TopEntriesCollector) manager.reduce(results);
       resultSender.lastResult(mergedResult);
-    } catch (IOException|BucketNotFoundException e) {
+    } catch (IOException | BucketNotFoundException e) {
       logger.warn("", e);
       throw new FunctionException(e);
     }
@@ -118,7 +116,7 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
   public String getId() {
     return ID;
   }
-  
+
   @Override
   public boolean optimizeForWrite() {
     return true;

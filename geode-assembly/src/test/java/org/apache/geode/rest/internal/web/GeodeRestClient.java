@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.rest.internal.web;
@@ -55,43 +53,50 @@ public class GeodeRestClient {
   public final static String CONTEXT = "/geode/v1";
 
   private int restPort = 0;
-  public GeodeRestClient(int restPort){
+
+  public GeodeRestClient(int restPort) {
     this.restPort = restPort;
   }
 
-  public HttpResponse doHEAD(String query, String username, String password) throws MalformedURLException {
+  public HttpResponse doHEAD(String query, String username, String password)
+      throws MalformedURLException {
     HttpHead httpHead = new HttpHead(CONTEXT + query);
     return doRequest(httpHead, username, password);
   }
 
-  public HttpResponse doPost(String query, String username, String password, String body) throws MalformedURLException {
+  public HttpResponse doPost(String query, String username, String password, String body)
+      throws MalformedURLException {
     HttpPost httpPost = new HttpPost(CONTEXT + query);
     httpPost.addHeader("content-type", "application/json");
     httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPost, username, password);
   }
 
-  public HttpResponse doPut(String query, String username, String password, String body) throws MalformedURLException {
+  public HttpResponse doPut(String query, String username, String password, String body)
+      throws MalformedURLException {
     HttpPut httpPut = new HttpPut(CONTEXT + query);
     httpPut.addHeader("content-type", "application/json");
     httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPut, username, password);
   }
 
-  public HttpResponse doGet(String uri, String username, String password) throws MalformedURLException {
+  public HttpResponse doGet(String uri, String username, String password)
+      throws MalformedURLException {
     HttpGet getRequest = new HttpGet(CONTEXT + uri);
     return doRequest(getRequest, username, password);
   }
+
   public HttpResponse doGet(String uri) throws MalformedURLException {
     return doGet(uri, null, null);
   }
 
-  public HttpResponse doDelete(String uri, String username, String password) throws MalformedURLException {
+  public HttpResponse doDelete(String uri, String username, String password)
+      throws MalformedURLException {
     HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
     return doRequest(httpDelete, username, password);
   }
 
-  public static String getContentType(HttpResponse response){
+  public static String getContentType(HttpResponse response) {
     return response.getEntity().getContentType().getValue();
   }
 
@@ -118,14 +123,16 @@ public class GeodeRestClient {
     return new JSONTokener(str.toString());
   }
 
-  private HttpResponse doRequest(HttpRequestBase request, String username, String password) throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(HOSTNAME,restPort, PROTOCOL);
+  private HttpResponse doRequest(HttpRequestBase request, String username, String password)
+      throws MalformedURLException {
+    HttpHost targetHost = new HttpHost(HOSTNAME, restPort, PROTOCOL);
     CloseableHttpClient httpclient = HttpClients.custom().build();
     HttpClientContext clientContext = HttpClientContext.create();
     // if username is null, do not put in authentication
     if (username != null) {
       CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()), new UsernamePasswordCredentials(username, password));
+      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()),
+          new UsernamePasswordCredentials(username, password));
       httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
       AuthCache authCache = new BasicAuthCache();
       BasicScheme basicAuth = new BasicScheme();

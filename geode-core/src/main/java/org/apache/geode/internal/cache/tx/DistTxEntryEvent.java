@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tx;
 
@@ -43,24 +41,21 @@ import org.apache.geode.internal.offheap.annotations.Retained;
  *
  */
 public class DistTxEntryEvent extends EntryEventImpl {
-  
+
   protected static final byte HAS_PUTALL_OP = 0x1;
   protected static final byte HAS_REMOVEALL_OP = 0x2;
 
   /**
-   * TODO DISTTX: callers of this constructor need to
-   * make sure that release is called. In general
-   * the distributed tx code needs to be reviewed to
-   * see if it correctly handles off-heap.
+   * TODO DISTTX: callers of this constructor need to make sure that release is called. In general
+   * the distributed tx code needs to be reviewed to see if it correctly handles off-heap.
    */
   @Retained
   public DistTxEntryEvent(EntryEventImpl entry) {
     super(entry);
   }
-  
+
   // For Serialization
-  public DistTxEntryEvent() {
-  }
+  public DistTxEntryEvent() {}
 
   @Override
   public Version[] getSerializationVersions() {
@@ -90,15 +85,15 @@ public class DistTxEntryEvent extends EntryEventImpl {
       flags |= HAS_REMOVEALL_OP;
     }
     DataSerializer.writeByte(flags, out);
-    
+
     // handle putAll
     if (this.putAllOp != null) {
       putAllToData(out);
-    } 
+    }
     // handle removeAll
     if (this.removeAllOp != null) {
       removeAllToData(out);
-    } 
+    }
   }
 
   @Override
@@ -111,20 +106,18 @@ public class DistTxEntryEvent extends EntryEventImpl {
     Object key = DataSerializer.readObject(in);
     Integer bucketId = DataSerializer.readInteger(in);
     this.keyInfo = new DistTxKeyInfo(key, null/*
-                                             * value [DISTTX} TODO see if
-                                             * required
-                                             */, null/*
-                                                      * callbackarg [DISTTX]
-                                                      * TODO
-                                                      */, bucketId);
+                                               * value [DISTTX} TODO see if required
+                                               */, null/*
+                                                       * callbackarg [DISTTX] TODO
+                                                       */, bucketId);
     basicSetNewValue(DataSerializer.readObject(in));
-    
+
     byte flags = DataSerializer.readByte(in);
-    if ((flags & HAS_PUTALL_OP) != 0 ) {
+    if ((flags & HAS_PUTALL_OP) != 0) {
       putAllFromData(in);
     }
-    
-    if ((flags & HAS_REMOVEALL_OP) != 0 ) {
+
+    if ((flags & HAS_REMOVEALL_OP) != 0) {
       removeAllFromData(in);
     }
   }
@@ -135,8 +128,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
    */
   private void putAllToData(DataOutput out) throws IOException {
     DataSerializer.writeInteger(this.putAllOp.putAllDataSize, out);
-    EntryVersionsList versionTags = new EntryVersionsList(
-        this.putAllOp.putAllDataSize);
+    EntryVersionsList versionTags = new EntryVersionsList(this.putAllOp.putAllDataSize);
     boolean hasTags = false;
     final PutAllEntryData[] putAllData = this.putAllOp.getPutAllEntryData();
     for (int i = 0; i < this.putAllOp.putAllDataSize; i++) {
@@ -160,17 +152,14 @@ public class DistTxEntryEvent extends EntryEventImpl {
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  private void putAllFromData(DataInput in)
-      throws IOException, ClassNotFoundException {
+  private void putAllFromData(DataInput in) throws IOException, ClassNotFoundException {
     int putAllSize = DataSerializer.readInteger(in);
     PutAllEntryData[] putAllEntries = new PutAllEntryData[putAllSize];
     if (putAllSize > 0) {
-      final Version version = InternalDataSerializer
-          .getVersionForDataStreamOrNull(in);
+      final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < putAllSize; i++) {
-        putAllEntries[i] = new PutAllEntryData(in, this.eventID, i, version,
-            bytesIn);
+        putAllEntries[i] = new PutAllEntryData(in, this.eventID, i, version, bytesIn);
       }
 
       boolean hasTags = in.readBoolean();
@@ -182,27 +171,24 @@ public class DistTxEntryEvent extends EntryEventImpl {
       }
     }
     // TODO DISTTX: release this event?
-    EntryEventImpl e = EntryEventImpl.create(
-        this.region, Operation.PUTALL_CREATE,
-        null, null, null, true, this.getDistributedMember(), true, true);
-    
-    this.putAllOp = new DistributedPutAllOperation(e, putAllSize, false /*[DISTTX] TODO*/);
+    EntryEventImpl e = EntryEventImpl.create(this.region, Operation.PUTALL_CREATE, null, null, null,
+        true, this.getDistributedMember(), true, true);
+
+    this.putAllOp = new DistributedPutAllOperation(e, putAllSize, false /* [DISTTX] TODO */);
     this.putAllOp.setPutAllEntryData(putAllEntries);
   }
-  
+
   /**
    * @param out
    * @throws IOException
    */
   private void removeAllToData(DataOutput out) throws IOException {
     DataSerializer.writeInteger(this.removeAllOp.removeAllDataSize, out);
-  
-    EntryVersionsList versionTags = new EntryVersionsList(
-        this.removeAllOp.removeAllDataSize);
-  
+
+    EntryVersionsList versionTags = new EntryVersionsList(this.removeAllOp.removeAllDataSize);
+
     boolean hasTags = false;
-    final RemoveAllEntryData[] removeAllData = this.removeAllOp
-        .getRemoveAllEntryData();
+    final RemoveAllEntryData[] removeAllData = this.removeAllOp.getRemoveAllEntryData();
     for (int i = 0; i < this.removeAllOp.removeAllDataSize; i++) {
       if (!hasTags && removeAllData[i].versionTag != null) {
         hasTags = true;
@@ -224,18 +210,15 @@ public class DistTxEntryEvent extends EntryEventImpl {
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  private void removeAllFromData(DataInput in)
-      throws IOException, ClassNotFoundException {
+  private void removeAllFromData(DataInput in) throws IOException, ClassNotFoundException {
     int removeAllSize = DataSerializer.readInteger(in);
     final RemoveAllEntryData[] removeAllData = new RemoveAllEntryData[removeAllSize];
-    final Version version = InternalDataSerializer
-        .getVersionForDataStreamOrNull(in);
+    final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
     final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
     for (int i = 0; i < removeAllSize; i++) {
-      removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, version,
-          bytesIn);
+      removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, version, bytesIn);
     }
-  
+
     boolean hasTags = in.readBoolean();
     if (hasTags) {
       EntryVersionsList versionTags = EntryVersionsList.create(in);
@@ -244,17 +227,17 @@ public class DistTxEntryEvent extends EntryEventImpl {
       }
     }
     // TODO DISTTX: release this event
-    EntryEventImpl e = EntryEventImpl.create(
-        this.region, Operation.REMOVEALL_DESTROY,
-        null, null, null, true, this.getDistributedMember(), true, true);
-    this.removeAllOp = new DistributedRemoveAllOperation(e, removeAllSize, false /*[DISTTX] TODO*/);
+    EntryEventImpl e = EntryEventImpl.create(this.region, Operation.REMOVEALL_DESTROY, null, null,
+        null, true, this.getDistributedMember(), true, true);
+    this.removeAllOp =
+        new DistributedRemoveAllOperation(e, removeAllSize, false /* [DISTTX] TODO */);
     this.removeAllOp.setRemoveAllEntryData(removeAllData);
   }
 
   public void setDistributedMember(DistributedMember sender) {
     this.distributedMember = sender;
   }
-  
+
   @Override
   public String toString() {
     StringBuilder buf = new StringBuilder();

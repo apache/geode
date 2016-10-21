@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -24,8 +22,8 @@ import org.apache.geode.management.PartitionAttributesData;
 import org.apache.geode.management.RegionAttributesData;
 
 /**
- * System-wide aggregate of a named Region. Provides high-level view of a Region
- * for all members hosting and/or using it.
+ * System-wide aggregate of a named Region. Provides high-level view of a Region for all members
+ * hosting and/or using it.
  * 
  * 
  */
@@ -55,7 +53,7 @@ public class DistributedRegionMBean implements DistributedRegionMXBean {
     return bridge.getCreatesRate();
   }
 
- 
+
   @Override
   public float getDestroyRate() {
 
@@ -230,7 +228,7 @@ public class DistributedRegionMBean implements DistributedRegionMXBean {
     return bridge.getRegionType();
   }
 
-  
+
   @Override
   public long getSystemRegionEntryCount() {
 

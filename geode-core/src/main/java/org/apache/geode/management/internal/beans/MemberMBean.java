@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -33,8 +31,7 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
  * 
  * 
  */
-public class MemberMBean extends NotificationBroadcasterSupport implements
-    MemberMXBean {
+public class MemberMBean extends NotificationBroadcasterSupport implements MemberMXBean {
 
   private MemberMBeanBridge bridge;
 
@@ -335,7 +332,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   public long getLockTimeout() {
     return bridge.getLockTimeout();
   }
-  
+
   public int getProcessId() {
     return bridge.getProcessId();
   }
@@ -368,6 +365,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   public boolean isManager() {
     return bridge.isManager();
   }
+
   @Override
   public boolean isManagerCreated() {
     return bridge.isManagerCreated();
@@ -408,7 +406,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
       CommandExecutionContext.clear();
     }
   }
-  
+
   @Override
   public String[] listDiskStores(boolean includeRegionOwned) {
     return bridge.listDiskStores(includeRegionOwned);
@@ -427,7 +425,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   @Override
   public void shutDownMember() {
     bridge.shutDownMember();
-    
+
   }
 
   @Override
@@ -439,12 +437,12 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   public String getId() {
     return bridge.getId();
   }
-  
+
   @Override
   public String getMember() {
     return bridge.getMember();
   }
-  
+
   public String[] getGroups() {
     return bridge.getGroups();
   }
@@ -548,12 +546,12 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   public float getPDXDeserializationRate() {
     return bridge.getPDXDeserializationRate();
   }
-  
-  public MemberMBeanBridge getBridge(){
+
+  public MemberMBeanBridge getBridge() {
     return bridge;
   }
-  
-  public void stopMonitor(){
+
+  public void stopMonitor() {
     bridge.stopMonitor();
   }
 
@@ -630,7 +628,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   @Override
   public int getVisibleNodes() {
     return bridge.getVisibleNodes();
-  }    
+  }
 
   @Override
   public int getOffHeapObjects() {
@@ -660,18 +658,18 @@ public class MemberMBean extends NotificationBroadcasterSupport implements
   @Override
   public long getOffHeapCompactionTime() {
     return bridge.getOffHeapCompactionTime();
-  }    
+  }
 
   @Override
   public long getMaxMemory() {
     return bridge.getMaxMemory();
- }
-  
+  }
+
   @Override
   public long getFreeMemory() {
     return bridge.getFreeMemory();
   }
-  
+
   @Override
   public long getUsedMemory() {
     return bridge.getUsedMemory();

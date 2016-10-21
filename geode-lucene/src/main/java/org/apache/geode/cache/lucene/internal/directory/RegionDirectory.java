@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.directory;
@@ -41,19 +37,19 @@ import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 /**
  * An implementation of Directory that stores data in geode regions.
  * 
- * Directory is an interface to file/RAM storage for lucene. This class uses
- * the {@link FileSystem} class to store the data in the provided geode
- * regions.
+ * Directory is an interface to file/RAM storage for lucene. This class uses the {@link FileSystem}
+ * class to store the data in the provided geode regions.
  */
 public class RegionDirectory extends BaseDirectory {
 
   private final FileSystem fs;
 
   /**
-   * Create a region directory with a given file and chunk region. These regions
-   * may be bucket regions or they may be replicated regions.
+   * Create a region directory with a given file and chunk region. These regions may be bucket
+   * regions or they may be replicated regions.
    */
-  public RegionDirectory(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion, FileSystemStats stats) {
+  public RegionDirectory(ConcurrentMap<String, File> fileRegion,
+      ConcurrentMap<ChunkKey, byte[]> chunkRegion, FileSystemStats stats) {
     super(new SingleInstanceLockFactory());
     fs = new FileSystem(fileRegion, chunkRegion, stats);
   }
@@ -61,7 +57,7 @@ public class RegionDirectory extends BaseDirectory {
   @Override
   public String[] listAll() throws IOException {
     ensureOpen();
-    String[] array = fs.listFileNames().toArray(new String[]{});
+    String[] array = fs.listFileNames().toArray(new String[] {});
     Arrays.sort(array);
     return array;
   }
@@ -87,7 +83,8 @@ public class RegionDirectory extends BaseDirectory {
     return new OutputStreamIndexOutput(name, name, out, 1000);
   }
 
-  public IndexOutput createTempOutput(String prefix, String suffix, IOContext context) throws IOException {
+  public IndexOutput createTempOutput(String prefix, String suffix, IOContext context)
+      throws IOException {
     String name = prefix + "_temp_" + UUID.randomUUID() + suffix;
     final File file = fs.createTemporaryFile(name);
     final OutputStream out = file.getOutputStream();
@@ -126,7 +123,7 @@ public class RegionDirectory extends BaseDirectory {
   public FileSystem getFileSystem() {
     return fs;
   }
-  
-  
+
+
 
 }

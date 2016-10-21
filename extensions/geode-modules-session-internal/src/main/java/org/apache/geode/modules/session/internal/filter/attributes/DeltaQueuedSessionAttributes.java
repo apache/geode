@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
@@ -23,9 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class implements delayed attribute delta propagation. Updates to
- * attributes are only propagated once the session goes out of scope - i.e. as
- * the request is done being processed.
+ * This class implements delayed attribute delta propagation. Updates to attributes are only
+ * propagated once the session goes out of scope - i.e. as the request is done being processed.
  */
 public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes {
 
@@ -35,28 +32,25 @@ public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes
   private Trigger trigger = Trigger.SET;
 
   private enum Trigger {
-    SET,
-    SET_AND_GET;
+    SET, SET_AND_GET;
   }
 
   /**
    * Register ourselves for de-serialization
    */
   static {
-    Instantiator.register(
-        new Instantiator(DeltaQueuedSessionAttributes.class, 3479) {
-          @Override
-          public DataSerializable newInstance() {
-            return new DeltaQueuedSessionAttributes();
-          }
-        });
+    Instantiator.register(new Instantiator(DeltaQueuedSessionAttributes.class, 3479) {
+      @Override
+      public DataSerializable newInstance() {
+        return new DeltaQueuedSessionAttributes();
+      }
+    });
   }
 
   /**
    * Default constructor
    */
-  public DeltaQueuedSessionAttributes() {
-  }
+  public DeltaQueuedSessionAttributes() {}
 
   public void setReplicationTrigger(String trigger) {
     this.trigger = Trigger.valueOf(trigger.toUpperCase());
@@ -71,8 +65,8 @@ public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes
   }
 
   /**
-   * {@inheritDoc} Put an attribute, setting the dirty flag. The changes are
-   * flushed at the end of filter processing.
+   * {@inheritDoc} Put an attribute, setting the dirty flag. The changes are flushed at the end of
+   * filter processing.
    */
   @Override
   public Object putAttribute(String attr, Object value) {
@@ -82,8 +76,8 @@ public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes
   }
 
   /**
-   * {@inheritDoc} Remove an attribute, setting the dirty flag. The changes are
-   * flushed at the end of filter processing.
+   * {@inheritDoc} Remove an attribute, setting the dirty flag. The changes are flushed at the end
+   * of filter processing.
    */
   @Override
   public Object removeAttribute(String attr) {

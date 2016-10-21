@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -29,8 +27,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 
 /**
- * This cache deserializable always keeps its byte[] in serialized form
- * and the object form.
+ * This cache deserializable always keeps its byte[] in serialized form and the object form.
  *
  * @since GemFire 5.5
  *
@@ -39,31 +36,29 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   /**
    * empty constructor for serialization only
    */
-  public StoreAllCachedDeserializable() {
-  }
-  
-  
-  private /*final*/ Object objValue;
+  public StoreAllCachedDeserializable() {}
+
+
+  private /* final */ Object objValue;
 
   /** The cached value */
-  private /*final*/ byte[] value;
-  
+  private /* final */ byte[] value;
+
   /**
-   * +PER_OBJECT_OVERHEAD for VMCachedDeserializable object
-   * +4 for value field
+   * +PER_OBJECT_OVERHEAD for VMCachedDeserializable object +4 for value field
    */
   static final int MEM_OVERHEAD = PER_OBJECT_OVERHEAD + 8;
 
-  /** 
+  /**
    * Creates a new instance of <code>StoreAllCachedDeserializable</code>.
    *
-   * Note that, in general, instances of this class should be obtained
-   * via {@link CachedDeserializableFactory}.
+   * Note that, in general, instances of this class should be obtained via
+   * {@link CachedDeserializableFactory}.
    */
   StoreAllCachedDeserializable(byte[] serializedValue) {
     if (serializedValue == null) {
       throw new NullPointerException(
-        LocalizedStrings.StoreAllCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
+          LocalizedStrings.StoreAllCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
     }
     this.value = serializedValue;
     this.objValue = EntryEventImpl.deserialize(this.value);
@@ -80,41 +75,39 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   public Object getDeserializedValue(Region r, RegionEntry re) {
     return this.objValue;
   }
-  
+
   public Object getDeserializedForReading() {
     return this.objValue;
   }
-  
+
   public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
     return EntryEventImpl.deserialize(this.value);
   }
-  
+
   /**
    * Return the serialized value as a byte[]
    */
   public byte[] getSerializedValue() {
     return this.value;
   }
-  
+
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
-    wrapper
-      .setData(this.value, userBits, this.value.length, 
-               false /* Not Reusable as it refers to underlying value */);
+    wrapper.setData(this.value, userBits, this.value.length,
+        false /* Not Reusable as it refers to underlying value */);
   }
 
   /**
-   * Return current value regardless of whether it is serialized or
-   * deserialized: if it was serialized than it is a byte[], otherwise
-   * it is not a byte[].
+   * Return current value regardless of whether it is serialized or deserialized: if it was
+   * serialized than it is a byte[], otherwise it is not a byte[].
    */
   public Object getValue() {
     return this.value;
   }
 
   public int getSizeInBytes() {
-    return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(this.value)*2;
+    return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(this.value) * 2;
   }
-  
+
   public int getValueSizeInBytes() {
     return CachedDeserializableFactory.getByteSize(this.value);
   }
@@ -131,15 +124,15 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeByteArray(this.value, out);
   }
-  
+
   String getShortClassName() {
     String cname = getClass().getName();
-    return cname.substring(getClass().getPackage().getName().length()+1);
+    return cname.substring(getClass().getPackage().getName().length() + 1);
   }
 
   @Override
   public String toString() {
-    return getShortClassName()+"@"+this.hashCode();
+    return getShortClassName() + "@" + this.hashCode();
   }
 
   public void writeValueAsByteArray(DataOutput out) throws IOException {

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.offheap;
@@ -45,8 +43,8 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({ "*.UnitTest" })
-@PrepareForTest({ MemoryAllocatorImpl.class })
+@PowerMockIgnore({"*.UnitTest"})
+@PrepareForTest({MemoryAllocatorImpl.class})
 public class ReferenceCountHelperImplTest {
 
   ReferenceCountHelperImpl rchi;
@@ -110,7 +108,7 @@ public class ReferenceCountHelperImplTest {
     rchi.skipRefCountTracking();
     Object postOwner = rchi.getReferenceCountOwner();
 
-    assertTrue(postOwner!=preOwner);  // skip sets owner to SKIP_REF_COUNT_TRACKING
+    assertTrue(postOwner != preOwner); // skip sets owner to SKIP_REF_COUNT_TRACKING
 
     assertFalse(rchi.isRefCountTracking());
 
@@ -132,26 +130,26 @@ public class ReferenceCountHelperImplTest {
   public void doSkipRefCountTrackingWithTrackRefsFalseAndTrackFreesTrue() {
     rchi = getFalseTrue();
     Object preOwner = rchi.getReferenceCountOwner();
-    assertEquals(null, preOwner);  // getReferenceCountOwner returns null if not tracking
+    assertEquals(null, preOwner); // getReferenceCountOwner returns null if not tracking
 
-    rchi.skipRefCountTracking();    
+    rchi.skipRefCountTracking();
     assertFalse(rchi.isRefCountTracking());
 
     rchi.unskipRefCountTracking();
-    assertFalse(rchi.isRefCountTracking());  // system prop not set    
+    assertFalse(rchi.isRefCountTracking()); // system prop not set
   }
 
   @Test
   public void doSkipRefCountTrackingWithTrackRefsFalseAndTrackFreesFalse() {
     rchi = getFalseFalse();
     Object preOwner = rchi.getReferenceCountOwner();
-    assertEquals(null, preOwner);  // getReferenceCountOwner returns null if not tracking
+    assertEquals(null, preOwner); // getReferenceCountOwner returns null if not tracking
 
-    rchi.skipRefCountTracking();    
+    rchi.skipRefCountTracking();
     assertFalse(rchi.isRefCountTracking());
 
     rchi.unskipRefCountTracking();
-    assertFalse(rchi.isRefCountTracking());  // system prop not set    
+    assertFalse(rchi.isRefCountTracking()); // system prop not set
   }
 
   @Test
@@ -162,7 +160,7 @@ public class ReferenceCountHelperImplTest {
     rchi.skipRefCountTracking();
     Object postOwner = rchi.getReferenceCountOwner();
 
-    assertTrue(postOwner!=preOwner);  // skip sets owner to SKIP_REF_COUNT_TRACKING
+    assertTrue(postOwner != preOwner); // skip sets owner to SKIP_REF_COUNT_TRACKING
 
     assertFalse(rchi.isRefCountTracking());
 
@@ -174,7 +172,7 @@ public class ReferenceCountHelperImplTest {
   }
 
   @Test
-  public void doSetReferenceCountOwnerWithTrackRefsTrueAndTrackFreesTrue() {  
+  public void doSetReferenceCountOwnerWithTrackRefsTrueAndTrackFreesTrue() {
     rchi = getTrueTrue();
     String owner = null;
     rchi.setReferenceCountOwner(owner);
@@ -191,25 +189,25 @@ public class ReferenceCountHelperImplTest {
     rchi.setReferenceCountOwner(owner2);
     ai = rchi.getReenterCount();
     assertEquals(2, ai.get());
-    assertTrue(rchi.getReferenceCountOwner()!=owner2);  // stays original owner until cnt = 0
+    assertTrue(rchi.getReferenceCountOwner() != owner2); // stays original owner until cnt = 0
 
     String owner3 = null;
     rchi.setReferenceCountOwner(owner3);
     ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), owner);    
+    assertEquals(rchi.getReferenceCountOwner(), owner);
 
     owner = null;
     rchi.setReferenceCountOwner(owner);
     ai = rchi.getReenterCount();
     assertEquals(0, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), null);    
-    
+    assertEquals(rchi.getReferenceCountOwner(), null);
+
     RegionEntry re = mock(RegionEntry.class);
     rchi.setReferenceCountOwner(re);
     ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), re);    
+    assertEquals(rchi.getReferenceCountOwner(), re);
 
     Long address = (long) 0x1000;
     boolean decRefCount = false;
@@ -219,20 +217,23 @@ public class ReferenceCountHelperImplTest {
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
@@ -261,7 +262,7 @@ public class ReferenceCountHelperImplTest {
   }
 
   @Test
-  public void doSetReferenceCountOwnerWithTrackRefsTrueAndTrackFreesFalse() {  
+  public void doSetReferenceCountOwnerWithTrackRefsTrueAndTrackFreesFalse() {
     rchi = getTrueFalse();
     String owner = null;
     rchi.setReferenceCountOwner(owner);
@@ -278,26 +279,26 @@ public class ReferenceCountHelperImplTest {
     rchi.setReferenceCountOwner(owner2);
     ai = rchi.getReenterCount();
     assertEquals(2, ai.get());
-    assertTrue(rchi.getReferenceCountOwner()!=owner2);  // stays original owner until cnt = 0
+    assertTrue(rchi.getReferenceCountOwner() != owner2); // stays original owner until cnt = 0
 
     String owner3 = null;
     rchi.setReferenceCountOwner(owner3);
     ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), owner);    
+    assertEquals(rchi.getReferenceCountOwner(), owner);
 
     owner = null;
     rchi.setReferenceCountOwner(owner);
     ai = rchi.getReenterCount();
     assertEquals(0, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), null);    
+    assertEquals(rchi.getReferenceCountOwner(), null);
   }
 
   @Test
   public void doCreateReferenceCountOwnerWithTrackRefsTrueAndTrackFreesTrue() {
     rchi = getTrueTrue();
     Object owner = rchi.createReferenceCountOwner();
-    assertFalse(owner==null);
+    assertFalse(owner == null);
     AtomicInteger ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
 
@@ -305,28 +306,28 @@ public class ReferenceCountHelperImplTest {
     rchi.setReferenceCountOwner(owner);
     ai = rchi.getReenterCount();
     assertEquals(0, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), null);    
+    assertEquals(rchi.getReferenceCountOwner(), null);
   }
 
   @Test
   public void doCreateReferenceCountOwnerWithTrackRefsFalseAndTrackFreesTrue() {
     rchi = getFalseTrue();
     Object owner = rchi.createReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
   }
 
   @Test
   public void doCreateReferenceCountOwnerWithTrackRefsFalseAndTrackFreesFalse() {
     rchi = getFalseFalse();
     Object owner = rchi.createReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
   }
 
   @Test
   public void doCreateReferenceCountOwnerWithTrackRefsTrueAndTrackFreesFalse() {
     rchi = getTrueFalse();
     Object owner = rchi.createReferenceCountOwner();
-    assertFalse(owner==null);
+    assertFalse(owner == null);
     AtomicInteger ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
 
@@ -334,7 +335,7 @@ public class ReferenceCountHelperImplTest {
     rchi.setReferenceCountOwner(owner);
     ai = rchi.getReenterCount();
     assertEquals(0, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), null);    
+    assertEquals(rchi.getReferenceCountOwner(), null);
   }
 
   @Test
@@ -344,49 +345,53 @@ public class ReferenceCountHelperImplTest {
     boolean decRefCount = false;
     int rc = 1;
 
-    rchi.freeRefCountInfo(address);  // quick check of free of nonexistent info
+    rchi.freeRefCountInfo(address); // quick check of free of nonexistent info
 
     Object owner = rchi.getReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
 
     rchi.refCountChanged(address, decRefCount, rc);
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(2, list.size());   // inc and dec are tracked in different changeinfo objects (?)
+    assertEquals(2, list.size()); // inc and dec are tracked in different changeinfo objects (?)
     rcci = list.get(1);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(2, list.size());
     rcci = list.get(1);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     list = rchi.peekRefCountInfo(address);
-    assertEquals(2, list.size());   // list contains 2 entries from inc/dec done above
+    assertEquals(2, list.size()); // list contains 2 entries from inc/dec done above
 
     List<RefCountChangeInfo> freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);   // no freeRefCountInfo calls yet
+    assertEquals(null, freeInfo); // no freeRefCountInfo calls yet
 
-    rchi.freeRefCountInfo(address);  // when freed, moved to FreeRefCountInfo list
+    rchi.freeRefCountInfo(address); // when freed, moved to FreeRefCountInfo list
 
     List<RefCountChangeInfo> freeInfo2 = rchi.getFreeRefCountInfo(address);
-    assertEquals(2, freeInfo2.size());  // the inc/dec info moved to freeRefCountInfo list
+    assertEquals(2, freeInfo2.size()); // the inc/dec info moved to freeRefCountInfo list
 
     list = rchi.getRefCountInfo(address);
-    assertEquals(null, list);  // the inc/dec ref count list should now be null
+    assertEquals(null, list); // the inc/dec ref count list should now be null
   }
 
   @Test
@@ -399,7 +404,7 @@ public class ReferenceCountHelperImplTest {
     int rc = 1;
 
     Object owner = rchi.getReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
 
     rchi.refCountChanged(address, decRefCount, rc);
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
@@ -408,15 +413,15 @@ public class ReferenceCountHelperImplTest {
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(null, list);   
+    assertEquals(null, list);
 
     List<RefCountChangeInfo> freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);   // no freeRefCountInfo calls yet
+    assertEquals(null, freeInfo); // no freeRefCountInfo calls yet
 
-    rchi.freeRefCountInfo(address);  // noop when not tracking
+    rchi.freeRefCountInfo(address); // noop when not tracking
 
     freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);  // should still be null
+    assertEquals(null, freeInfo); // should still be null
   }
 
   @Test
@@ -429,7 +434,7 @@ public class ReferenceCountHelperImplTest {
     int rc = 1;
 
     Object owner = rchi.getReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
 
     rchi.refCountChanged(address, decRefCount, rc);
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
@@ -438,15 +443,15 @@ public class ReferenceCountHelperImplTest {
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(null, list);   
+    assertEquals(null, list);
 
     List<RefCountChangeInfo> freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);   // no freeRefCountInfo calls yet
+    assertEquals(null, freeInfo); // no freeRefCountInfo calls yet
 
-    rchi.freeRefCountInfo(address);  // noop when not tracking
+    rchi.freeRefCountInfo(address); // noop when not tracking
 
     freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);  // should still be null
+    assertEquals(null, freeInfo); // should still be null
   }
 
   @Test
@@ -457,46 +462,50 @@ public class ReferenceCountHelperImplTest {
     int rc = 1;
 
     Object owner = rchi.getReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
 
     rchi.refCountChanged(address, decRefCount, rc);
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(2, list.size());   // inc and dec are tracked in different changeinfo objects (?)
+    assertEquals(2, list.size()); // inc and dec are tracked in different changeinfo objects (?)
     rcci = list.get(1);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(2, list.size());
     rcci = list.get(1);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     list = rchi.peekRefCountInfo(address);
-    assertEquals(2, list.size());   // list contains 2 entries from inc/dec done above
+    assertEquals(2, list.size()); // list contains 2 entries from inc/dec done above
 
     List<RefCountChangeInfo> freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);   // no freeRefCountInfo calls yet
+    assertEquals(null, freeInfo); // no freeRefCountInfo calls yet
 
-    rchi.freeRefCountInfo(address);  // when freed, moved to FreeRefCountInfo list
+    rchi.freeRefCountInfo(address); // when freed, moved to FreeRefCountInfo list
 
     List<RefCountChangeInfo> freeInfo2 = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo2);  // not tracking freed info
+    assertEquals(null, freeInfo2); // not tracking freed info
 
     list = rchi.getRefCountInfo(address);
-    assertEquals(null, list);  // the inc/dec ref count list should now be null
+    assertEquals(null, list); // the inc/dec ref count list should now be null
   }
 
   @Test
@@ -507,7 +516,7 @@ public class ReferenceCountHelperImplTest {
     int rc = 1;
 
     Object owner = rchi.createReferenceCountOwner();
-    assertFalse(owner==null);
+    assertFalse(owner == null);
 
     AtomicInteger ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
@@ -516,10 +525,10 @@ public class ReferenceCountHelperImplTest {
     rchi.setReferenceCountOwner(owner);
     ai = rchi.getReenterCount();
     assertEquals(0, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), null);  
+    assertEquals(rchi.getReferenceCountOwner(), null);
 
     owner = rchi.createReferenceCountOwner();
-    assertFalse(owner==null);
+    assertFalse(owner == null);
 
     ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
@@ -528,24 +537,27 @@ public class ReferenceCountHelperImplTest {
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(1, list.size());   // inc and dec are tracked in different changeinfo objects (?)
+    assertEquals(1, list.size()); // inc and dec are tracked in different changeinfo objects (?)
     rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.getRefCountInfo(address);
-    assertEquals(0, list.size());    
+    assertEquals(0, list.size());
   }
 
   @Test
@@ -558,7 +570,7 @@ public class ReferenceCountHelperImplTest {
     int rc = 1;
 
     Object owner = rchi.createReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
 
     rchi.refCountChanged(address, decRefCount, rc);
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
@@ -571,19 +583,19 @@ public class ReferenceCountHelperImplTest {
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(null, list);   // inc and dec are tracked in different changeinfo objects (?)
+    assertEquals(null, list); // inc and dec are tracked in different changeinfo objects (?)
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(null, list);
 
     List<RefCountChangeInfo> freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);   // no freeRefCountInfo calls yet
+    assertEquals(null, freeInfo); // no freeRefCountInfo calls yet
 
-    rchi.freeRefCountInfo(address);  // when freed, moved to FreeRefCountInfo list
+    rchi.freeRefCountInfo(address); // when freed, moved to FreeRefCountInfo list
 
     freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);  // the inc/dec info moved to freeRefCountInfo list
+    assertEquals(null, freeInfo); // the inc/dec info moved to freeRefCountInfo list
   }
 
   @Test
@@ -596,7 +608,7 @@ public class ReferenceCountHelperImplTest {
     int rc = 1;
 
     Object owner = rchi.createReferenceCountOwner();
-    assertTrue(owner==null);
+    assertTrue(owner == null);
 
     rchi.refCountChanged(address, decRefCount, rc);
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
@@ -609,19 +621,19 @@ public class ReferenceCountHelperImplTest {
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(null, list);   // inc and dec are tracked in different changeinfo objects (?)
+    assertEquals(null, list); // inc and dec are tracked in different changeinfo objects (?)
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(null, list);
 
     List<RefCountChangeInfo> freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);   // no freeRefCountInfo calls yet
+    assertEquals(null, freeInfo); // no freeRefCountInfo calls yet
 
-    rchi.freeRefCountInfo(address);  // when freed, moved to FreeRefCountInfo list
+    rchi.freeRefCountInfo(address); // when freed, moved to FreeRefCountInfo list
 
     freeInfo = rchi.getFreeRefCountInfo(address);
-    assertEquals(null, freeInfo);  // the inc/dec info moved to freeRefCountInfo list
+    assertEquals(null, freeInfo); // the inc/dec info moved to freeRefCountInfo list
   }
 
   @Test
@@ -632,7 +644,7 @@ public class ReferenceCountHelperImplTest {
     int rc = 1;
 
     Object owner = rchi.createReferenceCountOwner();
-    assertFalse(owner==null);
+    assertFalse(owner == null);
 
     AtomicInteger ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
@@ -641,10 +653,10 @@ public class ReferenceCountHelperImplTest {
     rchi.setReferenceCountOwner(owner);
     ai = rchi.getReenterCount();
     assertEquals(0, ai.get());
-    assertEquals(rchi.getReferenceCountOwner(), null);  
+    assertEquals(rchi.getReferenceCountOwner(), null);
 
     owner = rchi.createReferenceCountOwner();
-    assertFalse(owner==null);
+    assertFalse(owner == null);
 
     ai = rchi.getReenterCount();
     assertEquals(1, ai.get());
@@ -653,24 +665,27 @@ public class ReferenceCountHelperImplTest {
     List<RefCountChangeInfo> list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     decRefCount = true;
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(1, list.size());   // inc and dec are tracked in different changeinfo objects (?)
+    assertEquals(1, list.size()); // inc and dec are tracked in different changeinfo objects (?)
     rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
-    assertEquals(0, list.size());    
+    assertEquals(0, list.size());
   }
 
   @Test
@@ -686,25 +701,28 @@ public class ReferenceCountHelperImplTest {
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
-    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address);  // now getRefCountInfo
+    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address); // now getRefCountInfo
     assertEquals(1, info.size());
     rcci = info.get(0);
-    assertEquals(1, rcci.getUseCount());    
+    assertEquals(1, rcci.getUseCount());
 
     list = rchi.peekRefCountInfo(address);
-    assertEquals(0, list.size());  // getRefCountInfo leaves list LOCKED (i.e. empty)
+    assertEquals(0, list.size()); // getRefCountInfo leaves list LOCKED (i.e. empty)
   }
 
   @Test
-  public void doRefCountChangedAfterGetRefCountInfoWithTrackRefsTrueAndTrackFreesTrue() throws Exception {
+  public void doRefCountChangedAfterGetRefCountInfoWithTrackRefsTrueAndTrackFreesTrue()
+      throws Exception {
     rchi = getTrueTrue();
     long address = (long) 0x1000;
     boolean decRefCount = false;
@@ -716,40 +734,44 @@ public class ReferenceCountHelperImplTest {
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
-    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address);  // now getRefCountInfo
+    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address); // now getRefCountInfo
     assertEquals(1, info.size());
     rcci = info.get(0);
-    assertEquals(1, rcci.getUseCount());    
+    assertEquals(1, rcci.getUseCount());
 
     list = rchi.peekRefCountInfo(address);
-    assertEquals(0, list.size());  // getRefCountInfo leaves list LOCKED (i.e. empty)
+    assertEquals(0, list.size()); // getRefCountInfo leaves list LOCKED (i.e. empty)
 
-    sor.mute();   // Mute system out
-    
-    PowerMockito.spy(MemoryAllocatorImpl.class);     // Watch the impl for invocation of debugLog
+    sor.mute(); // Mute system out
 
-    rchi.refCountChanged(address, decRefCount, rc);     // this line should fail.  no inc after getInfo allowed
+    PowerMockito.spy(MemoryAllocatorImpl.class); // Watch the impl for invocation of debugLog
+
+    rchi.refCountChanged(address, decRefCount, rc); // this line should fail. no inc after getInfo
+                                                    // allowed
     PowerMockito.verifyStatic();
-    MemoryAllocatorImpl.debugLog("refCount inced after orphan detected for @1000",  true);
+    MemoryAllocatorImpl.debugLog("refCount inced after orphan detected for @1000", true);
 
     decRefCount = true;
-    
-    rchi.refCountChanged(address, decRefCount, rc);     // this line should fail.  no inc after getInfo allowed
-    PowerMockito.verifyStatic();
-    MemoryAllocatorImpl.debugLog("refCount deced after orphan detected for @1000",  true);
 
-    rchi.freeRefCountInfo(address);     // this line should fail.  no free after getInfo allowed
+    rchi.refCountChanged(address, decRefCount, rc); // this line should fail. no inc after getInfo
+                                                    // allowed
     PowerMockito.verifyStatic();
-    MemoryAllocatorImpl.debugLog("freed after orphan detected for @1000",  true);
-    
+    MemoryAllocatorImpl.debugLog("refCount deced after orphan detected for @1000", true);
+
+    rchi.freeRefCountInfo(address); // this line should fail. no free after getInfo allowed
+    PowerMockito.verifyStatic();
+    MemoryAllocatorImpl.debugLog("freed after orphan detected for @1000", true);
+
   }
 
   @Test
@@ -771,11 +793,11 @@ public class ReferenceCountHelperImplTest {
 
     list = rchi.peekRefCountInfo(address);
     assertEquals(null, list);
-    
-    rchi.refCountChanged(address, decRefCount, rc);     // this will be ignored.
+
+    rchi.refCountChanged(address, decRefCount, rc); // this will be ignored.
     decRefCount = true;
-    rchi.refCountChanged(address, decRefCount, rc);     // this will be ignored.
-    rchi.freeRefCountInfo(address);                     // this will be ignored.
+    rchi.refCountChanged(address, decRefCount, rc); // this will be ignored.
+    rchi.freeRefCountInfo(address); // this will be ignored.
 
   }
 
@@ -813,21 +835,23 @@ public class ReferenceCountHelperImplTest {
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     RefCountChangeInfo rcci = list.get(0);
-    assertEquals(0, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(0, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
     rchi.refCountChanged(address, decRefCount, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // line 258 of ref cnt helper does not set useCount = 1 when adding new entry?
+    assertEquals(1, rcci.getUseCount()); // line 258 of ref cnt helper does not set useCount = 1
+                                         // when adding new entry?
 
-    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address);  // now getRefCountInfo
+    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address); // now getRefCountInfo
     assertEquals(1, info.size());
     rcci = info.get(0);
-    assertEquals(1, rcci.getUseCount());    
+    assertEquals(1, rcci.getUseCount());
 
     list = rchi.peekRefCountInfo(address);
-    assertEquals(0, list.size());  // getRefCountInfo leaves list LOCKED (i.e. empty)
+    assertEquals(0, list.size()); // getRefCountInfo leaves list LOCKED (i.e. empty)
   }
 
   private ReferenceCountHelperImpl getTrueTrue() {
@@ -849,7 +873,7 @@ public class ReferenceCountHelperImplTest {
   private ReferenceCountHelperImpl getHookedImpl() {
     return new HookedReferenceCountHelperImpl(true, true);
   }
-  
+
   @Test
   public void doGetRefCountInfoNonRegionEntryConcurrencyTest() {
     rchi = getHookedImpl();
@@ -859,40 +883,41 @@ public class ReferenceCountHelperImplTest {
 
     List<RefCountChangeInfo> list = null;
 
-    rchi.setReferenceCountOwner("TestOwner");    // assume test identity
+    rchi.setReferenceCountOwner("TestOwner"); // assume test identity
 
     rchi.refCountChanged(address, false, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // hooked impl simulates a concurrent update, so cnt is > expected
+    assertEquals(1, rcci.getUseCount()); // hooked impl simulates a concurrent update, so cnt is >
+                                         // expected
 
-    rchi.setReferenceCountOwner(null);    // sets owner to null and resets count
-    rchi.setReferenceCountOwner(null);    // sets owner to null and resets count
-    
-    rchi.setReferenceCountOwner("TestOwner2");    // assume new identity
+    rchi.setReferenceCountOwner(null); // sets owner to null and resets count
+    rchi.setReferenceCountOwner(null); // sets owner to null and resets count
+
+    rchi.setReferenceCountOwner("TestOwner2"); // assume new identity
 
     rchi.refCountChanged(address, false, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(2, rcci.getUseCount());    // list is not null, so hook not used
-    
-    rchi.refCountChanged(address,  true,  rc);   // dec ref count    
+    assertEquals(2, rcci.getUseCount()); // list is not null, so hook not used
+
+    rchi.refCountChanged(address, true, rc); // dec ref count
     list = rchi.peekRefCountInfo(address);
-    assertEquals(2, list.size());    // dec adds new list of stack traces
+    assertEquals(2, list.size()); // dec adds new list of stack traces
     rcci = list.get(1);
-    assertEquals(0, rcci.getUseCount());   // cnt starts at 0 for new entries
+    assertEquals(0, rcci.getUseCount()); // cnt starts at 0 for new entries
 
-    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address);  // now getRefCountInfo
-    assertEquals(3, info.size());     // hooked impl added one to list
+    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address); // now getRefCountInfo
+    assertEquals(3, info.size()); // hooked impl added one to list
     rcci = info.get(2);
-    assertEquals(0, rcci.getUseCount());  // count starts at 0 for new entries    
+    assertEquals(0, rcci.getUseCount()); // count starts at 0 for new entries
 
     list = rchi.peekRefCountInfo(address);
-    assertEquals(0, list.size());  // getRefCountInfo leaves list LOCKED (i.e. empty)
+    assertEquals(0, list.size()); // getRefCountInfo leaves list LOCKED (i.e. empty)
   }
-  
+
   @Test
   public void doGetRefCountInfoRegionEntryConcurrencyTest() {
     rchi = getHookedImpl();
@@ -903,41 +928,42 @@ public class ReferenceCountHelperImplTest {
     List<RefCountChangeInfo> list = null;
 
     RegionEntry re = mock(RegionEntry.class);
-    rchi.setReferenceCountOwner(re);             // set owner to region entry type
+    rchi.setReferenceCountOwner(re); // set owner to region entry type
 
     rchi.refCountChanged(address, false, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(1, rcci.getUseCount());    // hooked impl simulates a concurrent update, so cnt is > expected
+    assertEquals(1, rcci.getUseCount()); // hooked impl simulates a concurrent update, so cnt is >
+                                         // expected
 
-    rchi.setReferenceCountOwner(null);    // sets owner to null and resets count
-    rchi.setReferenceCountOwner(null);    // sets owner to null and resets count
-    
+    rchi.setReferenceCountOwner(null); // sets owner to null and resets count
+    rchi.setReferenceCountOwner(null); // sets owner to null and resets count
+
     RegionEntry re2 = mock(RegionEntry.class);
-    rchi.setReferenceCountOwner(re2);             // set owner to region entry type
+    rchi.setReferenceCountOwner(re2); // set owner to region entry type
 
     rchi.refCountChanged(address, false, rc);
     list = rchi.peekRefCountInfo(address);
     assertEquals(1, list.size());
     rcci = list.get(0);
-    assertEquals(2, rcci.getUseCount());    // list is not null, so hook not used
-    
-    rchi.refCountChanged(address,  true,  rc);   // dec ref count    
+    assertEquals(2, rcci.getUseCount()); // list is not null, so hook not used
+
+    rchi.refCountChanged(address, true, rc); // dec ref count
     list = rchi.peekRefCountInfo(address);
-    assertEquals(2, list.size());    // dec adds new list of stack traces
+    assertEquals(2, list.size()); // dec adds new list of stack traces
     rcci = list.get(1);
-    assertEquals(0, rcci.getUseCount());   // cnt starts at 0 for new entries
+    assertEquals(0, rcci.getUseCount()); // cnt starts at 0 for new entries
 
-    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address);  // now getRefCountInfo
-    assertEquals(3, info.size());     // hooked impl added one to list
+    List<RefCountChangeInfo> info = rchi.getRefCountInfo(address); // now getRefCountInfo
+    assertEquals(3, info.size()); // hooked impl added one to list
     rcci = info.get(2);
-    assertEquals(0, rcci.getUseCount());  // count starts at 0 for new entries    
+    assertEquals(0, rcci.getUseCount()); // count starts at 0 for new entries
 
     list = rchi.peekRefCountInfo(address);
-    assertEquals(0, list.size());  // getRefCountInfo leaves list LOCKED (i.e. empty)
+    assertEquals(0, list.size()); // getRefCountInfo leaves list LOCKED (i.e. empty)
   }
-  
+
   private class HookedReferenceCountHelperImpl extends ReferenceCountHelperImpl {
     HookedReferenceCountHelperImpl(boolean trackRefCounts, boolean trackFreedRefCounts) {
       super(trackRefCounts, trackFreedRefCounts);
@@ -946,23 +972,25 @@ public class ReferenceCountHelperImplTest {
     protected int refCountChangedTestHookCount = 0;
 
     /*
-     * Update list of stack traces for address.  
-     * Hooked SUT should see that the list changed.
+     * Update list of stack traces for address. Hooked SUT should see that the list changed.
      */
     @Override
-    protected void getReferenceCountInfoTestHook(ConcurrentMap<Long, List<RefCountChangeInfo>> stacktraces, long address) {
-      List<RefCountChangeInfo> updatedList = new ArrayList<RefCountChangeInfo>(stacktraces.get(address));
+    protected void getReferenceCountInfoTestHook(
+        ConcurrentMap<Long, List<RefCountChangeInfo>> stacktraces, long address) {
+      List<RefCountChangeInfo> updatedList =
+          new ArrayList<RefCountChangeInfo>(stacktraces.get(address));
       RefCountChangeInfo rcci = new RefCountChangeInfo(false, 0, "TestOwner");
       updatedList.add(rcci);
       stacktraces.put(address, updatedList);
     }
+
     /*
-     * Reinvoke refCountChanged to update reference count.
-     * Hooked SUT should see that the count has changed.
+     * Reinvoke refCountChanged to update reference count. Hooked SUT should see that the count has
+     * changed.
      */
     @Override
     protected void refCountChangedTestHook(Long address, boolean decRefCount, int rc) {
-      if(refCountChangedTestHookCount==0) {
+      if (refCountChangedTestHookCount == 0) {
         refCountChangedTestHookCount++;
         refCountChanged(address, decRefCount, rc);
       } else {

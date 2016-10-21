@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin;
 
@@ -27,58 +25,52 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * A PooledDistributionMessage for notifying admin members about changes in 
- * Client Membership received through BridgeMembership 
+ * A PooledDistributionMessage for notifying admin members about changes in Client Membership
+ * received through BridgeMembership
  * 
  */
 public class ClientMembershipMessage extends PooledDistributionMessage {
-  public static final int JOINED  = 0;
-  public static final int LEFT    = 1;
+  public static final int JOINED = 0;
+  public static final int LEFT = 1;
   public static final int CRASHED = 2;
-  
+
 
   private String clientId;
   private String clientHost;
-  private int    eventType;
+  private int eventType;
 
   /**
    * Default constructor(for serialization)
    */
-  public ClientMembershipMessage() {
-  }
+  public ClientMembershipMessage() {}
 
   /**
    * Parameterized constructor
    * 
-   * @param clientId
-   *          Id of the client
-   * @param clientHost
-   *          host the client was running on (could be null)
-   * @param eventType
-   *          whether client joined, left or crashed. Should be one of
-   *          ClientMembershipMessage.JOINED, ClientMembershipMessage.LEFT,
-   *          ClientMembershipMessage.CRASHED
+   * @param clientId Id of the client
+   * @param clientHost host the client was running on (could be null)
+   * @param eventType whether client joined, left or crashed. Should be one of
+   *        ClientMembershipMessage.JOINED, ClientMembershipMessage.LEFT,
+   *        ClientMembershipMessage.CRASHED
    */
-  public ClientMembershipMessage(String clientId, String clientHost,
-                                 int eventType) {
-    this.clientId   = clientId;
+  public ClientMembershipMessage(String clientId, String clientHost, int eventType) {
+    this.clientId = clientId;
     this.clientHost = clientHost;
-    this.eventType  = eventType;
+    this.eventType = eventType;
   }
 
-  /** 
+  /**
    * 
    * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.internal.DistributionManager)
    */
   @Override
   protected void process(DistributionManager dm) {
-    AdminDistributedSystemImpl adminDs = 
-                      AdminDistributedSystemImpl.getConnectedInstance();
-    
-    /* 
-     * Disconnect can be called on AdminDistributedSystem from Agent and it is 
-     * not synchronous with processing of this message. Null check added to 
-     * avoid null if disconnect has been called on AdminDistributedSystem
+    AdminDistributedSystemImpl adminDs = AdminDistributedSystemImpl.getConnectedInstance();
+
+    /*
+     * Disconnect can be called on AdminDistributedSystem from Agent and it is not synchronous with
+     * processing of this message. Null check added to avoid null if disconnect has been called on
+     * AdminDistributedSystem
      */
     if (adminDs != null) {
       String senderId = null;
@@ -86,20 +78,19 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
       if (msgSender != null) {
         senderId = msgSender.getId();
       }
-  
-      adminDs.processClientMembership(senderId, clientId, 
-                                      clientHost, eventType);
+
+      adminDs.processClientMembership(senderId, clientId, clientHost, eventType);
     }
   }
 
   /**
-   *  
+   * 
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return CLIENT_MEMBERSHIP_MESSAGE;
   }
-  
+
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
@@ -107,14 +98,14 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
     DataSerializer.writeString(this.clientHost, out);
     out.writeInt(this.eventType);
   }
-  
+
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    
-    this.clientId   = DataSerializer.readString(in);
+
+    this.clientId = DataSerializer.readString(in);
     this.clientHost = DataSerializer.readString(in);
-    this.eventType  = in.readInt();
+    this.eventType = in.readInt();
   }
 
   /**
@@ -137,7 +128,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
   public int getEventType() {
     return eventType;
   }
-  
+
   /**
    * @param eventType the eventType integer
    * @return String format of eventType
@@ -154,7 +145,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
         return "UNKNOWN";
     }
   }
-  
+
   /**
    * String representation of this message.
    * 
@@ -163,24 +154,22 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
   @Override
   public String toString() {
     String clientMembership = "JOINED";
-    
+
     switch (this.eventType) {
-    case LEFT:
-      clientMembership = "LEFT";
-      break;
+      case LEFT:
+        clientMembership = "LEFT";
+        break;
 
-    case CRASHED:
-      clientMembership = "CRASHED and left";
-      break;
+      case CRASHED:
+        clientMembership = "CRASHED and left";
+        break;
 
-    default:
-      break;
+      default:
+        break;
     }
-    
-    return "Client with Id: "+this.clientId + 
-           " running on host: "+this.clientHost + 
-           " "+clientMembership +
-           " the server: "+this.getSender();
+
+    return "Client with Id: " + this.clientId + " running on host: " + this.clientHost + " "
+        + clientMembership + " the server: " + this.getSender();
   }
 
 }

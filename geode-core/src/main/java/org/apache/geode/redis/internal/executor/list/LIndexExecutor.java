@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.list;
 
@@ -63,11 +61,11 @@ public class LIndexExecutor extends ListExecutor {
     } catch (NumberFormatException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
       return;
-    } 
+    }
 
     /*
-     * Now the fun part, converting the redis index into our index.
-     * The redis index is 0 based but negative values count from the tail
+     * Now the fun part, converting the redis index into our index. The redis index is 0 based but
+     * negative values count from the tail
      */
 
     if (redisIndex < 0)
@@ -75,8 +73,8 @@ public class LIndexExecutor extends ListExecutor {
       redisIndex = listSize + redisIndex;
 
     /*
-     * If the index is still less than 0 that means the index has shot off
-     * back past the beginning, which means the index isn't real and a nil is returned
+     * If the index is still less than 0 that means the index has shot off back past the beginning,
+     * which means the index isn't real and a nil is returned
      */
     if (redisIndex < 0) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
@@ -99,10 +97,12 @@ public class LIndexExecutor extends ListExecutor {
 
     Object[] entryArray = entry.getFieldValues();
     ByteArrayWrapper valueWrapper = (ByteArrayWrapper) entryArray[1];
-    command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
+    command.setResponse(
+        Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
   }
 
-  private Struct getEntryAtIndex(ExecutionHandlerContext context, ByteArrayWrapper key, int index) throws Exception {
+  private Struct getEntryAtIndex(ExecutionHandlerContext context, ByteArrayWrapper key, int index)
+      throws Exception {
 
     Query query = getQuery(key, ListQuery.LINDEX, context);
 

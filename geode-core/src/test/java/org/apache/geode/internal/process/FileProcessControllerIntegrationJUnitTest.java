@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.process;
 
@@ -56,22 +54,22 @@ public class FileProcessControllerIntegrationJUnitTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
-  
+
   @Rule
   public TestName testName = new TestName();
-  
+
   @Before
   public void setUp() throws Exception {
     this.processType = ProcessType.LOCATOR;
   }
-  
+
   @After
   public void tearDown() throws Exception {
     if (this.executor != null) {
       this.executor.shutdownNow();
     }
   }
-  
+
   @Test
   public void statusShouldAwaitTimeoutWhileFileIsEmpty() throws Exception {
     // given: FileProcessController with empty pidFile
@@ -82,34 +80,32 @@ public class FileProcessControllerIntegrationJUnitTest {
     when(params.getProcessId()).thenReturn(pid);
     when(params.getProcessType()).thenReturn(this.processType);
     when(params.getWorkingDirectory()).thenReturn(this.temporaryFolder.getRoot());
-    
+
     FileProcessController controller = new FileProcessController(params, 1, 10, MILLISECONDS);
-    
+
     // when
     verifyException(controller).status();
 
     // then: we expect TimeoutException to be thrown
-    assertThat((Exception)caughtException())
-            .isInstanceOf(TimeoutException.class)
-            .hasMessageContaining("Timed out waiting for process to create")
-            .hasNoCause();
+    assertThat((Exception) caughtException()).isInstanceOf(TimeoutException.class)
+        .hasMessageContaining("Timed out waiting for process to create").hasNoCause();
   }
-  
+
   @Test
   public void statusShouldReturnJsonFromStatusFile() throws Exception {
     // given: FileProcessController with pidFile containing real pid
     int pid = ProcessUtils.identifyPid();
     File pidFile = this.temporaryFolder.newFile(this.processType.getPidFileName());
     writeToFile(pidFile, String.valueOf(pid));
-    
+
     FileControllerParameters params = mock(FileControllerParameters.class);
     when(params.getPidFile()).thenReturn(pidFile);
     when(params.getProcessId()).thenReturn(pid);
     when(params.getProcessType()).thenReturn(this.processType);
     when(params.getWorkingDirectory()).thenReturn(this.temporaryFolder.getRoot());
-    
+
     FileProcessController controller = new FileProcessController(params, pid, 1, MINUTES);
-    
+
     // when: status is called in one thread and json is written to the file
     AtomicReference<String> status = new AtomicReference<String>();
     AtomicReference<Exception> exception = new AtomicReference<Exception>();
@@ -124,15 +120,16 @@ public class FileProcessControllerIntegrationJUnitTest {
         }
       }
     });
-    
+
     // write status
     String statusJson = generateStatusJson();
     File statusFile = this.temporaryFolder.newFile(this.processType.getStatusFileName());
     writeToFile(statusFile, statusJson);
-    
+
     // then: returned status should be the json in the file
     assertThat(exception.get()).isNull();
-    with().pollInterval(10, MILLISECONDS).await().atMost(2, MINUTES).untilAtomic(status, equalTo(statusJson));
+    with().pollInterval(10, MILLISECONDS).await().atMost(2, MINUTES).untilAtomic(status,
+        equalTo(statusJson));
     assertThat(status.get()).isEqualTo(statusJson);
     System.out.println(statusJson);
   }
@@ -143,7 +140,7 @@ public class FileProcessControllerIntegrationJUnitTest {
     writer.flush();
     writer.close();
   }
-  
+
   private static String generateStatusJson() {
     Builder builder = new Builder();
     LocatorLauncher defaultLauncher = builder.build();

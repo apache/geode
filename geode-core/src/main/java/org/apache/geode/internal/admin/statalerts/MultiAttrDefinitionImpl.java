@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.statalerts;
 
@@ -29,8 +27,7 @@ import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
- * Implementation of {@link StatAlertDefinition} This provides the definition
- * for multiple statistic
+ * Implementation of {@link StatAlertDefinition} This provides the definition for multiple statistic
  * 
  */
 public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
@@ -42,8 +39,7 @@ public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   protected StatisticInfo[] statisticInfo;
 
-  public MultiAttrDefinitionImpl() {
-  }
+  public MultiAttrDefinitionImpl() {}
 
   /**
    * @param statInfo
@@ -66,7 +62,7 @@ public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   public boolean verify(StatisticsFactory factory) {
     if (statisticInfo == null || statisticInfo.length == 0) {
-//      System.out.println("No attributes defined for this definition.");
+      // System.out.println("No attributes defined for this definition.");
       return false;
     }
     boolean result = false;
@@ -74,8 +70,7 @@ public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
     for (int i = 0; i < statisticInfo.length; i++) {
 
       if (statisticInfo[i] != null) {
-        Statistics[] temp = factory.findStatisticsByTextId(statisticInfo[i]
-            .getStatisticsTextId());
+        Statistics[] temp = factory.findStatisticsByTextId(statisticInfo[i].getStatisticsTextId());
 
         if (temp == null || temp.length == 0)
           return false;
@@ -87,8 +82,7 @@ public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
             break;
           }
         }
-      }
-      else {
+      } else {
         result = false;
         break;
       }
@@ -132,8 +126,7 @@ public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
   /**
    * This method sets the name of this stat alert definition.
    * 
-   * @param name
-   *                name to be set for this StatAlertDefinition.
+   * @param name name to be set for this StatAlertDefinition.
    */
   public void setName(String name) {
     this._name = name;
@@ -154,8 +147,7 @@ public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
   public Number[] getValue() {
     Number[] vals = new Number[statisticInfo.length];
     for (int i = 0; i < vals.length; i++) {
-      vals[i] = statisticInfo[i].getStatistics().get(
-          statisticInfo[i].getStatisticDescriptor());
+      vals[i] = statisticInfo[i].getStatistics().get(statisticInfo[i].getStatisticDescriptor());
     }
     return vals;
   }
@@ -191,16 +183,16 @@ public final class MultiAttrDefinitionImpl implements StatAlertDefinition {
   public StatAlertDefinition getDecorator(String decoratorID) {
     return null;
   }
+
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this._name, out);
     DataSerializer.writePrimitiveInt(this._id, out);
     DataSerializer.writeObjectArray(this.statisticInfo, out);
   }
 
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this._name = DataSerializer.readString(in);
     this._id = DataSerializer.readPrimitiveInt(in);
-    this.statisticInfo = (StatisticInfo[])DataSerializer.readObjectArray(in);
+    this.statisticInfo = (StatisticInfo[]) DataSerializer.readObjectArray(in);
   }
 }

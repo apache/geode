@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.util;
 
@@ -48,22 +46,19 @@ import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * Re-balancing operation relocates data from heavily loaded members to lightly
- * loaded members. In most cases, the decision to re-balance is based on the
- * size of the member and a few other statistics. {@link AutoBalancer} monitors
- * these statistics and if necessary, triggers a re-balancing request.
- * Auto-Balancing is expected to prevent failures and data loss.
+ * Re-balancing operation relocates data from heavily loaded members to lightly loaded members. In
+ * most cases, the decision to re-balance is based on the size of the member and a few other
+ * statistics. {@link AutoBalancer} monitors these statistics and if necessary, triggers a
+ * re-balancing request. Auto-Balancing is expected to prevent failures and data loss.
  * 
  * <P>
- * This implementation is based on {@code Initializer} implementation. By
- * default auto-balancing is disabled. A user needs to configure
- * {@link AutoBalancer} during cache initialization
+ * This implementation is based on {@code Initializer} implementation. By default auto-balancing is
+ * disabled. A user needs to configure {@link AutoBalancer} during cache initialization
  * {@link GemFireCache#getInitializer()}
  * 
  * <P>
- * In a cluster only one member owns auto-balancing responsibility. This is
- * achieved by grabbing a distributed lock. In case of a failure a new member
- * will grab the lock and manage auto balancing.
+ * In a cluster only one member owns auto-balancing responsibility. This is achieved by grabbing a
+ * distributed lock. In case of a failure a new member will grab the lock and manage auto balancing.
  * 
  * <P>
  * {@link AutoBalancer} can be controlled using the following configurations
@@ -75,10 +70,9 @@ import org.apache.geode.internal.logging.LogService;
 @Experimental("The autobalancer may be removed or the API may change in future releases")
 public class AutoBalancer implements Declarable {
   /**
-   * Use this configuration to manage out-of-balance audit frequency. If the
-   * auditor finds the system to be out-of-balance, it will trigger
-   * re-balancing. Any valid cron string is accepted. The sub-expressions
-   * represent the following:
+   * Use this configuration to manage out-of-balance audit frequency. If the auditor finds the
+   * system to be out-of-balance, it will trigger re-balancing. Any valid cron string is accepted.
+   * The sub-expressions represent the following:
    * <OL>
    * <LI>Seconds
    * <LI>Minutes
@@ -94,43 +88,40 @@ public class AutoBalancer implements Declarable {
   public static final String SCHEDULE = "schedule";
 
   /**
-   * Use this configuration to manage re-balance invocation. Rebalance operation
-   * will be triggered if the total number of bytes rebalance operation may move
-   * is more than this threshold, in percentage of the total data size.
+   * Use this configuration to manage re-balance invocation. Rebalance operation will be triggered
+   * if the total number of bytes rebalance operation may move is more than this threshold, in
+   * percentage of the total data size.
    * <P>
    * Default value {@link #DEFAULT_SIZE_THRESHOLD_PERCENT}
    */
   public static final String SIZE_THRESHOLD_PERCENT = "size-threshold-percent";
 
   /**
-   * Default value of {@link AutoBalancer#SIZE_THRESHOLD_PERCENT}. If 10% of
-   * data is misplaced, its a good time to redistribute buckets
+   * Default value of {@link AutoBalancer#SIZE_THRESHOLD_PERCENT}. If 10% of data is misplaced, its
+   * a good time to redistribute buckets
    */
   public static final int DEFAULT_SIZE_THRESHOLD_PERCENT = 10;
 
   /**
-   * In the initial data load phases,
-   * {@link AutoBalancer#SIZE_THRESHOLD_PERCENT} based rebalance invocation may
-   * be unnecessary. Rebalance should not be triggered if the total data size
-   * managed by cluster is too small. Rebalance operation will be triggered if
-   * the total number of bytes rebalance operation may move is more than this
-   * number of bytes.
+   * In the initial data load phases, {@link AutoBalancer#SIZE_THRESHOLD_PERCENT} based rebalance
+   * invocation may be unnecessary. Rebalance should not be triggered if the total data size managed
+   * by cluster is too small. Rebalance operation will be triggered if the total number of bytes
+   * rebalance operation may move is more than this number of bytes.
    * <P>
    * Default value {@link #DEFAULT_MINIMUM_SIZE}
    */
   public static final String MINIMUM_SIZE = "minimum-size";
 
   /**
-   * Default value of {@link AutoBalancer#MINIMUM_SIZE}. In the initial data
-   * load phases, {@link AutoBalancer#SIZE_THRESHOLD_PERCENT} based rebalance
-   * invocation may be unnecessary. Do not rebalance if the data to be moved is
-   * less than 100MB
+   * Default value of {@link AutoBalancer#MINIMUM_SIZE}. In the initial data load phases,
+   * {@link AutoBalancer#SIZE_THRESHOLD_PERCENT} based rebalance invocation may be unnecessary. Do
+   * not rebalance if the data to be moved is less than 100MB
    */
   public static final int DEFAULT_MINIMUM_SIZE = 100 * 1024 * 1024;
 
   /**
-   * Name of the DistributedLockService that {@link AutoBalancer} will use to
-   * guard against concurrent maintenance activity
+   * Name of the DistributedLockService that {@link AutoBalancer} will use to guard against
+   * concurrent maintenance activity
    */
   public static final String AUTO_BALANCER_LOCK_SERVICE_NAME = "__AUTO_B";
 
@@ -174,10 +165,8 @@ public class AutoBalancer implements Declarable {
    * Invokes audit triggers based on a cron schedule.
    * <OL>
    * <LI>computes delay = next slot - current time
-   * <LI>schedules a out-of-balance audit task to be started after delay
-   * computed earlier
-   * <LI>once the audit task completes, it repeats delay computation and task
-   * submission
+   * <LI>schedules a out-of-balance audit task to be started after delay computed earlier
+   * <LI>once the audit task completes, it repeats delay computation and task submission
    */
   private class CronScheduler implements AuditScheduler {
     final ScheduledExecutorService trigger;
@@ -206,7 +195,7 @@ public class AutoBalancer implements Declarable {
 
       try {
         generator = new CronSequenceGenerator(schedule);
-      } catch(Exception e) {
+      } catch (Exception e) {
         throw new GemFireConfigException("Cron expression could not be parsed: " + schedule, e);
       }
 
@@ -219,7 +208,8 @@ public class AutoBalancer implements Declarable {
       long delay = nextSchedule.getTime() - currentTime;
 
       if (logger.isDebugEnabled()) {
-        logger.debug("Now={}, next audit time={}, delay={} ms", new Date(currentTime), nextSchedule, delay);
+        logger.debug("Now={}, next audit time={}, delay={} ms", new Date(currentTime), nextSchedule,
+            delay);
       }
 
       trigger.schedule(new Runnable() {
@@ -228,7 +218,8 @@ public class AutoBalancer implements Declarable {
           try {
             auditor.execute();
           } catch (CacheClosedException e) {
-            logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs", e);
+            logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs",
+                e);
             return;
           } catch (Exception e) {
             logger.warn("Error while executing out-of-balance audit.", e);
@@ -245,8 +236,7 @@ public class AutoBalancer implements Declarable {
   }
 
   /**
-   * Queries member statistics and health to determine if a re-balance operation
-   * is needed
+   * Queries member statistics and health to determine if a re-balance operation is needed
    * <OL>
    * <LI>acquires distributed lock
    * <LI>queries member health
@@ -273,7 +263,8 @@ public class AutoBalancer implements Declarable {
         if (props.getProperty(SIZE_THRESHOLD_PERCENT) != null) {
           sizeThreshold = Integer.valueOf(props.getProperty(SIZE_THRESHOLD_PERCENT));
           if (sizeThreshold <= 0 || sizeThreshold >= 100) {
-            throw new GemFireConfigException(SIZE_THRESHOLD_PERCENT + " should be integer, 1 to 99");
+            throw new GemFireConfigException(
+                SIZE_THRESHOLD_PERCENT + " should be integer, 1 to 99");
           }
         }
         if (props.getProperty(MINIMUM_SIZE) != null) {
@@ -290,7 +281,8 @@ public class AutoBalancer implements Declarable {
       boolean result = cache.acquireAutoBalanceLock();
       if (!result) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
+          logger.debug(
+              "Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
         }
         return;
       }
@@ -308,15 +300,12 @@ public class AutoBalancer implements Declarable {
     }
 
     /**
-     * By default auto-balancer will avoid rebalancing, because a user can
-     * always trigger rebalance manually. So in case of error or inconsistent
-     * data, return false. Return true if
+     * By default auto-balancer will avoid rebalancing, because a user can always trigger rebalance
+     * manually. So in case of error or inconsistent data, return false. Return true if
      * <OL>
-     * <LI>total transfer size is above threshold percent of total data size at
-     * cluster level
-     * <LI>If some smaller capacity nodes are heavily loaded while bigger
-     * capacity nodes are balanced. In such a scenario transfer size based
-     * trigger may not cause rebalance.
+     * <LI>total transfer size is above threshold percent of total data size at cluster level
+     * <LI>If some smaller capacity nodes are heavily loaded while bigger capacity nodes are
+     * balanced. In such a scenario transfer size based trigger may not cause rebalance.
      */
     boolean needsRebalancing() {
       // test cluster level status
@@ -350,8 +339,7 @@ public class AutoBalancer implements Declarable {
   }
 
   /**
-   * Hides cache level details and exposes simple methods relevant for
-   * auto-balancing
+   * Hides cache level details and exposes simple methods relevant for auto-balancing
    */
   static class GeodeCacheFacade implements CacheOperationFacade {
     private final AtomicBoolean isLockAcquired = new AtomicBoolean(false);
@@ -372,7 +360,8 @@ public class AutoBalancer implements Declarable {
       Map<PartitionedRegion, InternalPRInfo> detailsMap = new HashMap<>();
       for (PartitionedRegion region : cache.getPartitionedRegions()) {
         LoadProbe probe = cache.getResourceManager().getLoadProbe();
-        InternalPRInfo info = region.getRedundancyProvider().buildPartitionedRegionInfo(true, probe);
+        InternalPRInfo info =
+            region.getRedundancyProvider().buildPartitionedRegionInfo(true, probe);
         detailsMap.put(region, info);
       }
       return detailsMap;
@@ -387,7 +376,8 @@ public class AutoBalancer implements Declarable {
           Set<PartitionMemberInfo> membersInfo = info.getPartitionMemberInfo();
           for (PartitionMemberInfo member : membersInfo) {
             if (logger.isDebugEnabled()) {
-              logger.debug("Region:{}, Member: {}, Size: {}", region.getFullPath(), member, member.getSize());
+              logger.debug("Region:{}, Member: {}, Size: {}", region.getFullPath(), member,
+                  member.getSize());
             }
             totalSize += member.getSize();
           }
@@ -399,15 +389,16 @@ public class AutoBalancer implements Declarable {
     @Override
     public long getTotalTransferSize() {
       try {
-        RebalanceOperation operation = getCache().getResourceManager().createRebalanceFactory().simulate();
+        RebalanceOperation operation =
+            getCache().getResourceManager().createRebalanceFactory().simulate();
         RebalanceResults result = operation.getResults();
         if (logger.isDebugEnabled()) {
-          logger.debug(
-              "Rebalance estimate: RebalanceResultsImpl [TotalBucketCreateBytes=" + result.getTotalBucketCreateBytes()
-                  + ", TotalBucketCreatesCompleted=" + result.getTotalBucketCreatesCompleted()
-                  + ", TotalBucketTransferBytes=" + result.getTotalBucketTransferBytes()
-                  + ", TotalBucketTransfersCompleted=" + result.getTotalBucketTransfersCompleted()
-                  + ", TotalPrimaryTransfersCompleted=" + result.getTotalPrimaryTransfersCompleted() + "]");
+          logger.debug("Rebalance estimate: RebalanceResultsImpl [TotalBucketCreateBytes="
+              + result.getTotalBucketCreateBytes() + ", TotalBucketCreatesCompleted="
+              + result.getTotalBucketCreatesCompleted() + ", TotalBucketTransferBytes="
+              + result.getTotalBucketTransferBytes() + ", TotalBucketTransfersCompleted="
+              + result.getTotalBucketTransfersCompleted() + ", TotalPrimaryTransfersCompleted="
+              + result.getTotalPrimaryTransfersCompleted() + "]");
         }
         return result.getTotalBucketTransferBytes();
       } catch (CancellationException e) {
@@ -431,15 +422,19 @@ public class AutoBalancer implements Declarable {
     @Override
     public void rebalance() {
       try {
-        RebalanceOperation operation = getCache().getResourceManager().createRebalanceFactory().start();
+        RebalanceOperation operation =
+            getCache().getResourceManager().createRebalanceFactory().start();
         RebalanceResults result = operation.getResults();
-        logger.info("Rebalance result: [TotalBucketCreateBytes=" + result.getTotalBucketCreateBytes()
-            + ", TotalBucketCreateTime=" + result.getTotalBucketCreateTime() + ", TotalBucketCreatesCompleted="
-            + result.getTotalBucketCreatesCompleted() + ", TotalBucketTransferBytes="
-            + result.getTotalBucketTransferBytes() + ", TotalBucketTransferTime=" + result.getTotalBucketTransferTime()
-            + ", TotalBucketTransfersCompleted=" + +result.getTotalBucketTransfersCompleted()
-            + ", TotalPrimaryTransferTime=" + result.getTotalPrimaryTransferTime() + ", TotalPrimaryTransfersCompleted="
-            + result.getTotalPrimaryTransfersCompleted() + ", TotalTime=" + result.getTotalTime() + "]");
+        logger
+            .info("Rebalance result: [TotalBucketCreateBytes=" + result.getTotalBucketCreateBytes()
+                + ", TotalBucketCreateTime=" + result.getTotalBucketCreateTime()
+                + ", TotalBucketCreatesCompleted=" + result.getTotalBucketCreatesCompleted()
+                + ", TotalBucketTransferBytes=" + result.getTotalBucketTransferBytes()
+                + ", TotalBucketTransferTime=" + result.getTotalBucketTransferTime()
+                + ", TotalBucketTransfersCompleted=" + +result.getTotalBucketTransfersCompleted()
+                + ", TotalPrimaryTransferTime=" + result.getTotalPrimaryTransferTime()
+                + ", TotalPrimaryTransfersCompleted=" + result.getTotalPrimaryTransfersCompleted()
+                + ", TotalTime=" + result.getTotalTime() + "]");
       } catch (CancellationException e) {
         logger.info("Error rebalancing the cluster", e);
       } catch (InterruptedException e) {
@@ -479,7 +474,8 @@ public class AutoBalancer implements Declarable {
               }
             } else {
               if (logger.isDebugEnabled()) {
-                logger.debug("Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
+                logger.debug(
+                    "Another member owns auto-balance lock. Skip this attempt to rebalance the cluster");
               }
             }
           }
@@ -491,12 +487,14 @@ public class AutoBalancer implements Declarable {
     @Override
     public DistributedLockService getDLS() {
       GemFireCacheImpl cache = getCache();
-      DistributedLockService dls = DistributedLockService.getServiceNamed(AUTO_BALANCER_LOCK_SERVICE_NAME);
+      DistributedLockService dls =
+          DistributedLockService.getServiceNamed(AUTO_BALANCER_LOCK_SERVICE_NAME);
       if (dls == null) {
         if (logger.isDebugEnabled()) {
           logger.debug("Creating DistributeLockService");
         }
-        dls = DLockService.create(AUTO_BALANCER_LOCK_SERVICE_NAME, cache.getDistributedSystem(), true, true, true);
+        dls = DLockService.create(AUTO_BALANCER_LOCK_SERVICE_NAME, cache.getDistributedSystem(),
+            true, true, true);
       }
 
       return dls;

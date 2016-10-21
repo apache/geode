@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.admin.remote;
@@ -31,34 +29,35 @@ public class RemoteStatResource implements StatResource, DataSerializable {
   private String name;
   private String typeName;
   private String typeDesc;
-  private transient RemoteGemFireVM vm;  
+  private transient RemoteGemFireVM vm;
   private String systemName;
 
   // constructor
 
-  public RemoteStatResource(Statistics rsrc){
+  public RemoteStatResource(Statistics rsrc) {
     this.rsrcId = rsrc.getNumericId();
     this.rsrcUniqueId = rsrc.getUniqueId();
     this.name = rsrc.getTextId();
     this.typeName = rsrc.getType().getName();
     this.typeDesc = rsrc.getType().getDescription();
   }
-  
+
   /**
    * Constructor for <code>DataSerializable</code>
    */
-  public RemoteStatResource() { }
+  public RemoteStatResource() {}
 
   // StatResource methods
-  
-  public long getResourceID(){
+
+  public long getResourceID() {
     return rsrcId;
   }
+
   public long getResourceUniqueID() {
     return rsrcUniqueId;
   }
 
-  public String getSystemName(){
+  public String getSystemName() {
     if (systemName == null) {
       if (vm == null) {
         systemName = "";
@@ -69,12 +68,12 @@ public class RemoteStatResource implements StatResource, DataSerializable {
     return systemName;
   }
 
-  public GemFireVM getGemFireVM(){
+  public GemFireVM getGemFireVM() {
     return vm;
   }
 
-  public Stat[] getStats(){
-    if ( vm != null ) {
+  public Stat[] getStats() {
+    if (vm != null) {
       return vm.getResourceStatsByID(this.rsrcUniqueId);
     } else {
       return new RemoteStat[0];
@@ -83,7 +82,7 @@ public class RemoteStatResource implements StatResource, DataSerializable {
 
   public Stat getStatByName(String name) {
     Stat[] stats = getStats();
-    for (int i=0; i < stats.length; i++) {
+    for (int i = 0; i < stats.length; i++) {
       if (name.equals(stats[i].getName())) {
         return stats[i];
       }
@@ -93,19 +92,19 @@ public class RemoteStatResource implements StatResource, DataSerializable {
 
   // GfObject methods
 
-  public int getID(){
+  public int getID() {
     return -1;
   }
 
-  public String getName(){
+  public String getName() {
     return name;
   }
 
-  public String getType(){
+  public String getType() {
     return typeName;
   }
 
-  public String getDescription(){
+  public String getDescription() {
     return typeDesc;
   }
 
@@ -113,23 +112,22 @@ public class RemoteStatResource implements StatResource, DataSerializable {
 
   @Override
   public int hashCode() {
-    return (int)this.rsrcUniqueId;
+    return (int) this.rsrcUniqueId;
   }
-  
+
   @Override
-  public boolean equals(Object other){
-    if (other instanceof RemoteStatResource){
-      RemoteStatResource rsrc = (RemoteStatResource)other;
-      return (this.rsrcUniqueId == rsrc.rsrcUniqueId &&
-              this.vm.equals(rsrc.vm));
+  public boolean equals(Object other) {
+    if (other instanceof RemoteStatResource) {
+      RemoteStatResource rsrc = (RemoteStatResource) other;
+      return (this.rsrcUniqueId == rsrc.rsrcUniqueId && this.vm.equals(rsrc.vm));
     } else {
       return false;
-    }      
+    }
   }
 
   // other instance methods
 
-  void setGemFireVM( RemoteGemFireVM vm ){
+  void setGemFireVM(RemoteGemFireVM vm) {
     this.vm = vm;
   }
 
@@ -141,8 +139,7 @@ public class RemoteStatResource implements StatResource, DataSerializable {
     DataSerializer.writeString(this.typeDesc, out);
   }
 
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.rsrcId = in.readLong();
     this.rsrcUniqueId = in.readLong();

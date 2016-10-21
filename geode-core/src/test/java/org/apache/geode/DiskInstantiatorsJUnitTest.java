@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode;
 
@@ -36,8 +34,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.fail;
 
 /**
- * This class makes sure that instantatiors are persisted to disk
- * and can be recovered.
+ * This class makes sure that instantatiors are persisted to disk and can be recovered.
  */
 @SuppressWarnings("deprecation")
 @Category(IntegrationTest.class)
@@ -66,12 +63,12 @@ public class DiskInstantiatorsJUnitTest {
     InternalInstantiator.unregister(Payload.class, (byte) 22);
     InternalInstantiator.unregister(Key.class, (byte) 21);
   }
-  
+
   @After
   public void after() {
     disconnect();
   }
-  
+
   private void connect() throws CacheException {
     Properties cfg = new Properties();
     cfg.setProperty(MCAST_PORT, "0");
@@ -84,14 +81,12 @@ public class DiskInstantiatorsJUnitTest {
     factory.setScope(Scope.LOCAL);
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
     factory.setDiskSynchronous(true);
-    factory.setDiskStoreName(this.c.createDiskStoreFactory()
-                             .create("DiskInstantiatorsJUnitTest")
-                             .getName());
-      
-    this.r = this.c.createRegion("DiskInstantiatorsJUnitTest",
-                                   factory.create());
+    factory.setDiskStoreName(
+        this.c.createDiskStoreFactory().create("DiskInstantiatorsJUnitTest").getName());
+
+    this.r = this.c.createRegion("DiskInstantiatorsJUnitTest", factory.create());
   }
-  
+
   private void disconnect() throws CacheException {
     this.r = null;
     if (this.c != null) {
@@ -103,7 +98,7 @@ public class DiskInstantiatorsJUnitTest {
       this.ds = null;
     }
   }
-  
+
   @Test
   public void testDiskInstantiators() throws CacheException {
     try {
@@ -116,8 +111,8 @@ public class DiskInstantiatorsJUnitTest {
       r.put(new Key(1), new Payload(100));
       disconnect();
       // now unregister and make sure we can restore
-      InternalInstantiator.unregister(Payload.class, (byte)22);
-      InternalInstantiator.unregister(Key.class, (byte)21);
+      InternalInstantiator.unregister(Payload.class, (byte) 22);
+      InternalInstantiator.unregister(Key.class, (byte) 21);
       connect();
       size = this.r.entries(false).size();
       if (size != 1) {
@@ -126,8 +121,7 @@ public class DiskInstantiatorsJUnitTest {
       Object value = r.get(new Key(1));
       this.ds.getLogWriter().info("found entry");
       if (!(value instanceof Payload)) {
-        fail("Expected value to be an instance of Payload but it was "
-             + value.getClass());
+        fail("Expected value to be an instance of Payload but it was " + value.getClass());
       }
       disconnect();
     } finally {
@@ -147,14 +141,17 @@ public class DiskInstantiatorsJUnitTest {
 
   private static class Payload implements DataSerializable {
     private byte[] data;
-    public Payload() {
-    }
+
+    public Payload() {}
+
     public Payload(int size) {
       this.data = new byte[size];
     }
-    public void toData(DataOutput dataOutput) throws IOException  {
+
+    public void toData(DataOutput dataOutput) throws IOException {
       DataSerializer.writeByteArray(this.data, dataOutput);
     }
+
     public void fromData(DataInput dataInput) throws IOException {
       this.data = DataSerializer.readByteArray(dataInput);
     }
@@ -163,22 +160,27 @@ public class DiskInstantiatorsJUnitTest {
     public int hashCode() {
       return this.key.hashCode();
     }
+
     public boolean equals(Object obj) {
       if (obj instanceof Key) {
-        return this.key.equals(((Key)obj).key);
+        return this.key.equals(((Key) obj).key);
       } else {
         return false;
       }
     }
+
     private Long key;
-    public Key() {
-    }
+
+    public Key() {}
+
     public Key(long k) {
       this.key = new Long(k);
     }
-    public void toData(DataOutput dataOutput) throws IOException  {
+
+    public void toData(DataOutput dataOutput) throws IOException {
       dataOutput.writeLong(this.key.longValue());
     }
+
     public void fromData(DataInput dataInput) throws IOException {
       this.key = new Long(dataInput.readLong());
     }

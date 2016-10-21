@@ -1,23 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 /**
- * Used to carry arguments between gfsh region command implementations and the functions
- * that do the work for those commands.
+ * Used to carry arguments between gfsh region command implementations and the functions that do the
+ * work for those commands.
  * 
  * @since GemFire 7.0
  */
@@ -39,11 +37,11 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class RegionFunctionArgs implements Serializable {
   private static final long serialVersionUID = -5158224572470173267L;
-  
+
   private final String regionPath;
-  private final RegionShortcut regionShortcut; 
+  private final RegionShortcut regionShortcut;
   private final String useAttributesFrom;
-  private final Boolean skipIfExists; 
+  private final Boolean skipIfExists;
   private final String keyConstraint;
   private final String valueConstraint;
   private Boolean statisticsEnabled;
@@ -51,7 +49,7 @@ public class RegionFunctionArgs implements Serializable {
   private final RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime;
   private final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL;
   private final RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime;
-  private final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL;      
+  private final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL;
   private final String diskStore;
   private Boolean diskSynchronous;
   private final boolean isSetDiskSynchronous;
@@ -80,23 +78,19 @@ public class RegionFunctionArgs implements Serializable {
   private final boolean isSetOffHeap;
   private RegionAttributes<?, ?> regionAttributes;
 
-  public RegionFunctionArgs(String regionPath,
-      RegionShortcut regionShortcut, String useAttributesFrom,
-      boolean skipIfExists, String keyConstraint, String valueConstraint,
-      Boolean statisticsEnabled, 
-      RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime, 
-      RegionFunctionArgs.ExpirationAttrs entryExpirationTTL, 
-      RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime, 
+  public RegionFunctionArgs(String regionPath, RegionShortcut regionShortcut,
+      String useAttributesFrom, boolean skipIfExists, String keyConstraint, String valueConstraint,
+      Boolean statisticsEnabled, RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime,
+      RegionFunctionArgs.ExpirationAttrs entryExpirationTTL,
+      RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime,
       RegionFunctionArgs.ExpirationAttrs regionExpirationTTL, String diskStore,
-      Boolean diskSynchronous, Boolean enableAsyncConflation,
-      Boolean enableSubscriptionConflation, String[] cacheListeners,
-      String cacheLoader, String cacheWriter, String[] asyncEventQueueIds,
-      String[] gatewaySenderIds, Boolean concurrencyChecksEnabled,
-      Boolean cloningEnabled, Integer concurrencyLevel, String prColocatedWith,
-      Integer prLocalMaxMemory, Long prRecoveryDelay,
-      Integer prRedundantCopies, Long prStartupRecoveryDelay,
-      Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax,
-      String compressor, Boolean offHeap, Boolean mcastEnabled) {
+      Boolean diskSynchronous, Boolean enableAsyncConflation, Boolean enableSubscriptionConflation,
+      String[] cacheListeners, String cacheLoader, String cacheWriter, String[] asyncEventQueueIds,
+      String[] gatewaySenderIds, Boolean concurrencyChecksEnabled, Boolean cloningEnabled,
+      Integer concurrencyLevel, String prColocatedWith, Integer prLocalMaxMemory,
+      Long prRecoveryDelay, Integer prRedundantCopies, Long prStartupRecoveryDelay,
+      Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax, String compressor,
+      Boolean offHeap, Boolean mcastEnabled) {
     this.regionPath = regionPath;
     this.regionShortcut = regionShortcut;
     this.useAttributesFrom = useAttributesFrom;
@@ -161,12 +155,11 @@ public class RegionFunctionArgs implements Serializable {
     if (this.isSetConcurrencyLevel) {
       this.concurrencyLevel = concurrencyLevel;
     }
-    this.partitionArgs = new PartitionArgs(prColocatedWith,
-        prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
-        prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets);
-    
+    this.partitionArgs = new PartitionArgs(prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
+        prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets);
+
     this.isSetCompressor = (compressor != null);
-    if(this.isSetCompressor) {
+    if (this.isSetCompressor) {
       this.compressor = compressor;
     }
     this.isSetOffHeap = (offHeap != null);
@@ -176,34 +169,27 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   // Constructor to be used for supplied region attributes
-  public RegionFunctionArgs(String regionPath,
-      String useAttributesFrom,
-      boolean skipIfExists, String keyConstraint, String valueConstraint,
-      Boolean statisticsEnabled, 
-      RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime, 
-      RegionFunctionArgs.ExpirationAttrs entryExpirationTTL, 
-      RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime, 
+  public RegionFunctionArgs(String regionPath, String useAttributesFrom, boolean skipIfExists,
+      String keyConstraint, String valueConstraint, Boolean statisticsEnabled,
+      RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime,
+      RegionFunctionArgs.ExpirationAttrs entryExpirationTTL,
+      RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime,
       RegionFunctionArgs.ExpirationAttrs regionExpirationTTL, String diskStore,
-      Boolean diskSynchronous, Boolean enableAsyncConflation,
-      Boolean enableSubscriptionConflation, String[] cacheListeners,
-      String cacheLoader, String cacheWriter, String[] asyncEventQueueIds,
-      String[] gatewaySenderIds, Boolean concurrencyChecksEnabled,
-      Boolean cloningEnabled, Integer concurrencyLevel, String prColocatedWith,
-      Integer prLocalMaxMemory, Long prRecoveryDelay,
-      Integer prRedundantCopies, Long prStartupRecoveryDelay,
-      Long prTotalMaxMemory, Integer prTotalNumBuckets, 
-      Boolean offHeap,
-      Boolean mcastEnabled, RegionAttributes<?, ?> regionAttributes) {   
-    this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint,
-        valueConstraint, statisticsEnabled, entryExpirationIdleTime,
-        entryExpirationTTL, regionExpirationIdleTime, regionExpirationTTL,
-        diskStore, diskSynchronous, enableAsyncConflation,
-        enableSubscriptionConflation, cacheListeners, cacheLoader,
-        cacheWriter, asyncEventQueueIds, gatewaySenderIds,
-        concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
-        prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
-        prRedundantCopies, prStartupRecoveryDelay,
-        prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap , mcastEnabled);
+      Boolean diskSynchronous, Boolean enableAsyncConflation, Boolean enableSubscriptionConflation,
+      String[] cacheListeners, String cacheLoader, String cacheWriter, String[] asyncEventQueueIds,
+      String[] gatewaySenderIds, Boolean concurrencyChecksEnabled, Boolean cloningEnabled,
+      Integer concurrencyLevel, String prColocatedWith, Integer prLocalMaxMemory,
+      Long prRecoveryDelay, Integer prRedundantCopies, Long prStartupRecoveryDelay,
+      Long prTotalMaxMemory, Integer prTotalNumBuckets, Boolean offHeap, Boolean mcastEnabled,
+      RegionAttributes<?, ?> regionAttributes) {
+    this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint, valueConstraint,
+        statisticsEnabled, entryExpirationIdleTime, entryExpirationTTL, regionExpirationIdleTime,
+        regionExpirationTTL, diskStore, diskSynchronous, enableAsyncConflation,
+        enableSubscriptionConflation, cacheListeners, cacheLoader, cacheWriter, asyncEventQueueIds,
+        gatewaySenderIds, concurrencyChecksEnabled, cloningEnabled, concurrencyLevel,
+        prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
+        prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap,
+        mcastEnabled);
     this.regionAttributes = regionAttributes;
   }
 
@@ -232,7 +218,8 @@ public class RegionFunctionArgs implements Serializable {
    * @return true if need to use specified region attributes
    */
   public Boolean isSetUseAttributesFrom() {
-    return this.regionShortcut == null && this.useAttributesFrom != null && this.regionAttributes != null;
+    return this.regionShortcut == null && this.useAttributesFrom != null
+        && this.regionAttributes != null;
   }
 
   /**
@@ -247,7 +234,7 @@ public class RegionFunctionArgs implements Serializable {
    */
   public String getKeyConstraint() {
     return this.keyConstraint;
-  }  
+  }
 
   /**
    * @return the valueConstraint
@@ -318,7 +305,7 @@ public class RegionFunctionArgs implements Serializable {
   public Boolean isSetDiskSynchronous() {
     return this.isSetDiskSynchronous;
   }
-  
+
   public Boolean isOffHeap() {
     return this.offHeap;
   }
@@ -456,7 +443,8 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   public boolean withPartitioning() {
-    return hasPartitionAttributes() || (this.regionShortcut != null && this.regionShortcut.name().startsWith("PARTITION"));
+    return hasPartitionAttributes()
+        || (this.regionShortcut != null && this.regionShortcut.name().startsWith("PARTITION"));
   }
 
   /**
@@ -486,14 +474,14 @@ public class RegionFunctionArgs implements Serializable {
   public String getCompressor() {
     return this.compressor;
   }
-  
+
   /**
    * @return the isSetCompressor.
    */
   public boolean isSetCompressor() {
     return this.isSetCompressor;
   }
-  
+
   /**
    * @return the regionAttributes
    */
@@ -501,22 +489,22 @@ public class RegionFunctionArgs implements Serializable {
   public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     return (RegionAttributes<K, V>) this.regionAttributes;
   }
-  
+
   public static class ExpirationAttrs implements Serializable {
     private static final long serialVersionUID = 1474255033398008062L;
-  
+
     private ExpirationFor type;
-    private Integer   time;
+    private Integer time;
     private ExpirationAction action;
-  
+
     public ExpirationAttrs(ExpirationFor type, Integer time, String action) {
-      this.type   = type;
-      this.time   = time;
+      this.type = type;
+      this.time = time;
       if (action != null) {
         this.action = getExpirationAction(action);
       }
     }
-  
+
     public ExpirationAttributes convertToExpirationAttributes() {
       ExpirationAttributes expirationAttr = null;
       if (action != null) {
@@ -526,28 +514,28 @@ public class RegionFunctionArgs implements Serializable {
       }
       return expirationAttr;
     }
-  
+
     /**
      * @return the type
      */
     public ExpirationFor getType() {
       return type;
     }
-  
+
     /**
      * @return the time
      */
     public Integer getTime() {
       return time;
     }
-  
+
     /**
      * @return the action
      */
     public ExpirationAction getAction() {
       return action;
     }
-  
+
     @Override
     public String toString() {
       StringBuilder builder = new StringBuilder();
@@ -560,7 +548,7 @@ public class RegionFunctionArgs implements Serializable {
       builder.append("]");
       return builder.toString();
     }
-    
+
     private static ExpirationAction getExpirationAction(String action) {
       if (action == null) {
         return ExpirationAttributes.DEFAULT.getAction();
@@ -568,25 +556,24 @@ public class RegionFunctionArgs implements Serializable {
       action = action.replace('-', '_');
       if (action.equalsIgnoreCase(ExpirationAction.DESTROY.toString())) {
         return ExpirationAction.DESTROY;
-      } else if (action.equalsIgnoreCase(ExpirationAction.INVALIDATE
-          .toString())) {
+      } else if (action.equalsIgnoreCase(ExpirationAction.INVALIDATE.toString())) {
         return ExpirationAction.INVALIDATE;
-      } else if (action.equalsIgnoreCase(ExpirationAction.LOCAL_DESTROY
-          .toString())) {
+      } else if (action.equalsIgnoreCase(ExpirationAction.LOCAL_DESTROY.toString())) {
         return ExpirationAction.LOCAL_DESTROY;
-      } else if (action.equalsIgnoreCase(ExpirationAction.LOCAL_INVALIDATE
-          .toString())) {
+      } else if (action.equalsIgnoreCase(ExpirationAction.LOCAL_INVALIDATE.toString())) {
         return ExpirationAction.LOCAL_INVALIDATE;
       } else {
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__EXPIRATION_ACTION_0_IS_NOT_VALID, new Object[] {action}));
+        throw new IllegalArgumentException(
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__EXPIRATION_ACTION_0_IS_NOT_VALID,
+                new Object[] {action}));
       }
     }
-  
+
     public static enum ExpirationFor {
       REGION_IDLE, REGION_TTL, ENTRY_IDLE, ENTRY_TTL;
     }
   }
-  
+
   public static class PartitionArgs implements Serializable {
     private static final long serialVersionUID = 5907052187323280919L;
 
@@ -607,10 +594,9 @@ public class RegionFunctionArgs implements Serializable {
     private boolean hasPartitionAttributes;
     private final Set<String> userSpecifiedPartitionAttributes = new HashSet<String>();
 
-    public PartitionArgs(String prColocatedWith,
-        Integer prLocalMaxMemory, Long prRecoveryDelay,
-        Integer prRedundantCopies, Long prStartupRecoveryDelay,
-        Long prTotalMaxMemory, Integer prTotalNumBuckets) {
+    public PartitionArgs(String prColocatedWith, Integer prLocalMaxMemory, Long prRecoveryDelay,
+        Integer prRedundantCopies, Long prStartupRecoveryDelay, Long prTotalMaxMemory,
+        Integer prTotalNumBuckets) {
       this.prColocatedWith = prColocatedWith;
       if (this.prColocatedWith != null) {
         this.hasPartitionAttributes = true;

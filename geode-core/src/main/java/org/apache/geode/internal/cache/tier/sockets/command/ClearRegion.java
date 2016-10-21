@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  *
@@ -42,15 +40,15 @@ public class ClearRegion extends BaseCommand {
 
   private final static ClearRegion singleton = new ClearRegion();
 
-  private ClearRegion() {
-  }
+  private ClearRegion() {}
 
   public static Command getCommand() {
     return singleton;
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+      throws IOException, InterruptedException {
     Part regionNamePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null;
@@ -67,7 +65,7 @@ public class ClearRegion extends BaseCommand {
     // Retrieve the data from the message parts
     regionNamePart = msg.getPart(0);
     eventPart = msg.getPart(1);
-    //    callbackArgPart = null; (redundant assignment)
+    // callbackArgPart = null; (redundant assignment)
     if (msg.getNumberOfParts() > 2) {
       callbackArgPart = msg.getPart(2);
       try {
@@ -80,15 +78,18 @@ public class ClearRegion extends BaseCommand {
     }
     regionName = regionNamePart.getString();
     if (logger.isDebugEnabled()) {
-      logger.debug(servConn.getName() + ": Received clear region request (" + msg.getPayloadLength() + " bytes) from " + servConn
-        .getSocketString() + " for region " + regionName);
+      logger.debug(servConn.getName() + ": Received clear region request (" + msg.getPayloadLength()
+          + " bytes) from " + servConn.getSocketString() + " for region " + regionName);
     }
 
     // Process the clear region request
     if (regionName == null) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.ClearRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL, servConn
-        .getName()));
-      String errMessage = LocalizedStrings.ClearRegion_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL.toLocalizedString();
+      logger.warn(LocalizedMessage.create(
+          LocalizedStrings.ClearRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL,
+          servConn.getName()));
+      String errMessage =
+          LocalizedStrings.ClearRegion_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL
+              .toLocalizedString();
 
       writeErrorResponse(msg, MessageType.CLEAR_REGION_DATA_ERROR, errMessage, servConn);
       servConn.setAsTrue(RESPONDED);
@@ -97,7 +98,8 @@ public class ClearRegion extends BaseCommand {
 
     LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.ClearRegion_WAS_NOT_FOUND_DURING_CLEAR_REGION_REGUEST.toLocalizedString();
+      String reason = LocalizedStrings.ClearRegion_WAS_NOT_FOUND_DURING_CLEAR_REGION_REGUEST
+          .toLocalizedString();
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -114,10 +116,12 @@ public class ClearRegion extends BaseCommand {
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
-        RegionClearOperationContext clearContext = authzRequest.clearAuthorize(regionName, callbackArg);
+        RegionClearOperationContext clearContext =
+            authzRequest.clearAuthorize(regionName, callbackArg);
         callbackArg = clearContext.getCallbackArg();
       }
-      region.basicBridgeClear(callbackArg, servConn.getProxyID(), true /* boolean from cache Client */, eventId);
+      region.basicBridgeClear(callbackArg, servConn.getProxyID(),
+          true /* boolean from cache Client */, eventId);
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
       checkForInterrupt(servConn, e);

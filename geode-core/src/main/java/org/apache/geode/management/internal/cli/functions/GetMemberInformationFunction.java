@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.functions;
 
@@ -61,7 +59,7 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
     return true;
   }
 
-  @Override 
+  @Override
 
   public boolean isHA() {
     return true;
@@ -80,13 +78,13 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
     try {
       Cache cache = CacheFactory.getAnyInstance();
 
-      /*TODO: 
-       * 1) Get the CPU usage%
+      /*
+       * TODO: 1) Get the CPU usage%
        */
 
       InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
       DistributionConfig config = system.getConfig();
-      String 	serverBindAddress     = config.getServerBindAddress();
+      String serverBindAddress = config.getServerBindAddress();
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 
       MemberInformation memberInfo = new MemberInformation();
@@ -104,10 +102,10 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
       memberInfo.setMaxHeapSize(Long.toString(bytesToMeg(memUsage.getMax())));
       memberInfo.setInitHeapSize(Long.toString(bytesToMeg(memUsage.getInit())));
       memberInfo.setHostedRegions(CliUtil.getAllRegionNames());
-      
+
       List<CacheServer> csList = cache.getCacheServers();
-      
-      //A member is a server only if it has a cacheserver
+
+      // A member is a server only if it has a cacheserver
       if (csList != null) {
         memberInfo.setServer(true);
         Iterator<CacheServer> iters = csList.iterator();
@@ -121,8 +119,8 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
           CacheServerInfo cacheServerInfo = new CacheServerInfo(bindAddress, port, isRunning);
           memberInfo.addCacheServerInfo(cacheServerInfo);
         }
-        Map<ClientProxyMembershipID, CacheClientStatus> allConnectedClients = InternalClientMembership
-            .getStatusForAllClientsIgnoreSubscriptionStatus();
+        Map<ClientProxyMembershipID, CacheClientStatus> allConnectedClients =
+            InternalClientMembership.getStatusForAllClientsIgnoreSubscriptionStatus();
         Iterator<ClientProxyMembershipID> it = allConnectedClients.keySet().iterator();
         int numConnections = 0;
 
@@ -141,8 +139,8 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
       functionContext.getResultSender().sendException(e);
     }
   }
-  
+
   private long bytesToMeg(long bytes) {
-    return bytes/(1024L * 1024L);
+    return bytes / (1024L * 1024L);
   }
 }

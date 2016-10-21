@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.memcached;
 
@@ -53,14 +51,14 @@ import org.apache.geode.internal.memcached.commands.VerbosityCommand;
 import org.apache.geode.internal.memcached.commands.VersionCommand;
 
 /**
- * Represents all commands a memcached client
- * can issue
+ * Represents all commands a memcached client can issue
  *
  */
 public enum Command {
 
   SET {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -71,6 +69,7 @@ public enum Command {
   },
   SETQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -81,6 +80,7 @@ public enum Command {
   },
   ADD {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -91,6 +91,7 @@ public enum Command {
   },
   ADDQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -101,6 +102,7 @@ public enum Command {
   },
   REPLACE {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -111,6 +113,7 @@ public enum Command {
   },
   REPLACEQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -121,6 +124,7 @@ public enum Command {
   },
   APPEND {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -131,6 +135,7 @@ public enum Command {
   },
   APPENDQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -141,6 +146,7 @@ public enum Command {
   },
   PREPEND {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -151,6 +157,7 @@ public enum Command {
   },
   PREPENDQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -161,6 +168,7 @@ public enum Command {
   },
   CAS {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -171,6 +179,7 @@ public enum Command {
   },
   GET {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -181,6 +190,7 @@ public enum Command {
   },
   GETS {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -191,6 +201,7 @@ public enum Command {
   },
   GETQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -201,6 +212,7 @@ public enum Command {
   },
   GETK {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -211,6 +223,7 @@ public enum Command {
   },
   GETKQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -221,6 +234,7 @@ public enum Command {
   },
   DELETE {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -231,6 +245,7 @@ public enum Command {
   },
   DELETEQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -241,6 +256,7 @@ public enum Command {
   },
   INCR {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -251,6 +267,7 @@ public enum Command {
   },
   INCRQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -261,6 +278,7 @@ public enum Command {
   },
   DECR {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -271,6 +289,7 @@ public enum Command {
   },
   DECRQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -281,6 +300,7 @@ public enum Command {
   },
   STATS {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -291,6 +311,7 @@ public enum Command {
   },
   FLUSH_ALL {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -301,6 +322,7 @@ public enum Command {
   },
   FLUSH_ALLQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -311,6 +333,7 @@ public enum Command {
   },
   VERSION {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -321,6 +344,7 @@ public enum Command {
   },
   VERBOSITY {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -331,6 +355,7 @@ public enum Command {
   },
   QUIT {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -341,6 +366,7 @@ public enum Command {
   },
   QUITQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -351,6 +377,7 @@ public enum Command {
   },
   NOOP {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -361,6 +388,7 @@ public enum Command {
   },
   TOUCH {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -371,6 +399,7 @@ public enum Command {
   },
   GAT {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -381,6 +410,7 @@ public enum Command {
   },
   GATQ {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -391,6 +421,7 @@ public enum Command {
   },
   NOT_SUPPORTED {
     private CommandProcessor processor;
+
     @Override
     public CommandProcessor getCommandProcessor() {
       if (processor == null) {
@@ -398,22 +429,23 @@ public enum Command {
       }
       return processor;
     }
-      
+
   };
 
   /**
    * Returns a command processor to process the given {@link #Command}
+   * 
    * @return a command processor
    */
   public abstract CommandProcessor getCommandProcessor();
 
   public static String buffertoString(ByteBuffer header) {
     StringBuilder str = new StringBuilder("\n0: ");
-    for (int i=0; i<header.limit(); i++) {
-      str.append(byteToHex(header.get(i))+" | ");
+    for (int i = 0; i < header.limit(); i++) {
+      str.append(byteToHex(header.get(i)) + " | ");
       if ((i + 1) % 4 == 0) {
         str.append("\n");
-        str.append((i+1)+": ");
+        str.append((i + 1) + ": ");
       }
     }
     return str.toString();
@@ -421,80 +453,78 @@ public enum Command {
 
   public static Command getCommandFromOpCode(byte opCode) {
     switch (opCode) {
-    case 0x00:
-      return GET;
-    case 0x01:
-      return SET;
-    case 0x02:
-      return ADD;
-    case 0x03:
-      return REPLACE;
-    case 0x04:
-      return DELETE;
-    case 0x05:
-      return INCR;
-    case 0x06:
-      return DECR;
-    case 0x07:
-      return QUIT;
-    case 0x08:
-      return FLUSH_ALL;
-    case 0x09:
-      return GETQ;
-    case 0x0a:
-      return NOOP;
-    case 0x0b:
-      return VERSION;
-    case 0x0c:
-      return GETK;
-    case 0x0d:
-      return GETKQ;
-    case 0x0e:
-      return APPEND;
-    case 0x0f:
-      return PREPEND;
-    case 0x10:
-      return STATS;
-    case 0x11:
-      return SETQ;
-    case 0x12:
-      return ADDQ;
-    case 0x13:
-      return REPLACEQ;
-    case 0x14:
-      return DELETEQ;
-    case 0x15:
-      return INCRQ;
-    case 0x16:
-      return DECRQ;
-    case 0x17:
-      return QUITQ;
-    case 0x18:
-      return FLUSH_ALLQ;
-    case 0x19:
-      return APPENDQ;
-    case 0x1a:
-      return PREPENDQ;
-    case 0x1b:
-      return VERBOSITY;
-    case 0x1c:
-      return TOUCH;
-    case 0x1d:
-      return GAT;
-    case 0x1e:
-      return GATQ;
-    default:
-      return NOT_SUPPORTED;
+      case 0x00:
+        return GET;
+      case 0x01:
+        return SET;
+      case 0x02:
+        return ADD;
+      case 0x03:
+        return REPLACE;
+      case 0x04:
+        return DELETE;
+      case 0x05:
+        return INCR;
+      case 0x06:
+        return DECR;
+      case 0x07:
+        return QUIT;
+      case 0x08:
+        return FLUSH_ALL;
+      case 0x09:
+        return GETQ;
+      case 0x0a:
+        return NOOP;
+      case 0x0b:
+        return VERSION;
+      case 0x0c:
+        return GETK;
+      case 0x0d:
+        return GETKQ;
+      case 0x0e:
+        return APPEND;
+      case 0x0f:
+        return PREPEND;
+      case 0x10:
+        return STATS;
+      case 0x11:
+        return SETQ;
+      case 0x12:
+        return ADDQ;
+      case 0x13:
+        return REPLACEQ;
+      case 0x14:
+        return DELETEQ;
+      case 0x15:
+        return INCRQ;
+      case 0x16:
+        return DECRQ;
+      case 0x17:
+        return QUITQ;
+      case 0x18:
+        return FLUSH_ALLQ;
+      case 0x19:
+        return APPENDQ;
+      case 0x1a:
+        return PREPENDQ;
+      case 0x1b:
+        return VERBOSITY;
+      case 0x1c:
+        return TOUCH;
+      case 0x1d:
+        return GAT;
+      case 0x1e:
+        return GATQ;
+      default:
+        return NOT_SUPPORTED;
     }
   }
 
   static public String byteToHex(byte b) {
     // Returns hex String representation of byte b
-    char hexDigit[] = {
-       '0', '1', '2', '3', '4', '5', '6', '7',
-       '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-    };
-    char[] array = { hexDigit[(b >> 4) & 0x0f], hexDigit[b & 0x0f] };
+    char hexDigit[] =
+        {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    char[] array = {hexDigit[(b >> 4) & 0x0f], hexDigit[b & 0x0f]};
     return "0x" + new String(array);
- }
+  }
 }

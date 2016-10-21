@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.logging.log4j;
 
@@ -24,21 +22,22 @@ import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
 import org.apache.logging.log4j.status.StatusLogger;
 
 /**
- * Overrides is-enabled checks for log levels below INFO to avoid performance
- * penalties when the log level is INFO or above. If delegating is true
- * then it will always delegate to ExtendedLoggerWrapper for is-enabled checks.
+ * Overrides is-enabled checks for log levels below INFO to avoid performance penalties when the log
+ * level is INFO or above. If delegating is true then it will always delegate to
+ * ExtendedLoggerWrapper for is-enabled checks.
  * 
  */
 public class FastLogger extends ExtendedLoggerWrapper {
   private static final long serialVersionUID = 7084130827962463327L;
 
   private static volatile boolean delegating = true;
-  
+
   public FastLogger(final Logger logger) {
     this((ExtendedLogger) logger, logger.getName(), logger.getMessageFactory());
   }
 
-  public FastLogger(final ExtendedLogger logger, final String name, final MessageFactory messageFactory) {
+  public FastLogger(final ExtendedLogger logger, final String name,
+      final MessageFactory messageFactory) {
     super(logger, name, messageFactory);
   }
 
@@ -46,7 +45,7 @@ public class FastLogger extends ExtendedLoggerWrapper {
     StatusLogger.getLogger().debug("Setting delegating to {}", newValue);
     delegating = newValue;
   }
-  
+
   @Override
   public boolean isDebugEnabled() {
     return delegating && super.isDebugEnabled();
@@ -66,11 +65,11 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public boolean isTraceEnabled(final Marker marker) {
     return delegating && super.isTraceEnabled(marker);
   }
-  
+
   public boolean isDelegating() {
     return delegating;
   }
-  
+
   public ExtendedLogger getExtendedLogger() {
     return super.logger;
   }

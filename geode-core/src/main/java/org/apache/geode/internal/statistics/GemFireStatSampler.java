@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -51,45 +49,43 @@ import org.apache.logging.log4j.Logger;
 public final class GemFireStatSampler extends HostStatSampler {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private final ListenerIdMap listeners = new ListenerIdMap();
-  
+
   // TODO: change the listener maps to be copy-on-write
-  
-  private final Map<LocalStatListenerImpl, Boolean> localListeners = 
+
+  private final Map<LocalStatListenerImpl, Boolean> localListeners =
       new ConcurrentHashMap<LocalStatListenerImpl, Boolean>();
-  
-  private final Map<InternalDistributedMember, List<RemoteStatListenerImpl>> recipientToListeners = 
+
+  private final Map<InternalDistributedMember, List<RemoteStatListenerImpl>> recipientToListeners =
       new HashMap<InternalDistributedMember, List<RemoteStatListenerImpl>>();
-  
+
   private final InternalDistributedSystem con;
-  
+
   private int nextListenerId = 1;
   private ProcessStats processStats = null;
 
-  //////////////////////  Constructors  //////////////////////
+  ////////////////////// Constructors //////////////////////
 
   public GemFireStatSampler(InternalDistributedSystem con) {
     super(con.getCancelCriterion(), new StatSamplerStats(con, con.getId()));
     this.con = con;
   }
-  
+
   /**
-   * Returns the <code>ProcessStats</code> for this Java VM.  Note
-   * that <code>null</code> will be returned if operating statistics
-   * are disabled.
+   * Returns the <code>ProcessStats</code> for this Java VM. Note that <code>null</code> will be
+   * returned if operating statistics are disabled.
    *
    * @since GemFire 3.5
    */
   public final ProcessStats getProcessStats() {
     return this.processStats;
   }
-  
+
   @Override
   public String getProductDescription() {
-    return "GemFire " + GemFireVersion.getGemFireVersion()
-           + " #" + GemFireVersion.getBuildId()
-           + " as of " + GemFireVersion.getSourceDate();
+    return "GemFire " + GemFireVersion.getGemFireVersion() + " #" + GemFireVersion.getBuildId()
+        + " as of " + GemFireVersion.getSourceDate();
   }
 
   public int addListener(InternalDistributedMember recipient, long resourceId, String statName) {
@@ -99,8 +95,8 @@ public final class GemFireStatSampler extends HostStatSampler {
         // previous one was still being used
         result = getNextListenerId();
       }
-      RemoteStatListenerImpl sl = RemoteStatListenerImpl.create(result, recipient, 
-          resourceId, statName, this);
+      RemoteStatListenerImpl sl =
+          RemoteStatListenerImpl.create(result, recipient, resourceId, statName, this);
       listeners.put(result, sl);
       List<RemoteStatListenerImpl> l = recipientToListeners.get(recipient);
       if (l == null) {
@@ -111,10 +107,10 @@ public final class GemFireStatSampler extends HostStatSampler {
     }
     return result;
   }
-  
+
   public boolean removeListener(int listenerId) {
     synchronized (listeners) {
-      RemoteStatListenerImpl sl = (RemoteStatListenerImpl)listeners.remove(listenerId);
+      RemoteStatListenerImpl sl = (RemoteStatListenerImpl) listeners.remove(listenerId);
       if (sl != null) {
         List<RemoteStatListenerImpl> l = recipientToListeners.get(sl.getRecipient());
         l.remove(sl);
@@ -144,8 +140,8 @@ public final class GemFireStatSampler extends HostStatSampler {
   }
 
   public boolean removeLocalStatListener(LocalStatListener listener) {
-    Iterator<Map.Entry<LocalStatListenerImpl, Boolean>> it = 
-                  this.localListeners.entrySet().iterator();
+    Iterator<Map.Entry<LocalStatListenerImpl, Boolean>> it =
+        this.localListeners.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry<LocalStatListenerImpl, Boolean> entry = it.next();
       if (listener.equals(entry.getKey().getListener())) {
@@ -159,32 +155,32 @@ public final class GemFireStatSampler extends HostStatSampler {
   public Set<LocalStatListenerImpl> getLocalListeners() {
     return this.localListeners.keySet();
   }
-  
+
   @Override
   public final File getArchiveFileName() {
     return this.con.getConfig().getStatisticArchiveFile();
   }
-  
+
   @Override
   public final long getArchiveFileSizeLimit() {
     if (fileSizeLimitInKB()) {
       // use KB instead of MB to speed up rolling for testing
-      return ((long)this.con.getConfig().getArchiveFileSizeLimit()) * (1024);
+      return ((long) this.con.getConfig().getArchiveFileSizeLimit()) * (1024);
     } else {
-      return ((long)this.con.getConfig().getArchiveFileSizeLimit()) * (1024*1024);
+      return ((long) this.con.getConfig().getArchiveFileSizeLimit()) * (1024 * 1024);
     }
   }
-  
+
   @Override
   public final long getArchiveDiskSpaceLimit() {
     if (fileSizeLimitInKB()) {
       // use KB instead of MB to speed up removal for testing
-      return ((long)this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024);
+      return ((long) this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024);
     } else {
-      return ((long)this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024*1024);
+      return ((long) this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024 * 1024);
     }
   }
-  
+
   @Override
   protected void checkListeners() {
     checkLocalListeners();
@@ -193,17 +189,16 @@ public final class GemFireStatSampler extends HostStatSampler {
         return;
       }
       long timeStamp = System.currentTimeMillis();
-      Iterator<Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>>> it1 = 
+      Iterator<Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>>> it1 =
           recipientToListeners.entrySet().iterator();
       while (it1.hasNext()) {
-        if (stopRequested()) return;
-        Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> me = 
-            it1.next();
+        if (stopRequested())
+          return;
+        Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> me = it1.next();
         List<RemoteStatListenerImpl> l = me.getValue();
         if (l.size() > 0) {
-          InternalDistributedMember recipient = (InternalDistributedMember)me.getKey();
-          StatListenerMessage msg =
-            StatListenerMessage.create(timeStamp, l.size());
+          InternalDistributedMember recipient = (InternalDistributedMember) me.getKey();
+          StatListenerMessage msg = StatListenerMessage.create(timeStamp, l.size());
           msg.setRecipient(recipient);
           for (RemoteStatListenerImpl statListener : l) {
             if (getStatisticsManager().statisticsExists(statListener.getStatId())) {
@@ -219,27 +214,27 @@ public final class GemFireStatSampler extends HostStatSampler {
       }
     }
   }
-  
+
   @Override
   protected final int getSampleRate() {
     return this.con.getConfig().getStatisticSampleRate();
   }
-  
+
   @Override
   public final boolean isSamplingEnabled() {
     return this.con.getConfig().getStatisticSamplingEnabled();
   }
-  
+
   @Override
   protected final StatisticsManager getStatisticsManager() {
     return this.con;
   }
-  
+
   @Override
   protected final OsStatisticsFactory getOsStatisticsFactory() {
     return this.con;
   }
-  
+
   @Override
   protected final long getSpecialStatsId() {
     long statId = OSProcess.getId();
@@ -248,29 +243,32 @@ public final class GemFireStatSampler extends HostStatSampler {
     }
     return statId;
   }
-  
+
   @Override
   protected final void initProcessStats(long id) {
     if (PureJavaMode.osStatsAreAvailable()) {
       if (osStatsDisabled()) {
-        logger.info(LogMarker.STATISTICS, LocalizedMessage.create(LocalizedStrings.GemFireStatSampler_OS_STATISTIC_COLLECTION_DISABLED_BY_OSSTATSDISABLED_SYSTEM_PROPERTY));
+        logger.info(LogMarker.STATISTICS, LocalizedMessage.create(
+            LocalizedStrings.GemFireStatSampler_OS_STATISTIC_COLLECTION_DISABLED_BY_OSSTATSDISABLED_SYSTEM_PROPERTY));
       } else {
         int retVal = HostStatHelper.initOSStats();
-        if ( retVal != 0 ) {
-          logger.error(LogMarker.STATISTICS, LocalizedMessage.create(LocalizedStrings.GemFireStatSampler_OS_STATISTICS_FAILED_TO_INITIALIZE_PROPERLY_SOME_STATS_MAY_BE_MISSING_SEE_BUGNOTE_37160)); 
+        if (retVal != 0) {
+          logger.error(LogMarker.STATISTICS, LocalizedMessage.create(
+              LocalizedStrings.GemFireStatSampler_OS_STATISTICS_FAILED_TO_INITIALIZE_PROPERLY_SOME_STATS_MAY_BE_MISSING_SEE_BUGNOTE_37160));
         }
         HostStatHelper.newSystem(getOsStatisticsFactory());
         String statName = getStatisticsManager().getName();
         if (statName == null || statName.length() == 0) {
           statName = "javaApp" + getStatisticsManager().getId();
         }
-        Statistics stats = HostStatHelper.newProcess(getOsStatisticsFactory(), id, statName + "-proc");
-        this.processStats = HostStatHelper.newProcessStats(stats); 
+        Statistics stats =
+            HostStatHelper.newProcess(getOsStatisticsFactory(), id, statName + "-proc");
+        this.processStats = HostStatHelper.newProcessStats(stats);
       }
     }
   }
 
- @Override
+  @Override
   protected final void sampleProcessStats(boolean prepareOnly) {
     if (prepareOnly || osStatsDisabled() || !PureJavaMode.osStatsAreAvailable()) {
       return;
@@ -279,19 +277,21 @@ public final class GemFireStatSampler extends HostStatSampler {
     if (l == null) {
       return;
     }
-    if (stopRequested()) return;
+    if (stopRequested())
+      return;
     HostStatHelper.readyRefreshOSStats();
     Iterator<Statistics> it = l.iterator();
     while (it.hasNext()) {
-      if (stopRequested()) return;
-      StatisticsImpl s = (StatisticsImpl)it.next();
+      if (stopRequested())
+        return;
+      StatisticsImpl s = (StatisticsImpl) it.next();
       if (s.usesSystemCalls()) {
-        HostStatHelper.refresh((LocalStatisticsImpl)s);
+        HostStatHelper.refresh((LocalStatisticsImpl) s);
       }
     }
   }
 
- @Override
+  @Override
   protected final void closeProcessStats() {
     if (PureJavaMode.osStatsAreAvailable()) {
       if (!osStatsDisabled()) {
@@ -310,7 +310,7 @@ public final class GemFireStatSampler extends HostStatSampler {
       }
     }
   }
-  
+
   private int getNextListenerId() {
     int result = nextListenerId++;
     if (nextListenerId < 0) {
@@ -318,7 +318,7 @@ public final class GemFireStatSampler extends HostStatSampler {
     }
     return result;
   }
-    
+
   protected static abstract class StatListenerImpl {
     protected Statistics stats;
     protected StatisticDescriptorImpl stat;
@@ -332,45 +332,45 @@ public final class GemFireStatSampler extends HostStatSampler {
         return this.stats.getUniqueId();
       }
     }
-    
+
     protected abstract double getBitsAsDouble(long bits);
   }
 
   protected static abstract class LocalStatListenerImpl extends StatListenerImpl {
     private LocalStatListener listener;
-    
+
     public LocalStatListener getListener() {
       return this.listener;
     }
-    
+
     static LocalStatListenerImpl create(LocalStatListener l, Statistics stats, String statName) {
       LocalStatListenerImpl result = null;
-      StatisticDescriptorImpl stat = (StatisticDescriptorImpl)stats.nameToDescriptor(statName);
+      StatisticDescriptorImpl stat = (StatisticDescriptorImpl) stats.nameToDescriptor(statName);
       switch (stat.getTypeCode()) {
-      case StatisticDescriptorImpl.BYTE:
-      case StatisticDescriptorImpl.SHORT:
-      case StatisticDescriptorImpl.INT:
-      case StatisticDescriptorImpl.LONG:
-        result = new LocalLongStatListenerImpl();
-        break;
-      case StatisticDescriptorImpl.FLOAT:
-        result = new LocalFloatStatListenerImpl();
-        break;
-      case StatisticDescriptorImpl.DOUBLE:
-        result = new LocalDoubleStatListenerImpl();
-        break;
-      default:
-        throw new RuntimeException("Illegal field type " + stats.getType() + " for statistic");
+        case StatisticDescriptorImpl.BYTE:
+        case StatisticDescriptorImpl.SHORT:
+        case StatisticDescriptorImpl.INT:
+        case StatisticDescriptorImpl.LONG:
+          result = new LocalLongStatListenerImpl();
+          break;
+        case StatisticDescriptorImpl.FLOAT:
+          result = new LocalFloatStatListenerImpl();
+          break;
+        case StatisticDescriptorImpl.DOUBLE:
+          result = new LocalDoubleStatListenerImpl();
+          break;
+        default:
+          throw new RuntimeException("Illegal field type " + stats.getType() + " for statistic");
       }
       result.stats = stats;
       result.stat = stat;
       result.listener = l;
       return result;
     }
-    
+
     /**
-     * Checks to see if the value of the stat has changed. If it has then 
-     * the local listener is fired
+     * Checks to see if the value of the stat has changed. If it has then the local listener is
+     * fired
      */
     public void checkForChange() {
       long currentValue = stats.getRawBits(stat);
@@ -385,7 +385,7 @@ public final class GemFireStatSampler extends HostStatSampler {
       listener.statValueChanged(getBitsAsDouble(currentValue));
     }
   }
-  
+
   protected static class LocalLongStatListenerImpl extends LocalStatListenerImpl {
     @Override
     protected double getBitsAsDouble(long bits) {
@@ -396,10 +396,10 @@ public final class GemFireStatSampler extends HostStatSampler {
   protected static class LocalFloatStatListenerImpl extends LocalStatListenerImpl {
     @Override
     protected double getBitsAsDouble(long bits) {
-      return Float.intBitsToFloat((int)bits);
+      return Float.intBitsToFloat((int) bits);
     }
   }
-  
+
   protected static class LocalDoubleStatListenerImpl extends LocalStatListenerImpl {
     @Override
     protected double getBitsAsDouble(long bits) {
@@ -410,7 +410,7 @@ public final class GemFireStatSampler extends HostStatSampler {
   /**
    * Used to register a StatListener.
    */
-  protected static abstract class RemoteStatListenerImpl extends StatListenerImpl{
+  protected static abstract class RemoteStatListenerImpl extends StatListenerImpl {
     private int listenerId;
     private InternalDistributedMember recipient;
 
@@ -418,14 +418,14 @@ public final class GemFireStatSampler extends HostStatSampler {
     public final int hashCode() {
       return listenerId;
     }
-    
+
     @Override
     public final boolean equals(Object o) {
       if (o == null) {
         return false;
       }
       if (o instanceof RemoteStatListenerImpl) {
-        return listenerId == ((RemoteStatListenerImpl)o).listenerId;
+        return listenerId == ((RemoteStatListenerImpl) o).listenerId;
       } else {
         return false;
       }
@@ -434,30 +434,33 @@ public final class GemFireStatSampler extends HostStatSampler {
     public int getListenerId() {
       return this.listenerId;
     }
-    
+
     public InternalDistributedMember getRecipient() {
       return this.recipient;
     }
-    
-    static RemoteStatListenerImpl create(int listenerId, InternalDistributedMember recipient, long resourceId, String statName, HostStatSampler sampler) {
+
+    static RemoteStatListenerImpl create(int listenerId, InternalDistributedMember recipient,
+        long resourceId, String statName, HostStatSampler sampler) {
       RemoteStatListenerImpl result = null;
       Statistics stats = sampler.getStatisticsManager().findStatistics(resourceId);
-      StatisticDescriptorImpl stat = (StatisticDescriptorImpl)stats.nameToDescriptor(statName);
+      StatisticDescriptorImpl stat = (StatisticDescriptorImpl) stats.nameToDescriptor(statName);
       switch (stat.getTypeCode()) {
-      case StatisticDescriptorImpl.BYTE:
-      case StatisticDescriptorImpl.SHORT:
-      case StatisticDescriptorImpl.INT:
-      case StatisticDescriptorImpl.LONG:
-        result = new LongStatListenerImpl();
-        break;
-      case StatisticDescriptorImpl.FLOAT:
-        result = new FloatStatListenerImpl();
-        break;
-      case StatisticDescriptorImpl.DOUBLE:
-        result = new DoubleStatListenerImpl();
-        break;
-      default:
-        throw new RuntimeException(LocalizedStrings.GemFireStatSampler_ILLEGAL_FIELD_TYPE_0_FOR_STATISTIC.toLocalizedString(stats.getType()));
+        case StatisticDescriptorImpl.BYTE:
+        case StatisticDescriptorImpl.SHORT:
+        case StatisticDescriptorImpl.INT:
+        case StatisticDescriptorImpl.LONG:
+          result = new LongStatListenerImpl();
+          break;
+        case StatisticDescriptorImpl.FLOAT:
+          result = new FloatStatListenerImpl();
+          break;
+        case StatisticDescriptorImpl.DOUBLE:
+          result = new DoubleStatListenerImpl();
+          break;
+        default:
+          throw new RuntimeException(
+              LocalizedStrings.GemFireStatSampler_ILLEGAL_FIELD_TYPE_0_FOR_STATISTIC
+                  .toLocalizedString(stats.getType()));
       }
       result.stats = stats;
       result.stat = stat;
@@ -465,10 +468,10 @@ public final class GemFireStatSampler extends HostStatSampler {
       result.recipient = recipient;
       return result;
     }
-    
+
     /**
-     * Checks to see if the value of the stat has changed. If it has then it
-     * adds that change to the specified message.
+     * Checks to see if the value of the stat has changed. If it has then it adds that change to the
+     * specified message.
      */
     public void checkForChange(StatListenerMessage msg) {
       long currentValue = stats.getRawBits(stat);
@@ -494,10 +497,10 @@ public final class GemFireStatSampler extends HostStatSampler {
   protected static class FloatStatListenerImpl extends RemoteStatListenerImpl {
     @Override
     protected double getBitsAsDouble(long bits) {
-      return Float.intBitsToFloat((int)bits);
+      return Float.intBitsToFloat((int) bits);
     }
   }
-  
+
   protected static class DoubleStatListenerImpl extends RemoteStatListenerImpl {
     @Override
     protected double getBitsAsDouble(long bits) {

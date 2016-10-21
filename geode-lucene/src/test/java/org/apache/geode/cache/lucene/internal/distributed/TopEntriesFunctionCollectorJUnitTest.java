@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.distributed;
@@ -133,7 +129,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
     interruptWhileWaiting(false);
   }
 
-  private void interruptWhileWaiting(final boolean timedWait) throws InterruptedException, Exception {
+  private void interruptWhileWaiting(final boolean timedWait)
+      throws InterruptedException, Exception {
     GemFireCacheImpl mockCache = mock(GemFireCacheImpl.class);
     final TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(null, mockCache);
 
@@ -204,8 +201,9 @@ public class TopEntriesFunctionCollectorJUnitTest {
 
   @Test
   public void mergeShardAndLimitResults() throws Exception {
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, null, 3);
-    
+    LuceneFunctionContext<TopEntriesCollector> context =
+        new LuceneFunctionContext<>(null, null, null, 3);
+
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.addResult(null, result1);
     collector.addResult(null, result2);
@@ -216,7 +214,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
     assertEquals(3, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2);
   }
-  
+
   @Test
   public void mergeResultsDefaultCollectorManager() throws Exception {
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
@@ -236,18 +234,18 @@ public class TopEntriesFunctionCollectorJUnitTest {
     collector.addResult(null, result1);
     collector.addResult(null, result2);
     collector.endResults();
-    
+
     TopEntries merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(4, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
-    
+
     merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(4, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
-  
+
   @Test
   public void mergeResultsCustomCollectorManager() throws Exception {
     TopEntries resultEntries = new TopEntries();
@@ -264,7 +262,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
           }
         }));
 
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context =
+        new LuceneFunctionContext<>(null, null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.addResult(null, result1);
     collector.addResult(null, result2);
@@ -293,7 +292,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesCollectorManager mockManager = mock(TopEntriesCollectorManager.class);
     Mockito.doThrow(new RuntimeException()).when(mockManager).reduce(any(Collection.class));
 
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context =
+        new LuceneFunctionContext<>(null, null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.endResults();
     collector.getResult();

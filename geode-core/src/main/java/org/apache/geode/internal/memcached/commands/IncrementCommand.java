@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.memcached.commands;
 
@@ -33,13 +31,12 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
  * <code>
  * incr &lt;key&gt; &lt;value&gt; [noreply]\r\n
  * </code><br/>
- * value is the amount by which the client wants to increase/decrease
- * the item. It is a decimal representation of a 64-bit unsigned integer.
+ * value is the amount by which the client wants to increase/decrease the item. It is a decimal
+ * representation of a 64-bit unsigned integer.
  * 
- * The data for the item is
- * treated as decimal representation of a 64-bit unsigned integer.
- * Also, the item must already exist for incr/decr to work; these commands won't pretend
- * that a non-existent key exists with value 0; instead, they will fail.
+ * The data for the item is treated as decimal representation of a 64-bit unsigned integer. Also,
+ * the item must already exist for incr/decr to work; these commands won't pretend that a
+ * non-existent key exists with value 0; instead, they will fail.
  * 
  *
  */
@@ -60,13 +57,13 @@ public class IncrementCommand extends AbstractCommand {
     flb.flip();
     String firstLine = getFirstLine();
     String[] firstLineElements = firstLine.split(" ");
-    
+
     assert "incr".equals(firstLineElements[0]);
     String key = firstLineElements[1];
     String incrByStr = stripNewline(firstLineElements[2]);
     Long incrBy = Long.parseLong(incrByStr);
     boolean noReply = firstLineElements.length > 3;
-    
+
     Region<Object, ValueWrapper> r = getMemcachedRegion(cache);
     String reply = Reply.NOT_FOUND.toString();
     ByteBuffer newVal = ByteBuffer.allocate(8);
@@ -80,7 +77,7 @@ public class IncrementCommand extends AbstractCommand {
       long oldLong = getLongFromByteArray(oldVal);
       long newLong = oldLong + incrBy;
       newVal.putLong(0, newLong);
-      ValueWrapper newValWrapper = ValueWrapper.getWrappedValue(newVal.array(), 0/*flags*/);
+      ValueWrapper newValWrapper = ValueWrapper.getWrappedValue(newVal.array(), 0/* flags */);
       if (r.replace(key, oldValWrapper, newValWrapper)) {
         reply = newLong + "\r\n";
         break;
@@ -90,21 +87,21 @@ public class IncrementCommand extends AbstractCommand {
   }
 
   private static final int LONG_LENGTH = 8;
-  
+
   private ByteBuffer processBinaryProtocol(RequestReader request, Cache cache) {
     ByteBuffer buffer = request.getRequest();
     int extrasLength = buffer.get(EXTRAS_LENGTH_INDEX);
     final KeyWrapper key = getKey(buffer, HEADER_LENGTH + extrasLength);
-    
+
     long incrBy = buffer.getLong(HEADER_LENGTH);
     long initialVal = buffer.getLong(HEADER_LENGTH + LONG_LENGTH);
     int expiration = buffer.getInt(HEADER_LENGTH + LONG_LENGTH + LONG_LENGTH);
-    
+
     final Region<Object, ValueWrapper> r = getMemcachedRegion(cache);
     ByteBuffer newVal = ByteBuffer.allocate(8);
     boolean notFound = false;
     ValueWrapper newValWrapper = null;
-    
+
     try {
       while (true) {
         ValueWrapper oldValWrapper = r.get(key);
@@ -113,7 +110,7 @@ public class IncrementCommand extends AbstractCommand {
             notFound = true;
           } else {
             newVal.putLong(0, initialVal);
-            newValWrapper = ValueWrapper.getWrappedValue(newVal.array(), 0/*flags*/);
+            newValWrapper = ValueWrapper.getWrappedValue(newVal.array(), 0/* flags */);
             r.put(key, newValWrapper);
           }
           break;
@@ -122,7 +119,7 @@ public class IncrementCommand extends AbstractCommand {
         long oldLong = getLongFromByteArray(oldVal);
         long newLong = oldLong + incrBy;
         newVal.putLong(0, newLong);
-        newValWrapper = ValueWrapper.getWrappedValue(newVal.array(), 0/*flags*/);
+        newValWrapper = ValueWrapper.getWrappedValue(newVal.array(), 0/* flags */);
         if (r.replace(key, oldValWrapper, newValWrapper)) {
           break;
         }
@@ -130,7 +127,7 @@ public class IncrementCommand extends AbstractCommand {
     } catch (Exception e) {
       return handleBinaryException(key, request, request.getResponse(), "increment", e);
     }
-    
+
     if (expiration > 0) {
       StorageCommand.getExpiryExecutor().schedule(new Runnable() {
         @Override
@@ -139,11 +136,12 @@ public class IncrementCommand extends AbstractCommand {
         }
       }, expiration, TimeUnit.SECONDS);
     }
-    
+
     if (getLogger().fineEnabled()) {
-      getLogger().fine("incr:key:"+key+" incrBy:"+incrBy+" initVal:"+initialVal+" exp:"+expiration+" notFound:"+notFound);
+      getLogger().fine("incr:key:" + key + " incrBy:" + incrBy + " initVal:" + initialVal + " exp:"
+          + expiration + " notFound:" + notFound);
     }
-    
+
     ByteBuffer response = null;
     if (notFound) {
       response = request.getResponse();
@@ -159,7 +157,7 @@ public class IncrementCommand extends AbstractCommand {
     }
     return response;
   }
-  
+
   /**
    * Overridden by Q command
    */

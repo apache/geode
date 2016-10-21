@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security.templates;
 
@@ -42,19 +40,25 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
- * This class provides a sample implementation of {@link SecurityManager} for
- * authentication and authorization initialized from data provided as JSON.
+ * This class provides a sample implementation of {@link SecurityManager} for authentication and
+ * authorization initialized from data provided as JSON.
  *
- * <p>A Geode member must be configured with the following:
+ * <p>
+ * A Geode member must be configured with the following:
  *
- * <p>{@code security-manager = org.apache.geode.security.examples.SampleSecurityManager}
+ * <p>
+ * {@code security-manager = org.apache.geode.security.examples.SampleSecurityManager}
  *
- * <p>The class can be initialized with from a JSON resource called
- * {@code security.json}. This file must exist on the classpath, so members
- * should be started with an appropriate {@code --classpath} option.
+ * <p>
+ * The class can be initialized with from a JSON resource called {@code security.json}. This file
+ * must exist on the classpath, so members should be started with an appropriate {@code --classpath}
+ * option.
  *
- * <p>The format of the JSON for configuration is as follows:
- * <pre><code>
+ * <p>
+ * The format of the JSON for configuration is as follows:
+ * 
+ * <pre>
+ * <code>
  * {
  *   "roles": [
  *     {
@@ -85,7 +89,8 @@ import org.apache.geode.security.NotAuthorizedException;
  *     }
  *   ]
  * }
- * </code></pre>
+ * </code>
+ * </pre>
  */
 public class SampleSecurityManager implements SecurityManager {
 
@@ -97,10 +102,12 @@ public class SampleSecurityManager implements SecurityManager {
 
   @Override
   public boolean authorize(final Object principal, final ResourcePermission context) {
-    if (principal == null) return false;
+    if (principal == null)
+      return false;
 
     User user = this.userNameToUser.get(principal.toString());
-    if (user == null) return false; // this user is not authorized to do anything
+    if (user == null)
+      return false; // this user is not authorized to do anything
 
     // check if the user has this permission defined in the context
     for (Role role : this.userNameToUser.get(user.name).roles) {
@@ -116,13 +123,16 @@ public class SampleSecurityManager implements SecurityManager {
 
   @Override
   public void init(final Properties securityProperties) throws NotAuthorizedException {
-    String jsonPropertyValue = securityProperties != null ? securityProperties.getProperty(SECURITY_JSON) : null;
+    String jsonPropertyValue =
+        securityProperties != null ? securityProperties.getProperty(SECURITY_JSON) : null;
     if (jsonPropertyValue == null) {
       jsonPropertyValue = DEFAULT_JSON_FILE_NAME;
     }
 
     if (!initializeFromJsonResource(jsonPropertyValue)) {
-      throw new AuthenticationFailedException("SampleSecurityManager: unable to find json resource \"" + jsonPropertyValue + "\" as specified by [" + SECURITY_JSON + "].");
+      throw new AuthenticationFailedException(
+          "SampleSecurityManager: unable to find json resource \"" + jsonPropertyValue
+              + "\" as specified by [" + SECURITY_JSON + "].");
     }
   }
 
@@ -178,7 +188,8 @@ public class SampleSecurityManager implements SecurityManager {
     return writer.toString();
   }
 
-  private void readUsers(final Map<String, User> rolesToUsers, final JsonNode node, final Map<String, Role> roleMap) {
+  private void readUsers(final Map<String, User> rolesToUsers, final JsonNode node,
+      final Map<String, Role> roleMap) {
     for (JsonNode usersNode : node.get("users")) {
       User user = new User();
       user.name = usersNode.get("name").asText();
@@ -211,9 +222,8 @@ public class SampleSecurityManager implements SecurityManager {
       JsonNode regionsNode = rolesNode.get("regions");
       if (regionsNode != null) {
         if (regionsNode.isArray()) {
-          regionNames = StreamSupport.stream(regionsNode.spliterator(), false)
-                                     .map(JsonNode::asText)
-                                     .collect(Collectors.joining(","));
+          regionNames = StreamSupport.stream(regionsNode.spliterator(), false).map(JsonNode::asText)
+              .collect(Collectors.joining(","));
         } else {
           regionNames = regionsNode.asText();
         }
@@ -224,17 +234,18 @@ public class SampleSecurityManager implements SecurityManager {
         String resourcePart = (parts.length > 0) ? parts[0] : null;
         String operationPart = (parts.length > 1) ? parts[1] : null;
 
-        if (parts.length>2){
+        if (parts.length > 2) {
           regionNames = parts[2];
         }
-        if (parts.length>3){
+        if (parts.length > 3) {
           keys = parts[3];
         }
 
         String regionPart = (regionNames != null) ? regionNames : "*";
-        String keyPart = (keys !=null) ? keys : "*";
+        String keyPart = (keys != null) ? keys : "*";
 
-        role.permissions.add(new ResourcePermission(resourcePart, operationPart, regionPart, keyPart));
+        role.permissions
+            .add(new ResourcePermission(resourcePart, operationPart, regionPart, keyPart));
       }
 
       roleMap.put(role.name, role);

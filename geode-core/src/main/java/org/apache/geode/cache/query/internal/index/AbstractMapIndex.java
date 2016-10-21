@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -44,8 +42,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 
-public abstract class AbstractMapIndex extends AbstractIndex
-{
+public abstract class AbstractMapIndex extends AbstractIndex {
   final protected boolean isAllKeys;
 
   final String[] patternStr;
@@ -53,30 +50,28 @@ public abstract class AbstractMapIndex extends AbstractIndex
   protected final Map<Object, AbstractIndex> mapKeyToValueIndex;
 
   protected final Object[] mapKeys;
-    
-  AbstractMapIndex(String indexName, Region region, String fromClause,
-      String indexedExpression, String projectionAttributes,
-      String origFromClause, String origIndxExpr, String[] defintions,
-      boolean isAllKeys, String[] multiIndexingKeysPattern, Object[] mapKeys, IndexStatistics stats) {
-    super(indexName, region, fromClause, indexedExpression,
-        projectionAttributes, origFromClause, origIndxExpr, defintions, stats);
+
+  AbstractMapIndex(String indexName, Region region, String fromClause, String indexedExpression,
+      String projectionAttributes, String origFromClause, String origIndxExpr, String[] defintions,
+      boolean isAllKeys, String[] multiIndexingKeysPattern, Object[] mapKeys,
+      IndexStatistics stats) {
+    super(indexName, region, fromClause, indexedExpression, projectionAttributes, origFromClause,
+        origIndxExpr, defintions, stats);
     this.mapKeyToValueIndex = new ConcurrentHashMap<Object, AbstractIndex>(2, 0.75f, 1);
     RegionAttributes ra = region.getAttributes();
     this.isAllKeys = isAllKeys;
     this.mapKeys = mapKeys;
     if (this.isAllKeys) {
-      this.patternStr = new String[] { new StringBuilder(indexedExpression)
-          .deleteCharAt(indexedExpression.length() - 2).toString() };
+      this.patternStr = new String[] {new StringBuilder(indexedExpression)
+          .deleteCharAt(indexedExpression.length() - 2).toString()};
 
-    }
-    else {
+    } else {
       this.patternStr = multiIndexingKeysPattern;
     }
   }
 
   @Override
-  void addMapping(RegionEntry entry) throws IMQException
-  {
+  void addMapping(RegionEntry entry) throws IMQException {
     this.evaluator.evaluate(entry, true);
   }
 
@@ -85,8 +80,7 @@ public abstract class AbstractMapIndex extends AbstractIndex
     if (!(this.region instanceof BucketRegion)) {
       return new MapIndexStatistics(indexName);
     } else {
-      return new InternalIndexStatistics() {
-      };
+      return new InternalIndexStatistics() {};
     }
   }
 
@@ -94,8 +88,7 @@ public abstract class AbstractMapIndex extends AbstractIndex
     private IndexStats vsdStats;
 
     public MapIndexStatistics(String indexName) {
-      this.vsdStats = new IndexStats(getRegion().getCache()
-          .getDistributedSystem(), indexName);
+      this.vsdStats = new IndexStats(getRegion().getCache().getDistributedSystem(), indexName);
     }
 
     /**
@@ -154,24 +147,21 @@ public abstract class AbstractMapIndex extends AbstractIndex
     }
 
     /**
-     * Returns the total amount of time (in nanoseconds) spent updating this
-     * index.
+     * Returns the total amount of time (in nanoseconds) spent updating this index.
      */
     public long getTotalUpdateTime() {
       return this.vsdStats.getTotalUpdateTime();
     }
 
     /**
-     * Returns the total number of times this index has been accessed by a
-     * query.
+     * Returns the total number of times this index has been accessed by a query.
      */
     public long getTotalUses() {
       return this.vsdStats.getTotalUses();
     }
 
     /**
-     * Returns the number of keys in this index
-     * at the highest level
+     * Returns the number of keys in this index at the highest level
      */
     public long getNumberOfMapIndexKeys() {
       return this.vsdStats.getNumberOfMapIndexKeys();
@@ -196,8 +186,8 @@ public abstract class AbstractMapIndex extends AbstractIndex
      */
     public long getNumberOfValues(Object key) {
       long numValues = 0;
-      for (Object ind : mapKeyToValueIndex.values()) { 
-        numValues += ((AbstractIndex)ind).getStatistics().getNumberOfValues(key);
+      for (Object ind : mapKeyToValueIndex.values()) {
+        numValues += ((AbstractIndex) ind).getStatistics().getNumberOfValues(key);
       }
       return numValues;
     }
@@ -208,7 +198,7 @@ public abstract class AbstractMapIndex extends AbstractIndex
     public int getReadLockCount() {
       return this.vsdStats.getReadLockCount();
     }
-    
+
 
     public void close() {
       this.vsdStats.close();
@@ -221,63 +211,54 @@ public abstract class AbstractMapIndex extends AbstractIndex
       sb.append("No Values = ").append(getNumberOfValues()).append("\n");
       sb.append("No Uses = ").append(getTotalUses()).append("\n");
       sb.append("No Updates = ").append(getNumUpdates()).append("\n");
-      sb.append("Total Update time = ").append(getTotalUpdateTime())
-          .append("\n");
+      sb.append("Total Update time = ").append(getTotalUpdateTime()).append("\n");
       return sb.toString();
     }
-  } 
+  }
 
   @Override
-  public ObjectType getResultSetType()
-  {
+  public ObjectType getResultSetType() {
     return this.evaluator.getIndexResultSetType();
   }
 
   @Override
-  void instantiateEvaluator(IndexCreationHelper ich)
-  {
+  void instantiateEvaluator(IndexCreationHelper ich) {
     this.evaluator = new IMQEvaluator(ich);
   }
 
   @Override
-  public void initializeIndex(boolean loadEntries) throws IMQException
-  {
+  public void initializeIndex(boolean loadEntries) throws IMQException {
     evaluator.initializeIndex(loadEntries);
   }
 
   @Override
-  void lockedQuery(Object key, int operator, Collection results,
-      CompiledValue iterOps, RuntimeIterator runtimeItr,
-      ExecutionContext context, List projAttrib,
-      SelectResults intermediateResults, boolean isIntersection)
-      throws TypeMismatchException, FunctionDomainException,
-      NameResolutionException, QueryInvocationTargetException
-  {
-    Object[] mapKeyAndVal = (Object[])key;
+  void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
+      RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib,
+      SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
+      FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
+    Object[] mapKeyAndVal = (Object[]) key;
     AbstractIndex ri = this.mapKeyToValueIndex.get(mapKeyAndVal[1]);
     if (ri != null) {
-      ri.lockedQuery(mapKeyAndVal[0], operator, results, iterOps, runtimeItr,
-          context, projAttrib, intermediateResults, isIntersection);
+      ri.lockedQuery(mapKeyAndVal[0], operator, results, iterOps, runtimeItr, context, projAttrib,
+          intermediateResults, isIntersection);
     }
   }
 
   @Override
-  void lockedQuery(Object lowerBoundKey, int lowerBoundOperator,
-      Object upperBoundKey, int upperBoundOperator, Collection results,
-      Set keysToRemove, ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
-      NameResolutionException, QueryInvocationTargetException
-  {
+  void lockedQuery(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
+      int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
+      throws TypeMismatchException, FunctionDomainException, NameResolutionException,
+      QueryInvocationTargetException {
     throw new UnsupportedOperationException(
         "Range grouping for MapIndex condition is not supported");
 
   }
 
   @Override
-  void lockedQuery(Object key, int operator, Collection results,
-      Set keysToRemove, ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
-      NameResolutionException, QueryInvocationTargetException
-  {
-    Object[] mapKeyAndVal = (Object[])key;
+  void lockedQuery(Object key, int operator, Collection results, Set keysToRemove,
+      ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
+      NameResolutionException, QueryInvocationTargetException {
+    Object[] mapKeyAndVal = (Object[]) key;
     AbstractIndex ri = this.mapKeyToValueIndex.get(mapKeyAndVal[1]);
     if (ri != null) {
       ri.lockedQuery(mapKeyAndVal[0], operator, results, keysToRemove, context);
@@ -288,22 +269,17 @@ public abstract class AbstractMapIndex extends AbstractIndex
 
   protected abstract void removeMapping(RegionEntry entry, int opCode) throws IMQException;
 
-  public boolean clear() throws QueryException
-  {
-    throw new UnsupportedOperationException(
-        "MapType Index method not supported");
+  public boolean clear() throws QueryException {
+    throw new UnsupportedOperationException("MapType Index method not supported");
   }
 
-  public int getSizeEstimate(Object key, int op, int matchLevel)
-      throws TypeMismatchException
-  {
-    Object[] mapKeyAndVal = (Object[])key;
+  public int getSizeEstimate(Object key, int op, int matchLevel) throws TypeMismatchException {
+    Object[] mapKeyAndVal = (Object[]) key;
     Object mapKey = mapKeyAndVal[1];
     AbstractIndex ri = this.mapKeyToValueIndex.get(mapKey);
     if (ri != null) {
       return ri.getSizeEstimate(mapKeyAndVal[0], op, matchLevel);
-    }
-    else {
+    } else {
       return 0;
     }
   }
@@ -312,37 +288,32 @@ public abstract class AbstractMapIndex extends AbstractIndex
   protected boolean isCompactRangeIndex() {
     return false;
   }
-  
-  public IndexType getType()
-  {
+
+  public IndexType getType() {
     return IndexType.FUNCTIONAL;
   }
 
   @Override
-  public boolean isMapType()
-  {
+  public boolean isMapType() {
     return true;
   }
 
   @Override
-  void addMapping(Object key, Object value, RegionEntry entry)
-      throws IMQException
-  {
-    if(key == QueryService.UNDEFINED || !(key instanceof Map)) {
+  void addMapping(Object key, Object value, RegionEntry entry) throws IMQException {
+    if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
       return;
     }
     if (this.isAllKeys) {
-      Iterator<Map.Entry<?, ?>> entries = ((Map)key).entrySet().iterator();
+      Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
       while (entries.hasNext()) {
         Map.Entry<?, ?> mapEntry = entries.next();
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
         this.doIndexAddition(mapKey, indexKey, value, entry);
       }
-    }
-    else {
+    } else {
       for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map)key).get(mapKey);
+        Object indexKey = ((Map) key).get(mapKey);
         if (indexKey != null) {
           this.doIndexAddition(mapKey, indexKey, value, entry);
         }
@@ -351,24 +322,21 @@ public abstract class AbstractMapIndex extends AbstractIndex
   }
 
   @Override
-  void saveMapping(Object key, Object value, RegionEntry entry)
-      throws IMQException
-  {
-    if(key == QueryService.UNDEFINED || !(key instanceof Map)) {
+  void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
+    if (key == QueryService.UNDEFINED || !(key instanceof Map)) {
       return;
     }
     if (this.isAllKeys) {
-      Iterator<Map.Entry<?, ?>> entries = ((Map)key).entrySet().iterator();
+      Iterator<Map.Entry<?, ?>> entries = ((Map) key).entrySet().iterator();
       while (entries.hasNext()) {
         Map.Entry<?, ?> mapEntry = entries.next();
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
         this.saveIndexAddition(mapKey, indexKey, value, entry);
       }
-    }
-    else {
+    } else {
       for (Object mapKey : mapKeys) {
-        Object indexKey = ((Map)key).get(mapKey);
+        Object indexKey = ((Map) key).get(mapKey);
         if (indexKey != null) {
           this.saveIndexAddition(mapKey, indexKey, value, entry);
         }
@@ -382,47 +350,40 @@ public abstract class AbstractMapIndex extends AbstractIndex
   protected abstract void saveIndexAddition(Object mapKey, Object indexKey, Object value,
       RegionEntry entry) throws IMQException;
 
-  public Map<Object, AbstractIndex> getRangeIndexHolderForTesting()
-  {
+  public Map<Object, AbstractIndex> getRangeIndexHolderForTesting() {
     return Collections.unmodifiableMap(this.mapKeyToValueIndex);
   }
 
-  public String[] getPatternsForTesting()
-  {
+  public String[] getPatternsForTesting() {
     return this.patternStr;
   }
 
-  public Object[] getMapKeysForTesting()
-  {
+  public Object[] getMapKeysForTesting() {
     return this.mapKeys;
   }
 
   public abstract boolean containsEntry(RegionEntry entry);
 
   @Override
-  public boolean isMatchingWithIndexExpression(CompiledValue condnExpr,
-      String conditionExprStr, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException,
-      NameResolutionException
-  {
+  public boolean isMatchingWithIndexExpression(CompiledValue condnExpr, String conditionExprStr,
+      ExecutionContext context)
+      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     if (this.isAllKeys) {
       // check if the conditionExps is of type MapIndexable.If yes then check
       // the canonicalized string
       // stripped of the index arg & see if it matches.
       if (condnExpr instanceof MapIndexable) {
-        MapIndexable mi = (MapIndexable)condnExpr;
+        MapIndexable mi = (MapIndexable) condnExpr;
         CompiledValue recvr = mi.getRecieverSansIndexArgs();
         StringBuffer sb = new StringBuffer();
         recvr.generateCanonicalizedExpression(sb, context);
         sb.append('[').append(']');
         return sb.toString().equals(this.patternStr[0]);
 
-      }
-      else {
+      } else {
         return false;
       }
-    }
-    else {
+    } else {
       for (String expr : this.patternStr) {
         if (expr.equals(conditionExprStr)) {
           return true;
@@ -436,5 +397,5 @@ public abstract class AbstractMapIndex extends AbstractIndex
   public boolean isEmpty() {
     return mapKeyToValueIndex.size() == 0 ? true : false;
   }
-  
+
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security;
 
@@ -59,7 +57,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 /**
  * This is for multiuser-authentication
  */
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   private Map<String, String> cqNameToQueryStrings = new HashMap<>();
@@ -84,11 +82,9 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   @Test
   public void testAllowCQForAllMultiusers() throws Exception {
     /*
-     * Start a server
-     * Start a client1 with two users with valid credentials and post-authz'ed for CQ
-     * Each user registers a unique CQ
-     * Client2 does some operations on the region which satisfies both the CQs
-     * Validate that listeners for both the CQs are invoked.
+     * Start a server Start a client1 with two users with valid credentials and post-authz'ed for CQ
+     * Each user registers a unique CQ Client2 does some operations on the region which satisfies
+     * both the CQs Validate that listeners for both the CQs are invoked.
      */
     doStartUp(2, 5, new boolean[] {true, true}, false);
   }
@@ -96,11 +92,9 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   @Test
   public void testDisallowCQForAllMultiusers() throws Exception {
     /*
-     * Start a server
-     * Start a client1 with two users with valid credentials but not post-authz'ed for CQ
-     * Each user registers a unique CQ
-     * Client2 does some operations on the region which satisfies both the CQs
-     * Validate that listeners for none of the CQs are invoked.
+     * Start a server Start a client1 with two users with valid credentials but not post-authz'ed
+     * for CQ Each user registers a unique CQ Client2 does some operations on the region which
+     * satisfies both the CQs Validate that listeners for none of the CQs are invoked.
      */
     doStartUp(2, 5, new boolean[] {false, false}, false);
   }
@@ -108,12 +102,10 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   @Test
   public void testDisallowCQForSomeMultiusers() throws Exception {
     /*
-     * Start a server
-     * Start a client1 with two users with valid credentials
-     * User1 is post-authz'ed for CQ but user2 is not.
-     * Each user registers a unique CQ
-     * Client2 does some operations on the region which satisfies both the CQs
-     * Validate that listener for User1's CQ is invoked but that for User2's CQ is not invoked.
+     * Start a server Start a client1 with two users with valid credentials User1 is post-authz'ed
+     * for CQ but user2 is not. Each user registers a unique CQ Client2 does some operations on the
+     * region which satisfies both the CQs Validate that listener for User1's CQ is invoked but that
+     * for User2's CQ is not invoked.
      */
     doStartUp(2, 5, new boolean[] {true, false}, false);
   }
@@ -121,19 +113,17 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   @Test
   public void testAllowCQForAllMultiusersWithFailover() throws Exception {
     /*
-     * Start a server1
-     * Start a client1 with two users with valid credentials and post-authz'ed for CQ
-     * Each user registers a unique CQ
-     * Client2 does some operations on the region which satisfies both the CQs
-     * Validate that listeners for both the CQs are invoked.
-     * Start server2 and shutdown server1
-     * Client2 does some operations on the region which satisfies both the CQs
-     * Validate that listeners for both the CQs are get updates.
+     * Start a server1 Start a client1 with two users with valid credentials and post-authz'ed for
+     * CQ Each user registers a unique CQ Client2 does some operations on the region which satisfies
+     * both the CQs Validate that listeners for both the CQs are invoked. Start server2 and shutdown
+     * server1 Client2 does some operations on the region which satisfies both the CQs Validate that
+     * listeners for both the CQs are get updates.
      */
     doStartUp(2, 5, new boolean[] {true, true}, true);
   }
 
-  private void doStartUp(final int numOfUsers, final int numOfPuts, final boolean[] postAuthzAllowed, final boolean failover) throws Exception {
+  private void doStartUp(final int numOfUsers, final int numOfPuts,
+      final boolean[] postAuthzAllowed, final boolean failover) throws Exception {
     AuthzCredentialGenerator authzGenerator = getXmlAuthzGenerator();
     CredentialGenerator credentialGenerator = authzGenerator.getCredentialGenerator();
     Properties extraAuthProps = credentialGenerator.getSystemProperties();
@@ -144,11 +134,13 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
     String authInit = credentialGenerator.getAuthInit();
     TestAuthzCredentialGenerator tgen = new TestAuthzCredentialGenerator(authzGenerator);
 
-    Properties serverProps = buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
+    Properties serverProps =
+        buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
     Properties opCredentials;
     credentialGenerator = tgen.getCredentialGenerator();
-    final Properties javaProps2 = credentialGenerator == null ? null : credentialGenerator.getJavaProperties();
+    final Properties javaProps2 =
+        credentialGenerator == null ? null : credentialGenerator.getJavaProperties();
 
     int[] indices = new int[numOfPuts];
     for (int index = 0; index < numOfPuts; ++index) {
@@ -162,13 +154,17 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
 
       if (postAuthzAllowed[i]) {
         // For callback, GET should be allowed
-        opCredentials = tgen.getAllowedCredentials(new OperationCode[] {OperationCode.EXECUTE_CQ, OperationCode.GET}, new String[] {REGION_NAME}, indices, rand);
+        opCredentials = tgen.getAllowedCredentials(
+            new OperationCode[] {OperationCode.EXECUTE_CQ, OperationCode.GET},
+            new String[] {REGION_NAME}, indices, rand);
       } else {
         // For callback, GET should be disallowed
-        opCredentials = tgen.getDisallowedCredentials(new OperationCode[] { OperationCode.GET}, new String[] {REGION_NAME}, indices, rand);
+        opCredentials = tgen.getDisallowedCredentials(new OperationCode[] {OperationCode.GET},
+            new String[] {REGION_NAME}, indices, rand);
       }
 
-      authProps[i] = concatProperties(new Properties[] {opCredentials, extraAuthProps, extraAuthzProps});
+      authProps[i] =
+          concatProperties(new Properties[] {opCredentials, extraAuthProps, extraAuthzProps});
     }
 
     // Get ports for the servers
@@ -182,17 +178,23 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
     server2.invoke(() -> closeCache());
 
     server1.invoke(() -> createTheServerCache(serverProps, javaProps, locatorPort, port1));
-    client1.invoke(() -> createClientCache(javaProps2, authInit, authProps, new int[] {port1, port2}, numOfUsers, postAuthzAllowed));
-    client2.invoke(() -> createClientCache(javaProps2, authInit, authProps, new int[] {port1, port2}, numOfUsers, postAuthzAllowed));
+    client1.invoke(() -> createClientCache(javaProps2, authInit, authProps,
+        new int[] {port1, port2}, numOfUsers, postAuthzAllowed));
+    client2.invoke(() -> createClientCache(javaProps2, authInit, authProps,
+        new int[] {port1, port2}, numOfUsers, postAuthzAllowed));
 
     client1.invoke(() -> createCQ(numOfUsers));
-    client1.invoke(() -> executeCQ(numOfUsers, new boolean[] {false, false}, numOfPuts, new String[numOfUsers], postAuthzAllowed));
+    client1.invoke(() -> executeCQ(numOfUsers, new boolean[] {false, false}, numOfPuts,
+        new String[numOfUsers], postAuthzAllowed));
 
     client2.invoke(() -> doPuts(numOfPuts, true/* put last key */));
 
     if (!postAuthzAllowed[0]) {
       // There is no point waiting as no user is authorized to receive cq events.
-      try {Thread.sleep(1000);} catch (InterruptedException ie) {} // TODO: replace with Awaitility
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException ie) {
+      } // TODO: replace with Awaitility
     } else {
       client1.invoke(() -> waitForLastKey(0));
       if (postAuthzAllowed[1]) {
@@ -200,7 +202,8 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
       }
     }
 
-    client1.invoke(() -> checkCQListeners(numOfUsers, postAuthzAllowed, numOfPuts + 1/* last key */, 0, !failover));
+    client1.invoke(() -> checkCQListeners(numOfUsers, postAuthzAllowed, numOfPuts + 1/* last key */,
+        0, !failover));
 
     if (failover) {
       server2.invoke(() -> createTheServerCache(serverProps, javaProps, locatorPort, port2));
@@ -211,28 +214,35 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
 
       client2.invoke(() -> doPuts(numOfPuts, true/* put last key */));
       client1.invoke(() -> waitForLastKeyUpdate(0));
-      client1.invoke(() -> checkCQListeners(numOfUsers, postAuthzAllowed, numOfPuts + 1/* last key */, numOfPuts + 1/* last key */, true));
+      client1.invoke(() -> checkCQListeners(numOfUsers, postAuthzAllowed,
+          numOfPuts + 1/* last key */, numOfPuts + 1/* last key */, true));
     }
   }
 
-  private void createTheServerCache(final Properties serverProps, final Properties javaProps, final int locatorPort, final  int serverPort) {
-    SecurityTestUtils.createCacheServer(serverProps, javaProps, locatorPort, (String)null, serverPort, true, NO_EXCEPTION);
+  private void createTheServerCache(final Properties serverProps, final Properties javaProps,
+      final int locatorPort, final int serverPort) {
+    SecurityTestUtils.createCacheServer(serverProps, javaProps, locatorPort, (String) null,
+        serverPort, true, NO_EXCEPTION);
   }
 
-  private void createClientCache(final Properties javaProps, final String authInit, final Properties[] authProps, final int ports[], final int numOfUsers, final boolean[] postAuthzAllowed) {
-    createCacheClientForMultiUserMode(numOfUsers, authInit, authProps, javaProps, ports, 0, false, NO_EXCEPTION);
+  private void createClientCache(final Properties javaProps, final String authInit,
+      final Properties[] authProps, final int ports[], final int numOfUsers,
+      final boolean[] postAuthzAllowed) {
+    createCacheClientForMultiUserMode(numOfUsers, authInit, authProps, javaProps, ports, 0, false,
+        NO_EXCEPTION);
   }
 
   private void createCQ(final int num) throws CqException, CqExistsException {
     for (int i = 0; i < num; i++) {
       QueryService cqService = getProxyCaches(i).getQueryService();
       String cqName = "CQ_" + i;
-      String queryStr = cqNameToQueryStrings.get(cqName) + getProxyCaches(i).getRegion(REGION_NAME).getFullPath();
+      String queryStr =
+          cqNameToQueryStrings.get(cqName) + getProxyCaches(i).getRegion(REGION_NAME).getFullPath();
 
       // Create CQ Attributes.
       CqAttributesFactory cqf = new CqAttributesFactory();
       CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
-      ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
+      ((CqQueryTestListener) cqListeners[0]).cqName = cqName;
 
       cqf.initCqListeners(cqListeners);
       CqAttributes cqa = cqf.create();
@@ -243,15 +253,19 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
     }
   }
 
-  private void executeCQ(final int num, final boolean[] initialResults, final int expectedResultsSize, final String[] expectedErr, final boolean[] postAuthzAllowed) throws RegionNotFoundException, CqException {
+  private void executeCQ(final int num, final boolean[] initialResults,
+      final int expectedResultsSize, final String[] expectedErr, final boolean[] postAuthzAllowed)
+      throws RegionNotFoundException, CqException {
     for (int i = 0; i < num; i++) {
       try {
         if (expectedErr[i] != null) {
-          getLogWriter().info("<ExpectedException action=add>" + expectedErr[i] + "</ExpectedException>");
+          getLogWriter()
+              .info("<ExpectedException action=add>" + expectedErr[i] + "</ExpectedException>");
         }
         CqQuery cq1 = null;
         String cqName = "CQ_" + i;
-        //String queryStr = cqNameToQueryStrings.get(cqName) + getProxyCaches(i).getRegion(REGION_NAME).getFullPath();
+        // String queryStr = cqNameToQueryStrings.get(cqName) +
+        // getProxyCaches(i).getRegion(REGION_NAME).getFullPath();
         QueryService cqService = getProxyCaches(i).getQueryService();
 
         // Get CqQuery object.
@@ -300,7 +314,8 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
         }
       } finally {
         if (expectedErr[i] != null) {
-          getLogWriter().info("<ExpectedException action=remove>" + expectedErr[i] + "</ExpectedException>");
+          getLogWriter()
+              .info("<ExpectedException action=remove>" + expectedErr[i] + "</ExpectedException>");
         }
       }
     }
@@ -309,7 +324,7 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   private void doPuts(final int num, final boolean putLastKey) {
     Region region = getProxyCaches(0).getRegion(REGION_NAME);
     for (int i = 0; i < num; i++) {
-      region.put("CQ_key"+i, "CQ_value"+i);
+      region.put("CQ_key" + i, "CQ_value" + i);
     }
     if (putLastKey) {
       region.put("LAST_KEY", "LAST_KEY");
@@ -319,15 +334,15 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   private void waitForLastKey(final int cqIndex) {
     String cqName = "CQ_" + cqIndex;
     QueryService qService = getProxyCaches(cqIndex).getQueryService();
-    ClientCQImpl cqQuery = (ClientCQImpl)qService.getCq(cqName);
-    ((CqQueryTestListener)cqQuery.getCqListeners()[0]).waitForCreated("LAST_KEY");
+    ClientCQImpl cqQuery = (ClientCQImpl) qService.getCq(cqName);
+    ((CqQueryTestListener) cqQuery.getCqListeners()[0]).waitForCreated("LAST_KEY");
   }
 
   private void waitForLastKeyUpdate(final int cqIndex) {
     String cqName = "CQ_" + cqIndex;
     QueryService qService = getProxyCaches(cqIndex).getQueryService();
-    ClientCQImpl cqQuery = (ClientCQImpl)qService.getCq(cqName);
-    ((CqQueryTestListener)cqQuery.getCqListeners()[0]).waitForUpdated("LAST_KEY");
+    ClientCQImpl cqQuery = (ClientCQImpl) qService.getCq(cqName);
+    ((CqQueryTestListener) cqQuery.getCqListeners()[0]).waitForUpdated("LAST_KEY");
   }
 
   private void allowCQsToRegister(final int number) {
@@ -344,6 +359,7 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
           return false;
         }
       }
+
       @Override
       public String description() {
         return num + "Waited for " + num + " CQs to be registered on this server.";
@@ -352,20 +368,21 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
     waitForCriterion(wc, 60 * 1000, 100, false);
   }
 
-  private boolean checkCQListeners(final int numOfUsers, final boolean[] expectedListenerInvocation, final int createEventsSize, final int updateEventsSize, final boolean closeCache) {
+  private boolean checkCQListeners(final int numOfUsers, final boolean[] expectedListenerInvocation,
+      final int createEventsSize, final int updateEventsSize, final boolean closeCache) {
     for (int i = 0; i < numOfUsers; i++) {
       String cqName = "CQ_" + i;
       QueryService qService = getProxyCaches(i).getQueryService();
-      ClientCQImpl cqQuery = (ClientCQImpl)qService.getCq(cqName);
+      ClientCQImpl cqQuery = (ClientCQImpl) qService.getCq(cqName);
 
       if (expectedListenerInvocation[i]) {
         for (CqListener listener : cqQuery.getCqListeners()) {
-          assertEquals(createEventsSize, ((CqQueryTestListener)listener).getCreateEventCount());
-          assertEquals(updateEventsSize, ((CqQueryTestListener)listener).getUpdateEventCount());
+          assertEquals(createEventsSize, ((CqQueryTestListener) listener).getCreateEventCount());
+          assertEquals(updateEventsSize, ((CqQueryTestListener) listener).getUpdateEventCount());
         }
       } else {
         for (CqListener listener : cqQuery.getCqListeners()) {
-          assertEquals(0, ((CqQueryTestListener)listener).getTotalEventCount());
+          assertEquals(0, ((CqQueryTestListener) listener).getTotalEventCount());
         }
       }
       if (closeCache) {

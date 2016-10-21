@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal;
 
@@ -47,12 +43,12 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
 
   @After
   public void tearDown() {
-    ((RawLuceneRepositoryManager)repoManager).close();
+    ((RawLuceneRepositoryManager) repoManager).close();
   }
-  
+
   protected void createIndexAndRepoManager() {
     LuceneServiceImpl.luceneIndexFactory = new LuceneRawIndexFactory();
-    
+
     indexStats = Mockito.mock(LuceneIndexStats.class);
     indexForPR = Mockito.mock(LuceneRawIndex.class);
     when(indexForPR.getIndexStats()).thenReturn(indexStats);
@@ -62,12 +58,13 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     when(indexForPR.withPersistence()).thenReturn(true);
     repoManager = new RawLuceneRepositoryManager(indexForPR, serializer);
   }
-  
+
   @Test
   public void testIndexRepositoryFactoryShouldBeRaw() {
-    assertTrue(RawLuceneRepositoryManager.indexRepositoryFactory instanceof RawIndexRepositoryFactory);
+    assertTrue(
+        RawLuceneRepositoryManager.indexRepositoryFactory instanceof RawIndexRepositoryFactory);
   }
-  
+
   @Override
   protected void checkRepository(IndexRepositoryImpl repo0, int bucketId) {
     IndexWriter writer0 = repo0.getWriter();
@@ -86,11 +83,11 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     dataBuckets.put(id, mockBucket);
     return mockBucket;
   }
-  
+
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
     setUpMockBucket(0);
-    
+
     assertNotNull(repoManager.getRepository(userRegion, 0, null));
   }
 

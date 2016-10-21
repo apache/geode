@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -38,13 +36,11 @@ public class Invalidate70 extends Invalidate {
     return singleton;
   }
 
-  private Invalidate70() {
-  }
+  private Invalidate70() {}
 
   @Override
-  protected void writeReplyWithRefreshMetadata(Message origMsg,
-      ServerConnection servConn, PartitionedRegion pr,
-      byte nwHop, VersionTag versionTag) throws IOException {
+  protected void writeReplyWithRefreshMetadata(Message origMsg, ServerConnection servConn,
+      PartitionedRegion pr, byte nwHop, VersionTag versionTag) throws IOException {
     Message replyMsg = servConn.getReplyMessage();
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     replyMsg.setMessageType(MessageType.REPLY);
@@ -60,18 +56,18 @@ public class Invalidate70 extends Invalidate {
     if (versionTag != null) {
       replyMsg.addObjPart(versionTag);
     }
-    replyMsg.addBytesPart(new byte[]{pr.getMetadataVersion(), nwHop});
+    replyMsg.addBytesPart(new byte[] {pr.getMetadataVersion(), nwHop});
     pr.getPrStats().incPRMetaDataSentCount();
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl with REFRESH_METADAT tx: {}", servConn.getName(), origMsg.getTransactionId());
+      logger.trace("{}: rpl with REFRESH_METADAT tx: {}", servConn.getName(),
+          origMsg.getTransactionId());
     }
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection servConn,
-      VersionTag versionTag)
-  throws IOException {
+  protected void writeReply(Message origMsg, ServerConnection servConn, VersionTag versionTag)
+      throws IOException {
     Message replyMsg = servConn.getReplyMessage();
     servConn.getCache().getCancelCriterion().checkCancelInProgress(null);
     replyMsg.setMessageType(MessageType.REPLY);
@@ -97,7 +93,8 @@ public class Invalidate70 extends Invalidate {
     replyMsg.addBytesPart(OK_BYTES); // make old single-hop code happy by putting byte[]{0} here
     replyMsg.send(servConn);
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: rpl tx: {} parts={}", servConn.getName(), origMsg.getTransactionId(), replyMsg.getNumberOfParts());
+      logger.trace("{}: rpl tx: {} parts={}", servConn.getName(), origMsg.getTransactionId(),
+          replyMsg.getNumberOfParts());
     }
   }
 }

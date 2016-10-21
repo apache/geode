@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
@@ -27,25 +25,26 @@ import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 
-public class LeaveRequestMessage extends HighPriorityDistributionMessage
-  implements HasMemberID {
+public class LeaveRequestMessage extends HighPriorityDistributionMessage implements HasMemberID {
   private InternalDistributedMember memberID;
   private String reason;
-  
-  public LeaveRequestMessage(Collection<InternalDistributedMember> coords, InternalDistributedMember id, String reason) {
+
+  public LeaveRequestMessage(Collection<InternalDistributedMember> coords,
+      InternalDistributedMember id, String reason) {
     super();
     setRecipients(coords);
     this.memberID = id;
     this.reason = reason;
   }
-  
-  public LeaveRequestMessage(InternalDistributedMember coord, InternalDistributedMember id, String reason) {
+
+  public LeaveRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
+      String reason) {
     super();
     setRecipient(coord);
     this.memberID = id;
     this.reason = reason;
   }
-  
+
   public LeaveRequestMessage() {
     // no-arg constructor for serialization
   }
@@ -54,16 +53,16 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage
   public int getDSFID() {
     return LEAVE_REQUEST_MESSAGE;
   }
-  
+
   @Override
   public void process(DistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool"); 
+    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   public InternalDistributedMember getMemberID() {
     return memberID;
   }
-  
+
   public String getReason() {
     return reason;
   }
@@ -87,8 +86,7 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage
 
   @Override
   public String toString() {
-    return getShortClassName() + "(" + memberID
-        + "; reason=" + reason + ")";
+    return getShortClassName() + "(" + memberID + "; reason=" + reason + ")";
   }
 
 }

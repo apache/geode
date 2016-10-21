@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.util;
 
@@ -436,10 +434,12 @@ public class AutoBalancerJUnitTest {
     regions.add(mockR1);
     regions.add(mockR2);
 
-    final PRHARedundancyProvider mockRedundancyProviderR1 = mockContext.mock(PRHARedundancyProvider.class, "prhaR1");
+    final PRHARedundancyProvider mockRedundancyProviderR1 =
+        mockContext.mock(PRHARedundancyProvider.class, "prhaR1");
     final InternalPRInfo mockR1PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR1");
 
-    final PRHARedundancyProvider mockRedundancyProviderR2 = mockContext.mock(PRHARedundancyProvider.class, "prhaR2");
+    final PRHARedundancyProvider mockRedundancyProviderR2 =
+        mockContext.mock(PRHARedundancyProvider.class, "prhaR2");
     final InternalPRInfo mockR2PRInfo = mockContext.mock(InternalPRInfo.class, "prInforR2");
 
     mockContext.checking(new Expectations() {
@@ -459,10 +459,12 @@ public class AutoBalancerJUnitTest {
         oneOf(mockR2).getRedundancyProvider();
         will(returnValue(mockRedundancyProviderR2));
 
-        oneOf(mockRedundancyProviderR1).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
+        oneOf(mockRedundancyProviderR1).buildPartitionedRegionInfo(with(true),
+            with(any(LoadProbe.class)));
         will(returnValue(mockR1PRInfo));
 
-        oneOf(mockRedundancyProviderR2).buildPartitionedRegionInfo(with(true), with(any(LoadProbe.class)));
+        oneOf(mockRedundancyProviderR2).buildPartitionedRegionInfo(with(true),
+            with(any(LoadProbe.class)));
         will(returnValue(mockR2PRInfo));
       }
     });

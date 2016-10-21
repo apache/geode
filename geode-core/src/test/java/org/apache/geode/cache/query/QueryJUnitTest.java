@@ -1,26 +1,23 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /******
-* THIS FILE IS ENCODED IN UTF-8 IN ORDER TO TEST UNICODE IN FIELD NAMES.
-* THE ENCODING MUST BE SPECIFIED AS UTF-8 WHEN COMPILED
-*******/
+ * THIS FILE IS ENCODED IN UTF-8 IN ORDER TO TEST UNICODE IN FIELD NAMES. THE ENCODING MUST BE
+ * SPECIFIED AS UTF-8 WHEN COMPILED
+ *******/
 /*
- * QueryJUnitTest.java
- * JUnit based test
+ * QueryJUnitTest.java JUnit based test
  *
  * Created on March 8, 2005, 4:54 PM
  */
@@ -59,58 +56,58 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @FixMethodOrder(NAME_ASCENDING)
 @Category(IntegrationTest.class)
 public class QueryJUnitTest {
-  
+
   @Before
   public void setUp() throws java.lang.Exception {
     CacheUtils.startCache();
   }
-  
+
   @After
   public void tearDown() throws java.lang.Exception {
     CacheUtils.closeCache();
   }
-  
+
   @Test
   public void test000GetQueryString() {
     CacheUtils.log("testGetQueryString");
     String queryStr = "SELECT DISTINCT * FROM /root";
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
-    if(!queryStr.equals(q.getQueryString())){
+    if (!queryStr.equals(q.getQueryString())) {
       fail("Query.getQueryString() returns different query string");
     }
   }
-  
+
   @Test
   public void test001Execute() {
     CacheUtils.log("testExecute");
-    try{
+    try {
       Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
-      region.put("1",new Portfolio(1));
-      region.put("2",new Portfolio(0));
+      region.put("1", new Portfolio(1));
+      region.put("2", new Portfolio(0));
       String queryStr = "SELECT DISTINCT * FROM /Portfolios";
       Query q = CacheUtils.getQueryService().newQuery(queryStr);
-      SelectResults results = (SelectResults)q.execute();
+      SelectResults results = (SelectResults) q.execute();
       assertEquals(results.size(), 2);
-    }catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Exception during Query.execute");
     }
   }
-  
+
   @Test
   public void test002UnicodeInQuery() {
     CacheUtils.log("testUnicodeInQuery");
-    try{
+    try {
       Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
-      region.put("1",new Portfolio(1));
-      region.put("2",new Portfolio(0));
+      region.put("1", new Portfolio(1));
+      region.put("2", new Portfolio(0));
       String queryStr = "SELECT DISTINCT * FROM /Portfolios WHERE unicodeṤtring = 'ṤẐṶ'";
       Query q = CacheUtils.getQueryService().newQuery(queryStr);
-      SelectResults results = (SelectResults)q.execute();
+      SelectResults results = (SelectResults) q.execute();
       assertEquals(results.size(), 1);
-      Portfolio p = (Portfolio)results.iterator().next();
+      Portfolio p = (Portfolio) results.iterator().next();
       assertEquals(p.unicodeṤtring, "ṤẐṶ");
-    }catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Exception during Query.execute");
     }
@@ -119,95 +116,97 @@ public class QueryJUnitTest {
   @Test
   public void test003Compile() {
     CacheUtils.log("testCompile");
-    //fail("The test case is empty.");
+    // fail("The test case is empty.");
   }
-  
+
   @Test
   public void test004IsCompiled() {
     CacheUtils.log("testIsCompiled");
     String queryStr = "SELECT DISTINCT * FROM /root";
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
-    if(q.isCompiled())
+    if (q.isCompiled())
       fail("Query.isCompiled() returns true for non-compiled query");
   }
-    
+
   @Test
   public void test005GetStatistics() {
     CacheUtils.log("testGetStatistics");
     String queryStr = "SELECT DISTINCT * FROM /Portfolios where status='active'";
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
     QueryStatistics qst = q.getStatistics();
-    if(qst.getNumExecutions()!=0 && qst.getTotalExecutionTime()!=0){
+    if (qst.getNumExecutions() != 0 && qst.getTotalExecutionTime() != 0) {
       fail("QueryStatistics not initialized properly");
     }
-    try{
+    try {
       Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
-      CacheUtils.getQueryService().createIndex("testIndex", IndexType.FUNCTIONAL,
-                                         "status", "/Portfolios");
-      for(int i=0;i<10000;i++){
-        region.put(i+"",new Portfolio(i));
+      CacheUtils.getQueryService().createIndex("testIndex", IndexType.FUNCTIONAL, "status",
+          "/Portfolios");
+      for (int i = 0; i < 10000; i++) {
+        region.put(i + "", new Portfolio(i));
       }
       q.execute();
       qst = q.getStatistics();
-      if(qst.getNumExecutions() != 1) { // || qst.getTotalExecutionTime()==0){  // bruce - time based CachePerfStats are disabled by default
+      if (qst.getNumExecutions() != 1) { // || qst.getTotalExecutionTime()==0){ // bruce - time
+                                         // based CachePerfStats are disabled by default
         fail("QueryStatistics not updated.");
       }
-      
+
       for (int i = 0; i < 10; i++) {
         q.execute();
       }
-      
-    }
-    catch(Exception e){
+
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Exception during Query.execute");
     }
   }
-  
+
   @Test
   public void test006GetRegionsInQuery() {
-    
-    String queryStrs[] = new String[] {
-        "SELECT DISTINCT * FROM /Portfolios where status='active'",
-        "/Portfolios", "/Portfolios.values","/Portfolios.keys()","/Portfolios.entries(false)",
-        "null = null", "select distinct * from /Employees where not (select distinct * from collect).isEmpty",
-        "select distinct * from $2 where salary > $1","SELECT DISTINCT key: key, iD: entry.value.iD, secId: posnVal.secId  FROM /pos.entries entry, entry.value.positions.values posnVal  WHERE entry.value.\"type\" = 'type0' AND posnVal.secId = 'YHOO'",
+
+    String queryStrs[] = new String[] {"SELECT DISTINCT * FROM /Portfolios where status='active'",
+        "/Portfolios", "/Portfolios.values", "/Portfolios.keys()", "/Portfolios.entries(false)",
+        "null = null",
+        "select distinct * from /Employees where not (select distinct * from collect).isEmpty",
+        "select distinct * from $2 where salary > $1",
+        "SELECT DISTINCT key: key, iD: entry.value.iD, secId: posnVal.secId  FROM /pos.entries entry, entry.value.positions.values posnVal  WHERE entry.value.\"type\" = 'type0' AND posnVal.secId = 'YHOO'",
         "SELECT DISTINCT * FROM (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) WHERE pos.value.secId = 'IBM'",
         "SELECT DISTINCT * FROM /Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty",
         "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status",
         "Select distinct * from /Portfolios pf, /Portfolios2, /Portfolios3, /Data where pf.status='active'",
-        "select distinct * from /portfolios p, p.positions.values myPos, (select distinct * from /Employees x)  where myPos.secId = 'YHOO'",  
+        "select distinct * from /portfolios p, p.positions.values myPos, (select distinct * from /Employees x)  where myPos.secId = 'YHOO'",
         "select distinct * from /portfolios p, p.positions.values myPos, (select distinct * from /Employees x, /portfolios)  where myPos.secId = 'YHOO'",
         "select distinct * from /portfolios p, p.positions.values myPos, (select distinct * from /Employees x, /Portfolios)  where myPos.secId = 'YHOO'",
         "select distinct /Portfolios.size, key FROM /pos.entries",
         "select distinct /Portfolios2.size, key FROM /pos.entries WHERE (Select distinct * from /portfolios4, entries).size = 3",
-        
+
     };
-    String regions[][]= new String[][] {
-        {"/Portfolios"}, {"/Portfolios"},{"/Portfolios"},{"/Portfolios"},{"/Portfolios"},{}, {"/Employees"},
-        {"/Portfolios"}, {"/pos"}, {"/Portfolios"}, {"/Portfolios"}, {"/Portfolios"}, {"/Portfolios","/Portfolios2","/Portfolios3","/Data"},
-        {"/portfolios","/Employees"}, {"/portfolios","/Employees"}, {"/portfolios","/Employees","/Portfolios"},
+    String regions[][] = new String[][] {{"/Portfolios"}, {"/Portfolios"}, {"/Portfolios"},
+        {"/Portfolios"}, {"/Portfolios"}, {}, {"/Employees"}, {"/Portfolios"}, {"/pos"},
+        {"/Portfolios"}, {"/Portfolios"}, {"/Portfolios"},
+        {"/Portfolios", "/Portfolios2", "/Portfolios3", "/Data"}, {"/portfolios", "/Employees"},
+        {"/portfolios", "/Employees"}, {"/portfolios", "/Employees", "/Portfolios"},
         {"/Portfolios", "/pos"}, {"/Portfolios2", "/pos", "/portfolios4"}
-        
+
     };
-    
-    Object[] params = new Object[] {"", CacheUtils.createRegion("Portfolios", Portfolio.class) };
-    for(int i=0; i<queryStrs.length;++i) {
-       Query q = CacheUtils.getQueryService().newQuery(queryStrs[i]);
-      
-       Set set = ((DefaultQuery)q).getRegionsInQuery(params);
-       String qRegions[] = regions[i];
-       assertEquals("region names don't match in query #" + i + "(\"" + queryStrs[i] + "\"",
-                    new HashSet(Arrays.asList(qRegions)), set);
+
+    Object[] params = new Object[] {"", CacheUtils.createRegion("Portfolios", Portfolio.class)};
+    for (int i = 0; i < queryStrs.length; ++i) {
+      Query q = CacheUtils.getQueryService().newQuery(queryStrs[i]);
+
+      Set set = ((DefaultQuery) q).getRegionsInQuery(params);
+      String qRegions[] = regions[i];
+      assertEquals("region names don't match in query #" + i + "(\"" + queryStrs[i] + "\"",
+          new HashSet(Arrays.asList(qRegions)), set);
     }
-    DefaultQuery q = (DefaultQuery)CacheUtils.getQueryService().newQuery(queryStrs[0]);
-    
+    DefaultQuery q = (DefaultQuery) CacheUtils.getQueryService().newQuery(queryStrs[0]);
+
     Set set = q.getRegionsInQuery(params);
-    try{
+    try {
       set.add("test");
       fail("The set returned should not be modifiable");
-    }catch(Exception e) {     
-      //Expected
+    } catch (Exception e) {
+      // Expected
     }
   }
 
@@ -215,26 +214,26 @@ public class QueryJUnitTest {
   public void test007UndefinedResults() {
     CacheUtils.log("testQueryExceptionLogMessage");
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
-    region.put("1",new Portfolio(1));
-    region.put("2",new Portfolio(0));
+    region.put("1", new Portfolio(1));
+    region.put("2", new Portfolio(0));
     String queryStr = "SELECT DISTINCT * FROM /Portfolios.ketset";
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
     Object results = null;
-    
+
     try {
       results = q.execute();
     } catch (Exception e) {
       fail("Query execution failed " + e);
     }
-    assertEquals(0, ((SelectResults)results).size());
+    assertEquals(0, ((SelectResults) results).size());
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     AttributesFactory af = new AttributesFactory();
     af.setPartitionAttributes(paf.create());
 
     region = CacheUtils.createRegion("PortfoliosPR", af.create(), false);
-    region.put("1",new Portfolio(1));
-    region.put("2",new Portfolio(0));
+    region.put("1", new Portfolio(1));
+    region.put("2", new Portfolio(0));
     queryStr = "SELECT DISTINCT * FROM /PortfoliosPR.ketset";
     q = CacheUtils.getQueryService().newQuery(queryStr);
     try {
@@ -242,8 +241,8 @@ public class QueryJUnitTest {
     } catch (Exception e) {
       fail("Query execution failed " + e);
     }
-    assertEquals(0, ((SelectResults)results).size());
-  }  
+    assertEquals(0, ((SelectResults) results).size());
+  }
 
   @Test
   public void test008NullCollectionField() {
@@ -256,9 +255,8 @@ public class QueryJUnitTest {
       region.put("key-" + i, p);
     }
 
-    String queryStr = "select * from " + region.getFullPath()
-        + " p where p.positions = NULL ";
- 
+    String queryStr = "select * from " + region.getFullPath() + " p where p.positions = NULL ";
+
     Query q = CacheUtils.getQueryService().newQuery(queryStr);
     SelectResults sr = null;
     try {
@@ -284,8 +282,7 @@ public class QueryJUnitTest {
   public void testThreadSafetyOfCompiledSelectScopeId() throws Exception {
     try {
       Cache cache = CacheUtils.getCache();
-      RegionFactory<Integer, Portfolio> rf = cache
-          .createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory<Integer, Portfolio> rf = cache.createRegionFactory(RegionShortcut.PARTITION);
       Region r = rf.create("keyzset");
       for (int i = 0; i < 100; i++) {
         r.put(i, new Portfolio(i));
@@ -293,20 +290,20 @@ public class QueryJUnitTest {
       ScopeThreadingTestHook scopeIDTestHook = new ScopeThreadingTestHook(3);
       DefaultQuery.testHook = scopeIDTestHook;
       QueryService qs = cache.getQueryService();
-      Query q = qs
-          .newQuery("SELECT DISTINCT * FROM /keyzset.keySet key WHERE key.id > 0 AND key.id <= 0 ORDER BY key asc LIMIT $3");
-      Thread q1 = new Thread(new QueryRunnable(q, new Object[] { 10, 20, 10 }));
-      Thread q2 = new Thread(new QueryRunnable(q, new Object[] { 5, 10, 5 }));
-      Thread q3 = new Thread(new QueryRunnable(q, new Object[] { 2, 10, 8 }));
+      Query q = qs.newQuery(
+          "SELECT DISTINCT * FROM /keyzset.keySet key WHERE key.id > 0 AND key.id <= 0 ORDER BY key asc LIMIT $3");
+      Thread q1 = new Thread(new QueryRunnable(q, new Object[] {10, 20, 10}));
+      Thread q2 = new Thread(new QueryRunnable(q, new Object[] {5, 10, 5}));
+      Thread q3 = new Thread(new QueryRunnable(q, new Object[] {2, 10, 8}));
       q1.start();
       q2.start();
       q3.start();
       q1.join();
       q2.join();
       q3.join();
-      assertEquals("Exceptions were thrown due to DefaultQuery not being thread-safe", true, scopeIDTestHook.isOk());
-    }
-    finally {
+      assertEquals("Exceptions were thrown due to DefaultQuery not being thread-safe", true,
+          scopeIDTestHook.isOk());
+    } finally {
       DefaultQuery.testHook = null;
     }
   }

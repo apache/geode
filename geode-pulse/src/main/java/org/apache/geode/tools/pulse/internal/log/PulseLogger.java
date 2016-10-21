@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -35,16 +33,16 @@ import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 /**
  * Class PulseLogger
  * 
- * PulseLogger is the custom logger class for Pulse Web Application. It logs
- * messages to the file in custom format.
+ * PulseLogger is the custom logger class for Pulse Web Application. It logs messages to the file in
+ * custom format.
  * 
  * @since GemFire version 7.0.Beta
  */
 public class PulseLogger {
 
   // Pulse Application Log File
-  private static final String LOG_FILE_NAME = PulseConstants.PULSE_LOG_FILE_LOCATION
-      + "/" + PulseConstants.PULSE_LOG_FILE;
+  private static final String LOG_FILE_NAME =
+      PulseConstants.PULSE_LOG_FILE_LOCATION + "/" + PulseConstants.PULSE_LOG_FILE;
 
   // Date pattern to be used in log messages
   public static final String LOG_MESSAGE_DATE_PATTERN = "dd/MM/yyyy hh:mm:ss.SSS";
@@ -102,8 +100,7 @@ public class PulseLogger {
   /**
    * Class MessageFormatter
    * 
-   * MessageFormatter is the custom formatter class for formatting the log
-   * messages.
+   * MessageFormatter is the custom formatter class for formatting the log messages.
    * 
    * @since GemFire version 7.0.Beta 2012-09-23
    */

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.remote;
 
@@ -33,30 +31,29 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * An instruction to all members that they should forget 
- * about the persistent member described by this pattern.
- * TODO prpersist - This extends AdminRequest, but it doesn't
- * work with most of the admin paradigm, which is a request response
- * to a single member. Maybe we need to a new base class.
+ * An instruction to all members that they should forget about the persistent member described by
+ * this pattern. TODO prpersist - This extends AdminRequest, but it doesn't work with most of the
+ * admin paradigm, which is a request response to a single member. Maybe we need to a new base
+ * class.
  *
  */
 public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
   PersistentMemberPattern pattern;
   private boolean cancel;
-  
+
   public PrepareRevokePersistentIDRequest() {
-    
+
   }
-  
+
   public PrepareRevokePersistentIDRequest(PersistentMemberPattern pattern, boolean cancel) {
     this.pattern = pattern;
     this.cancel = cancel;
   }
-  
+
   public static void cancel(DM dm, PersistentMemberPattern pattern) {
     send(dm, pattern, true);
   }
-  
+
   public static void send(DM dm, PersistentMemberPattern pattern) {
     send(dm, pattern, false);
   }
@@ -64,17 +61,18 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
   private static void send(DM dm, PersistentMemberPattern pattern, boolean cancel) {
     Set recipients = dm.getOtherDistributionManagerIds();
     recipients.remove(dm.getId());
-    PrepareRevokePersistentIDRequest request = new PrepareRevokePersistentIDRequest(pattern, cancel);
+    PrepareRevokePersistentIDRequest request =
+        new PrepareRevokePersistentIDRequest(pattern, cancel);
     request.setRecipients(recipients);
-    
+
     AdminMultipleReplyProcessor replyProcessor = new AdminMultipleReplyProcessor(dm, recipients);
     request.msgId = replyProcessor.getProcessorId();
     dm.putOutgoing(request);
     try {
       replyProcessor.waitForReplies();
     } catch (ReplyException e) {
-      if(e.getCause() instanceof CancelException) {
-        //ignore
+      if (e.getCause() instanceof CancelException) {
+        // ignore
         return;
       }
       throw e;
@@ -82,18 +80,18 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
       e.printStackTrace();
     }
     request.setSender(dm.getId());
-    request.createResponse((DistributionManager)dm);
+    request.createResponse((DistributionManager) dm);
   }
-  
+
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    if(cache != null && !cache.isClosed()) {
+    if (cache != null && !cache.isClosed()) {
       PersistentMemberManager mm = cache.getPersistentMemberManager();
-      if(cancel) {
+      if (cancel) {
         mm.cancelRevoke(pattern);
       } else {
-        if(!mm.prepareRevoke(pattern, dm, getSender())) {
+        if (!mm.prepareRevoke(pattern, dm, getSender())) {
           throw new RevokeFailedException(
               LocalizedStrings.RevokeFailedException_Member_0_is_already_running_1
                   .toLocalizedString(dm.getId(), pattern));

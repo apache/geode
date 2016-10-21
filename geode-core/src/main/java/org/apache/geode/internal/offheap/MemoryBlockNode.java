@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.offheap;
 
@@ -28,36 +26,45 @@ import org.apache.geode.cache.CacheClosedException;
 public class MemoryBlockNode implements MemoryBlock {
   private final MemoryAllocatorImpl ma;
   private final MemoryBlock block;
+
   MemoryBlockNode(MemoryAllocatorImpl ma, MemoryBlock block) {
     this.ma = ma;
     this.block = block;
   }
+
   @Override
   public State getState() {
     return this.block.getState();
   }
+
   @Override
   public long getAddress() {
     return this.block.getAddress();
   }
+
   @Override
   public int getBlockSize() {
     return this.block.getBlockSize();
   }
+
   @Override
   public MemoryBlock getNextBlock() {
     return this.ma.getMemoryInspector().getBlockAfter(this);
   }
+
   public int getSlabId() {
     return this.ma.findSlab(getAddress());
   }
+
   @Override
   public int getFreeListId() {
     return this.block.getFreeListId();
   }
+
   public int getRefCount() {
     return this.block.getRefCount(); // delegate to fix GEODE-489
   }
+
   public String getDataType() {
     if (this.block.getDataType() != null) {
       return this.block.getDataType();
@@ -65,37 +72,40 @@ public class MemoryBlockNode implements MemoryBlock {
     if (!isSerialized()) {
       // byte array
       if (isCompressed()) {
-        return "compressed byte[" + ((OffHeapStoredObject)this.block).getDataSize() + "]";
+        return "compressed byte[" + ((OffHeapStoredObject) this.block).getDataSize() + "]";
       } else {
-        return "byte[" + ((OffHeapStoredObject)this.block).getDataSize() + "]";
+        return "byte[" + ((OffHeapStoredObject) this.block).getDataSize() + "]";
       }
     } else if (isCompressed()) {
-      return "compressed object of size " + ((OffHeapStoredObject)this.block).getDataSize();
+      return "compressed object of size " + ((OffHeapStoredObject) this.block).getDataSize();
     }
-    //Object obj = EntryEventImpl.deserialize(((Chunk)this.block).getRawBytes());
-    byte[] bytes = ((OffHeapStoredObject)this.block).getRawBytes();
+    // Object obj = EntryEventImpl.deserialize(((Chunk)this.block).getRawBytes());
+    byte[] bytes = ((OffHeapStoredObject) this.block).getRawBytes();
     return DataType.getDataType(bytes);
   }
+
   public boolean isSerialized() {
     return this.block.isSerialized();
   }
+
   public boolean isCompressed() {
     return this.block.isCompressed();
   }
+
   @Override
   public Object getDataValue() {
     String dataType = getDataType();
     if (dataType == null || dataType.equals("N/A")) {
       return null;
     } else if (isCompressed()) {
-      return ((OffHeapStoredObject)this.block).getCompressedBytes();
+      return ((OffHeapStoredObject) this.block).getCompressedBytes();
     } else if (!isSerialized()) {
       // byte array
-      //return "byte[" + ((Chunk)this.block).getDataSize() + "]";
-      return ((OffHeapStoredObject)this.block).getRawBytes();
+      // return "byte[" + ((Chunk)this.block).getDataSize() + "]";
+      return ((OffHeapStoredObject) this.block).getRawBytes();
     } else {
       try {
-        byte[] bytes = ((OffHeapStoredObject)this.block).getRawBytes();
+        byte[] bytes = ((OffHeapStoredObject) this.block).getRawBytes();
         return DataSerializer.readObject(DataType.getDataInput(bytes));
       } catch (IOException e) {
         e.printStackTrace();
@@ -109,6 +119,7 @@ public class MemoryBlockNode implements MemoryBlock {
       }
     }
   }
+
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(MemoryBlock.class.getSimpleName());
@@ -146,15 +157,15 @@ public class MemoryBlockNode implements MemoryBlock {
     sb.append("}");
     return sb.toString();
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (o instanceof MemoryBlockNode) {
-      o = ((MemoryBlockNode)o).block;
+      o = ((MemoryBlockNode) o).block;
     }
     return this.block.equals(o);
   }
-  
+
   @Override
   public int hashCode() {
     return this.block.hashCode();

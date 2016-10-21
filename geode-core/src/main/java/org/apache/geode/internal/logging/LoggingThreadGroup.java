@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.logging;
 
@@ -30,11 +28,9 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.i18n.StringId;
 
 /**
- * A <code>ThreadGroup</code> that logs all {@linkplain
- * #uncaughtException uncaught exceptions} to a GemFire
- * <code>LogWriterI18n</code>.   It also keeps track of the uncaught
- * exceptions that were thrown by its threads.  This is comes in
- * handy when a thread fails to initialize properly (see bug
+ * A <code>ThreadGroup</code> that logs all {@linkplain #uncaughtException uncaught exceptions} to a
+ * GemFire <code>LogWriterI18n</code>. It also keeps track of the uncaught exceptions that were
+ * thrown by its threads. This is comes in handy when a thread fails to initialize properly (see bug
  * 32550).
  *
  * @see LoggingThreadGroup#createThreadGroup
@@ -44,44 +40,41 @@ import org.apache.geode.i18n.StringId;
 public class LoggingThreadGroup extends ThreadGroup {
 
   /** A "local" log writer that logs exceptions to standard error */
-  private static final StandardErrorPrinter stderr = new StandardErrorPrinter(InternalLogWriter.ALL_LEVEL);
-  
+  private static final StandardErrorPrinter stderr =
+      new StandardErrorPrinter(InternalLogWriter.ALL_LEVEL);
+
   /** A set of all created LoggingThreadGroups */
-  private static final Collection<LoggingThreadGroup> loggingThreadGroups = new ArrayList<LoggingThreadGroup>();
+  private static final Collection<LoggingThreadGroup> loggingThreadGroups =
+      new ArrayList<LoggingThreadGroup>();
 
   /**
-   * Returns a <code>ThreadGroup</code> whose {@link
-   * ThreadGroup#uncaughtException} method logs to both {#link
-   * System#err} and the given <code>InternalLogWriter</code>.
+   * Returns a <code>ThreadGroup</code> whose {@link ThreadGroup#uncaughtException} method logs to
+   * both {#link System#err} and the given <code>InternalLogWriter</code>.
    *
-   * @param name
-   *        The name of the <code>ThreadGroup</code>
+   * @param name The name of the <code>ThreadGroup</code>
    */
   public static LoggingThreadGroup createThreadGroup(final String name) {
     return createThreadGroup(name, (Logger) null);
   }
-  
+
   /**
-   * Returns a <code>ThreadGroup</code> whose {@link
-   * ThreadGroup#uncaughtException} method logs to both {#link
-   * System#err} and the given <code>InternalLogWriter</code>.
+   * Returns a <code>ThreadGroup</code> whose {@link ThreadGroup#uncaughtException} method logs to
+   * both {#link System#err} and the given <code>InternalLogWriter</code>.
    *
-   * @param name
-   *        The name of the <code>ThreadGroup</code>
-   * @param logWriter
-   *        A <code>InternalLogWriter</code> to log uncaught exceptions to.  It
-   *        is okay for this argument to be <code>null</code>.
+   * @param name The name of the <code>ThreadGroup</code>
+   * @param logWriter A <code>InternalLogWriter</code> to log uncaught exceptions to. It is okay for
+   *        this argument to be <code>null</code>.
    *
-   * author David Whitlock
+   *        author David Whitlock
    * @since GemFire 3.0
    */
   public static LoggingThreadGroup createThreadGroup(final String name,
-                                                     final InternalLogWriter logWriter) {
+      final InternalLogWriter logWriter) {
     // Cache the LoggingThreadGroups so that we don't create a
     // gazillion of them.
     LoggingThreadGroup group = null;
     synchronized (loggingThreadGroups) {
-      for (Iterator<LoggingThreadGroup> iter = loggingThreadGroups.iterator(); iter.hasNext(); ) {
+      for (Iterator<LoggingThreadGroup> iter = loggingThreadGroups.iterator(); iter.hasNext();) {
 
         LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
         if (group2.isDestroyed()) {
@@ -93,8 +86,8 @@ public class LoggingThreadGroup extends ThreadGroup {
         if (name.equals(group2.getName())) {
           // We already have one!
           // Change the underlying logger to point to new one (creating new
-          //  thread groups for different loggers leaks groups for repeated
-          //  connect/disconnects as in dunits for example)
+          // thread groups for different loggers leaks groups for repeated
+          // connect/disconnects as in dunits for example)
           if (logWriter != group2.logWriter) {
             group2.logWriter = logWriter;
           }
@@ -116,26 +109,22 @@ public class LoggingThreadGroup extends ThreadGroup {
   }
 
   /**
-   * Returns a <code>ThreadGroup</code> whose {@link
-   * ThreadGroup#uncaughtException} method logs to both {#link
-   * System#err} and the given <code>InternalLogWriter</code>.
+   * Returns a <code>ThreadGroup</code> whose {@link ThreadGroup#uncaughtException} method logs to
+   * both {#link System#err} and the given <code>InternalLogWriter</code>.
    *
-   * @param name
-   *        The name of the <code>ThreadGroup</code>
-   * @param logger
-   *        A <code>InternalLogWriter</code> to log uncaught exceptions to.  It
-   *        is okay for this argument to be <code>null</code>.
+   * @param name The name of the <code>ThreadGroup</code>
+   * @param logger A <code>InternalLogWriter</code> to log uncaught exceptions to. It is okay for
+   *        this argument to be <code>null</code>.
    *
-   * author David Whitlock
+   *        author David Whitlock
    * @since GemFire 3.0
    */
-  public static LoggingThreadGroup createThreadGroup(final String name,
-                                                     final Logger logger) {
+  public static LoggingThreadGroup createThreadGroup(final String name, final Logger logger) {
     // Cache the LoggingThreadGroups so that we don't create a
     // gazillion of them.
     LoggingThreadGroup group = null;
     synchronized (loggingThreadGroups) {
-      for (Iterator<LoggingThreadGroup> iter = loggingThreadGroups.iterator(); iter.hasNext(); ) {
+      for (Iterator<LoggingThreadGroup> iter = loggingThreadGroups.iterator(); iter.hasNext();) {
 
         LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
         if (group2.isDestroyed()) {
@@ -147,8 +136,8 @@ public class LoggingThreadGroup extends ThreadGroup {
         if (name.equals(group2.getName())) {
           // We already have one!
           // Change the underlying logger to point to new one (creating new
-          //  thread groups for different loggers leaks groups for repeated
-          //  connect/disconnects as in dunits for example)
+          // thread groups for different loggers leaks groups for repeated
+          // connect/disconnects as in dunits for example)
           if (logger != group2.logger) {
             group2.logger = logger;
           }
@@ -169,37 +158,35 @@ public class LoggingThreadGroup extends ThreadGroup {
     return group;
   }
 
-//  /**
-//   * @deprecated Only for use by hydra for backwards compatability reasons.
-//   * Returns a <code>ThreadGroup</code> whose {@link
-//   * ThreadGroup#uncaughtException} method logs to both {#link
-//   * System#err} and the given <code>LogWriterI18n</code>.
-//   *
-//   * @param name
-//   *        The name of the <code>ThreadGroup</code>
-//   * @param logger
-//   *        A <code>LogWriter</code> to log uncaught exceptions to.  It
-//   *        is okay for this argument to be <code>null</code>.
-//   *
-//   * author kbanks 
-//   * @since GemFire 6.0
-//   */
-//  @Deprecated public static LoggingThreadGroup createThreadGroup(final String name,
-//                                                                 final LogWriter logger) {
-//    return createThreadGroup(name,
-//        logger != null ? logger.convertToLogWriterI18n() : null);
-//  }
+  // /**
+  // * @deprecated Only for use by hydra for backwards compatability reasons.
+  // * Returns a <code>ThreadGroup</code> whose {@link
+  // * ThreadGroup#uncaughtException} method logs to both {#link
+  // * System#err} and the given <code>LogWriterI18n</code>.
+  // *
+  // * @param name
+  // * The name of the <code>ThreadGroup</code>
+  // * @param logger
+  // * A <code>LogWriter</code> to log uncaught exceptions to. It
+  // * is okay for this argument to be <code>null</code>.
+  // *
+  // * author kbanks
+  // * @since GemFire 6.0
+  // */
+  // @Deprecated public static LoggingThreadGroup createThreadGroup(final String name,
+  // final LogWriter logger) {
+  // return createThreadGroup(name,
+  // logger != null ? logger.convertToLogWriterI18n() : null);
+  // }
 
   public static void cleanUpThreadGroups() {
     synchronized (loggingThreadGroups) {
       LoggingThreadGroup group;
       Iterator<?> itr = loggingThreadGroups.iterator();
       while (itr.hasNext()) {
-        group = (LoggingThreadGroup)itr.next();
-        if (!group.getName().equals(
-            InternalDistributedSystem.SHUTDOWN_HOOK_NAME)
-            && !group.getName()
-                .equals("GemFireConnectionFactory Shutdown Hook")) {
+        group = (LoggingThreadGroup) itr.next();
+        if (!group.getName().equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME)
+            && !group.getName().equals("GemFireConnectionFactory Shutdown Hook")) {
           group.cleanup();
         }
       }
@@ -214,8 +201,8 @@ public class LoggingThreadGroup extends ThreadGroup {
    */
   public static ThreadGroup getThreadGroup(final String threadGroupName) {
     synchronized (loggingThreadGroups) {
-      for (Object object: loggingThreadGroups) {
-        LoggingThreadGroup threadGroup = (LoggingThreadGroup)object;
+      for (Object object : loggingThreadGroups) {
+        LoggingThreadGroup threadGroup = (LoggingThreadGroup) object;
         if (threadGroup.getName().equals(threadGroupName)) {
           return threadGroup;
         }
@@ -223,49 +210,46 @@ public class LoggingThreadGroup extends ThreadGroup {
       return null;
     }
   }
-  
-  /** A log writer that the user has specified for logging uncaught
-   * exceptions. */
+
+  /**
+   * A log writer that the user has specified for logging uncaught exceptions.
+   */
   protected volatile InternalLogWriter logWriter;
 
-  /** A logger that the user has specified for logging uncaught
-   * exceptions. */
+  /**
+   * A logger that the user has specified for logging uncaught exceptions.
+   */
   protected volatile Logger logger;
 
-  /** The count uncaught exceptions that were thrown by threads in this
-   * thread group. */
+  /**
+   * The count uncaught exceptions that were thrown by threads in this thread group.
+   */
   private long uncaughtExceptionsCount;
 
   /**
-   * Creates a new <code>LoggingThreadGroup</code> that logs
-   * uncaught exceptions to the given log writer.
+   * Creates a new <code>LoggingThreadGroup</code> that logs uncaught exceptions to the given log
+   * writer.
    *
-   * @param name
-   *        The name of the thread group
-   * @param logWriter
-   *        A logWriter to which uncaught exceptions are logged.  May
-   *        be <code>null</code>.
+   * @param name The name of the thread group
+   * @param logWriter A logWriter to which uncaught exceptions are logged. May be <code>null</code>.
    */
   LoggingThreadGroup(final String name, final InternalLogWriter logWriter) {
     super(name);
     this.logWriter = logWriter;
   }
-  
+
   /**
-   * Creates a new <code>LoggingThreadGroup</code> that logs
-   * uncaught exceptions to the given logger.
+   * Creates a new <code>LoggingThreadGroup</code> that logs uncaught exceptions to the given
+   * logger.
    *
-   * @param name
-   *        The name of the thread group
-   * @param logger
-   *        A logger to which uncaught exceptions are logged.  May
-   *        be <code>null</code>.
+   * @param name The name of the thread group
+   * @param logger A logger to which uncaught exceptions are logged. May be <code>null</code>.
    */
   LoggingThreadGroup(final String name, final Logger logger) {
     super(name);
     this.logger = logger;
   }
-  
+
   private Object dispatchLock = new Object();
 
   /**
@@ -273,17 +257,17 @@ public class LoggingThreadGroup extends ThreadGroup {
    */
   @Override
   public void uncaughtException(final Thread t, final Throwable ex) {
-    synchronized(this.dispatchLock) {
+    synchronized (this.dispatchLock) {
       if (ex instanceof VirtualMachineError) {
-        SystemFailure.setFailure((VirtualMachineError)ex); // don't throw
+        SystemFailure.setFailure((VirtualMachineError) ex); // don't throw
       }
       // Solution to treat the shutdown hook error as a special case.
       // Do not change the hook's thread name without also changing it here.
-      String threadName = t.getName();  
-      if ((ex instanceof NoClassDefFoundError) 
-          && (threadName.equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME)))
-      {
-        final StringId msg = LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1;
+      String threadName = t.getName();
+      if ((ex instanceof NoClassDefFoundError)
+          && (threadName.equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
+        final StringId msg =
+            LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1;
         final Object[] msgArgs = new Object[] {t, ex.getLocalizedMessage()};
         stderr.info(msg, msgArgs);
         if (this.logger != null) {
@@ -292,19 +276,21 @@ public class LoggingThreadGroup extends ThreadGroup {
         if (this.logWriter != null) {
           this.logWriter.info(msg, msgArgs);
         }
-      } else { 
+      } else {
         stderr.severe(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t, ex);
         if (this.logger != null) {
-          this.logger.fatal(LocalizedMessage.create(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t), ex);
+          this.logger.fatal(
+              LocalizedMessage.create(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t), ex);
         }
         if (this.logWriter != null) {
           this.logWriter.severe(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t, ex);
         }
       }
-      //if (!(ex instanceof RuntimeException) && (ex instanceof Exception)) {
+      // if (!(ex instanceof RuntimeException) && (ex instanceof Exception)) {
       // something's fishy - checked exceptions shouldn't get here
-      //  this.logger.severe("stack trace showing origin of uncaught checked exception", new Exception("stack trace"));
-      //}
+      // this.logger.severe("stack trace showing origin of uncaught checked exception", new
+      // Exception("stack trace"));
+      // }
       this.uncaughtExceptionsCount++;
     }
   }
@@ -314,24 +300,23 @@ public class LoggingThreadGroup extends ThreadGroup {
    * clear number of uncaught exceptions
    */
   public void clearUncaughtExceptionsCount() {
-    synchronized(this.dispatchLock) {
+    synchronized (this.dispatchLock) {
       this.uncaughtExceptionsCount = 0;
     }
   }
 
   /**
-   * Returns the number of uncaught exceptions that occurred in threads in
-   * this thread group.
+   * Returns the number of uncaught exceptions that occurred in threads in this thread group.
    */
   public long getUncaughtExceptionsCount() {
-    synchronized(this.dispatchLock) {
+    synchronized (this.dispatchLock) {
       return uncaughtExceptionsCount;
     }
   }
-  
+
   /**
-   * clean up the threadgroup, releasing resources that could be problematic
-   * (bug 35388)
+   * clean up the threadgroup, releasing resources that could be problematic (bug 35388)
+   * 
    * @since GemFire 4.2.3
    */
   public synchronized void cleanup() {

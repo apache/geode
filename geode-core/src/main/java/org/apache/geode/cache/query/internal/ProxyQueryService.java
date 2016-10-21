@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -58,7 +56,7 @@ import org.apache.geode.internal.logging.LogService;
 public class ProxyQueryService implements QueryService {
   private static final Logger logger = LogService.getLogger();
 
-  ProxyCache   proxyCache;
+  ProxyCache proxyCache;
   QueryService realQueryService;
   List<String> cqNames = new ArrayList<String>();
 
@@ -74,8 +72,8 @@ public class ProxyQueryService implements QueryService {
   public void closeCqs(boolean keepAlive) {
     preOp();
     try {
-      ((DefaultQueryService)realQueryService).getCqService().closeAllCqs(
-          !keepAlive, Arrays.asList(this.getCqs()), keepAlive);
+      ((DefaultQueryService) realQueryService).getCqService().closeAllCqs(!keepAlive,
+          Arrays.asList(this.getCqs()), keepAlive);
       this.cqNames.clear();
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
@@ -83,60 +81,51 @@ public class ProxyQueryService implements QueryService {
       }
     }
   }
-  
-  public Index createHashIndex(String indexName, String indexedExpression,
-      String fromClause) throws IndexInvalidException,
-      IndexNameConflictException, IndexExistsException,
-      RegionNotFoundException, UnsupportedOperationException {
-    throw new UnsupportedOperationException(
-        "Index creation on the server is not supported from the client.");
-  }
-  
-  public Index createHashIndex(String indexName, String indexedExpression,
-      String fromClause, String imports) throws IndexInvalidException,
-      IndexNameConflictException, IndexExistsException,
+
+  public Index createHashIndex(String indexName, String indexedExpression, String fromClause)
+      throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
       RegionNotFoundException, UnsupportedOperationException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
-  public Index createIndex(String indexName, IndexType indexType,
-      String indexedExpression, String fromClause)
-      throws IndexInvalidException, IndexNameConflictException,
-      IndexExistsException, RegionNotFoundException,
-      UnsupportedOperationException {
+  public Index createHashIndex(String indexName, String indexedExpression, String fromClause,
+      String imports) throws IndexInvalidException, IndexNameConflictException,
+      IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
-  public Index createIndex(String indexName, IndexType indexType,
-      String indexedExpression, String fromClause, String imports)
-      throws IndexInvalidException, IndexNameConflictException,
-      IndexExistsException, RegionNotFoundException,
-      UnsupportedOperationException {
+  public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
+      String fromClause) throws IndexInvalidException, IndexNameConflictException,
+      IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
-  public Index createIndex(String indexName, String indexedExpression,
-      String fromClause) throws IndexInvalidException,
-      IndexNameConflictException, IndexExistsException,
+  public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
+      String fromClause, String imports) throws IndexInvalidException, IndexNameConflictException,
+      IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
+    throw new UnsupportedOperationException(
+        "Index creation on the server is not supported from the client.");
+  }
+
+  public Index createIndex(String indexName, String indexedExpression, String fromClause)
+      throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
       RegionNotFoundException, UnsupportedOperationException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
-  public Index createIndex(String indexName, String indexedExpression,
-      String fromClause, String imports) throws IndexInvalidException,
-      IndexNameConflictException, IndexExistsException,
-      RegionNotFoundException, UnsupportedOperationException {
+  public Index createIndex(String indexName, String indexedExpression, String fromClause,
+      String imports) throws IndexInvalidException, IndexNameConflictException,
+      IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
-  public Index createKeyIndex(String indexName, String indexedExpression,
-      String fromClause) throws IndexInvalidException,
-      IndexNameConflictException, IndexExistsException,
+  public Index createKeyIndex(String indexName, String indexedExpression, String fromClause)
+      throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
       RegionNotFoundException, UnsupportedOperationException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
@@ -144,36 +133,36 @@ public class ProxyQueryService implements QueryService {
 
 
   @Override
-  public void defineKeyIndex(String indexName, String indexedExpression,
-      String fromClause) throws RegionNotFoundException {
+  public void defineKeyIndex(String indexName, String indexedExpression, String fromClause)
+      throws RegionNotFoundException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
   @Override
-  public void defineHashIndex(String indexName, String indexedExpression,
-      String regionPath) throws RegionNotFoundException {
+  public void defineHashIndex(String indexName, String indexedExpression, String regionPath)
+      throws RegionNotFoundException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
   @Override
-  public void defineHashIndex(String indexName, String indexedExpression,
-      String regionPath, String imports) throws RegionNotFoundException {
+  public void defineHashIndex(String indexName, String indexedExpression, String regionPath,
+      String imports) throws RegionNotFoundException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
   @Override
-  public void defineIndex(String indexName, String indexedExpression,
-      String regionPath) throws RegionNotFoundException {
+  public void defineIndex(String indexName, String indexedExpression, String regionPath)
+      throws RegionNotFoundException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
 
   @Override
-  public void defineIndex(String indexName, String indexedExpression,
-      String regionPath, String imports) throws RegionNotFoundException {
+  public void defineIndex(String indexName, String indexedExpression, String regionPath,
+      String imports) throws RegionNotFoundException {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
@@ -183,7 +172,7 @@ public class ProxyQueryService implements QueryService {
     throw new UnsupportedOperationException(
         "Index creation on the server is not supported from the client.");
   }
-  
+
   @Override
   public boolean clearDefinedIndexes() {
     throw new UnsupportedOperationException(
@@ -193,8 +182,8 @@ public class ProxyQueryService implements QueryService {
   public void executeCqs() throws CqException {
     preOp();
     try {
-      ((DefaultQueryService)realQueryService).getCqService().executeCqs(
-          Arrays.asList(this.getCqs()));
+      ((DefaultQueryService) realQueryService).getCqService()
+          .executeCqs(Arrays.asList(this.getCqs()));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to execute cqs. Error: {}", cqe.getMessage(), cqe);
@@ -205,11 +194,12 @@ public class ProxyQueryService implements QueryService {
   public void executeCqs(String regionName) throws CqException {
     preOp();
     try {
-      ((DefaultQueryService)realQueryService).getCqService().executeCqs(
-          Arrays.asList(this.getCqs(regionName)));
+      ((DefaultQueryService) realQueryService).getCqService()
+          .executeCqs(Arrays.asList(this.getCqs(regionName)));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Unable to execute cqs on the specified region. Error: {}", cqe.getMessage(), cqe);
+        logger.debug("Unable to execute cqs on the specified region. Error: {}", cqe.getMessage(),
+            cqe);
       }
     }
   }
@@ -233,8 +223,7 @@ public class ProxyQueryService implements QueryService {
     try {
       ArrayList<InternalCqQuery> cqList = new ArrayList<InternalCqQuery>();
       for (String name : this.cqNames) {
-        cqList.add(((DefaultQueryService)realQueryService).getCqService()
-            .getCq(name));
+        cqList.add(((DefaultQueryService) realQueryService).getCqService().getCq(name));
       }
       cqs = new ClientCQ[cqList.size()];
       cqList.toArray(cqs);
@@ -251,8 +240,7 @@ public class ProxyQueryService implements QueryService {
     Collection<? extends InternalCqQuery> cqs = null;
     try {
       ArrayList<CqQuery> cqList = new ArrayList<CqQuery>();
-      cqs = ((DefaultQueryService)realQueryService).getCqService()
-          .getAllCqs(regionName);
+      cqs = ((DefaultQueryService) realQueryService).getCqService().getAllCqs(regionName);
       for (InternalCqQuery cq : cqs) {
         if (this.cqNames.contains(cq.getName())) {
           cqList.add((CqQuery) cq);
@@ -294,9 +282,8 @@ public class ProxyQueryService implements QueryService {
     preOp(true);
     ClientCQ cq = null;
     try {
-      cq = ((DefaultQueryService)realQueryService).getCqService()
-          .newCq(null, queryString, cqAttributes,
-              ((DefaultQueryService)realQueryService).getPool(), false);
+      cq = ((DefaultQueryService) realQueryService).getCqService().newCq(null, queryString,
+          cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false);
       cq.setProxyCache(this.proxyCache);
       this.cqNames.add(cq.getName());
     } catch (CqExistsException cqe) {
@@ -310,14 +297,13 @@ public class ProxyQueryService implements QueryService {
     return cq;
   }
 
-  public CqQuery newCq(String queryString, CqAttributes cqAttributes,
-      boolean isDurable) throws QueryInvalidException, CqException {
+  public CqQuery newCq(String queryString, CqAttributes cqAttributes, boolean isDurable)
+      throws QueryInvalidException, CqException {
     preOp(true);
     ClientCQ cq = null;
     try {
-      cq = ((DefaultQueryService)realQueryService).getCqService()
-          .newCq(null, queryString, cqAttributes,
-              ((DefaultQueryService)realQueryService).getPool(), isDurable);
+      cq = ((DefaultQueryService) realQueryService).getCqService().newCq(null, queryString,
+          cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable);
       cq.setProxyCache(this.proxyCache);
       this.cqNames.add(cq.getName());
     } catch (CqExistsException cqe) {
@@ -331,19 +317,16 @@ public class ProxyQueryService implements QueryService {
     return cq;
   }
 
-  public CqQuery newCq(String cqName, String queryString,
-      CqAttributes cqAttributes) throws QueryInvalidException,
-      CqExistsException, CqException {
+  public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes)
+      throws QueryInvalidException, CqExistsException, CqException {
     preOp(true);
     try {
       if (cqName == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL
-                .toLocalizedString());
+            LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
       }
-      ClientCQ cq = ((DefaultQueryService)realQueryService)
-          .getCqService().newCq(cqName, queryString, cqAttributes,
-              ((DefaultQueryService)realQueryService).getPool(), false);
+      ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
+          queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false);
       cq.setProxyCache(proxyCache);
       this.cqNames.add(cq.getName());
       return cq;
@@ -352,20 +335,16 @@ public class ProxyQueryService implements QueryService {
     }
   }
 
-  public CqQuery newCq(String cqName, String queryString,
-      CqAttributes cqAttributes, boolean isDurable)
-      throws QueryInvalidException, CqExistsException, CqException {
+  public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes,
+      boolean isDurable) throws QueryInvalidException, CqExistsException, CqException {
     preOp(true);
     try {
       if (cqName == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL
-                .toLocalizedString());
+            LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
       }
-      ClientCQ cq = ((DefaultQueryService)realQueryService)
-          .getCqService().newCq(cqName, queryString, cqAttributes,
-              ((DefaultQueryService)realQueryService).getPool(),
-              isDurable);
+      ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
+          queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable);
       cq.setProxyCache(proxyCache);
       this.cqNames.add(cq.getName());
       return cq;
@@ -376,8 +355,7 @@ public class ProxyQueryService implements QueryService {
 
   public Query newQuery(String queryString) {
     preOp();
-    return ((DefaultQueryService)realQueryService).newQuery(queryString,
-        this.proxyCache);
+    return ((DefaultQueryService) realQueryService).newQuery(queryString, this.proxyCache);
   }
 
   public void removeIndex(Index index) {
@@ -398,8 +376,7 @@ public class ProxyQueryService implements QueryService {
   public void stopCqs() throws CqException {
     preOp();
     try {
-      ((DefaultQueryService)realQueryService).getCqService().stopCqs(
-          Arrays.asList(this.getCqs()));
+      ((DefaultQueryService) realQueryService).getCqService().stopCqs(Arrays.asList(this.getCqs()));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to stop all CQs. Error: {}", cqe.getMessage(), cqe);
@@ -410,22 +387,24 @@ public class ProxyQueryService implements QueryService {
   public void stopCqs(String regionName) throws CqException {
     preOp();
     try {
-      ((DefaultQueryService)realQueryService).getCqService().stopCqs(
-          Arrays.asList(this.getCqs(regionName)));
+      ((DefaultQueryService) realQueryService).getCqService()
+          .stopCqs(Arrays.asList(this.getCqs(regionName)));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Unable to stop cqs on the specified region. Error: {}", cqe.getMessage(), cqe);
+        logger.debug("Unable to stop cqs on the specified region. Error: {}", cqe.getMessage(),
+            cqe);
       }
     }
   }
-  
+
   public List<String> getAllDurableCqsFromServer() throws CqException {
     preOp();
     try {
-      ((DefaultQueryService)realQueryService).getAllDurableCqsFromServer();
+      ((DefaultQueryService) realQueryService).getAllDurableCqsFromServer();
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Unable to get all durablec client cqs on the specified region. Error: {}", cqe.getMessage(), cqe);
+        logger.debug("Unable to get all durablec client cqs on the specified region. Error: {}",
+            cqe.getMessage(), cqe);
       }
     }
     return Collections.EMPTY_LIST;

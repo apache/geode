@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  *
@@ -50,7 +48,7 @@ public class CreateRegion extends BaseCommand {
     // bserverStats.incLong(readDestroyRequestTimeId,
     // DistributionStats.getStatTime() - start);
     // bserverStats.incInt(destroyRequestsId, 1);
-    //    start = DistributionStats.getStatTime();
+    // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
     Part parentRegionNamePart = msg.getPart(0);
     String parentRegionName = parentRegionNamePart.getString();
@@ -59,22 +57,30 @@ public class CreateRegion extends BaseCommand {
     regionName = regionNamePart.getString();
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received create region request ({} bytes) from {} for parent region {} region {}", servConn.getName(), msg
-        .getPayloadLength(), servConn.getSocketString(), parentRegionName, regionName);
+      logger.debug(
+          "{}: Received create region request ({} bytes) from {} for parent region {} region {}",
+          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), parentRegionName,
+          regionName);
     }
 
     // Process the create region request
     if (parentRegionName == null || regionName == null) {
       String errMessage = "";
       if (parentRegionName == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.CreateRegion_0_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL, servConn
-          .getName()));
-        errMessage = LocalizedStrings.CreateRegion_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL.toLocalizedString();
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.CreateRegion_0_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL,
+            servConn.getName()));
+        errMessage =
+            LocalizedStrings.CreateRegion_THE_INPUT_PARENT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL
+                .toLocalizedString();
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.CreateRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL, servConn
-          .getName()));
-        errMessage = LocalizedStrings.CreateRegion_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL.toLocalizedString();
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.CreateRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL,
+            servConn.getName()));
+        errMessage =
+            LocalizedStrings.CreateRegion_THE_INPUT_REGION_NAME_FOR_THE_CREATE_REGION_REQUEST_IS_NULL
+                .toLocalizedString();
       }
       writeErrorResponse(msg, MessageType.CREATE_REGION_DATA_ERROR, errMessage, servConn);
       servConn.setAsTrue(RESPONDED);
@@ -83,7 +89,9 @@ public class CreateRegion extends BaseCommand {
 
     Region parentRegion = servConn.getCache().getRegion(parentRegionName);
     if (parentRegion == null) {
-      String reason = LocalizedStrings.CreateRegion__0_WAS_NOT_FOUND_DURING_SUBREGION_CREATION_REQUEST.toLocalizedString(parentRegionName);
+      String reason =
+          LocalizedStrings.CreateRegion__0_WAS_NOT_FOUND_DURING_SUBREGION_CREATION_REQUEST
+              .toLocalizedString(parentRegionName);
       writeRegionDestroyedEx(msg, parentRegionName, reason, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -129,7 +137,8 @@ public class CreateRegion extends BaseCommand {
     writeReply(msg, servConn);
     servConn.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent create region response for parent region {} region {}", servConn.getName(), parentRegionName, regionName);
+      logger.debug("{}: Sent create region response for parent region {} region {}",
+          servConn.getName(), parentRegionName, regionName);
     }
   }
 

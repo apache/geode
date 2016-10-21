@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -61,84 +59,61 @@ public class QueueCommands implements CommandMarker {
     return Gfsh.getCurrentInstance();
   }
 
-  @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE, help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
+  @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE,
+      help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
   @CliMetaData(writesToSharedConfiguration = true)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createAsyncEventQueue(
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, 
-                 mandatory = true,
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP)
-      String id,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP, 
-                 unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, 
-                 optionContext = ConverterHint.MEMBERGROUP,
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP)
-      String[] groups,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL, 
-                 unspecifiedDefaultValue = "false",
-                 specifiedDefaultValue = "true",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL__HELP) 
-      Boolean parallel,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, mandatory = true,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP) String id,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] groups,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL,
+          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL__HELP) Boolean parallel,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION,
-                 unspecifiedDefaultValue = "false",
-                 specifiedDefaultValue = "true",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION__HELP) 
-      Boolean enableBatchConflation,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE, 
-                 unspecifiedDefaultValue = "100", 
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE__HELP)
-      int batchSize,
+          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION__HELP) Boolean enableBatchConflation,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE,
+          unspecifiedDefaultValue = "100",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE__HELP) int batchSize,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL,
-                 unspecifiedDefaultValue = "1000", 
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL__HELP) 
-      int batchTimeInterval,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT, 
-                 unspecifiedDefaultValue = "false",
-                 specifiedDefaultValue = "true",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT__HELP)
-      boolean persistent,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE, 
-                 unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, 
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE__HELP)
-      String diskStore,
+          unspecifiedDefaultValue = "1000",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL__HELP) int batchTimeInterval,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT,
+          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT__HELP) boolean persistent,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE__HELP) String diskStore,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS,
-                 unspecifiedDefaultValue = "true",
-                 specifiedDefaultValue = "true",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP)
-      Boolean diskSynchronous,
+          unspecifiedDefaultValue = "true", specifiedDefaultValue = "true",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY,
-                 unspecifiedDefaultValue = "false",
-                 specifiedDefaultValue = "false",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY__HELP)
-      Boolean ignoreEvictionAndExpiration,
+          unspecifiedDefaultValue = "false", specifiedDefaultValue = "false",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY__HELP) Boolean ignoreEvictionAndExpiration,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY,
-                 unspecifiedDefaultValue = "100",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP)
-      int maxQueueMemory,
+          unspecifiedDefaultValue = "100",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP) int maxQueueMemory,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS,
-                 unspecifiedDefaultValue = "1",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS__HELP) 
-      Integer dispatcherThreads,
+          unspecifiedDefaultValue = "1",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS__HELP) Integer dispatcherThreads,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY,
-                 unspecifiedDefaultValue = "KEY",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY__HELP) 
-      String orderPolicy,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER, 
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] gatewayEventFilters,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER, 
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER__HELP)
-      String gatewaySubstitutionListener,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER,
-                 mandatory = true,
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER__HELP)
-      String listener,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE, 
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP,
-                 optionContext=ConverterHint.STRING_DISABLER)
-      @CliMetaData (valueSeparator = ",")
-      String[] listenerParamsAndValues) {
+          unspecifiedDefaultValue = "KEY",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY__HELP) String orderPolicy,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER__HELP) @CliMetaData(
+              valueSeparator = ",") String[] gatewayEventFilters,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER__HELP) String gatewaySubstitutionListener,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER, mandatory = true,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER__HELP) String listener,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP,
+          optionContext = ConverterHint.STRING_DISABLER) @CliMetaData(
+              valueSeparator = ",") String[] listenerParamsAndValues) {
 
     Properties listenerProperties = new Properties();
 
@@ -149,8 +124,8 @@ public class QueueCommands implements CommandMarker {
           if (hashPosition == -1) {
             listenerProperties.put(listenerParamsAndValues[i], "");
           } else {
-            listenerProperties.put(listenerParamsAndValues[i].substring(0, hashPosition), listenerParamsAndValues[i]
-                .substring(hashPosition + 1));
+            listenerProperties.put(listenerParamsAndValues[i].substring(0, hashPosition),
+                listenerParamsAndValues[i].substring(hashPosition + 1));
           }
         }
       }
@@ -166,13 +141,12 @@ public class QueueCommands implements CommandMarker {
       }
 
       AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel,
-          enableBatchConflation, batchSize,batchTimeInterval,
-          persistent, diskStore, diskSynchronous, maxQueueMemory, dispatcherThreads, orderPolicy,
-          gatewayEventFilters, gatewaySubstitutionListener, listener, listenerProperties,
-          ignoreEvictionAndExpiration);
+          enableBatchConflation, batchSize, batchTimeInterval, persistent, diskStore,
+          diskSynchronous, maxQueueMemory, dispatcherThreads, orderPolicy, gatewayEventFilters,
+          gatewaySubstitutionListener, listener, listenerProperties, ignoreEvictionAndExpiration);
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(new CreateAsyncEventQueueFunction(),
-          aeqArgs, targetMembers);
+      ResultCollector<?, ?> rc =
+          CliUtil.executeFunction(new CreateAsyncEventQueueFunction(), aeqArgs, targetMembers);
 
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
@@ -180,15 +154,15 @@ public class QueueCommands implements CommandMarker {
       for (CliFunctionResult result : results) {
         if (result.getThrowable() != null) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Result", "ERROR: " + result.getThrowable().getClass().getName() + ": "
-              + result.getThrowable().getMessage());
+          tabularData.accumulate("Result", "ERROR: " + result.getThrowable().getClass().getName()
+              + ": " + result.getThrowable().getMessage());
           accumulatedData = true;
           tabularData.setStatus(Status.ERROR);
         } else if (result.isSuccessful()) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
           tabularData.accumulate("Result", result.getMessage());
           accumulatedData = true;
-          
+
           if (xmlEntity == null) {
             xmlEntity = result.getXmlEntity();
           }
@@ -198,10 +172,11 @@ public class QueueCommands implements CommandMarker {
       if (!accumulatedData) {
         return ResultBuilder.createInfoResult("Unable to create async event queue(s).");
       }
-      
+
       Result result = ResultBuilder.buildResult(tabularData);
       if (xmlEntity != null) {
-        result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
+        result
+            .setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
       }
       return result;
     } catch (VirtualMachineError e) {
@@ -209,12 +184,14 @@ public class QueueCommands implements CommandMarker {
       throw e;
     } catch (Throwable th) {
       SystemFailure.checkFailure();
-      return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__ERROR_WHILE_CREATING_REASON_0, new Object[] { th.getMessage() }));
+      return ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ERROR_WHILE_CREATING_REASON_0,
+              new Object[] {th.getMessage()}));
     }
   }
 
-  @CliCommand(value = CliStrings.LIST_ASYNC_EVENT_QUEUES, help = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP)
+  @CliCommand(value = CliStrings.LIST_ASYNC_EVENT_QUEUES,
+      help = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listAsyncEventQueues() {
     try {
@@ -228,14 +205,15 @@ public class QueueCommands implements CommandMarker {
         return crex.getResult();
       }
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(new ListAsyncEventQueuesFunction(), new Object[] {}, targetMembers);
+      ResultCollector<?, ?> rc = CliUtil.executeFunction(new ListAsyncEventQueuesFunction(),
+          new Object[] {}, targetMembers);
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
       for (CliFunctionResult result : results) {
         if (result.getThrowable() != null) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Result", "ERROR: " + result.getThrowable().getClass().getName() + ": "
-              + result.getThrowable().getMessage());
+          tabularData.accumulate("Result", "ERROR: " + result.getThrowable().getClass().getName()
+              + ": " + result.getThrowable().getMessage());
           accumulatedData = true;
           tabularData.setStatus(Status.ERROR);
         } else {
@@ -261,11 +239,13 @@ public class QueueCommands implements CommandMarker {
                 } else {
                   firstProperty = false;
                 }
-                propsStringBuilder.append(property.getKey()).append('=').append(property.getValue());
+                propsStringBuilder.append(property.getKey()).append('=')
+                    .append(property.getValue());
               }
               propsStringBuilder.append(')');
-              
-              tabularData.accumulate("Listener", details[i].getListener() + propsStringBuilder.toString());
+
+              tabularData.accumulate("Listener",
+                  details[i].getListener() + propsStringBuilder.toString());
             }
             accumulatedData = true;
           }
@@ -273,7 +253,8 @@ public class QueueCommands implements CommandMarker {
       }
 
       if (!accumulatedData) {
-        return ResultBuilder.createInfoResult(CliStrings.LIST_ASYNC_EVENT_QUEUES__NO_QUEUES_FOUND_MESSAGE);
+        return ResultBuilder
+            .createInfoResult(CliStrings.LIST_ASYNC_EVENT_QUEUES__NO_QUEUES_FOUND_MESSAGE);
       }
 
       return ResultBuilder.buildResult(tabularData);
@@ -282,12 +263,14 @@ public class QueueCommands implements CommandMarker {
       throw e;
     } catch (Throwable th) {
       SystemFailure.checkFailure();
-      return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.LIST_ASYNC_EVENT_QUEUES__ERROR_WHILE_LISTING_REASON_0, new Object[] { th.getMessage() }));
+      return ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.LIST_ASYNC_EVENT_QUEUES__ERROR_WHILE_LISTING_REASON_0,
+              new Object[] {th.getMessage()}));
     }
   }
 
-  @CliAvailabilityIndicator({ CliStrings.CREATE_ASYNC_EVENT_QUEUE, CliStrings.LIST_ASYNC_EVENT_QUEUES })
+  @CliAvailabilityIndicator({CliStrings.CREATE_ASYNC_EVENT_QUEUE,
+      CliStrings.LIST_ASYNC_EVENT_QUEUES})
   public boolean queueCommandsAvailable() {
     boolean isAvailable = true;
     if (CliUtil.isGfshVM()) {

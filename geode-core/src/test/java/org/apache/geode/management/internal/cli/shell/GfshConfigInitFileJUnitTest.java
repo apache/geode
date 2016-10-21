@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.shell;
 
@@ -82,19 +80,17 @@ public class GfshConfigInitFileJUnitTest {
   public void constructorArgumentUsed() throws Exception {
     temporaryFolder_HomeDirectory.newFile(INIT_FILE_NAME);
     temporaryFolder_CurrentDirectory.newFile(INIT_FILE_NAME);
-    System.setProperty(INIT_FILE_PROPERTY, temporaryFolder_AnotherDirectory.newFile(INIT_FILE_NAME).getAbsolutePath());
+    System.setProperty(INIT_FILE_PROPERTY,
+        temporaryFolder_AnotherDirectory.newFile(INIT_FILE_NAME).getAbsolutePath());
 
-    String argument = temporaryFolder_AnotherDirectory.newFile("junit")
-        .getAbsolutePath();
+    String argument = temporaryFolder_AnotherDirectory.newFile("junit").getAbsolutePath();
 
     /*
-     * String historyFileName, String defaultPrompt, int historySize, String
-     * logDir, Level logLevel, Integer logLimit, Integer logCount, String
-     * initFileName
+     * String historyFileName, String defaultPrompt, int historySize, String logDir, Level logLevel,
+     * Integer logLimit, Integer logCount, String initFileName
      */
     GfshConfig gfshConfig = new GfshConfig("historyFileName", "", 0,
-        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null,
-        null, null, argument);
+        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null, null, null, argument);
 
     String result = gfshConfig.getInitFileName();
 
@@ -110,13 +106,11 @@ public class GfshConfigInitFileJUnitTest {
     System.setProperty(INIT_FILE_PROPERTY, fileName);
 
     /*
-     * String historyFileName, String defaultPrompt, int historySize, String
-     * logDir, Level logLevel, Integer logLimit, Integer logCount, String
-     * initFileName
+     * String historyFileName, String defaultPrompt, int historySize, String logDir, Level logLevel,
+     * Integer logLimit, Integer logCount, String initFileName
      */
     GfshConfig gfshConfig = new GfshConfig("historyFileName", "", 0,
-        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null,
-        null, null, null);
+        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null, null, null, null);
 
     String result = gfshConfig.getInitFileName();
 
@@ -130,13 +124,11 @@ public class GfshConfigInitFileJUnitTest {
     String fileName = temporaryFolder_CurrentDirectory.newFile(INIT_FILE_NAME).getAbsolutePath();
 
     /*
-     * String historyFileName, String defaultPrompt, int historySize, String
-     * logDir, Level logLevel, Integer logLimit, Integer logCount, String
-     * initFileName
+     * String historyFileName, String defaultPrompt, int historySize, String logDir, Level logLevel,
+     * Integer logLimit, Integer logCount, String initFileName
      */
     GfshConfig gfshConfig = new GfshConfig("historyFileName", "", 0,
-        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null,
-        null, null, null);
+        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null, null, null, null);
 
     String result = gfshConfig.getInitFileName();
 
@@ -149,13 +141,11 @@ public class GfshConfigInitFileJUnitTest {
     String fileName = temporaryFolder_HomeDirectory.newFile(INIT_FILE_NAME).getAbsolutePath();
 
     /*
-     * String historyFileName, String defaultPrompt, int historySize, String
-     * logDir, Level logLevel, Integer logLimit, Integer logCount, String
-     * initFileName
+     * String historyFileName, String defaultPrompt, int historySize, String logDir, Level logLevel,
+     * Integer logLimit, Integer logCount, String initFileName
      */
     GfshConfig gfshConfig = new GfshConfig("historyFileName", "", 0,
-        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null,
-        null, null, null);
+        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null, null, null, null);
 
     String result = gfshConfig.getInitFileName();
 
@@ -166,13 +156,11 @@ public class GfshConfigInitFileJUnitTest {
   @Test
   public void noMatches() throws Exception {
     /*
-     * String historyFileName, String defaultPrompt, int historySize, String
-     * logDir, Level logLevel, Integer logLimit, Integer logCount, String
-     * initFileName
+     * String historyFileName, String defaultPrompt, int historySize, String logDir, Level logLevel,
+     * Integer logLimit, Integer logCount, String initFileName
      */
     GfshConfig gfshConfig = new GfshConfig("historyFileName", "", 0,
-        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null,
-        null, null, null);
+        temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath(), null, null, null, null);
 
     String result = gfshConfig.getInitFileName();
 

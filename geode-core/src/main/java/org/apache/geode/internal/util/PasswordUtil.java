@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util;
 
@@ -22,25 +20,23 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Generates an encrypted password, used by the gemfire encrypt-password
- * command. Makes use of Blowfish algorithm to encrypt/decrypt password string
+ * Generates an encrypted password, used by the gemfire encrypt-password command. Makes use of
+ * Blowfish algorithm to encrypt/decrypt password string
  * 
  * <p>
- * This shows a sample command invocation and output (assuming password is the
- * actual password for the datasource): <br>
+ * This shows a sample command invocation and output (assuming password is the actual password for
+ * the datasource): <br>
  * <br>
  * bash-2.05$ $GEMFIRE/bin/gemfire encrypt-password password<br>
  * Using system directory "/home/users/jpearson/gemfire/defaultSystem".<br>
  * Encrypted to 83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a <br>
  * <br>
- * Copy the output from the gemfire command to the cache.xml file as the value
- * of the password attribute of the jndi-binding tag embedded in encrypted(),
- * just like a method parameter.<br>
+ * Copy the output from the gemfire command to the cache.xml file as the value of the password
+ * attribute of the jndi-binding tag embedded in encrypted(), just like a method parameter.<br>
  * Enter it as encrypted, in this format:
  * password="encrypted(83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a)"<br>
- * To use a non-encrypted password, put the actual password as the value of the
- * password attribute of the jndi-binding tag, like this: password="password"
- * <br>
+ * To use a non-encrypted password, put the actual password as the value of the password attribute
+ * of the jndi-binding tag, like this: password="password" <br>
  * 
  */
 public class PasswordUtil {
@@ -50,8 +46,7 @@ public class PasswordUtil {
   /**
    * Encrypts a password string
    * 
-   * @param password
-   *          String to be encrypted.
+   * @param password String to be encrypted.
    * @return String encrypted String
    */
   public static String encrypt(String password) {
@@ -73,20 +68,19 @@ public class PasswordUtil {
       byte[] encrypted = cipher.doFinal(password.getBytes());
       encryptedString = byteArrayToHexString(encrypted);
       if (echo) {
-        System.out.println(LocalizedStrings.PasswordUtil_ENCRYPTED_TO_0
-            .toLocalizedString(encryptedString));
+        System.out.println(
+            LocalizedStrings.PasswordUtil_ENCRYPTED_TO_0.toLocalizedString(encryptedString));
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
     return encryptedString;
   }
+
   /**
    * Decrypts an encrypted password string.
    * 
-   * @param password
-   *          String to be decrypted
+   * @param password String to be decrypted
    * @return String decrypted String
    */
   public static String decrypt(String password) {
@@ -99,8 +93,7 @@ public class PasswordUtil {
         cipher.init(Cipher.DECRYPT_MODE, key);
         decrypted = cipher.doFinal(hexStringToByteArray(toDecrypt));
         return new String(decrypted);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         e.printStackTrace();
       }
     }
@@ -124,7 +117,7 @@ public class PasswordUtil {
     for (int i = 0; i < b.length; i++) {
       int index = i * 2;
       int v = Integer.parseInt(s.substring(index, index + 2), 16);
-      b[i] = (byte)v;
+      b[i] = (byte) v;
     }
     return b;
   }

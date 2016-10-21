@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
@@ -23,13 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class implements synchronous attribute delta propagation. Updates to
- * attributes are immediately propagated.
+ * This class implements synchronous attribute delta propagation. Updates to attributes are
+ * immediately propagated.
  */
 public class DeltaSessionAttributes extends AbstractDeltaSessionAttributes {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(DeltaSessionAttributes.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(DeltaSessionAttributes.class.getName());
 
   /**
    * Register ourselves for de-serialization
@@ -46,12 +43,11 @@ public class DeltaSessionAttributes extends AbstractDeltaSessionAttributes {
   /**
    * Default constructor
    */
-  public DeltaSessionAttributes() {
-  }
+  public DeltaSessionAttributes() {}
 
   /**
-   * {@inheritDoc} Put an attribute, setting the dirty flag and immediately
-   * flushing the delta queue.
+   * {@inheritDoc} Put an attribute, setting the dirty flag and immediately flushing the delta
+   * queue.
    */
   @Override
   public Object putAttribute(String attr, Object value) {
@@ -62,8 +58,8 @@ public class DeltaSessionAttributes extends AbstractDeltaSessionAttributes {
   }
 
   /**
-   * {@inheritDoc} Remove an attribute, setting the dirty flag and immediately
-   * flushing the delta queue.
+   * {@inheritDoc} Remove an attribute, setting the dirty flag and immediately flushing the delta
+   * queue.
    */
   @Override
   public Object removeAttribute(String attr) {

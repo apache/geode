@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.io;
 
@@ -31,9 +29,9 @@ import java.util.Set;
 public class CompositeOutputStream extends OutputStream implements Iterable<OutputStream> {
 
   protected final Object lock = new Object();
-  
+
   private volatile Set<OutputStream> streams = Collections.<OutputStream>emptySet();
-  
+
   /**
    * Constructs a new instance of CompositeOutputStream with zero or more OutputStreams.
    * 
@@ -48,10 +46,11 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
   }
 
   /**
-   * @return <tt>true</tt> if this CompositeOutputStream did not already contain the specified OutputStream
+   * @return <tt>true</tt> if this CompositeOutputStream did not already contain the specified
+   *         OutputStream
    */
   public boolean addOutputStream(OutputStream out) {
-    synchronized(this.lock) {
+    synchronized (this.lock) {
       final Set<OutputStream> oldSet = this.streams;
       if (oldSet.contains(out)) {
         return false;
@@ -63,12 +62,12 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
       }
     }
   }
-  
+
   /**
    * @return <tt>true</tt> if this CompositeOutputStream contained the specified OutputStream
    */
   public boolean removeOutputStream(OutputStream out) {
-    synchronized(this.lock) {
+    synchronized (this.lock) {
       final Set<OutputStream> oldSet = this.streams;
       if (!oldSet.contains(out)) {
         return false;
@@ -83,7 +82,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
       }
     }
   }
-  
+
   /**
    * Returns <tt>true</tt> if this CompositeOutputStream contains no OutputStreams.
    *
@@ -92,7 +91,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
   public boolean isEmpty() {
     return this.streams.isEmpty();
   }
-  
+
   /**
    * Returns the number of OutputStreams in this CompositeOutputStream (its cardinality).
    *
@@ -101,22 +100,21 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
   public int size() {
     return this.streams.size();
   }
-  
+
   public Iterator<OutputStream> iterator() {
     return this.streams.iterator();
   }
-  
+
   /**
-   * Writes the specified <code>byte</code> to this output stream. 
+   * Writes the specified <code>byte</code> to this output stream.
    * <p>
-   * The <code>write</code> method of <code>FilterOutputStream</code> 
-   * calls the <code>write</code> method of its underlying output stream, 
-   * that is, it performs <tt>out.write(b)</tt>.
+   * The <code>write</code> method of <code>FilterOutputStream</code> calls the <code>write</code>
+   * method of its underlying output stream, that is, it performs <tt>out.write(b)</tt>.
    * <p>
-   * Implements the abstract <tt>write</tt> method of <tt>OutputStream</tt>. 
+   * Implements the abstract <tt>write</tt> method of <tt>OutputStream</tt>.
    *
-   * @param      b   the <code>byte</code>.
-   * @exception  IOException  if an I/O error occurs.
+   * @param b the <code>byte</code>.
+   * @exception IOException if an I/O error occurs.
    */
   public void write(int b) throws IOException {
     Set<OutputStream> outputStreams = this.streams;
@@ -126,14 +124,14 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
   }
 
   /**
-   * Flushes this output stream and forces any buffered output bytes 
-   * to be written out to the stream. 
+   * Flushes this output stream and forces any buffered output bytes to be written out to the
+   * stream.
    * <p>
-   * The <code>flush</code> method of <code>FilterOutputStream</code> 
-   * calls the <code>flush</code> method of its underlying output stream. 
+   * The <code>flush</code> method of <code>FilterOutputStream</code> calls the <code>flush</code>
+   * method of its underlying output stream.
    *
-   * @exception  IOException  if an I/O error occurs.
-   * @see        java.io.FilterOutputStream#out
+   * @exception IOException if an I/O error occurs.
+   * @see java.io.FilterOutputStream#out
    */
   public void flush() throws IOException {
     Set<OutputStream> outputStreams = this.streams;
@@ -143,16 +141,14 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
   }
 
   /**
-   * Closes this output stream and releases any system resources 
-   * associated with the stream. 
+   * Closes this output stream and releases any system resources associated with the stream.
    * <p>
-   * The <code>close</code> method of <code>FilterOutputStream</code> 
-   * calls its <code>flush</code> method, and then calls the 
-   * <code>close</code> method of its underlying output stream. 
+   * The <code>close</code> method of <code>FilterOutputStream</code> calls its <code>flush</code>
+   * method, and then calls the <code>close</code> method of its underlying output stream.
    *
-   * @exception  IOException  if an I/O error occurs.
-   * @see        java.io.FilterOutputStream#flush()
-   * @see        java.io.FilterOutputStream#out
+   * @exception IOException if an I/O error occurs.
+   * @see java.io.FilterOutputStream#flush()
+   * @see java.io.FilterOutputStream#out
    */
   public void close() throws IOException {
     Set<OutputStream> outputStreams = this.streams;
@@ -164,7 +160,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
       out.close();
     }
   }
-  
+
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getSimpleName());

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.statalerts;
 
@@ -70,8 +68,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
   /**
    * This method sets the name of this stat alert definition.
    * 
-   * @param name
-   *                name to be set for this StatAlertDefinition.
+   * @param name name to be set for this StatAlertDefinition.
    */
   public void setName(String name) {
     _def.setName(name);
@@ -136,16 +133,14 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     try {
       int eval = compare(param, threshold);
       return eval > 0;
-    }
-    catch (VirtualMachineError err) {
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
-    }
-    catch (Throwable e) {
+    } catch (Throwable e) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
@@ -158,16 +153,14 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     try {
       int eval = compare(param, threshold);
       return eval < 0;
-    }
-    catch (VirtualMachineError err) {
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
-    }
-    catch (Throwable e) {
+    } catch (Throwable e) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
@@ -181,28 +174,22 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
       int eval = 0;
       if (threshold instanceof Double) {
         eval = Double.compare(param.doubleValue(), threshold.doubleValue());
-      }
-      else if (threshold instanceof Float) {
+      } else if (threshold instanceof Float) {
         eval = Float.compare(param.floatValue(), threshold.floatValue());
-      }
-      else if (threshold instanceof Long) {
-        eval = (Long.valueOf(param.longValue())).compareTo(Long.valueOf(threshold
-            .longValue()));
-      }
-      else if (threshold instanceof Integer) {
+      } else if (threshold instanceof Long) {
+        eval = (Long.valueOf(param.longValue())).compareTo(Long.valueOf(threshold.longValue()));
+      } else if (threshold instanceof Integer) {
         eval = param.intValue() > threshold.intValue() ? 1 : -1;
       }
       return eval;
-    }
-    catch (VirtualMachineError err) {
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
-    }
-    catch (Throwable e) {
+    } catch (Throwable e) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
@@ -216,8 +203,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     DataSerializer.writeObject(this._def, out);
   }
 
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this._def = (StatAlertDefinition) DataSerializer.readObject(in);
   }
 }

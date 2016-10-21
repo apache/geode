@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -24,50 +22,44 @@ import org.apache.geode.internal.admin.GemFireVM;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
- * A <code>SystemMember</code> that is also managed (or manageable) by
- * the admin API.
+ * A <code>SystemMember</code> that is also managed (or manageable) by the admin API.
  *
- * This class must be public so that its methods can be invoked
- * reflectively (for MBean operations) on instances of its
- * subclasses. 
+ * This class must be public so that its methods can be invoked reflectively (for MBean operations)
+ * on instances of its subclasses.
  *
  * @since GemFire 4.0
  */
 public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
-  implements InternalManagedEntity {
+    implements InternalManagedEntity {
 
   /** Controller for starting and stopping local or remote managers */
   protected ManagedEntityController controller;
-  
+
   /** The state of this managed entity (see bug 32455) */
   private int state = UNKNOWN;
 
   /** A lock that is obtained while this entity's state changes */
   private final Object stateChange = new Object();
 
-  //////////////////////  Constructors  //////////////////////
+  ////////////////////// Constructors //////////////////////
 
   /**
-   * Creates a new <code>ManagedSystemMemberImpl</code> that
-   * represents an existing member of an
+   * Creates a new <code>ManagedSystemMemberImpl</code> that represents an existing member of an
    * <code>AdminDistributedSystem</code>.
    */
-  protected ManagedSystemMemberImpl(AdminDistributedSystemImpl system, 
-                                    GemFireVM vm) 
-    throws AdminException {
+  protected ManagedSystemMemberImpl(AdminDistributedSystemImpl system, GemFireVM vm)
+      throws AdminException {
 
     super(system, vm);
     this.controller = system.getEntityController();
   }
 
   /**
-   * Creates a new <code>ManagedSystemMemberImpl</code> that
-   * represents a non-existing member with the given
-   * <code>ManagedEntityConfig</code> that has not yet been started.
+   * Creates a new <code>ManagedSystemMemberImpl</code> that represents a non-existing member with
+   * the given <code>ManagedEntityConfig</code> that has not yet been started.
    */
-  protected ManagedSystemMemberImpl(AdminDistributedSystemImpl system,
-                                    ManagedEntityConfig config) 
-    throws AdminException {
+  protected ManagedSystemMemberImpl(AdminDistributedSystemImpl system, ManagedEntityConfig config)
+      throws AdminException {
 
     super(system);
     this.internalId = null;
@@ -77,7 +69,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
     this.controller = system.getEntityController();
   }
 
-  //////////////////////  Instance Methods  //////////////////////
+  ////////////////////// Instance Methods //////////////////////
 
   public String getWorkingDirectory() {
     return this.getEntityConfig().getWorkingDirectory();
@@ -107,24 +99,23 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
       int oldState = this.state;
       this.state = state;
       return oldState;
-      
+
     } else {
       synchronized (this.stateChange) {
         int oldState = this.state;
         this.state = state;
 
         this.stateChange.notifyAll();
-        
+
         return oldState;
       }
     }
   }
 
   /**
-   * Returns whether or not this managed system member needs to be
-   * stopped.  If this member is stopped or is stopping, then it does
-   * not need to be stopped.  Otherwise, it will atomically place this
-   * member in the {@link #STOPPING} state.  See bug 32455.
+   * Returns whether or not this managed system member needs to be stopped. If this member is
+   * stopped or is stopping, then it does not need to be stopped. Otherwise, it will atomically
+   * place this member in the {@link #STOPPING} state. See bug 32455.
    */
   protected boolean needToStop() {
     synchronized (this.stateChange) {
@@ -139,11 +130,9 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   }
 
   /**
-   * Returns whether or not this managed system member needs to be
-   * started.  If this member is started or is starting, then it
-   * does not need to be started.  Otherwise, it will atomically
-   * place this member in the {@link #STARTING} state.  See bug
-   * 32455.
+   * Returns whether or not this managed system member needs to be started. If this member is
+   * started or is starting, then it does not need to be started. Otherwise, it will atomically
+   * place this member in the {@link #STARTING} state. See bug 32455.
    */
   protected boolean needToStart() {
     synchronized (this.stateChange) {
@@ -158,8 +147,8 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   }
 
   /**
-   * Sets the state of this managed system member depending on whether
-   * or not <code>vm</code> is <code>null</code>.
+   * Sets the state of this managed system member depending on whether or not <code>vm</code> is
+   * <code>null</code>.
    */
   @Override
   void setGemFireVM(GemFireVM vm) throws AdminException {
@@ -175,11 +164,11 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   /**
    * Waits until this system member's "state" is {@link #RUNNING}.
    */
-  public boolean waitToStart(long timeout) 
-    throws InterruptedException {
+  public boolean waitToStart(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted()) throw new InterruptedException();
-    
+    if (Thread.interrupted())
+      throw new InterruptedException();
+
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
       synchronized (this.stateChange) {
@@ -200,10 +189,10 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   /**
    * Waits until this system member's "state" is {@link #STOPPED}.
    */
-  public boolean waitToStop(long timeout) 
-    throws InterruptedException {
+  public boolean waitToStop(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted()) throw new InterruptedException();
+    if (Thread.interrupted())
+      throw new InterruptedException();
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
       synchronized (this.stateChange) {
@@ -222,9 +211,8 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   }
 
   /**
-   * Appends configuration information to a <code>StringBuffer</code>
-   * that contains a command line.  Handles certain configuration
-   * parameters specially.
+   * Appends configuration information to a <code>StringBuffer</code> that contains a command line.
+   * Handles certain configuration parameters specially.
    */
   protected void appendConfiguration(StringBuffer sb) {
     ConfigurationParameter[] params = this.getConfiguration();
@@ -241,15 +229,14 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
       if (value != null && !value.equals("")) {
         if (name.equals(LOCATORS)) {
           // Use the new locator syntax so that is plays nicely with
-          // rsh.  See bug 32306.
+          // rsh. See bug 32306.
           String locator = value;
           int firstBracket = locator.indexOf('[');
           int lastBracket = locator.indexOf(']');
 
           if (firstBracket > -1 && lastBracket > -1) {
             String host = locator.substring(0, firstBracket);
-            String port =
-              locator.substring(firstBracket + 1, lastBracket);
+            String port = locator.substring(firstBracket + 1, lastBracket);
             locator = host + ":" + port;
           }
 

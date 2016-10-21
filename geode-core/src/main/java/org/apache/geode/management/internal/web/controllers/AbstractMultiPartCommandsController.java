@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.web.controllers;
 
@@ -26,9 +24,10 @@ import org.apache.geode.internal.util.IOUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * The AbstractMultiPartCommandsController class is a abstract base class encapsulating all common functionality for
- * handling multi-part (file upload) HTTP requests.
+ * The AbstractMultiPartCommandsController class is a abstract base class encapsulating all common
+ * functionality for handling multi-part (file upload) HTTP requests.
  * <p/>
+ * 
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @since GemFire 8.0
  */
@@ -40,6 +39,7 @@ public class AbstractMultiPartCommandsController extends AbstractCommandsControl
   /**
    * Saves an array of File objects to this system's file system.
    * <p/>
+   * 
    * @param files an array of MultipartFile objects to persist to the file system.
    * @throws IOException if I/O error occurs while saving the Files to the file system.
    * @see org.springframework.web.multipart.MultipartFile
@@ -55,6 +55,7 @@ public class AbstractMultiPartCommandsController extends AbstractCommandsControl
   /**
    * Saves a multi-part File to this system's file system.
    * <p/>
+   * 
    * @param file the MultipartFile object to persist to the file system.
    * @throws IOException if I/O error occurs while saving the File to the file system.
    * @see org.springframework.web.multipart.MultipartFile
@@ -68,8 +69,7 @@ public class AbstractMultiPartCommandsController extends AbstractCommandsControl
       fileWriter = new FileOutputStream(saveFile, false);
       fileWriter.write(file.getBytes());
       fileWriter.flush();
-    }
-    finally {
+    } finally {
       IOUtils.close(fileWriter);
     }
   }

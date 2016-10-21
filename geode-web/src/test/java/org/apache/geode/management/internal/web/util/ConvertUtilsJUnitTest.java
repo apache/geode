@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.web.util;
 
@@ -35,8 +33,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * The ConvertUtilsJUnitTest class is a test suite testing the contract and functionality of the ConvertUtilsJUnitTest class.
+ * The ConvertUtilsJUnitTest class is a test suite testing the contract and functionality of the
+ * ConvertUtilsJUnitTest class.
  * <p/>
+ * 
  * @see org.apache.geode.management.internal.web.util.ConvertUtils
  * @see org.junit.Assert
  * @see org.junit.Test
@@ -47,19 +47,28 @@ public class ConvertUtilsJUnitTest {
 
   private MultipartFile createMultipartFile(final String filename, final byte[] content) {
     return new MultipartFileAdapter() {
-      @Override public byte[] getBytes() throws IOException {
+      @Override
+      public byte[] getBytes() throws IOException {
         return content;
       }
-      @Override public InputStream getInputStream() throws IOException {
+
+      @Override
+      public InputStream getInputStream() throws IOException {
         return new ByteArrayInputStream(getBytes());
       }
-      @Override public String getName() {
+
+      @Override
+      public String getName() {
         return filename;
       }
-      @Override public String getOriginalFilename() {
+
+      @Override
+      public String getOriginalFilename() {
         return filename;
       }
-      @Override public long getSize() {
+
+      @Override
+      public long getSize() {
         return content.length;
       }
     };
@@ -67,7 +76,8 @@ public class ConvertUtilsJUnitTest {
 
   private Resource createResource(final String filename, final byte[] content) {
     return new ByteArrayResource(content, String.format("Content of file (%1$s).", filename)) {
-      @Override public String getFilename() {
+      @Override
+      public String getFilename() {
         return filename;
       }
     };
@@ -75,8 +85,9 @@ public class ConvertUtilsJUnitTest {
 
   @Test
   public void testConvertFileData() throws IOException {
-    final String[] filenames = { "/path/to/file1.ext", "/path/to/another/file2.ext" };
-    final String[] fileContent = { "This is the contents of file 1.", "This is the contents of file 2." };
+    final String[] filenames = {"/path/to/file1.ext", "/path/to/another/file2.ext"};
+    final String[] fileContent =
+        {"This is the contents of file 1.", "This is the contents of file 2."};
 
     final List<byte[]> fileData = new ArrayList<byte[]>(2);
 
@@ -85,14 +96,16 @@ public class ConvertUtilsJUnitTest {
       fileData.add(fileContent[index].getBytes());
     }
 
-    final Resource[] resources = ConvertUtils.convert(fileData.toArray(new byte[fileData.size()][]));
+    final Resource[] resources =
+        ConvertUtils.convert(fileData.toArray(new byte[fileData.size()][]));
 
     assertNotNull(resources);
     assertEquals(filenames.length, resources.length);
 
     for (int index = 0; index < resources.length; index++) {
       assertEquals(filenames[index], resources[index].getFilename());
-      assertEquals(fileContent[index], new String(IOUtils.toByteArray(resources[index].getInputStream())));
+      assertEquals(fileContent[index],
+          new String(IOUtils.toByteArray(resources[index].getInputStream())));
     }
   }
 
@@ -107,9 +120,10 @@ public class ConvertUtilsJUnitTest {
   @Test
   public void testConvertMultipartFile() throws IOException {
     final MultipartFile[] files = {
-      createMultipartFile("/path/to/multi-part/file1.txt", "The contents of multi-part file1.".getBytes()),
-      createMultipartFile("/path/to/multi-part/file2.txt", "The contents of multi-part file2.".getBytes())
-    };
+        createMultipartFile("/path/to/multi-part/file1.txt",
+            "The contents of multi-part file1.".getBytes()),
+        createMultipartFile("/path/to/multi-part/file2.txt",
+            "The contents of multi-part file2.".getBytes())};
 
     final byte[][] fileData = ConvertUtils.convert(files);
 
@@ -124,10 +138,9 @@ public class ConvertUtilsJUnitTest {
 
   @Test
   public void testConvertResource() throws IOException {
-    final Resource[] resources = {
-      createResource("/path/to/file1.txt", "Contents of file1.".getBytes()),
-      createResource("/path/to/file2.txt", "Contents of file2.".getBytes())
-    };
+    final Resource[] resources =
+        {createResource("/path/to/file1.txt", "Contents of file1.".getBytes()),
+            createResource("/path/to/file2.txt", "Contents of file2.".getBytes())};
 
     final byte[][] fileData = ConvertUtils.convert(resources);
 
@@ -136,7 +149,8 @@ public class ConvertUtilsJUnitTest {
 
     for (int index = 0; index < fileData.length; index += 2) {
       assertEquals(resources[index / 2].getFilename(), new String(fileData[index]));
-      assertEquals(new String(IOUtils.toByteArray(resources[index / 2].getInputStream())), new String(fileData[index + 1]));
+      assertEquals(new String(IOUtils.toByteArray(resources[index / 2].getInputStream())),
+          new String(fileData[index + 1]));
     }
   }
 
@@ -144,9 +158,10 @@ public class ConvertUtilsJUnitTest {
   public void testConvertResourceWithResourceHavingNoFilename() throws IOException {
     try {
       ConvertUtils.convert(createResource(null, "test".getBytes()));
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals("The filename of Resource (Byte array resource [Content of file (null).]) must be specified!", expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          "The filename of Resource (Byte array resource [Content of file (null).]) must be specified!",
+          expected.getMessage());
       throw expected;
     }
   }

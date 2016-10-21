@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -35,9 +33,8 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * This test is for testing Disk attributes set programmatically
- * The generated cacheXml is used to create a cache and teh region
- * properties retested.
+ * This test is for testing Disk attributes set programmatically The generated cacheXml is used to
+ * create a cache and teh region properties retested.
  */
 @Category(IntegrationTest.class)
 public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
@@ -56,11 +53,9 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
 
     for (int i = 0; i < diskRegionProperties.length; i++) {
       diskRegionProperties[i] = new DiskRegionProperties();
-      if(i == 0)
-      {
+      if (i == 0) {
         diskRegionProperties[i].setDiskDirsAndSizes(dirs, diskDirSize);
-      }
-      else{
+      } else {
         diskRegionProperties[i].setDiskDirs(dirs);
       }
     }
@@ -71,41 +66,37 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
     diskRegionProperties[0].setRolling(true);
     diskRegionProperties[0].setMaxOplogSize(1073741824L);
     diskRegionProperties[0].setRegionName("regions1");
-    regions[0] = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
-      diskRegionProperties[0], Scope.LOCAL);
+    regions[0] = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskRegionProperties[0],
+        Scope.LOCAL);
 
     // create the regions[1] which is SyncPersistOnly and set DiskWriteAttibutes
 
     diskRegionProperties[1].setRolling(false);
     diskRegionProperties[1].setRegionName("regions2");
-    regions[1] = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
-      diskRegionProperties[1], Scope.LOCAL);
+    regions[1] = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskRegionProperties[1],
+        Scope.LOCAL);
 
     // create the regions[2] which AsyncPersistOnly, No buffer and Rolling oplog
     diskRegionProperties[2].setRolling(true);
     diskRegionProperties[2].setMaxOplogSize(1073741824L);
     diskRegionProperties[2].setRegionName("regions3");
-    regions[2] = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
-      diskRegionProperties[2]);
+    regions[2] = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskRegionProperties[2]);
 
     // create the regions[3] which is AsynchPersistonly, No buffer and fixed oplog
     diskRegionProperties[3].setRolling(false);
     diskRegionProperties[3].setRegionName("regions4");
-    regions[3] = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
-      diskRegionProperties[3]);
+    regions[3] = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskRegionProperties[3]);
 
     // create the regions[4] which is SynchOverflowOnly, Rolling oplog
     diskRegionProperties[4].setRolling(true);
     diskRegionProperties[4].setMaxOplogSize(1073741824L);
     diskRegionProperties[4].setRegionName("regions5");
-    regions[4] = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,
-      diskRegionProperties[4]);
+    regions[4] = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, diskRegionProperties[4]);
 
     // create the regions[5] which is SyncOverflowOnly, Fixed oplog
     diskRegionProperties[5].setRolling(false);
     diskRegionProperties[5].setRegionName("regions6");
-    regions[5] = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,
-      diskRegionProperties[5]);
+    regions[5] = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, diskRegionProperties[5]);
 
     // create the regions[6] which is AsyncOverflow, with Buffer and rolling oplog
     diskRegionProperties[6].setRolling(true);
@@ -113,8 +104,7 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
     diskRegionProperties[6].setBytesThreshold(10000l);
     diskRegionProperties[6].setTimeInterval(15l);
     diskRegionProperties[6].setRegionName("regions7");
-    regions[6] = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
-      diskRegionProperties[6]);
+    regions[6] = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskRegionProperties[6]);
 
     // create the regions[7] which is AsyncOverflow ,Time base buffer-zero byte
     // buffer
@@ -123,21 +113,20 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
     diskRegionProperties[7].setTimeInterval(15l);
     diskRegionProperties[7].setBytesThreshold(0l);
     diskRegionProperties[7].setRegionName("regions8");
-    regions[7] = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
-      diskRegionProperties[7]);
+    regions[7] = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskRegionProperties[7]);
 
     // create the regions[8] which is SyncPersistOverflow, Rolling oplog
     diskRegionProperties[8].setRolling(true);
     diskRegionProperties[8].setMaxOplogSize(1073741824L);
     diskRegionProperties[8].setRegionName("regions9");
-    regions[8] = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,
-      diskRegionProperties[8]);
+    regions[8] =
+        DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskRegionProperties[8]);
 
     // create the regions[9] which is Sync PersistOverflow, fixed oplog
     diskRegionProperties[9].setRolling(false);
     diskRegionProperties[9].setRegionName("regions10");
-    regions[9] = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,
-      diskRegionProperties[9]);
+    regions[9] =
+        DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskRegionProperties[9]);
     // create the regions[10] which is Async Overflow Persist ,with buffer and
     // rollong
     // oplog
@@ -146,8 +135,8 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
     diskRegionProperties[10].setBytesThreshold(10000l);
     diskRegionProperties[10].setTimeInterval(15l);
     diskRegionProperties[10].setRegionName("regions11");
-    regions[10] = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
-      diskRegionProperties[10]);
+    regions[10] =
+        DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, diskRegionProperties[10]);
 
     // create the regions[11] which is Async Persist Overflow with time based
     // buffer
@@ -156,10 +145,10 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
     diskRegionProperties[11].setBytesThreshold(0l);
     diskRegionProperties[11].setTimeInterval(15l);
     diskRegionProperties[11].setRegionName("regions12");
-    regions[11] = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
-      diskRegionProperties[11]);
+    regions[11] =
+        DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, diskRegionProperties[11]);
 
-    //cacheXmlGenerator: generates cacheXml file
+    // cacheXmlGenerator: generates cacheXml file
     FileWriter fw = new FileWriter(new File(getClass().getSimpleName() + ".xml"));
     PrintWriter pw = new PrintWriter(fw);
     CacheXmlGenerator.generate(cache, pw);

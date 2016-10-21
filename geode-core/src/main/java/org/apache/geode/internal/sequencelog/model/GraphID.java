@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.sequencelog.model;
 
@@ -24,23 +22,24 @@ import org.apache.geode.internal.sequencelog.GraphType;
  *
  */
 public class GraphID implements Comparable<GraphID>, Serializable {
-  
+
   public final GraphType type;
   public final String graphName;
-  
-  
+
+
   public GraphID(GraphType type, String graphName) {
     this.type = type;
     this.graphName = graphName;
   }
-  
+
   public GraphType getType() {
     return type;
   }
+
   public String getGraphName() {
     return graphName;
   }
-  
+
   @Override
   public String toString() {
     return graphName;
@@ -78,17 +77,16 @@ public class GraphID implements Comparable<GraphID>, Serializable {
   }
 
   public int compareTo(GraphID o) {
-    if(o == null) {
+    if (o == null) {
       return -1;
     }
     int result = type.compareTo(o.getType());
-    if(result != 0) {
+    if (result != 0) {
       return result;
     }
     return graphName.compareTo(o.getGraphName());
   }
-  
-  
-  
-  
+
+
+
 }
