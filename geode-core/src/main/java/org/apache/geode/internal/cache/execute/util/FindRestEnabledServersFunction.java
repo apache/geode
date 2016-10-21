@@ -22,12 +22,13 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.internal.RestAgent;
 
 /**
  * The FindRestEnabledServersFunction class is a gemfire function that gives details about REST
  * enabled gemfire servers.
  * <p/>
- * 
+ *
  * @since GemFire 8.1
  */
 
@@ -42,11 +43,13 @@ public class FindRestEnabledServersFunction extends FunctionAdapter implements I
       GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getAnyInstance();
       DistributionConfig config = InternalDistributedSystem.getAnyInstance().getConfig();
 
+      String bindAddress = RestAgent.getBindAddressForHttpService(config);
+
       final String protocolType = config.getHttpServiceSSLEnabled() ? "https" : "http";
 
       if (c.isRESTServiceRunning()) {
-        context.getResultSender().lastResult(protocolType + "://"
-            + config.getHttpServiceBindAddress() + ":" + config.getHttpServicePort());
+        context.getResultSender()
+            .lastResult(protocolType + "://" + bindAddress + ":" + config.getHttpServicePort());
 
       } else {
         context.getResultSender().lastResult("");

@@ -36,6 +36,9 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.Assert;
 
@@ -49,12 +52,13 @@ import java.nio.charset.StandardCharsets;
 public class GeodeRestClient {
 
   public final static String PROTOCOL = "http";
-  public final static String HOSTNAME = "localhost";
   public final static String CONTEXT = "/geode/v1";
 
   private int restPort = 0;
+  private String bindAddress = null;
 
-  public GeodeRestClient(int restPort) {
+  public GeodeRestClient(String bindAddress, int restPort) {
+    this.bindAddress = bindAddress;
     this.restPort = restPort;
   }
 
@@ -113,21 +117,19 @@ public class GeodeRestClient {
     return response.getStatusLine().getStatusCode();
   }
 
-  public static JSONTokener getResponseBody(HttpResponse response) throws IOException {
-    HttpEntity entity = response.getEntity();
-    InputStream content = entity.getContent();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-    String line;
-    StringBuilder str = new StringBuilder();
-    while ((line = reader.readLine()) != null) {
-      str.append(line);
-    }
-    return new JSONTokener(str.toString());
+  public static JSONObject getJsonObject(HttpResponse response) throws IOException, JSONException {
+    JSONTokener tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
+    return new JSONObject(tokener);
+  }
+
+  public static JSONArray getJsonArray(HttpResponse response) throws IOException, JSONException {
+    JSONTokener tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
+    return new JSONArray(tokener);
   }
 
   public HttpResponse doRequest(HttpRequestBase request, String username, String password)
       throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(HOSTNAME, restPort, PROTOCOL);
+    HttpHost targetHost = new HttpHost(bindAddress, restPort, PROTOCOL);
     CloseableHttpClient httpclient = HttpClients.custom().build();
     HttpClientContext clientContext = HttpClientContext.create();
     // if username is null, do not put in authentication

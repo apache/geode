@@ -59,7 +59,7 @@ public class RestSecurityIntegrationTest {
 
   @ClassRule
   public static ServerStarter serverStarter = new ServerStarter(properties);
-  private final GeodeRestClient restClient = new GeodeRestClient(restPort);
+  private final GeodeRestClient restClient = new GeodeRestClient("localhost", restPort);
 
   @BeforeClass
   public static void before() throws Exception {
@@ -199,7 +199,7 @@ public class RestSecurityIntegrationTest {
     assertEquals("A '200 - OK' was expected", 200, restClient.getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, restClient.getContentType(response));
 
-    JSONObject jsonObject = new JSONObject(restClient.getResponseBody(response));
+    JSONObject jsonObject = restClient.getJsonObject(response);
     JSONArray regions = jsonObject.getJSONArray("regions");
     assertNotNull(regions);
     assertTrue(regions.length() > 0);

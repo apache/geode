@@ -114,7 +114,7 @@ public class RestAgent {
   public void startHttpService() {
     // TODO: add a check that will make sure that we start HTTP service on
     // non-manager data node
-    String httpServiceBindAddress = getBindAddressForHttpService();
+    String httpServiceBindAddress = getBindAddressForHttpService(this.config);
     logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
         this.config.getHttpServicePort(), httpServiceBindAddress);
 
@@ -157,25 +157,25 @@ public class RestAgent {
     }
   }
 
-  private String getBindAddressForHttpService() {
-    java.lang.String bindAddress = this.config.getHttpServiceBindAddress();
-    if (StringUtils.isBlank(bindAddress)) {
-      if (StringUtils.isBlank(this.config.getServerBindAddress())) {
-        if (StringUtils.isBlank(this.config.getBindAddress())) {
-          try {
-            bindAddress = SocketCreator.getLocalHost().getHostAddress();
-            logger.info("RestAgent.getBindAddressForHttpService.localhost: "
-                + SocketCreator.getLocalHost().getHostAddress());
-          } catch (UnknownHostException e) {
-            logger.error("LocalHost could not be found.", e);
-            return bindAddress;
-          }
-        } else {
-          bindAddress = this.config.getBindAddress();
-        }
-      } else {
-        bindAddress = this.config.getServerBindAddress();
-      }
+  public static String getBindAddressForHttpService(DistributionConfig config) {
+    String bindAddress = config.getHttpServiceBindAddress();
+    if (!StringUtils.isBlank(bindAddress))
+      return bindAddress;
+
+    bindAddress = config.getServerBindAddress();
+    if (!StringUtils.isBlank(bindAddress))
+      return bindAddress;
+
+    bindAddress = config.getBindAddress();
+    if (!StringUtils.isBlank(bindAddress))
+      return bindAddress;
+
+    try {
+      bindAddress = SocketCreator.getLocalHost().getHostAddress();
+      logger.info("RestAgent.getBindAddressForHttpService.localhost: "
+          + SocketCreator.getLocalHost().getHostAddress());
+    } catch (UnknownHostException e) {
+      logger.error("LocalHost could not be found.", e);
     }
     return bindAddress;
   }

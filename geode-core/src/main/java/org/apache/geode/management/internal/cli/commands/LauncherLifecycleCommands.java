@@ -14,47 +14,32 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCK_MEMORY;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PROTOCOL;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__PASSWORD;
-
-import java.awt.Desktop;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
@@ -71,13 +56,13 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.net.*;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessStreamReader;
@@ -116,13 +101,50 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.awt.Desktop;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools
  * (like starting GemFire Monitor (GFMon) and Visual Statistics Display (VSD)) as well external
  * tools (like jconsole).
  * <p>
- * 
+ *
  * @see org.apache.geode.distributed.LocatorLauncher
  * @see org.apache.geode.distributed.ServerLauncher
  * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
@@ -1460,11 +1482,10 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_SERVER__REST_API, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__REST_API__HELP) final Boolean startRestApi,
-      @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_PORT,
-          unspecifiedDefaultValue = ("" + CacheServer.HTTP_DEFAULT_PORT),
+      @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_PORT, unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__HTTP_SERVICE_PORT__HELP) final String httpServicePort,
       @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS,
-          unspecifiedDefaultValue = CacheServer.HTTP_SERVICE_DEFAULT_BIND_ADDRESS,
+          unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress,
       @CliOption(key = CliStrings.START_SERVER__USERNAME, unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__USERNAME__HELP) final String userName,

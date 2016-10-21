@@ -12,21 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.rest.internal.web;
 
-
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
-import org.json.JSONObject;
+import org.json.JSONArray;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -35,48 +31,38 @@ import org.junit.experimental.categories.Category;
 import java.util.Properties;
 
 @Category(IntegrationTest.class)
+public class RestServersJUnitTest {
 
-public class SwaggerVerificationTest {
-
-  private static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  private static int defaultPort = 7070;
   static Properties properties = new Properties() {
     {
       setProperty(START_DEV_REST_API, "true");
       setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-      setProperty(HTTP_SERVICE_PORT, restPort + "");
     }
   };
 
   @ClassRule
   public static ServerStarter serverStarter = new ServerStarter(properties);
-  private final GeodeRestClient restClient = new GeodeRestClient("localhost", restPort);
+  private static GeodeRestClient restClient;
 
   @BeforeClass
   public static void before() throws Exception {
     serverStarter.startServer();
+    restClient = new GeodeRestClient("localhost", defaultPort);
   }
 
   @Test
-  public void isSwaggerRunning() throws Exception {
-    // Check the UI
-    HttpResponse response = restClient.doGetRequest("/geode/swagger-ui.html");
-    assertThat(GeodeRestClient.getCode(response), is(200));
+  public void testDefaultPort() throws Exception {
+    // make sure the server is started on the default port and we can connect using the default port
+    HttpResponse response = restClient.doGet("/", null, null);
+    Assert.assertEquals(200, GeodeRestClient.getCode(response));
+  }
 
-    // Check the JSON
-    response = restClient.doGetRequest("/geode/v2/api-docs");
-    assertThat(GeodeRestClient.getCode(response), is(200));
-    JSONObject json = GeodeRestClient.getJsonObject(response);
-    assertThat(json.get("swagger"), is("2.0"));
-
-    JSONObject info = json.getJSONObject("info");
-    assertThat(info.getString("description"),
-        is(LocalizedStrings.SwaggerConfig_DESCRIPTOR.toLocalizedString()));
-    assertThat(info.getString("title"),
-        is(LocalizedStrings.SwaggerConfig_VENDOR_PRODUCT_LINE.toLocalizedString()));
-
-    JSONObject license = info.getJSONObject("license");
-    assertThat(license.getString("name"), is("Apache License, version 2.0"));
-    assertThat(license.getString("url"), is("http://www.apache.org/licenses/"));
-
+  @Test
+  public void testServers() throws Exception {
+    HttpResponse response = restClient.doGet("/servers", null, null);
+    JSONArray body = GeodeRestClient.getJsonArray(response);
+    Assert.assertEquals(1, body.length());
+    Assert.assertEquals("http://localhost:7070", body.getString(0));
   }
 }
