@@ -77,6 +77,7 @@ public class EndpointManagerImpl implements EndpointManager {
           Map<ServerLocation, Endpoint> endpointMapTemp =
               new HashMap<ServerLocation, Endpoint>(endpointMap);
           endpoint = new Endpoint(this, ds, server, stats, memberId);
+          listener.clearPdxRegistry(endpoint);
           endpointMapTemp.put(server, endpoint);
           endpointMap = Collections.unmodifiableMap(endpointMapTemp);
           addedEndpoint = true;
@@ -291,9 +292,21 @@ public class EndpointManagerImpl implements EndpointManager {
       // logger.warn("HIGHUP:JOIN:"+endpoint.getLocation());
       for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
         EndpointManager.EndpointListener listener = itr.next();
-        listener.endpointNowInUse(endpoint);
+        if (!(listener instanceof PdxRegistryRecoveryListener)) {
+          listener.endpointNowInUse(endpoint);
+        }
       }
     }
+
+    public void clearPdxRegistry(Endpoint endpoint) {
+      for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
+        EndpointManager.EndpointListener listener = itr.next();
+        if (listener instanceof PdxRegistryRecoveryListener) {
+          listener.endpointNowInUse(endpoint);
+        }
+      }
+    }
+
   }
 
 
