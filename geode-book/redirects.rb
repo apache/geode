@@ -14,5 +14,5 @@
 #permissions and limitations under the License.
 
 r301 %r{/releases/latest/javadoc/(.*)}, 'http://geode.incubator.apache.org/releases/latest/javadoc/$1'
-rewrite '/', '/guide/about_geode.html'
-rewrite '/index.html', '/guide/about_geode.html'
+rewrite '/', '/docs/guide/about_geode.html'
+rewrite '/index.html', '/docs/guide/about_geode.html'
