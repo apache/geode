@@ -135,22 +135,14 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
                           afterAckForSecondary_EventInBucket(abstractSender, brq, key);
                           destroyKeyFromBucketQueue(brq, key, region);
                           isDestroyed = true;
-                        } else {
-                          // if BucketRegionQueue does not have the key, it
-                          // should be in tempQueue
-                          // remove it from there..defect #49196
-                          isDestroyed =
-                              destroyFromTempQueue(brq.getPartitionedRegion(), (Integer) bId, key);
                         }
-                        if (!isDestroyed) {
-                          // event is neither destroyed from BucketRegionQueue nor from tempQueue
-                          brq.addToFailedBatchRemovalMessageKeys(key);
-                          if (isDebugEnabled) {
-                            logger.debug(
-                                "Event is neither destroyed from BucketRegionQueue not from tempQueue. Added to failedBatchRemovalMessageKeys: {}",
-                                key);
-                          }
-                        }
+
+                        // Even if BucketRegionQueue does not have the key, it could be in the tempQueue
+                        // remove it from there..defect #49196
+                        destroyFromTempQueue(brq.getPartitionedRegion(), (Integer) bId, key);
+
+                        // Finally, add the key to the failed batch removal keys so that it is definitely removed from the bucket region queue
+                        brq.addToFailedBatchRemovalMessageKeys(key);
                       } finally {
                         brq.getInitializationLock().readLock().unlock();
                       }
