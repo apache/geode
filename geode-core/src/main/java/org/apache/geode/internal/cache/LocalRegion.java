@@ -8316,7 +8316,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (this.customEntryIdleTimeout != null || this.customEntryTimeToLive != null) {
             newTask = createExpiryTask(re);
             if (newTask == null) {
-              cancelExpiryTask(re); // cancel any old task
               return;
             }
             // to fix bug 44418 see if the new tasks expiration would be earlier than
@@ -8344,7 +8343,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (newTask == null) {
         newTask = createExpiryTask(re);
         if (newTask == null) {
-          cancelExpiryTask(re); // cancel any old task
           return;
         }
       }
@@ -8370,7 +8368,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // return;
       // }
     } else {
-      cancelExpiryTask(re);
       if (logger.isTraceEnabled()) {
         logger.trace("addExpiryTask(key) ignored");
       }

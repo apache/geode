@@ -3510,8 +3510,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Tests that an entry in a region that remains idle for a given amount of time is destroyed.
    */
-  @Category(FlakyTest.class) // GEODE-706: time sensitive, expiration, waitForDestroy,
-                             // EXPIRY_MS_PROPERTY, short timeout
   @Test
   public void testEntryIdleDestroy() throws Exception {
 

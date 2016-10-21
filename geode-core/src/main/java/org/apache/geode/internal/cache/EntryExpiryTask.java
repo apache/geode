@@ -111,7 +111,6 @@ public class EntryExpiryTask extends ExpiryTask {
     @Released
     EntryEventImpl event = EntryEventImpl.create(lr, Operation.EXPIRE_DESTROY, key, null,
         createExpireEntryCallback(lr, key), false, lr.getMyId());
-    event.setExpiryTask(this);
     try {
       event.setPendingSecondaryExpireDestroy(isPending);
       if (lr.generateEventID()) {
@@ -216,7 +215,7 @@ public class EntryExpiryTask extends ExpiryTask {
     // so the next call to addExpiryTaskIfAbsent will
     // add a new task instead of doing nothing, which would
     // erroneously cancel expiration for this key.
-    getLocalRegion().cancelExpiryTask(this.re, null);
+    getLocalRegion().cancelExpiryTask(this.re, this);
     getLocalRegion().performExpiryTimeout(this);
   }
 

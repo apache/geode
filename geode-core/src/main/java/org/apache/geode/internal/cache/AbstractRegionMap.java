@@ -1521,9 +1521,11 @@ public abstract class AbstractRegionMap implements RegionMap {
           } finally {
             if (opCompleted) {
               if (re != null) {
-                owner.cancelExpiryTask(re, event.getExpiryTask());
-              } else if (tombstone != null) {
-                owner.cancelExpiryTask(tombstone, event.getExpiryTask());
+                // we only want to cancel if concurrency-check is not enabled
+                // re(regionentry) will be null when concurrency-check is enable and removeTombstone
+                // method
+                // will call cancelExpiryTask on regionEntry
+                owner.cancelExpiryTask(re);
               }
             }
           }
@@ -3801,6 +3803,7 @@ public abstract class AbstractRegionMap implements RegionMap {
           try {
             re.setValue(_getOwner(), Token.REMOVED_PHASE2);
             if (removeTombstone(re)) {
+              _getOwner().cancelExpiryTask(re);
               result = true;
               incEntryCount(-1);
               // Bug 51118: When the method is called by tombstoneGC thread, current 're' is an
