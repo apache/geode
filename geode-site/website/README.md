@@ -6,7 +6,10 @@ Source files for the website are in `${geode-project-dir}/geode-site/website/con
 
 Generated files for the website are in `${geode-project-dir}/geode-site/content`.
 
-NOTE: To make changes to the [Apache Geode User Guide](http://geode.incubator.apache.org/docs/guide/About_Geode.html), see `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for information about contributing to the documentation source files and `${geode-project-dir}/geode-book/README.md` for information about building a local version of the guide and adding it to the website.
+NOTE: To make changes to the [Apache Geode User Guide](http://geode.incubator.apache.org/docs/guide/About_Geode.html):
+
+- See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for information about contributing to the documentation source files.
+- See `${geode-project-dir}/geode-book/README.md` for information about building a local version of the guide and adding it to the website.
 
 The website is updated by a "sync" tool that monitors the __asf-site__ branch 
 of our Git repo, so after making changes you must place your updated source
@@ -60,7 +63,7 @@ With a cwd of ``${geode-project-dir}/geode-site/website``:
 Run ``git status`` and you should see your changes plus any updated files
 under the ``${geode-project-dir}/content`` directory.
 
-NOTE: Whether or not you have made changes to the Apache Geode User Guide, you must now move the directory `${geode-project-dir}/geode-book/final_app/public/guide` to the `${geode-project-dir}/geode-site/content/docs` directory or the docs *will not be included* in your website build. See `${geode-project-dir}/geode-book/README.md` for more information.
+NOTE: Whether or not you have made changes to the Apache Geode User Guide, you must now build the User Guide and move the User Guide files to the Geode website. For instructions, see `${geode-project-dir}/geode-book/README.md`.
 
 To view your changes locally, use the view command to start a local web server. Check the website at [http://0.0.0.0:3000](http://0.0.0.0:3000)
 
@@ -86,7 +89,7 @@ Here is one way to accomplish this:
         $ nanoc compile
         $ cd ../content
         $ tar cvf new-website-content.tar .
-        $ mv new-website-content.tar ~/Desktop/.
+        $ mv new-website-content.tar ~/Desktop/
 
 2. Expand the TAR file at the top level of the __asf-site__ branch (cwd should be ${geode-project-dir}:
 

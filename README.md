@@ -3,7 +3,7 @@
 **[Location of Directions for Building from Source](#building)**  
 **[Geode in 5 minutes](#started)**  
 **[Application Development](#development)**  
-**[Documentation](http://geode.docs.pivotal.io/)**  
+**[Documentation](http://geode.incubator.apache.org/docs/)**  
 **[wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)**  
 **Continuous Integration** [![Build Status](https://travis-ci.org/apache/incubator-geode.svg?branch=develop)](https://travis-ci.org/apache/incubator-geode)  
 
@@ -63,7 +63,7 @@ _HelloWorld.java_
     import java.util.Map;
     import org.apache.geode.cache.Region;
     import org.apache.geode.cache.client.*;
-
+    
     public class HelloWorld {
       public static void main(String[] args) throws Exception {
         ClientCache cache = new ClientCacheFactory()
@@ -72,10 +72,10 @@ _HelloWorld.java_
         Region<String, String> region = cache
           .<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
           .create("region");
-
+    
         region.put("1", "Hello");
         region.put("2", "World");
-
+    
         for (Map.Entry<String, String>  entry : region.entrySet()) {
           System.out.format("key = %s, value = %s\n", entry.getKey(), entry.getValue());
         }

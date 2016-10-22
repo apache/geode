@@ -68,7 +68,7 @@ Once you have reviewed your local build of the User Guide, you can embed it in t
    $ nanoc compile
 ```
 
-2. Move the built User Guide files to the Geode website. Navigate to: `{geode-project-dir}/geode-book/final_app/public/` and enter::
+2. Move the built User Guide files to the Geode website. Navigate to: `{geode-project-dir}/geode-book/final_app/public/` and enter:
 ```
    $ tar cvf ~/Desktop/new-guide-content.tar
    $ cd ../../../geode-site/content
