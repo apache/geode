@@ -37,10 +37,6 @@ jline
 jna
 jopt-simple
 json4s-ast
-json4s-core
-json4s-ext
-json4s-jackson
-json4s-native
 log4j-api
 log4j-core
 log4j-jcl
@@ -79,5 +75,14 @@ spring-tx
 spring-web
 spring-webmvc
 swagger-annotations
-swagger-core
-swagger-springmvc
+mapstruct
+spring-plugin-core
+spring-plugin-metadata
+springfox-core
+springfox-schema
+springfox-spi
+springfox-spring-web
+springfox-swagger
+springfox-swagger-common
+springfox-swagger-ui
+swagger-models
