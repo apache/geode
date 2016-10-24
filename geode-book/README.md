@@ -32,29 +32,33 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 ## Building the Documentation
 
 1. The GemFile in the `geode-book` directory already defines the `gem "bookbindery"` dependency. Make sure you are in the `{geode-project-dir}/geode-book` directory and enter:
+
 ```
-   $ bundle install
+    $ bundle install
 ```
 
    Note: You will not have to run `bundle install` on subsequent builds.
 
 2. To build the documentation locally using the installed `config.yml` file, enter:
+
 ```
-   $ bundle exec bookbinder bind local
+    $ bundle exec bookbinder bind local
 ```
 
    Bookbinder converts the markdown source into HTML, which it puts in the `final_app` directory.
 
 3. Navigate to `{geode-project-dir}/geode-book/final_app/` and enter:
+
 ```
-   $ bundle install
+    $ bundle install
 ```
 
    Note: You will not have to run `bundle install` on subsequent builds.
 
 4. To start a local website of the Apache Geode User Guide, enter:
+
 ```
-   $ rackup
+    $ rackup
 ```
 
    You can now view the local documentation at <http://localhost:9292>. 
@@ -64,20 +68,23 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 Once you have reviewed your local build of the User Guide, you can embed it in the Apache Geode website by doing the following:
 
 1. Compile the website source *before adding the User Guide files*. In the `{geode-project-dir}/geode-site/website` directory, enter:
+
 ```
-   $ nanoc compile
+    $ nanoc compile
 ```
 
 2. Move the built User Guide files to the Geode website. Navigate to: `{geode-project-dir}/geode-book/final_app/public/` and enter:
+
 ```
-   $ tar cvf ~/Desktop/new-guide-content.tar
-   $ cd ../../../geode-site/content
-   $ tar xvf ~/Desktop/new-guide-content.tar
+    $ tar cvf ~/Desktop/new-guide-content.tar .
+    $ cd ../../../geode-site/content
+    $ tar xvf ~/Desktop/new-guide-content.tar
 ```
 
 3. In the `{geode-project-dir}/geode-site/website` directory, enter:
+
 ```
-   $ nanoc view
+    $ nanoc view
 ```
 
    You can now view the local website at http://localhost:3000.
