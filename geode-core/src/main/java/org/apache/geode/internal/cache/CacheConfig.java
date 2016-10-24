@@ -14,13 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.List;
-
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
-import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SecurityManager;
+
+import java.util.List;
 
 /**
  * This is helper class used by CacheFactory to pass the cache configuration values to cache
@@ -34,6 +35,9 @@ public class CacheConfig {
   public static String DEFAULT_PDX_DISK_STORE = null;
   public static boolean DEFAULT_PDX_PERSISTENT = false;
   public static boolean DEFAULT_PDX_IGNORE_UNREAD_FIELDS = false;
+
+  private static SecurityManager securityManager = null;
+  private static PostProcessor postProcessor = null;
 
   public boolean pdxReadSerialized = DEFAULT_PDX_READ_SERIALIZED;
 
@@ -88,14 +92,26 @@ public class CacheConfig {
     return pdxSerializer;
   }
 
+  public SecurityManager getSecurityManager() {
+    return securityManager;
+  }
 
+  public void setSecurityManager(SecurityManager securityManager) {
+    CacheConfig.securityManager = securityManager;
+  }
 
   public void setPdxSerializer(PdxSerializer pdxSerializer) {
     pdxSerializerUserSet = true;
     this.pdxSerializer = pdxSerializer;
   }
 
+  public PostProcessor getPostProcessor() {
+    return postProcessor;
+  }
 
+  public void setPostProcessor(PostProcessor postProcessor) {
+    CacheConfig.postProcessor = postProcessor;
+  }
 
   public String getPdxDiskStore() {
     return pdxDiskStore;

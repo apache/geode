@@ -28,6 +28,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SecurityManager;
 
 
 /**
@@ -322,6 +324,38 @@ public class CacheFactory {
    */
   public CacheFactory setPdxReadSerialized(boolean readSerialized) {
     this.cacheConfig.setPdxReadSerialized(readSerialized);
+    return this;
+  }
+
+  /**
+   * sets the securityManager for the cache. If this securityManager is set. It will override the
+   * security-manager property you set in your gemfire system properties.
+   *
+   * This is provided mostly for container to inject an already initialized securityManager. An
+   * object provided this way is expected to be initialized already. We are not calling the init
+   * method on this object
+   *
+   * @param securityManager
+   * @return
+   */
+  public CacheFactory setSecurityManager(SecurityManager securityManager) {
+    this.cacheConfig.setSecurityManager(securityManager);
+    return this;
+  }
+
+  /**
+   * sets the postProcessor for the cache. If this postProcessor is set. It will override thie
+   * security-post-processor setting in the gemfire system properties.
+   *
+   * This is provided mostly for container to inject an already initialized post processor. An
+   * object provided this way is expected to be initialized already. We are not calling the init
+   * method on this object
+   * 
+   * @param postProcessor
+   * @return
+   */
+  public CacheFactory setPostProcessor(PostProcessor postProcessor) {
+    this.cacheConfig.setPostProcessor(postProcessor);
     return this;
   }
 

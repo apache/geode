@@ -18,14 +18,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
-import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -133,7 +138,7 @@ public class IntegratedSecurityServiceTest {
   }
 
   @Test
-  public void testInitWithBothAuthenticator() {
+  public void testInitWithAuthenticators() {
     properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
     properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
 
@@ -153,6 +158,48 @@ public class IntegratedSecurityServiceTest {
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
     assertTrue(securityService.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void testNoInit() {
+    assertFalse(securityService.isIntegratedSecurity());
+  }
+
+  @Test
+  public void testInitWithOutsideShiroSecurityManager() {
+    SecurityUtils.setSecurityManager(new DefaultSecurityManager());
+    securityService.initSecurity(properties);
+    assertTrue(securityService.isIntegratedSecurity());
+  }
+
+  @Test
+  public void testSetSecurityManager() {
+    // initially
+    assertFalse(securityService.isIntegratedSecurity());
+
+    // init with client authenticator
+    properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
+    securityService.initSecurity(properties);
+    assertFalse(securityService.isIntegratedSecurity());
+    assertTrue(securityService.isClientSecurityRequired());
+    assertFalse(securityService.isPeerSecurityRequired());
+
+    // set a security manager
+    securityService.setSecurityManager(new SimpleSecurityManager());
+    assertTrue(securityService.isIntegratedSecurity());
+    assertTrue(securityService.isClientSecurityRequired());
+    assertTrue(securityService.isPeerSecurityRequired());
+    assertFalse(securityService.needPostProcess());
+
+    // set a post processor
+    securityService.setPostProcessor(new SamplePostProcessor());
+    assertTrue(securityService.isIntegratedSecurity());
+    assertTrue(securityService.needPostProcess());
+  }
+
+  @After
+  public void after() {
+    securityService.close();
   }
 
   private static class Factories {

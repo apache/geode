@@ -14,13 +14,6 @@
  */
 package org.apache.geode.internal.security;
 
-import java.lang.reflect.Method;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
-
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -28,6 +21,12 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
+import java.lang.reflect.Method;
+import java.util.Properties;
+import java.util.concurrent.Callable;
 
 public interface SecurityService {
 
@@ -96,7 +95,11 @@ public interface SecurityService {
 
   SecurityManager getSecurityManager();
 
+  void setSecurityManager(SecurityManager securityManager);
+
   PostProcessor getPostProcessor();
+
+  void setPostProcessor(PostProcessor postProcessor);
 
   /**
    * this method would never return null, it either throws an exception or returns an object

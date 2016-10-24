@@ -42,6 +42,7 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
@@ -73,7 +74,7 @@ public class IntegratedSecurityService implements SecurityService {
   private PostProcessor postProcessor;
   private SecurityManager securityManager;
 
-  private boolean isIntegratedSecurity;
+  private Boolean isIntegratedSecurity;
 
   private boolean isClientAuthenticator; // is there a SECURITY_CLIENT_AUTHENTICATOR
   private boolean isPeerAuthenticator; // is there a SECURITY_PEER_AUTHENTICATOR
@@ -85,7 +86,7 @@ public class IntegratedSecurityService implements SecurityService {
    * @return the shiro subject, null if security is not enabled
    */
   public Subject getSubject() {
-    if (!isIntegratedSecurity) {
+    if (!isIntegratedSecurity()) {
       return null;
     }
 
@@ -133,7 +134,7 @@ public class IntegratedSecurityService implements SecurityService {
    * @return null if security is not enabled, otherwise return a shiro subject
    */
   public Subject login(Properties credentials) {
-    if (!isIntegratedSecurity) {
+    if (!isIntegratedSecurity()) {
       return null;
     }
 
@@ -300,7 +301,7 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
-    String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
+    String securityManagerConfig = securityProps.getProperty(SECURITY_MANAGER);
     String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     String peerAuthenticatorConfig = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
 
@@ -318,18 +319,17 @@ public class IntegratedSecurityService implements SecurityService {
       org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
       SecurityUtils.setSecurityManager(securityManager);
       isIntegratedSecurity = true;
+      isClientAuthenticator = false;
+      isPeerAuthenticator = false;
     }
     // only set up shiro realm if user has implemented SecurityManager
-    else if (!StringUtils.isBlank(securityConfig)) {
-      securityManager =
-          SecurityService.getObjectOfTypeFromClassName(securityConfig, SecurityManager.class);
+    else if (!StringUtils.isBlank(securityManagerConfig)) {
+      SecurityManager securityManager = SecurityService
+          .getObjectOfTypeFromClassName(securityManagerConfig, SecurityManager.class);
       securityManager.init(securityProps);
-      Realm realm = new CustomAuthRealm(securityManager);
-      org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
-      SecurityUtils.setSecurityManager(shiroManager);
-      isIntegratedSecurity = true;
+      this.setSecurityManager(securityManager);
     } else {
-      isIntegratedSecurity = false;
+      isIntegratedSecurity = null;
       isClientAuthenticator = !StringUtils.isBlank(clientAuthenticatorConfig);
       isPeerAuthenticator = !StringUtils.isBlank(peerAuthenticatorConfig);
     }
@@ -356,7 +356,8 @@ public class IntegratedSecurityService implements SecurityService {
       postProcessor = null;
     }
     ThreadContext.remove();
-    isIntegratedSecurity = false;
+    SecurityUtils.setSecurityManager(null);
+    isIntegratedSecurity = null;
     isClientAuthenticator = false;
     isPeerAuthenticator = false;
   }
@@ -367,7 +368,7 @@ public class IntegratedSecurityService implements SecurityService {
    * bypass it entirely, call this first.
    */
   public boolean needPostProcess() {
-    return (isIntegratedSecurity && postProcessor != null);
+    return (isIntegratedSecurity() && postProcessor != null);
   }
 
   public Object postProcess(String regionPath, Object key, Object value,
@@ -412,19 +413,55 @@ public class IntegratedSecurityService implements SecurityService {
     return securityManager;
   }
 
+  public void setSecurityManager(SecurityManager securityManager) {
+    if (securityManager == null) {
+      return;
+    }
+
+    this.securityManager = securityManager;
+    Realm realm = new CustomAuthRealm(securityManager);
+    org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
+    SecurityUtils.setSecurityManager(shiroManager);
+    isIntegratedSecurity = true;
+    isClientAuthenticator = false;
+    isPeerAuthenticator = false;
+  }
+
   public PostProcessor getPostProcessor() {
     return postProcessor;
   }
 
+  public void setPostProcessor(PostProcessor postProcessor) {
+    if (postProcessor == null) {
+      return;
+    }
+
+    this.postProcessor = postProcessor;
+  }
+
+  /**
+   * If Shiro's security manager is configured, then return true, otherwise, return false;
+   * 
+   * @return
+   */
   public boolean isIntegratedSecurity() {
+    if (isIntegratedSecurity != null) {
+      return isIntegratedSecurity;
+    }
+
+    try {
+      isIntegratedSecurity = (SecurityUtils.getSecurityManager() != null);
+    } catch (UnavailableSecurityManagerException e) {
+      isIntegratedSecurity = false;
+    }
     return isIntegratedSecurity;
   }
 
   public boolean isClientSecurityRequired() {
-    return isClientAuthenticator || isIntegratedSecurity;
+    return isClientAuthenticator || isIntegratedSecurity();
   }
 
   public boolean isPeerSecurityRequired() {
-    return isPeerAuthenticator || isIntegratedSecurity;
+    return isPeerAuthenticator || isIntegratedSecurity();
   }
 }
