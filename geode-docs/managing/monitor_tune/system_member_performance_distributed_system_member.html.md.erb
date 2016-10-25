@@ -1,0 +1,28 @@
+---
+title:  Distributed System Member Properties
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Several performance-related properties apply to a cache server or application that connects to the distributed system.
+
+-   **statistic-sampling-enabled**.Turning off statistics sampling saves resources, but it also takes away potentially valuable information for ongoing system tuning and unexpected system problems. If LRU eviction is configured, then statistics sampling must be on.
+-   **statistic-sample-rate**. Increasing the sample rate for statistics reduces system resource use while still providing some statistics for system tuning and failure analysis.
+-   **log-level**. As with the statistic sample rate, lowering this setting reduces system resource consumption. See [Logging](../logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865).
+
+

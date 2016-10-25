@@ -1,0 +1,77 @@
+---
+title:  help
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Display syntax and usage information for all the available commands.
+
+Typing help without a command as an argument lists all available commands.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+help [command]
+```
+
+**Examples Commands:**
+
+``` pre
+help
+help rebalance
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>help rebalance
+NAME
+        rebalance
+IS AVAILABLE
+        true
+SYNOPSIS
+        Rebalance partitioned regions. The default is for all partitioned region
+s to be rebalanced.
+SYNTAX
+        rebalance [--include-region=value(,value)*] [--exclude-region=value(,val
+ue)*] [--time-out=value] [--simulate(=value)?]
+PARAMETERS
+        include-region
+                Partitioned regions to be included when rebalancing. Includes ta
+ke precedence over excludes.
+                Required:false
+        exclude-region
+                Partitioned regions to be excluded when rebalancing.
+                Required:false
+        time-out
+                Time to wait (in seconds) before GFSH returns to a prompt while
+rebalancing continues in the background. The default is to wait for rebalancing
+to complete.
+                Required:false
+                Default if the parameter is not specified:-1
+        simulate
+                Whether to only simulate rebalancing. The --time-out parameter i
+s not available when simulating.
+                Required:false
+                Default if no value for the parameter is given:true
+                Default if the parameter is not specified:false
+```
+
+

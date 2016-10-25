@@ -1,0 +1,80 @@
+---
+title:  Index Samples
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic provides code samples for creating query indexes.
+
+``` pre
+ // Key index samples. The field doesn't have to be present.
+createKeyIndex("pkidIndex","p.pkid1","/root/exampleRegion p");
+ 
+createKeyIndex("Index4","ID","/portfolios");
+ 
+// Simple index
+createIndex("pkidIndex","p.pkid","/root/exampleRegion p");
+createIndex("i", "p.status", "/exampleRegion p")
+createIndex("i", "p.ID", "/exampleRegion p")
+createIndex("i", "p.position1.secId", "/exampleRegion p"
+ 
+// On Set type
+ createIndex("setIndex","s","/root/exampleRegion p, p.sp s");
+ 
+// Positions is a map
+createIndex("secIdIndex","b.secId","/portfolios pf, pf.positions.values b");
+
+//...
+createIndex("i", "pf.collectionHolderMap[(pf.Id).toString()].arr[pf.ID]", "/exampleRegion pf")
+createIndex("i", "pf.ID", "/exampleRegion pf", "pf.positions.values pos")
+createIndex("i", "pos.secId", "/exampleRegion pf", "pf.positions.values pos")
+createIndex("i", "e.value.getID()", "/exampleRegion.entrySet e")
+createIndex("i", "e.value.ID", "/exampleRegion.entrySet e")
+
+//...
+createIndex("i", "entries.value.getID", "/exampleRegion.entrySet() entries")
+createIndex("i", "ks.toString", "/exampleRegion.getKeys() ks")
+createIndex("i", "key.status", "/exampleRegion.keys key")
+createIndex("i", "secIds.length", "/exampleRegion p, p.secIds secIds")
+createIndex("i", "secId", "/portfolios.asList[1].positions.values")
+createIndex("i", "secId", "/portfolios['1'].positions.valules")
+
+//Index on Map types
+createIndex("i", "p.positions['key1']", "/exampleRegion p")
+createIndex("i", "p.positions['key1','key2',key3',key7']", "/exampleRegion p")
+createIndex("i", "p.positions[*]", "/exampleRegion p")
+```
+
+The following are some sample queries on indexes.
+
+``` pre
+SELECT * FROM (SELECT * FROM /R2 m) r2, (SELECT * FROM  /exampleRegion e WHERE e.pkid IN r2.sp) p
+
+SELECT * FROM (SELECT * FROM /R2 m WHERE m.ID IN SET (1, 5, 10)) r2, 
+     (SELECT * FROM  /exampleRegion e WHERE e.pkid IN  r2.sp) p
+
+//examples using position index in the collection
+SELECT * FROM /exampleRegion p WHERE p.names[0] = 'aaa'
+
+SELECT * FROM /exampleRegion p WHERE p.position3[1].portfolioId = 2
+
+SELECT DISTINCT positions.values.toArray[0], positions.values.toArray[0], status 
+FROM /exampleRegion
+```
+
+

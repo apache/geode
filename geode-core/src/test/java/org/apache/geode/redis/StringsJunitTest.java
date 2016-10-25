@@ -16,10 +16,10 @@
  */
 package org.apache.geode.redis;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import org.apache.geode.redis.GeodeRedisServer;
 import org.junit.After;
@@ -32,7 +32,7 @@ import redis.clients.jedis.Jedis;
 import java.io.IOException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)

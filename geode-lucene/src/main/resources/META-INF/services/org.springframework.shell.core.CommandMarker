@@ -1,2 +1,2 @@
 # Lucene Extensions command
-com.gemstone.gemfire.cache.lucene.internal.cli.LuceneIndexCommands
+org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommands

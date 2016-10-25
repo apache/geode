@@ -1,0 +1,141 @@
+---
+title:  close
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Close durable client CQs and durable clients.
+
+-   **[close durable-client](../../../tools_modules/gfsh/command-pages/close.html#topic_4125AAAB9FE44CD787166E48B694C41D)**
+
+    Attempts to close a durable client. The client must be disconnected for this command to work.
+
+-   **[close durable-cq](../../../tools_modules/gfsh/command-pages/close.html#topic_1BC15B3132BA480DB227921A9B3ABDD1)**
+
+    Closes the durable continuous query (CQ) registered by the durable client and drain events held for the durable CQ from the subscription queue.
+
+## <a id="topic_4125AAAB9FE44CD787166E48B694C41D" class="no-quick-link"></a>close durable-client
+
+Attempts to close a durable client. The client must be disconnected for this command to work.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+close durable-client --durable-client-id=value [--member=value] [--group=value]
+```
+
+<a id="topic_4125AAAB9FE44CD787166E48B694C41D__table_618C978BA2B442A9A979243B50856885"></a>
+
+| Name                                                       | Description                                                            |
+|------------------------------------------------------------|------------------------------------------------------------------------|
+| \\-\\-durable-client-id  | *Required.* The ID of the durable client.                              |
+| \\-\\-member             | Name or ID of the member for which the durable client is to be closed. |
+| \\-\\-group              | Group of members for which the durable client is to be closed.         |
+
+<span class="tablecap">Table 1. Close Durable-Client Parameters</span>
+
+**Example Commands**:
+
+``` pre
+close durable-client --durable-client-id=client1
+```
+
+**Sample Output**:
+
+``` pre
+gfsh>close durable-client --durable-client-id=client1
+Closed the durable client : "client1". on following members.
+1.server4
+2.server3
+```
+
+**Error Messages:**
+
+``` pre
+gfsh>close durable-cq --durable-cq-name=cq1 --durable-client-id=client1
+
+Could not close the durable-cq : "cq1" for the durable-client-id : "client1" due to following reasons.
+
+CacheClientProxy: Could not drain cq cq1 because client proxy id client1 is connected.
+Occurred on members
+1.server4
+2.server3
+
+No client found with client-id : client1
+Occurred on members
+1.server1
+```
+
+## <a id="topic_1BC15B3132BA480DB227921A9B3ABDD1" class="no-quick-link"></a>close durable-cq
+
+Closes the durable continuous query (CQ) registered by the durable client and drain events held for the durable CQ from the subscription queue.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+close durable-cq --durable-client-id=value --durable-cq-name=value 
+[--member=value] [--group=value]
+```
+
+<a id="topic_1BC15B3132BA480DB227921A9B3ABDD1__table_CEFFFECABBDF4DC4A37E8861422EEB5C"></a>
+
+| Name                                                 | Description                                                                                          |
+|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| \\-\\-durable-client-id | Required. The ID of the durable client.                                                              |
+| \\-\\-durable-cq-name   | Required. Name of the CQ to be closed.                                                               |
+| \\-\\-member            | Name or ID of the member for which the durable client is registered and the durable CQ to be closed. |
+| \\-\\-group             | Group of members for which the durable client is registered and the durable CQ to be closed.         |
+
+<span class="tablecap">Table 2. Close Durable-CQ Parameters</span>
+
+**Example Commands:**
+
+``` pre
+close durable-cq --durable-client-id=client1 --durable-cq-name=cq1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>close durable-cq --durable-cq-name=cq1 --durable-client-id=client1
+Closed the durable cq : "cq1" for the durable client : "client1". on following members.
+1.server4
+2.server3
+```
+
+**Error Messages:**
+
+``` pre
+gfsh>close durable-client --durable-client-id=client1
+Unable to close the durable client : "client1" due to following reasons.
+
+Cannot close a running durable client : client1
+Occurred on members
+1.server4
+2.server3
+
+No client found with client-id : client1
+Occurred on members
+1.server1
+```
+
+

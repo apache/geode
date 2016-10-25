@@ -1,0 +1,43 @@
+---
+title:  Using Non-ASCII Strings in Apache Geode Property Files
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can specify Unicode (non-ASCII) characters in Apache Geode property files by using a `\uXXXX` escape sequence.
+
+For a supplementary character, you need two escape sequences, one for each of the two UTF-16 code units. The XXXX denotes the 4 hexadecimal digits for the value of the UTF-16 code unit. For example, a properties file might have the following entries:
+
+``` pre
+s1=hello there
+s2=\u3053\u3093\u306b\u3061\u306f
+```
+
+For example, in `gemfire.properties`, you might write:
+
+``` pre
+log-file=my\u00df.log
+```
+
+to indicate the desired propery definition of `log-file=myß.log`.
+
+If you have edited and saved the file in a non-ASCII encoding, you can convert it to ASCII with the `native2ascii` tool included in your Oracle Java distribution. For example, you might want to do this when editing a properties file in Shift\_JIS, a popular Japanese encoding.
+
+For more information on internationalization in Java, see [http://www.oracle.com/technetwork/java/javase/tech/intl-139810.html](http://www.oracle.com/technetwork/java/javase/tech/intl-139810.html).
+
+

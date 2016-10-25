@@ -1,0 +1,103 @@
+---
+title:  PUT /gemfire-api/v1/{region}/{key1},{key2},...{keyN}
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Update or insert (put) data for multiple keys in the region.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key},{key2},...{keyN}
+```
+
+## Parameters
+
+See [PUT /gemfire-api/v1/{region}/{key}?op=REPLACE](put_replace_data.html#topic_itv_mg5_m4) and [PUT /gemfire-api/v1/{region}/{key}?op=CAS](put_update_cas_data.html#topic_itv_mg5_m4).
+
+## Example Request
+
+``` pre
+Request Payload: application/json
+
+PUT /gemfire-api/v1/orders/4,5
+
+Accept: application/json
+Content-Type: application/json
+[
+    {
+        "@type":  "org.apache.geode.web.rest.domain.Order",
+         "purchaseOrderNo": 555,
+         "customerId": 5,
+         "description":  "Order for 23 Corp",
+         "orderDate":  "01/15/2014",
+         "deliveryDate":  "02/20/2014",
+         "contact":  "Jane Doe",
+         "email":  "jane.doe@example.com",
+         "phone":  "01-2048096",
+         "items": [
+            {
+                 "itemNo": 321,
+                 "description":  "part 21",
+                 "quantity": 2,
+                 "unitPrice": 49.95,
+                 "totalPrice": 99.9
+            }
+        ],
+         "totalPrice": 99.9
+    },
+    {
+         "@type":  "org.apache.geode.web.rest.domain.Order",
+         "purchaseOrderNo": 777,
+         "customerId": 11,
+         "description":  "Order for  MNP Corp",
+         "orderDate":  "02/10/2014",
+         "deliveryDate":  "02/20/2014",
+         "contact":  "Trent Jones",
+         "email":  "trent.jones@example.com",
+         "phone":  "503-555-1221",
+         "items": [
+            {
+                 "itemNo": 321,
+                 "description":  "Product-21",
+                 "quantity": 3,
+                 "unitPrice": 49.95,
+                 "totalPrice": 149.85
+            }
+        ],
+         "totalPrice": 149.85
+    }
+]
+```
+
+## Example Success Response
+
+``` pre
+Response-payload: null
+
+200 OK
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                                                      |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| 400 BAD REQUEST           | Returned if one or more of the supplied keys is an invalid format.                                                               |
+| 404 NOT FOUND             | Returned if the region is not found.                                                                                             |
+| 500 INTERNAL SERVER ERROR | Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. |

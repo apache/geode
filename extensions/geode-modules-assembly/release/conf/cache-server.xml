@@ -60,7 +60,7 @@
       <entry-idle-time>
         <expiration-attributes timeout="0" action="invalidate">
           <custom-expiry>
-            <class-name>com.gemstone.gemfire.modules.util.SessionCustomExpiry</class-name>
+            <class-name>org.apache.geode.modules.util.SessionCustomExpiry</class-name>
           </custom-expiry>
         </expiration-attributes>
       </entry-idle-time>

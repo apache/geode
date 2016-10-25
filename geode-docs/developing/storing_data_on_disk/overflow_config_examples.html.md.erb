@@ -1,0 +1,53 @@
+---
+title:  Overflow Configuration Examples
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The `cache.xml` examples show configuration of region and server subscription queue overflows.
+
+<a id="overflow_config_examples__section_FD38DA72706245C996ACB7B23927F6AF"></a>
+Configure overflow criteria based on one of these factors:
+
+-   Entry count
+-   Absolute memory consumption
+-   Memory consumption as a percentage of the application heap (not available for server subscription queues)
+
+Configuration of region overflow:
+
+``` pre
+<!-- Overflow when the region goes over 10000 entries -->
+<region-attributes>
+  <eviction-attributes>
+    <lru-entry-count maximum="10000" action="overflow-to-disk"/>
+  </eviction-attributes>
+</region-attributes>
+```
+
+Configuration of server's client subscription queue overflow:
+
+``` pre
+<!-- Overflow the server's subscription queues when the queues reach 1 Mb of memory -->
+<cache> 
+  <cache-server> 
+    <client-subscription eviction-policy="mem" capacity="1"/> 
+  </cache-server> 
+</cache>
+```
+
+

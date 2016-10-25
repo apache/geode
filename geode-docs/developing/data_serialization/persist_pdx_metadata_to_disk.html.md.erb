@@ -1,0 +1,53 @@
+---
+title:  Persisting PDX Metadata to Disk
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode allows you to persist PDX metadata to disk and specify the disk store to use.
+
+<a id="persist_pdx_metadata_to_disk__section_7F357A8E56B54BFB9A5778C0F89E034E"></a>
+**Prerequisites**
+
+-   Understand generally how to configure the Geode cache. See [Basic Configuration and Programming](../../basic_config/book_intro.html).
+-   Understand how Geode disk stores work. See [Disk Storage](../../managing/disk_storage/chapter_overview.html).
+
+**Procedure**
+
+1.  Set the `<pdx>` attribute `persistent` to true in your cache configuration. This is required for caches that use PDX with persistent regions and with regions that use a gateway sender to distribute events across a WAN.. Otherwise, it is optional.
+2.  (Optional) If you want to use a disk store that is not the Geode default disk store, set the `<pdx>` attribute `disk-store-name` to the name of your non-default disk store.
+    **Note:**
+    If you are using PDX serialized objects as region entry keys and you are using persistent regions, then you must configure your PDX disk store to be a different one than the disk store used by the persistent regions.
+
+3.  (Optional) If you later want to rename the PDX types that are persisted to disk, you can do so on your offline disk-stores by executing the `pdx                             rename` command. See [pdx rename](../../tools_modules/gfsh/command-pages/pdx.html).
+
+**Example cache.xml:**
+
+This example `cache.xml` enables PDX persistence and sets a non-default disk store in a server cache configuration:
+
+``` pre
+  <pdx read-serialized="true" 
+       persistent="true" disk-store-name="SerializationDiskStore">
+    <pdx-serializer>
+      <class-name>pdxSerialization.defaultSerializer</class-name>
+    </pdx-serializer>
+  </pdx>
+  <region ...
+```
+
+

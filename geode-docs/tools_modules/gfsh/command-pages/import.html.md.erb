@@ -1,0 +1,100 @@
+---
+title: import
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_u55_wkd_2l"></a>
+
+
+You can import data into a region or import an existing cluster configuration into the cluster.
+
+-   **[import data](../../../tools_modules/gfsh/command-pages/import.html#topic_jw2_2ld_2l)**
+
+    Import user data from a file to a region.
+
+-   **[import cluster-configuration](../../../tools_modules/gfsh/command-pages/import.html#topic_vnv_grz_ck)**
+
+    Import a cluster configuration.
+
+## <a id="topic_jw2_2ld_2l" class="no-quick-link"></a>import data
+
+Import user data from a file to a region.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+ import data --region=value --file=value --member=value
+```
+
+<a id="topic_jw2_2ld_2l__table_lzg_3fg_2w"></a>
+
+| Name                                           | Description                                                                                                                                                                                                                      |
+|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-region</span> | *Required.* Region into which data will be imported.                                                                                                                                                                             |
+| <span class="keyword parmname">\\-\\-file </span>  | *Required.* File from which the imported data will be read. The file must have an extension of ".gfd" and must be on the file system of the member (or accessible to that member via NFS) that is being targeted for the import. |
+| <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/Id of a member which hosts the region. The data will be imported from the specified file on the host where the member is running.                                                                               |
+
+<span class="tablecap">Table 1. Import Data Parameters</span>
+
+**Example Commands:**
+
+``` pre
+import data --region=region2 --file=/mnt5/region2_20121001.gfd --member=server1
+```
+
+## <a id="topic_vnv_grz_ck" class="no-quick-link"></a>import cluster-configuration
+
+Import a cluster configuration.
+
+Imports all artifacts of a cluster configuration from a zip file.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Note:**
+Shutdown all data members (servers) before importing a shared configuration.
+
+**Syntax:**
+
+``` pre
+import cluster-configuration --zip-file-name=value
+```
+
+<a id="topic_vnv_grz_ck__table_w1m_kfg_2w"></a>
+
+| Name                                                  | Description                                                                                     |
+|-------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-zip-file-name</span> | *Required.* Name of the zip file containing the cluster configuration artifacts to be imported. |
+
+<span class="tablecap">Table 2. Import Cluster-Configuration Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh>import cluster-configuration --zip-file-name=/home/username/myClusterConfig.zip
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>import cluster-configuration --zip-file-name=/home/username/myClusterConfig.zip
+Cluster configuration successfully imported
+```
+
+

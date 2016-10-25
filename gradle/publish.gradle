@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 subprojects {
   apply plugin: 'com.bmuschko.nexus'
   
@@ -24,7 +25,7 @@ subprojects {
   }
   
   nexus {
-    sign = true
+    sign = Boolean.parseBoolean(nexusSignArchives)
     repositoryUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
     snapshotRepositoryUrl = 'https://repository.apache.org/content/repositories/snapshots'
   }
@@ -57,6 +58,8 @@ subprojects {
       //This black magic checks to see if a dependency has the flag ext.optional=true
       //set on it, and if so marks the dependency as optional in the maven pom
       def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
+      def runtimeDeps = project.configurations.runtime.dependencies.collectEntries { [it.name, it] }
+      depMap.putAll(runtimeDeps)
       asNode().dependencies.dependency.findAll {
         def dep = depMap.get(it.artifactId.text())
         return dep?.hasProperty('optional') && dep.optional

@@ -1,0 +1,64 @@
+---
+title:  load-balance gateway-sender
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Causes the specified gateway sender to close its current connections and reconnect to remote gateway receivers in a more balanced fashion.
+
+Use this command to load balance connections between gateway senders to receivers. For example, when you add a new gateway receiver node at a remote site, execute this command so that the new gateway receiver can pick up connections from the specified gateway sender. Invoking this command redistributes a sender's connections more evenly among all the gateway receivers.
+
+**Note:**
+This command has no effect on ping connections.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+load-balance gateway-sender --id=value
+```
+
+<a id="concept_fn2_qls_5q__table_jwk_tdg_2w"></a>
+
+| Name                                       | Description                           |
+|--------------------------------------------|---------------------------------------|
+| <span class="keyword parmname">\\-\\-id</span> | *Required.* ID of the Gateway Sender. |
+
+<span class="tablecap">Table 1. Load-Balance Gateway-Sender Parameters</span>
+
+**Example Commands:**
+
+``` pre
+load-balance gateway-sender --id=sender1-LN
+```
+
+**Sample Output:**
+
+``` pre
+load-balance gateway-sender --id=ny
+ 
+                 Member             | Result | Message
+  --------------------------------- | ------ |--------------------------------------------------------------------------
+boglesbymac(ln-1:88651)<v2>:48277 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-1:88651)<v2>:48277
+boglesbymac(ln-4:88681)<v5>:42784 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-4:88681)<v5>:42784
+boglesbymac(ln-3:88672)<v4>:43675 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-3:88672)<v4>:43675
+boglesbymac(ln-2:88662)<v3>:12796 | OK     | GatewaySender ny is rebalanced on member boglesbymac(ln-2:88662)<v3>:12796
+```
+
+

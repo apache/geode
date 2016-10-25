@@ -1,0 +1,82 @@
+---
+title:  Supported Literals
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## <a id="literals__section_BA2D0AC444EB45088F00D9E2C8A1DD06" class="no-quick-link"></a>Comparing Values With java.util.Date
+
+Geode supports the following literal types:
+
+<dt>**boolean**</dt>
+<dd>A `boolean` value, either TRUE or FALSE</dd>
+<dt>**int** and **long**</dt>
+<dd>An integer literal is of type `long` if has a suffix of the ASCII letter L. Otherwise it is of type `int`.</dd>
+<dt>**floating point**</dt>
+<dd>A floating-point literal is of type `float` if it has a suffix of an ASCII letter `F`. Otherwise its type is `double`. Optionally, it can have a suffix of an ASCII letter `D`. A double or floating point literal can optionally include an exponent suffix of `E` or `e`, followed by a signed or unsigned number.</dd>
+
+<dt>**string**</dt>
+<dd>String literals are delimited by single quotation marks. Embedded single-quotation marks are doubled. For example, the character string `'Hello'` evaluates to the value `Hello`, while the character string `'He said, ''Hello'''` evaluates to `He said, 'Hello'`. Embedded newlines are kept as part of the string literal.</dd>
+<dt>**char**</dt>
+<dd>A literal is of type char if it is a string literal prefixed by the keyword `CHAR`, otherwise it is of type `string`. The `CHAR` literal for the single-quotation mark character is `CHAR` `''''` (four single quotation marks).</dd>
+<dt>**date**</dt>
+<dd>A `java.sql.Date` object that uses the JDBC format prefixed with the DATE keyword: `DATE yyyy-mm-dd`. In the `Date`, `yyyy` represents the year, `mm` represents the month, and `dd` represents the day. The year must be represented by four digits; a two-digit shorthand for the year is not allowed.</dd>
+<dt>**time**</dt>
+<dd>A `java.sql.Time` object that uses the JDBC format (based on a 24-hour clock) prefixed with the TIME keyword: `TIME hh:mm:ss`. In the `Time`, `hh` represents the hours, `mm` represents the minutes, and `ss` represents the seconds.</dd>
+<dt>**timestamp**</dt>
+<dd>A `java.sql.Timestamp` object that uses the JDBC format with a TIMESTAMP prefix: `TIMESTAMP yyyy-mm-dd hh:mm:ss.fffffffff` In the `Timestamp`, `yyyy-mm-dd` represents the `date`, `hh:mm:ss` represents the `time`, and `fffffffff` represents the fractional seconds (up to nine digits).</dd>
+<dt>**NIL**</dt>
+<dd>Equivalent alternative of `NULL`.</dd>
+<dt>**NULL**</dt>
+<dd>The same as `null` in Java.</dd>
+<dt>**UNDEFINED**</dt>
+<dd>A special literal that is a valid value for any data type. An `UNDEFINED` value is the result of accessing an attribute of a null-valued attribute. Note that if you access an attribute that has an explicit value of null, then it is not undefined. For example if a query accesses the attribute address.city and address is null, the result is undefined. If the query accesses address, then the result is not undefined, it is `NULL`.</dd>
+
+You can compare temporal literal values `DATE`, `TIME`, and `TIMESTAMP` with `java.util.Date` values. There is no literal for `java.util.Date` in the query language.
+
+## <a id="literals__section_9EE6CFC410D2409188EDEAA43AC85851" class="no-quick-link"></a>Type Conversion
+
+The Geode query processor performs implicit type conversions and promotions under certain cases in order to evaluate expressions that contain different types. The query processor performs binary numeric promotion, method invocation conversion, and temporal type conversion.
+
+## <a id="literals__section_F5A3FC509FD04E09B5468BA94B814701" class="no-quick-link"></a>Binary Numeric Promotion
+
+The query processor performs binary numeric promotion on the operands of the following operators:
+
+-   Comparison operators &lt;, &lt;=, &gt;, and &gt;=
+-   Equality operators = and &lt;&gt;
+-   Binary numeric promotion widens the operands in a numeric expression to the widest representation used by any of the operands. In each expression, the query processor applies the following rules in the prescribed order until a conversion is made:
+    1.  If either operand is of type double, the other is converted to double
+    2.  If either operand is of type float, the other is converted to float
+    3.  If either operand is of type long, the other is converted to long
+    4.  Both operands are converted to type int char
+
+## <a id="literals__section_BA277AC4A9B34C93A5291ECC1FDC11C7" class="no-quick-link"></a>Method Invocation Conversion
+
+Method invocation conversion in the query language follows the same rules as Java method invocation conversion, except that the query language uses runtime types instead of compile time types, and handles null arguments differently than in Java. One aspect of using runtime types is that an argument with a null value has no typing information, and so can be matched with any type parameter. When a null argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an AmbiguousNameException
+
+## <a id="literals__section_0A1A6EFE98A24538B651373B1C6ED8C0" class="no-quick-link"></a>Temporal Type Conversion
+
+The temporal types that the query language supports include the Java types java.util.Date , java.sql.Date , java.sql.Time , and java.sql.Timestamp , which are all treated the same and can be compared and used in indexes. When compared with each other, these types are all treated as nanosecond quantities.
+
+## <a id="literals__section_73255A4630C94D04B461B1480AAF2F66" class="no-quick-link"></a>Enum Conversion
+
+Enums are not automatically converted. To use Enum values in query, you must use the toString method of the enum object or use a query bind parameter. See [Enum Objects](../query_select/the_where_clause.html#the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5) for more information.
+
+## <a id="literals__section_CB624C143A2743C5ADC6F95C962F176B" class="no-quick-link"></a>Query Evaulation of Float.NaN and Double.NaN
+
+Float.NaN and Double.NaN are not evaluated as primitives; instead, they are compared in the same manner used as the JDK methods Float.compareTo and Double.compareTo. See [Double.NaN and Float.NaN Comparisons](../query_select/the_where_clause.html#the_where_clause__section_E7206D045BEC4F67A8D2B793922BF213) for more information.

@@ -1,0 +1,237 @@
+---
+title:  Management and Monitoring Programming Examples
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+One example demonstrates the use of an MBean server to manage and monitor a node in a distributed system, and the other example acts as the managed node.
+
+## JMX Manager Node Example
+
+``` pre
+package quickstart;
+
+import java.util.Set;
+import javax.management.ObjectName;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.RegionMXBean;
+
+/**
+ * Example of a JMX Manager Node. It first creates a cache. 
+ * Then for each member of Distributed System it retrieves RegionMXBean and uses its data.
+ *   
+ * @author GemStone Systems, Inc.
+ * 
+ * @since 7.0
+ */
+public class ManagerNode {
+
+  /**
+   * @param args
+   */
+  public static final String EXAMPLE_REGION_NAME = "exampleRegion";
+
+  public static void main(String[] args) throws Exception {
+
+    //Set waiting period for federation in milliseconds
+    final int JMX_WAIT_PERIOD_FOR_FEDERATION_UPDATE = 2500;
+    
+    
+    System.out
+        .println("Connecting to the distributed system and creating the cache.");
+    
+    // Create the cache which causes the cache-xml-file to be parsed
+    Cache cache = new CacheFactory()
+                  .set("name", "ManagerNode")
+                  .set("statistic-sampling-enabled", "true")
+                  .set("jmx-manager-start","true")
+                  .set("jmx-manager","true")      
+                  .set("jmx-manager-port","2576")
+                  .set("cache-xml-file", "xml/Managed-node.xml").create(); 
+    
+    // Retrieve service
+    System.out.println("Retrieving service ...");
+    
+    //ManagementService.getManagementService() will create a service in case not already created
+    //ManagementService.getExistingManagementService() will return existing one, otherwise null.
+    ManagementService service = ManagementService.getManagementService(cache);
+    System.out.println("Retrieved service ");
+    
+    
+    //Retrieve distributed system members
+    System.out.println("Retrieving distributed members ...");
+    Set<DistributedMember> dsMembers = cache.getDistributedSystem()
+        .getAllOtherMembers();    
+    System.out.println("Retrieved " +dsMembers.size()+ " distributed members ");
+    
+    
+    //Sleep is needed for federation data to get published
+    System.out.println("Retrieving RegionMXBean for members in DS ...");
+    
+    try {
+      Thread.sleep(JMX_WAIT_PERIOD_FOR_FEDERATION_UPDATE);
+    } catch (Exception e) {
+
+    }
+    
+    for (DistributedMember dsMember : dsMembers) {
+      System.out.println("Retrieved RegionMXBean for member "+ dsMember.getId());    
+      
+      //Get region member bean name using region path. 
+      ObjectName regionMBeanName = service.getRegionMBeanName(dsMember, "/"
+          + EXAMPLE_REGION_NAME);
+      System.out.println("regionMBeanName " + regionMBeanName);
+      
+      //Get Region MBean Proxy
+      RegionMXBean regionMXBean = service.getMBeanInstance(regionMBeanName,
+          RegionMXBean.class);
+
+      // Validate regionMXbean
+      if(regionMXBean != null){        
+        System.out.println("Entry count in " + EXAMPLE_REGION_NAME + " is =" + regionMXBean.getEntryCount());
+      }else{
+        System.out.println("Retrieved RegionMXBean is null.");        
+      }
+    }
+    
+    // Close the cache and disconnect from GemFire distributed system
+    System.out.println("Closing the cache and disconnecting.");
+    cache.close();
+    
+    
+    //Complete Managed Node by pressing enter in managed node console
+    System.out.println("");
+    System.out.println("Press enter in Managed Node");
+
+  }
+}
+```
+
+## GemFire Managed Node Example
+
+``` pre
+package quickstart;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.RegionMXBean;
+
+/**
+ * In this example of Managed Node. 
+ * 1. It creates a cache and adds entries in it.
+ * 2. From ManagementService it retrieves service. 
+ * 3. From service gets Region Mbean.
+ *  
+ * 
+ * @author GemStone Systems, Inc.
+ * 
+ * @since 7.0
+ */
+
+public class ManagedNode {
+
+  /**
+   * @param args
+   */
+  public static final String EXAMPLE_REGION_NAME = "exampleRegion";
+
+  public static void main(String[] args) throws Exception {
+
+    //Set waiting period for federation in milliseconds
+    final int JMX_WAIT_PERIOD_FOR_FEDERATION_UPDATE = 2500;
+    
+    System.out
+        .println("Connecting to the distributed system and creating the cache.");
+
+    // Create the cache which causes the cache-xml-file to be parsed
+    System.out.println("Creating cache using Mbean.xml");
+    Cache cache = new CacheFactory().set("name", "ManagedNode")
+                      .set("log-level", "fine")
+                      .set("statistic-sampling-enabled", "true")                      
+                      .set("cache-xml-file", "xml/Managed-node.xml").create();
+
+    System.out.println("Created cache using Mbean.xml");
+
+    // Create one sample region
+    Region<Object, Object> region = cache.getRegion("/" + EXAMPLE_REGION_NAME);
+
+    // Add some entries to region
+    if (region != null) {
+      System.out.println("Adding key and value to region in member "
+          + cache.getDistributedSystem().getDistributedMember().getId());
+      for (int count = 0; count < 10; count++) {
+        String key = "key" + count;
+        String value = "value" + count;
+        region.put(key, value);
+      }
+    }
+
+    System.out.println("Retrieving service using cache ...");
+
+    // Retrieve service in this node
+    ManagementService service = ManagementService
+        .getExistingManagementService(cache);
+    System.out.println("Retrieved service.");
+
+    System.out.println("Retrieving RegionMXBean for " + EXAMPLE_REGION_NAME);   
+    
+    try{
+      Thread.sleep(JMX_WAIT_PERIOD_FOR_FEDERATION_UPDATE);
+    }catch(Exception e){
+      
+    }
+    
+    RegionMXBean regionBean = service.getLocalRegionMBean("/"
+        + EXAMPLE_REGION_NAME);
+
+ 
+
+    if (regionBean != null) {
+      System.out.println("Retrieved RegionMXBean for " + EXAMPLE_REGION_NAME);
+      System.out.println("Entry count for " + EXAMPLE_REGION_NAME + " is="
+          + regionBean.getEntryCount());
+
+      System.out.println("Start Manager Node and wait till it completes");
+
+    } else {
+      System.out.println("Could not retriev RegionMXBean for "
+          + EXAMPLE_REGION_NAME);
+    }
+
+    // Wait till user input, after manager node completes
+    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+        System.in));
+    bufferedReader.readLine();
+
+    // Close the cache and disconnect
+    System.out.println("Closing the cache and disconnecting.");
+    cache.close();
+  }
+
+}
+```
+
+

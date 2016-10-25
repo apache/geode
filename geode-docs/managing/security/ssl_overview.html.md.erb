@@ -1,0 +1,45 @@
+---
+title:  SSL
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+SSL protects your data in transit between applications by ensuring
+that only the applications identified by you can share distributed system data.
+
+To be secure, the data that is cached in a Geode system must be protected during storage, distribution, and processing. At any time, data in a distributed system may be in one or more of these locations:
+
+-   In memory
+-   On disk
+-   In transit between processes (for example, in an internet or intranet)
+
+For the protection of data in memory or on disk, Geode relies on your standard system security features such as firewalls, operating system settings, and JDK security settings.
+
+The SSL implementation ensures that only the applications identified by you can share distributed system data in transit. In this figure, the data in the visible portion of the distributed system is secured by the firewall and by security settings in the operating system and in the JDK. The data in the disk files, for example, is protected by the firewall and by file permissions. Using SSL for data distribution provides secure communication between Geode system members inside and outside the firewalls.
+
+<img src="../../images/security-5.gif" id="how_ssl_works__image_0437E0FC3EE74FB297BE4EBCC0FD4321" class="image" />
+
+
+-   **[Configuring SSL](implementing_ssl.html)**
+
+    You configure SSL for mutual authentication between members and to protect your data during distribution. You can use SSL alone or in conjunction with the other Geode security options.
+
+-   **[SSL Sample Implementation](ssl_example.html)**
+
+    A simple example demonstrates the configuration and startup of Geode system components with SSL.
+

@@ -44,10 +44,17 @@ public class SamplePostProcessor implements PostProcessor{
    * @return the processed value
    */
   @Override
-  public Object processRegionValue(Principal principal,
+  public Object processRegionValue(Object principal,
                                    String regionName,
                                    Object key,
                                    Object value) {
-    return principal.getName()+"/"+regionName+"/"+key+"/"+value;
+    String name = null;
+    if(principal instanceof Principal){
+      name = ((Principal) principal).getName();
+    }
+    else{
+      name = principal.toString();
+    }
+    return name+"/"+regionName+"/"+key+"/"+value;
   }
 }

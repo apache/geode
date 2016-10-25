@@ -18,11 +18,11 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;

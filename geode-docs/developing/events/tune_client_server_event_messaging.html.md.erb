@@ -1,0 +1,37 @@
+---
+title:  Tuning Client/Server Event Messaging
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="client_server_event_messaging__section_0894E034A285456EA01D5903248F9B3B"></a>
+The server uses an asynchronous messaging queue to send events to its clients. Every event in the queue originates in an operation performed by a thread in a client, a server, or an application in the server’s or some other distributed system. The event message has a unique identifier composed of the originating thread’s ID combined with its member’s distributed system member ID, and the sequential ID of the operation. So the event messages originating in any single thread can be grouped and ordered by time from lowest sequence ID to highest. Servers and clients track the highest sequential ID for each member thread ID.
+
+A single client thread receives and processes messages from the server, tracking received messages to make sure it does not process duplicate sends. It does this using the process IDs from originating threads.
+
+<img src="../../images_svg/tune_cs_event_messaging.svg" id="client_server_event_messaging__image_656BDF5E745F4C6D92C844C423102948" class="image" />
+
+The client’s message tracking list holds the highest sequence ID of any message received for each originating thread. The list can become quite large in systems where there are many different threads coming and going and doing work on the cache. After a thread dies, its tracking entry is not needed. To avoid maintaining tracking information for threads that have died, the client expires entries that have had no activity for more than the `subscription-message-tracking-timeout`.
+
+-   **[Conflate the Server Subscription Queue](../../developing/events/conflate_server_subscription_queue.html)**
+
+-   **[Limit the Server's Subscription Queue Memory Use](../../developing/events/limit_server_subscription_queue_size.html)**
+
+-   **[Tune the Client's Subscription Message Tracking Timeout](../../developing/events/tune_client_message_tracking_timeout.html)**
+
+

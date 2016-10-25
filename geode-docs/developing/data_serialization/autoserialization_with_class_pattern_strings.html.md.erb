@@ -1,0 +1,85 @@
+---
+title:  Customizing Serialization with Class Pattern Strings
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Use class pattern strings to name the classes that you want to serialize using Geode's reflection-based autoserializer and to specify object identity fields and to specify fields to exclude from serialization.
+
+The class pattern strings used to configured the `ReflectionBasedAutoSerializer` are standard regular expressions. For example, this expression would select all classes defined in the `com.company.domain` package and its subpackages:
+
+``` pre
+com\.company\.domain\..*
+```
+
+You can augment the pattern strings with a special notation to define fields to exclude from serialization and to define fields to mark as PDX identity fields. The full syntax of the pattern string is:
+
+``` pre
+<class pattern> [# (identity|exclude) = <field pattern>]... [, <class pattern>...]
+```
+
+The following example pattern string sets these PDX serialization criteria:
+
+-   Classes with names matching the pattern `com.company.DomainObject.*` are serialized. In those classes, fields beginning with `id` are marked as identity fields and fields named `creationDate` are not serialized.
+-   The class `com.company.special.Patient` is serialized. In the class, the field, `ssn` is marked as an identity field
+
+``` pre
+com.company.DomainObject.*#identity=id.*#exclude=creationDate, 
+com.company.special.Patient#identity=ssn
+```
+
+**Note:**
+There is no association between the `identity` and `exclude` options, so the pattern above could also be expressed as:
+
+``` pre
+com.company.DomainObject.*#identity=id.*, com.company.DomainObject.*#exclude=creationDate, 
+com.company.special.Patient#identity=ssn
+            
+```
+
+**Note:**
+The order of the patterns is not relevant. All defined class patterns are used when determining whether a field should be considered as an identity field or should be excluded.
+
+Examples:
+
+-   This XML uses the example pattern shown above:
+
+    ``` pre
+    <parameter name="classes">
+      <string>com.company.DomainObject.*#identity=id.*#exclude=creationDate, 
+    com.company.special.Patient#identity=ssn</string>
+    </parameter>
+    ```
+
+-   This application code sets the same pattern:
+
+    ``` pre
+    classPatterns.add("com.company.DomainObject.*#identity=id.*#exclude=creationDate,
+       com.company.special.Patient#identity=ssn");
+    ```
+
+-   This application code has the same effect:
+
+    ``` pre
+     Cache c = new CacheFactory().set("cache-xml-file", cacheXmlFileName)
+         .setPdxSerializer(new ReflectionBasedAutoSerializer("com.foo.DomainObject*#identity=id.*",
+             "com.company.DomainObject.*#exclude=creationDate","com.company.special.Patient#identity=ssn"))
+         .create();
+    ```
+
+

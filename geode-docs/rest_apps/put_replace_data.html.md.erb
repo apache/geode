@@ -1,0 +1,83 @@
+---
+title:  PUT /gemfire-api/v1/{region}/{key}?op=REPLACE
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Update (replace) data with key(s) if and only if the key(s) exists in region. The Key(s) must be present in the Region for the update to occur.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key}?op=REPLACE
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key1},{key2},...{keyN}?op=REPLACE
+```
+
+## Parameters
+
+| Parameter | Description                                                                                                                       | Example Values           |
+|-----------|-----------------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| op        | When you specify REPLACE for this parameter, data is only updated if the specified key or keys are already present in the region. | REPLACE                  |
+| @type     | Specified in the response body. Use this to declare the domain object type of the entry value.                                    | com.mycompany.ObjectName |
+
+## Example Request
+
+``` pre
+Request Payload: application/json
+PUT //gemfire-api/v1/orders/2?op=REPLACE
+
+Accept: application/json
+Content-Type: application/json
+{
+     "@type":  "org.apache.geode.web.rest.domain.Order",
+     "purchaseOrderNo": 1121,
+     "customerId": 1012,
+     "description":  "Order for XYZ Corp",
+     "orderDate":  "02/10/2014",
+     "deliveryDate":  "02/20/2014",
+     "contact":  "Jelly Bean",
+     "email":  "jelly.bean@example.com",
+     "phone":  "01-2048096",
+     "totalPrice": 225,
+     "items": [
+        {
+             "itemNo": 1,
+             "description":  "Product-100",
+             "quantity": 12,
+             "unitPrice": 5,
+             "totalPrice": 60
+        }
+    ]
+}
+```
+
+## Example Success Response
+
+``` pre
+Response Payload: null
+
+200 OK
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                                                      |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| 400 BAD REQUEST           | Returned if the supplied key is not present in the region.                                                                       |
+| 404 NOT FOUND             | Returned if the region is not found.                                                                                             |
+| 500 INTERNAL SERVER ERROR | Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. |

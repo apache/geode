@@ -1,0 +1,45 @@
+---
+title:  Preventing and Recovering from Disk Full Errors
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+It is important to monitor the disk usage of Geode members. If a member lacks sufficient disk space for a disk store, the member attempts to shut down the disk store and its associated cache, and logs an error message. A shutdown due to a member running out of disk space can cause loss of data, data file corruption, log file corruption and other error conditions that can negatively impact your applications.
+
+After you make sufficient disk space available to the member, you can restart the member.
+
+You can prevent disk file errors using the following techniques:
+
+-   If you are using ext4 file system, we recommend that you pre-allocate disk store files and disk store metadata files. Pre-allocation reserves disk space for these files and leaves the member in a healthy state when the disk store and regions are shut down, allowing you to restart the member once sufficient disk space has been made available. Pre-allocation is enabled by default.
+-   Configure critical usage thresholds (disk-usage-warning-percentage and disk-usage-critical-percentage) for the disk. By default, these are set to 90% for warning and 99% for errors that will shut down the cache.
+-   Follow the recommendations in [Optimizing a System with Disk Stores](../disk_storage/optimize_availability_and_performance.html#optimize_avail_disk_store) for general disk management best practices.
+
+When a disk write fails due to disk full conditions, the member is shutdown and removed from the distributed system.
+
+## Recovering from Disk Full Errors
+
+If a member of your Geode distributed system fails due to a disk full error condition, add or make additional disk capacity available and attempt to restart the member normally. If the member does not restart and there is a redundant copy of its regions in a disk store on another member, you can restore the member using the following steps:
+
+1.  Delete or move the disk store files from the failed member.
+2.  Use the gfsh `show missing-disk-stores` command to identify any missing data. You may need to manually restore this data.
+3.  Revoke the missing disk stores using the [revoke missing-disk-store](../../tools_modules/gfsh/command-pages/revoke.html) gfsh command.
+4.  Restart the member.
+
+See [Handling Missing Disk Stores](../disk_storage/handling_missing_disk_stores.html#handling_missing_disk_stores) for more information.
+
+

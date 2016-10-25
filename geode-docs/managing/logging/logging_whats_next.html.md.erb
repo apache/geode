@@ -1,0 +1,56 @@
+---
+title:  Naming, Searching, and Creating Log Files
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The best way to manage and understand the logs is to have each member log to its own files.
+
+## <a id="logging_whats_next__section_82C0D09E8A414693A7E6342E30209FC4" class="no-quick-link"></a>Log File Naming Recommendation
+
+For members running on the same machine, you can have them log to their own files by starting them in different working directories and using the same, relative `log-file` specification. For example, you could set this in `<commonDirectoryPath>/gemfire.properties`:
+
+``` pre
+log-file=./log/member.log
+```
+
+then start each member in a different directory with this command, which points to the common properties file:
+
+``` pre
+java -DgemfirePropertyFile=<commonDirectoryPath>/gemfire.properties
+```
+
+This way, each member has its own log files under its own working directory.
+
+## <a id="logging_whats_next__section_5502E3248A424E978B13B1142360F445" class="no-quick-link"></a>Searching the Log Files
+
+For the clearest picture, merge the log files, with the `gfsh export                 logs` command:
+
+``` pre
+gfsh> export logs --dir=myDir --dir=myDir --merge-log=true
+```
+
+Search for lines that begin with these strings:
+
+-   \[warning
+-   \[error
+-   \[severe
+
+## <a id="logging_whats_next__section_32F26033A2134525BCC10F3A6C6FAD7B" class="no-quick-link"></a>Creating Your Own Log Messages
+
+In addition to the system logs, you can add your own application logs from your Java code. For information on adding custom logging to your applications, see the online Java documentation for the `org.apache.geode.LogWriter` interface. Both system and application logging is output and stored according to your logging configuration settings.

@@ -1,0 +1,37 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<HTML>
+<BODY>
+
+<P>Provides information about, access to, and common tools for GemFire
+distributed systems.  When a program wishes to access distributed dtaa
+data stored in GemFire, it first creates a {@link
+org.apache.geode.distributed.DistributedSystem} that will connect
+to the distributed system.  GemFire provides two means of discovering
+the other members in a distributed group.  The first uses IP multicast
+to broadcast a message to all members that listen on a given <A
+href="DistributedSystem.html#mcast-port"/>port</A> and <A
+href="DistributedSystem.html#mcast-address">address</A>.  The second
+method of discovery uses special VMs called {@linkplain
+org.apache.geode.distributed.Locator "locators"} to keep track of
+the members of the distributed system.  Each locator is identified by
+a host/port pair that is <A
+href="DistributedSystem.html#locators">specified</A> when connecting
+to the distributed system.</P>
+
+</BODY>
+</HTML>

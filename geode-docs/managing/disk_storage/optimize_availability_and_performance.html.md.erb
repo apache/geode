@@ -1,0 +1,32 @@
+---
+title:  Optimizing a System with Disk Stores
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Optimize availability and performance by following the guidelines in this section.
+
+1.  Apache Geode recommends the use of `ext4` filesystems when operating on Linux or Solaris platforms. The `ext4` filesystem supports preallocation, which benefits disk startup performance. If you are using `ext3` filesystems in latency-sensitive environments with high write throughput, you can improve disk startup performance by setting the `maxOplogSize` (see the `DiskStoreFactory.setMaxOplogSize`) to a value lower than the default 1 GB and by disabling preallocation by specifying the system property `gemfire.preAllocateDisk=false` upon Geode process startup.
+2.  When you start your system, start all the members that have persistent regions at roughly the same time. Create and use startup scripts for consistency and completeness.
+3.  Shut down your system using the gfsh `shutdown` command. This is an ordered shutdown that positions your disk stores for a faster startup.
+4.  Configure critical usage thresholds (`disk-usage-warning-percentage` and `disk-usage-critical-percentage`) for the disk. By default, these are set to 80% for warning and 99% for errors that will shut down the cache.
+5.  Decide on a file compaction policy and, if needed, develop procedures to monitor your files and execute regular compaction.
+6.  Decide on a backup strategy for your disk stores and follow it. You can back up a running sytem by using the `backup                     disk-store` command.
+7.  If you remove any persistent region or change its configuration while your disk store is offline, consider synchronizing the regions in your disk stores.
+
+

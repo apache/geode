@@ -18,9 +18,9 @@ package org.apache.geode.redis.internal.executor.list;
 
 import java.util.List;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;

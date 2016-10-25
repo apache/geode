@@ -21,8 +21,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 /**
  * This class is a wrapper for the any Regions that need to store a 

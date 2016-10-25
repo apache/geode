@@ -2,10 +2,10 @@
   "member" : [["java.lang.String","pc68(19971)<v1>:19276"]],
   "result" : [
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 24 ],
@@ -15,7 +15,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -23,7 +23,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -31,7 +31,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -39,7 +39,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -52,7 +52,7 @@
                       "java.util.HashMap",
                       {
                         "ORCL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 85 ],
                               "secId" : [ "java.lang.String", "ORCL" ],
@@ -64,7 +64,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "SAP" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 86 ],
                               "secId" : [ "java.lang.String", "SAP" ],
@@ -77,7 +77,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 84 ],
                         "secId" : [ "java.lang.String", "APPL" ],
@@ -93,7 +93,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 24 ],
@@ -103,7 +103,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -111,7 +111,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -119,7 +119,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -127,7 +127,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -140,7 +140,7 @@
                       "java.util.HashMap",
                       {
                         "ORCL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 85 ],
                               "secId" : [ "java.lang.String", "ORCL" ],
@@ -152,7 +152,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "SAP" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 86 ],
                               "secId" : [ "java.lang.String", "SAP" ],
@@ -165,7 +165,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 84 ],
                         "secId" : [ "java.lang.String", "APPL" ],
@@ -182,10 +182,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 15 ],
@@ -195,7 +195,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -203,7 +203,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -211,7 +211,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -219,7 +219,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -232,7 +232,7 @@
                       "java.util.HashMap",
                       {
                         "YHOO" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 54 ],
                               "secId" : [ "java.lang.String", "YHOO" ],
@@ -244,7 +244,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "GOOG" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 55 ],
                               "secId" : [ "java.lang.String", "GOOG" ],
@@ -257,7 +257,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 52 ],
                         "secId" : [ "java.lang.String", "SUN" ],
@@ -269,7 +269,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 53 ],
                         "secId" : [ "java.lang.String", "IBM" ],
@@ -285,7 +285,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 15 ],
@@ -295,7 +295,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -303,7 +303,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -311,7 +311,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -319,7 +319,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -332,7 +332,7 @@
                       "java.util.HashMap",
                       {
                         "YHOO" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 54 ],
                               "secId" : [ "java.lang.String", "YHOO" ],
@@ -344,7 +344,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "GOOG" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 55 ],
                               "secId" : [ "java.lang.String", "GOOG" ],
@@ -357,7 +357,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 52 ],
                         "secId" : [ "java.lang.String", "SUN" ],
@@ -369,7 +369,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 53 ],
                         "secId" : [ "java.lang.String", "IBM" ],
@@ -386,10 +386,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 7 ],
@@ -399,7 +399,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -407,7 +407,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -415,7 +415,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -423,7 +423,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -436,7 +436,7 @@
                       "java.util.HashMap",
                       {
                         "IBM" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 27 ],
                               "secId" : [ "java.lang.String", "IBM" ],
@@ -448,7 +448,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "SUN" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 26 ],
                               "secId" : [ "java.lang.String", "SUN" ],
@@ -461,7 +461,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 24 ],
                         "secId" : [ "java.lang.String", "NOVL" ],
@@ -473,7 +473,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 25 ],
                         "secId" : [ "java.lang.String", "HP" ],
@@ -489,7 +489,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 7 ],
@@ -499,7 +499,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -507,7 +507,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -515,7 +515,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -523,7 +523,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -536,7 +536,7 @@
                       "java.util.HashMap",
                       {
                         "IBM" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 27 ],
                               "secId" : [ "java.lang.String", "IBM" ],
@@ -548,7 +548,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "SUN" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 26 ],
                               "secId" : [ "java.lang.String", "SUN" ],
@@ -561,7 +561,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 24 ],
                         "secId" : [ "java.lang.String", "NOVL" ],
@@ -573,7 +573,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 25 ],
                         "secId" : [ "java.lang.String", "HP" ],
@@ -590,10 +590,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type2" ],
                   "ID" : [ "int", 14 ],
@@ -603,7 +603,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -611,7 +611,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -619,7 +619,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -627,7 +627,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -640,7 +640,7 @@
                       "java.util.HashMap",
                       {
                         "NOVL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 50 ],
                               "secId" : [ "java.lang.String", "NOVL" ],
@@ -652,7 +652,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "HP" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 51 ],
                               "secId" : [ "java.lang.String", "HP" ],
@@ -665,7 +665,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 49 ],
                         "secId" : [ "java.lang.String", "RHAT" ],
@@ -681,7 +681,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type2" ],
                   "ID" : [ "int", 14 ],
@@ -691,7 +691,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -699,7 +699,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -707,7 +707,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -715,7 +715,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -728,7 +728,7 @@
                       "java.util.HashMap",
                       {
                         "NOVL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 50 ],
                               "secId" : [ "java.lang.String", "NOVL" ],
@@ -740,7 +740,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "HP" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 51 ],
                               "secId" : [ "java.lang.String", "HP" ],
@@ -753,7 +753,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 49 ],
                         "secId" : [ "java.lang.String", "RHAT" ],
@@ -770,10 +770,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 1 ],
@@ -783,7 +783,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -791,7 +791,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -799,7 +799,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -807,7 +807,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -820,7 +820,7 @@
                       "java.util.HashMap",
                       {
                         "APPL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 6 ],
                               "secId" : [ "java.lang.String", "APPL" ],
@@ -832,7 +832,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "AOL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 5 ],
                               "secId" : [ "java.lang.String", "AOL" ],
@@ -845,7 +845,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 3 ],
                         "secId" : [ "java.lang.String", "GOOG" ],
@@ -857,7 +857,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 4 ],
                         "secId" : [ "java.lang.String", "MSFT" ],
@@ -873,7 +873,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 1 ],
@@ -883,7 +883,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -891,7 +891,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -899,7 +899,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -907,7 +907,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -920,7 +920,7 @@
                       "java.util.HashMap",
                       {
                         "APPL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 6 ],
                               "secId" : [ "java.lang.String", "APPL" ],
@@ -932,7 +932,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "AOL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 5 ],
                               "secId" : [ "java.lang.String", "AOL" ],
@@ -945,7 +945,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 3 ],
                         "secId" : [ "java.lang.String", "GOOG" ],
@@ -957,7 +957,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 4 ],
                         "secId" : [ "java.lang.String", "MSFT" ],
@@ -974,10 +974,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 21 ],
@@ -987,7 +987,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -995,7 +995,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1003,7 +1003,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1011,7 +1011,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1024,7 +1024,7 @@
                       "java.util.HashMap",
                       {
                         "NOVL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 76 ],
                               "secId" : [ "java.lang.String", "NOVL" ],
@@ -1036,7 +1036,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "RHAT" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 75 ],
                               "secId" : [ "java.lang.String", "RHAT" ],
@@ -1049,7 +1049,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 73 ],
                         "secId" : [ "java.lang.String", "SAP" ],
@@ -1061,7 +1061,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 74 ],
                         "secId" : [ "java.lang.String", "DELL" ],
@@ -1077,7 +1077,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 21 ],
@@ -1087,7 +1087,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1095,7 +1095,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1103,7 +1103,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1111,7 +1111,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1124,7 +1124,7 @@
                       "java.util.HashMap",
                       {
                         "NOVL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 76 ],
                               "secId" : [ "java.lang.String", "NOVL" ],
@@ -1136,7 +1136,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "RHAT" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 75 ],
                               "secId" : [ "java.lang.String", "RHAT" ],
@@ -1149,7 +1149,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 73 ],
                         "secId" : [ "java.lang.String", "SAP" ],
@@ -1161,7 +1161,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 74 ],
                         "secId" : [ "java.lang.String", "DELL" ],
@@ -1178,10 +1178,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 10 ],
@@ -1191,7 +1191,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1199,7 +1199,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1207,7 +1207,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1215,7 +1215,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1228,7 +1228,7 @@
                       "java.util.HashMap",
                       {
                         "NOVL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 37 ],
                               "secId" : [ "java.lang.String", "NOVL" ],
@@ -1240,7 +1240,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "RHAT" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 36 ],
                               "secId" : [ "java.lang.String", "RHAT" ],
@@ -1253,7 +1253,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 35 ],
                         "secId" : [ "java.lang.String", "DELL" ],
@@ -1269,7 +1269,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 10 ],
@@ -1279,7 +1279,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1287,7 +1287,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1295,7 +1295,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1303,7 +1303,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1316,7 +1316,7 @@
                       "java.util.HashMap",
                       {
                         "NOVL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 37 ],
                               "secId" : [ "java.lang.String", "NOVL" ],
@@ -1328,7 +1328,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "RHAT" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 36 ],
                               "secId" : [ "java.lang.String", "RHAT" ],
@@ -1341,7 +1341,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 35 ],
                         "secId" : [ "java.lang.String", "DELL" ],
@@ -1358,10 +1358,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 4 ],
@@ -1371,7 +1371,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1379,7 +1379,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1387,7 +1387,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1395,7 +1395,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1408,7 +1408,7 @@
                       "java.util.HashMap",
                       {
                         "YHOO" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 15 ],
                               "secId" : [ "java.lang.String", "YHOO" ],
@@ -1420,7 +1420,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "GOOG" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 16 ],
                               "secId" : [ "java.lang.String", "GOOG" ],
@@ -1433,7 +1433,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 14 ],
                         "secId" : [ "java.lang.String", "IBM" ],
@@ -1449,7 +1449,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type1" ],
                   "ID" : [ "int", 4 ],
@@ -1459,7 +1459,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1467,7 +1467,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1475,7 +1475,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1483,7 +1483,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1496,7 +1496,7 @@
                       "java.util.HashMap",
                       {
                         "YHOO" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 15 ],
                               "secId" : [ "java.lang.String", "YHOO" ],
@@ -1508,7 +1508,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "GOOG" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 16 ],
                               "secId" : [ "java.lang.String", "GOOG" ],
@@ -1521,7 +1521,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 14 ],
                         "secId" : [ "java.lang.String", "IBM" ],
@@ -1538,10 +1538,10 @@
                 } ]
           } ],
       [
-          "com.gemstone.gemfire.cache.query.types.StructType",
+          "org.apache.geode.cache.query.types.StructType",
           {
             "r1" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 27 ],
@@ -1551,7 +1551,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1559,7 +1559,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1567,7 +1567,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1575,7 +1575,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1588,7 +1588,7 @@
                       "java.util.HashMap",
                       {
                         "APPL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 97 ],
                               "secId" : [ "java.lang.String", "APPL" ],
@@ -1600,7 +1600,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "AOL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 96 ],
                               "secId" : [ "java.lang.String", "AOL" ],
@@ -1613,7 +1613,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 94 ],
                         "secId" : [ "java.lang.String", "GOOG" ],
@@ -1625,7 +1625,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 95 ],
                         "secId" : [ "java.lang.String", "MSFT" ],
@@ -1641,7 +1641,7 @@
                   "doubleMinValue" : [ "double", 4.9E-324 ]
                 } ],
             "r2" : [
-                "com.gemstone.gemfire.cache.query.data.Portfolio",
+                "org.apache.geode.cache.query.data.Portfolio",
                 {
                   "type" : [ "java.lang.String", "type0" ],
                   "ID" : [ "int", 27 ],
@@ -1651,7 +1651,7 @@
                       "java.util.HashMap",
                       {
                         "3" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1659,7 +1659,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "2" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1667,7 +1667,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "1" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1675,7 +1675,7 @@
                                       "YHOO", "GOOG", "MSFT" ] ]
                             } ],
                         "0" : [
-                            "com.gemstone.gemfire.cache.query.data.CollectionHolder",
+                            "org.apache.geode.cache.query.data.CollectionHolder",
                             {
                               "arr" : [
                                   "java.lang.String[]",
@@ -1688,7 +1688,7 @@
                       "java.util.HashMap",
                       {
                         "APPL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 97 ],
                               "secId" : [ "java.lang.String", "APPL" ],
@@ -1700,7 +1700,7 @@
                                       [ "java.lang.String", "0" ] ] ]
                             } ],
                         "AOL" : [
-                            "com.gemstone.gemfire.cache.query.data.Position",
+                            "org.apache.geode.cache.query.data.Position",
                             {
                               "id" : [ "int", 96 ],
                               "secId" : [ "java.lang.String", "AOL" ],
@@ -1713,7 +1713,7 @@
                             } ]
                       } ],
                   "p1" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 94 ],
                         "secId" : [ "java.lang.String", "GOOG" ],
@@ -1725,7 +1725,7 @@
                                 [ "java.lang.String", "0" ] ] ]
                       } ],
                   "p2" : [
-                      "com.gemstone.gemfire.cache.query.data.Position",
+                      "org.apache.geode.cache.query.data.Position",
                       {
                         "id" : [ "int", 95 ],
                         "secId" : [ "java.lang.String", "MSFT" ],

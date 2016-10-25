@@ -1,0 +1,71 @@
+---
+title:  Peer-to-Peer Event Distribution
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+When a region or entry operation is performed, Geode distributes the associated events in the distributed system according to system and cache configurations.
+
+<a id="how_cache_events_work__section_7864A275FDB549FD8E2D046DD59CB9F4"></a>
+Install a cache listener for a region in each system member that needs to receive notification of region and entry changes.
+
+## <a id="how_cache_events_work__section_CACE500A00214CD88CE232D22899263B" class="no-quick-link"></a>Events in a Partitioned Region
+
+A distributed operation follows this sequence in a partitioned region:
+
+1.  Apply the operation to the cache with the primary data entry, if appropriate.
+2.  Do the distribution based on the subscription-attributes interest-policy of the other members.
+3.  Invoke any listeners in the caches that receive the distribution.
+4.  Invoke the listener in the cache with the primary data entry.
+
+In the following figure:
+
+1.  An API call in member M1 creates an entry.
+2.  The partitioned region creates the new entry in the cache in M2. M2, the holder of the primary copy, drives the rest of the procedure.
+3.  These two operations occur simultaneously:
+    -   The partitioned region creates a secondary copy of the entry in the cache in M3. Creating the secondary copy does not invoke the listener on M3.
+    -   M2 distributes the event to M4. This distribution to the other members is based on their interest policies. M4 has an interest-policy of all , so it receives notification of all events anywhere in the region. Since M1 and M3 have an interest-policy of cache-content , and this event does not affect any pre-existing entry in their local caches, they do not receive the event.
+
+4.  The cache listener on M4 handles the notification of the remote event on M2.
+5.  Once everything on the other members has completed successfully, the original create operation on M2 succeeds and invokes the cache listener on M2.
+
+<img src="../../images/Events-2.gif" id="how_cache_events_work__image_E5E187C14A774144B85FA7B636239DBE" class="image" />
+
+## <a id="how_cache_events_work__section_FACF58272C824907BA020B1727427D7A" class="no-quick-link"></a>Events in a Distributed Region
+
+A distributed operation follows this sequence in a distributed region:
+
+1.  Apply the operation to the local cache, if appropriate.
+2.  Invoke the local listeners.
+3.  Do the distribution.
+4.  Each member that receives the distribution carries out its own operation in response, which invokes any local listeners.
+
+In the following figure:
+
+1.  An entry is created through a direct API call on member M1.
+2.  The create invokes the cache listener on M1.
+3.  M1 distributes the event to the other members.
+4.  M2 and M3 apply the remote change through their own local operations.
+5.  M3 does a create, but M2 does an update, because the entry already existed in its cache.
+6.  The cache listener on M2 receives callbacks for the local update. Since there is no cache listener on M3, the callbacks from the create on M3 are not handled. An API call in member M1 creates an entry.
+
+<img src="../../images/Events-3.gif" id="how_cache_events_work__image_A24D6182B2A840D1843EBD4686966EEF" class="image" />
+
+## <a id="how_cache_events_work__section_B4DCA51DDF7F44699E7355277172BEF0" class="no-quick-link"></a>Managing Events in Multi-threaded Applications
+
+For partitioned regions, Geode guarantees ordering of events across threads, but for distributed regions it doesn’t. For multi-threaded applications that create distributed regions, you need to use your application synchronization to make sure that one operation completes before the next one begins. Distribution through the distributed-no-ack queue can work with multiple threads if you set the `conserve-sockets` attribute to true. Then the threads share one queue, preserving the order of the events in distributed regions. Different threads can invoke the same listener, so if you allow different threads to send events, it can result in concurrent invocations of the listener. This is an issue only if the threads have some shared state - if they are incrementing a serial number, for example, or adding their events to a log queue. Then you need to make your code thread safe.

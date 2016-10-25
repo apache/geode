@@ -16,11 +16,10 @@
  */
 package org.apache.geode.security;
 
-import java.security.Principal;
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.security.AuthenticationFailedException;
 
 /**
  * User implementation of a authentication/authorization logic for Integrated Security.
@@ -46,13 +45,13 @@ public interface SecurityManager {
    * @param credentials
    *        it contains the security-username and security-password as keys of the properties
    * @return
-   *        the authenticated Principal object
+   *        a serializable principal object
    * @throws AuthenticationFailedException
    */
-  Principal authenticate(Properties credentials) throws AuthenticationFailedException;
+  Object authenticate(Properties credentials) throws AuthenticationFailedException;
 
   /**
-   * Authorize the GeodePermission for a given Principal
+   * Authorize the ResourcePermission for a given Principal
    * @param principal
    *        The principal that's requesting the permission
    * @param permission
@@ -60,7 +59,7 @@ public interface SecurityManager {
    * @return
    *        true if authorized, false if not
    */
-  default boolean authorize(Principal principal, GeodePermission permission) {
+  default boolean authorize(Object principal, ResourcePermission permission) {
     return true;
   }
 

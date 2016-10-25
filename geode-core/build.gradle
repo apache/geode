@@ -87,6 +87,9 @@ dependencies {
     exclude module: 'spring-aop'
     ext.optional = true
   }
+  compile ('org.springframework:spring-core:' + project.'springframework.version') {
+    ext.optional = true
+  }
   compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
@@ -131,52 +134,22 @@ sourceSets {
   main {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
-}
-
-ext.readScmInfo = {
-  try {
-    def git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
-    try {
-      return [
-        'Source-Repository': git.branch.getCurrent().name,
-        'Source-Revision'  : git.head().id,
-        'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
-      ] as Properties
-    } finally {
-      git.close()
-    }
-  } catch (IllegalArgumentException e) {
-    // if we're building from the source distribution, we don't have git so
-    // use cached info written during the assembly process
-    def buildInfo = file "$rootDir/.buildinfo"
-    if (buildInfo.exists()) {
-      def props = new Properties()
-      new FileInputStream(buildInfo).withStream { fis ->
-        props.load(fis)
-      }
-      return props
-    }
-
-    logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
-    return [
-      'Source-Repository': 'UNKNOWN',
-      'Source-Revision'  : 'UNKNOWN',
-      'Source-Date'      : new Date().format('yyyy-MM-dd HH:mm:ss Z')
-    ] as Properties
+  test {
+    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
 }
 
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
-  def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
+  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
   outputs.file propertiesFile
   inputs.dir compileJava.destinationDir
 
   doLast {
     def props = [
-      "Product-Name"      : "Apache Geode (incubating)",
+      "Product-Name"      : productName,
       "Product-Version"   : version,
-      "Build-Id"          : "${System.env.USER} ${new Date().format('MMddyy')}".toString(),
+      "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
       "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
       "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
       "Build-Java-Version": System.properties['java.version']
@@ -195,22 +168,22 @@ jar {
   from sourceSets.main.output
   from sourceSets.jca.output
   
-  exclude 'com/gemstone/gemfire/management/internal/web/**'
-  exclude 'com/gemstone/gemfire/internal/i18n/StringIdResourceBundle_ja.txt'
-  exclude 'com/gemstone/gemfire/admin/doc-files/ds4_0.dtd'
+  exclude 'org/apache/geode/management/internal/web/**'
+  exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
+  exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
 }
 
 task webJar (type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive containing the gemfire management web classes.'
   from sourceSets.main.output
   baseName 'geode-web'
-  include 'com/gemstone/gemfire/management/internal/web/**'
+  include 'org/apache/geode/management/internal/web/**'
 }
 
 task raJar (type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output
-  exclude 'com/gemstone/gemfire/ra/**'
+  exclude 'org/apache/geode/ra/**'
   archiveName 'ra.jar'
 }
 

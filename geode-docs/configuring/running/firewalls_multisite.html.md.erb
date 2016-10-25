@@ -1,0 +1,87 @@
+---
+title:  Firewalls and Ports in Multi-Site (WAN) Configurations
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Make sure your port settings are configured correctly for firewalls.
+
+<a id="concept_pfs_sf4_ft__section_alm_2g4_ft"></a>
+Each gateway receiver uses a port to listen for incoming communication from one or more gateway senders communication between GemFire sites. The full range of port values for gateway receivers must be made accessible within the firewall from across the WAN.
+
+## **Properties for Firewall and Port Configuration in Multi-Site (WAN) Configurations**
+
+This table contains properties potentially involved in firewall behavior, with a brief description of each property. Click on a property name for a link to the [gemfire.properties and gfsecurity.properties (GemFire Properties)](../../reference/topics/gemfire_properties.html#gemfire_properties) reference topic.
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Configuration Area</th>
+<th><strong>Property or Setting</strong></th>
+<th><strong>Definition</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>multi-site (WAN) config</td>
+<td><p>[hostname-for-senders](../../reference/topics/gfe_cache_xml.html#gateway-receiver)</p></td>
+<td><p>Hostname or IP address of the gateway receiver used by gateway senders to connect.</p></td>
+</tr>
+<tr class="even">
+<td>multi-site (WAN) config</td>
+<td>[remote-locators](../../reference/topics/gemfire_properties.html#gemfire_properties)</td>
+<td><p>List of locators (and their ports) that are available on the remote WAN site.</p></td>
+</tr>
+<tr class="odd">
+<td>multi-site (WAN) config</td>
+<td><p>[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the gfsh start gateway receiver command</p></td>
+<td><p>Port range that the gateway receiver can use to listen for gateway sender communication.</p></td>
+</tr>
+</tbody>
+</table>
+
+## Default Port Configuration
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><p><strong>Port Name</strong></p></th>
+<th>Related Configuration Setting</th>
+<th><p><strong>Default Port</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>Gateway Receiver</p></td>
+<td><p>[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the <code class="ph codeph">gfsh start gateway receiver</code> command</p></td>
+<td><em>not set</em> Each gateway receiver uses a single port to accept connections from gateway senders in other systems. However, the configuration of a gateway receiver specifies a range of possible port values to use. GemFire selects an available port from the specified range when the gateway receiver starts. Configure your firewall so that the full range of possible port values is accessible by gateway senders from across the WAN.</td>
+</tr>
+</tbody>
+</table>
+
+

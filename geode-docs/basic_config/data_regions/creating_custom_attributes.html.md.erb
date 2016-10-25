@@ -1,0 +1,64 @@
+---
+title:  Creating Custom Attributes for Regions and Entries
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Use custom attributes to store information related to your region or its entries in your cache. These attributes are only visible to the local application and are not distributed.
+
+<a id="creating_custom_attributes__section_A8752F55C157480FAF435738D6244503"></a>
+You can define custom user attributes so you can associate data with the region or entry and retrieve it later. Unlike the other configuration settings, these attributes are used only by your application.
+
+**Note:**
+User attributes are not distributed.
+
+1.  Create a Java `Object` with your attribute definitions.
+2.  Attach the object to the region or to an entry:
+    -   `Region.setUserAttribute(userAttributeObject)`
+    -   `Region.getEntry(key).setUserAttribute(userAttributeObject)`
+
+3.  Get the attribute value:
+    -   `Region.getUserAttribute()`
+    -   `Region.getEntry(key).getUserAttribute()`
+
+This example stores attributes for later retrieval by a cache writer.
+
+``` pre
+// Attach a user attribute to a Region with database info for table portfolio
+Object myAttribute = "portfolio"; 
+final Region portfolios = 
+      new RegionFactory().setCacheWriter(new PortfolioDBWriter()).create("Portfolios"); 
+Portfolios.setUserAttribute(myAttribute);
+```
+
+``` pre
+//Implement a cache writer that reads the user attribute setting
+public class PortfolioDBWriter extends CacheWriterAdapter {
+  public void beforeCreate(RegionEvent event) {
+    table = (String)event.getRegion().getUserAttribute();
+    // update database table using name from attribute
+        . . .
+  }
+}
+```
+
+## <a id="creating_custom_attributes__section_A5CB456E4E96410584F8856EAFB5BB83" class="no-quick-link"></a>Limitations and Alternatives
+
+User attributes are not distributed to other processes, so if you need to define each attribute in every process that uses the region or entry. You need to update every instance of the region separately. User attributes are not stored to disk for region persistence or overflow, so they cannot be recovered to reinitialize the region.
+
+If your application requires features not supported by user attributes, an alternative is to create a separate region to hold this data instead. For instance, a region, AttributesRegion, defined by you, could use region names as keys and the user attributes as values. Changes to AttributesRegion would be distributed to other processes, and you could configure the region for persistence or overflow if needed.

@@ -1,0 +1,298 @@
+---
+title: status
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_7BCB054803CF48FE8688394C5C39000A"></a>
+
+
+Check the status of the cluster configuration service and Geode member processes, including locators, gateway receivers, gateway senders, and servers.
+
+-   **[status cluster-config-service](#topic_ts1_qb1_dk2)**
+
+    Displays the status of the cluster configuration service.
+
+-   **[status gateway-receiver](#topic_B0F45DC2D5F64FB1A2F738206BC6539E)**
+
+    Display the status of the specified gateway receiver.
+
+-   **[status gateway-sender](#topic_6F539877F0564F05AF264A9E704EC842)**
+
+    Display the status of the specified gateway sender.
+
+-   **[status locator](#topic_E96D0EFA513C4CD79B833FCCDD69C832)**
+
+    Displays the status of the specified locator.
+
+-   **[status server](#topic_E5DB49044978404D9D6B1971BF5D400D)**
+
+    Display the status of the specified Geode cache server.
+
+## <a id="topic_ts1_qb1_dk2" class="no-quick-link"></a>status cluster-config-service
+
+Displays the status of the cluster configuration service.
+
+Displays the status of cluster configuration service on all the locators where <span class="keyword parmname">enable-cluster-configuration</span> is set to `true`.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+status cluster-config-service
+```
+
+**Example Commands:**
+
+``` pre
+status cluster-config-service
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>status cluster-config-service
+Status of shared configuration on locators
+
+  Name   | Status
+-------- | -------
+locator8 | RUNNING
+```
+
+## <a id="topic_B0F45DC2D5F64FB1A2F738206BC6539E" class="no-quick-link"></a>status gateway-receiver
+
+Display the status of the specified gateway receiver.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+status gateway-receiver [--group=value(,value)*] [--member=value]
+```
+
+<a id="topic_B0F45DC2D5F64FB1A2F738206BC6539E__table_mb3_p3f_2w"></a>
+
+| Name                                           | Description                                                     |
+|------------------------------------------------|-----------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of Gateway Receivers for which to display status.      |
+| <span class="keyword parmname">\\-\\-member</span> | Name or ID of the Gateway Receiver for which to display status. |
+
+<span class="tablecap">Table 1. Status Gateway-Receiver Parameters</span>
+
+**Example Commands:**
+
+``` pre
+status gateway-receiver --group=LN-Group1
+status gateway-receiver --member=server1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>status gateway-receiver
+Member               | Port  | Status
+---------------------| ------| -------
+pc13(8151)<v2>:26518 | 26837 | Running
+pc13(8175)<v4>:53787 | 23753 | Running
+pc13(8164)<v3>:24081 | 25457 | Running
+
+Member                       | Error
+-----------------------------| ---------------------------------------------------
+pc13(Manager:8124)<v1>:52410 | GatewayReceiver is not available or already stopped
+pc13(8130):8180              | GatewayReceiver is not available or already stopped
+
+
+gfsh>status gateway-receiver --member=pc13(8151)<v2>:50130
+Member               | Port  |  Status
+-------------------- | ----- | --------
+pc13(8151)<v2>:50130 | 28592 | Running
+
+gfsh>status gateway-receiver --group=RG1
+Member                 | Port  | Status
+-----------------------| ------| -------
+pc13(8151)<v2>:19450   | 27815 | Running
+pc13(8175)<v4>:14139   | 27066 | Running
+pc13(8164)<v3>:45150   | 29897 | Running
+```
+
+## <a id="topic_6F539877F0564F05AF264A9E704EC842" class="no-quick-link"></a>status gateway-sender
+
+Display the status of the specified gateway sender.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+status gateway-sender --id=value [--group=value(,value)*]
+[--member=value]
+```
+
+<a id="topic_6F539877F0564F05AF264A9E704EC842__table_xc2_s3f_2w"></a>
+
+| Name                                             | Description                                                                                               |
+|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-id </span>     | *Required.* ID of the Gateway Sender.                                                                     |
+| <span class="keyword parmname">\\-\\-group </span>   | Group(s) of Gateway Senders for which to display status. Comma separated list for multiple member groups. |
+| <span class="keyword parmname">&#8209;&#8209;member </span> | Name/ID of the Gateway Sender for which to display status.                                                |
+
+<span class="tablecap">Table 2. Status Gateway-Sender Parameters</span>
+
+**Example Commands:**
+
+``` pre
+status gateway-receiver receiver1-LN --group=LN-Group1;
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>status gateway-sender --id=ln_Serial
+Member                 |  Type  | Runtime Policy | Status
+-----------------------| -------| -------------- | -----------
+ pc13(8175)<v4>:21449  | Serial | Secondary      | Not Running
+ pc13(8151)<v2>:40761  | Serial | Secondary      | Not Running
+ pc13(8164)<v3>:33476  | Serial | Secondary      | Not Running
+
+Member                         | Error
+------------------------------ | ------------------------------
+ pc13(8130):2365               | GatewaySender is not available
+ pc13(Manager:8124)<v1>:43821  | GatewaySender is not available
+
+gfsh>status gateway-sender --id=ln_Serial --member=pc13(8151)<v2>:7411
+Member               |  Type  | Runtime Policy | Status
+-------------------  | ------ | -------------- | -----------
+ pc13(8151)<v2>:7411 | Serial | Secondary      | Not Running
+
+gfsh>status gateway-sender --id=ln_Serial --member=pc13(8151)<v2>:7411
+Member               |  Type  | Runtime Policy | Status
+------------------- -| ------ | -------------- | -------
+ pc13(8151)<v2>:7411 | Serial | Primary        | Running
+
+gfsh>status gateway-sender --id=ln_Serial --group=Serial_Sender
+==>
+Member                 |  Type  | Runtime Policy | Status
+---------------------- | -------| -------------- | -----------
+ pc13(8151)<v2>:44396  | Serial | Secondary      | Not Running
+ pc13(8164)<v3>:29475  | Serial | Secondary      | Not Running
+Member                 | Error
+---------------------- | ------------------------------
+ pc13(8186)<v5>:45840  | GatewaySender is not available
+```
+
+## <a id="topic_E96D0EFA513C4CD79B833FCCDD69C832" class="no-quick-link"></a>status locator
+
+Displays the status of the specified locator.
+
+The status will be one of the following:
+
+-   started
+-   online
+-   offline
+-   not responding
+
+**Availability:** Online or offline. If you want to obtain the status of a locator while you are offline, use the `--dir` or the `--pid` parameter.
+
+**Syntax:**
+
+``` pre
+status locator [--name=value] [--host=value] [--port=value]
+[--pid=value] [--dir=value]
+```
+
+<a id="topic_E96D0EFA513C4CD79B833FCCDD69C832__table_s44_w3f_2w"></a>
+
+| Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                    | Default Value     |
+|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| <span class="keyword parmname">&#8209;&#8209;name</span> | Name/ID of the locator for which to display status. You must be connected to the JMX Manager to use this option. Can be used to obtain status of remote locators. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
+| <span class="keyword parmname">\\-\\-host</span> | Hostname or IP address on which the Locator is running.                                                                                                                                                                                                                                                                                                                                                                        |                   |
+| <span class="keyword parmname">\\-\\-port</span> | Port on which the locator is listening.                                                                                                                                                                                                                                                                                                                                                                                        | 10334             |
+| <span class="keyword parmname">\\-\\-pid</span>  | Process ID (PID) of the running locator.                                                                                                                                                                                                                                                                                                                                                                                       |                   |
+| <span class="keyword parmname">\\-\\-dir</span>  | Directory in which the locator was started.                                                                                                                                                                                                                                                                                                                                                                                    | current directory |
+
+<span class="tablecap">Table 3. Status Locator Parameters</span>
+
+**Example Commands:**
+
+``` pre
+status locator
+status locator --name=locator1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>status locator --name=locator1
+Locator in /home/user/gemfire/locator1 on ubuntu.local[10334] as locator1 is currently online.
+Process ID: 2401
+Uptime: 12 minutes 3 seconds
+GemFire Version: 8.0.0
+Java Version: 1.7.0_65
+Log File: /home/user/gemfire/locator1/locator1.log
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
+-Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+
+Cluster configuration service is up and running.
+```
+
+## <a id="topic_E5DB49044978404D9D6B1971BF5D400D" class="no-quick-link"></a>status server
+
+Display the status of the specified Geode cache server.
+
+**Availability:** Online or offline. If you want to obtain the status of a server while you are offline, use the `--dir` or the `--pid` parameter.
+
+**Syntax:**
+
+``` pre
+status server [--name=value] [--pid=value] [--dir=value]
+```
+
+<a id="topic_E5DB49044978404D9D6B1971BF5D400D__table_zvn_z3f_2w"></a>
+
+| Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                           | Default Value     |
+|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| <span class="keyword parmname">&#8209;&#8209;name</span> | Name or ID of the Cache Server for which to display status. You must be connected to the JMX Manager to use this option. Can be used to obtain status of remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
+| <span class="keyword parmname">\\-\\-pid</span>  | Process ID (PID) of the running Geode Cache Server.                                                                                                                                                                                                                                                                                                                                                      |                   |
+| <span class="keyword parmname">\\-\\-dir </span> | Directory in which the Geode Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
+
+<span class="tablecap">Table 4. Status Server Parameters</span>
+
+**Example Commands:**
+
+``` pre
+status server
+status server --name=server1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>status server --name=server1
+Server in /home/user/gemfire/server1 on ubuntu.local[40404] as server1 is currently online.
+Process ID: 2726
+Uptime: 1 minute 3 seconds
+GemFire Version: 8.0.0
+Java Version: 1.7.0_65
+Log File: /home/user/gemfire/server1/server1.log
+JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true
+ -XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
+-Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
+```

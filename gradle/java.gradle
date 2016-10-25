@@ -14,11 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+allprojects {
+  apply plugin: 'java'
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+  compileJava.options.encoding = 'UTF-8'
+}
 subprojects {
   apply plugin: 'java'
-  
+
   // apply compiler options
-  gradle.taskGraph.whenReady( { graph ->
+  gradle.taskGraph.whenReady({ graph ->
     tasks.withType(JavaCompile).each { javac ->
       javac.configure {
         sourceCompatibility '1.8'
@@ -27,18 +34,18 @@ subprojects {
       }
     }
   })
-  
+
   // apply default manifest
-  gradle.taskGraph.whenReady( { graph ->
+  gradle.taskGraph.whenReady({ graph ->
     tasks.withType(Jar).each { jar ->
       jar.doFirst {
         manifest {
           attributes(
-            "Manifest-Version"  : "1.0",
-            "Created-By"        : System.getProperty("user.name"),
-            "Title"             : rootProject.name,
-            "Version"           : version,
-            "Organization"      : "Apache Software Foundation (ASF)"
+            "Manifest-Version": "1.0",
+            "Created-By": System.getProperty("user.name"),
+            "Title": rootProject.name,
+            "Version": version,
+            "Organization": productOrg
           )
         }
 
@@ -57,10 +64,10 @@ subprojects {
       description 'a dependency that is provided externally at runtime'
       visible true
     }
-    
+
     testOutput {
       extendsFrom testCompile
-      description  'a dependency that exposes test artifacts'
+      description 'a dependency that exposes test artifacts'
     }
   }
 
@@ -72,7 +79,7 @@ subprojects {
     }
   }
 
-  task jarTest (type: Jar, dependsOn: testClasses) {
+  task jarTest(type: Jar, dependsOn: testClasses) {
     description 'Assembles a jar archive of test classes.'
     from sourceSets.test.output
     classifier 'test'
@@ -93,7 +100,7 @@ subprojects {
 
   javadoc {
     options.addStringOption('Xdoclint:none', '-quiet')
-    options.encoding='UTF-8'
+    options.encoding = 'UTF-8'
   }
 }
 

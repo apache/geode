@@ -16,12 +16,9 @@
  */
 package org.apache.geode.security.templates;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,18 +30,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.management.remote.JMXPrincipal;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.geode.security.GeodePermission;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * This class provides a sample implementation of {@link SecurityManager} for
@@ -52,16 +47,11 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  *
  * <p>A Geode member must be configured with the following:
  *
- * <p>{@code security-manager = com.gemstone.gemfire.security.examples.SampleSecurityManager}
+ * <p>{@code security-manager = org.apache.geode.security.examples.SampleSecurityManager}
  *
- * <p>The class can be initialized with from either a JSON string or a JSON
- * file
- *
- * <p>TODO: example of configuring from in-memory JSON string specified in securityProperties
- *
- * <p>TODO: example of configuring from a JSON file specified in securityProperties<br/>
- * ...called {@code security.json}. This file must exist on the classpath,
- * so members should be started with an appropriate {@code --classpath} option.
+ * <p>The class can be initialized with from a JSON resource called
+ * {@code security.json}. This file must exist on the classpath, so members
+ * should be started with an appropriate {@code --classpath} option.
  *
  * <p>The format of the JSON for configuration is as follows:
  * <pre><code>
@@ -106,10 +96,10 @@ public class SampleSecurityManager implements SecurityManager {
   private Map<String, User> userNameToUser;
 
   @Override
-  public boolean authorize(final Principal principal, final GeodePermission context) {
+  public boolean authorize(final Object principal, final ResourcePermission context) {
     if (principal == null) return false;
 
-    User user = this.userNameToUser.get(principal.getName());
+    User user = this.userNameToUser.get(principal.toString());
     if (user == null) return false; // this user is not authorized to do anything
 
     // check if the user has this permission defined in the context
@@ -126,31 +116,18 @@ public class SampleSecurityManager implements SecurityManager {
 
   @Override
   public void init(final Properties securityProperties) throws NotAuthorizedException {
-    String jsonPropertyValue = securityProperties.getProperty(SECURITY_JSON);
+    String jsonPropertyValue = securityProperties != null ? securityProperties.getProperty(SECURITY_JSON) : null;
     if (jsonPropertyValue == null) {
-      throw new AuthenticationFailedException("SampleSecurityManager: property [" + SECURITY_JSON + "] must be set.");
+      jsonPropertyValue = DEFAULT_JSON_FILE_NAME;
     }
 
-    // 1st try to load value as a json resource
-    boolean initialized = initializeFromJsonResource(jsonPropertyValue);
-
-    // 2nd try to load value as a json file
-    if (!initialized) {
-      initialized = initializeFromJsonFile(new File(jsonPropertyValue));
-    }
-
-    // 3rd try to use value as a json string
-    if (!initialized) {
-      initialized = initializeFromJson(jsonPropertyValue);
-    }
-
-    if (!initialized) {
-      throw new AuthenticationFailedException("SampleSecurityManager: unable to read json from \"" + jsonPropertyValue + "\" as specified by [" + SECURITY_JSON + "].");
+    if (!initializeFromJsonResource(jsonPropertyValue)) {
+      throw new AuthenticationFailedException("SampleSecurityManager: unable to find json resource \"" + jsonPropertyValue + "\" as specified by [" + SECURITY_JSON + "].");
     }
   }
 
   @Override
-  public Principal authenticate(final Properties credentials) throws AuthenticationFailedException {
+  public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
     String user = credentials.getProperty(ResourceConstants.USER_NAME);
     String password = credentials.getProperty(ResourceConstants.PASSWORD);
 
@@ -163,10 +140,10 @@ public class SampleSecurityManager implements SecurityManager {
       throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
     }
 
-    return new JMXPrincipal(user);
+    return user;
   }
 
-  boolean initializeFromJson(final String json) {//throws IOException {
+  boolean initializeFromJson(final String json) {
     try {
       ObjectMapper mapper = new ObjectMapper();
       JsonNode jsonNode = mapper.readTree(json);
@@ -179,19 +156,7 @@ public class SampleSecurityManager implements SecurityManager {
     }
   }
 
-  boolean initializeFromJsonFile(final File jsonFile) {//throws IOException {
-    try {
-      InputStream input = new FileInputStream(jsonFile);
-      if (input != null) {
-        initializeFromJson(readJsonFromInputStream(input));
-        return true;
-      }
-    } catch (IOException ex) {
-    }
-    return false;
-  }
-
-  boolean initializeFromJsonResource(final String jsonResource) {//throws IOException {
+  boolean initializeFromJsonResource(final String jsonResource) {
     try {
       InputStream input = ClassLoader.getSystemResourceAsStream(jsonResource);
       if (input != null) {
@@ -269,7 +234,7 @@ public class SampleSecurityManager implements SecurityManager {
         String regionPart = (regionNames != null) ? regionNames : "*";
         String keyPart = (keys !=null) ? keys : "*";
 
-        role.permissions.add(new GeodePermission(resourcePart, operationPart, regionPart, keyPart));
+        role.permissions.add(new ResourcePermission(resourcePart, operationPart, regionPart, keyPart));
       }
 
       roleMap.put(role.name, role);
@@ -283,7 +248,7 @@ public class SampleSecurityManager implements SecurityManager {
   }
 
   static class Role {
-    List<GeodePermission> permissions = new ArrayList<>();
+    List<ResourcePermission> permissions = new ArrayList<>();
     String name;
     String serverGroup;
   }

@@ -1,0 +1,79 @@
+---
+title:  Membership Coordinators, Lead Members and Member Weighting
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Network partition detection uses a designated membership coordinator and a weighting system that accounts for a lead member to determine whether a network partition has occurred.
+
+## <a id="concept_23C2606D59754106AFBFE17515DF4330__section_7C67F1D30C1645CC8489E481873691D9" class="no-quick-link"></a>Membership Coordinators and Lead Members
+
+The membership coordinator is a member that manages entry and exit of other members of the distributed system. With network partition detection enabled, the coordinator can be any Geode member but locators are preferred. In a locator-based system, if all locators are in the reconnecting state, the system continues to function, but new members are not able to join until a locator has successfully reconnected. After a locator has reconnected, the reconnected locator will take over the role of coordinator.
+
+When a coordinator is shutting down, it sends out a view that removes itself from the list and the other members must determine who the new coordinator is.
+
+The lead member is determined by the coordinator. Any member that has enabled network partition detection, is not hosting a locator, and is not an administrator interface-only member is eligible to be designated as the lead member by the coordinator. The coordinator chooses the longest-lived member that fits the criteria.
+
+The purpose of the lead member role is to provide extra weight. It does not perform any specific functionality.
+
+## <a id="concept_23C2606D59754106AFBFE17515DF4330__section_D819DE21928F4D658C132981307447E3" class="no-quick-link"></a>Member Weighting System
+
+By default, individual members are assigned the following weights:
+
+-   Each member has a weight of 10 except the lead member.
+-   The lead member is assigned a weight of 15.
+-   Locators have a weight of 3.
+
+You can modify the default weights for specific members by defining the `gemfire.member-weight` system property upon startup.
+
+The weights of members prior to the view change are added together and compared to the weight of lost members. Lost members are considered members that were removed between the last view and the completed send of the view preparation message. If membership is reduced by a certain percentage within a single membership view change, a network partition is declared.
+
+The loss percentage threshold is 51 (meaning 51%). Note that the percentage calculation uses standard rounding. Therefore, a value of 50.51 is rounded to 51. If the rounded loss percentage is equal to or greater than 51%, the membership coordinator initiates shut down.
+
+## <a id="concept_23C2606D59754106AFBFE17515DF4330__section_53C963D1B2DF417C973A60981E52CDCF" class="no-quick-link"></a>Sample Member Weight Calculations
+
+This section provides some example calculations.
+
+**Example 1:** Distributed system with 12 members. 2 locators, 10 cache servers (one cache server is designated as lead member.) View total weight equals 111.
+
+-   4 cache servers become unreachable. Total membership weight loss is 40 (36%). Since 36% is under the 51% threshold for loss, the distributed system stays up.
+-   1 locator and 4 cache servers (including the lead member) become unreachable. Membership weight loss equals 48 (43%). Since 43% is under the 51% threshold for loss, the distributed system stays up.
+-   5 cache servers (not including the lead member) and both locators become unreachable. Membership weight loss equals 56 (49%). Since 49% is under the 51% threshold for loss, the distributed system stays up.
+-   5 cache servers (including the lead member) and 1 locator become unreachable. Membership weight loss equals 58 (52%). Since 52% is greater than the 51% threshold, the coordinator initiates shutdown.
+-   6 cache servers (not including the lead member) and both locators become unreachable. Membership weight loss equals 66 (59%). Since 59% is greater than the 51% threshold, the newly elected coordinator (a cache server since no locators remain) will initiate shutdown.
+
+**Example 2:** Distributed system with 4 members. 2 cache servers (1 cache server is designated lead member), 2 locators. View total weight is 31.
+
+-   Cache server designated as lead member becomes unreachable. Membership weight loss equals 15 or 48%. Distributed system stays up.
+-   Cache server designated as lead member and 1 locator become unreachable. Member weight loss equals 18 or 58%. Membership coordinator initiates shutdown. If the locator that became unreachable was the membership coordinator, the other locator is elected coordinator and then initiates shutdown.
+
+Even if network partitioning is not enabled, if quorum loss is detected due to unresponsive processes, the locator will also log a severe level message to identify the failed processes:
+``` pre
+Possible loss of quorum detected due to loss of {0} cache processes: {1}
+```
+
+where {0} is the number of processes that failed and {1} lists the processes.
+
+Enabling network partition detection allows only one subgroup to survive a split. The rest of the system is disconnected and the caches are closed.
+
+When a shutdown occurs, the members that are shut down will log the following alert message:
+``` pre
+Exiting due to possible network partition event due to loss of {0} cache processes: {1}
+```
+
+where `{0}` is the count of lost members and `{1}` is the list of lost member IDs.

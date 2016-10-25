@@ -1,0 +1,44 @@
+---
+title:  How Multi-site (WAN) Systems Work
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The Apache Geode multi-site implementation connects disparate distributed systems. The systems act as one when they are coupled, and they act as independent systems when communication between sites fails. The coupling is tolerant of weak or slow links between distributed system sites. A wide-area network (WAN) is the main use case for the multi-site topology.
+
+-   **[Overview of Multi-site Caching](../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_70045702D3994BC692E75102CE01BD7C)**
+
+    A multi-site installation consists of two or more distributed systems that are loosely coupled. Each site manages its own distributed system, but region data is distributed to remote sites using one or more logical connections.
+
+-   **[Consistency for WAN Updates](../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_C74A0961937640B199396DC925D8D782)**
+
+    Geode ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including Geode members that distribute region events across a WAN.
+
+-   **[Discovery for Multi-Site Systems](../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_1742957C8D4B4F7590847EB8DB6CD4F7)**
+
+    Each Geode cluster in a WAN configuration uses locators to discover remote clusters as well as local members.
+
+-   **[Gateway Senders](../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA)**
+
+    A Geode cluster uses a *gateway sender* to distribute region events to another, remote Geode cluster. You can create multiple gateway sender configurations to distribute region events to multiple remote clusters, and/or to distribute region events concurrently to another remote cluster.
+
+-   **[Gateway Receivers](../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_4DB3D9CF01AD4F4899457D1250468D00)**
+
+    A gateway receiver configures a physical connection for receiving region events from gateway senders in one or more remote Geode clusters.
+
+

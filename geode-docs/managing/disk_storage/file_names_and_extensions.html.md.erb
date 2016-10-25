@@ -1,0 +1,96 @@
+---
+title:  Disk Store File Names and Extensions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Disk store files include store management files, access control files, and the operation log, or oplog, files, consisting of one file for deletions and another for all other operations.
+
+<a id="file_names_and_extensions__section_AE90870A7BDB425B93111D1A6E166874"></a>
+The next tables describe file names and extensions; they are followed by example disk store files.
+
+## <a id="file_names_and_extensions__section_C99ABFDB1AEA4FE4B38F5D4F1D612F71" class="no-quick-link"></a>File Names
+
+File names have three parts:
+
+**First Part of File Name: Usage Identifier**
+
+| Values   | Used for                                                               | Examples                                   |
+|----------|------------------------------------------------------------------------|--------------------------------------------|
+| OVERFLOW | Oplog data from overflow regions and queues only.                      | OVERFLOWoverflowDS1\_1.crf                 |
+| BACKUP   | Oplog data from persistent and persistent+overflow regions and queues. | BACKUPoverflowDS1.if, BACKUPDEFAULT.if     |
+| DRLK\_IF | Access control - locking the disk store.                               | DRLK\_IFoverflowDS1.lk, DRLK\_IFDEFAULT.lk |
+
+**Second Part of File Name: Disk Store Name**
+
+| Values                  | Used for                                                                                                                  | Examples                                                                             |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| &lt;disk store name&gt; | Non-default disk stores.                                                                                                  | name="overflowDS1" DRLK\_IFoverflowDS1.lk, name="persistDS1" BACKUPpersistDS1\_1.crf |
+| DEFAULT                 | Default disk store name, used when persistence or overflow are specified on a region or queue but no disk store is named. | DRLK\_IFDEFAULT.lk, BACKUPDEFAULT\_1.crf                                             |
+
+**Third Part of File Name: oplog Sequence Number**
+
+| Values                            | Used for                                        | Examples                                                                     |
+|-----------------------------------|-------------------------------------------------|------------------------------------------------------------------------------|
+| Sequence number in the format \_n | Oplog data files only. Numbering starts with 1. | OVERFLOWoverflowDS1\_1.crf, BACKUPpersistDS1\_2.crf, BACKUPpersistDS1\_3.crf |
+
+## <a id="file_names_and_extensions__section_4FC89D10D6304088882B2E278A889A9B" class="no-quick-link"></a>File Extensions
+
+| File extension | Used for                                         | Notes                                                                                                |
+|----------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| if             | Disk store metadata                              | Stored in the first disk-dir listed for the store. Negligible size - not considered in size control. |
+| lk             | Disk store access control                        | Stored in the first disk-dir listed for the store. Negligible size - not considered in size control. |
+| crf            | Oplog: create, update, and invalidate operations | Pre-allocated 90% of the total max-oplog-size at creation.                                           |
+| drf            | Oplog: delete operations                         | Pre-allocated 10% of the total max-oplog-size at creation.                                           |
+| krf            | Oplog: key and crf offset information            | Created after the oplog has reached the max-oplog-size. Used to improve performance at startup.      |
+
+Example files for disk stores persistDS1 and overflowDS1:
+
+``` pre
+bash-2.05$ ls -tlra persistData1/
+total 8
+-rw-rw-r--   1 person users        188 Mar  4 06:17 BACKUPpersistDS1.if
+drwxrwxr-x   2 person users        512 Mar  4 06:17 .
+-rw-rw-r--   1 person users          0 Mar  4 06:18 BACKUPpersistDS1_1.drf
+-rw-rw-r--   1 person users         38 Mar  4 06:18 BACKUPpersistDS1_1.crf
+drwxrwxr-x   8 person users        512 Mar  4 06:20 ..
+bash-2.05$
+ 
+bash-2.05$ ls -ltra overflowData1/
+total 1028
+drwxrwxr-x   8 person users        512 Mar  4 06:20 ..
+-rw-rw-r--   1 person users          0 Mar  4 06:21 DRLK_IFoverflowDS1.lk
+-rw-rw-r--   1 person users          0 Mar  4 06:21 BACKUPoverflowDS1.if
+-rw-rw-r--   1 person users 1073741824 Mar  4 06:21 OVERFLOWoverflowDS1_1.crf
+drwxrwxr-x   2 person users        512 Mar  4 06:21 .
+```
+
+Example default disk store files for a persistent region:
+
+``` pre
+bash-2.05$ ls -tlra
+total 106
+drwxrwxr-x   8 person users       1024 Mar  8 14:51 ..
+-rw-rw-r--   1 person users       1010 Mar  8 15:01 defTest.xml
+drwxrwxr-x   2 person users        512 Mar  8 15:01 backupDirectory
+-rw-rw-r--   1 person users          0 Mar  8 15:01 DRLK_IFDEFAULT.lk
+-rw-rw-r--   1 person users  107374183 Mar  8 15:01 BACKUPDEFAULT_1.drf
+-rw-rw-r--   1 person users  966367641 Mar  8 15:01 BACKUPDEFAULT_1.crf
+-rw-rw-r--   1 person users        172 Mar  8 15:01 BACKUPDEFAULT.if
+drwxrwxr-x   3 person users        512 Mar  8 15:01 .           
+```

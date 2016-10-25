@@ -1,0 +1,56 @@
+---
+title:  Advantages of Using Geode for Session Management
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The HTTP Session Management Module enables you to customize how you manage your session data.
+
+Depending on your usage model, the HTTP Session Management Module enables you to accomplish the following tasks:
+
+-   Replicate session data across multiple peers.
+-   Partition data across multiple servers.
+-   Manage your session data in many other customizable ways.
+
+Using Geode for session management has many advantages:
+
+<dt>**tc Server integration**</dt>
+<dd>The Geode module offers clean integration into the tc Server environment with minimal configuration changes necessary.</dd>
+
+<dt>**Scalability**</dt>
+<dd>Applications with a small number of frequently-accessed sessions can **replicate** session information on all members in the system. However, when the number of concurrent sessions being managed is large, data can be **partitioned** across any number of servers (either embedded within your application server process or managed by Geode cache servers), which allows for **linear scaling**. Additionally, capacity can be **dynamically added or removed** in a running system and Geode re-executes a non-blocking, rebalancing logic to migrate data from existing members to the newly added members. When the session state memory requirements exceed available memory, each partition host can **overflow to disk**.</dd>
+
+<dt>**Server-managed session state**</dt>
+<dd>Session state can be managed independent of the application server cluster. This allows applications or servers to come and go without impacting session lifetimes.</dd>
+
+<dt>**Shared nothing cluster-wide persistence**</dt>
+<dd>Session state can be persisted (and recovered) - invaluable for scenarios where sessions manage critical application state or have long lifetimes. Geode uses a shared nothing persistence model where each member can continuously append to rolling log files without ever needing to seek on disk, providing very high disk throughput. When data is partitioned, the total disk throughput can come close to the aggregate disk transfer rates across each of the members storing data on disk.</dd>
+
+<dt>**Session deltas**</dt>
+<dd>When session attributes are updated, only the updated state that is sent over the wire (to cache servers and to replicas). This provides fast updates even for large sessions. Session state is always managed in a serialized state on the servers, avoiding the need for the cache servers to be aware of the application classes.</dd>
+
+<dt>**Tiered caching**</dt>
+<dd>Applications can configure a local or near cache for in-process caching of the most frequently used session state. This local cache delegates to a farm of cache servers where the entire session state is partitioned across any number of peer cache servers. The local cache can be configured to consume a certain percentage of the total heap available before least-recently used (LRU) eviction. This is a simpler and more effective way to manage LRU caches as opposed to alternate strategies based on count or memory size, which increase the risk of getting an "OutOfMemoryException".</dd>
+
+<dt>**Application server sizing**</dt>
+<dd>Another aspect of tiered-caching functionality is that session replication can be configured so that session objects are stored external to the application server process. This allows the heap settings on the application server to be much smaller than they would otherwise need to be.</dd>
+
+<dt>**High availability (HA), disk-based overflow, synchronization to backend data store, other Geode features**</dt>
+<dd>All the popular Geode features are available. For example: more than one synchronous copy of the session state can be maintained providing high availability (HA); the session cache can overflow to disk if the memory capacity in the cache server farm becomes insufficient; state information can be written to a backend database in a synchronous or asynchronous manner.</dd>
+
+

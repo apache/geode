@@ -18,7 +18,7 @@ package parReg.query.unittest;
 
 import java.util.*;
 import java.io.Serializable;
-import com.gemstone.gemfire.cache.Declarable;
+import org.apache.geode.cache.Declarable;
 
 /**
  * Represents a number of shares of a stock ("security") held in a

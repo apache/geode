@@ -1,0 +1,72 @@
+---
+title:  Useful gfsh Shell Variables
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can use the built-in `gfsh` shell variables in scripts.
+
+You can also use the `set variable` command to modify shell behavior or to define your own variables.
+
+To see a list of all gfsh shell variables and their current values, use the following command:
+
+``` pre
+gfsh>echo --string=$*
+```
+
+To obtain the current value of an existing variable, use the following command syntax (the variable must be enclosed in braces):
+
+``` pre
+gfsh>echo --string=${VARIABLE}
+```
+
+For example:
+
+``` pre
+gfsh>echo --string=${SYS_CLASSPATH}
+```
+
+**System Variables**
+
+|                          |                                                                                                    |
+|--------------------------|----------------------------------------------------------------------------------------------------|
+| SYS\_CLASSPATH           | CLASSPATH of the gfsh JVM (read only).                                                             |
+| SYS\_GEMFIRE\_DIR        | Product directory where Geode has been installed (read only). |
+| SYS\_HOST\_NAME          | Host from which gfsh is started (read only).                                                       |
+| SYS\_JAVA\_VERSION       | Java version used (read only).                                                                     |
+| SYS\_OS                  | OS name (read only).                                                                               |
+| SYS\_OS\_LINE\_SEPARATOR | Line separator (\\ or ^) variable that you can use when writing gfsh scripts. (read only).         |
+| SYS\_USER                | User name (read only).                                                                             |
+| SYS\_USER\_HOME          | User's home directory (read only).                                                                 |
+
+**GFSH Environment Variables**
+
+|                                    |                                                                                                                                                                                                                                                                               |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| APP\_COLLECTION\_LIMIT             | Number of items in the embedded collection of a result to be iterated Values: 1-100. Default value is 20.                                                                                                                                                                     |
+| APP\_FETCH\_SIZE                   | Fetch size to be used while querying. Values: 0 - 2147483647. Default value is 1000.                                                                                                                                                                                          |
+| APP\_LAST\_EXIT\_STATUS            | Last command exit status. Similar to $? (Unix) and %errorlevel% (Windows). Values: 0 (successful), 1 (error), 2(crash) (read only).                                                                                                                                           |
+| APP\_LOGGING\_ENABLED              | Whether gfsh logging is enabled. Default: false (read only). You can enable gfsh logging by setting the `gfsh.log-level` Java system property to a [supported Java log level](http://docs.oracle.com/javase/8/docs/api/java/util/logging/Level.html). |
+| APP\_LOG\_FILE                     | Path and name of current gfsh log file (read only).                                                                                                                                                                                                                           |
+| APP\_NAME                          | Name of the application-- "gfsh" (read only).                                                                                                                                                                                                                                 |
+| APP\_PWD                           | Current working directory where gfsh was launched (read only).                                                                                                                                                                                                                |
+| APP\_QUERY\_RESULTS\_DISPLAY\_MODE | Toggle the display mode for returning query results. Values: table or catalog. Default value is table.                                                                                                                                                                        |
+| APP\_QUIET\_EXECUTION              | Whether the execution should be in quiet mode. Values (case insensitive): true, false. Default value is false.                                                                                                                                                                |
+| APP\_RESULT\_VIEWER                | Unix only. Set this variable to `external` to enable viewing of the output using the UNIX `less` command. Default value is basic (gfsh).                                                                                                                                      |
+
+

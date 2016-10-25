@@ -1,0 +1,122 @@
+---
+title:  Setting Up the CLASSPATH
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic describes how Geode processes set their CLASSPATH.
+
+To simplify CLASSPATH environment settings, Geode has organized all application libraries required by Geode processes into `*-dependencies.jar` files. All dependency JAR files are located in the `path_to_product/lib` directory. When starting a server or locator process using `gfsh`, the required application JAR files are automatically loaded into the process's CLASSPATH for you.
+
+**Note:**
+To embed Geode in your application, add `path_to_product/lib/geode-dependencies.jar` to your CLASSPATH.
+
+The following table lists the dependency JAR files associated with various Geode processes:
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Geode Process</th>
+<th>Associated JAR Files</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>gfsh</td>
+<td>gfsh-dependencies.jar</td>
+</tr>
+<tr class="even">
+<td>server and locator</td>
+<td>geode-dependencies.jar
+<div class="note note">
+Note:
+<p>Use this library for all standalone or embedded Geode processes (including Java clients) that host cache data.</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+
+## Modifying the CLASSPATH in gfsh-Managed Processes
+
+There are two options for updating the CLASSPATH of Geode server and locator processes that are started on the gfsh command line.
+
+**Option 1:** Specify the `--classpath` parameter upon process startup. For example, to modify the CLASSPATH of a locator:
+
+``` pre
+gfsh> start locator --name=locator1 --classpath=/path/to/applications/classes.jar
+```
+
+And to modify the CLASSPATH of a server:
+
+``` pre
+gfsh> start server --name=server1 --classpath=/path/to/applications/classes.jar
+```
+
+Application classes supplied as arguments to the `--classpath` option are *prepended* to the server or locator's CLASSPATH, beginning in second position. The first entry in the CLASSPATH is reserved for the core Geode jar file, for security reasons.
+
+**Option 2:** Define the CLASSPATH environment variable in your OS environment. Then, specify the `--include-system-classpath` parameter upon process startup. For example:
+
+``` pre
+gfsh> start locator --name=locator1 --include-system-classpath=true
+```
+
+The same can also be done for server processes:
+
+``` pre
+gfsh> start server --name=server1 --include-system-classpath=true
+```
+
+This option *appends* the contents of the system CLASSPATH environment variable to the locator or server's CLASSPATH upon startup. Specifying this option without a value sets it to true.
+
+## Setting the CLASSPATH for Applications and Standalone Java Processes
+
+If you are starting a Geode process programmatically (standalone or embedded), we recommend that you specify the CLASSPATH upon program execution using the `java -classpath` or `java -cp` command-line option. This method is preferred to setting the CLASSPATH as an environment variable since it allows you to set the value individually for each application without affecting other applications and without other applications modifying its value.
+
+For example, to start up a Geode locator process using the LocatorLauncher API, you can execute the following on the command line:
+
+``` pre
+prompt# java -cp "path_to_product/lib/geode-dependencies.jar"
+org.apache.geode.distributed.LocatorLauncher start locator1
+<locator-launcher-options>
+```
+
+To start up a Geode server process using the ServerLauncher API:
+
+``` pre
+prompt# java -cp "path_to_product/lib/geode-dependencies.jar:/path/to/your/applications/classes.jar"
+org.apache.geode.distributed.ServerLauncher start server1
+<server-launcher-options>
+```
+
+Note that in addition to the `*-dependencies.jar` file associated with the process, you must also specify any custom application JARs that you wish to access in your Geode process. For example, if you are planning on using a customized compressor on your regions, you should specify the application JAR that contains the compressor application you wish to use.
+
+To start up an application with an embedded cache:
+
+``` pre
+java -cp "path_to_product/lib/geode-dependencies.jar:/path/to/your/applications/classes.jar"
+com.mycompany.package.ApplicationWithEmbeddedCache
+```
+
+**Note:**
+Another method for updating the CLASSPATH of a server process with your own applications is to use the `gfsh deploy` command. Deploying application JAR files will automatically update the CLASSPATH of all members that are targeted for deployment. See [Deploying Application JARs to Apache Geode Members](../configuring/cluster_config/deploying_application_jars.html#concept_4436C021FB934EC4A330D27BD026602C) for more details.
+
+

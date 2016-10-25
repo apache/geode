@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.security.templates.SampleSecurityManager.Role;
 import org.apache.geode.security.templates.SampleSecurityManager.User;
 
@@ -65,36 +65,20 @@ public class SampleSecurityManagerTest {
   }
 
   @Test
-  public void shouldInitializeFromJsonString() throws Exception {
-    this.sampleSecurityManager.initializeFromJson(this.json);
+  public void shouldDefaultToSecurityJsonInClasspathIfNullProperties() throws Exception {
+    this.sampleSecurityManager.init(null);
+    verifySecurityManagerState();
+  }
+
+  @Test
+  public void shouldDefaultToSecurityJsonInClasspathIfEmptyProperties() throws Exception {
+    this.sampleSecurityManager.init(new Properties());
     verifySecurityManagerState();
   }
 
   @Test
   public void shouldInitializeFromJsonResource() throws Exception {
     this.sampleSecurityManager.initializeFromJsonResource(this.jsonResource);
-    verifySecurityManagerState();
-  }
-
-  @Test
-  public void shouldInitializeFromJsonFile() throws Exception {
-    this.sampleSecurityManager.initializeFromJsonFile(this.jsonFile);
-    verifySecurityManagerState();
-  }
-
-  @Test
-  public void initShouldUsePropertyAsJsonString() throws Exception {
-    Properties securityProperties = new Properties();
-    securityProperties.setProperty(SampleSecurityManager.SECURITY_JSON, this.json);
-    this.sampleSecurityManager.init(securityProperties);
-    verifySecurityManagerState();
-  }
-
-  @Test
-  public void initShouldUsePropertyAsJsonFile() throws Exception {
-    Properties securityProperties = new Properties();
-    securityProperties.setProperty(SampleSecurityManager.SECURITY_JSON, this.jsonFile.getAbsolutePath());
-    this.sampleSecurityManager.init(securityProperties);
     verifySecurityManagerState();
   }
 

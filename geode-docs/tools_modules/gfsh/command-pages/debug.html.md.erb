@@ -1,0 +1,54 @@
+---
+title:  debug
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Enable or disable debugging output in `gfsh`.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+debug --state=value
+```
+
+<a id="concept_B70E7B27CEF1496CB3B7217B15FF4726__table_B6D7C12CE550464CB7D6B2159BD94A1E"></a>
+
+| Name                                           | Description                                                                        | Default Value |
+|------------------------------------------------|------------------------------------------------------------------------------------|---------------|
+| <span class="keyword parmname">&#8209;&#8209;state </span> | Whether to turn debugging ON or OFF. Valid options are: ON, OFF (Case insensitive) | OFF           |
+
+<span class="tablecap">Table 1. Debug Parameters</span>
+
+**Example Commands:**
+
+``` pre
+debug --state=off
+debug --state=on
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>debug --state=on
+Debug is on
+```
+
+

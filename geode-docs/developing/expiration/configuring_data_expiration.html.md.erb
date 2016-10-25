@@ -1,0 +1,83 @@
+---
+title:  Configure Data Expiration
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Configure the type of expiration and the expiration action to use.
+
+<a id="configuring_data_expiration__section_ADB8302125624E01A808EA5E4FF79A5C"></a>
+
+-   Set the region's `statistics-enabled` attribute to true.
+
+    The statistics used for expiration are available directly to the application through the `CacheStatistics` object returned by the `Region` and `Region.Entry` `getStatistics` methods. The `CacheStatistics` object also provides a method for resetting the statistics counters.
+
+-   Set the expiration attributes by expiration type, with the max times and expiration actions. See the region attributes listings for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, and `region-idle-time` in [&lt;region-attributes&gt;](../../reference/topics/cache_xml.html#region-attributes).
+
+    For partitioned regions, to ensure reliable read behavior, use the `time-to-live` attributes, not the `idle-time` attributes. In addition, you cannot use `local-destroy` or `local-invalidate` expiration actions in partitioned regions.
+
+    Replicated regions example:
+
+    ``` pre
+    // Setting standard expiration on an entry
+    <region-attributes statistics-enabled="true"> 
+      <entry-idle-time> 
+        <expiration-attributes timeout="60" action="local-invalidate"/> 
+      </entry-idle-time> 
+    </region-attributes> 
+    ```
+
+-   Override the region-wide settings for specific entries, if required by your application. To do this:
+    1.  Program a custom expiration class that implements `org.apache.geode.cache.CustomExpiry`. Example:
+
+        ``` pre
+        // Custom expiration class
+        // Use the key for a region entry to set entry-specific expiration timeouts of 
+        //   10 seconds for even-numbered keys with a DESTROY action on the expired entries
+        //   Leave the default region setting for all odd-numbered keys. 
+        public class MyClass implements CustomExpiry, Declarable 
+        { 
+            private static final ExpirationAttributes CUSTOM_EXPIRY = 
+                    new ExpirationAttributes(10, ExpirationAction.DESTROY); 
+            public ExpirationAttributes getExpiry(Entry entry) 
+            { 
+                int key = (Integer)entry.getKey(); 
+                return key % 2 == 0 ? CUSTOM_EXPIRY : null; 
+            }
+        }
+        ```
+    2.  Define the class inside the expiration attributes settings for the region. Example:
+
+
+        ``` pre
+        <!-- Set default entry idle timeout expiration for the region --> 
+        <!-- Pass entries to custom expiry class for expiration overrides -->
+        <region-attributes statistics-enabled="true"> 
+            <entry-idle-time> 
+                <expiration-attributes timeout="60" action="local-invalidate"> 
+                    <custom-expiry> 
+                        <class-name>com.company.mypackage.MyClass</class-name> 
+                    </custom-expiry> 
+                </expiration-attributes> 
+            </entry-idle-time> 
+        </region-attributes>
+        ```
+
+You can also configure Regions using the gfsh command-line interface, however, you cannot configure `custom-expiry` using gfsh. See [Region Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_EF03119A40EE492984F3B6248596E1DD).
+
+

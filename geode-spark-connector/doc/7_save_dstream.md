@@ -51,7 +51,7 @@ Now let's save the running word count to Geode region `str_int_region`, which
 simply replace print() with saveToGeode():
 
 ```
-import io.pivotal.geode.spark.connector.streaming._
+import org.apache.geode.spark.connector.streaming._
 runningCounts.saveToGeode("str_int_region")
 ```
 

@@ -1,8 +1,8 @@
-# Mock command for com.gemstone.gemfire.management.internal.cli.CommandManagerJUnitTest.testLoadPluginCommands
-com.gemstone.gemfire.management.internal.cli.CommandManagerJUnitTest$MockPluginCommand
+# Mock command for org.apache.geode.management.internal.cli.CommandManagerJUnitTest.testLoadPluginCommands
+org.apache.geode.management.internal.cli.CommandManagerJUnitTest$MockPluginCommand
 # Should cause ServiceConfigurationException while iterating.
-#TODO jbarrett - causes tests to be marked as failed because of exception in log com.gemstone.gemfire.management.internal.cli.CommandManagerJUnitTest$MockPluginCommandNotFound
+#TODO jbarrett - causes tests to be marked as failed because of exception in log org.apache.geode.management.internal.cli.CommandManagerJUnitTest$MockPluginCommandNotFound
 
 
 # Mock Extension commands
-com.gemstone.gemfire.internal.cache.extension.mock.MockExtensionCommands
+org.apache.geode.internal.cache.extension.mock.MockExtensionCommands

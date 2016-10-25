@@ -29,16 +29,16 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.RegionNotFoundException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 import org.apache.geode.redis.GeodeRedisServer;
 

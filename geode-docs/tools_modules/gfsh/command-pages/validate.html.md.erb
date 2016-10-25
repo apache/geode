@@ -1,0 +1,48 @@
+---
+title:  validate offline-disk-store
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Validate offline disk stores.
+
+<a id="concept_1A965E61EA7A4A629117CF55FC567685__section_CECE13AEC08E4F5DAABEF4D9E500664A"></a>
+**Availability:** Offline.
+
+**Syntax:**
+
+``` pre
+validate offline-disk-store --name=value --disk-dirs=value(,value)*
+```
+
+<a id="concept_1A965E61EA7A4A629117CF55FC567685__table_vd5_35g_2w"></a>
+
+| Name                                               | Description                                                                   |
+|----------------------------------------------------|-------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the disk store to be validated.                           |
+| <span class="keyword parmname">\\-\\-disk-dirs </span> | *Required.* Directories where data for the disk store was previously written. |
+
+<span class="tablecap">Table 1. Validate Offline-Disk-Store Parameters</span>
+
+**Example Commands:**
+
+``` pre
+validate offline-disk-store --name=DiskStore2 --disk-dirs=data/dir3,data/dir4
+```
+
+

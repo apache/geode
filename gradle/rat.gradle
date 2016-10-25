@@ -51,7 +51,7 @@ rat {
     // IDE
     'etc/eclipseFormatterProfile.xml',
     'etc/intellijIdeaCodeStyle.xml',
-    'etc/eclipseOrganizeImports.importorder', 
+    'etc/eclipseOrganizeImports.importorder',
     '**/.project',
     '**/.classpath',
     '**/.settings/**',
@@ -60,6 +60,7 @@ rat {
     '**/*.ipr',
     '**/*.iws',
     '.idea/**',
+    'geode-spark-connector/.idea/**',
     '**/tags',
 
     // text files
@@ -72,6 +73,8 @@ rat {
     '**/*.log',
     '**/*.patch',
     '**/*.diff',
+    '**/*.rej',
+    '**/*.orig',
     '**/*.MF',
 
     // binary files
@@ -85,10 +88,16 @@ rat {
     '**/*.pdf',
     '**/*.png',
     '**/*.ser',
+    '**/*.svg',
     '**/*.truststore',
     '**/*.xls',
     '**/publickeyfile',
     '**/*.dat',
+
+    // Geode docs
+    'geode-book/Gemfile.lock',
+    'geode-book/output/**',
+    'geode-book/final_app/**',
 
     // other text files
     'geode-spark-connector/project/plugins.sbt',
@@ -100,14 +109,14 @@ rat {
     'extensions/**/tomcat-users.xml',
     'extensions/geode-modules-assembly/release/tcserver/**',
     'extensions/geode-modules-assembly/release/**/setenv.properties',
-    'extensions/geode-modules/src/main/java/com/gemstone/gemfire/modules/session/catalina/LocalStrings.properties',
+    'extensions/geode-modules/src/main/java/org/apache/geode/modules/session/catalina/LocalStrings.properties',
     'extensions/geode-modules/src/main/resources/modules-version.properties',
-    'extensions/geode-modules/src/test/resources/com/gemstone/gemfire/modules/Event.hbm.xml',
-    'extensions/geode-modules/src/test/resources/com/gemstone/gemfire/modules/Person.hbm.xml',
+    'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Event.hbm.xml',
+    'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Person.hbm.xml',
 
     // these are test files that don't expect the first element to be a comment
-    'geode-core/src/test/resources/com/gemstone/gemfire/management/internal/configuration/domain/CacheElementJUnitTest.xml',
-    'geode-core/src/test/resources/com/gemstone/gemfire/management/internal/configuration/utils/*.xml',
+    'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/domain/CacheElementJUnitTest.xml',
+    'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
 
     // geode-site: Adding exceptions to MIT/BSD licensed files
     'geode-site/website/content/js/head.js',
@@ -130,23 +139,19 @@ rat {
 
 
     // ANTLR generated files
-    'geode-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexer.java',
-    'geode-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexerTokenTypes.java',
-    'geode-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLParser.java',
-    'geode-core/src/main/java/com/gemstone/gemfire/cache/query/internal/parse/OQLLexerTokenTypes.txt',
+    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexer.java',
+    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexerTokenTypes.java',
+    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLParser.java',
+    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexerTokenTypes.txt',
 
     // Service META-INF
     '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
-    '**/META-INF/services/com.gemstone.gemfire.internal.cache.CacheService',
-    '**/META-INF/services/com.gemstone.gemfire.internal.cache.xmlcache.XmlParser',
-    '**/META-INF/services/com.gemstone.gemfire.distributed.ServerLauncherCacheProvider',
+    '**/META-INF/services/org.apache.geode.internal.cache.CacheService',
+    '**/META-INF/services/org.apache.geode.internal.cache.xmlcache.XmlParser',
+    '**/META-INF/services/org.apache.geode.distributed.ServerLauncherCacheProvider',
     '**/META-INF/services/org.springframework.shell.core.CommandMarker',
 
     // --- Other Licenses ---
-
-    // Copied from other ASF projects
-    'geode-core/src/main/resources/com/gemstone/gemfire/admin/jmx/internal/doc-files/mbeans-descriptors.dtd',
-    'geode-core/src/main/resources/com/gemstone/gemfire/admin/jmx/mbeans-descriptors.xml',
 
     // Public Domain http://meyerweb.com/eric/tools/css/reset/
     'geode-web-api/src/main/webapp/docs/css/reset.css',
@@ -210,7 +215,7 @@ rat {
 
     // BSD License
     'geode-web-api/src/main/webapp/docs/lib/highlight.7.3.pack.js',
-    'geode-core/src/main/java/com/gemstone/gemfire/management/internal/cli/shell/jline/ANSIBuffer.java',
+    'geode-core/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.sparkline.js',
 
     // Apache License
@@ -224,7 +229,7 @@ rat {
     'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js',
 
     // MX4J License
-    'geode-core/src/main/java/com/gemstone/gemfire/admin/jmx/internal/MX4JModelMBean.java'
+    'geode-core/src/main/java/org/apache/geode/admin/jmx/internal/MX4JModelMBean.java'
   ]
 }
 

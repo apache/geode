@@ -1,0 +1,123 @@
+---
+title:  Extending the ReflectionBasedAutoSerializer
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can extend the `ReflectionBasedAutoSerializer` to handle serialization in a customized manner. This section provides an overview of the available method-based customization options and an example of extending the serializer to support BigDecimal and BigInteger types.
+
+## <a id="concept_9E020566EE794A81A48A90BA798EC279__section_378C0C68A1B342DD9D754DDBDC4874B3" class="no-quick-link"></a>Reasons to Extend the ReflectionBasedAutoSerializer
+
+One of the main use cases for extending the `ReflectionBasedAutoSerializer` is that you want it to handle an object that would currently need to be handled by standard Java serialization. There are several issues with having to use standard Java serialization that can be addressed by extending the PDX `ReflectionBasedAutoSerializer`.
+
+-   Each time we transition from a Geode serialized object to an object that will be Java I/O serialized, extra data must get serialized. This can cause a great deal of serialization overhead. This is why it is worth extending the `ReflectionBasedAutoSerializer` to handle any classes that normally would have to be Java I/O serialized.
+-   Expanding the number of classes that can use the `ReflectionBasedAutoSerializer` is beneficial when you encounter object graphs. After we use Java I/O serialization on an object, any objects under that object in the object graph will also have to be Java I/O serialized. This includes objects that normally would have been serialized using PDX or `DataSerializable`.
+-   If standard Java I/O serialization is done on an object and you have enabled check-portability, then an exception will be thrown. Even if you are not concerned with the object's portability, you can use this flag to find out what classes would use standard Java serialization (by getting an exception on them) and then enhancing your auto serializer to handle them.
+
+## <a id="concept_9E020566EE794A81A48A90BA798EC279__section_A739691C60FB4EB291289AADCD66C675" class="no-quick-link"></a>Overriding ReflectionBasedAutoSerializer Behavior
+
+You can customize the specific behaviors in `ReflectionBasedAutoSerializer` by overriding the following methods:
+
+-   **`isClassAutoSerialized`** customizes which classes to autoserialize.
+-   **`isFieldIncluded`** specifies which fields of a class to autoserialize.
+-   **`getFieldName`** defines the specific field names that will be generated during autoserialization.
+-   **`isIdentifyField`** controls which field is marked as the identity field. Identity fields are used when a PdxInstance computes its hash code to determine whether it is equal to another object.
+-   **`getFieldType`** determines the field type that will be used when autoserializing the given field.
+-   **`transformFieldValue`** controls whether specific field values of a PDX object can be transformed during serialization.
+-   **`writeTransform`** controls what field value is written during auto serialization.
+-   **`readTransform`** controls what field value is read during auto deserialization.
+
+These methods are only called the first time the `ReflectionBasedAutoSerializer` sees a new class. The results will be remembered and used the next time the same class is seen.
+
+For details on these methods and their default behaviors, see the JavaDocs on [ReflectionBasedAutoSerializer](/releases/latest/javadoc/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html) for details.
+
+## <a id="concept_9E020566EE794A81A48A90BA798EC279__section_7C4CC39FD82A48A9B5F8376522078192" class="no-quick-link"></a>Example of Optimizing Autoserialization of BigInteger and BigDecimal Types
+
+This section provides an example of extending the `ReflectionBasedAutoSerializer` to optimize the automatic serialization of BigInteger and BigDecimal types.
+
+The following code sample illustrates a subclass of the `ReflectionBasedAutoSerializer` that optimizes BigInteger and BigDecimal autoserialization:
+
+``` pre
+public static class BigAutoSerializer extends ReflectionBasedAutoSerializer {
+   public BigAutoSerializer(Boolean checkPortability, string… patterns) {
+    super(checkPortability, patterns);
+}
+
+@Override
+public FieldType get FieldType(Field f, Class<?> clazz) {
+   if (f.getType().equals(BigInteger.class)) {
+        return FieldType.BYTE_ARRAY; 
+      } else if (f.getType().equals(BigDecimal.class)) {
+        return FieldType.STRING; 
+      } else {
+        return super.getFieldType(f, clazz);
+      }
+    }
+@Override
+    public boolean transformFieldValue(Field f, Class<?> clazz) {
+      if (f.getType().equals(BigInteger.class)) {
+        return true;
+      } else if (f.getType().equals(BigDecimal.class)) {
+        return true;
+      } else {
+        return super.transformFieldValue(f, clazz);
+      }
+    }
+
+@Override
+    public Object writeTransform(Field f, Class<?> clazz, Object originalValue) {
+      if (f.getType().equals(BigInteger.class)) {
+        byte[] result = null;
+        if (originalValue != null) {
+          BigInteger bi = (BigInteger)originalValue;
+          result = bi.toByteArray();
+        }
+        return result;
+      } else if (f.getType().equals(BigDecimal.class)) {
+        Object result = null;
+        if (originalValue != null) {
+          BigDecimal bd = (BigDecimal)originalValue;
+          result = bd.toString();
+        }
+        return result;
+      } else {
+        return super.writeTransform(f, clazz, originalValue);
+      }
+    }
+
+@Override
+    public Object readTransform(Field f, Class<?> clazz, Object serializedValue) {
+      if (f.getType().equals(BigInteger.class)) {
+        BigInteger result = null;
+        if (serializedValue != null) {
+          result = new BigInteger((byte[])serializedValue);
+        }
+        return result;
+      } else if (f.getType().equals(BigDecimal.class)) {
+        BigDecimal result = null;
+        if (serializedValue != null) {
+          result = new BigDecimal((String)serializedValue);
+        }
+        return result;
+      } else {
+        return super.readTransform(f, clazz, serializedValue);
+      }
+    }
+    
+  }
+```

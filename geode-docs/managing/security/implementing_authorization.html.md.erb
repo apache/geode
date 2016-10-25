@@ -1,0 +1,265 @@
+---
+title:  Implementing Authorization
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## How Authorization Works
+
+When a component requests an operation,
+the `SecurityManager.authorize` method is invoked.
+It is passed the principal of the operation's requester
+and a `ResourcePermission`, which describes the operation requested.
+
+The implementation of the `SecurityManager.authorize` method
+makes a decision as to whether or not the principal will be granted permission
+to carry out the operation.
+It returns a boolean in which a return value of `true` permits
+the operation,
+and a return value of `false` prevents the operation.
+
+A well-designed `authorize` method will have or will have a way of obtaining
+a mapping of principals to the operations (in the form of resource permissions)
+that they are permitted to do.
+
+## Resource Permissions
+
+All operations are described by an instance of the `ResourcePermission` class.
+A permission contains the `Resource` data member,
+which classifies whether the operation as working on
+
+- cache data; value is `DATA`
+- the distributed system; value is `CLUSTER`
+
+A permission also contains the `Operation` data member, 
+which classifies whether the operation as
+
+- reading; value is `READ`
+- changing information; value is `WRITE`
+- making administrative changes; value is `MANAGE`
+
+The operations are not hierarchical;
+`MANAGE` does not imply `WRITE`, and `WRITE` does not imply `READ`.
+
+Some operations further specify a region name in the permission.
+This permits restricting operations on that region to only those
+authorized principals.
+And within a region, some operations may specify a key.
+This permits restricting operations on that key within that region to 
+only those authorized principals.
+
+This table classifies the permissions assigned for operations common to
+a Client-Server interaction.
+
+| Client Operation                   | Assigned `ResourcePermission`
+|------------------------------------|-------------------------------------|
+| get function attribute             | CLUSTER:READ                        |
+| create region                      | DATA:MANAGE                         |
+| destroy region                     | DATA:MANAGE                         |
+| Region.Keyset                      | DATA:READ:RegionName                |
+| Region.query                       | DATA:READ:RegionName                |
+| Region.getAll                      | DATA:READ:RegionName                |
+| Region.getAll with a list of keys  | DATA:READ:RegionName:Key            |
+| Region.getEntry                    | DATA:READ:RegionName                |
+| Region.containsKeyOnServer(key)    | DATA:READ:RegionName:Key            |
+| Region.get(key)                    | DATA:READ:RegionName:Key            |
+| Region.registerInterest(key)       | DATA:READ:RegionName:Key            |
+| Region.registerInterest(regex)     | DATA:READ:RegionName                |
+| Region.unregisterInterest(key)     | DATA:READ:RegionName:Key            |
+| Region.unregisterInterest(regex)   | DATA:READ:RegionName                |
+| execute function                   | DATA:WRITE                          |
+| clear region                       | DATA:WRITE:RegionName               |
+| Region.putAll                      | DATA:WRITE:RegionName               |
+| Region.clear                       | DATA:WRITE:RegionName               |
+| Region.removeAll                   | DATA:WRITE:RegionName               |
+| Region.destroy(key)                | DATA:WRITE:RegionName:Key           |
+| Region.invalidate(key)             | DATA:WRITE:RegionName:Key           |
+| invalidate key (DIFFERENT?)        | DATA:WRITE:RegionName:Key           |
+| Region.destroy(key)                | DATA:WRITE:RegionName:Key           |
+| destroy key    (DIFFERENT?)        | DATA:WRITE:RegionName:Key           |
+| Region.put(key)                    | DATA:WRITE:RegionName:Key           |
+| Region.replace                     | DATA:WRITE:RegionName:Key           |
+
+
+This table classifies the permissions assigned for `gfsh` operations.
+
+| `gfsh` Command                         | Assigned `ResourcePermission`
+|----------------------------------------|----------------------------------|
+| alter disk-store                       | DATA:MANAGE                      |
+| alter region                           | DATA:MANAGE:RegionName           |
+| alter runtime                          | CLUSTER:MANAGE                   |
+| backup disk-store                      | DATA:READ                        |
+| change loglevel                        | CLUSTER:WRITE                    |
+| clear defined indexes                  | DATA:MANAGE                      |
+| close durable-client                   | DATA:MANAGE                      |
+| close durable-cq                       | DATA:MANAGE                      |
+| compact disk-store                     | DATA:MANAGE                      |
+| compact offline-disk-store             | DATA:MANAGE                      |
+| configure pdx                          | DATA:MANAGE                      |
+| create async-event-queue               | DATA:MANAGE                      |
+| create defined indexes                 | DATA:MANAGE                      |
+| create disk-store                      | DATA:MANAGE                      |
+| create gateway-receiver                | DATA:MANAGE                      |
+| create gateway-sender                  | DATA:MANAGE                      |
+| create index                           | DATA:MANAGE:RegionName           |
+| create region                          | DATA:MANAGE                      |
+| define index                           | DATA:MANAGE:RegionName           |
+| deploy                                 | DATA:MANAGE                      |
+| describe client                        | CLUSTER:READ                     |
+| describe config                        | CLUSTER:READ                     |
+| describe disk-store                    | CLUSTER:READ                     |
+| describe member                        | CLUSTER:READ                     |
+| describe offline-disk-store            | CLUSTER:READ                     |
+| describe region                        | CLUSTER:READ                     |
+| destroy disk-store                     | DATA:MANAGE                      |
+| destroy function                       | DATA:MANAGE                      |
+| destroy index                          | DATA:MANAGE or DATA:MANAGE:RegionName |
+| destroy region                         | DATA:MANAGE                      |
+| disconnect                             | DATA:MANAGE                      |
+| echo                                   | DATA:MANAGE                      |
+| encrypt password                       | DATA:MANAGE                      |
+| execute function                       | DATA:MANAGE                      |
+| export cluster-configuration           | CLUSTER:READ                     |
+| export config                          | CLUSTER:READ                     |
+| export data                            | CLUSTER:READ                     |
+| export logs                            | CLUSTER:READ                     |
+| export offline-disk-store              | CLUSTER:READ                     |
+| export stack-traces                    | CLUSTER:READ                     |
+| gc                                     | CLUSTER:MANAGE                   |
+| get --key=key1 --region=region1        | DATA:READ:RegionName:Key         |
+| import data                            | DATA:WRITE:RegionName            |
+| import cluster-configuration           | DATA:MANAGE                      |
+| list async-event-queues                | CLUSTER:READ                     |
+| list clients                           | CLUSTER:READ                     |
+| list deployed                          | CLUSTER:READ                     |
+| list disk-stores                       | CLUSTER:READ                     |
+| list durable-cqs                       | CLUSTER:READ                     |
+| list functions                         | CLUSTER:READ                     |
+| list gateways                          | CLUSTER:READ                     |
+| list indexes                           | CLUSTER:READ                     |
+| list members                           | CLUSTER:READ                     |
+| list regions                           | DATA:READ                        |
+| load-balance gateway-sender            | DATA:MANAGE                      |
+| locate entry                           | DATA:READ:RegionName:Key         |
+| netstat                                | CLUSTER:READ                     |
+| pause gateway-sender                   | DATA:MANAGE                      |
+| pdx rename                             | DATA:MANAGE                      |
+| put --key=key1 --region=region1        | DATA:WRITE:RegionName:Key        |
+| query                                  | DATA:READ:RegionName             |
+| rebalance                              | DATA:MANAGE                      |
+| remove                                 | DATA:WRITE:RegionName or DATA:WRITE:RegionName:Key |
+| resume gateway-sender                  | DATA:MANAGE                      |
+| revoke mising-disk-store               | DATA:MANAGE                      |
+| show dead-locks                        | CLUSTER:READ                     |
+| show log                               | CLUSTER:READ                     |
+| show metrics                           | CLUSTER:READ                     |
+| show missing-disk-stores               | CLUSTER:READ                     |
+| show subscription-queue-size           | CLUSTER:READ                     |
+| shutdown                               | CLUSTER:MANAGE                   |
+| start gateway-receiver                 | DATA:MANAGE                      |
+| start gateway-sender                   | DATA:MANAGE                      |
+| start server                           | CLUSTER:MANAGE                   |
+| status cluster-config-service          | CLUSTER:READ                     |
+| status gateway-receiver                | CLUSTER:READ                     |
+| status gateway-sender                  | CLUSTER:READ                     |
+| status locator                         | CLUSTER:READ                     |
+| status server                          | CLUSTER:READ                     |
+| stop gateway-receiver                  | DATA:MANAGE                      |
+| stop gateway-receiver                  | DATA:MANAGE                      |
+| stop locator                           | CLUSTER:MANAGE                   |
+| stop server                            | CLUSTER:MANAGE                   |
+| undeploy                               | DATA:MANAGE                      |
+
+The `gfsh connect` does not have a permission,
+as it is the operation that invokes authentication. 
+These `gfsh` commands do not have permission defined,
+as they do not interact with the distributed system.
+
+-  `gfsh describe connection`, which describes the `gfsh` end of the connection
+-  `gfsh debug`, which toggles the mode within `gfsh`
+-  `gfsh exit`
+-  `gfsh help`
+-  `gfsh hint`
+-  `gfsh history`
+-  `gfsh run`, although individual commands within the script
+will go through authorization
+-  `gfsh set variable`
+-  `gfsh sh`
+-  `gfsh sleep`
+-  `validate offline-disk-store`
+-  `gfsh version`
+
+This table classifies the permissions assigned for JMX operations.
+
+| JMX Operation                                | Assigned `ResourcePermission`
+|----------------------------------------------|-----------------------------|
+| DistributedSystemMXBean.shutdownAllMembers     | CLUSTER:MANAGE            |
+| ManagerMXBean.start                            | CLUSTER:MANAGE            |
+| ManagerMXBean.stop                             | CLUSTER:MANAGE            |
+| ManagerMXBean.createManager                    | CLUSTER:MANAGE            |
+| ManagerMXBean.shutDownMember                   | CLUSTER:MANAGE            |
+| Mbeans get attributes                          | CLUSTER:READ              |
+| MemberMXBean.showLog                           | CLUSTER:READ              |
+| DistributedSystemMXBean.changerAlertLevel      | CLUSTER:WRITE             |
+| ManagerMXBean.setPulseURL                      | CLUSTER:WRITE             |
+| ManagerMXBean.setStatusMessage                 | CLUSTER:WRITE             |
+| CacheServerMXBean.closeAllContinuousQuery      | DATA:MANAGE               |
+| CacheServerMXBean.closeContinuousQuery         | DATA:MANAGE               |
+| CacheServerMXBean.executeContinuousQuery       | DATA:READ                 |
+| DiskStoreMXBean.flush                          | DATA:MANAGE               |
+| DiskStoreMXBean.forceCompaction                | DATA:MANAGE               |
+| DiskStoreMXBean.forceRoll                      | DATA:MANAGE               |
+| DiskStoreMXBean.setDiskUsageCriticalPercentage | DATA:MANAGE               |
+| DiskStoreMXBean.setDiskUsageWarningPercentage  | DATA:MANAGE               |
+| DistributedSystemMXBean.revokeMissingDiskStores| DATA:MANAGE               |
+| DistributedSystemMXBean.setQueryCollectionsDepth| DATA:MANAGE              |
+| DistributedSystemMXBean.setQueryResultSetLimit | DATA:MANAGE               |
+| DistributedSystemMXBean.backupAllMembers       | DATA:READ                 |
+| DistributedSystemMXBean.queryData              | DATA:READ                 |
+| DistributedSystemMXBean.queryDataForCompressedResult | DATA:READ           |
+| GatewayReceiverMXBean.pause                    | DATA:MANAGE               |
+| GatewayReceiverMXBean.rebalance                | DATA:MANAGE               |
+| GatewayReceiverMXBean.resume                   | DATA:MANAGE               |
+| GatewayReceiverMXBean.start                    | DATA:MANAGE               |
+| GatewayReceiverMXBean.stop                     | DATA:MANAGE               |
+| GatewaySenderMXBean.pause                      | DATA:MANAGE               |
+| GatewaySenderMXBean.rebalance                  | DATA:MANAGE               |
+| GatewaySenderMXBean.resume                     | DATA:MANAGE               |
+| GatewaySenderMXBean.start                      | DATA:MANAGE               |
+| GatewaySenderMXBean.stop                       | DATA:MANAGE               |
+| LockServiceMXBean.becomeLockGrantor            | DATA:MANAGE               |
+| MemberMXBean.compactAllDiskStores              | DATA:MANAGE               |
+
+## Implement Authorization
+
+Complete these items to implement authorization.
+
+- Decide upon an authorization algorithm.
+The [Authorization Example](authorization_example.html)
+stores a mapping of which principals (users) are permitted to do
+which operations.
+The algorithm bases its decision
+on a look up of the permissions granted to the principal attempting
+the operation.
+- Define the `security-manager` property.
+See [Enable Security with Property Definitions](enable_security.html)
+for details about this property.
+- Implement the  `authorize` method of the `SecurityManager` interface.
+- Define any extra resources that the implemented authorization algorithm
+needs in order to make a decision.
+

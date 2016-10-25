@@ -1,0 +1,70 @@
+---
+title:  Authentication Example
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This example demonstrates the basics of an implementation of the
+`SecurityManager.authenticate` method.
+The remainder of the example may be found within the Apache Geode
+source code within the
+`geode-core/src/main/java/org/apache/geode/security/templates` directory.
+
+Of course, the security implementation of every installation is unique,
+so this example cannot be used in a production environment.
+Its use of the user name as a returned principal upon successful
+authentication is a particularly poor design choice,
+as any attacker that discovers the implementation can potentially
+spoof the system.
+
+This example assumes that a set of user name and password pairs
+representing users that may be successfully authenticated 
+has been read into a data structure upon intialization.
+Any component that presents the correct password for a user name
+successfully authenticates,
+and its identity is verified as that user.
+Therefore, the implementation of the `authenticate` method
+checks that the user name provided within the `credentials` parameter
+ is in its data structure.
+If the user name is present,
+then the password provided within the `credentials` parameter 
+is compared to the data structure's known password for that user name.
+Upon a match, the authentication is successful.
+
+``` pre
+public Object authenticate(final Properties credentials)
+         throws AuthenticationFailedException {
+    String user = credentials.getProperty(ResourceConstants.USER_NAME);
+    String password = credentials.getProperty(ResourceConstants.PASSWORD);
+
+    User userObj = this.userNameToUser.get(user);
+    if (userObj == null) {
+        throw new AuthenticationFailedException(
+                      "SampleSecurityManager: wrong username/password");
+    }
+
+    if (user != null 
+        && !userObj.password.equals(password) 
+        && !"".equals(user)) {
+        throw new AuthenticationFailedException(
+                      "SampleSecurityManager: wrong username/password");
+    }
+
+    return user;
+}
+```

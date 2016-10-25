@@ -1,0 +1,77 @@
+---
+title:  undeploy
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Undeploy the JAR files that were deployed on members or groups using `deploy` command.
+
+If `--jar` is not specified, the command will undeploy all deployed JARs. If `--group` is not specified, the command applies to the entire cluster. Note that this command can't unload the classes that were loaded during deployment. Member(s) should be restarted for that.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+undeploy [--jar=<jar to be undeployed>] [--group=<member-group-name>]
+```
+
+<a id="concept_234FEC313B4A468E8851DD9B1B759B98__table_mcj_l5g_2w"></a>
+
+| Name                                          | Description                                                  | Default Value                       |
+|-----------------------------------------------|--------------------------------------------------------------|-------------------------------------|
+| <span class="keyword parmname">\\-\\-group</span> | Group(s) from which the specified JAR(s) will be undeployed. | undeploy will occur on all members. |
+| <span class="keyword parmname">\\-\\-jar</span>   | JAR or JARs to be undeployed.                                | All JARs will be undeployed.        |
+
+<span class="tablecap">Table 1. Undeploy Parameters</span>
+
+**Example Commands:**
+
+``` pre
+undeploy --jar=domain-objects.jar
+undeploy --group=Group1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>undeploy --jar=domain-objects.jar
+
+  Member   |  Un-Deployed JAR   |         Un-Deployed From JAR Location        
+---------- | ------------------ | ---------------------------------------------
+datanode10 | domain-objects.jar | /usr/local/gemfire/deploy/GF#domain-objects#1
+datanode11 | domain-objects.jar | /usr/local/gemfire/deploy/GF#domain-objects#1 
+
+
+gfsh> undeploy --group=Group1
+
+ Member   |     Un-Deployed JAR     |             Un-Deployed From JAR Location        
+--------- | ----------------------- | ------------------------------------------------------
+datanode1 | group1_functions.jar    | /usr/local/gemfire/deploy/GF#group1_functions.jar#1
+datanode1 | group1_dependencies.jar | /usr/local/gemfire/deploy/GF#group1_dependencies.jar#1 
+datanode2 | group1_functions.jar    | /usr/local/gemfire/deploy/GF#group1_functions.jar#1
+datanode2 | group1_dependencies.jar | /usr/local/gemfire/deploy/GF#group1_dependencies.jar#1
+```
+
+**Error Messages:**
+
+``` pre
+No JAR Files Found
+```
+
+

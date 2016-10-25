@@ -1,0 +1,48 @@
+---
+title:  Socket Communication
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode processes communicate using TCP/IP and UDP unicast and multicast protocols. In all cases, communication uses sockets that you can tune to optimize performance.
+
+The adjustments you make to tune your Geode communication may run up against operating system limits. If this happens, check with your system administrator about adjusting the operating system settings.
+
+All of the settings discussed here are listed as `gemfire.properties` and `cache.xml` settings. They can also be configured through the API and some can be configured at the command line. Before you begin, you should understand Geode [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+-   **[Setting Socket Buffer Sizes](../../managing/monitor_tune/socket_communication_setting_socket_buffer_sizes.html)**
+
+    When you determine buffer size settings, you try to strike a balance between communication needs and other processing.
+
+-   **[Ephemeral TCP Port Limits](../../managing/monitor_tune/socket_communication_ephemeral_tcp_port_limits.html)**
+
+    By default, Windows’ ephemeral ports are within the range 1024-4999, inclusive.You can increase the range.
+
+-   **[Making Sure You Have Enough Sockets](../../managing/monitor_tune/socket_communication_have_enough_sockets.html)**
+
+    The number of sockets available to your applications is governed by operating system limits.
+
+-   **[TCP/IP KeepAlive Configuration](../../managing/monitor_tune/socket_tcp_keepalive.html)**
+
+    Geode supports TCP KeepAlive to prevent socket connections from being timed out.
+
+-   **[TCP/IP Peer-to-Peer Handshake Timeouts](../../managing/monitor_tune/socket_communication_tcpip_p2p_handshake_timeouts.html)**
+
+    You can alleviate connection handshake timeouts for TCP/IP connections by increasing the connection handshake timeout interval with the system property p2p.handshakeTimeoutMs.
+
+

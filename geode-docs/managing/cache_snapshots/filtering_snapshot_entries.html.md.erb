@@ -1,0 +1,46 @@
+---
+title:  Filtering Entries During Import or Export
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can customize your snapshot by filtering entries during the import or export of a region or a cache.
+
+For example, use filters to limit the export of data to a certain date range. If you set up a filter on the import or export of a cache, the filter is applied to every single region in the cache.
+
+The following example filters snapshot data by even numbered keys.
+
+``` pre
+File mySnapshot = ...
+Region<Integer, MyObject> region = ...
+
+SnapshotFilter<Integer, MyObject> even = new SnapshotFilter<Integer, MyObject>() {
+  @Override
+  public boolean accept(Entry<Integer, MyObject> entry) {
+    return entry.getKey() % 2 == 0;
+  }
+};
+
+RegionSnapshotService<Integer, MyObject> snapsrv = region.getSnapshotService();
+SnapshotOptions<Integer, MyObject> options = rss.createOptions().setFilter(even);
+
+// only save cache entries with an even key
+snapsrv.save(mySnapshot, SnapshotFormat.GEMFIRE, options);
+```
+
+

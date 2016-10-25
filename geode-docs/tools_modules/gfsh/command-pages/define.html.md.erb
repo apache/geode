@@ -1,0 +1,68 @@
+---
+title:  define index
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Define an index that can be used when executing queries. Then, you can execute a single command to create multiple indexes all at once using `create defined             indexes`.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+define index --name=value --expression=value --region=value [--type=value]
+```
+
+<a id="concept_B70E7B27CEF1496CB3B7217B15FF4726__table_B6D7C12CE550464CB7D6B2159BD94A1E"></a>
+
+| Name                                               | Description                                                                            | Default Value |
+|----------------------------------------------------|----------------------------------------------------------------------------------------|---------------|
+| <span class="keyword parmname">\\-\\-name </span>      | *Required.* Name of the index to define.                                               |               |
+| <span class="keyword parmname">&#8209;&#8209;expression</span> | *Required.* Field of the region values that are referenced by the index.               |               |
+| <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |               |
+| <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: range, key and hash.                              | range         |
+
+<span class="tablecap">Table 1. Define Index Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh> define index --name=myIndex1 --expression=exp1 --region=/exampleRegion 
+
+gfsh> define index --name=myIndex2 --expression=”c.exp2” --region="/exampleRegion e, e.collection1 c" 
+
+gfsh> define index --name=myIndex3 --expression=exp3 --region=/exampleRegion --type=hash 
+
+//then to create the indexes, execute:
+
+gfsh> create defined indexes
+ 
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>define index --name=myIndex1 --expression=exp1 --region=/exampleRegion
+Index successfully defined with following details
+Name       : myIndex1
+Expression : exp1
+RegionPath : /exampleRegion
+```
+
+

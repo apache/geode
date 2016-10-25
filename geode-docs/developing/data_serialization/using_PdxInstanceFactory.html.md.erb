@@ -1,0 +1,51 @@
+---
+title:  Using PdxInstanceFactory to Create PdxInstances
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+You can use the `PdxInstanceFactory` interface to create a `PdxInstance` from raw data when the domain class is not available on the server.
+
+This can be particularly useful when you need an instance of a domain class for plug in code such as a function or a loader. If you have the raw data for the domain object (the class name and each field's type and data), then you can explicitly create a `PdxInstance`. The `PdxInstanceFactory` is very similar to the `PdxWriter` except that after writing each field, you need to call the create method which returns the created PdxInstance.
+
+To create a factory call `RegionService.createPdxInstanceFactory`. A factory can only create a single instance. To create multiple instances create multiple factories or use `PdxInstance.createWriter()` to create subsequent instances. Using `PdxInstance.createWriter()` is usually faster.
+
+When you create a PdxInstance, set as least one identity field using the `markIndentityField` method. If you do not mark an identity field, the PdxInstance`equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well. It is important that the fields used by your `equals` and `hashCode` implementations are the same fields that you mark as identity fields.
+
+The following is a code example of using `PdxInstanceFactory`:
+
+``` pre
+PdxInstance pi = cache.createPdxInstanceFactory("com.company.DomainObject")
+   .writeInt("id", 37)
+   .markIdentityField("id")
+   .writeString("name", "Mike Smith")
+   .writeObject("favoriteDay", cache.createPdxEnum("com.company.Day", "FRIDAY", 5))
+   .create();
+```
+
+For more information, see `PdxInstanceFactory` in the Java API documentation.
+
+## <a id="concept_FFECBE8249D848E9A2CF7FD02514EC68__section_F4EC56197730427084FBF040820A6149" class="no-quick-link"></a>Enum Objects as PdxInstances
+
+You can now work with enum objects as PdxInstances. When you fetch an enum object from the cache, you can now deserialize it as a `PdxInstance`. To check whether a `PdxInstance` is an enum, use the `PdxInstance.isEnum` method. An enum `PdxInstance` will have one field named "name" whose value is a String that corresponds to the enum constant name.
+
+An enum `PdxInstance` is not writable; if you call `createWriter` it will throw an exception.
+
+The `RegionService` has a method that allows you to create a `PdxInstance` that represents an enum. See `RegionService.createPdxEnum` in the Java API documentation.
+
+

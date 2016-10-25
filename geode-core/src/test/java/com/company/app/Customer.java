@@ -16,7 +16,7 @@
  */
 package com.company.app;
 
-import com.gemstone.gemfire.cache.Declarable;
+import org.apache.geode.cache.Declarable;
 
 /**
  * A class that is <code>Declarable</code>

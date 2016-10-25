@@ -1,0 +1,81 @@
+---
+title:  Importing Cache and Region Snapshots
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+To import a Geode cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
+
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4B2C73CA1A734D9D96693A52BF99D75A" class="no-quick-link"></a>Import Requirements
+
+Before you import a region snapshot:
+
+-   Make sure the cache is configured correctly. Configure all registered PdxSerializers, DataSerializers, and Instantiators; create regions; and ensure the classpath contains any required classes.
+-   When you import a snapshot containing PDX types, you must wait until the exported type definitions are imported into the cache before inserting data that causes type conflicts. It is recommended that you wait for the import to complete before inserting data.
+
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_F5FA11694BFC46D4A813A259FE670C69" class="no-quick-link"></a>Import Limitations
+
+During an import, the `CacheWriter` and `CacheListener` callbacks are not invoked.
+
+If an error occurs during import, the import is halted and the region will contain some but not all snapshot data.
+
+The state of a cache client is indeterminate after an import. It is likely that the data in the client's cache is inconsistent with the imported data. Take the client offline during the import and restart it after the import completes.
+
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4F1A3A60FABA49A295CA18FBF572998D" class="no-quick-link"></a>Importing Cache Snapshots
+
+When you import a cache snapshot, the snapshot file is imported into the same region (match determined by name) that was used during snapshot export. When you import a cache, you import all snapshot files located within a directory into the cache. The API attempts to load all files in the specified directory.
+
+**Java API:**
+
+``` pre
+File mySnapshotDir = ...
+Cache cache = ...
+
+cache.getSnapshotService().load(mySnapshotDir, SnapshotFormat.GEMFIRE);
+```
+
+## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_97054643976345A099A7BDDC63DE30E9" class="no-quick-link"></a>Importing a Region Snapshot
+
+**Java API:**
+
+``` pre
+File mySnapshot = ...
+Region<String, MyObject> region = ...
+
+region.getSnapshotService().load(mySnapshot, SnapshotFormat.GEMFIRE);
+```
+
+**gfsh:**
+
+Open a gfsh prompt. After connecting to a Geode distributed system, at the prompt type:
+
+``` pre
+gfsh>import data --region=Region --file=filename.gfd 
+--member=membername
+```
+
+where *Region* corresponds to the name of the region that you want to import data into; *filename* (must end in .gfd) corresponds to the name of the file to be imported; and *membername* corresponds to the member where the region to be imported is hosted. For example:
+
+``` pre
+gfsh>import data --region=region1 --file=region1_2012_10_10.gfd 
+--member=server2
+```
+
+The snapshot file must already reside on the specified member at the location specified in the `--file` argument before import.
+
+For more information on this command, see [import data](../../tools_modules/gfsh/command-pages/import.html#topic_jw2_2ld_2l).

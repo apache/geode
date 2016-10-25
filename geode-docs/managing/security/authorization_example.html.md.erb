@@ -1,0 +1,70 @@
+---
+title:  Authorization Example
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This example demonstrates the basics of an implementation of the
+`SecurityManager.authorize` method.
+The remainder of the example may be found within the Apache Geode
+source code within the
+`geode-core/src/main/java/org/apache/geode/security/templates` directory.
+
+Of course, the security implementation of every installation is unique,
+so this example cannot be used in a production environment,
+as the roles and permissions will not match the needs of any
+real distributed system. 
+
+This example assumes that a set of users, a set of roles
+that a user might take on within the system,
+and a mapping of users to their roles are described
+in a JSON format file.
+The roles define a set of authorized resource permissions granted
+for users in those roles.
+Code not shown here parses the file to compose a data structure
+with the information on roles and users.
+The `authorize` callback denies permission for any operation
+that does not have a principal representing the identity of the
+operation's requester.
+Given the principal, 
+the method iterates through the data structure searching for the 
+necessary permissions for the principal.
+When the necessary permission is found, 
+authorization is granted by returning the value `true`.
+If the permission is not found in the data structure,
+then the method returns `false`, denying authorization of the operation.
+
+``` pre
+public boolean authorize(final Object principal, final ResourcePermission context) {
+    if (principal == null) return false;
+
+    User user = this.userNameToUser.get(principal.toString());
+    if (user == null) return false; // this user is not authorized to do anything
+
+    // check if the user has this permission defined in the context
+    for (Role role : this.userNameToUser.get(user.name).roles) {
+        for (Permission permitted : role.permissions) {
+            if (permitted.implies(context)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+```

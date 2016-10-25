@@ -1,0 +1,74 @@
+---
+title:  Limit the Server's Subscription Queue Memory Use
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a id="limit_server_subscription_queue_size__section_1791DFB89502480EB57F81D16AC0EBAC"></a>
+These are options for limiting the amount of server memory the subscription queues consume.
+
+-   Optional: Conflate the subscription queue messages.
+-   Optional: Increase the frequency of queue synchronization. This only applies to configurations where server redundancy is used for high availability. Increase the client’s pool configuration, `subscription-ack-interval`. The client periodically sends a batch acknowledgment of messages to the server, rather than acknowledging each message individually. A lower setting speeds message delivery and generally reduces traffic between the server and client. A higher setting helps contain server queue size. Example:
+
+    ``` pre
+    <!-- Set subscription ack interval to 3 seconds -->
+    <cache> 
+      <pool ... subscription-enabled="true" 
+                subscription-ack-interval="3000"> 
+      ... 
+    </pool>
+    ```
+
+    You might want to lower the interval if you have a very busy system and want to reduce the space required in the servers for the subscription queues. More frequent acknowledgments means fewer events held in the server queues awaiting acknowledgment.
+
+-   Optional: Limit Queue Size. Cap the server queue size using overflow or blocking. These options help avoid out of memory errors on the server in the case of slow clients. A slow client slows the rate that the server can send messages, causing messages to back up in the queue, possibly leading to out of memory on the server. You can use one or the other of these options, but not both:
+    -   Optional: Overflow to Disk. Configure subscription queue overflow by setting the server’s `client-subscription` properties. With overflow, the most recently used (MRU) events are written out to disk, keeping the oldest events, the ones that are next in line to be sent to the client, available in memory. Example:
+
+        ``` pre
+        <!-- Set overflow after 10K messages are enqueued -->
+        <cache-server port="40404"> 
+          <client-subscription 
+            eviction-policy="entry" 
+            capacity="10000" 
+            disk-store-name="svrOverflow"/> 
+        </cache-server>
+        ```
+
+    -   Optional: Block While Queue Full. Set the server’s `maximum-message-count` to the maximum number of event messages allowed in any single subscription queue before incoming messages are blocked. You can only limit the message count, not the size allocated for messages. Examples:
+
+        XML:
+
+        ``` pre
+        <!-- Set the maximum message count to 50000 entries -->
+          <cache-server port="41414" maximum-message-count="50000" />
+        ```
+
+        API:
+
+        ``` pre
+        Cache cache = ...; 
+        CacheServer cacheServer = cache.addCacheServer(); 
+        cacheServer.setPort(41414); 
+        cacheServer.setMaximumMessageCount(50000); 
+        cacheServer.start(); 
+        ```
+
+        **Note:**
+        With this setting, one slow client can slow the server and all of its other clients because this blocks the threads that write to the queues. All operations that add messages to the queue block until the queue size drops to an acceptable level. If the regions feeding these queues are partitioned or have `distributed-ack` or `global` scope, operations on them remain blocked until their event messages can be added to the queue. If you are using this option and see stalling on your server region operations, your queue capacity might be too low for your application behavior.
+
+

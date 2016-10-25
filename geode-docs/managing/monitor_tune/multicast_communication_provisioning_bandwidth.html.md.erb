@@ -1,0 +1,60 @@
+---
+title:  Provisioning Bandwidth for Multicast
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Multicast installations require more planning and configuration than TCP installations. With IP multicast, you gain scalability but lose the administrative convenience of TCP.
+
+<a id="multicast__section_B7DA88707CBF4713A1E287CAA9A80EB9"></a>
+When you install an application that runs over TCP, the network is almost always set up for TCP and other applications are already using it. When you install an application to run over IP multicast it may be the first multicast application on the network.
+
+Multicast is very dependent on the environment in which it runs. Its operation is affected by the network hardware, the network software, the machines, which Geode processes run on which machines, and whether there are any competing applications. You could find that your site has connectivity in TCP but not in multicast because some switches and network cards do not support multicast. Your network could have latent problems that you would never see otherwise. To successfully implement a distributed Geode system using multicast requires the cooperation of both system and network administrators.
+
+**Bounded Operation Over Multicast**
+
+Group rate control is required for Geode systems to maintain cache coherence. If your application delivers the same data to a group of members, your system tuning effort needs to focus on the slow receivers.
+
+If some of your members have trouble keeping up with the incoming data, the other members in the group may be impacted. At best, slow receivers cause the producer to use buffering, adding latency for the slow receiver and perhaps for all of them. In the worst case, throughput for the group can stop entirely while the producer’s CPU, memory and network bandwidth are dedicated to serving the slow receivers.
+
+To address this issue, you can implement a bounded operation policy, which sets boundaries for the producer’s operation. The appropriate rate limits are determined through tuning and testing to allow the fastest operation possible while minimizing data loss and latency in the group of consumers. This policy is suited to applications such as financial market data, where high throughput, reliable delivery and network stability are required. With the boundaries set correctly, your producer’s traffic cannot cause a network outage.
+
+Multicast protocols typically have a flow control protocol built into them to keep processes from being overrun. The Geode flow control protocol uses the mcast-flow-control property to set producer and consumer boundaries for multicast flow operations. The property provides these three configuration settings:
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><p><code class="ph codeph">byteAllowance</code></p></td>
+<td><p>Number of bytes that can be sent without a recharge.</p></td>
+</tr>
+<tr class="even">
+<td><p><code class="ph codeph">rechargeThreshold</code></p></td>
+<td><p>Tells consumers how low the producer’s initial to remaining allowance ratio should be before sending a recharge.</p></td>
+</tr>
+<tr class="odd">
+<td><code class="ph codeph">rechargeBlockMs</code></td>
+<td><p>Tells the producer how long to wait for a recharge before requesting one.</p></td>
+</tr>
+</tbody>
+</table>
+
+

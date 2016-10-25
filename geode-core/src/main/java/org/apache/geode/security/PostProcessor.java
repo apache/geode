@@ -17,7 +17,6 @@
 
 package org.apache.geode.security;
 
-import java.security.Principal;
 import java.util.Properties;
 
 /**
@@ -38,7 +37,8 @@ public interface PostProcessor {
    * Process the value before sending it to the requester
    *
    * @param principal
-   *        The principal that's accessing the value
+   *        The principal that's accessing the value. The type of the principal will depend on how you implemented
+   *        your SecurityManager
    * @param regionName
    *        The region that's been accessed. This could be null.
    * @param key
@@ -48,7 +48,7 @@ public interface PostProcessor {
    * @return
    *        the value that will be returned to the requester
    */
-  Object processRegionValue(Principal principal, String regionName, Object key,  Object value);
+  Object processRegionValue(Object principal, String regionName, Object key, Object value);
 
   /**
    * Give the implementation a chance to close the resources used.

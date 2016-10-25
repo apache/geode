@@ -1,0 +1,68 @@
+---
+title:  Multi-Site (WAN) Event Distribution
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Geode distributes a subset of cache events between distributed systems, with a minimum impact on each system's performance. Events are distributed only for regions that you configure to use a gateway sender for distribution.
+
+## <a id="how_multisite_distribution_works__section_A16562611E094C88B12BC149D5EEEEBA" class="no-quick-link"></a>Queuing Events for Distribution
+
+In regions that are configured with one or more gateway senders (`gateway-sender-ids` attribute), events are automatically added to a gateway sender queue for distribution to other sites. Events that are placed in a gateway sender queue are distributed asynchronously to remote sites. For serial gateway queues, the ordering of events sent between sites can be preserved using the `order-policy` attribute.
+
+If a queue becomes too full, it is overflowed to disk to keep the member from running out of memory. You can optionally configure the queue to be persisted to disk (with the `enable-persistence` `gateway-sender` attribute). With persistence, if the member that manages the queue goes down, the member picks up where it left off after it restarts.
+
+## Operation Distribution from a Gateway Sender
+
+The multi-site installation is designed for minimal impact on distributed system performance, so only the farthest-reaching entry operations are distributed between sites.
+
+These operations are distributed:
+
+-   entry create
+-   entry put
+-   entry distributed destroy, providing the operation is not an expiration action
+
+These operations are not distributed:
+
+-   get
+-   invalidate
+-   local destroy
+-   expiration actions of any kind
+-   region operations
+
+## <a id="how_multisite_distribution_works__section_EE819CBF41274312BD5C3EA4A660475C" class="no-quick-link"></a>How a Gateway Sender Processes Its Queue
+
+Each primary gateway sender contains a processor thread that reads messages from the queue, batches them, and distributes the batches to a gateway receiver in a remote site. To process the queue, a gateway sender thread takes the following actions:
+
+1.  Reads messages from the queue
+2.  Creates a batch of the messages
+3.  Synchronously distributes the batch to the other site and waits for a reply
+4.  Removes the batch from the queue after the other site has successfully replied
+
+Because the batch is not removed from the queue until after the other site has replied, the message cannot get lost. On the other hand, in this mode a message could be processed more than once. If a site goes offline in the middle of processing a batch of messages, then that same batch will be sent again once the site is back online.
+
+You can configure the batch size for messages as well as the batch time interval settings. A gateway sender processes a batch of messages from the queue when either the batch size or the time interval is reached. In an active network, it is likely that the batch size will be reached before the time interval. In an idle network, the time interval will most likely be reached before the batch size. This may result in some network latency that corresponds to the time interval.
+
+## <a id="how_multisite_distribution_works__section_EF240AB26CF242F99689222E9E1D2512" class="no-quick-link"></a>How a Gateway Sender Handles Batch Processing Failure
+
+Exceptions can occur at different points during batch processing:
+
+-   The gateway receiver could fail with acknowledgment. If processing fails while the gateway receiver is processing a batch, the receiver replies with a failure acknowledgment that contains the exception, including the identity of the message that failed, and the ID of the last message that it successfully processed. The gateway sender then removes the successfully processed messages and the failed message from the queue and logs an exception with the failed message information. The sender then continues processing the messages remaining in the queue.
+-   The gateway receiver can fail without acknowledgment. If the gateway receiver does not acknowledge a sent batch, the gateway sender does not know which messages were successfully processed. In this case the gateway sender re-sends the entire batch.
+-   No gateway receivers may be available for processing. If a batch processing exception occurs because there are no remote gateway receivers available, then the batch remains in the queue. The gateway sender waits for a time, and then attempts to re-send the batch. The time period between attempts is five seconds. The existing server monitor continuously attempts to connect to the gateway receiver, so that a connection can be made and queue processing can continue. Messages build up in the queue and possibly overflow to disk while waiting for the connection.
+

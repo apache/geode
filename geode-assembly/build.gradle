@@ -55,11 +55,13 @@ dependencies {
   archives project(':geode-json')  
   archives project(':geode-core')
   archives project(':geode-lucene')
+  archives project(':geode-old-client-support')
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-pulse')
   archives project(':geode-wan')
   archives project(':geode-cq')
+  archives project(':geode-rebalancer')
 
   testCompile project(':geode-junit')
   testCompile files(project(':geode-core').sourceSets.test.output)
@@ -99,7 +101,7 @@ tasks.withType(Test){
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/gemfire.properties")
-  main 'com.gemstone.gemfire.distributed.internal.DistributionConfigImpl'
+  main 'org.apache.geode.distributed.internal.DistributionConfigImpl'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
   workingDir buildDir
   
@@ -110,7 +112,7 @@ task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
 
 task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/cache.xml")
-  main 'com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator'
+  main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
   workingDir buildDir
 
@@ -214,13 +216,13 @@ task docs(type: Javadoc) {
     options.encoding='UTF-8'
     source parent.subprojects*.javadoc*.source
     classpath = files(parent.subprojects*.javadoc*.classpath)
-    title = "Apache Geode ${project.version}"
-    include 'com/gemstone/gemfire/**/'
-    exclude 'com/gemstone/gemfire/internal/**/'
-    exclude 'com/gemstone/gemfire/**/internal/**/'
-    exclude 'com/gemstone/gemfire/**/xml/**/'
-    exclude 'com/gemstone/gemfire/distributed/**/util/**/'
-    exclude 'com/gemstone/gemfire/test/**/'
+    title = "${productName} ${project.version}"
+    include 'org/apache/geode/**/'
+    exclude 'org/apache/geode/internal/**/'
+    exclude 'org/apache/geode/**/internal/**/'
+    exclude 'org/apache/geode/**/xml/**/'
+    exclude 'org/apache/geode/distributed/**/util/**/'
+    exclude 'org/apache/geode/test/**/'
     destinationDir = docsDir
 
     doLast {
@@ -332,6 +334,12 @@ distributions {
 
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
+        
+        from project(":geode-old-client-support").configurations.runtime
+        from project(":geode-old-client-support").configurations.archives.allArtifacts.files
+
+        from project(":geode-rebalancer").configurations.runtime
+        from project(":geode-rebalancer").configurations.archives.allArtifacts.files
 
         from configurations.bundled
         from configurations.gfshDependencies
@@ -342,9 +350,6 @@ distributions {
         from { project(":geode-core").raJar }
         from { project(":geode-core").jcaJar }
 
-        // include this jar        
-        from project(":geode-web-api").jar
-        
         // dependency jars
         from depsJar
         from gfshDepsJar
@@ -364,9 +369,7 @@ distributions {
       }
 
       into ('tools/Pulse') {
-        from (project(":geode-pulse").configurations.archives.allArtifacts.files) {
-          exclude '*.jar'
-        }
+        from (project(":geode-pulse").configurations.archives.allArtifacts.files)
       }
 
       into ('tools/Modules') {
@@ -391,6 +394,8 @@ flakyTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
+
+precheckin.dependsOn ':buildExamples'
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 

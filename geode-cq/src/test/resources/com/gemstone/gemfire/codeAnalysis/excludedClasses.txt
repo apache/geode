@@ -1,2 +1,0 @@
-# e.g.,
-#com/gemstone/gemfire/cache/query/CqAttributesFactory

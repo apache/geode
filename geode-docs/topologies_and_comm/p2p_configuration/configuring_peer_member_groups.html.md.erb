@@ -1,0 +1,60 @@
+---
+title:  Organizing Peers into Logical Member Groups
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+In a peer-to-peer configuration, you can organize members into logical member groups and use those groups to associate specific data or assign tasks to a pre-defined set of members.
+
+<a id="concept_032521546EF34FABB40EB2C18080ED35__section_411EA6C46AD4456C987C0759A05340F2"></a>
+You can use logical member groups to deploy JAR applications across multiple members or to execute functions across a member group.
+
+To add a peer to a member group, you can configure the following:
+
+1.  Add the member group names to the `gemfire.properties` file for the member. For example:
+
+    ``` pre
+    #gemfire.properties
+    groups=Portfolios,ManagementGroup1
+    ```
+
+    A member can belong to more than one member group. If specifying multiple member groups for a member, use a comma-separated list. Alternatively, if you are using the `gfsh` command interface to start up the member, provide the group name or group names as a parameter.
+
+    For example, to start up a server and associate it with member groups, you could type:
+
+    ``` pre
+    gfsh>start server --name=server1 \
+    --group=Portfolios,ManagementGroup1
+    ```
+
+    For example, to start up a locator and associate it with member groups, you could type:
+
+    ``` pre
+    gfsh>start locator --name=locator1 \
+    --group=ManagementGroup1
+    ```
+
+2.  Then you can use the member group names to perform tasks such as deploy applications or execute functions.
+
+    For example, to deploy an application across a member group, you could type the following in `gfsh`:
+
+    ``` pre
+    gfsh>deploy --jar=group1_functions.jar --group=ManagementGroup1
+    ```
+
+

@@ -18,8 +18,8 @@ package org.apache.geode.redis.internal.executor;
 
 import java.util.Map.Entry;
 
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;

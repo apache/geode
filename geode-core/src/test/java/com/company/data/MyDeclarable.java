@@ -16,7 +16,7 @@
  */
 package com.company.data;
 
-import com.gemstone.gemfire.cache.*;
+import org.apache.geode.cache.*;
 
 /**
  * A <code>Declarable</code> object

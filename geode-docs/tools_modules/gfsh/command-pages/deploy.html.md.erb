@@ -1,0 +1,78 @@
+---
+title:  deploy
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Deploy JAR-packaged applications to a member or members.
+
+Only one of either `--jar` or `--dir` may be specified.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+deploy [--group=value(,value)*] [--jar=value] [--dir=value]
+```
+
+<a id="concept_6B38CB283BC048778A8E3908C1BDF221__table_gfk_42h_2w"></a>
+
+| Name                                          | Description                                                                                                                       |
+|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">&#8209;&#8209;group</span> | Group(s) to which the specified JARs will be deployed. If this option is not specified, the deployment will occur on all members. |
+| <span class="keyword parmname">\\-\\-jar</span>   | Path of the JAR to deploy.                                                                                                        |
+| <span class="keyword parmname">\\-\\-dir</span>   | Directory from which to deploy the JARs.                                                                                          |
+
+<span class="tablecap">Table 1. Deploy Parameters</span>
+
+**Example Commands:**
+
+``` pre
+deploy --jar=group1_functions.jar --group=Group1
+
+deploy --dir=libs/group1-libs --group=Group2
+```
+
+**Sample Output:**
+
+``` pre
+gfsh> deploy --jar=group1_functions.jar --group=Group1
+
+ Member   |     Deployed JAR     |                Deployed JAR Location            
+--------- | -------------------- | ---------------------------------------------------
+datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/GF#group1_functions.jar#1
+datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/GF#group1_functions.jar#1
+
+
+gfsh> deploy --dir=libs/group1-libs --group=Group2
+
+Deploying files: group2_functions.jar, group2_dependencies.jar
+Total file size is: 0.64MB
+
+Continue?  (Y/n): Y
+
+ Member   |      Deployed JAR       |             Deployed JAR Location            
+--------- | ----------------------- | ---------------------------------------------
+datanode3 | group2_functions.jar    | /usr/local/gemfire/deploy/GF#group2_functions.jar#1
+datanode3 | group2_dependencies.jar | /usr/local/gemfire/deploy/GF#group2_dependencies.jar#1 
+datanode4 | group2_functions.jar    | /usr/local/gemfire/deploy/GF#group2_functions.jar#1
+datanode4 | group2_dependencies.jar | /usr/local/gemfire/deploy/GF#group2_dependencies.jar#1
+```
+
+

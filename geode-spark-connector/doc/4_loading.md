@@ -32,7 +32,7 @@ on each Geode server into two RDD partitions by default.
 The number of splits is configurable, the following shows how to set 
 three partitions per Geode server:
 ```
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 
 val opConf = Map(PreferredPartitionerPropKey -> ServerSplitsPartitionerName,
                  NumberPartitionsPerServerPropKey -> "3")
@@ -73,7 +73,7 @@ only contains `Emp.class`.
 Now in Spark shell, generate some random `Emp` records, and save them to region `emps` (remember to add `emp.jar` to 
 Spark shell classpath before starting Spark shell):
 ```
-import io.pivotal.geode.spark.connector._
+import org.apache.geode.spark.connector._
 import scala.util.Random
 import demo.Emp
 
