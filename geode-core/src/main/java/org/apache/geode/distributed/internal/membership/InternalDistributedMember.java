@@ -1171,11 +1171,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
   public String getHost() {
-    return this.hostName;
-  }
-
-  public void setHost(String h) {
-    this.hostName = h;
+    return this.netMbr.getInetAddress().getCanonicalHostName();
   }
 
   public int getProcessId() {

@@ -15,7 +15,6 @@
 package org.apache.geode.cache.client.internal;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
@@ -23,29 +22,22 @@ import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.SharedConfiguration;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.PoolStats;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -143,25 +135,6 @@ public class AutoConnectionSourceImplJUnitTest {
     } catch (NoAvailableLocatorsException expected) {
       // do nothing
     }
-  }
-
-  @Test
-  public void testClientMembershipListenerHostAtClient() throws IOException {
-    String fakeHost = "fake.com";
-    InternalDistributedMember member = new InternalDistributedMember("localhost", 54638);
-    ServerLocation sl = new ServerLocation(fakeHost, 420);
-
-    HeapDataOutputStream dos = new HeapDataOutputStream(Version.CURRENT);
-    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
-    DataSerializer.writeObject(member, hdos);
-    DataSerializer.writeByteArray(hdos.toByteArray(), dos);
-    hdos.close();
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(dos.toByteArray()));
-
-    DistributedMember ret = (DistributedMember) HandShake.readServerMember(dis, sl);
-
-    assertEquals(fakeHost, ret.getHost());
   }
 
   @Test
