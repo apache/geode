@@ -33,6 +33,7 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
@@ -78,29 +79,25 @@ public class AttributeDescriptor {
       return readPdx((PdxInstance) target);
     }
     // for non pdx objects
-    return read(target, target.getClass());
+    return readReflection(target);
   }
 
   // used when the resolution of an attribute must be on a superclass
   // instead of the runtime class
-  private Object read(Object target, Class resolutionClass)
+  private Object readReflection(Object target)
       throws NameNotFoundException, QueryInvocationTargetException {
     Support.Assert(target != null);
     Support.Assert(target != QueryService.UNDEFINED);
-    Member m;
-    if (target.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")) {
+    if (target instanceof Token) {
       return QueryService.UNDEFINED;
-    } else {
-      m = getReadMember(resolutionClass);
     }
+
+    Class resolutionClass = target.getClass();
+    Member m = getReadMember(resolutionClass);
     try {
       if (m instanceof Method) {
         try {
-          if (target.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")) {
-            return QueryService.UNDEFINED;
-          } else {
-            return ((Method) m).invoke(target, (Object[]) null);
-          }
+          return ((Method) m).invoke(target, (Object[]) null);
         } catch (EntryDestroyedException e) {
           // eat the Exception
           return QueryService.UNDEFINED;
@@ -123,11 +120,7 @@ public class AttributeDescriptor {
         }
       } else {
         try {
-          if (target.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")) {
-            return QueryService.UNDEFINED;
-          } else {
-            return ((Field) m).get(target);
-          }
+          return ((Field) m).get(target);
         } catch (IllegalAccessException e) {
           throw new NameNotFoundException(
               LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
@@ -315,7 +308,7 @@ public class AttributeDescriptor {
       throws NameNotFoundException, QueryInvocationTargetException {
     try {
       Object obj = pdxInstance.getCachedObject();
-      return read(obj, obj.getClass());
+      return readReflection(obj);
     } catch (PdxSerializationException e) {
       throw new NameNotFoundException( // the domain object is not available
           LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
