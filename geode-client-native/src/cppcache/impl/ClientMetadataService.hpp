@@ -144,6 +144,10 @@ namespace gemfire {
     void markPrimaryBucketForTimeoutButLookSecondaryBucket(const RegionPtr& region, const CacheableKeyPtr& key,
     const CacheablePtr& value,const UserDataPtr& aCallbackArgument, bool isPrimary, BucketServerLocationPtr& serverLocation,  int8_t& version);
 
+    void markAllBucketsOfServerThatContainsTheKeyAsPrimary(const RegionPtr& region, const CacheableKeyPtr& key,
+    const CacheablePtr& value,const UserDataPtr& aCallbackArgument, bool isPrimary, BucketServerLocationPtr& serverLocation,  int8_t& version);
+	
+
     bool isBucketMarkedForTimeout(const char * regionFullPath, int32_t bucketid);
 
     bool AreBucketSetsEqual(CacheableHashSetPtr& currentBucketSet, CacheableHashSetPtr& bucketSet);
