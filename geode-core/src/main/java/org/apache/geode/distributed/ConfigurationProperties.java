@@ -1439,10 +1439,14 @@ public interface ConfigurationProperties {
   String SECURITY_PREFIX = "security-";
   /**
    * The static String definition of the <i>"security-client-accessor"</i> property
+   *
+   * @deprecated since Geode 1.0, use security-manager
    */
   String SECURITY_CLIENT_ACCESSOR = SECURITY_PREFIX + "client-accessor";
   /**
    * The static String definition of the <i>"security-client-accessor-pp"</i> property
+   *
+   * @deprecated since Geode 1.0, use security-post-processor
    */
   String SECURITY_CLIENT_ACCESSOR_PP = SECURITY_PREFIX + "client-accessor-pp";
   /**
@@ -1474,6 +1478,8 @@ public interface ConfigurationProperties {
 
   /**
    * The static String definition of the <i>"security-client-authenticator"</i> property
+   *
+   * @deprecated since Geode 1.0, use security-manager
    */
   String SECURITY_CLIENT_AUTHENTICATOR = SECURITY_PREFIX + "client-authenticator";
   /**
@@ -1497,10 +1503,14 @@ public interface ConfigurationProperties {
   String SECURITY_LOG_LEVEL = SECURITY_PREFIX + "log-level";
   /**
    * The static String definition of the <i>"security-peer-auth-init"</i> property
+   *
+   * @deprecated since Geode 1.0. use security-username and security-password
    */
   String SECURITY_PEER_AUTH_INIT = SECURITY_PREFIX + "peer-auth-init";
   /**
    * The static String definition of the <i>"security-peer-authenticator"</i> property
+   *
+   * @deprecated since Geode 1.0, use security-manager
    */
   String SECURITY_PEER_AUTHENTICATOR = SECURITY_PREFIX + "peer-authenticator";
   /**
