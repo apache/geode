@@ -154,7 +154,6 @@ rat {
     // --- Other Licenses ---
 
     // Public Domain http://meyerweb.com/eric/tools/css/reset/
-    'geode-web-api/src/main/webapp/docs/css/reset.css',
     'geode-pulse/src/main/webapp/scripts/lib/tooltip.js',
 
     // JSON License - permissive, used for Good, not Evil
@@ -178,12 +177,6 @@ rat {
     'geode-json/src/main/java/org/json/XMLTokener.java',
 
     // MIT License
-    'geode-web-api/src/main/webapp/docs/lib/backbone-min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery-1.8.0.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery.ba-bbq.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery.slideto.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery.wiggle.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/underscore-min.js',
     'geode-site/src/jbake/**',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.jqGrid.src.js',
     'geode-pulse/src/main/webapp/scripts/lib/grid.locale-en.js',
@@ -209,23 +202,11 @@ rat {
     'geode-pulse/src/main/webapp/css/jquery.ztreestyle.css',
     'geode-pulse/src/main/webapp/css/jquery-ui.css',
 
-    // MIT or ISC
-    'geode-web-api/src/main/webapp/docs/lib/shred.bundle.js',
-    'geode-web-api/src/main/webapp/docs/lib/shred/content.js',
-
     // BSD License
-    'geode-web-api/src/main/webapp/docs/lib/highlight.7.3.pack.js',
     'geode-core/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.sparkline.js',
 
     // Apache License
-    'geode-web-api/src/main/webapp/docs/o2c.html',
-    'geode-web-api/src/main/webapp/docs/index.html',
-    'geode-web-api/src/main/webapp/docs/lib/swagger-oauth.js',
-    'geode-web-api/src/main/webapp/docs/lib/swagger.js',
-    'geode-web-api/src/main/webapp/docs/css/screen.css',
-    'geode-web-api/src/main/webapp/docs/swagger-ui.js',
-    'geode-web-api/src/main/webapp/docs/swagger-ui.min.js',
     'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js',
 
     // MX4J License
