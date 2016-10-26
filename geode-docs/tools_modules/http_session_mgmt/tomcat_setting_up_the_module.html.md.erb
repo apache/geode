@@ -43,11 +43,17 @@ For Tomcat 6.0:
                          Tomcat6DeltaSessionManager"/> 
 ```
 
-For Tomcat 7.0 and above:
+For Tomcat 7.0:
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat7DeltaSessionManager"/> 
+```
+For Tomcat 8.0 and 8.5:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat8DeltaSessionManager"/> 
 ```
 
 ## <a id="tomcat_setting_up_the_module__section_B0CEBE93564540DBA165E0F7A10FDC0B" class="no-quick-link"></a>Client/Server Setup
@@ -70,11 +76,18 @@ For Tomcat 6.0:
                          Tomcat6DeltaSessionManager"/> 
 ```
 
-For Tomcat 7.0 and above:
+For Tomcat 7.0:
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat7DeltaSessionManager"/> 
+```
+
+For Tomcat 8.0 and 8.5:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat8DeltaSessionManager"/> 
 ```
 
 The application server operates as a Geode client in this configuration. With a similar environment to this example that is for a client/server set up,
