@@ -14,8 +14,36 @@
  */
 package org.apache.geode.internal.cache.locks;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static com.jayway.awaitility.Awaitility.await;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.locks.DLockRecoverGrantorProcessor;
+import org.apache.geode.distributed.internal.locks.DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,29 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.distributed.internal.locks.DLockRecoverGrantorProcessor;
-import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class tests distributed ownership via the DistributedLockService api.
@@ -75,22 +81,10 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void postSetUp() throws Exception {
-    // Create a DistributedSystem in every VM
+    Invoke.invokeInEveryVM("connectDistributedSystem", () -> connectDistributedSystem());
     connectDistributedSystem();
-
-    for (int h = 0; h < Host.getHostCount(); h++) {
-      Host host = Host.getHost(h);
-
-      for (int v = 0; v < host.getVMCount(); v++) {
-        // host.getVM(v).invoke(() -> TXLockServiceDUnitTest.dumpStack());
-        host.getVM(v).invoke(TXLockServiceDUnitTest.class, "connectDistributedSystem", null);
-      }
-    }
   }
 
-  public static void dumpStack() {
-    org.apache.geode.internal.OSProcess.printStacks(0);
-  }
 
   @Override
   public final void preTearDown() throws Exception {
@@ -124,16 +118,13 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
      */
   }
 
-  @Ignore("TODO: test is disabled")
   @Test
   public void testGetAndDestroyAgain() {
     testGetAndDestroy();
   }
 
-  @Ignore("TODO: test is disabled")
   @Test
   public void testTXRecoverGrantorMessageProcessor() throws Exception {
-    LogWriterUtils.getLogWriter().info("[testTXOriginatorRecoveryProcessor]");
     TXLockService.createDTLS();
     checkDLockRecoverGrantorMessageProcessor();
 
@@ -162,28 +153,157 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     msg.setProcessorId(testProc.getProcessorId());
     msg.setSender(dlock.getDistributionManager().getId());
 
-    Thread thread = new Thread(new Runnable() {
-      public void run() {
-        TXRecoverGrantorMessageProcessor proc =
-            (TXRecoverGrantorMessageProcessor) dlock.getDLockRecoverGrantorMessageProcessor();
-        proc.processDLockRecoverGrantorMessage(dlock.getDistributionManager(), msg);
-      }
+    Thread thread = new Thread(() -> {
+      TXRecoverGrantorMessageProcessor proc =
+          (TXRecoverGrantorMessageProcessor) dlock.getDLockRecoverGrantorMessageProcessor();
+      proc.processDLockRecoverGrantorMessage(dlock.getDistributionManager(), msg);
     });
+    thread.setName("TXLockServiceDUnitTest thread");
+    thread.setDaemon(true);
     thread.start();
 
-    // pause to allow thread to be blocked before we release the lock
-    sleep(999);
+    await("waiting for recovery message to block").atMost(999, TimeUnit.MILLISECONDS).until(() -> {
+      return ((TXLockServiceImpl) dtls).isRecovering();
+    });
 
-    // release txLock
     dtls.release(txLockId);
 
-    // check results to verify no locks were provided in reply
-    ThreadUtils.join(thread, 30 * 1000);
+    // check results to verify no locks were provided in the reply
+    await("waiting for thread to exit").atMost(30, TimeUnit.SECONDS).until(() -> {
+      return !thread.isAlive();
+    });
+
+    assertFalse(((TXLockServiceImpl) dtls).isRecovering());
+
     assertEquals("testTXRecoverGrantor_replyCode_PASS is false", true,
         testTXRecoverGrantor_replyCode_PASS);
     assertEquals("testTXRecoverGrantor_heldLocks_PASS is false", true,
         testTXRecoverGrantor_heldLocks_PASS);
   }
+
+
+  @Test
+  public void testTXGrantorMigration() throws Exception {
+    // first make sure some other VM is the grantor
+    Host.getHost(0).getVM(0).invoke("become lock grantor", () -> {
+      TXLockService.createDTLS();
+      TXLockService vm0dtls = TXLockService.getDTLS();
+      DLockService vm0dlock = ((TXLockServiceImpl) vm0dtls).getInternalDistributedLockService();
+      vm0dlock.becomeLockGrantor();
+    });
+
+    TXLockService.createDTLS();
+    checkDLockRecoverGrantorMessageProcessor();
+
+    /*
+     * call TXRecoverGrantorMessageProcessor.process directly to make sure that correct behavior
+     * occurs
+     */
+
+    // get txLock and hold it
+    final List regionLockReqs = new ArrayList();
+    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXRecoverGrantorMessageProcessor2",
+        new HashSet(Arrays.asList(new String[] {"KEY-1", "KEY-2", "KEY-3", "KEY-4"}))));
+    TXLockService dtls = TXLockService.getDTLS();
+    TXLockId txLockId = dtls.txLock(regionLockReqs, Collections.EMPTY_SET);
+
+    final DLockService dlock = ((TXLockServiceImpl) dtls).getInternalDistributedLockService();
+
+    // GEODE-2024: now cause grantor migration while holding the recoveryReadLock.
+    // It will lock up in TXRecoverGrantorMessageProcessor until the recoveryReadLock
+    // is released. Demonstrate that dtls.release() does not block forever and releases the
+    // recoveryReadLock
+    // allowing grantor migration to finish
+
+    // create an observer that will block recovery messages from being processed
+    MessageObserver observer = new MessageObserver();
+    DistributionMessageObserver.setInstance(observer);
+
+    try {
+      System.out.println("starting thread to take over being lock grantor from vm0");
+
+      // become the grantor - this will block waiting for a reply to the message blocked by the
+      // observer
+      Thread thread = new Thread(() -> {
+        dlock.becomeLockGrantor();
+      });
+      thread.setName("TXLockServiceDUnitTest thread2");
+      thread.setDaemon(true);
+      thread.start();
+
+      await("waiting for recovery to begin").atMost(10, TimeUnit.SECONDS).until(() -> {
+        return observer.isPreventingProcessing();
+      });
+
+
+      // spawn a thread that will unblock message processing
+      // so that TXLockServiceImpl's "recovering" variable will be set
+      System.out.println("starting a thread to unblock recovery in 5 seconds");
+      Thread unblockThread = new Thread(() -> {
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          throw new RuntimeException("sleep interrupted");
+        }
+        System.out.println("releasing block of recovery message processing");
+        observer.releasePreventionOfProcessing();
+      });
+      unblockThread.setName("TXLockServiceDUnitTest unblockThread");
+      unblockThread.setDaemon(true);
+      unblockThread.start();
+
+      // release txLock - this will block until unblockThread tells the observer
+      // that it can process its message. Then it should release the recovery read-lock
+      // allowing the grantor to finish recovery
+      System.out.println("releasing transaction locks, which should block for a bit");
+      dtls.release(txLockId);
+
+      await("waiting for recovery to finish").atMost(10, TimeUnit.SECONDS).until(() -> {
+        return !((TXLockServiceImpl) dtls).isRecovering();
+      });
+    } finally {
+      observer.releasePreventionOfProcessing();
+      DistributionMessageObserver.setInstance(null);
+    }
+  }
+
+  static class MessageObserver extends DistributionMessageObserver {
+    final boolean[] preventingMessageProcessing = new boolean[] {false};
+    final boolean[] preventMessageProcessing = new boolean[] {true};
+
+
+    public boolean isPreventingProcessing() {
+      synchronized (preventingMessageProcessing) {
+        return preventingMessageProcessing[0];
+      }
+    }
+
+    public void releasePreventionOfProcessing() {
+      synchronized (preventMessageProcessing) {
+        preventMessageProcessing[0] = false;
+      }
+    }
+
+    @Override
+    public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+      if (message instanceof DLockRecoverGrantorMessage) {
+        synchronized (preventingMessageProcessing) {
+          preventingMessageProcessing[0] = true;
+        }
+        synchronized (preventMessageProcessing) {
+          while (preventMessageProcessing[0]) {
+            try {
+              preventMessageProcessing.wait(50);
+            } catch (InterruptedException e) {
+              throw new RuntimeException("sleep interrupted");
+            }
+          }
+        }
+      }
+    }
+
+  }
+
 
   protected static volatile TXLockId testTXLock_TXLockId;
 
@@ -384,7 +504,6 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     });
     Host.getHost(0).getVM(originatorVM).invoke(() -> disconnectFromDS());
 
-
     // grantor sends TXOriginatorRecoveryMessage...
     // TODO: verify processing of message? and have test sleep until finished
     sleep(200);
@@ -456,7 +575,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates a new DistributedLockService in a remote VM.
-   *
+   * 
    * @param name The name of the newly-created DistributedLockService. It is recommended that the
    *        name of the Region be the {@link #getUniqueName()} of the test, or at least derive from
    *        it.
@@ -594,9 +713,6 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Accessed via reflection. DO NOT REMOVE
-   * 
-   * @param key
-   * @return
    */
   protected static Boolean unlock_DTLS(Object key) {
     TXLockService dtls = TXLockService.getDTLS();

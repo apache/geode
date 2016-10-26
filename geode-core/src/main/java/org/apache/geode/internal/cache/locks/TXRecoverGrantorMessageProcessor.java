@@ -15,10 +15,6 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import java.util.concurrent.RejectedExecutionException;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -30,11 +26,13 @@ import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Provides processing of DLockRecoverGrantorProcessor. Reply will not be sent until all locks are
  * released.
- *
  */
 public class TXRecoverGrantorMessageProcessor
     implements DLockRecoverGrantorProcessor.MessageProcessor {
