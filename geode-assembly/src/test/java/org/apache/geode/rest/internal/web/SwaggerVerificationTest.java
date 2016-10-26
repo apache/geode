@@ -17,12 +17,14 @@ package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
@@ -42,6 +44,7 @@ public class SwaggerVerificationTest {
   static Properties properties = new Properties() {
     {
       setProperty(START_DEV_REST_API, "true");
+      setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
       setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
       setProperty(HTTP_SERVICE_PORT, restPort + "");
     }
