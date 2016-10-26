@@ -16,9 +16,9 @@ All examples:
 
 ### Installation and a Tutorial for Beginners
 
-*  [How to Install](http://geode.docs.pivotal.io/docs/getting_started/installation/install_standalone.html)
+*  [How to Install](http://geode.apache.org/docs/guide/getting_started/installation/install_standalone.html)
 *  Set a `GEODE_HOME` environment variable to point to the root directory of the installation; this directory contains `bin/`. For those that have built from source, it will be the `geode-assembly/build/install/apache-geode` directory.
-*  If desired run the tutorial: [Apache Geode in 15 minutes or Less](http://geode.docs.pivotal.io/docs/getting_started/15_minute_quickstart_gfsh.html)
+*  If desired run the tutorial: [Apache Geode in 15 minutes or Less](http://geode.apache.org/docs/guide/getting_started/15_minute_quickstart_gfsh.html)
 
 ### Basics
 

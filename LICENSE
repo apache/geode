@@ -346,11 +346,8 @@ Apache Geode bundles the following files under the MIT license:
   - jQuery UI MultiSelect Widget v1.14pre
     (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/),
     Copyright (c) 2011 Eric Hynds
-  - jQuery UI v1.8.18 (http://jqueryui.com/about), Copyright (c) jQuery
+  - jQuery UI v1.10.2 (http://jqueryui.com/about), Copyright (c) jQuery
     Foundation and other contributors, http://jquery.org
-  - jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle),
-    Copyright (c) 2011 Wilhelm Murdoch <wilhelm.murdoch@gmail.com>,
-     TheDrunkenEpic <http://www.thedrunkenepic.com>
   - jScrollPane (http://jscrollpane.kelvinluck.com/), Copyright (c) 2010
     Kelvin Luck
   - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
