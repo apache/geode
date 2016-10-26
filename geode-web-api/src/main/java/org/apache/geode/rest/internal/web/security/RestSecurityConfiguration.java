@@ -15,6 +15,8 @@
  */
 package org.apache.geode.rest.internal.web.security;
 
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,9 +28,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
 
 @Configuration
 @EnableWebSecurity
@@ -54,8 +53,10 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   protected void configure(HttpSecurity http) throws Exception {
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-        .authorizeRequests().antMatchers("/ping", "/api-docs/**", "/docs/**").permitAll()
-        .anyRequest().authenticated().and().formLogin().and().csrf().disable();
+        .authorizeRequests()
+        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", "/v2/api-docs/**",
+            "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
+        .permitAll().anyRequest().authenticated().and().formLogin().and().csrf().disable();
 
     if (securityService.isIntegratedSecurity()) {
       http.httpBasic();
