@@ -366,7 +366,8 @@ public class SampleCollector {
     }
 
     // notify unmarked/new handlers but not marked/old handlers
-    notifyNewHandlersOfResources(handlers, this.resourceInstMap.values());
+    notifyNewHandlersOfResources(handlers, this.resourceTypeMap.values(),
+        this.resourceInstMap.values());
   }
 
   private ResourceType getResourceType(List<MarkableSampleHandler> handlers, Statistics statistics)
@@ -489,7 +490,7 @@ public class SampleCollector {
   }
 
   private void notifyNewHandlersOfResources(List<MarkableSampleHandler> handlers,
-      Collection<ResourceInstance> resources) {
+      Collection<ResourceType> types, Collection<ResourceInstance> resources) {
     final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
     if (isDebugEnabled_STATISTICS) {
       logger.trace(LogMarker.STATISTICS,
@@ -508,6 +509,11 @@ public class SampleCollector {
           }
           // allocatedResourceInstance...
           handler.allocatedResourceInstance(resourceInstance);
+        }
+        for (ResourceType resourceType : types) {
+          if (!allocatedResourceTypes.contains(resourceType)) {
+            handler.allocatedResourceType(resourceType);
+          }
         }
         handler.mark();
         count++;

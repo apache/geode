@@ -89,12 +89,20 @@ public abstract class HostStatSampler
 
   private final CallbackSampler callbackSampler;
 
+  private final NanoTimer timer;
+
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats) {
+    this(stopper, samplerStats, new NanoTimer());
+  }
+
+  protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats,
+      NanoTimer timer) {
     this.stopper = stopper;
     this.statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
     this.samplerStats = samplerStats;
     this.fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
     this.callbackSampler = new CallbackSampler(stopper, samplerStats);
+    this.timer = timer;
   }
 
   public final StatSamplerStats getStatSamplerStats() {
@@ -171,8 +179,6 @@ public abstract class HostStatSampler
    */
   @Override
   public final void run() {
-    NanoTimer timer = new NanoTimer();
-
     final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
     if (isDebugEnabled_STATISTICS) {
       logger.trace(LogMarker.STATISTICS, "HostStatSampler started");
@@ -182,7 +188,7 @@ public abstract class HostStatSampler
       initSpecialStats();
 
       this.sampleCollector = new SampleCollector(this);
-      this.sampleCollector.initialize(this, NanoTimer.getTime());
+      this.sampleCollector.initialize(this, timer.getTime());
 
       this.statSamplerInitializedLatch.countDown();
       latchCountedDown = true;
@@ -197,7 +203,7 @@ public abstract class HostStatSampler
         }
         final long nanosBeforeSleep = timer.getLastResetTime();
         final long nanosToDelay = nanosLastTimeStamp + getNanoRate();
-        delay(timer, nanosToDelay);
+        delay(nanosToDelay);
         nanosLastTimeStamp = timer.getLastResetTime();
         if (!stopRequested() && isSamplingEnabled()) {
           final long nanosTimeStamp = timer.getLastResetTime();
@@ -371,11 +377,21 @@ public abstract class HostStatSampler
    * @since GemFire 7.0
    */
   public final boolean waitForInitialization(long ms) throws InterruptedException {
-    return this.statSamplerInitializedLatch.await(ms);
+    return awaitInitialization(ms, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Awaits the initialization of special statistics.
+   *
+   * @see #initSpecialStats
+   */
+  public final boolean awaitInitialization(final long timeout, final TimeUnit unit)
+      throws InterruptedException {
+    return this.statSamplerInitializedLatch.await(timeout, unit);
   }
 
   public final void changeArchive(File newFile) {
-    this.sampleCollector.changeArchive(newFile, NanoTimer.getTime());
+    this.sampleCollector.changeArchive(newFile, timer.getTime());
   }
 
   /**
@@ -476,10 +492,9 @@ public abstract class HostStatSampler
   }
 
   /**
-   * @param timer a NanoTimer used to compute the elapsed delay
    * @param nanosToDelay the timestamp to delay until it is the current time
    */
-  private void delay(NanoTimer timer, final long nanosToDelay) throws InterruptedException {
+  private void delay(final long nanosToDelay) throws InterruptedException {
     timer.reset();
     long now = timer.getLastResetTime();
     long remainingNanos = nanosToDelay - now;
