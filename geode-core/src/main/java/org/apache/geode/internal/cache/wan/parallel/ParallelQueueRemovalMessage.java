@@ -137,11 +137,13 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
                           isDestroyed = true;
                         }
 
-                        // Even if BucketRegionQueue does not have the key, it could be in the tempQueue
+                        // Even if BucketRegionQueue does not have the key, it could be in the
+                        // tempQueue
                         // remove it from there..defect #49196
                         destroyFromTempQueue(brq.getPartitionedRegion(), (Integer) bId, key);
 
-                        // Finally, add the key to the failed batch removal keys so that it is definitely removed from the bucket region queue
+                        // Finally, add the key to the failed batch removal keys so that it is
+                        // definitely removed from the bucket region queue
                         brq.addToFailedBatchRemovalMessageKeys(key);
                       } finally {
                         brq.getInitializationLock().readLock().unlock();

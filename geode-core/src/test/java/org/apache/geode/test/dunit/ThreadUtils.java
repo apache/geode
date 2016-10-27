@@ -77,7 +77,7 @@ public class ThreadUtils {
    */
   public static void dumpStack(final Host host) {
     for (int v = 0; v < host.getVMCount(); v++) {
-      host.getVM(v).invoke(org.apache.geode.test.dunit.DistributedTestCase.class, "dumpStack");
+      host.getVM(v).invoke(org.apache.geode.test.dunit.ThreadUtils.class, "dumpStack");
     }
   }
 
@@ -87,7 +87,7 @@ public class ThreadUtils {
    * @since GemFire 5.0
    */
   public static void dumpStack(final VM vm) {
-    vm.invoke(org.apache.geode.test.dunit.DistributedTestCase.class, "dumpStack");
+    vm.invoke(org.apache.geode.test.dunit.ThreadUtils.class, "dumpStack");
   }
 
   public static void dumpStackTrace(final Thread thread, final StackTraceElement[] stackTrace) {

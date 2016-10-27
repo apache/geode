@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
@@ -74,7 +72,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
     when(this.queueRegion.getPrStats()).thenReturn(mock(PartitionedRegionStats.class));
     when(this.queueRegion.getDataStore()).thenReturn(mock(PartitionedRegionDataStore.class));
     when(this.queueRegion.getCache()).thenReturn(this.cache);
-    EvictionAttributesImpl ea = (EvictionAttributesImpl) EvictionAttributes.createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK);
+    EvictionAttributesImpl ea = (EvictionAttributesImpl) EvictionAttributes
+        .createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK);
     LRUAlgorithm algorithm = ea.createEvictionController(this.queueRegion, false);
     algorithm.getLRUHelper().initStats(this.queueRegion, this.cache.getDistributedSystem());
     when(this.queueRegion.getEvictionController()).thenReturn(algorithm);
@@ -94,8 +93,10 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private void createRootRegion() {
     // Mock root region
     this.rootRegion = mock(PartitionedRegion.class);
-    when(this.rootRegion.getFullPath()).thenReturn(Region.SEPARATOR+PartitionedRegionHelper.PR_ROOT_REGION_NAME);
-    when(this.cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true)).thenReturn(this.rootRegion);
+    when(this.rootRegion.getFullPath())
+        .thenReturn(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+    when(this.cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
+        .thenReturn(this.rootRegion);
     when(this.cache.getRegion(getRegionQueueName(), false)).thenReturn(this.queueRegion);
   }
 
@@ -114,19 +115,25 @@ public class ParallelQueueRemovalMessageJUnitTest {
     when(this.queueRegion.getPartitionAttributes()).thenReturn(pa);
     when(this.queueRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     when(pa.getColocatedWith()).thenReturn(null);
-    ProxyBucketRegion pbr = new ProxyBucketRegion(BUCKET_ID, this.queueRegion, pbrIra); // final classes cannot be mocked
+    ProxyBucketRegion pbr = new ProxyBucketRegion(BUCKET_ID, this.queueRegion, pbrIra); // final
+                                                                                        // classes
+                                                                                        // cannot be
+                                                                                        // mocked
     when(ba.getProxyBucketRegion()).thenReturn(pbr);
 
     // Create RegionAttributes
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK));
+    factory.setEvictionAttributes(
+        EvictionAttributes.createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK));
     RegionAttributes attributes = factory.create();
 
     // Create BucketRegionQueue
-    this.bucketRegionQueue = new BucketRegionQueue(this.queueRegion.getBucketName(BUCKET_ID), attributes, this.rootRegion, this.cache, ira);
-    this.bucketRegionQueueHelper = new BucketRegionQueueHelper(this.cache, this.queueRegion, this.bucketRegionQueue);
+    this.bucketRegionQueue = new BucketRegionQueue(this.queueRegion.getBucketName(BUCKET_ID),
+        attributes, this.rootRegion, this.cache, ira);
+    this.bucketRegionQueueHelper =
+        new BucketRegionQueueHelper(this.cache, this.queueRegion, this.bucketRegionQueue);
   }
 
   @After
@@ -135,12 +142,14 @@ public class ParallelQueueRemovalMessageJUnitTest {
   }
 
   @Test
-  public void validateFailedBatchRemovalMessageKeysInUninitializedBucketRegionQueue() throws Exception {
+  public void validateFailedBatchRemovalMessageKeysInUninitializedBucketRegionQueue()
+      throws Exception {
     // Validate initial BucketRegionQueue state
     assertFalse(this.bucketRegionQueue.isInitialized());
     assertEquals(0, this.bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
 
-    // Create and process a ParallelQueueRemovalMessage (causes the failedBatchRemovalMessageKeys to add a key)
+    // Create and process a ParallelQueueRemovalMessage (causes the failedBatchRemovalMessageKeys to
+    // add a key)
     createAndProcessParallelQueueRemovalMessage();
 
     // Validate BucketRegionQueue after processing ParallelQueueRemovalMessage
@@ -157,7 +166,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
     this.bucketRegionQueueHelper.addEvent(KEY);
     assertEquals(1, this.bucketRegionQueue.size());
 
-    // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to DESTROYED)
+    // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to
+    // DESTROYED)
     when(this.queueRegion.getKeyInfo(KEY, null, null)).thenReturn(new KeyInfo(KEY, null, null));
     createAndProcessParallelQueueRemovalMessage();
 
@@ -175,10 +185,12 @@ public class ParallelQueueRemovalMessageJUnitTest {
     ParallelGatewaySenderEventProcessor pgsep = createConcurrentParallelGatewaySenderQueue();
 
     // Add a mock GatewaySenderEventImpl to the temp queue
-    BlockingQueue<GatewaySenderEventImpl> tempQueue = createTempQueueAndAddEvent(pgsep, mock(GatewaySenderEventImpl.class));
+    BlockingQueue<GatewaySenderEventImpl> tempQueue =
+        createTempQueueAndAddEvent(pgsep, mock(GatewaySenderEventImpl.class));
     assertEquals(1, tempQueue.size());
 
-    // Create and process a ParallelQueueRemovalMessage (causes the failedBatchRemovalMessageKeys to add a key)
+    // Create and process a ParallelQueueRemovalMessage (causes the failedBatchRemovalMessageKeys to
+    // add a key)
     createAndProcessParallelQueueRemovalMessage();
 
     // Validate temp queue is empty after processing ParallelQueueRemovalMessage
@@ -202,7 +214,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
     BlockingQueue<GatewaySenderEventImpl> tempQueue = createTempQueueAndAddEvent(pgsep, gsei);
     assertEquals(1, tempQueue.size());
 
-    // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to DESTROYED)
+    // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to
+    // DESTROYED)
     when(this.queueRegion.getKeyInfo(KEY, null, null)).thenReturn(new KeyInfo(KEY, null, null));
     createAndProcessParallelQueueRemovalMessage();
 
@@ -217,7 +230,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
   }
 
   private void createAndProcessParallelQueueRemovalMessage() {
-    ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(createRegionToDispatchedKeysMap());
+    ParallelQueueRemovalMessage pqrm =
+        new ParallelQueueRemovalMessage(createRegionToDispatchedKeysMap());
     pqrm.process(null);
   }
 
@@ -233,16 +247,19 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
   private ParallelGatewaySenderEventProcessor createConcurrentParallelGatewaySenderQueue() {
     ParallelGatewaySenderEventProcessor pgsep = new ParallelGatewaySenderEventProcessor(sender);
-    ConcurrentParallelGatewaySenderQueue cpgsq = new ConcurrentParallelGatewaySenderQueue(sender, new ParallelGatewaySenderEventProcessor[] {pgsep});
+    ConcurrentParallelGatewaySenderQueue cpgsq = new ConcurrentParallelGatewaySenderQueue(sender,
+        new ParallelGatewaySenderEventProcessor[] {pgsep});
     Set<RegionQueue> queues = new HashSet<>();
     queues.add(cpgsq);
     when(this.sender.getQueues()).thenReturn(queues);
     return pgsep;
   }
 
-  private BlockingQueue<GatewaySenderEventImpl> createTempQueueAndAddEvent(ParallelGatewaySenderEventProcessor pgsep, GatewaySenderEventImpl gsei) {
+  private BlockingQueue<GatewaySenderEventImpl> createTempQueueAndAddEvent(
+      ParallelGatewaySenderEventProcessor pgsep, GatewaySenderEventImpl gsei) {
     ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) pgsep.getQueue();
-    Map<Integer, BlockingQueue<GatewaySenderEventImpl>> tempQueueMap = pgsq.getBucketToTempQueueMap();
+    Map<Integer, BlockingQueue<GatewaySenderEventImpl>> tempQueueMap =
+        pgsq.getBucketToTempQueueMap();
     BlockingQueue<GatewaySenderEventImpl> tempQueue = new LinkedBlockingQueue();
     when(gsei.getShadowKey()).thenReturn(KEY);
     tempQueue.add(gsei);
@@ -251,6 +268,6 @@ public class ParallelQueueRemovalMessageJUnitTest {
   }
 
   private String getRegionQueueName() {
-    return Region.SEPARATOR+GATEWAY_SENDER_ID+ ParallelGatewaySenderQueue.QSTRING;
+    return Region.SEPARATOR + GATEWAY_SENDER_ID + ParallelGatewaySenderQueue.QSTRING;
   }
 }
