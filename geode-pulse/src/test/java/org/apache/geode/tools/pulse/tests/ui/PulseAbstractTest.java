@@ -219,6 +219,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     driver = new PhantomJSDriver(capabilities);
     driver.manage().window().maximize();
     driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+    driver.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS);
   }
 
   @AfterClass
