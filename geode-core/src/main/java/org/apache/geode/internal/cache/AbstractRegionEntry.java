@@ -209,7 +209,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         version.getRegionVersion())) {
       // distributed gc with higher vector version preempts this operation
       if (!isTombstone()) {
-        setValue(r, Token.TOMBSTONE);
+        basicMakeTombstone(r);
         r.incTombstoneCount(1);
       }
       r.getRegionMap().removeTombstone(this, version, false, true);
@@ -220,11 +220,22 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       }
       setRecentlyUsed();
       boolean newEntry = (getValueAsToken() == Token.REMOVED_PHASE1);
-      setValue(r, Token.TOMBSTONE);
+      basicMakeTombstone(r);
       r.scheduleTombstone(this, version);
       if (newEntry) {
         // bug #46631 - entry count is decremented by scheduleTombstone but this is a new entry
         r.getCachePerfStats().incEntryCount(1);
+      }
+    }
+  }
+  private void basicMakeTombstone(LocalRegion r) throws RegionClearedException {
+    boolean setValueCompleted = false;
+    try {
+      setValue(r, Token.TOMBSTONE);
+      setValueCompleted = true;
+    } finally {
+      if (!setValueCompleted && isTombstone()) {
+        removePhase2();
       }
     }
   }
