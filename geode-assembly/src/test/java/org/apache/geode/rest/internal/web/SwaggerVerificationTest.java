@@ -24,7 +24,7 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
@@ -44,7 +44,7 @@ public class SwaggerVerificationTest {
   static Properties properties = new Properties() {
     {
       setProperty(START_DEV_REST_API, "true");
-      setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
       setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
       setProperty(HTTP_SERVICE_PORT, restPort + "");
     }
