@@ -24,12 +24,11 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.security.templates.SimpleSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -51,13 +50,8 @@ public class SwaggerVerificationTest {
   };
 
   @ClassRule
-  public static ServerStarter serverStarter = new ServerStarter(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
   private final GeodeRestClient restClient = new GeodeRestClient("localhost", restPort);
-
-  @BeforeClass
-  public static void before() throws Exception {
-    serverStarter.startServer();
-  }
 
   @Test
   public void isSwaggerRunning() throws Exception {

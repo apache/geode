@@ -19,7 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
@@ -42,12 +42,11 @@ public class RestServersJUnitTest {
   };
 
   @ClassRule
-  public static ServerStarter serverStarter = new ServerStarter(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
   private static GeodeRestClient restClient;
 
   @BeforeClass
   public static void before() throws Exception {
-    serverStarter.startServer();
     restClient = new GeodeRestClient("localhost", defaultPort);
   }
 

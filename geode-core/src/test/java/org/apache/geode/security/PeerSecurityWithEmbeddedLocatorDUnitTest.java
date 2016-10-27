@@ -30,7 +30,7 @@ import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -62,7 +62,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedT
 
     VM server2 = lsRule.getNodeVM(2);
     server2.invoke(() -> {
-      ServerStarter serverStarter = new ServerStarter(server2Props);
+      ServerStarterRule serverStarter = new ServerStarterRule(server2Props);
       assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
           .isInstanceOf(GemFireSecurityException.class)
           .hasMessageContaining("Security check failed. Authentication error");
@@ -90,7 +90,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedT
 
     VM server2 = lsRule.getNodeVM(2);
     server2.invoke(() -> {
-      ServerStarter serverStarter = new ServerStarter(server2Props);
+      ServerStarterRule serverStarter = new ServerStarterRule(server2Props);
       assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
     });

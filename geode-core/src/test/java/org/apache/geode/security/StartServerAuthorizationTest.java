@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +30,6 @@ import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -55,7 +55,7 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
 
     VM server = lsRule.getNodeVM(1);
     server.invoke(() -> {
-      ServerStarter serverStarter = new ServerStarter(props);
+      ServerStarterRule serverStarter = new ServerStarterRule(props);
       assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(
               "Security check failed. Authentication error. Please check your credentials");
@@ -72,7 +72,7 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
 
     VM server = lsRule.getNodeVM(1);
     server.invoke(() -> {
-      ServerStarter serverStarter = new ServerStarter(props);
+      ServerStarterRule serverStarter = new ServerStarterRule(props);
       assertThatThrownBy(() -> serverStarter.startServer(lsRule.getPort(0)))
           .isInstanceOf(GemFireSecurityException.class)
           .hasMessageContaining("user not authorized for CLUSTER:MANAGE");

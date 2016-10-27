@@ -16,19 +16,18 @@
 
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.junit.Assert.assertEquals;
 
-import java.util.Properties;
-
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.test.dunit.rules.ServerStarter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.util.Properties;
 
 @Category(IntegrationTest.class)
 public class JavaRmiServerNameTest {
@@ -44,11 +43,8 @@ public class JavaRmiServerNameTest {
     }
   };
 
-  @BeforeClass
-  public static void beforeClass() throws Exception {
-    ServerStarter serverStarter = new ServerStarter(properties);
-    serverStarter.startServer();
-  }
+  @ClassRule
+  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
 
   // https://issues.apache.org/jira/browse/GEODE-1548
   @Test

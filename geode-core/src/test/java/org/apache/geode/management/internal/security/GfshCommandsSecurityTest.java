@@ -14,18 +14,14 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.List;
-import java.util.Properties;
-
-import org.apache.shiro.authz.permission.WildcardPermission;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -37,16 +33,37 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.shiro.authz.permission.WildcardPermission;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.List;
+import java.util.Properties;
 
 @Category({IntegrationTest.class, SecurityTest.class})
+// @RunWith(Parameterized.class)
+// @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GfshCommandsSecurityTest {
 
   protected static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
   protected static int jmxPort = ports[0];
   protected static int httpPort = ports[1];
+
+  // can't do parameterized tests here since useHttp tests needs to be in geode-web project
+  // @Parameterized.Parameters
+  // public static Collection<Object> data() {
+  // return Arrays.asList(new Object[] {true, false});
+  // }
+  //
+  // @Parameterized.Parameter
+  // public boolean useHttp;
 
   static Properties properties = new Properties() {
     {
@@ -62,14 +79,13 @@ public class GfshCommandsSecurityTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    ServerStarter serverStarter = new ServerStarter(properties);
+    ServerStarterRule serverStarter = new ServerStarterRule(properties);
     serverStarter.startServer();
     serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
   @Rule
-  public GfshShellConnectionRule gfshConnection =
-      new GfshShellConnectionRule(jmxPort, httpPort, false);
+  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort);
 
   @Before
   public void before() {

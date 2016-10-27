@@ -15,16 +15,12 @@
 
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
-import org.junit.Before;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -37,7 +33,14 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+import org.junit.Before;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTestCase {
 
@@ -71,7 +74,7 @@ public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTes
 
   @Before
   public void before() throws Exception {
-    ServerStarter serverStarter = new ServerStarter(getProperties());
+    ServerStarterRule serverStarter = new ServerStarterRule(getProperties());
     serverStarter.startServer(0, pdxPersistent);
     serverPort = serverStarter.server.getPort();
     Region region =

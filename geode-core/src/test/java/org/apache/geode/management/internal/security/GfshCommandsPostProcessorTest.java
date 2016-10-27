@@ -14,16 +14,10 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.Assert.*;
-
-import java.util.Properties;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.internal.Assert.assertTrue;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -31,9 +25,17 @@ import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GfshCommandsPostProcessorTest {
@@ -53,7 +55,7 @@ public class GfshCommandsPostProcessorTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    ServerStarter serverStarter = new ServerStarter(properties);
+    ServerStarterRule serverStarter = new ServerStarterRule(properties);
     serverStarter.startServer();
     serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }

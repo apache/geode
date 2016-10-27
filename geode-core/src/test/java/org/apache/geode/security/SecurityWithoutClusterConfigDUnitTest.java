@@ -32,7 +32,7 @@ import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -70,7 +70,7 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    ServerStarter serverStarter = new ServerStarter(props);
+    ServerStarterRule serverStarter = new ServerStarterRule(props);
     serverStarter.startServer(lsRule.getPort(0));
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
     assertEquals(3, ds.getSecurityProperties().size());

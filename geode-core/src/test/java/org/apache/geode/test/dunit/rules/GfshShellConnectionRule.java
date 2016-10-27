@@ -12,9 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.security;
-
-import org.junit.runner.Description;
+package org.apache.geode.test.dunit.rules;
 
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
@@ -23,18 +21,17 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
+import org.junit.runner.Description;
 
 /**
- * Class which eases the creation of MBeans for security testing. When combined with
- * {@link ConnectionConfiguration} it allows for the creation of per-test connections with different
- * user/password combinations.
+ * Class which eases the connection to the jmxManager {@link ConnectionConfiguration} it allows for
+ * the creation of per-test connections with different user/password combinations, or no username
+ * and password
  */
 public class GfshShellConnectionRule extends DescribedExternalResource {
 
-  private int jmxPort = 0;
-  private int httpPort = 0;
+  private int port = 0;
   private boolean useHttp = false;
   private HeadlessGfsh gfsh;
   private boolean authenticated;
@@ -42,36 +39,37 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   /**
    * Rule constructor
    */
-  public GfshShellConnectionRule(int jmxPort, int httpPort, boolean useHttp) {
-    this.jmxPort = jmxPort;
-    this.httpPort = httpPort;
-    this.useHttp = useHttp;
+
+  public GfshShellConnectionRule(int port) {
+    this.useHttp = false;
+    this.port = port;
   }
 
-  public GfshShellConnectionRule(int jmxPort) {
-    this.jmxPort = jmxPort;
+  public GfshShellConnectionRule(int port, boolean useHttp) {
+    this.useHttp = useHttp;
+    this.port = port;
   }
 
   protected void before(Description description) throws Throwable {
-    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
-    if (config == null)
-      return;
-
     CliUtil.isGfshVM = true;
     String shellId = getClass().getSimpleName() + "_" + description.getMethodName();
     gfsh = new HeadlessGfsh(shellId, 30, "gfsh_files"); // TODO: move to TemporaryFolder
 
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
-    connectCommand.addOption(CliStrings.CONNECT__USERNAME, config.user());
-    connectCommand.addOption(CliStrings.CONNECT__PASSWORD, config.password());
+
+    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
+    if (config != null) {
+      connectCommand.addOption(CliStrings.CONNECT__USERNAME, config.user());
+      connectCommand.addOption(CliStrings.CONNECT__PASSWORD, config.password());
+    }
 
     String endpoint;
     if (useHttp) {
-      endpoint = "http://localhost:" + httpPort + "/gemfire/v1";
+      endpoint = "http://localhost:" + port + "/gemfire/v1";
       connectCommand.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
       connectCommand.addOption(CliStrings.CONNECT__URL, endpoint);
     } else {
-      endpoint = "localhost[" + jmxPort + "]";
+      endpoint = "localhost[" + port + "]";
       connectCommand.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
     }
     System.out.println(getClass().getSimpleName() + " using endpoint: " + endpoint);

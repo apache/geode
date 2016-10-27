@@ -15,16 +15,20 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.Serializable;
-import java.util.Properties;
-
-import org.junit.rules.ExternalResource;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
+import org.junit.rules.ExternalResource;
+
+import java.io.Serializable;
+import java.util.Properties;
 
 
 /**
@@ -33,18 +37,17 @@ import org.apache.geode.cache.server.CacheServer;
  * If you need a rule to start a server/locator in different VM for Distribution tests, You should
  * use LocatorServerStartupRule
  *
- * This rule does not have a before(), because you may choose to start a server in different time of
- * your tests. You may choose to use this class not as a rule or use it in your own rule, (see
- * LocatorServerStartupRule) you will need to call after() manually in that case.
+ * You may choose to use this class not as a rule or use it in your own rule, (see
+ * LocatorServerStartupRule) you will need to call startServer and after() manually in that case.
  */
-public class ServerStarter extends ExternalResource implements Serializable {
+public class ServerStarterRule extends ExternalResource implements Serializable {
 
   public Cache cache;
   public CacheServer server;
 
   private Properties properties;
 
-  public ServerStarter(Properties properties) {
+  public ServerStarterRule(Properties properties) {
     this.properties = properties;
   }
 
@@ -88,6 +91,16 @@ public class ServerStarter extends ExternalResource implements Serializable {
     server.start();
   }
 
+  /**
+   * if you use this class as a rule, the default startServer will be called in the before. You need
+   * to make sure your properties to start the server with has the locator information it needs to
+   * connect to, otherwise, this server won't connect to any locator
+   */
+  protected void before() throws Throwable {
+    startServer();
+  }
+
+  @Override
   public void after() {
     if (cache != null)
       cache.close();

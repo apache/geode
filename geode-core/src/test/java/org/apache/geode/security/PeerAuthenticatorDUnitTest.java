@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +30,6 @@ import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.ServerStarter;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -61,7 +61,7 @@ public class PeerAuthenticatorDUnitTest extends JUnit4DistributedTestCase {
     VM server2 = lsRule.getNodeVM(2);
 
     server2.invoke(() -> {
-      ServerStarter serverStarter = new ServerStarter(server2Props);
+      ServerStarterRule serverStarter = new ServerStarterRule(server2Props);
       assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
     });

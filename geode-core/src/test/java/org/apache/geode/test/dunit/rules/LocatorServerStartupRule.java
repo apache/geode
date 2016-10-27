@@ -15,20 +15,19 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Host.*;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.rules.ExternalResource;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Host.getHost;
 
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.rules.ExternalResource;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Properties;
 
 
 /**
@@ -43,8 +42,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
 
   // these are only avaialbe in each VM
-  public static ServerStarter serverStarter;
-  public static LocatorStarter locatorStarter;
+  public static ServerStarterRule serverStarter;
+  public static LocatorStarterRule locatorStarter;
 
   @Before
   public void before() {
@@ -69,7 +68,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   public VM getLocatorVM(int index, Properties locatorProperties) throws IOException {
     VM locatorVM = host.getVM(index);
     int locatorPort = locatorVM.invoke(() -> {
-      locatorStarter = new LocatorStarter(locatorProperties);
+      locatorStarter = new LocatorStarterRule(locatorProperties);
       locatorStarter.startLocator();
       return locatorStarter.locator.getPort();
     });
@@ -99,7 +98,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     VM nodeVM = getNodeVM(index);
     properties.setProperty(NAME, "server-" + index);
     int port = nodeVM.invoke(() -> {
-      serverStarter = new ServerStarter(properties);
+      serverStarter = new ServerStarterRule(properties);
       serverStarter.startServer(locatorPort);
       return serverStarter.server.getPort();
     });

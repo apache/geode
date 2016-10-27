@@ -26,14 +26,14 @@ import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.security.templates.SampleSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 
 /**
  * this rule would help you start up a cache server with the given properties in the current VM
  */
 public class CacheServerStartupRule extends ExternalResource implements Serializable {
 
-  private ServerStarter serverStarter;
+  private ServerStarterRule serverStarter;
 
   public static CacheServerStartupRule withDefaultSecurityJson(int jmxManagerPort) {
     return new CacheServerStartupRule(jmxManagerPort,
@@ -49,7 +49,7 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
       properties.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
       properties.put(SampleSecurityManager.SECURITY_JSON, jsonFile);
     }
-    serverStarter = new ServerStarter(properties);
+    serverStarter = new ServerStarterRule(properties);
   }
 
   @Before

@@ -14,28 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang.StringUtils;
-import org.springframework.shell.core.AbstractShell;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ParseResult;
-
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.internal.cli.exceptions.CliCommandMultiModeOptionException;
 import org.apache.geode.management.internal.cli.exceptions.CliCommandOptionException;
@@ -60,6 +39,26 @@ import org.apache.geode.management.internal.cli.parser.preprocessor.Preprocessor
 import org.apache.geode.management.internal.cli.parser.preprocessor.TrimmedInput;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CLIConsoleBufferUtil;
+import org.springframework.shell.core.AbstractShell;
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.MethodTarget;
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ParseResult;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Implementation of the {@link Parser} interface for GemFire SHell (gfsh) requirements.
@@ -927,7 +926,6 @@ public class GfshParser implements Parser {
         }
       } else {
         if (targets.size() == 1) {
-
           OptionSet parse = null;
           List<MethodParameter> parameters = new ArrayList<MethodParameter>();
           Map<String, String> paramValMap = new HashMap<String, String>();

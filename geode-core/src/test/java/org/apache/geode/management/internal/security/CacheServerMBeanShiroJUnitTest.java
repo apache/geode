@@ -14,24 +14,24 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.Properties;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class CacheServerMBeanShiroJUnitTest {
@@ -45,11 +45,8 @@ public class CacheServerMBeanShiroJUnitTest {
 
   private CacheServerMXBean bean;
 
-  @BeforeClass
-  public static void before() throws Exception {
-    ServerStarter serverStarter = new ServerStarter(properties);
-    serverStarter.startServer();
-  }
+  @ClassRule
+  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
 
   @Rule
   public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);

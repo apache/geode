@@ -15,18 +15,17 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+
+import com.jayway.awaitility.Awaitility;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.junit.rules.ExternalResource;
 
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
-import com.jayway.awaitility.Awaitility;
-import org.junit.rules.ExternalResource;
-
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalLocator;
 
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
@@ -34,18 +33,17 @@ import org.apache.geode.distributed.internal.InternalLocator;
  * If you need a rule to start a server/locator in different VM for Distribution tests, You should
  * use LocatorServerStartupRule
  *
- * This rule does not have a before(), because you may choose to start a locator in different time
- * of your tests. You may choose to use this class not as a rule or use it in your own rule, (see
- * LocatorServerStartupRule) you will need to call after() manually in that case.
+ * You may choose to use this class not as a rule or use it in your own rule, (see
+ * LocatorServerStartupRule) you will need to call startLocator() and after() manually in that case.
  */
 
-public class LocatorStarter extends ExternalResource implements Serializable {
+public class LocatorStarterRule extends ExternalResource implements Serializable {
 
   public InternalLocator locator;
 
   private Properties properties;
 
-  public LocatorStarter(Properties properties) {
+  public LocatorStarterRule(Properties properties) {
     this.properties = properties;
   }
 
@@ -64,7 +62,12 @@ public class LocatorStarter extends ExternalResource implements Serializable {
   }
 
   @Override
-  public void after() {
+  protected void before() throws Throwable {
+    startLocator();
+  }
+
+  @Override
+  protected void after() {
     if (locator != null) {
       locator.stop();
     }
