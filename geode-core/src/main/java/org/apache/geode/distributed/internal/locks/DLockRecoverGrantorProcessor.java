@@ -91,7 +91,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     // process msg and reply from this VM...
     if (msg.getSender() == null)
       msg.setSender(dm.getId());
-    msg.processMessage(dm);
+    msg.scheduleMessage(dm);
 
     // keep waiting even if interrupted
     try {
@@ -237,6 +237,20 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     @Override
     protected void process(DistributionManager dm) {
       processMessage(dm);
+    }
+
+    /**
+     * For unit testing we need to push the message through scheduleAction so that message observers
+     * are invoked
+     * 
+     * @param dm the distribution manager
+     */
+    protected void scheduleMessage(DM dm) {
+      if (dm instanceof DistributionManager) {
+        super.scheduleAction((DistributionManager) dm);
+      } else {
+        processMessage(dm);
+      }
     }
 
     protected void processMessage(DM dm) {

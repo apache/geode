@@ -14,29 +14,14 @@
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessController;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.ShiroException;
-import org.apache.shiro.config.Ini.Section;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.subject.support.SubjectThreadState;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.util.ThreadState;
-
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -54,6 +39,24 @@ import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.SecurityManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.ShiroException;
+import org.apache.shiro.config.Ini.Section;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.support.SubjectThreadState;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.util.ThreadState;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessController;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 public class IntegratedSecurityService implements SecurityService {
 
@@ -325,14 +328,10 @@ public class IntegratedSecurityService implements SecurityService {
       org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(shiroManager);
       isIntegratedSecurity = true;
-    } else if (!StringUtils.isBlank(clientAuthenticatorConfig)) {
-      isClientAuthenticator = true;
-    } else if (!StringUtils.isBlank(peerAuthenticatorConfig)) {
-      isPeerAuthenticator = true;
     } else {
       isIntegratedSecurity = false;
-      isClientAuthenticator = false;
-      isPeerAuthenticator = false;
+      isClientAuthenticator = !StringUtils.isBlank(clientAuthenticatorConfig);
+      isPeerAuthenticator = !StringUtils.isBlank(peerAuthenticatorConfig);
     }
 
     // this initializes the post processor

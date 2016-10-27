@@ -235,20 +235,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
   }
 
   private InternalDistributedMember createDataStoreMember(int i) {
-    String hostname = null;
-    InternalDistributedMember mem = null;
-    try {
-      mem = new InternalDistributedMember("host" + i, 3033);
-    } catch (java.net.UnknownHostException uhe) {
-      logger.severe(
-          "PartitionedRegion: initalizeNode() Unknown host = " + hostname + " servicePort = " + 0,
-          uhe);
-      throw new PartitionedRegionException(
-          "PartitionedRegionDataStore: initalizeNode() Unknown host = " + hostname
-              + " servicePort = " + 0,
-          uhe);
-    }
-    return mem;
+    return new InternalDistributedMember("host" + i, 3033);
   }
 
   /**
@@ -257,14 +244,8 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
    * @return
    */
   public Node createNode(int i) {
-    Node node = null;
-    try {
-      node = new Node(new InternalDistributedMember("host" + i, 3033), i);
-      node.setPRType(Node.DATASTORE);
-    } catch (java.net.UnknownHostException uhe) {
-      logger.severe("PartitionedRegion: initalizeNode() threw exception", uhe);
-      throw new PartitionedRegionException("", uhe);
-    }
+    Node node = new Node(new InternalDistributedMember("host" + i, 3033), i);
+    node.setPRType(Node.DATASTORE);
     return node;
   }
 

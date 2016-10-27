@@ -14,19 +14,23 @@
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Java6Assertions.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
+import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
-
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
 
 @Category(UnitTest.class)
 public class IntegratedSecurityServiceTest {
@@ -125,6 +129,18 @@ public class IntegratedSecurityServiceTest {
 
     assertFalse(securityService.isIntegratedSecurity());
     assertFalse(securityService.isClientSecurityRequired());
+    assertTrue(securityService.isPeerSecurityRequired());
+  }
+
+  @Test
+  public void testInitWithBothAuthenticator() {
+    properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
+    properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
+
+    securityService.initSecurity(properties);
+
+    assertFalse(securityService.isIntegratedSecurity());
+    assertTrue(securityService.isClientSecurityRequired());
     assertTrue(securityService.isPeerSecurityRequired());
   }
 

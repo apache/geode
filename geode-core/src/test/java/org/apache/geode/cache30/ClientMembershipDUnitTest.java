@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -81,6 +83,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   protected static final int CRASHED = 2;
 
   private static Properties properties;
+
+  ServerLocation serverLocation = new ServerLocation("127.0.0.1", 0);
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
@@ -270,8 +274,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ClientMembership.registerClientMembershipListener(listener);
 
     // test JOIN for server
-    DistributedMember serverJoined = new TestDistributedMember("serverJoined");
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyServerJoined(serverLocation);
 
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
@@ -279,8 +282,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         });
 
     assertTrue(fired[JOINED]);
-    assertEquals(serverJoined, member[JOINED]);
-    assertEquals(serverJoined.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(memberId[LEFT]);
@@ -292,7 +294,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // test JOIN for client
     DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalClientMembership.notifyJoined(clientJoined, CLIENT);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
@@ -311,8 +313,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // test LEFT for server
-    DistributedMember serverLeft = new TestDistributedMember("serverLeft");
-    InternalClientMembership.notifyLeft(serverLeft, SERVER);
+    InternalClientMembership.notifyServerLeft(serverLocation);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[LEFT];
@@ -322,8 +323,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertNull(memberId[JOINED]);
     assertFalse(isClient[JOINED]);
     assertTrue(fired[LEFT]);
-    assertEquals(serverLeft, member[LEFT]);
-    assertEquals(serverLeft.getId(), memberId[LEFT]);
+    assertNotNull(member[LEFT]);
     assertFalse(isClient[LEFT]);
     assertFalse(fired[CRASHED]);
     assertNull(memberId[CRASHED]);
@@ -332,7 +332,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // test LEFT for client
     DistributedMember clientLeft = new TestDistributedMember("clientLeft");
-    InternalClientMembership.notifyLeft(clientLeft, CLIENT);
+    InternalClientMembership.notifyClientLeft(clientLeft);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[LEFT];
@@ -351,8 +351,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // test CRASHED for server
-    DistributedMember serverCrashed = new TestDistributedMember("serverCrashed");
-    InternalClientMembership.notifyCrashed(serverCrashed, SERVER);
+    InternalClientMembership.notifyServerCrashed(serverLocation);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[CRASHED];
@@ -365,14 +364,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertNull(memberId[LEFT]);
     assertFalse(isClient[LEFT]);
     assertTrue(fired[CRASHED]);
-    assertEquals(serverCrashed, member[CRASHED]);
-    assertEquals(serverCrashed.getId(), memberId[CRASHED]);
+    assertNotNull(member[CRASHED]);
     assertFalse(isClient[CRASHED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // test CRASHED for client
     DistributedMember clientCrashed = new TestDistributedMember("clientCrashed");
-    InternalClientMembership.notifyCrashed(clientCrashed, CLIENT);
+    InternalClientMembership.notifyClientCrashed(clientCrashed);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[CRASHED];
@@ -434,7 +432,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // fire event to make sure listener is registered
     DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
@@ -452,7 +450,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // unregister and verify listener is not notified
     ClientMembership.unregisterClientMembershipListener(listener);
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).until(() -> {
           return true;
@@ -496,7 +494,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     }
 
     final DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     for (int i = 0; i < NUM_LISTENERS; i++) {
       synchronized (listeners[i]) {
         listeners[i].wait(20);
@@ -523,7 +521,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[0], registeredListeners[0]);
     assertEquals(listeners[1], registeredListeners[1]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -549,7 +547,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(1, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -578,7 +576,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[2], registeredListeners[1]);
     assertEquals(listeners[3], registeredListeners[2]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[3]) {
       if (!fired[3]) {
         listeners[3].wait(2000);
@@ -607,7 +605,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[3], registeredListeners[2]);
     assertEquals(listeners[0], registeredListeners[3]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -628,7 +626,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[2], registeredListeners[1]);
     assertEquals(listeners[0], registeredListeners[2]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -655,7 +653,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[1], registeredListeners[0]);
     assertEquals(listeners[0], registeredListeners[1]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -681,7 +679,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(0, registeredListeners.length);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     for (int i = 0; i < NUM_LISTENERS; i++) {
       synchronized (listeners[i]) {
         listeners[i].wait(20);
@@ -698,7 +696,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(1, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -814,15 +812,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // sanity check...
     System.out.println("[testClientMembershipEventsInClient] sanity check");
-    DistributedMember test = new TestDistributedMember("test");
-    InternalClientMembership.notifyJoined(test, SERVER);
+    InternalClientMembership.notifyServerJoined(serverLocation);
 
     Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
         .pollDelay(50, TimeUnit.MILLISECONDS).until(() -> fired[JOINED] || fired[CRASHED]);
 
     assertTrue(fired[JOINED]);
-    assertEquals(test, member[JOINED]);
-    assertEquals(test.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
@@ -871,8 +867,6 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertTrue(fired[JOINED]);
     assertNotNull(member[JOINED]);
     assertNotNull(memberId[JOINED]);
-    assertEquals(serverMember, member[JOINED]);
-    assertEquals(serverMemberId, memberId[JOINED]);
     assertFalse(isClient[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
@@ -902,8 +896,6 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertTrue(fired[CRASHED]);
     assertNotNull(member[CRASHED]);
     assertNotNull(memberId[CRASHED]);
-    assertEquals(serverMember, member[CRASHED]);
-    assertEquals(serverMemberId, memberId[CRASHED]);
     assertFalse(isClient[CRASHED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
@@ -927,8 +919,6 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertNotNull(member[JOINED]);
     assertNotNull(memberId[JOINED]);
     assertFalse(isClient[JOINED]);
-    assertEquals(serverMember, member[JOINED]);
-    assertEquals(serverMemberId, memberId[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
     assertNull(memberId[LEFT]);
@@ -1018,7 +1008,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     // sanity check...
     System.out.println("[testClientMembershipEventsInServer] sanity check");
     DistributedMember test = new TestDistributedMember("test");
-    InternalClientMembership.notifyJoined(test, CLIENT);
+    InternalClientMembership.notifyClientJoined(test);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED] || fired[LEFT] || fired[CRASHED];
@@ -1232,22 +1222,20 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     getSystem(config);
 
     // assert that event is fired while connected
-    DistributedMember serverJoined = new TestDistributedMember("serverJoined");
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyServerJoined(serverLocation);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
         });
     assertTrue(fired[JOINED]);
-    assertEquals(serverJoined, member[JOINED]);
-    assertEquals(serverJoined.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // assert that event is NOT fired while disconnected
     disconnectFromDS();
 
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyServerJoined(serverLocation);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).until(() -> {
           return true;
@@ -1264,15 +1252,14 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     InternalDistributedSystem sys = getSystem(config);
     assertTrue(sys.isConnected());
 
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyServerJoined(serverLocation);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
         .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
         });
 
     assertTrue(fired[JOINED]);
-    assertEquals(serverJoined, member[JOINED]);
-    assertEquals(serverJoined.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
   }
 

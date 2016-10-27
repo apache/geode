@@ -799,12 +799,7 @@ public class ConnectionManagerJUnitTest {
         this.notifyAll();
       }
       DistributedMember fakeMember = null;
-      try {
-        fakeMember = new InternalDistributedMember("localhost", 555);
-      } catch (UnknownHostException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
+      fakeMember = new InternalDistributedMember("localhost", 555);
       final DistributedMember member = fakeMember;
 
       return new Connection() {

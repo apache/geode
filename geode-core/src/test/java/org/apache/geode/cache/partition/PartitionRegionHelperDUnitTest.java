@@ -612,8 +612,6 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           fail("Should have received an exception");
         } catch (IllegalStateException expected) {
           System.err.println(expected);
-        } catch (UnknownHostException e) {
-          Assert.fail("Unknown host", e);
         }
         assertHasMembers(PartitionRegionHelper.getAllMembersForKey(region, 1), member0, member1);
 
@@ -693,8 +691,6 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           fail("Should have received an exception");
         } catch (IllegalStateException expected) {
           System.err.println(expected);
-        } catch (UnknownHostException e) {
-          Assert.fail("Unknown host", e);
         }
         assertHasMembers(PartitionRegionHelper.getAllMembersForKey(region, 1), member0, member1);
 
@@ -705,8 +701,6 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           fail("Should have received an exception");
         } catch (IllegalStateException expected) {
           System.err.println(expected);
-        } catch (UnknownHostException e) {
-          Assert.fail("Unknown host", e);
         }
         assertHasMembers(PartitionRegionHelper.getAllMembersForKey(region, 1), member0, member1);
 

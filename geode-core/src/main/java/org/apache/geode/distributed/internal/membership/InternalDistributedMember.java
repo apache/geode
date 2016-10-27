@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.DistributedMember;
@@ -23,6 +24,7 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.*;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -242,8 +244,28 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * @param p the membership listening port
    * @throws UnknownHostException if the given hostname cannot be resolved
    */
-  public InternalDistributedMember(String i, int p) throws UnknownHostException {
+  public InternalDistributedMember(String i, int p) {
     this(i, p, Version.CURRENT);
+  }
+
+  /**
+   * Creates a new InternalDistributedMember for use in notifying membership listeners. The version
+   * information in the ID is set to Version.CURRENT.
+   * 
+   * @param location the coordinates of the server
+   */
+
+  public InternalDistributedMember(ServerLocation location) {
+    this.hostName = location.getHostName();
+    InetAddress addr = null;
+    try {
+      addr = InetAddress.getByName(this.hostName);
+    } catch (UnknownHostException e) {
+      throw new GemFireConfigException("Unable to resolve server location " + location, e);
+    }
+    this.netMbr = MemberFactory.newNetMember(addr, location.getPort());
+    this.vmKind = DistributionManager.NORMAL_DM_TYPE;
+    this.versionObj = Version.CURRENT;
   }
 
   /**
@@ -260,7 +282,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * @param version the version of this member
    * @throws UnknownHostException if the given hostname cannot be resolved
    */
-  public InternalDistributedMember(String i, int p, Version version) throws UnknownHostException {
+  public InternalDistributedMember(String i, int p, Version version) {
     this(i, p, version, MemberFactory.newNetMember(i, p));
   }
 
@@ -272,8 +294,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
    * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    **/
-  public InternalDistributedMember(String i, int p, Version version, NetMember netMember)
-      throws UnknownHostException {
+  public InternalDistributedMember(String i, int p, Version version, NetMember netMember) {
     netMbr = netMember;
     defaultToCurrentHost();
     this.vmKind = DistributionManager.NORMAL_DM_TYPE;

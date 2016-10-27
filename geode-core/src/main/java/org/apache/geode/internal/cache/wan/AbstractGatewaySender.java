@@ -684,7 +684,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return null;
   }
 
-  final public Set<RegionQueue> getQueues() {
+  public Set<RegionQueue> getQueues() {
     if (this.eventProcessor != null) {
       if (!(this.eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
         Set<RegionQueue> queues = new HashSet<RegionQueue>();

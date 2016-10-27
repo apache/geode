@@ -234,8 +234,6 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
       vm0.invoke(connectDisconnect);
       assertTrue("Member was not removed from surprise member set", !mgr.isSurpriseMember(mbr));
 
-    } catch (UnknownHostException e) {
-      fail("unable to resolve localhost - test needs some attention", e);
     } finally {
       if (sys != null && sys.isConnected()) {
         sys.disconnect();

@@ -300,7 +300,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
             mySock.getInetAddress().getHostAddress(), mySock.getLocalPort(), mySock.getPort());
       }
 
-      ServerQueueStatus sqs = handshake.greetNotifier(mySock, this.isPrimary, location);
+      ServerQueueStatus sqs = handshake.greetNotifier(mySock, this.isPrimary);
       if (sqs.isPrimary() || sqs.isNonRedundant()) {
         PoolImpl pool = (PoolImpl) this.qManager.getPool();
         if (!pool.getReadyForEventsCalled()) {

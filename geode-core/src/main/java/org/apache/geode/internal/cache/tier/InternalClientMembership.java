@@ -27,6 +27,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -349,13 +351,76 @@ public final class InternalClientMembership {
 
 
   /**
+   * Notifies registered listeners that a Client member has connected
+   *
+   * @param clientId the representing the client
+   */
+  public static void notifyClientJoined(final DistributedMember clientId) {
+    notifyListeners(clientId, true, EventType.JOINED);
+  }
+
+  /**
+   * Notifies registered listeners that a Client member has left
+   *
+   * @param clientId the representing the client
+   */
+  public static void notifyClientLeft(final DistributedMember clientId) {
+    notifyListeners(clientId, true, EventType.LEFT);
+  }
+
+  /**
+   * Notifies registered listeners that a Client member has crashed
+   *
+   * @param clientId the representing the client
+   */
+  public static void notifyClientCrashed(final DistributedMember clientId) {
+    notifyListeners(clientId, true, EventType.CRASHED);
+  }
+
+
+
+  /**
+   * Notifies registered listeners that a Client member has connected
+   *
+   * @param location the address of the server
+   */
+  public static void notifyServerJoined(final ServerLocation location) {
+    DistributedMember id = new InternalDistributedMember(location);
+    notifyListeners(id, false, EventType.JOINED);
+  }
+
+  /**
+   * Notifies registered listeners that a Client member has left
+   *
+   * @param location the address of the server
+   */
+  public static void notifyServerLeft(final ServerLocation location) {
+    DistributedMember id = new InternalDistributedMember(location);
+    notifyListeners(id, false, EventType.LEFT);
+  }
+
+  /**
+   * Notifies registered listeners that a Client member has crashed
+   *
+   * @param location the address of the server
+   */
+  public static void notifyServerCrashed(final ServerLocation location) {
+    DistributedMember id = new InternalDistributedMember(location);
+    notifyListeners(id, false, EventType.CRASHED);
+  }
+
+
+
+  /**
    * Notifies registered listeners that a Client member has joined. The new member may be a client
    * connecting to this process or a server that this process has just connected to.
-   *
+   * 
    * @param member the <code>DistributedMember</code>
    * @param client true if the member is a client; false if server
+   * @param typeOfEvent joined/left/crashed
    */
-  public static void notifyJoined(final DistributedMember member, final boolean client) {
+  private static void notifyListeners(final DistributedMember member, final boolean client,
+      final EventType typeOfEvent) {
     startMonitoring();
     ThreadPoolExecutor queuedExecutor = executor;
     if (queuedExecutor == null) {
@@ -364,13 +429,11 @@ public final class InternalClientMembership {
 
     final ClientMembershipEvent event = new InternalClientMembershipEvent(member, client);
     if (forceSynchronous) {
-      doNotifyClientMembershipListener(member, client, event, EventType.CLIENT_JOINED);
+      doNotifyClientMembershipListener(member, client, event, typeOfEvent);
     } else {
       try {
-        queuedExecutor.execute(new Runnable() {
-          public void run() {
-            doNotifyClientMembershipListener(member, client, event, EventType.CLIENT_JOINED);
-          }
+        queuedExecutor.execute(() -> {
+          doNotifyClientMembershipListener(member, client, event, typeOfEvent);
         });
       } catch (RejectedExecutionException e) {
         // executor must have been shutdown
@@ -378,69 +441,6 @@ public final class InternalClientMembership {
     }
   }
 
-
-
-  /**
-   * Notifies registered listeners that a member has left. The departed member may be a client
-   * previously connected to this process or a server that this process was connected to.
-   *
-   * @param member the <code>DistributedMember</code>
-   * @param client true if the member is a client; false if server
-   */
-  public static void notifyLeft(final DistributedMember member, final boolean client) {
-    startMonitoring();
-    ThreadPoolExecutor queuedExecutor = executor;
-    if (queuedExecutor == null) {
-      return;
-    }
-
-
-    final ClientMembershipEvent event = new InternalClientMembershipEvent(member, client);
-    if (forceSynchronous) {
-      doNotifyClientMembershipListener(member, client, event, EventType.CLIENT_LEFT);
-    } else {
-      try {
-        queuedExecutor.execute(new Runnable() {
-          public void run() {
-            doNotifyClientMembershipListener(member, client, event, EventType.CLIENT_LEFT);
-          }
-        });
-      } catch (RejectedExecutionException e) {
-        // executor must have been shutdown
-      }
-    }
-  }
-
-
-  /**
-   * Notifies registered listeners that a member has crashed. The departed member may be a client
-   * previously connected to this process or a server that this process was connected to.
-   *
-   * @param member the <code>DistributedMember</code>
-   * @param client true if the member is a client; false if server
-   */
-  public static void notifyCrashed(final DistributedMember member, final boolean client) {
-    ThreadPoolExecutor queuedExecutor = executor;
-    if (queuedExecutor == null) {
-      return;
-    }
-
-    final ClientMembershipEvent event = new InternalClientMembershipEvent(member, client);
-    if (forceSynchronous) {
-      doNotifyClientMembershipListener(member, client, event, EventType.CLIENT_CRASHED);
-    } else {
-
-      try {
-        queuedExecutor.execute(new Runnable() {
-          public void run() {
-            doNotifyClientMembershipListener(member, client, event, EventType.CLIENT_CRASHED);
-          }
-        });
-      } catch (RejectedExecutionException e) {
-        // executor must have been shutdown
-      }
-    }
-  }
 
   private static void doNotifyClientMembershipListener(DistributedMember member, boolean client,
       ClientMembershipEvent clientMembershipEvent, EventType eventType) {
@@ -450,9 +450,9 @@ public final class InternalClientMembership {
 
       ClientMembershipListener listener = iter.next();
       try {
-        if (eventType.equals(EventType.CLIENT_JOINED)) {
+        if (eventType.equals(EventType.JOINED)) {
           listener.memberJoined(clientMembershipEvent);
-        } else if (eventType.equals(EventType.CLIENT_LEFT)) {
+        } else if (eventType.equals(EventType.LEFT)) {
           listener.memberLeft(clientMembershipEvent);
         } else {
           listener.memberCrashed(clientMembershipEvent);
@@ -549,17 +549,26 @@ public final class InternalClientMembership {
   }
 
   /**
-   * Internal implementation of ClientMembershipEvent.
+   * Internal implementation of ClientMembershipEvent. This class is used in both clients and
+   * servers to notify listeners about events concerning client/server communications. In servers
+   * listeners are notified about clients connecting/disconnecting. In clients listeners notified
+   * about new connections being formed to servers. The instance variable "client" is used to
+   * distinguish between the two.
    */
   protected static class InternalClientMembershipEvent implements ClientMembershipEvent {
 
     private final DistributedMember member;
+
+    /**
+     * If true this means that a client has joined/left/crashed.
+     * <p>
+     * If false this means that a server has joined/left/crashed
+     */
     private final boolean client;
 
-    /** Constructs new instance of event */
-    protected InternalClientMembershipEvent(DistributedMember member, boolean client) {
+    protected InternalClientMembershipEvent(DistributedMember member, boolean isClient) {
       this.member = member;
-      this.client = client;
+      this.client = isClient;
     }
 
     public DistributedMember getMember() {
@@ -593,7 +602,7 @@ public final class InternalClientMembership {
   }
 
   private static enum EventType {
-    CLIENT_JOINED, CLIENT_LEFT, CLIENT_CRASHED
+    JOINED, LEFT, CRASHED
   }
 }
 

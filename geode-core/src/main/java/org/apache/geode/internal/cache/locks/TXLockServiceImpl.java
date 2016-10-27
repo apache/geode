@@ -15,13 +15,6 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -32,6 +25,12 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /** Provides clean separation of implementation from public facade */
 public class TXLockServiceImpl extends TXLockService {
@@ -50,13 +49,14 @@ public class TXLockServiceImpl extends TXLockService {
   /** Instance of dlock service to use */
   private DLockService dlock;
 
-  /** List of active txLockIds */
+  /**
+   * List of active txLockIds
+   */
   protected List txLockIdList = new ArrayList();
 
   /**
    * True if grantor recovery is in progress; used to keep <code>release</code> from waiting for
-   * grantor. TODO: this boolean can probably be removed... it was insufficient and new fixes for
-   * bug 38763 have the side effect of making this boolean obsolete (verify before removal!)
+   * grantor.
    */
   private volatile boolean recovering = false;
 
@@ -225,10 +225,11 @@ public class TXLockServiceImpl extends TXLockService {
             LocalizedStrings.TXLockServiceImpl_INVALID_TXLOCKID_NOT_FOUND_0
                 .toLocalizedString(txLockId));
       }
-      // only release w/ dlock if not in middle of recovery...
-      if (!this.recovering) {
-        this.dlock.releaseTryLocks(txLockId, true);
-      }
+
+      this.dlock.releaseTryLocks(txLockId, () -> {
+        return this.recovering;
+      });
+
       this.txLockIdList.remove(txLockId);
       releaseRecoveryReadLock();
     }
@@ -243,10 +244,14 @@ public class TXLockServiceImpl extends TXLockService {
   // Internal implementation methods
   // -------------------------------------------------------------------------
 
+  boolean isRecovering() {
+    return this.recovering;
+  }
+
   /** Delays grantor recovery replies until finished with locks */
   void acquireRecoveryWriteLock() throws InterruptedException {
-    this.recoveryLock.writeLock().lockInterruptibly();
     this.recovering = true;
+    this.recoveryLock.writeLock().lockInterruptibly();
   }
 
   void releaseRecoveryWriteLock() {
