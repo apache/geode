@@ -318,7 +318,7 @@ public class EndpointManagerImpl implements EndpointManager {
         return;
       }
       // logger.warn("EMANFIRE:CRASH:"+endpoint.getLocation());
-      InternalClientMembership.notifyCrashed(endpoint.getMemberId(), false);
+      InternalClientMembership.notifyServerCrashed(endpoint.getLocation());
     }
 
     public void endpointNoLongerInUse(Endpoint endpoint) {
@@ -326,7 +326,7 @@ public class EndpointManagerImpl implements EndpointManager {
         return;
       }
       // logger.warn("EMANFIRE:LEFT:"+endpoint.getLocation());
-      InternalClientMembership.notifyLeft(endpoint.getMemberId(), false);
+      InternalClientMembership.notifyServerLeft(endpoint.getLocation());
     }
 
     public void endpointNowInUse(Endpoint endpoint) {
@@ -335,7 +335,7 @@ public class EndpointManagerImpl implements EndpointManager {
       }
       // logger.warn("EMANFIRE:JOIN:"+endpoint.getLocation()+" mid:"+endpoint.getMemberId(),new
       // Exception());
-      InternalClientMembership.notifyJoined(endpoint.getMemberId(), false);
+      InternalClientMembership.notifyServerJoined(endpoint.getLocation());
     }
   }
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.*;
@@ -66,14 +67,20 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
    */
   static DistributionLocatorConfig createConfigFor(String host, int port, InetAddress bindAddress) {
     TcpClient client = new TcpClient();
-    String[] info = null;
-    if (bindAddress != null) {
-      info = client.getInfo(bindAddress, port);
-    } else {
-      info = client.getInfo(InetAddressUtil.toInetAddress(host), port);
-    }
-    if (info == null) {
-      return null;
+    String[] info = new String[] {"unknown", "unknown"};
+
+    try {
+      client = new TcpClient();
+      if (bindAddress != null) {
+        info = client.getInfo(bindAddress, port);
+      } else {
+        info = client.getInfo(InetAddressUtil.toInetAddress(host), port);
+      }
+      if (info == null) {
+        return null;
+      }
+    } catch (GemFireConfigException e) {
+      // communications are not initialized at this point
     }
 
     DistributionLocatorConfigImpl config = new DistributionLocatorConfigImpl();

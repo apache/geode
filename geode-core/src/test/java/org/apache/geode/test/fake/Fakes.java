@@ -68,11 +68,7 @@ public class Fakes {
     Statistics stats = mock(Statistics.class);
 
     InternalDistributedMember member;
-    try {
-      member = new InternalDistributedMember("localhost", 5555);
-    } catch (UnknownHostException e) {
-      throw new RuntimeException(e);
-    }
+    member = new InternalDistributedMember("localhost", 5555);
 
     when(config.getCacheXmlFile()).thenReturn(new File(""));
     when(config.getDeployWorkingDir()).thenReturn(new File("."));

@@ -1297,7 +1297,7 @@ public class HandShake implements ClientHandShake {
     }
   }
 
-  public ServerQueueStatus greetNotifier(Socket sock, boolean isPrimary, ServerLocation location)
+  public ServerQueueStatus greetNotifier(Socket sock, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException {
     ServerQueueStatus sqs = null;
@@ -1378,7 +1378,7 @@ public class HandShake implements ClientHandShake {
       dis = new VersionedDataInputStream(dis, v);
     }
     try {
-      return (DistributedMember) DataSerializer.readObject(dis);
+      return DataSerializer.readObject(dis);
     } catch (EOFException e) {
       throw e;
     } catch (Exception e) {

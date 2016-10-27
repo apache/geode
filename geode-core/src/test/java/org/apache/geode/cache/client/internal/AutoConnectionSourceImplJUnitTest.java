@@ -32,6 +32,11 @@ import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.cache.tier.InternalClientMembership;
+import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.management.membership.ClientMembershipEvent;
+import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -49,11 +54,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import com.jayway.awaitility.Awaitility;
 
 /**
  *
@@ -135,6 +144,52 @@ public class AutoConnectionSourceImplJUnitTest {
     } catch (NoAvailableLocatorsException expected) {
       // do nothing
     }
+  }
+
+  @Test
+  public void testServerLocationUsedInListenerNotification() throws Exception {
+    final ClientMembershipEvent[] listenerEvents = new ClientMembershipEvent[1];
+
+    ClientMembershipListener listener = new ClientMembershipListener() {
+
+      @Override
+      public void memberJoined(final ClientMembershipEvent event) {
+        synchronized (listenerEvents) {
+          listenerEvents[0] = event;
+        }
+      }
+
+      @Override
+      public void memberLeft(final ClientMembershipEvent event) {}
+
+      @Override
+      public void memberCrashed(final ClientMembershipEvent event) {}
+    };
+    InternalClientMembership.registerClientMembershipListener(listener);
+
+    ServerLocation location = new ServerLocation("1.1.1.1", 0);
+
+    InternalClientMembership.notifyServerJoined(location);
+    Awaitility.await("wait for listener notification").atMost(10, TimeUnit.SECONDS).until(() -> {
+      synchronized (listenerEvents) {
+        return listenerEvents[0] != null;
+      }
+    });
+
+    assertEquals("1.1.1.1", listenerEvents[0].getMember().getHost());
+
+    InetAddress addr = InetAddress.getLocalHost();
+    location = new ServerLocation(addr.getHostAddress(), 0);
+
+    listenerEvents[0] = null;
+    InternalClientMembership.notifyServerJoined(location);
+    Awaitility.await("wait for listener notification").atMost(10, TimeUnit.SECONDS).until(() -> {
+      synchronized (listenerEvents) {
+        return listenerEvents[0] != null;
+      }
+    });
+
+    assertEquals(addr.getCanonicalHostName(), listenerEvents[0].getMember().getHost());
   }
 
   @Test

@@ -552,7 +552,7 @@ public class ServerConnection implements Runnable {
       this.crHelper.checkCancelInProgress(null);
       if (clientJoined && isFiringMembershipEvents()) {
         // This is a new client. Notify bridge membership and heartbeat monitor.
-        InternalClientMembership.notifyJoined(this.proxyId.getDistributedMember(), true);
+        InternalClientMembership.notifyClientJoined(this.proxyId.getDistributedMember());
       }
 
       ClientHealthMonitor chm = this.acceptor.getClientHealthMonitor();
@@ -862,9 +862,9 @@ public class ServerConnection implements Runnable {
       // the heartbeat monitor; other wise just remove the connection.
       if (clientDeparted && isFiringMembershipEvents()) {
         if (this.clientDisconnectedCleanly && !forceClientCrashEvent) {
-          InternalClientMembership.notifyLeft(proxyId.getDistributedMember(), true);
+          InternalClientMembership.notifyClientLeft(proxyId.getDistributedMember());
         } else {
-          InternalClientMembership.notifyCrashed(this.proxyId.getDistributedMember(), true);
+          InternalClientMembership.notifyClientCrashed(this.proxyId.getDistributedMember());
         }
         // The client has departed. Remove this last connection and unregister it.
       }
