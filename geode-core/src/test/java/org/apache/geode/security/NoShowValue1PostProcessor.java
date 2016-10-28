@@ -14,10 +14,6 @@
  */
 package org.apache.geode.security;
 
-import java.io.Serializable;
-
-import org.apache.geode.security.PostProcessor;
-
 public class NoShowValue1PostProcessor implements PostProcessor {
 
   @Override

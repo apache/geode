@@ -113,7 +113,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     headers.setLocation(toUri(region, key));
 
     if (existingPdxObj != null) {
-      final RegionEntryData<Object> data = new RegionEntryData<Object>(region);
+      final RegionEntryData<Object> data = new RegionEntryData<>(region);
       data.add(existingPdxObj);
       headers.setContentType(MediaType.APPLICATION_JSON);
       return new ResponseEntity<RegionEntryData<?>>(data, headers, HttpStatus.CONFLICT);
@@ -149,13 +149,13 @@ public class PdxBasedCrudController extends CommonCrudController {
     region = decode(region);
 
     Map<Object, Object> valueObjs = null;
-    final RegionData<Object> data = new RegionData<Object>(region);
+    final RegionData<Object> data = new RegionData<>(region);
 
     final HttpHeaders headers = new HttpHeaders();
     String keyList = null;
     int regionSize = getRegion(region).size();
-    List<Object> keys = new ArrayList<Object>(regionSize);
-    List<Object> values = new ArrayList<Object>(regionSize);
+    List<Object> keys = new ArrayList<>(regionSize);
+    List<Object> values = new ArrayList<>(regionSize);
 
     for (Map.Entry<Object, Object> entry : getValues(region).entrySet()) {
       Object value = entry.getValue();
@@ -174,8 +174,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         if (maxLimit < 0) {
           String errorMessage =
               String.format("Negative limit param (%1$s) is not valid!", maxLimit);
-          return new ResponseEntity<String>(convertErrorAsJson(errorMessage),
-              HttpStatus.BAD_REQUEST);
+          return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
         }
 
         int mapSize = keys.size();
@@ -190,7 +189,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         // limit param is not specified in proper format. set the HTTPHeader
         // for BAD_REQUEST
         String errorMessage = String.format("limit param (%1$s) is not valid!", limit);
-        return new ResponseEntity<String>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -233,7 +232,7 @@ public class PdxBasedCrudController extends CommonCrudController {
             .format("Key (%1$s) does not exist for region (%2$s) in cache!", keys[0], region));
       }
 
-      final RegionEntryData<Object> data = new RegionEntryData<Object>(region);
+      final RegionEntryData<Object> data = new RegionEntryData<>(region);
       headers.set("Content-Location", toUri(region, keys[0]).toASCIIString());
       data.add(value);
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
@@ -245,7 +244,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         String errorMessage = String.format(
             "ignoreMissingKey param (%1$s) is not valid. valid usage is ignoreMissingKey=true!",
             ignoreMissingKey);
-        return new ResponseEntity<String>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
       }
 
       if (!("true".equalsIgnoreCase(ignoreMissingKey))) {
@@ -254,7 +253,7 @@ public class PdxBasedCrudController extends CommonCrudController {
           String unknownKeysAsStr = StringUtils.collectionToDelimitedString(unknownKeys, ",");
           String erroString = String.format("Requested keys (%1$s) not exist in region (%2$s)",
               StringUtils.collectionToDelimitedString(unknownKeys, ","), region);
-          return new ResponseEntity<String>(convertErrorAsJson(erroString), headers,
+          return new ResponseEntity<>(convertErrorAsJson(erroString), headers,
               HttpStatus.BAD_REQUEST);
         }
       }
@@ -268,7 +267,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       // currently we are not removing keys having value null from the result.
       String keyList = StringUtils.collectionToDelimitedString(valueObjs.keySet(), ",");
       headers.set("Content-Location", toUri(region, keyList).toASCIIString());
-      final RegionData<Object> data = new RegionData<Object>(region);
+      final RegionData<Object> data = new RegionData<>(region);
       data.add(valueObjs.values());
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
     }

@@ -14,15 +14,13 @@
  */
 package org.apache.geode.security;
 
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
-import java.util.Properties;
-
-import org.apache.geode.security.PostProcessor;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
+
+import java.util.Arrays;
+import java.util.Properties;
 
 public class PDXPostProcessor implements PostProcessor {
   public static byte[] BYTES = {1, 0};

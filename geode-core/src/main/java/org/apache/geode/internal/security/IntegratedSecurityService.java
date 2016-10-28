@@ -440,7 +440,9 @@ public class IntegratedSecurityService implements SecurityService {
   }
 
   /**
-   * If Shiro's security manager is configured, then return true, otherwise, return false;
+   * check if Shiro's security manager is configured
+   * 
+   * @return true if configured, false if not
    */
   public boolean isIntegratedSecurity() {
     if (isIntegratedSecurity != null) {

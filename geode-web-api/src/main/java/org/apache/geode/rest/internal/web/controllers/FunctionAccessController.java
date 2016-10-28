@@ -63,15 +63,14 @@ import java.util.Set;
 @RequestMapping(FunctionAccessController.REST_API_VERSION + "/functions")
 @SuppressWarnings("unused")
 public class FunctionAccessController extends AbstractBaseController {
-  private static final Logger logger = LogService.getLogger();
-
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Gets the version of the REST API implemented by this @Controller.
    * <p>
-   *
+   * 
    * @return a String indicating the REST API version.
    */
   @Override
@@ -81,7 +80,7 @@ public class FunctionAccessController extends AbstractBaseController {
 
   /**
    * list all registered functions in Gemfire data node
-   *
+   * 
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
@@ -102,13 +101,13 @@ public class FunctionAccessController extends AbstractBaseController {
         JSONUtils.formulateJsonForListFunctionsCall(registeredFunctions.keySet());
     final HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri("functions"));
-    return new ResponseEntity<String>(listFunctionsAsJson, headers, HttpStatus.OK);
+    return new ResponseEntity<>(listFunctionsAsJson, headers, HttpStatus.OK);
   }
 
   /**
    * Execute a function on Gemfire data node using REST API call. Arguments to the function are
    * passed as JSON string in the request body.
-   *
+   * 
    * @param functionId represents function to be executed
    * @param region list of regions on which function to be executed.
    * @param members list of nodes on which function to be executed.
@@ -116,6 +115,7 @@ public class FunctionAccessController extends AbstractBaseController {
    * @param filter list of keys which the function will use to determine on which node to execute
    *        the function.
    * @param argsInBody function argument as a JSON document
+   *
    * @return result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId}",
@@ -144,7 +144,6 @@ public class FunctionAccessController extends AbstractBaseController {
     if (StringUtils.hasText(region)) {
       logger.debug("Executing Function ({}) with arguments ({}) on Region ({})...", functionId,
           ArrayUtils.toString(argsInBody), region);
-
 
       region = decode(region);
       try {
@@ -236,7 +235,7 @@ public class FunctionAccessController extends AbstractBaseController {
           @SuppressWarnings("unchecked")
           String functionResultAsJson =
               JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
-          return new ResponseEntity<String>(functionResultAsJson, headers, HttpStatus.OK);
+          return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
         } catch (JSONException e) {
           throw new GemfireRestException(
               "Could not convert function results into Restful (JSON) format!", e);

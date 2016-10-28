@@ -71,8 +71,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   protected static final String PARAMETERIZED_QUERIES_REGION = "__ParameterizedQueries__";
 
-  private final ConcurrentHashMap<String, DefaultQuery> compiledQueries =
-      new ConcurrentHashMap<String, DefaultQuery>();
+  private final ConcurrentHashMap<String, DefaultQuery> compiledQueries = new ConcurrentHashMap<>();
 
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
@@ -112,7 +111,7 @@ public class QueryAccessController extends AbstractBaseController {
     String queryListAsJson = JSONUtils.formulateJsonForListQueriesCall(parametrizedQueryRegion);
     final HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri("queries"));
-    return new ResponseEntity<String>(queryListAsJson, headers, HttpStatus.OK);
+    return new ResponseEntity<>(queryListAsJson, headers, HttpStatus.OK);
   }
 
   /**
@@ -142,7 +141,7 @@ public class QueryAccessController extends AbstractBaseController {
 
 
     // store the compiled OQL statement with 'queryId' as the Key into the hidden,
-    // ParameterizedQueries Region...
+    // Parametrized Queries Region...
     final String existingOql =
         createNamedQuery(PARAMETERIZED_QUERIES_REGION, queryId, oqlStatement);
 
@@ -151,9 +150,8 @@ public class QueryAccessController extends AbstractBaseController {
 
     if (existingOql != null) {
       headers.setContentType(MediaType.APPLICATION_JSON);
-      return new ResponseEntity<String>(
-          JSONUtils.formulateJsonForExistingQuery(queryId, existingOql), headers,
-          HttpStatus.CONFLICT);
+      return new ResponseEntity<>(JSONUtils.formulateJsonForExistingQuery(queryId, existingOql),
+          headers, HttpStatus.CONFLICT);
     } else {
       return new ResponseEntity<String>(headers, HttpStatus.CREATED);
     }
@@ -188,7 +186,7 @@ public class QueryAccessController extends AbstractBaseController {
     // and handle the Exceptions appropriately (500 Server Error)!
     try {
       Object queryResult = query.execute();
-      return processQueryResponse(queryResult, "adhoc?q=" + oql);
+      return processQueryResponse(query, null, queryResult);
     } catch (FunctionDomainException fde) {
       throw new GemfireRestException(
           "A function was applied to a parameter that is improper for that function!", fde);
@@ -253,7 +251,7 @@ public class QueryAccessController extends AbstractBaseController {
       Query compiledQuery = compiledQueries.get(queryId);
       if (compiledQuery == null) {
         // This is first time the query is seen by this server.
-        final String oql = getValue(PARAMETERIZED_QUERIES_REGION, queryId);
+        final String oql = getValue(PARAMETERIZED_QUERIES_REGION, queryId, false);
 
         ValidationUtils.returnValueThrowOnNull(oql, new ResourceNotFoundException(
             String.format("No Query with ID (%1$s) was found!", queryId)));
@@ -269,7 +267,7 @@ public class QueryAccessController extends AbstractBaseController {
       // and handle the Exceptions appropriately (500 Server Error)!
       try {
         Object queryResult = compiledQuery.execute(args);
-        return processQueryResponse(queryResult, queryId);
+        return processQueryResponse(compiledQuery, args, queryResult);
       } catch (FunctionDomainException fde) {
         throw new GemfireRestException(
             "A function was applied to a parameter that is improper for that function!", fde);
@@ -327,13 +325,13 @@ public class QueryAccessController extends AbstractBaseController {
         queryId);
 
 
-    // update the OQL statement with 'queryId' as the Key into the hidden, ParameterizedQueries
+    // update the OQL statement with 'queryId' as the Key into the hidden, Parametrized Queries
     // Region...
     checkForQueryIdExist(PARAMETERIZED_QUERIES_REGION, queryId);
     updateNamedQuery(PARAMETERIZED_QUERIES_REGION, queryId, oqlStatement);
     compiledQueries.remove(queryId);
 
-    return new ResponseEntity<Object>(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   // delete named, parametrized query
@@ -358,7 +356,7 @@ public class QueryAccessController extends AbstractBaseController {
     // ParameterizedQueries Region...
     deleteNamedQuery(PARAMETERIZED_QUERIES_REGION, queryId);
     compiledQueries.remove(queryId);
-    return new ResponseEntity<Object>(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
 }

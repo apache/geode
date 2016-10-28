@@ -27,6 +27,7 @@ import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LeaseExpiredException;
@@ -44,6 +45,7 @@ import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
 import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.security.RestSecurityService;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.IdentifiableUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
@@ -91,18 +93,17 @@ import javax.annotation.PostConstruct;
 @SuppressWarnings("unused")
 public abstract class AbstractBaseController {
 
-  private static final Logger logger = LogService.getLogger();
-
   protected static final String NEW_META_DATA_PROPERTY = "@new";
   protected static final String OLD_META_DATA_PROPERTY = "@old";
   protected static final String TYPE_META_DATA_PROPERTY = "@type";
-
   protected static final String UTF_8 = "UTF-8";
   protected static final String DEFAULT_ENCODING = UTF_8;
+  private static final Logger logger = LogService.getLogger();
   private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
 
   // private Cache cache = GemFireCacheImpl.getExisting(null);
-
+  @Autowired
+  protected RestSecurityService securityService;
   @Autowired
   private ObjectMapper objectMapper;
 
@@ -190,15 +191,18 @@ public abstract class AbstractBaseController {
     }
   }
 
-  public ResponseEntity<String> processQueryResponse(Object queryResult, String queryId)
+  public ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult)
       throws JSONException {
     if (queryResult instanceof Collection<?>) {
-      Collection<Object> result = (Collection<Object>) queryResult;
-      String queryResultAsJson = JSONUtils.convertCollectionToJson(result);
+      Collection processedResults = new ArrayList(((Collection) queryResult).size());
+      for (Object result : (Collection) queryResult) {
+        processedResults.add(securityService.postProcess(null, null, result, false));
+      }
+      String queryResultAsJson = JSONUtils.convertCollectionToJson(processedResults);
 
       final HttpHeaders headers = new HttpHeaders();
-      headers.setLocation(toUri("queries", queryId));
-      return new ResponseEntity<String>(queryResultAsJson, headers, HttpStatus.OK);
+      headers.setLocation(toUri("queries", query.getQueryString()));
+      return new ResponseEntity<>(queryResultAsJson, headers, HttpStatus.OK);
     } else {
       throw new GemfireRestException(
           "Server has encountered error while generating query result into restful format(JSON)!");
@@ -210,7 +214,6 @@ public abstract class AbstractBaseController {
     try {
       jsonArr = new JSONArray(jsonArray);
       Collection<PdxInstance> pdxInstances = new ArrayList<PdxInstance>();
-
 
       for (int index = 0; index < jsonArr.length(); index++) {
         // String element = jsonArr.getJSONObject(i).toString();
@@ -639,6 +642,10 @@ public abstract class AbstractBaseController {
     try {
       final Region<Object, T> region = getRegion(regionNamePath);
       final Map<Object, T> entries = region.getAll(Arrays.asList(getKeys(regionNamePath, keys)));
+      for (Object key : entries.keySet()) {
+        entries.put(key,
+            (T) securityService.postProcess(regionNamePath, key, entries.get(key), false));
+      }
       return entries;
     } catch (SerializationException se) {
       throw new DataTypeNotSupportedException(
@@ -881,12 +888,20 @@ public abstract class AbstractBaseController {
 
   @SuppressWarnings("unchecked")
   protected <T> T getValue(final String regionNamePath, final Object key) {
+    return getValue(regionNamePath, key, true);
+  }
+
+  protected <T> T getValue(final String regionNamePath, final Object key, boolean postProcess) {
     Assert.notNull(key, "The Cache Region key to read the value for cannot be null!");
 
     Region r = getRegion(regionNamePath);
     try {
       Object value = r.get(key);
-      return (T) value;
+      if (postProcess) {
+        return (T) securityService.postProcess(regionNamePath, key, value, false);
+      } else {
+        return (T) value;
+      }
     } catch (SerializationException se) {
       throw new DataTypeNotSupportedException(
           "The resource identified could not convert into the supported content characteristics (JSON)!",
