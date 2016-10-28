@@ -30,7 +30,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.security.templates.SampleSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarter;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.http.HttpResponse;
@@ -64,7 +64,7 @@ public class RestSecurityPostProcessorTest {
   };
 
   @ClassRule
-  public static ServerStarter serverStarter = new ServerStarter(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
   private final GeodeRestClient restClient = new GeodeRestClient("localhost", restPort);
 
   @BeforeClass
