@@ -74,7 +74,9 @@ public class GfshCommandsSecurityTest {
           "org/apache/geode/management/internal/security/cacheServer.json");
     }
   };
-
+  @Rule
+  public GfshShellConnectionRule gfshConnection =
+      new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
   private HeadlessGfsh gfsh = null;
 
   @BeforeClass
@@ -84,9 +86,6 @@ public class GfshCommandsSecurityTest {
     serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
-  @Rule
-  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort);
-
   @Before
   public void before() {
     gfsh = gfshConnection.getGfsh();
@@ -95,13 +94,13 @@ public class GfshCommandsSecurityTest {
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "wrongPwd")
   public void testInvalidCredentials() throws Exception {
-    assertFalse(gfshConnection.isAuthenticated());
+    assertFalse(gfshConnection.isConnected());
   }
 
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testValidCredentials() throws Exception {
-    assertTrue(gfshConnection.isAuthenticated());
+    assertTrue(gfshConnection.isConnected());
   }
 
   @Test

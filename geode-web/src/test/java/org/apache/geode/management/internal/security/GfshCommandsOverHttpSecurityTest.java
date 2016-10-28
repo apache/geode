@@ -24,6 +24,6 @@ import org.junit.experimental.categories.Category;
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GfshCommandsOverHttpSecurityTest extends GfshCommandsSecurityTest {
   public GfshCommandsOverHttpSecurityTest() {
-    gfshConnection = new GfshShellConnectionRule(httpPort, true);
+    gfshConnection = new GfshShellConnectionRule(httpPort, GfshShellConnectionRule.PortType.http);
   }
 }

@@ -36,14 +36,11 @@ import java.util.Properties;
  */
 public class LocatorServerStartupRule extends ExternalResource implements Serializable {
 
-  private Host host = getHost(0);
-
-  public int[] ports = new int[4];
-
-
   // these are only avaialbe in each VM
   public static ServerStarterRule serverStarter;
   public static LocatorStarterRule locatorStarter;
+  public int[] ports = new int[4];
+  private Host host = getHost(0);
 
   @Before
   public void before() {
@@ -67,6 +64,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    */
   public VM getLocatorVM(int index, Properties locatorProperties) throws IOException {
     VM locatorVM = host.getVM(index);
+    locatorProperties.setProperty(NAME, "locator-" + index);
     int locatorPort = locatorVM.invoke(() -> {
       locatorStarter = new LocatorStarterRule(locatorProperties);
       locatorStarter.startLocator();

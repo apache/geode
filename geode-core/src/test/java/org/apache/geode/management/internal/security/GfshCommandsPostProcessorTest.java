@@ -50,7 +50,9 @@ public class GfshCommandsPostProcessorTest {
           "org/apache/geode/management/internal/security/cacheServer.json");
     }
   };
-
+  @Rule
+  public GfshShellConnectionRule gfshConnection =
+      new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
   private HeadlessGfsh gfsh = null;
 
   @BeforeClass
@@ -59,9 +61,6 @@ public class GfshCommandsPostProcessorTest {
     serverStarter.startServer();
     serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
-
-  @Rule
-  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(jmxPort);
 
   @Before
   public void before() {
