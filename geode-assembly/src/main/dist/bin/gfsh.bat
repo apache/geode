@@ -82,5 +82,5 @@ REM  Expect to find the tools.jar from the JDK
 )
 
 REM Call java with our classpath
-@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath %DEPENDENCIES% %JAVA_ARGS% %LAUNCHER% %*
+@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath "%DEPENDENCIES%" %JAVA_ARGS% %LAUNCHER% %*
 :done
