@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
 import org.apache.geode.rest.internal.web.controllers.support.RegionData;
 import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
@@ -221,21 +222,24 @@ public class PdxBasedCrudController extends CommonCrudController {
       @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
     logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
 
+    SecurityService securityService = SecurityService.getSecurityService();
     final HttpHeaders headers = new HttpHeaders();
     region = decode(region);
 
     if (keys.length == 1) {
       /* GET op on single key */
       Object value = getValue(region, keys[0]);
+      boolean isSerialized = (!(value instanceof byte[]));
+      Object postProcessed = securityService.postProcess(region, keys[0], value, isSerialized);
       // if region.get(K) return null (i.e INVLD or TOMBSTONE case) We consider 404, NOT Found case
-      if (value == null) {
+      if (postProcessed == null) {
         throw new ResourceNotFoundException(String
             .format("Key (%1$s) does not exist for region (%2$s) in cache!", keys[0], region));
       }
 
-      final RegionEntryData<Object> data = new RegionEntryData<Object>(region);
+      final RegionEntryData<Object> data = new RegionEntryData<>(region);
       headers.set("Content-Location", toUri(region, keys[0]).toASCIIString());
-      data.add(value);
+      data.add(postProcessed);
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
 
     } else {
@@ -245,7 +249,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         String errorMessage = String.format(
             "ignoreMissingKey param (%1$s) is not valid. valid usage is ignoreMissingKey=true!",
             ignoreMissingKey);
-        return new ResponseEntity<String>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
       }
 
       if (!("true".equalsIgnoreCase(ignoreMissingKey))) {
@@ -254,12 +258,17 @@ public class PdxBasedCrudController extends CommonCrudController {
           String unknownKeysAsStr = StringUtils.collectionToDelimitedString(unknownKeys, ",");
           String erroString = String.format("Requested keys (%1$s) not exist in region (%2$s)",
               StringUtils.collectionToDelimitedString(unknownKeys, ","), region);
-          return new ResponseEntity<String>(convertErrorAsJson(erroString), headers,
+          return new ResponseEntity<>(convertErrorAsJson(erroString), headers,
               HttpStatus.BAD_REQUEST);
         }
       }
 
       final Map<Object, Object> valueObjs = getValues(region, keys);
+      for (Object key : valueObjs.keySet()) {
+        Object value = valueObjs.get(key);
+        boolean isSerialized = (!(value instanceof byte[]));
+        valueObjs.put(key, securityService.postProcess(region, key, value, isSerialized));
+      }
 
       // Do we need to remove null values from Map..?
       // To Remove null value entries from map.
@@ -268,7 +277,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       // currently we are not removing keys having value null from the result.
       String keyList = StringUtils.collectionToDelimitedString(valueObjs.keySet(), ",");
       headers.set("Content-Location", toUri(region, keyList).toASCIIString());
-      final RegionData<Object> data = new RegionData<Object>(region);
+      final RegionData<Object> data = new RegionData<>(region);
       data.add(valueObjs.values());
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
     }
