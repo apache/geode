@@ -77,6 +77,8 @@ public class RegionFunctionArgs implements Serializable {
   private Boolean offHeap;
   private final boolean isSetOffHeap;
   private RegionAttributes<?, ?> regionAttributes;
+  private final boolean isPartitionResolver;
+  private String partitionResolver;
 
   public RegionFunctionArgs(String regionPath, RegionShortcut regionShortcut,
       String useAttributesFrom, boolean skipIfExists, String keyConstraint, String valueConstraint,
@@ -90,7 +92,7 @@ public class RegionFunctionArgs implements Serializable {
       Integer concurrencyLevel, String prColocatedWith, Integer prLocalMaxMemory,
       Long prRecoveryDelay, Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax, String compressor,
-      Boolean offHeap, Boolean mcastEnabled) {
+      Boolean offHeap, Boolean mcastEnabled, final String partitionResolver) {
     this.regionPath = regionPath;
     this.regionShortcut = regionShortcut;
     this.useAttributesFrom = useAttributesFrom;
@@ -155,8 +157,9 @@ public class RegionFunctionArgs implements Serializable {
     if (this.isSetConcurrencyLevel) {
       this.concurrencyLevel = concurrencyLevel;
     }
-    this.partitionArgs = new PartitionArgs(prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
-        prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets);
+    this.partitionArgs =
+        new PartitionArgs(prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
+            prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, partitionResolver);
 
     this.isSetCompressor = (compressor != null);
     if (this.isSetCompressor) {
@@ -165,6 +168,10 @@ public class RegionFunctionArgs implements Serializable {
     this.isSetOffHeap = (offHeap != null);
     if (this.isSetOffHeap) {
       this.offHeap = offHeap;
+    }
+    this.isPartitionResolver = (partitionResolver != null);
+    if (this.isPartitionResolver) {
+      this.partitionResolver = partitionResolver;
     }
   }
 
@@ -181,7 +188,7 @@ public class RegionFunctionArgs implements Serializable {
       Integer concurrencyLevel, String prColocatedWith, Integer prLocalMaxMemory,
       Long prRecoveryDelay, Integer prRedundantCopies, Long prStartupRecoveryDelay,
       Long prTotalMaxMemory, Integer prTotalNumBuckets, Boolean offHeap, Boolean mcastEnabled,
-      RegionAttributes<?, ?> regionAttributes) {
+      RegionAttributes<?, ?> regionAttributes, final String partitionResolver) {
     this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint, valueConstraint,
         statisticsEnabled, entryExpirationIdleTime, entryExpirationTTL, regionExpirationIdleTime,
         regionExpirationTTL, diskStore, diskSynchronous, enableAsyncConflation,
@@ -189,7 +196,7 @@ public class RegionFunctionArgs implements Serializable {
         gatewaySenderIds, concurrencyChecksEnabled, cloningEnabled, concurrencyLevel,
         prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
         prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap,
-        mcastEnabled);
+        mcastEnabled, partitionResolver);
     this.regionAttributes = regionAttributes;
   }
 
@@ -384,6 +391,20 @@ public class RegionFunctionArgs implements Serializable {
       return null;
     }
     return Collections.unmodifiableSet(this.gatewaySenderIds);
+  }
+
+  /**
+   * @return the PartitionResolver
+   */
+  public String getPartitionResolver() {
+    return this.partitionResolver;
+  }
+
+  /**
+   * @return True if Partition Resolver is set otherwise False
+   */
+  public Boolean isPartitionResolverSet() {
+    return this.isPartitionResolver;
   }
 
   /**
@@ -590,13 +611,15 @@ public class RegionFunctionArgs implements Serializable {
     private final boolean isSetPRTotalMaxMemory;
     private int prTotalNumBuckets;
     private final boolean isSetPRTotalNumBuckets;
+    private final boolean isPartitionResolver;
+    private String partitionResolver;
 
     private boolean hasPartitionAttributes;
     private final Set<String> userSpecifiedPartitionAttributes = new HashSet<String>();
 
     public PartitionArgs(String prColocatedWith, Integer prLocalMaxMemory, Long prRecoveryDelay,
         Integer prRedundantCopies, Long prStartupRecoveryDelay, Long prTotalMaxMemory,
-        Integer prTotalNumBuckets) {
+        Integer prTotalNumBuckets, String partitionResolver) {
       this.prColocatedWith = prColocatedWith;
       if (this.prColocatedWith != null) {
         this.hasPartitionAttributes = true;
@@ -638,6 +661,13 @@ public class RegionFunctionArgs implements Serializable {
         this.hasPartitionAttributes = true;
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__TOTALNUMBUCKETS);
       }
+      this.isPartitionResolver = partitionResolver != null;
+      if (this.isPartitionResolver) {
+        this.partitionResolver = partitionResolver;
+        this.hasPartitionAttributes = true;
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__PARTITION_RESOLVER);
+      }
+
     }
 
     /**
