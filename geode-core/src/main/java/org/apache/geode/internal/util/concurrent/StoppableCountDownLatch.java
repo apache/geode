@@ -46,7 +46,6 @@ public class StoppableCountDownLatch {
   /**
    * @param count the number of times {@link #countDown} must be invoked before threads can pass
    *        through {@link #await()}
-   *
    * @throws IllegalArgumentException if {@code count} is negative
    */
   public StoppableCountDownLatch(CancelCriterion stopper, int count) {
@@ -69,17 +68,12 @@ public class StoppableCountDownLatch {
 
   /**
    * @param msTimeout how long to wait in milliseconds
-   *
    * @return true if it was unlatched
+   * @throws InterruptedException
    */
   public boolean await(long msTimeout) throws InterruptedException {
     stopper.checkCancelInProgress(null);
     return latch.await(msTimeout, TimeUnit.MILLISECONDS);
-  }
-
-  public boolean await(final long timeout, final TimeUnit unit) throws InterruptedException {
-    stopper.checkCancelInProgress(null);
-    return latch.await(timeout, unit);
   }
 
   public synchronized void countDown() {

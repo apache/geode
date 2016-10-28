@@ -38,7 +38,7 @@ package org.apache.geode.internal;
  * </pre>
  * 
  */
-public class NanoTimer {
+public final class NanoTimer {
 
   public static final long NANOS_PER_MILLISECOND = 1000000;
 
@@ -73,7 +73,7 @@ public class NanoTimer {
   /**
    * For unit testing
    */
-  protected NanoTimer(TimeService ts) {
+  NanoTimer(TimeService ts) {
     this.timeService = ts;
     this.lastResetTime = ts.getTime();
     this.constructionTime = this.lastResetTime;
@@ -164,7 +164,7 @@ public class NanoTimer {
   /**
    * Allows unit tests to insert a deterministic clock for testing.
    */
-  public interface TimeService {
+  interface TimeService {
     /**
      * Returns the current time.
      */
