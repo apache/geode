@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.Set;
 
+import joptsimple.internal.Strings;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -26,6 +28,7 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
@@ -405,7 +408,46 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       prAttrFactory.setStartupRecoveryDelay(partitionArgs.getPrStartupRecoveryDelay());
     }
 
+    if (regionCreateArgs.isPartitionResolverSet()) {
+      Class<?> partitionResolverClass = forName(regionCreateArgs.getPartitionResolver(),
+          CliStrings.CREATE_REGION__PARTITION_RESOLVER);
+      prAttrFactory
+          .setPartitionResolver((PartitionResolver<K, V>) newInstance(partitionResolverClass,
+              CliStrings.CREATE_REGION__PARTITION_RESOLVER));
+    }
     return prAttrFactory.create();
+  }
+
+
+  private static Class<?> forName(String className, String neededFor) {
+    if (Strings.isNullOrEmpty(className)) {
+      return null;
+    }
+    try {
+      return ClassPathLoader.getLatest().forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(CliStrings.format(
+          CliStrings.CREATE_REGION_PARTITION_RESOLVER__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+          new Object[] {className, neededFor}), e);
+    } catch (ClassCastException e) {
+      throw new RuntimeException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
+          new Object[] {className, neededFor}), e);
+    }
+  }
+
+  private static Object newInstance(Class<?> klass, String neededFor) {
+    try {
+      return klass.newInstance();
+    } catch (InstantiationException e) {
+      throw new RuntimeException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
+          new Object[] {klass, neededFor}), e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
+          new Object[] {klass, neededFor}), e);
+    }
   }
 
   @Override

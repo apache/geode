@@ -1006,6 +1006,27 @@ public class CliStrings {
   public static final String CREATE_REGION__OFF_HEAP__HELP =
       "Causes the values of the region to be stored in off-heap memory. The default is on heap.";
 
+  public static final String CREATE_REGION__PARTITION_RESOLVER = "partition-resolver";
+  public static final String CREATE_REGION__PARTITION_RESOLVER__HELP =
+      "The fully-qualified class name of the region's partition resolver";
+  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER_ONLY_FOR_REGION_TYPE_PARTITION =
+      "partition resolver property is only applicable to PARTITION region type";
+
+  public static final String CREATE_REGION_PARTITION_RESOLVER__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
+      "Could not find class \"{0}\" specified for \"{1}\".";
+
+  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
+      "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
+
+  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
+      "Could not instantiate class \"{0}\" specified for \"{1}\".";
+
+  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
+      "Could not access class \"{0}\" specified for \"{1}\".";
+
+  public static final String CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER =
+      "{0} is an invalid Partition Resolver.";
+
   /* debug command */
   public static final String DEBUG = "debug";
   public static final String DEBUG__HELP = "Enable/Disable debugging output in GFSH.";

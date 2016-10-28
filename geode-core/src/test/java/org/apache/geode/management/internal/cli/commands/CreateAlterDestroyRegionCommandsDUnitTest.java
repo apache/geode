@@ -35,17 +35,12 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.apache.geode.cache.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
@@ -1090,6 +1085,126 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       return null;
     });
   }
+
+
+  final String PR_STRING = " package com.cadrdunit;"
+      + " public class TestPartitionResolver implements org.apache.geode.cache.PartitionResolver { "
+      + "   @Override" + "   public void close() {" + "   }" + "   @Override"
+      + "   public Object getRoutingObject(org.apache.geode.cache.EntryOperation opDetails) { "
+      + "    return null; " + "   }" + "   @Override" + "   public String getName() { "
+      + "    return \"TestPartitionResolver\";" + "   }" + " }";
+
+  /**
+   * Test Description 1. Deploy a JAR with Custom Partition Resolver 2. Create Region with Partition
+   * Resolver 3. Region should get created with no Errors 4. Verify Region Partition Attributes for
+   * Partition Resolver
+   * 
+   * @throws IOException
+   */
+  @Test
+  public void testCreateRegionWithPartitionResolver() throws IOException {
+    setUpJmxManagerOnVm0ThenConnect(null);
+    VM vm = Host.getHost(0).getVM(1);
+    // Create a cache in vm 1
+    vm.invoke(() -> {
+      assertNotNull(getCache());
+    });
+
+    ClassBuilder classBuilder = new ClassBuilder();
+    // classBuilder.addToClassPath(".");
+    final File prJarFile = new File(new File(".").getAbsolutePath(), "myPartitionResolver.jar");
+    this.filesToBeDeleted.add(prJarFile.getAbsolutePath());
+    byte[] jarBytes =
+        classBuilder.createJarFromClassContent("com/cadrdunit/TestPartitionResolver", PR_STRING);
+    writeJarBytesToFile(prJarFile, jarBytes);
+
+    CommandResult cmdResult = executeCommand("deploy --jar=myPartitionResolver.jar");
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+
+    // Create a region with an unrecognized compressor
+    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, "regionWithPartitionResolver");
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__PARTITION_RESOLVER,
+        "com.cadrdunit.TestPartitionResolver");
+    CommandResult cmdResult1 = executeCommand(commandStringBuilder.toString());
+    assertEquals(Result.Status.OK, cmdResult1.getStatus());
+
+    // Assert that our region was not created
+    vm.invoke(() -> {
+      Region region = getCache().getRegion("regionWithPartitionResolver");
+      assertNotNull(region);
+
+      PartitionedRegion pr = (PartitionedRegion) region;
+      PartitionAttributes partitionAttributes = pr.getPartitionAttributes();
+      assertNotNull(partitionAttributes);
+      PartitionResolver partitionResolver = partitionAttributes.getPartitionResolver();
+      assertNotNull(partitionResolver);
+      assertEquals("TestPartitionResolver", partitionResolver.getName());
+    });
+
+    vm.invoke(() -> {
+      getCache().getRegion("regionWithPartitionResolver").destroyRegion();
+    });
+  }
+
+  @Test
+  public void testCreateRegionWithInvalidPartitionResolver() {
+    setUpJmxManagerOnVm0ThenConnect(null);
+    VM vm = Host.getHost(0).getVM(1);
+    // Create a cache in vm 1
+    vm.invoke(() -> {
+      assertNotNull(getCache());
+    });
+
+    // Create a region with an unrecognized compressor
+    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION,
+        "testCreateRegionWithInvalidPartitionResolver");
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__PARTITION_RESOLVER, "a.b.c.d");
+    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
+    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
+
+    // Assert that our region was not created
+    vm.invoke(() -> {
+      Region region = getCache().getRegion("testCreateRegionWithInvalidPartitionResolver");
+      assertNull(region);
+    });
+  }
+
+  /**
+   * Test Description Try creating region of type REPLICATED and specify partition resolver Region
+   * Creation should fail.
+   */
+  @Test
+  public void testCreateRegionForReplicatedRegionWithParitionResolver() {
+    setUpJmxManagerOnVm0ThenConnect(null);
+    VM vm = Host.getHost(0).getVM(1);
+    // Create a cache in vm 1
+    vm.invoke(() -> {
+      assertNotNull(getCache());
+    });
+
+    // Create a region with an unrecognized compressor
+    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION,
+        "testCreateRegionForReplicatedRegionWithParitionResolver");
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
+    commandStringBuilder.addOption(CliStrings.CREATE_REGION__PARTITION_RESOLVER, "a.b.c.d");
+    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
+    System.out.println("Result --> " + cmdResult);
+    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
+
+    // Assert that our region was not created
+    vm.invoke(() -> {
+      Region region =
+          getCache().getRegion("testCreateRegionForReplicatedRegionWithParitionResolver");
+      assertNull(region);
+    });
+  }
+
 
   @Override
   protected final void preTearDownCliCommandTestBase() throws Exception {
