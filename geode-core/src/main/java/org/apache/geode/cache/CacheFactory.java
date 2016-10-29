@@ -336,7 +336,7 @@ public class CacheFactory {
    * method on this object
    *
    * @param securityManager
-   * @return
+   * @return this CacheFactory
    */
   public CacheFactory setSecurityManager(SecurityManager securityManager) {
     this.cacheConfig.setSecurityManager(securityManager);
@@ -352,7 +352,7 @@ public class CacheFactory {
    * method on this object
    * 
    * @param postProcessor
-   * @return
+   * @return this CacheFactory
    */
   public CacheFactory setPostProcessor(PostProcessor postProcessor) {
     this.cacheConfig.setPostProcessor(postProcessor);
