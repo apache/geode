@@ -228,6 +228,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       }
     }
   }
+
   private void basicMakeTombstone(LocalRegion r) throws RegionClearedException {
     boolean setValueCompleted = false;
     try {
