@@ -92,9 +92,14 @@ Compile and run `HelloWorld.java`.  The classpath should include `geode-dependen
 
 Apache Geode applications can be written in these client technologies:
 
-* Java using the Geode client API or embedded using the Geode peer API
-* [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
+* Java [client](http://geode.apache.org/docs/guide/topologies_and_comm/cs_configuration/chapter_overview.html) or [peer](http://geode.apache.org/docs/guide/topologies_and_comm/p2p_configuration/chapter_overview.html)
 * [REST](http://geode.apache.org/docs/guide/rest_apps/chapter_overview.html)
-* [memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
+* [Memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
+* [Redis](https://cwiki.apache.org/confluence/display/GEODE/Geode+Redis+Adapter)
+
+The following libraries are available external to the Apache Geode project:
+
+* [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/)
+* [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
 
