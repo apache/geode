@@ -71,7 +71,7 @@ public class HashIndexDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testHashIndexForConcurrentHashSet() throws Exception {
-    doPut(333); // 111 entries for a key in the index (> 100 so creates a ConcurrentHashSet)
+    doPut(333); // 111 entries for a key in the index (> 100 so creates a ConcurrentHashSet)//test
     doQuery();
     doUpdate(333);
     doQuery();
