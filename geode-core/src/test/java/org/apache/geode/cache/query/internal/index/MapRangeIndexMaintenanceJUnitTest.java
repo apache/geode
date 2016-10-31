@@ -968,7 +968,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
     HashMap map2 = new HashMap();
     map2.put("SUN", 1);
     map2.put("IBM", 2);
-    p2.positions = map1;
+    p2.positions = map2;
     region.put(2, p2);
 
 
