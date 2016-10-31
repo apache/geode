@@ -14,16 +14,19 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.apache.geode.test.dunit.Wait.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
+import org.apache.geode.internal.statistics.StatisticsNotification.Type;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -34,13 +37,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.statistics.StatisticsNotification.Type;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Integration test for the SampleCollector class.
@@ -125,7 +127,8 @@ public class ValueMonitorIntegrationTest {
 
     // need a real SampleCollector for this test or the monitor can't get the handler
     SampleCollector sampleCollector = new SampleCollector(mockStatisticsSampler);
-    sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime());
+    sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
+        new MainWithChildrenRollingFileHandler());
 
     List<StatisticsNotification> notifications = new ArrayList<>();
     StatisticsListener listener = (final StatisticsNotification notification) -> {
@@ -189,7 +192,8 @@ public class ValueMonitorIntegrationTest {
     });
 
     SampleCollector sampleCollector = new SampleCollector(sampler);
-    sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime());
+    sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
+        new MainWithChildrenRollingFileHandler());
 
     StatisticDescriptor[] statsST1 = new StatisticDescriptor[] {
         manager.createDoubleCounter("double_counter_1", "double_counter_1_desc",

@@ -32,9 +32,10 @@ public class StatMonitorHandler implements SampleHandler {
 
   private static final Logger logger = LogService.getLogger();
 
-  static final String ENABLE_MONITOR_THREAD =
+  protected static final String ENABLE_MONITOR_THREAD =
       DistributionConfig.GEMFIRE_PREFIX + "stats.enableMonitorThread";
-  static final boolean enableMonitorThread = Boolean.getBoolean(ENABLE_MONITOR_THREAD);
+
+  private final boolean enableMonitorThread;
 
   /** The registered monitors */
   private volatile List<StatisticsMonitor> monitors = Collections.<StatisticsMonitor>emptyList();
@@ -43,7 +44,9 @@ public class StatMonitorHandler implements SampleHandler {
   private volatile StatMonitorNotifier notifier;
 
   /** Constructs a new StatMonitorHandler instance */
-  public StatMonitorHandler() {}
+  public StatMonitorHandler() {
+    this.enableMonitorThread = Boolean.getBoolean(ENABLE_MONITOR_THREAD);
+  }
 
   /** Adds a monitor which will be notified of samples */
   public boolean addMonitor(StatisticsMonitor monitor) {
@@ -55,9 +58,8 @@ public class StatMonitorHandler implements SampleHandler {
         added = newMonitors.add(monitor);
         this.monitors = Collections.unmodifiableList(newMonitors);
       }
-      if (enableMonitorThread && !this.monitors.isEmpty() && this.notifier == null) {
-        this.notifier = new StatMonitorNotifier();
-        this.notifier.start();
+      if (!this.monitors.isEmpty()) {
+        startNotifier_IfEnabledAndNotRunning();
       }
       return added;
     }
@@ -73,9 +75,8 @@ public class StatMonitorHandler implements SampleHandler {
         removed = newMonitors.remove(monitor);
         this.monitors = Collections.unmodifiableList(newMonitors);
       }
-      if (enableMonitorThread && this.monitors.isEmpty() && this.notifier != null) {
-        this.notifier.stop();
-        this.notifier = null;
+      if (this.monitors.isEmpty()) {
+        stopNotifier_IfEnabledAndRunning();
       }
       return removed;
     }
@@ -86,16 +87,14 @@ public class StatMonitorHandler implements SampleHandler {
    */
   public void close() {
     synchronized (this) {
-      if (enableMonitorThread && this.notifier != null) {
-        this.notifier.stop();
-      }
+      stopNotifier_IfEnabledAndRunning();
     }
   }
 
   @Override
   public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances) {
     synchronized (this) {
-      if (enableMonitorThread) {
+      if (this.enableMonitorThread) {
         final StatMonitorNotifier thread = this.notifier;
         if (thread != null) {
           try {
@@ -147,6 +146,20 @@ public class StatMonitorHandler implements SampleHandler {
   StatMonitorNotifier getStatMonitorNotifier() {
     synchronized (this) {
       return this.notifier;
+    }
+  }
+
+  private void startNotifier_IfEnabledAndNotRunning() {
+    if (this.enableMonitorThread && this.notifier == null) {
+      this.notifier = new StatMonitorNotifier();
+      this.notifier.start();
+    }
+  }
+
+  private void stopNotifier_IfEnabledAndRunning() {
+    if (this.enableMonitorThread && this.notifier != null) {
+      this.notifier.stop();
+      this.notifier = null;
     }
   }
 

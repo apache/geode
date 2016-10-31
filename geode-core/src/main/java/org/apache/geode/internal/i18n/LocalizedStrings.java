@@ -1265,7 +1265,7 @@ public class LocalizedStrings {
           "Could not free space in {0} directory.  The space used is {1} which exceeds the configured limit of {2}.");
 
   public static final StringId ManagerLogWriter_DELETED_INACTIVE__0___1_ =
-      new StringId(1797, "Deleted inactive  {0}  \"{1}\".");
+      new StringId(1797, "Deleted inactive {0} \"{1}\".");
   public static final StringId ManagerLogWriter_SWITCHING_TO_LOG__0 =
       new StringId(1798, "Switching to log {0}");
 

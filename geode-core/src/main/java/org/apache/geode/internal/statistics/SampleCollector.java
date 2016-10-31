@@ -24,6 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
+import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
@@ -136,15 +139,17 @@ public class SampleCollector {
    * 
    * @param config defines the configuration for the StatArchiveHandler
    * @param nanosTimeStamp the nanos time stamp to initialize stat archiver with
+   * @param rollingFileHandler provides file rolling behavior
    */
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-      value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+  @SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "There is never more than one SampleCollector instance.")
-  public void initialize(StatArchiveHandlerConfig config, long nanosTimeStamp) {
+  public void initialize(final StatArchiveHandlerConfig config, final long nanosTimeStamp,
+      final RollingFileHandler rollingFileHandler) {
     synchronized (SampleCollector.class) {
       instance = this;
       synchronized (this.sampleHandlers) {
-        StatArchiveHandler newStatArchiveHandler = new StatArchiveHandler(config, this);
+        StatArchiveHandler newStatArchiveHandler =
+            new StatArchiveHandler(config, this, rollingFileHandler);
         this.statArchiveHandler = newStatArchiveHandler;
         addSampleHandler(newStatArchiveHandler);
         newStatArchiveHandler.initialize(nanosTimeStamp);
@@ -366,7 +371,8 @@ public class SampleCollector {
     }
 
     // notify unmarked/new handlers but not marked/old handlers
-    notifyNewHandlersOfResources(handlers, this.resourceInstMap.values());
+    notifyNewHandlersOfResources(handlers, this.resourceTypeMap.values(),
+        this.resourceInstMap.values());
   }
 
   private ResourceType getResourceType(List<MarkableSampleHandler> handlers, Statistics statistics)
@@ -489,7 +495,7 @@ public class SampleCollector {
   }
 
   private void notifyNewHandlersOfResources(List<MarkableSampleHandler> handlers,
-      Collection<ResourceInstance> resources) {
+      Collection<ResourceType> types, Collection<ResourceInstance> resources) {
     final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
     if (isDebugEnabled_STATISTICS) {
       logger.trace(LogMarker.STATISTICS,
@@ -508,6 +514,11 @@ public class SampleCollector {
           }
           // allocatedResourceInstance...
           handler.allocatedResourceInstance(resourceInstance);
+        }
+        for (ResourceType resourceType : types) {
+          if (!allocatedResourceTypes.contains(resourceType)) {
+            handler.allocatedResourceType(resourceType);
+          }
         }
         handler.mark();
         count++;

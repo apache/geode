@@ -14,20 +14,20 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.statistics.StatMonitorHandler.StatMonitorNotifier;
-import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link StatMonitorHandler}.
@@ -138,56 +138,6 @@ public class StatMonitorHandlerTest {
       assertEquals(i, resourceInstance.getId());
       i++;
     }
-  }
-
-  @Test
-  public void testStatMonitorNotifierAliveButWaiting() throws Exception {
-    assumeTrue(StatMonitorHandler.enableMonitorThread);
-    StatMonitorHandler handler = new StatMonitorHandler();
-    TestStatisticsMonitor monitor = new TestStatisticsMonitor();
-    handler.addMonitor(monitor);
-
-    final StatMonitorNotifier notifier = handler.getStatMonitorNotifier();
-    assertTrue(notifier.isAlive());
-
-    waitUntilWaiting(notifier);
-
-    for (int i = 0; i < 20; i++) {
-      assert (notifier.isWaiting());
-      Thread.sleep(10);
-    }
-  }
-
-  @Test
-  public void testStatMonitorNotifierWakesUpForWork() throws Exception {
-    assumeTrue(StatMonitorHandler.enableMonitorThread);
-    StatMonitorHandler handler = new StatMonitorHandler();
-    TestStatisticsMonitor monitor = new TestStatisticsMonitor();
-    handler.addMonitor(monitor);
-
-    final StatMonitorNotifier notifier = handler.getStatMonitorNotifier();
-    assertTrue(notifier.isAlive());
-
-    waitUntilWaiting(notifier);
-
-    // if notification occurs then notifier woke up...
-    assertEquals(0, monitor.getNotificationCount());
-    handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
-
-    waitForNotificationCount(monitor, 1, 2 * 1000, 10, false);
-    assertEquals(1, monitor.getNotificationCount());
-
-    // and goes back to waiting...
-    waitUntilWaiting(notifier);
-  }
-
-  private static void waitUntilWaiting(StatMonitorNotifier notifier) throws InterruptedException {
-    boolean done = false;
-    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 2000; done =
-        (notifier.isWaiting())) {
-      Thread.sleep(10);
-    }
-    assertTrue("waiting for notifier to be waiting", done);
   }
 
   private static void waitForNotificationCount(final TestStatisticsMonitor monitor,
