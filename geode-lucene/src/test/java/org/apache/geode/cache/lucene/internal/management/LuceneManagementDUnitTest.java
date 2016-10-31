@@ -144,13 +144,13 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     }
   }
 
-  private static void verifyMBean() {
+  private void verifyMBean() {
     getMBean();
   }
 
-  private static LuceneServiceMXBean getMBean() {
-    ObjectName objectName =
-        MBeanJMXAdapter.getCacheServiceMBeanName(ds.getDistributedMember(), "LuceneService");
+  private LuceneServiceMXBean getMBean() {
+    ObjectName objectName = MBeanJMXAdapter
+        .getCacheServiceMBeanName(getSystem().getDistributedMember(), "LuceneService");
     assertNotNull(getManagementService().getMBeanInstance(objectName, LuceneServiceMXBean.class));
     return getManagementService().getMBeanInstance(objectName, LuceneServiceMXBean.class);
   }
@@ -179,14 +179,14 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     createPartitionRegion(vm, regionName);
   }
 
-  private static void createIndexes(String regionName, int numIndexes) {
-    LuceneService luceneService = LuceneServiceProvider.get(cache);
+  private void createIndexes(String regionName, int numIndexes) {
+    LuceneService luceneService = LuceneServiceProvider.get(getCache());
     for (int i = 0; i < numIndexes; i++) {
       luceneService.createIndex(INDEX_NAME + "_" + i, regionName, "field" + i);
     }
   }
 
-  private static void verifyAllMBeanIndexMetrics(String regionName, int numRegionIndexes,
+  private void verifyAllMBeanIndexMetrics(String regionName, int numRegionIndexes,
       int numTotalIndexes) {
     LuceneServiceMXBean mbean = getMBean();
     verifyMBeanIndexMetrics(mbean, regionName, numRegionIndexes, numTotalIndexes);
@@ -211,18 +211,17 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     }
   }
 
-  private static void putEntries(String regionName, int numEntries) {
+  private void putEntries(String regionName, int numEntries) {
     for (int i = 0; i < numEntries; i++) {
-      Region region = cache.getRegion(regionName);
+      Region region = getCache().getRegion(regionName);
       String key = String.valueOf(i);
       Object value = new TestObject(key);
       region.put(key, value);
     }
   }
 
-  private static void queryEntries(String regionName, String indexName)
-      throws LuceneQueryException {
-    LuceneService service = LuceneServiceProvider.get(cache);
+  private void queryEntries(String regionName, String indexName) throws LuceneQueryException {
+    LuceneService service = LuceneServiceProvider.get(getCache());
     LuceneQuery query =
         service.createLuceneQueryFactory().create(indexName, regionName, "field0:0", null);
     query.findValues();

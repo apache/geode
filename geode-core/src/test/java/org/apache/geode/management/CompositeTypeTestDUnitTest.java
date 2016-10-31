@@ -14,163 +14,89 @@
  */
 package org.apache.geode.management;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
+import static java.util.concurrent.TimeUnit.*;
+import static org.assertj.core.api.Assertions.*;
 
-import static org.junit.Assert.*;
+import java.io.Serializable;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class CompositeTypeTestDUnitTest extends ManagementTestBase {
+@SuppressWarnings({"serial", "unused"})
+public class CompositeTypeTestDUnitTest implements Serializable {
 
-  public CompositeTypeTestDUnitTest() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
+  @Manager
+  private VM managerVM;
 
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
+  @Member
+  private VM memberVM;
 
-  private static ObjectName objectName;
+  @Rule
+  public ManagementTestRule managementTestRule = ManagementTestRule.builder().start(true).build();
 
-  @Category(FlakyTest.class) // GEODE-1492
   @Test
   public void testCompositeTypeGetters() throws Exception {
+    registerMBeanWithCompositeTypeGetters(this.memberVM);
 
-    initManagement(false);
-    String member = getMemberId(managedNode1);
-    member = MBeanJMXAdapter.makeCompliantName(member);
-
-    registerMBeanWithCompositeTypeGetters(managedNode1, member);
-
-
-    checkMBeanWithCompositeTypeGetters(managingNode, member);
-
+    String memberName = MBeanJMXAdapter.makeCompliantName(getMemberId(this.memberVM));
+    verifyMBeanWithCompositeTypeGetters(this.managerVM, memberName);
   }
 
+  private void registerMBeanWithCompositeTypeGetters(final VM memberVM) {
+    memberVM.invoke("registerMBeanWithCompositeTypeGetters", () -> {
+      SystemManagementService service = this.managementTestRule.getSystemManagementService();
 
-  /**
-   * Creates a Local region
-   *
-   * @param vm reference to VM
-   */
-  protected void registerMBeanWithCompositeTypeGetters(VM vm, final String memberID)
-      throws Exception {
-    SerializableRunnable regMBean =
-        new SerializableRunnable("Register CustomMBean with composite Type") {
-          public void run() {
-            GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-            SystemManagementService service = (SystemManagementService) getManagementService();
+      ObjectName objectName = new ObjectName("GemFire:service=custom,type=composite");
+      CompositeTestMXBean compositeTestMXBean = new CompositeTestMBean();
 
-            try {
-              ObjectName objectName = new ObjectName("GemFire:service=custom,type=composite");
-              CompositeTestMXBean mbean = new CompositeTestMBean();
-              objectName = service.registerMBean(mbean, objectName);
-              service.federate(objectName, CompositeTestMXBean.class, false);
-            } catch (MalformedObjectNameException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            } catch (NullPointerException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            }
-
-
-
-          }
-        };
-    vm.invoke(regMBean);
+      objectName = service.registerMBean(compositeTestMXBean, objectName);
+      service.federate(objectName, CompositeTestMXBean.class, false);
+    });
   }
 
+  private void verifyMBeanWithCompositeTypeGetters(final VM managerVM, final String memberId) {
+    managerVM.invoke("verifyMBeanWithCompositeTypeGetters", () -> {
+      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+      ObjectName objectName =
+          new ObjectName("GemFire:service=custom,type=composite,member=" + memberId);
 
-  /**
-   * Creates a Local region
-   *
-   * @param vm reference to VM
-   */
-  protected void checkMBeanWithCompositeTypeGetters(VM vm, final String memberID) throws Exception {
-    SerializableRunnable checkMBean =
-        new SerializableRunnable("Check CustomMBean with composite Type") {
-          public void run() {
-            GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-            final SystemManagementService service =
-                (SystemManagementService) getManagementService();
+      await().until(() -> service.getMBeanInstance(objectName, CompositeTestMXBean.class) != null);
 
-            try {
-              final ObjectName objectName =
-                  new ObjectName("GemFire:service=custom,type=composite,member=" + memberID);
+      CompositeTestMXBean compositeTestMXBean =
+          service.getMBeanInstance(objectName, CompositeTestMXBean.class);
+      assertThat(compositeTestMXBean).isNotNull();
 
-              Wait.waitForCriterion(new WaitCriterion() {
-                public String description() {
-                  return "Waiting for Composite Type MBean";
-                }
+      CompositeStats listCompositeStatsData = compositeTestMXBean.listCompositeStats();
+      assertThat(listCompositeStatsData).isNotNull();
 
-                public boolean done() {
-                  CompositeTestMXBean bean =
-                      service.getMBeanInstance(objectName, CompositeTestMXBean.class);
-                  boolean done = (bean != null);
-                  return done;
-                }
+      CompositeStats getCompositeStatsData = compositeTestMXBean.getCompositeStats();
+      assertThat(getCompositeStatsData).isNotNull();
 
-              }, ManagementConstants.REFRESH_TIME * 4, 500, true);
+      CompositeStats[] getCompositeArrayData = compositeTestMXBean.getCompositeArray();
+      assertThat(getCompositeArrayData).isNotNull().isNotEmpty();
 
-
-              CompositeTestMXBean bean =
-                  service.getMBeanInstance(objectName, CompositeTestMXBean.class);
-
-              CompositeStats listData = bean.listCompositeStats();
-
-              System.out.println("connectionStatsType = " + listData.getConnectionStatsType());
-              System.out.println("connectionsOpened = " + listData.getConnectionsOpened());
-              System.out.println("connectionsClosed = " + listData.getConnectionsClosed());
-              System.out.println("connectionsAttempted = " + listData.getConnectionsAttempted());
-              System.out.println("connectionsFailed = " + listData.getConnectionsFailed());
-
-              CompositeStats getsData = bean.getCompositeStats();
-              System.out.println("connectionStatsType = " + getsData.getConnectionStatsType());
-              System.out.println("connectionsOpened = " + getsData.getConnectionsOpened());
-              System.out.println("connectionsClosed = " + getsData.getConnectionsClosed());
-              System.out.println("connectionsAttempted = " + getsData.getConnectionsAttempted());
-              System.out.println("connectionsFailed = " + getsData.getConnectionsFailed());
-
-              CompositeStats[] arrayData = bean.getCompositeArray();
-              Integer[] intArrayData = bean.getIntegerArray();
-              Thread.sleep(2 * 60 * 1000);
-            } catch (MalformedObjectNameException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            } catch (NullPointerException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            } catch (InterruptedException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            }
-
-
-
-          }
-        };
-    vm.invoke(checkMBean);
+      Integer[] getIntegerArrayData = compositeTestMXBean.getIntegerArray();
+      assertThat(getIntegerArrayData).isNotNull().isNotEmpty();
+    });
   }
 
+  private String getMemberId(final VM memberVM) {
+    return memberVM.invoke("getMemberId",
+        () -> this.managementTestRule.getDistributedMember().getId());
+  }
 
+  private ConditionFactory await() {
+    return Awaitility.await().atMost(2, MINUTES);
+  }
 }

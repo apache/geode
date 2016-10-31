@@ -17,15 +17,17 @@ package org.apache.geode.management;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import javax.management.MBeanServer;
+
 import javax.management.ObjectName;
 
-import org.apache.geode.LogWriter;
+import org.junit.Rule;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -35,39 +37,32 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.statistics.SampleCollector;
 import org.apache.geode.management.internal.FederatingManager;
 import org.apache.geode.management.internal.LocalManager;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 
 @SuppressWarnings("serial")
-public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
+public abstract class ManagementTestBase extends JUnit4CacheTestCase {
 
   private static final int MAX_WAIT = 70 * 1000;
 
-  /**
-   * log writer instance
-   */
-  private static LogWriter logWriter;
-
-  private static Properties props = new Properties();
-
-  /**
-   * Distributed System
-   */
-  protected static DistributedSystem ds;
+  // protected static DistributedSystem ds;
+  protected static ManagementService managementService;
+  // protected static Cache cache;
 
   /**
    * List containing all the Managed Node VM
@@ -79,23 +74,14 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
    */
   protected static VM managingNode;
 
-  /**
-   * Management Service
-   */
-  protected static ManagementService managementService;
-
   protected static VM managedNode1;
   protected static VM managedNode2;
   protected static VM managedNode3;
   protected static VM locatorVM;
 
-  private static SampleCollector sampleCollector;
-
-  protected static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-
-  private static int mcastPort;
-
-  protected static Cache cache;
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -119,16 +105,14 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
   protected void postSetUpManagementTestBase() throws Exception {}
 
   @Override
-  public final void preTearDown() throws Exception {
+  public final void preTearDownCacheTestCase() throws Exception {
     preTearDownManagementTestBase();
 
-    closeAllCache();
+  }
+
+  @Override
+  public final void postTearDownCacheTestCase() throws Exception {
     managementService = null;
-
-    mcastPort = 0;
-    disconnectAllFromDS();
-    props.clear();
-
     postTearDownManagementTestBase();
   }
 
@@ -136,99 +120,49 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
 
   protected void postTearDownManagementTestBase() throws Exception {}
 
-  public void closeAllCache() throws Exception {
-    closeCache(managingNode);
-    closeCache(managedNode1);
-    closeCache(managedNode2);
-    closeCache(managedNode3);
-    cache = null;
-  }
-
-  /**
-   * Enable system property gemfire.disableManagement false in each VM.
-   */
-  public void enableManagement() {
-    Invoke.invokeInEveryVM(new SerializableRunnable("Enable Management") {
-      public void run() {
-        System.setProperty(InternalDistributedSystem.DISABLE_MANAGEMENT_PROPERTY, "false");
-      }
-    });
-
-  }
-
-  /**
-   * Disable system property gemfire.disableManagement true in each VM.
-   */
-  public void disableManagement() {
-    Invoke.invokeInEveryVM(new SerializableRunnable("Disable Management") {
-      public void run() {
-        System.setProperty(InternalDistributedSystem.DISABLE_MANAGEMENT_PROPERTY, "true");
-      }
-    });
-
-  }
-
   /**
    * managingNodeFirst variable tests for two different test cases where Managing & Managed Node
    * creation time lines are reversed.
    */
-  public void initManagement(boolean managingNodeFirst) throws Exception {
-
+  protected void initManagement(final boolean managingNodeFirst) throws Exception {
     if (managingNodeFirst) {
       createManagementCache(managingNode);
       startManagingNode(managingNode);
-
       for (VM vm : managedNodeList) {
         createCache(vm);
-
       }
 
     } else {
       for (VM vm : managedNodeList) {
         createCache(vm);
-
       }
       createManagementCache(managingNode);
       startManagingNode(managingNode);
     }
   }
 
-  public void createCache(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        createCache(false);
-      }
+  protected void createCache(final VM vm1) throws Exception {
+    vm1.invoke("Create Cache", () -> {
+      createCache(false);
     });
-
   }
 
-  public void createCache(VM vm1, final Properties props) throws Exception {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        createCache(props);
-      }
+  protected void createCache(final VM vm1, final Properties props) throws Exception {
+    vm1.invoke("Create Cache", () -> {
+      createCache(props);
     });
-
   }
 
-  public Cache createCache(Properties props) {
-    System.setProperty("dunitLogPerTest", "true");
-    props.setProperty(LOG_FILE, getTestMethodName() + "-.log");
-    ds = getSystem(props);
-    cache = CacheFactory.create(ds);
+  private Cache createCache(final Properties props) {
+    Cache cache = getCache(props);
     managementService = ManagementService.getManagementService(cache);
-    logWriter = ds.getLogWriter();
-    assertNotNull(cache);
-    assertNotNull(managementService);
+
     return cache;
   }
 
-  public Cache getCache() {
-    return cache;
-  }
+  protected Cache createCache(final boolean management) {
 
-  public Cache createCache(boolean management) {
-    System.setProperty("dunitLogPerTest", "true");
+    Properties props = new Properties();
     if (management) {
       props.setProperty(JMX_MANAGER, "true");
       props.setProperty(JMX_MANAGER_START, "false");
@@ -238,68 +172,48 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     props.setProperty(LOG_FILE, getTestMethodName() + "-.log");
-    ds = getSystem(props);
-    cache = CacheFactory.create(ds);
+
+    Cache cache = getCache(props);
     managementService = ManagementService.getManagementService(cache);
-    logWriter = ds.getLogWriter();
-    assertNotNull(cache);
-    assertNotNull(managementService);
+
     return cache;
   }
 
-  public void createManagementCache(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Create Management Cache") {
-      public void run() {
-        createCache(true);
+  protected void createManagementCache(final VM vm1) throws Exception {
+    vm1.invoke("Create Management Cache", () -> {
+      createCache(true);
+    });
+  }
+
+  protected void closeCache(final VM vm1) throws Exception {
+    vm1.invoke("Close Cache", () -> {
+      GemFireCacheImpl existingInstance = GemFireCacheImpl.getInstance();
+      if (existingInstance != null) {
+        existingInstance.close();
+      }
+      InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+      if (ds != null) {
+        ds.disconnect();
       }
     });
   }
 
-  public void closeCache(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Close Cache") {
-      public void run() {
-        GemFireCacheImpl existingInstance = GemFireCacheImpl.getInstance();
-        if (existingInstance != null) {
-          existingInstance.close();
-        }
-        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-        if (ds != null) {
-          ds.disconnect();
-        }
-      }
+  protected String getMemberId(final VM vm) {
+    return vm.invoke("getMemberId", () -> {
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      return cache.getDistributedSystem().getDistributedMember().getId();
     });
-
-  }
-
-  public void closeCache() throws Exception {
-    GemFireCacheImpl existingInstance = GemFireCacheImpl.getInstance();
-    if (existingInstance != null) {
-      existingInstance.close();
-    }
-    InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-    if (ds != null) {
-      ds.disconnect();
-    }
-  }
-
-  public String getMemberId(final VM vm) {
-    SerializableCallable getMember = new SerializableCallable("getMemberId") {
-      public Object call() throws Exception {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        return cache.getDistributedSystem().getDistributedMember().getId();
-      }
-    };
-    return (String) vm.invoke(getMember);
   }
 
   protected static void waitForProxy(final ObjectName objectName, final Class interfaceClass) {
-
     Wait.waitForCriterion(new WaitCriterion() {
+      @Override
       public String description() {
         return "Waiting for the proxy of " + objectName.getCanonicalName()
             + " to get propagated to Manager";
       }
 
+      @Override
       public boolean done() {
         SystemManagementService service = (SystemManagementService) managementService;
         if (service.getMBeanProxy(objectName, interfaceClass) != null) {
@@ -308,205 +222,55 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
           return false;
         }
       }
-
     }, MAX_WAIT, 500, true);
-  }
-
-  protected void runManagementTaskAdhoc() {
-    SystemManagementService service = (SystemManagementService) managementService;
-    service.getLocalManager().runManagementTaskAdhoc();
   }
 
   /**
    * Marks a VM as Managing
-   *
-   * @throws Exception
    */
-  public void startManagingNode(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Start Being Managing Node") {
-      public void run() {
-        startBeingManagingNode();
-      }
-    });
-
-  }
-
-  public void startBeingManagingNode() {
-    Cache existingCache = GemFireCacheImpl.getInstance();
-    if (existingCache != null && !existingCache.isClosed()) {
+  protected void startManagingNode(final VM vm1) {
+    vm1.invoke("Start Being Managing Node", () -> {
+      Cache existingCache = GemFireCacheImpl.getInstance();
+      // if (existingCache != null && !existingCache.isClosed()) {
       managementService = ManagementService.getManagementService(existingCache);
       SystemManagementService service = (SystemManagementService) managementService;
       service.createManager();
       service.startManager();
-    }
-  }
-
-  /**
-   * Marks a VM as Managing
-   *
-   * @throws Exception
-   */
-  public void startManagingNodeAsync(VM vm1) throws Exception {
-    vm1.invokeAsync(new SerializableRunnable("Start Being Managing Node") {
-
-      public void run() {
-        Cache existingCache = GemFireCacheImpl.getInstance();
-        if (existingCache != null && !existingCache.isClosed()) {
-          managementService = ManagementService.getManagementService(existingCache);
-          managementService.startManager();
-        }
-
-      }
+      // }
     });
-
   }
 
   /**
    * Stops a VM as a Managing node
-   *
-   * @throws Exception
    */
-  public void stopManagingNode(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Stop Being Managing Node") {
-      public void run() {
-        Cache existingCache = GemFireCacheImpl.getInstance();
-        if (existingCache != null && !existingCache.isClosed()) {
-          if (managementService.isManager()) {
-            managementService.stopManager();
-          }
-
-        }
-
-      }
-    });
-
-  }
-
-  /**
-   * Check various resources clean up Once a VM stops being managable it should remove all the
-   * artifacts of management namely a) Notification region b) Monitoring Region c) Management task
-   * should stop
-   */
-  public void checkManagedNodeCleanup(VM vm) throws Exception {
-    vm.invoke(new SerializableRunnable("Managing Node Clean up") {
-
-      public void run() {
-        Cache existingCache = GemFireCacheImpl.getInstance();
-        if (existingCache != null) {
-          // Cache is closed
-          assertEquals(true, existingCache.isClosed());
-          // ManagementService should throw exception
-          LocalManager localManager =
-              ((SystemManagementService) managementService).getLocalManager();
-          // Check Monitoring region destroyed
-          Region monitoringRegion =
-              localManager.getManagementResourceRepo().getLocalMonitoringRegion();
-          assertEquals(null, monitoringRegion);
-          // check Notification region is destroyed
-          Region notifRegion =
-              localManager.getManagementResourceRepo().getLocalNotificationRegion();
-          assertEquals(null, notifRegion);
-          // check ManagementTask is stopped
-          assertEquals(true, localManager.getFederationSheduler().isShutdown());
-
-        }
-
-      }
-    });
-
-  }
-
-  /**
-   * Check various resources clean up Once a VM stops being Managing.It should remove all the
-   * artifacts of management namely a) proxies b) Monitoring Region c) Management task should stop
-   */
-
-  public void checkProxyCleanup(VM vm) throws Exception {
-
-    vm.invoke(new SerializableRunnable("Managing Node Clean up") {
-
-      public void run() {
-
-        try {
-          GemFireCacheImpl existingCache = GemFireCacheImpl.getInstance();
-          if (existingCache == null) {
-            return;
-          }
-
-          assertEquals(false, existingCache.isClosed());
-          // ManagementService should not be closed
-
-          Set<DistributedMember> otherMemberSet =
-              existingCache.getDistributionManager().getOtherDistributionManagerIds();
-
-          Iterator<DistributedMember> it = otherMemberSet.iterator();
-          FederatingManager federatingManager =
-              ((SystemManagementService) managementService).getFederatingManager();
-
-          // check Proxy factory. There should not be any proxies left
-          DistributedMember member;
-          while (it.hasNext()) {
-            member = it.next();
-
-            assertNull(federatingManager.getProxyFactory().findAllProxies(member));
-          }
-
-        } catch (ManagementException e) {
-          Assert.fail("failed with ManagementException", e);
+  protected void stopManagingNode(final VM vm1) {
+    vm1.invoke("Stop Being Managing Node", () -> {
+      Cache existingCache = GemFireCacheImpl.getInstance();
+      if (existingCache != null && !existingCache.isClosed()) {
+        if (managementService.isManager()) {
+          managementService.stopManager();
         }
       }
     });
-
   }
 
-  /**
-   * All the expected exceptions are checked here
-   *
-   * @param e
-   * @return is failed
-   */
-  public boolean checkManagementExceptions(ManagementException e) {
-
-    if (e.getMessage().equals(ManagementStrings.Management_Service_CLOSED_CACHE)
-        || e.getMessage().equals(
-            ManagementStrings.Management_Service_MANAGEMENT_SERVICE_IS_CLOSED.toLocalizedString())
-        || e.getMessage()
-            .equals(ManagementStrings.Management_Service_MANAGEMENT_SERVICE_NOT_STARTED_YET
-                .toLocalizedString())
-        || e.getMessage().equals(
-            ManagementStrings.Management_Service_NOT_A_GEMFIRE_DOMAIN_MBEAN.toLocalizedString())
-        || e.getMessage().equals(
-            ManagementStrings.Management_Service_NOT_A_MANAGING_NODE_YET.toLocalizedString())
-        || e.getMessage()
-            .equals(ManagementStrings.Management_Service_OPERATION_NOT_ALLOWED_FOR_CLIENT_CACHE
-                .toLocalizedString())
-        || e.getMessage()
-            .equals(ManagementStrings.Management_Service_PROXY_NOT_AVAILABLE.toLocalizedString())) {
-
-      return false;
-    }
-    return true;
-  }
-
-  public static List<VM> getManagedNodeList() {
+  protected static List<VM> getManagedNodeList() {
     return managedNodeList;
   }
 
-  public static VM getManagingNode() {
+  protected static VM getManagingNode() {
     return managingNode;
   }
 
-  public static ManagementService getManagementService() {
+  protected static ManagementService getManagementService() {
     return managementService;
   }
 
   /**
    * Creates a Distributed region
-   *
-   * @param vm reference to VM
-   * @param regionName name of the distributed region
    */
-  protected void createDistributedRegion(VM vm, final String regionName) throws Exception {
+  protected void createDistributedRegion(final VM vm, final String regionName)
+      throws InterruptedException {
     AsyncInvocation future = createDistributedRegionAsync(vm, regionName);
     future.join(MAX_WAIT);
     if (future.isAlive()) {
@@ -519,169 +283,103 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
 
   /**
    * Creates a Local region
-   *
-   * @param vm reference to VM
-   * @param localRegionName name of the local region
    */
-  protected void createLocalRegion(VM vm, final String localRegionName) throws Exception {
-    SerializableRunnable createLocalRegion = new SerializableRunnable("Create Local region") {
-      public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        SystemManagementService service = (SystemManagementService) getManagementService();
-        RegionFactory rf = cache.createRegionFactory(RegionShortcut.LOCAL);
+  protected void createLocalRegion(final VM vm, final String localRegionName) throws Exception {
+    vm.invoke("Create Local region", () -> {
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      SystemManagementService service = (SystemManagementService) getManagementService();
+      RegionFactory rf = cache.createRegionFactory(RegionShortcut.LOCAL);
 
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Local Region");
-        rf.create(localRegionName);
-
-      }
-    };
-    vm.invoke(createLocalRegion);
+      LogWriterUtils.getLogWriter().info("Creating Local Region");
+      rf.create(localRegionName);
+    });
   }
 
   /**
    * Creates a Sub region
-   *
-   * @param vm reference to VM
    */
-  protected void createSubRegion(VM vm, final String parentRegionPath, final String subregionName)
-      throws Exception {
-    SerializableRunnable createSubRegion = new SerializableRunnable("Create Sub region") {
-      public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        SystemManagementService service = (SystemManagementService) getManagementService();
-        Region region = cache.getRegion(parentRegionPath);
+  protected void createSubRegion(final VM vm, final String parentRegionPath,
+      final String subregionName) throws Exception {
+    vm.invoke("Create Sub region", () -> {
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      SystemManagementService service = (SystemManagementService) getManagementService();
+      Region region = cache.getRegion(parentRegionPath);
 
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Sub Region");
-        region.createSubregion(subregionName, region.getAttributes());
-
-      }
-    };
-    vm.invoke(createSubRegion);
-  }
-
-  /**
-   * Puts in distributed region
-   *
-   * @param vm
-   */
-  protected void putInDistributedRegion(final VM vm, final String key, final String value,
-      final String regionPath) {
-    SerializableRunnable put = new SerializableRunnable("Put In Distributed Region") {
-      public void run() {
-
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        Region region = cache.getRegion(regionPath);
-        region.put(key, value);
-
-      }
-    };
-    vm.invoke(put);
+      LogWriterUtils.getLogWriter().info("Creating Sub Region");
+      region.createSubregion(subregionName, region.getAttributes());
+    });
   }
 
   /**
    * Creates a Distributed Region
-   *
-   * @param vm
    */
-  protected AsyncInvocation createDistributedRegionAsync(final VM vm, final String regionName) {
-    SerializableRunnable createRegion = new SerializableRunnable("Create Distributed region") {
-      public void run() {
+  private AsyncInvocation createDistributedRegionAsync(final VM vm, final String regionName) {
+    return vm.invokeAsync("Create Distributed region", () -> {
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      SystemManagementService service = (SystemManagementService) getManagementService();
 
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        SystemManagementService service = (SystemManagementService) getManagementService();
-
-        RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Dist Region");
-        rf.create(regionName);
-
-      }
-    };
-    return vm.invokeAsync(createRegion);
+      RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      LogWriterUtils.getLogWriter().info("Creating Dist Region");
+      rf.create(regionName);
+    });
   }
 
   /**
    * Creates a partition Region
-   *
-   * @param vm
    */
   protected void createPartitionRegion(final VM vm, final String partitionRegionName) {
-    SerializableRunnable createParRegion = new SerializableRunnable("Create Partitioned region") {
-      public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        SystemManagementService service = (SystemManagementService) getManagementService();
-        RegionFactory rf = cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating Par Region");
-        rf.create(partitionRegionName);
-
-      }
-    };
-    vm.invoke(createParRegion);
+    vm.invoke("Create Partitioned region", () -> {
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      SystemManagementService service = (SystemManagementService) getManagementService();
+      RegionFactory rf = cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
+      LogWriterUtils.getLogWriter().info("Creating Par Region");
+      rf.create(partitionRegionName);
+    });
   }
 
-  /**
-   * closes a Distributed Region
-   *
-   * @param vm
-   */
-  protected void closeRegion(final VM vm, final String regionPath) {
-    SerializableRunnable closeRegion = new SerializableRunnable("Close Distributed region") {
-      public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Closing Dist Region");
-        Region region = cache.getRegion(regionPath);
-        region.close();
-
-      }
-    };
-    vm.invoke(closeRegion);
-  }
-
-  public void waitForAllMembers(final int expectedCount) {
+  protected void waitForAllMembers(final int expectedCount) {
     ManagementService service = getManagementService();
     final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
 
     assertNotNull(service.getDistributedSystemMXBean());
 
     Wait.waitForCriterion(new WaitCriterion() {
+      @Override
       public String description() {
         return "Waiting All members to intimate DistributedSystemMBean";
       }
 
+      @Override
       public boolean done() {
         if (bean.listMemberObjectNames() != null) {
-
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+          LogWriterUtils.getLogWriter()
               .info("Member Length " + bean.listMemberObjectNames().length);
-
         }
-
         if (bean.listMemberObjectNames().length >= expectedCount) {
           return true;
         } else {
           return false;
         }
-
       }
-
     }, MAX_WAIT, 500, true);
 
     assertNotNull(bean.getManagerObjectName());
   }
 
-  public static void waitForRefresh(final int expectedRefreshCount, final ObjectName objectName) {
+  protected static void waitForRefresh(final int expectedRefreshCount,
+      final ObjectName objectName) {
     final ManagementService service = getManagementService();
 
-    final long currentTime = System.currentTimeMillis();
-
     Wait.waitForCriterion(new WaitCriterion() {
-      int actualRefreshCount = 0;
-      long lastRefreshTime = service.getLastUpdateTime(objectName);
+      private int actualRefreshCount = 0;
+      private long lastRefreshTime = service.getLastUpdateTime(objectName);
 
+      @Override
       public String description() {
         return "Waiting For Proxy Refresh Count = " + expectedRefreshCount;
       }
 
+      @Override
       public boolean done() {
         long newRefreshTime = service.getLastUpdateTime(objectName);
         if (newRefreshTime > lastRefreshTime) {
@@ -694,12 +392,10 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
         }
         return false;
       }
-
     }, MAX_WAIT, 500, true);
-
   }
 
-  public DistributedMember getMember(final VM vm) {
+  protected DistributedMember getMember(final VM vm) {
     SerializableCallable getMember = new SerializableCallable("Get Member") {
       public Object call() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -708,5 +404,15 @@ public abstract class ManagementTestBase extends JUnit4DistributedTestCase {
       }
     };
     return (DistributedMember) vm.invoke(getMember);
+  }
+
+  protected boolean mbeanExists(final ObjectName objectName) {
+    return ManagementFactory.getPlatformMBeanServer().isRegistered(objectName);
+  }
+
+  protected <T> T getMBeanProxy(final ObjectName objectName, Class<T> interfaceClass) {
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getManagementService(getCache());
+    return service.getMBeanProxy(objectName, interfaceClass);
   }
 }

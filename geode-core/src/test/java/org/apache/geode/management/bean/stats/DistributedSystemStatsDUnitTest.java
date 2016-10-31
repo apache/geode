@@ -14,99 +14,91 @@
  */
 package org.apache.geode.management.bean.stats;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.management.ObjectName;
 
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.DiskStoreStats;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.ManagementTestBase;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.ManagementTestRule;
+import org.apache.geode.management.Manager;
+import org.apache.geode.management.Member;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.beans.MemberMBean;
-import org.apache.geode.management.internal.beans.MemberMBeanBridge;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- */
 @Category(DistributedTest.class)
-public class DistributedSystemStatsDUnitTest extends ManagementTestBase {
+@SuppressWarnings({"unused", "serial"})
+public class DistributedSystemStatsDUnitTest implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  @Manager
+  private VM managerVM;
 
-  public DistributedSystemStatsDUnitTest() {
-    super();
-  }
+  @Member
+  private VM[] members;
+
+  @Rule
+  public ManagementTestRule managementTestRule = ManagementTestRule.builder().start(true).build();
 
   @Test
   public void testDistributedSystemStats() throws Exception {
-    initManagement(true);
+    this.managerVM.invoke("verifyMBeans", () -> {
+      DistributedSystemMXBean distributedSystemMXBean = awaitDistributedSystemMXBean();
 
-    for (VM vm : managedNodeList) {
-      setDiskStats(vm);
-    }
-    verifyDiskStats(managingNode);
-  }
+      // next block awaits all memberMXBeanName to refresh (getLastUpdateTime)
+      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+      Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
+      assertEquals(3, otherMemberSet.size());
+      for (DistributedMember member : otherMemberSet) {
+        MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
+        ObjectName memberMXBeanName = service.getMemberMBeanName(member);
+        long lastRefreshTime = service.getLastUpdateTime(memberMXBeanName);
 
-  @SuppressWarnings("serial")
-  public void setDiskStats(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Set Member Stats") {
-      public void run() {
-        MemberMBean bean = (MemberMBean) managementService.getMemberMXBean();
-        MemberMBeanBridge bridge = bean.getBridge();
-        DiskStoreStats diskStoreStats = new DiskStoreStats(basicGetSystem(), "test");
-        bridge.addDiskStoreStats(diskStoreStats);
-        diskStoreStats.startRead();
-        diskStoreStats.startWrite();
-        diskStoreStats.startBackup();
-        diskStoreStats.startRecovery();
-        diskStoreStats.incWrittenBytes(20, true);
-        diskStoreStats.startFlush();
-        diskStoreStats.setQueueSize(10);
+        await()
+            .until(() -> assertTrue(service.getLastUpdateTime(memberMXBeanName) > lastRefreshTime));
       }
+
+      // TODO: add assertions for distributedSystemMXBean stats?
     });
   }
 
-  @SuppressWarnings("serial")
-  public void verifyDiskStats(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Set Member Stats") {
-      public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  private MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
+    SystemManagementService service = this.managementTestRule.getSystemManagementService();
+    ObjectName objectName = service.getMemberMBeanName(member);
 
-        SystemManagementService service = (SystemManagementService) getManagementService();
-        DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
-        assertNotNull(bean);
-        Set<DistributedMember> otherMemberSet =
-            cache.getDistributionManager().getOtherNormalDistributionManagerIds();
+    String alias = "Awaiting MemberMXBean proxy for " + member;
+    await(alias)
+        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
 
-        for (DistributedMember member : otherMemberSet) {
-          ObjectName memberMBeanName;
-          try {
-            memberMBeanName = service.getMemberMBeanName(member);
-            waitForProxy(memberMBeanName, MemberMXBean.class);
-            MemberMXBean memberBean = service.getMBeanProxy(memberMBeanName, MemberMXBean.class);
-            waitForRefresh(2, memberMBeanName);
-          } catch (NullPointerException e) {
-            Assert.fail("FAILED WITH EXCEPION", e);
-          } catch (Exception e) {
-            Assert.fail("FAILED WITH EXCEPION", e);
-          }
-        }
+    return service.getMBeanProxy(objectName, MemberMXBean.class);
+  }
 
-      }
-    });
+  private DistributedSystemMXBean awaitDistributedSystemMXBean() {
+    ManagementService service = this.managementTestRule.getManagementService();
+
+    await().until(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
+
+    return service.getDistributedSystemMXBean();
+  }
+
+  private ConditionFactory await() {
+    return Awaitility.await().atMost(2, MINUTES);
+  }
+
+  private ConditionFactory await(final String alias) {
+    return Awaitility.await(alias).atMost(2, MINUTES);
   }
 }

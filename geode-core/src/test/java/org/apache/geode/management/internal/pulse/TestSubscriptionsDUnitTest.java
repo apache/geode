@@ -15,6 +15,9 @@
 package org.apache.geode.management.internal.pulse;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Host.*;
+import static org.apache.geode.test.dunit.NetworkUtils.*;
+import static org.apache.geode.test.dunit.Wait.*;
 import static org.junit.Assert.*;
 
 import java.util.Properties;
@@ -32,268 +35,173 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is for testing subscriptions
  */
 @Category(DistributedTest.class)
-public class TestSubscriptionsDUnitTest extends JUnit4DistributedTestCase {
+@SuppressWarnings("serial")
+public class TestSubscriptionsDUnitTest extends ManagementTestBase {
 
-  private static final String k1 = "k1";
-  private static final String k2 = "k2";
-  private static final String client_k1 = "client-k1";
-
-  private static final String client_k2 = "client-k2";
   private static final String REGION_NAME =
       TestSubscriptionsDUnitTest.class.getSimpleName() + "_Region";
+
+  private static final String KEY1 = "k1";
+  private static final String KEY2 = "k2";
+  private static final String CLIENT_VALUE1 = "client-k1";
+  private static final String CLIENT_VALUE2 = "client-k2";
+
   private static VM server = null;
   private static VM client = null;
   private static VM client2 = null;
-  private static VM managingNode = null;
-  private ManagementTestBase helper;
 
   @Override
-  public final void preSetUp() throws Exception {
-    this.helper = new ManagementTestBase() {};
-  }
-
-  @Override
-  public final void postSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    managingNode = host.getVM(0);
-    server = host.getVM(1);
-    client = host.getVM(2);
-    client2 = host.getVM(3);
-  }
-
-  @Override
-  public final void preTearDown() throws Exception {
-    helper.closeCache(managingNode);
-    helper.closeCache(server);
-    helper.closeCache(client);
-    helper.closeCache(client2);
-    disconnectFromDS();
+  public final void postSetUpManagementTestBase() throws Exception {
+    server = getHost(0).getVM(1);
+    client = getHost(0).getVM(2);
+    client2 = getHost(0).getVM(3);
   }
 
   @Test
-  public void testNoOfSubscription() throws Exception {
+  public void testNumSubscriptions() throws Exception {
+    createManagementCache(managingNode);
+    startManagingNode(managingNode);
 
-    helper.createManagementCache(managingNode);
-    helper.startManagingNode(managingNode);
+    int port = createServerCache(server);
+    getMember(server);
 
-    int port = (Integer) createServerCache(server);
-    DistributedMember serverMember = helper.getMember(server);
-    createClientCache(client, NetworkUtils.getServerHostName(server.getHost()), port);
-    createClientCache(client2, NetworkUtils.getServerHostName(server.getHost()), port);
+    createClientCache(client, getServerHostName(server.getHost()), port);
+    createClientCache(client2, getServerHostName(server.getHost()), port);
+
     put(client);
     put(client2);
+
     registerInterest(client);
     registerInterest(client2);
-    verifyClientStats(managingNode, serverMember, port);
-    helper.stopManagingNode(managingNode);
+
+    verifyNumSubscriptions(managingNode);
+
+    stopManagingNode(managingNode);
   }
 
-  @SuppressWarnings("serial")
-  private Object createServerCache(VM vm) {
-    return vm.invoke(new SerializableCallable("Create Server Cache in TestSubscriptionsDUnitTest") {
-
-      public Object call() {
-        try {
-          return createServerCache();
-        } catch (Exception e) {
-          fail("Error while createServerCache in TestSubscriptionsDUnitTest" + e);
-        }
-        return null;
-      }
+  private int createServerCache(VM vm) {
+    return vm.invoke("Create Server Cache in TestSubscriptionsDUnitTest", () -> {
+      return createServerCache();
     });
   }
 
-  @SuppressWarnings("serial")
-  private void createClientCache(VM vm, final String host, final Integer port1) {
-    vm.invoke(new SerializableCallable("Create Client Cache in TestSubscriptionsDUnitTest") {
-
-      public Object call() {
-        try {
-          createClientCache(host, port1);
-        } catch (Exception e) {
-          fail("Error while createClientCache in TestSubscriptionsDUnitTest " + e);
-        }
-        return null;
-      }
+  private void createClientCache(VM vm, final String host, final int port1) {
+    vm.invoke("Create Client Cache in TestSubscriptionsDUnitTest", () -> {
+      createClientCache(host, port1);
     });
   }
 
   private Cache createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
-    ds.disconnect();
-    ds = getSystem(props);
-    assertNotNull(ds);
-    Cache cache = (GemFireCacheImpl) CacheFactory.create(ds);
-    assertNotNull(cache);
+    Cache cache = CacheFactory.create(ds);
     return cache;
   }
 
-  private Integer createServerCache(DataPolicy dataPolicy) throws Exception {
-    Cache cache = helper.createCache(false);
+  private int createServerCache(DataPolicy dataPolicy) throws Exception {
+    Cache cache = createCache(false);
+
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(dataPolicy);
-    RegionAttributes attrs = factory.create();
-    cache.createRegion(REGION_NAME, attrs);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+
+    cache.createRegion(REGION_NAME, factory.create());
+
     CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port);
+    server1.setPort(0);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+
+    return server1.getPort();
   }
 
-  public Integer createServerCache() throws Exception {
+  private int createServerCache() throws Exception {
     return createServerCache(DataPolicy.REPLICATE);
   }
 
-  public Cache createClientCache(String host, Integer port1) throws Exception {
-
+  private Cache createClientCache(String host, int port1) throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
+
     Cache cache = createCache(props);
-    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1.intValue())
-        .setSubscriptionEnabled(true).setThreadLocalConnections(true).setMinConnections(1)
-        .setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(1)
-        .setSubscriptionEnabled(true).setStatisticInterval(1000)
-        .create("TestSubscriptionsDUnitTest");
+
+    PoolImpl p =
+        (PoolImpl) PoolManager.createFactory().addServer(host, port1).setSubscriptionEnabled(true)
+            .setThreadLocalConnections(true).setMinConnections(1).setReadTimeout(20000)
+            .setPingInterval(10000).setRetryAttempts(1).setSubscriptionEnabled(true)
+            .setStatisticInterval(1000).create("TestSubscriptionsDUnitTest");
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(p.getName());
 
     RegionAttributes attrs = factory.create();
-    Region region = cache.createRegion(REGION_NAME, attrs);
+    cache.createRegion(REGION_NAME, attrs);
+
     return cache;
-
   }
 
-  /**
-   * get member id
-   */
-  @SuppressWarnings("serial")
-  protected static DistributedMember getMember() throws Exception {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    return cache.getDistributedSystem().getDistributedMember();
-  }
+  private void verifyNumSubscriptions(final VM vm) {
+    vm.invoke("TestSubscriptionsDUnitTest Verify Cache Server Remote", () -> {
+      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-  /**
-   * Verify the Cache Server details
-   * 
-   * @param vm
-   */
-  @SuppressWarnings("serial")
-  protected void verifyClientStats(final VM vm, final DistributedMember serverMember,
-      final int serverPort) {
-    SerializableRunnable verifyCacheServerRemote =
-        new SerializableRunnable("TestSubscriptionsDUnitTest Verify Cache Server Remote") {
-          public void run() {
-            final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-            try {
-              final WaitCriterion waitCriteria = new WaitCriterion() {
-                @Override
-                public boolean done() {
-                  ManagementService service = ManagementService.getExistingManagementService(cache);
-                  final DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
-                  if (dsBean != null) {
-                    if (dsBean.getNumSubscriptions() > 1) {
-                      return true;
-                    }
-                  }
-                  return false;
-                }
-
-                @Override
-                public String description() {
-                  return "TestSubscriptionsDUnitTest wait for getDistributedSystemMXBean to complete and get results";
-                }
-              };
-              Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
-              final DistributedSystemMXBean dsBean = ManagementService
-                  .getExistingManagementService(cache).getDistributedSystemMXBean();
-              assertNotNull(dsBean);
-              LogWriterUtils.getLogWriter()
-                  .info("TestSubscriptionsDUnitTest dsBean.getNumSubscriptions() ="
-                      + dsBean.getNumSubscriptions());
-              assertTrue(dsBean.getNumSubscriptions() == 2 ? true : false);
-            } catch (Exception e) {
-              fail("TestSubscriptionsDUnitTest Error while verifying subscription "
-                  + e.getMessage());
-            }
-
-          }
-        };
-    vm.invoke(verifyCacheServerRemote);
-  }
-
-  /**
-   * Verify the Cache Server details
-   * 
-   * @param vm
-   */
-  @SuppressWarnings("serial")
-  protected void registerInterest(final VM vm) {
-    SerializableRunnable put =
-        new SerializableRunnable("TestSubscriptionsDUnitTest registerInterest") {
-          public void run() {
-            try {
-              Cache cache = GemFireCacheImpl.getInstance();
-              Region<Object, Object> r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-              assertNotNull(r1);
-              r1.registerInterest(k1);
-              r1.registerInterest(k2);
-            } catch (Exception ex) {
-              Assert.fail("TestSubscriptionsDUnitTest failed while register Interest", ex);
-            }
-          }
-
-        };
-    vm.invoke(put);
-  }
-
-  @SuppressWarnings("serial")
-  protected void put(final VM vm) {
-    SerializableRunnable put = new SerializableRunnable("put") {
-      public void run() {
-        try {
-          Cache cache = GemFireCacheImpl.getInstance();
-          Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-          assertNotNull(r1);
-          r1.put(k1, client_k1);
-          assertEquals(r1.getEntry(k1).getValue(), client_k1);
-          r1.put(k2, client_k2);
-          assertEquals(r1.getEntry(k2).getValue(), client_k2);
-        } catch (Exception ex) {
-          Assert.fail("failed while put", ex);
+      waitForCriterion(new WaitCriterion() {
+        @Override
+        public boolean done() {
+          ManagementService service = ManagementService.getExistingManagementService(cache);
+          DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
+          return distributedSystemMXBean != null
+              & distributedSystemMXBean.getNumSubscriptions() > 1;
         }
-      }
 
-    };
-    vm.invoke(put);
+        @Override
+        public String description() {
+          return "TestSubscriptionsDUnitTest wait for getDistributedSystemMXBean to complete and get results";
+        }
+      }, 2 * 60 * 1000, 3000, true);
+
+      DistributedSystemMXBean distributedSystemMXBean =
+          ManagementService.getExistingManagementService(cache).getDistributedSystemMXBean();
+      assertNotNull(distributedSystemMXBean);
+      assertEquals(2, distributedSystemMXBean.getNumSubscriptions());
+    });
   }
 
+  private void registerInterest(final VM vm) {
+    vm.invoke("TestSubscriptionsDUnitTest registerInterest", () -> {
+      Cache cache = GemFireCacheImpl.getInstance();
+      Region<Object, Object> region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      assertNotNull(region);
+
+      region.registerInterest(KEY1);
+      region.registerInterest(KEY2);
+    });
+  }
+
+  private void put(final VM vm) {
+    vm.invoke("put", () -> {
+      Cache cache = GemFireCacheImpl.getInstance();
+      Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+      assertNotNull(region);
+
+      region.put(KEY1, CLIENT_VALUE1);
+      assertEquals(CLIENT_VALUE1, region.getEntry(KEY1).getValue());
+
+      region.put(KEY2, CLIENT_VALUE2);
+      assertEquals(CLIENT_VALUE2, region.getEntry(KEY2).getValue());
+    });
+  }
 }

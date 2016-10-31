@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static org.awaitility.Awaitility.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
@@ -21,8 +22,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
+import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -36,31 +40,27 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.offheap.OffHeapMemoryStats;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.offheap.OffHeapStoredObject;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.beans.MemberMBean;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.
  */
-@SuppressWarnings("serial")
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
+
   /**
    * Specified assertion operations.
    */
-  private static enum ASSERT_OP {
+  private enum ASSERT_OP {
     EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN
   }
 
@@ -139,28 +139,20 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        System.setProperty(OffHeapStorage.STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY, "true");
-      }
+    Host.getHost(0).getVM(0).invoke(() -> {
+      System.setProperty(OffHeapStorage.STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY, "true");
     });
   }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        System.clearProperty(OffHeapStorage.STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY);
-      }
+    Host.getHost(0).getVM(0).invoke(() -> {
+      System.clearProperty(OffHeapStorage.STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY);
     });
   }
 
   /**
    * Tests off-heap additions to the RegionMXBean and MemberMXBean interfaces.
-   * 
-   * @throws Exception
    */
   @Test
   public void testOffHeapMBeanAttributesAndStats() throws Exception {
@@ -209,8 +201,6 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests the fragmentation statistic for off-heap memory.
-   * 
-   * @throws Exception
    */
   @Test
   public void testFragmentationStat() throws Exception {
@@ -300,9 +290,7 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests the compation time statistic for off-heap memory.
-   * 
-   * @throws Exception
+   * Tests the compaction time statistic for off-heap memory.
    */
   @Test
   public void testCompactionTimeStat() throws Exception {
@@ -476,12 +464,13 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Destroys a number of entries previously allocated.
-   * 
+   *
    * @param vm a virtual machine
    * @param numAllocations the number of previous off-heap allocations
    * @param numDestroys the number of destroys to perform
    */
-  protected void doFreeOffHeapMemoryOnVm(VM vm, final int numAllocations, final int numDestroys) {
+  private void doFreeOffHeapMemoryOnVm(final VM vm, final int numAllocations,
+      final int numDestroys) {
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -492,11 +481,11 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performs some destroys to free off-heap allocations.
-   * 
+   *
    * @param numAllocations the number of previous off-heap allocations
    * @param numDestroys the number of destroys to perform
    */
-  protected void doFreeOffHeapMemory(int numAllocations, int numDestroys) {
+  private void doFreeOffHeapMemory(final int numAllocations, final int numDestroys) {
     assertTrue(numDestroys <= numAllocations);
 
     Region region = getCache().getRegion(OFF_HEAP_REGION_NAME);
@@ -520,34 +509,29 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Consumes off off-heap memory until the allocation size cannot be satisfied.
-   * 
+   *
    * @param vm a virtual machine
    * @param allocationSize the number of bytes for each allocation
+   *
    * @return the number of successful puts
    */
-  protected int doConsumeOffHeapMemoryOnVm(VM vm, final int allocationSize) {
-    return (Integer) vm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() {
-        return doConsumeOffHeapMemory(allocationSize);
-      }
-    });
+  private int doConsumeOffHeapMemoryOnVm(final VM vm, final int allocationSize) {
+    return vm.invoke(() -> doConsumeOffHeapMemory(allocationSize));
   }
 
   /**
    * Consumes off off-heap memory until the allocation size cannot be satisfied.
-   * 
+   *
    * @param allocationSize the number of bytes for each allocation
+   *
    * @return the number of successful puts
    */
-  protected int doConsumeOffHeapMemory(int allocationSize) { // TODO:KIRK: change this to handle new
-                                                             // OutOfOffHeapMemoryException
-    OffHeapMemoryStats stats = ((GemFireCacheImpl) getCache()).getOffHeapStore().getStats();
+  private int doConsumeOffHeapMemory(final int allocationSize) {
     int i = 0;
 
     // Loop until we fail
     try {
-      while (true) {
+      while (true) { // TODO: put a time limit on this just in case
         doPut("KEY" + (i++), new byte[allocationSize], OFF_HEAP_REGION_NAME, false);
       }
     } catch (OutOfOffHeapMemoryException e) {
@@ -558,28 +542,23 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Asserts that the compactionTime stat is available and satisfies an assert operation.
-   * 
+   *
    * @param vm a virtual machine.
    * @param compactionTime total off heap compaction time.
    * @param op an assert operation.
    */
-  protected void assertCompactionTimeStatOnVm(VM vm, final long compactionTime,
+  private void assertCompactionTimeStatOnVm(final VM vm, final long compactionTime,
       final ASSERT_OP op) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        assertCompactionTimeStat(compactionTime, op);
-      }
-    });
+    vm.invoke(() -> assertCompactionTimeStat(compactionTime, op));
   }
 
   /**
    * Asserts that the compactionTime stat is available and satisfies an assert operation.
-   * 
+   *
    * @param compactionTime total off heap compaction time.
    * @param op an assert operation.
    */
-  protected void assertCompactionTimeStat(long compactionTime, ASSERT_OP op) {
+  private void assertCompactionTimeStat(final long compactionTime, final ASSERT_OP op) {
     ManagementService service = ManagementService.getExistingManagementService(getCache());
     assertNotNull(service);
 
@@ -606,27 +585,23 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Asserts that the fragmentation stat is available and satisfies an assert operation.
-   * 
+   *
    * @param vm a virtual machine
    * @param fragmentation a fragmentation percentage
    * @param op an assertion operation
    */
-  protected void assertFragmentationStatOnVm(VM vm, final int fragmentation, final ASSERT_OP op) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        assertFragmentationStat(fragmentation, op);
-      }
-    });
+  private void assertFragmentationStatOnVm(final VM vm, final int fragmentation,
+      final ASSERT_OP op) {
+    vm.invoke(() -> assertFragmentationStat(fragmentation, op));
   }
 
   /**
    * Asserts that the fragmentation stat is available and satisfies an assert operation.
-   * 
+   *
    * @param fragmentation a fragmentation percentage
    * @param op an assertion operation
    */
-  protected void assertFragmentationStat(int fragmentation, ASSERT_OP op) {
+  private void assertFragmentationStat(final int fragmentation, final ASSERT_OP op) {
     ManagementService service = ManagementService.getExistingManagementService(getCache());
     assertNotNull(service);
 
@@ -651,7 +626,7 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
   /**
    * Returns off-heap system properties for enabling off-heap and the JMX system.
    */
-  protected Properties getSystemProperties() {
+  private Properties getSystemProperties() {
     Properties props = getDistributedSystemProperties();
 
     props.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
@@ -664,16 +639,11 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Removes off heap region on vm and disconnects.
-   * 
-   * @param vm a virutal machine.
+   *
+   * @param vm a virtual machine.
    */
-  protected void doCleanupOnVm(VM vm) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        cleanup();
-      }
-    });
+  private void doCleanupOnVm(final VM vm) {
+    vm.invoke(() -> cleanup());
   }
 
   /**
@@ -696,20 +666,14 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
   /**
    * Asserts that the off heap region data is available and enabled for a VM.
    */
-  @SuppressWarnings("serial")
-  protected void assertOffHeapRegionAttributesOnVm(VM vm) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        assertOffHeapRegionAttributes();
-      }
-    });
+  private void assertOffHeapRegionAttributesOnVm(final VM vm) {
+    vm.invoke(() -> assertOffHeapRegionAttributes());
   }
 
   /**
    * Asserts that the off heap region data is available and enabled.
    */
-  protected void assertOffHeapRegionAttributes() {
+  private void assertOffHeapRegionAttributes() {
     ManagementService service = ManagementService.getExistingManagementService(getCache());
     assertNotNull(service);
 
@@ -726,33 +690,28 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Asserts that OffHeapMetrics match input parameters for a VM.
-   * 
+   *
    * @param vm a virtual machine.
    * @param freeMemory total off-heap free memory in bytes.
    * @param allocatedMemory allocated (or used) off-heap memory in bytes.
    * @param objects number of objects stored in off-heap memory.
    * @param fragmentation the fragmentation percentage.
    */
-  protected void assertOffHeapMetricsOnVm(VM vm, final long freeMemory, final long allocatedMemory,
-      final long objects, final int fragmentation) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        assertOffHeapMetrics(freeMemory, allocatedMemory, objects, fragmentation);
-      }
-    });
+  private void assertOffHeapMetricsOnVm(final VM vm, final long freeMemory,
+      final long allocatedMemory, final long objects, final int fragmentation) {
+    vm.invoke(() -> assertOffHeapMetrics(freeMemory, allocatedMemory, objects, fragmentation));
   }
 
   /**
    * Asserts that OffHeapMetrics match input parameters.
-   * 
+   *
    * @param freeMemory total off-heap free memory in bytes.
    * @param allocatedMemory allocated (or used) off-heap memory in bytes.
    * @param objects number of objects stored in off-heap memory.
    * @param fragmentation the fragmentation percentage.
    */
-  protected void assertOffHeapMetrics(long freeMemory, long allocatedMemory, long objects,
-      int fragmentation) {
+  private void assertOffHeapMetrics(final long freeMemory, final long allocatedMemory,
+      final long objects, final int fragmentation) {
     ManagementService service = ManagementService.getExistingManagementService(getCache());
     assertNotNull(service);
 
@@ -769,57 +728,49 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates an off-heap region on a vm.
-   * 
+   *
    * @param vm a virtual machine.
    * @param name a region name.
    * @param dataPolicy a data policy.
+   *
    * @return true if successful.
    */
-  protected boolean createOffHeapRegionOnVm(final VM vm, final String name,
+  private boolean createOffHeapRegionOnVm(final VM vm, final String name,
       final DataPolicy dataPolicy) {
-    return (Boolean) vm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        return (null != createOffHeapRegion(name, dataPolicy));
-      }
-    });
+    return vm.invoke(() -> null != createOffHeapRegion(name, dataPolicy));
   }
 
   /**
    * Creates an off-heap region.
-   * 
+   *
    * @param name a region name.
    * @param dataPolicy a data policy.
+   *
    * @return the newly created region.
    */
-  protected Region createOffHeapRegion(String name, DataPolicy dataPolicy) {
+  private Region createOffHeapRegion(final String name, final DataPolicy dataPolicy) {
     return getCache().createRegionFactory().setOffHeap(true).setDataPolicy(dataPolicy).create(name);
   }
 
   /**
    * Sets the distributed system properties for a vm.
-   * 
+   *
    * @param vm a virtual machine.
    * @param management starts the ManagementService when true.
    * @param props distributed system properties.
    */
-  @SuppressWarnings("serial")
-  protected void setSystemPropertiesOnVm(VM vm, final boolean management, final Properties props) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        setSystemProperties(management, props);
-      }
-    });
+  private void setSystemPropertiesOnVm(final VM vm, final boolean management,
+      final Properties props) {
+    vm.invoke(() -> setSystemProperties(management, props));
   }
 
   /**
    * Sets the distributed system properties.
-   * 
+   *
    * @param management starts the ManagementService when true.
    * @param props distributed system properties.
    */
-  protected void setSystemProperties(boolean management, Properties props) {
+  private void setSystemProperties(final boolean management, final Properties props) {
     getSystem(props);
 
     if (management) {
@@ -832,27 +783,22 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performs a destroy operation on a vm.
-   * 
+   *
    * @param vm a virtual machine.
    * @param key the region entry to destroy.
    * @param regionName a region name.
    */
-  protected void doDestroyOnVm(final VM vm, final Object key, final String regionName) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        doDestroy(key, regionName);
-      }
-    });
+  private void doDestroyOnVm(final VM vm, final Object key, final String regionName) {
+    vm.invoke(() -> doDestroy(key, regionName));
   }
 
   /**
    * Performs a destroy operation.
-   * 
+   *
    * @param key the region entry to destroy.
    * @param regionName a region name.
    */
-  protected void doDestroy(Object key, String regionName) {
+  private void doDestroy(final Object key, final String regionName) {
     Region region = getCache().getRegion(regionName);
     assertNotNull(region);
 
@@ -861,59 +807,54 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performs a put operation on a vm.
-   * 
+   *
    * @param vm a virtual machine.
    * @param key region entry key.
    * @param value region entry value.
    * @param regionName a region name.
    */
-  protected void doPutOnVm(final VM vm, final Object key, final Object value,
-      final String regionName, final boolean expectException) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        doPut(key, value, regionName, expectException);
-      }
-    });
+  private void doPutOnVm(final VM vm, final Object key, final Object value, final String regionName,
+      final boolean expectException) {
+    vm.invoke(() -> doPut(key, value, regionName, expectException));
   }
 
   /**
    * Performs a put operation.
-   * 
+   *
    * @param key region entry key.
    * @param value region entry value.
    * @param regionName a region name.
    */
-  protected void doPut(Object key, Object value, String regionName, boolean expectException) {
+  private void doPut(final Object key, final Object value, final String regionName,
+      final boolean expectException) {
     Region region = getCache().getRegion(regionName);
     assertNotNull(region);
 
     try {
       region.put(key, value);
+      if (expectException) {
+        fail("Expected OutOfOffHeapMemoryException");
+      }
     } catch (OutOfOffHeapMemoryException e) {
-      if (!expectException)
+      if (!expectException) {
         throw e;
+      }
     }
   }
 
   /**
    * Adds an off-heap notification listener to the MemberMXBean for a vm.
-   * 
+   *
    * @param vm a virtual machine.
    */
-  protected void addOffHeapNotificationListenerOnVm(VM vm) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        addOffHeapNotificationListener();
-      }
-    });
+  private void addOffHeapNotificationListenerOnVm(final VM vm) {
+    vm.invoke(() -> addOffHeapNotificationListener());
   }
 
   /**
    * Adds an off-heap notification listener to the MemberMXBean.
    */
-  protected void addOffHeapNotificationListener() {
+  private void addOffHeapNotificationListener() {
     ManagementService service = ManagementService.getExistingManagementService(getCache());
     assertNotNull(service);
 
@@ -929,116 +870,90 @@ public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates and adds a generic GaugeMonitor for an attribute of the MemberMXBean on a VM.
-   * 
+   *
    * @param vm a virtual machine.
    * @param attribute the attribute to monitor.
    * @param highThreshold the high threshold trigger.
    * @param lowThreshold the low threshold trigger.
    */
-  protected void setupOffHeapMonitorOnVm(VM vm, final String attribute, final long highThreshold,
-      final long lowThreshold) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        setupOffHeapMonitor(attribute, highThreshold, lowThreshold);
-      }
-    });
+  private void setupOffHeapMonitorOnVm(final VM vm, final String attribute,
+      final long highThreshold, final long lowThreshold) {
+    vm.invoke(() -> setupOffHeapMonitor(attribute, highThreshold, lowThreshold));
   }
 
   /**
    * Creates and adds a generic GaugeMonitor for an attribute of the MemberMXBean.
-   * 
+   *
    * @param attribute the attribute to monitor.
    * @param highThreshold the high threshold trigger.
    * @param lowThreshold the low threshold trigger.
    */
-  protected void setupOffHeapMonitor(String attribute, long highThreshold, long lowThreshold) {
+  private void setupOffHeapMonitor(final String attribute, final long highThreshold,
+      final long lowThreshold) throws JMException {
     ObjectName memberMBeanObjectName = MBeanJMXAdapter.getMemberMBeanName(
         InternalDistributedSystem.getConnectedInstance().getDistributedMember());
     assertNotNull(memberMBeanObjectName);
 
-    try {
-      ObjectName offHeapMonitorName = new ObjectName("monitors:type=Gauge,attr=" + attribute);
-      mbeanServer.createMBean("javax.management.monitor.GaugeMonitor", offHeapMonitorName);
+    ObjectName offHeapMonitorName = new ObjectName("monitors:type=Gauge,attr=" + attribute);
+    mbeanServer.createMBean("javax.management.monitor.GaugeMonitor", offHeapMonitorName);
 
-      AttributeList al = new AttributeList();
-      al.add(new Attribute("ObservedObject", memberMBeanObjectName));
-      al.add(new Attribute("GranularityPeriod", 500));
-      al.add(new Attribute("ObservedAttribute", attribute));
-      al.add(new Attribute("Notify", true));
-      al.add(new Attribute("NotifyHigh", true));
-      al.add(new Attribute("NotifyLow", true));
-      al.add(new Attribute("HighTheshold", highThreshold));
-      al.add(new Attribute("LowThreshold", lowThreshold));
+    AttributeList al = new AttributeList();
+    al.add(new Attribute("ObservedObject", memberMBeanObjectName));
+    al.add(new Attribute("GranularityPeriod", 500));
+    al.add(new Attribute("ObservedAttribute", attribute));
+    al.add(new Attribute("Notify", true));
+    al.add(new Attribute("NotifyHigh", true));
+    al.add(new Attribute("NotifyLow", true));
+    al.add(new Attribute("HighTheshold", highThreshold));
+    al.add(new Attribute("LowThreshold", lowThreshold));
 
-      mbeanServer.setAttributes(offHeapMonitorName, al);
-      mbeanServer.addNotificationListener(offHeapMonitorName, notificationListener, null, null);
-      mbeanServer.invoke(offHeapMonitorName, "start", new Object[] {}, new String[] {});
-    } catch (Exception e) {
-      fail(e.getMessage());
-    }
+    mbeanServer.setAttributes(offHeapMonitorName, al);
+    mbeanServer.addNotificationListener(offHeapMonitorName, notificationListener, null, null);
+    mbeanServer.invoke(offHeapMonitorName, "start", new Object[] {}, new String[] {});
   }
 
   /**
    * Waits to receive MBean notifications.
-   * 
+   *
    * @param vm a virtual machine.
    * @param wait how long to wait for in millis.
    * @param interval the polling interval to check for notifications.
    * @param throwOnTimeout throws an exception on timeout if true.
    */
-  protected void waitForNotificationListenerOnVm(VM vm, final long wait, final long interval,
+  private void waitForNotificationListenerOnVm(final VM vm, final long wait, final long interval,
       final boolean throwOnTimeout) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Wait.waitForCriterion(new WaitCriterion() {
-          @Override
-          public boolean done() {
-            return (notificationListener.getNotificationSize() > 0);
-          }
-
-          @Override
-          public String description() {
-            return "Awaiting Notification Listener";
-          }
-        }, wait, interval, throwOnTimeout);
-      }
-    });
+    vm.invoke(() -> await("Awaiting Notification Listener").atMost(wait, TimeUnit.MILLISECONDS)
+        .until(() -> assertTrue(notificationListener.getNotificationSize() > 0)));
   }
 
   /**
    * Clears received notifications.
-   * 
+   *
    * @param vm a virtual machine.
    */
-  protected void clearNotificationListenerOnVm(VM vm) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        notificationListener.clear();
-      }
-    });
-  }
-}
-
-
-/**
- * Collects MBean Notifications.
- */
-class OffHeapNotificationListener implements NotificationListener {
-  List<Notification> notificationList = Collections.synchronizedList(new ArrayList<Notification>());
-
-  @Override
-  public void handleNotification(Notification notification, Object handback) {
-    this.notificationList.add(notification);
+  private void clearNotificationListenerOnVm(final VM vm) {
+    vm.invoke(() -> notificationListener.clear());
   }
 
-  public void clear() {
-    this.notificationList.clear();
-  }
+  /**
+   * Collects MBean Notifications.
+   */
+  private static class OffHeapNotificationListener implements NotificationListener {
 
-  public int getNotificationSize() {
-    return this.notificationList.size();
+    List<Notification> notificationList =
+        Collections.synchronizedList(new ArrayList<Notification>());
+
+    @Override
+    public void handleNotification(final Notification notification, final Object handback) {
+      this.notificationList.add(notification);
+    }
+
+    public void clear() {
+      this.notificationList.clear();
+    }
+
+    public int getNotificationSize() {
+      return this.notificationList.size();
+    }
   }
 }

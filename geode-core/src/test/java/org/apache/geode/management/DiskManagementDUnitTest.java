@@ -14,24 +14,25 @@
  */
 package org.apache.geode.management;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import static java.util.concurrent.TimeUnit.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import javax.management.ObjectName;
 
-import org.apache.geode.LogWriter;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
@@ -40,674 +41,366 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
  * Test cases to cover all test cases which pertains to disk from Management layer
- * 
- * 
  */
 @Category(DistributedTest.class)
-public class DiskManagementDUnitTest extends ManagementTestBase {
+@SuppressWarnings({"serial", "unused"})
+public class DiskManagementDUnitTest implements Serializable {
 
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
-
-  // This must be bigger than the dunit ack-wait-threshold for the revoke
-  // tests. The command line is setting the ack-wait-threshold to be
-  // 60 seconds.
-  private static final int MAX_WAIT = 70 * 1000;
-
-  boolean testFailed = false;
-
-  String failureCause = "";
-  static final String REGION_NAME = "region";
+  private static final String REGION_NAME =
+      DiskManagementDUnitTest.class.getSimpleName() + "_region";
 
   private File diskDir;
 
-  protected static LogWriter logWriter;
+  @Manager
+  private VM managerVM;
 
-  public DiskManagementDUnitTest() throws Exception {
-    super();
+  @Member
+  private VM[] memberVMs;
 
-    diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
-    org.apache.geode.internal.FileUtil.delete(diskDir);
-    diskDir.mkdir();
-    diskDir.deleteOnExit();
-  }
+  @Rule
+  public ManagementTestRule managementTestRule = ManagementTestRule.builder().start(true).build();
 
-  @Override
-  protected final void postSetUpManagementTestBase() throws Exception {
-    failureCause = "";
-    testFailed = false;
-  }
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
-  @Override
-  protected final void postTearDownManagementTestBase() throws Exception {
-    org.apache.geode.internal.FileUtil.delete(diskDir);
+  @Before
+  public void before() throws Exception {
+    this.diskDir = this.temporaryFolder.newFolder("diskDir");
   }
 
   /**
-   * Tests Disk Compaction from a MemberMbean which is at cache level. All the disks which belong to
-   * the cache should be compacted.
-   * 
-   * @throws Exception
+   * Tests Disk Compaction from a MemberMXBean which is at cache level. All the disks which belong
+   * to the cache should be compacted.
    */
-
   @Test
-  public void testDiskCompact() throws Throwable {
-    initManagement(false);
-    for (VM vm : getManagedNodeList()) {
-      createPersistentRegion(vm);
-      makeDiskCompactable(vm);
+  public void testDiskCompact() throws Exception {
+    for (VM memberVM : this.memberVMs) {
+      createPersistentRegion(memberVM);
+      makeDiskCompactable(memberVM);
     }
 
-    for (VM vm : getManagedNodeList()) {
-      compactAllDiskStores(vm);
+    for (VM memberVM : this.memberVMs) {
+      compactAllDiskStores(memberVM);
     }
-
   }
 
   /**
-   * Tests Disk Compaction from a MemberMbean which is at cache level. All the disks which belong to
-   * the cache should be compacted.
-   * 
-   * @throws Exception
+   * Tests Disk Compaction from a MemberMXBean which is at cache level. All the disks which belong
+   * to the cache should be compacted.
    */
-
   @Test
-  public void testDiskCompactRemote() throws Throwable {
-
-    initManagement(false);
-    for (VM vm : getManagedNodeList()) {
-      createPersistentRegion(vm);
-      makeDiskCompactable(vm);
+  public void testDiskCompactRemote() throws Exception {
+    for (VM memberVM : this.memberVMs) {
+      createPersistentRegion(memberVM);
+      makeDiskCompactable(memberVM);
     }
-    compactDiskStoresRemote(managingNode);
 
+    compactDiskStoresRemote(this.managerVM, this.memberVMs.length);
   }
 
   /**
    * Tests various operations defined on DiskStore Mbean
-   * 
-   * @throws Exception
    */
-
   @Test
-  public void testDiskOps() throws Throwable {
-
-    initManagement(false);
-    for (VM vm : getManagedNodeList()) {
-      createPersistentRegion(vm);
-      makeDiskCompactable(vm);
-      invokeFlush(vm);
-      invokeForceRoll(vm);
-      invokeForceCompaction(vm);
+  public void testDiskOps() throws Exception {
+    for (VM memberVM : this.memberVMs) {
+      createPersistentRegion(memberVM);
+      makeDiskCompactable(memberVM);
+      invokeFlush(memberVM);
+      invokeForceRoll(memberVM);
+      invokeForceCompaction(memberVM);
     }
-
   }
 
   @Test
-  public void testDiskBackupAllMembers() throws Throwable {
-    initManagement(false);
-    for (VM vm : getManagedNodeList()) {
-      createPersistentRegion(vm);
-      makeDiskCompactable(vm);
-
+  public void testDiskBackupAllMembers() throws Exception {
+    for (VM memberVM : this.memberVMs) {
+      createPersistentRegion(memberVM);
+      makeDiskCompactable(memberVM);
     }
-    backupAllMembers(managingNode);
+
+    backupAllMembers(this.managerVM, this.memberVMs.length);
   }
 
   /**
-   * Checks the test case of missing disks and revoking them through MemberMbean interfaces
-   * 
-   * @throws Throwable
+   * Checks the test case of missing disks and revoking them through MemberMXBean interfaces
    */
-  @SuppressWarnings("serial")
   @Test
-  public void testMissingMembers() throws Throwable {
+  public void testMissingMembers() throws Exception {
+    VM memberVM1 = this.memberVMs[0];
+    VM memberVM2 = this.memberVMs[1];
 
-    initManagement(false);
-    VM vm0 = getManagedNodeList().get(0);
-    VM vm1 = getManagedNodeList().get(1);
-    VM vm2 = getManagedNodeList().get(2);
+    createPersistentRegion(memberVM1);
+    createPersistentRegion(memberVM2);
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM0");
-    createPersistentRegion(vm0);
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Creating region in VM1");
-    createPersistentRegion(vm1);
+    putAnEntry(memberVM1);
 
-    putAnEntry(vm0);
+    this.managerVM.invoke("checkForMissingDiskStores", () -> {
+      ManagementService service = this.managementTestRule.getManagementService();
+      DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
+      PersistentMemberDetails[] missingDiskStores = distributedSystemMXBean.listMissingDiskStores();
 
-
-    managingNode.invoke(new SerializableRunnable("Check for waiting regions") {
-
-      public void run() {
-        Cache cache = getCache();
-        ManagementService service = getManagementService();
-        DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
-        PersistentMemberDetails[] missingDiskStores = bean.listMissingDiskStores();
-
-        assertNull(missingDiskStores);
-      }
+      assertThat(missingDiskStores).isNull();
     });
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm0");
-    closeRegion(vm0);
+    closeRegion(memberVM1);
 
-    updateTheEntry(vm1);
+    updateTheEntry(memberVM2, "C");
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("closing region in vm1");
-    closeRegion(vm1);
-    AsyncInvocation future = createPersistentRegionAsync(vm0);
-    waitForBlockedInitialization(vm0);
-    assertTrue(future.isAlive());
+    closeRegion(memberVM2);
 
-    managingNode.invoke(new SerializableRunnable("Revoke the member") {
+    AsyncInvocation creatingPersistentRegionAsync = createPersistentRegionAsync(memberVM1);
 
-      public void run() {
-        Cache cache = getCache();
-        GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
-        ManagementService service = getManagementService();
-        DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
-        PersistentMemberDetails[] missingDiskStores = bean.listMissingDiskStores();
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-            .info("waiting members=" + missingDiskStores);
-        assertNotNull(missingDiskStores);
-        assertEquals(1, missingDiskStores.length);
+    memberVM1.invoke(() -> await().until(() -> {
+      GemFireCacheImpl cache = (GemFireCacheImpl) this.managementTestRule.getCache();
+      PersistentMemberManager persistentMemberManager = cache.getPersistentMemberManager();
+      Map<String, Set<PersistentMemberID>> regions = persistentMemberManager.getWaitingRegions();
+      return !regions.isEmpty();
+    }));
 
-        for (PersistentMemberDetails id : missingDiskStores) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-              .info("Missing DiskStoreID is =" + id.getDiskStoreId());
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-              .info("Missing Host is =" + id.getHost());
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-              .info("Missing Directory is =" + id.getDirectory());
+    assertThat(creatingPersistentRegionAsync.isAlive()).isTrue();
 
-          try {
-            bean.revokeMissingDiskStores(id.getDiskStoreId());
-          } catch (Exception e) {
-            fail("revokeMissingDiskStores failed with exception " + e);
-          }
-        }
-      }
+    this.managerVM.invoke("revokeMissingDiskStore", () -> {
+      ManagementService service = this.managementTestRule.getManagementService();
+      DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
+      PersistentMemberDetails[] missingDiskStores = bean.listMissingDiskStores();
+
+      assertThat(missingDiskStores).isNotNull().hasSize(1);
+
+      assertThat(bean.revokeMissingDiskStores(missingDiskStores[0].getDiskStoreId())).isTrue();
     });
 
-    future.join(MAX_WAIT);
-    if (future.isAlive()) {
-      fail("Region not created within" + MAX_WAIT);
-    }
-    if (future.exceptionOccurred()) {
-      throw new Exception(future.getException());
-    }
-    checkForRecoveryStat(vm0, true);
-    // Check to make sure we recovered the old
-    // value of the entry.
-    SerializableRunnable checkForEntry = new SerializableRunnable("check for the entry") {
+    await(creatingPersistentRegionAsync);
 
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(REGION_NAME);
-        assertEquals("B", region.get("A"));
-      }
-    };
-    vm0.invoke(checkForEntry);
+    verifyRecoveryStats(memberVM1, true);
 
-  }
-
-  protected void checkNavigation(final VM vm, final DistributedMember diskMember,
-      final String diskStoreName) {
-    SerializableRunnable checkNavigation = new SerializableRunnable("Check Navigation") {
-      public void run() {
-
-        final ManagementService service = getManagementService();
-
-        DistributedSystemMXBean disMBean = service.getDistributedSystemMXBean();
-        try {
-          ObjectName expected =
-              MBeanJMXAdapter.getDiskStoreMBeanName(diskMember.getId(), diskStoreName);
-          ObjectName actual = disMBean.fetchDiskStoreObjectName(diskMember.getId(), diskStoreName);
-          assertEquals(expected, actual);
-        } catch (Exception e) {
-          fail("Disk Store Navigation Failed " + e);
-        }
-
-
-      }
-    };
-    vm.invoke(checkNavigation);
-  }
-
-  /**
-   * get Distributed member for a given vm
-   */
-  @SuppressWarnings("serial")
-  protected static DistributedMember getMember() throws Exception {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    return cache.getDistributedSystem().getDistributedMember();
+    // Check to make sure we recovered the old value of the entry.
+    memberVM1.invoke("check for the entry", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      assertThat(region.get("A")).isEqualTo("B");
+    });
   }
 
   /**
    * Invokes flush on the given disk store by MBean interface
-   * 
-   * @param vm reference to VM
    */
-  @SuppressWarnings("serial")
-  public void invokeFlush(final VM vm) {
-    SerializableRunnable invokeFlush = new SerializableRunnable("Invoke Flush On Disk") {
-      public void run() {
-        Cache cache = getCache();
-        DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        String name = "testFlush_" + vm.getPid();
-        DiskStore ds = dsf.create(name);
+  private void invokeFlush(final VM memberVM) {
+    memberVM.invoke("invokeFlush", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+      String name = "testFlush_" + ProcessUtils.identifyPid();
+      DiskStore diskStore = diskStoreFactory.create(name);
 
-        ManagementService service = getManagementService();
-        DiskStoreMXBean bean = service.getLocalDiskStoreMBean(name);
-        assertNotNull(bean);
-        bean.flush();
-      }
-    };
-    vm.invoke(invokeFlush);
+      ManagementService service = this.managementTestRule.getManagementService();
+      DiskStoreMXBean diskStoreMXBean = service.getLocalDiskStoreMBean(name);
+      assertThat(diskStoreMXBean).isNotNull();
+      assertThat(diskStoreMXBean.getName()).isEqualTo(diskStore.getName());
+
+      diskStoreMXBean.flush();
+    });
   }
 
   /**
    * Invokes force roll on disk store by MBean interface
-   * 
-   * @param vm reference to VM
    */
-  @SuppressWarnings("serial")
-  public void invokeForceRoll(final VM vm) {
-    SerializableRunnable invokeForceRoll = new SerializableRunnable("Invoke Force Roll") {
-      public void run() {
-        Cache cache = getCache();
-        DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        String name = "testForceRoll_" + vm.getPid();
-        DiskStore ds = dsf.create(name);
-        ManagementService service = getManagementService();
-        DiskStoreMXBean bean = service.getLocalDiskStoreMBean(name);
-        assertNotNull(bean);
-        bean.forceRoll();
-      }
-    };
-    vm.invoke(invokeForceRoll);
+  private void invokeForceRoll(final VM memberVM) {
+    memberVM.invoke("invokeForceRoll", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+      String name = "testForceRoll_" + ProcessUtils.identifyPid();
+      DiskStore diskStore = diskStoreFactory.create(name);
+
+      ManagementService service = this.managementTestRule.getManagementService();
+      DiskStoreMXBean diskStoreMXBean = service.getLocalDiskStoreMBean(name);
+      assertThat(diskStoreMXBean).isNotNull();
+      assertThat(diskStoreMXBean.getName()).isEqualTo(diskStore.getName());
+
+      diskStoreMXBean.forceRoll();
+    });
   }
 
   /**
    * Invokes force compaction on disk store by MBean interface
-   * 
-   * @param vm reference to VM
    */
-  @SuppressWarnings("serial")
-  public void invokeForceCompaction(final VM vm) {
-    SerializableRunnable invokeForceCompaction =
-        new SerializableRunnable("Invoke Force Compaction") {
-          public void run() {
-            Cache cache = getCache();
-            DiskStoreFactory dsf = cache.createDiskStoreFactory();
-            dsf.setAllowForceCompaction(true);
-            String name = "testForceCompaction_" + vm.getPid();
-            DiskStore ds = dsf.create(name);
-            ManagementService service = getManagementService();
-            DiskStoreMXBean bean = service.getLocalDiskStoreMBean(name);
-            assertNotNull(bean);
-            assertEquals(false, bean.forceCompaction());
-          }
-        };
-    vm.invoke(invokeForceCompaction);
+  private void invokeForceCompaction(final VM memberVM) {
+    memberVM.invoke("invokeForceCompaction", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      DiskStoreFactory dsf = cache.createDiskStoreFactory();
+      dsf.setAllowForceCompaction(true);
+      String name = "testForceCompaction_" + ProcessUtils.identifyPid();
+      DiskStore diskStore = dsf.create(name);
+
+      ManagementService service = this.managementTestRule.getManagementService();
+      DiskStoreMXBean diskStoreMXBean = service.getLocalDiskStoreMBean(name);
+      assertThat(diskStoreMXBean).isNotNull();
+      assertThat(diskStoreMXBean.getName()).isEqualTo(diskStore.getName());
+
+      assertThat(diskStoreMXBean.forceCompaction()).isFalse();
+    });
   }
 
   /**
    * Makes the disk compactable by adding and deleting some entries
-   * 
-   * @throws Exception
    */
-  @SuppressWarnings("serial")
-  public void makeDiskCompactable(VM vm1) throws Exception {
-    vm1.invoke(new SerializableRunnable("Make The Disk Compactable") {
-
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(REGION_NAME);
-        DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("putting key1");
-        region.put("key1", "value1");
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("putting key2");
-        region.put("key2", "value2");
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("removing key2");
-        region.remove("key2");
-        // now that it is compactable the following forceCompaction should
-        // go ahead and do a roll and compact it.
-      }
+  private void makeDiskCompactable(final VM memberVM) throws Exception {
+    memberVM.invoke("makeDiskCompactable", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      region.put("key1", "value1");
+      region.put("key2", "value2");
+      region.remove("key2");
+      // now that it is compactable the following forceCompaction should
+      // go ahead and do a roll and compact it.
     });
-
   }
-
-
 
   /**
    * Compacts all DiskStores belonging to a member
-   * 
-   * @param vm1 reference to VM
-   * @throws Exception
    */
-  @SuppressWarnings("serial")
-  public void compactAllDiskStores(VM vm1) throws Exception {
-
-    vm1.invoke(new SerializableCallable("Compact All Disk Stores") {
-
-      public Object call() throws Exception {
-        ManagementService service = getManagementService();
-        MemberMXBean memberBean = service.getMemberMXBean();
-        String[] compactedDiskStores = memberBean.compactAllDiskStores();
-
-        assertTrue(compactedDiskStores.length > 0);
-        for (int i = 0; i < compactedDiskStores.length; i++) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-              .info("<ExpectedString> Compacted Store " + i + " " + compactedDiskStores[i]
-                  + "</ExpectedString> ");
-        }
-
-        return null;
-      }
+  private void compactAllDiskStores(final VM memberVM) throws Exception {
+    memberVM.invoke("compactAllDiskStores", () -> {
+      ManagementService service = this.managementTestRule.getManagementService();
+      MemberMXBean memberMXBean = service.getMemberMXBean();
+      String[] compactedDiskStores = memberMXBean.compactAllDiskStores();
+      assertThat(compactedDiskStores).hasSize(1);
     });
-
   }
 
   /**
    * Takes a back up of all the disk store in a given directory
    */
-  @SuppressWarnings("serial")
-  public void backupAllMembers(final VM managingVM) throws Exception {
+  private void backupAllMembers(final VM managerVM, final int memberCount) {
+    managerVM.invoke("backupAllMembers", () -> {
+      ManagementService service = this.managementTestRule.getManagementService();
+      DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
+      File backupDir = this.temporaryFolder.newFolder("backupDir");
 
-    managingVM.invoke(new SerializableCallable("Backup All Disk Stores") {
+      DiskBackupStatus status = bean.backupAllMembers(backupDir.getAbsolutePath(), null);
 
-      public Object call() throws Exception {
-        ManagementService service = getManagementService();
-        DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
-        DiskBackupStatus status =
-            bean.backupAllMembers(getBackupDir("test_backupAllMembers").getAbsolutePath(), null);
-
-        return null;
-      }
-    });
-
-  }
-
-  /**
-   * Compact a disk store from Managing node
-   */
-  @SuppressWarnings("serial")
-  public void compactDiskStoresRemote(VM managingVM) throws Exception {
-    {
-
-      managingVM.invoke(new SerializableCallable("Compact All Disk Stores Remote") {
-
-        public Object call() throws Exception {
-          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-          Set<DistributedMember> otherMemberSet =
-              cache.getDistributionManager().getOtherNormalDistributionManagerIds();
-
-          for (DistributedMember member : otherMemberSet) {
-            MemberMXBean bean = MBeanUtil.getMemberMbeanProxy(member);
-            String[] allDisks = bean.listDiskStores(true);
-            assertNotNull(allDisks);
-            List<String> listString = Arrays.asList(allDisks);
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-                .info("<ExpectedString> Remote All Disk Stores Are  " + listString.toString()
-                    + "</ExpectedString> ");
-            String[] compactedDiskStores = bean.compactAllDiskStores();
-            assertTrue(compactedDiskStores.length > 0);
-            for (int i = 0; i < compactedDiskStores.length; i++) {
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-                  .info("<ExpectedString> Remote Compacted Store " + i + " "
-                      + compactedDiskStores[i] + "</ExpectedString> ");
-            }
-
-          }
-          return null;
-        }
-      });
-
-    }
-
-  }
-
-  /**
-   * Checks if a file with the given extension is present
-   * 
-   * @param fileExtension file extension
-   * @throws Exception
-   */
-  protected void checkIfContainsFileWithExt(String fileExtension) throws Exception {
-    File[] files = diskDir.listFiles();
-    for (int j = 0; j < files.length; j++) {
-      if (files[j].getAbsolutePath().endsWith(fileExtension)) {
-        fail("file \"" + files[j].getAbsolutePath() + "\" still exists");
-      }
-    }
-
-  }
-
-  /**
-   * Update Entry
-   * 
-   * @param vm1 reference to VM
-   */
-  protected void updateTheEntry(VM vm1) {
-    updateTheEntry(vm1, "C");
-  }
-
-  /**
-   * Update an Entry
-   * 
-   * @param vm1 reference to VM
-   * @param value Value which is updated
-   */
-  @SuppressWarnings("serial")
-  protected void updateTheEntry(VM vm1, final String value) {
-    vm1.invoke(new SerializableRunnable("change the entry") {
-
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(REGION_NAME);
-        region.put("A", value);
-      }
+      assertThat(status.getBackedUpDiskStores().keySet().size()).isEqualTo(memberCount);
+      assertThat(status.getOfflineDiskStores()).isEqualTo(null); // TODO: fix GEODE-1946
     });
   }
 
   /**
-   * Put an entry to region
-   * 
-   * @param vm0 reference to VM
+   * Compact a disk store from managerVM VM
    */
-  @SuppressWarnings("serial")
-  protected void putAnEntry(VM vm0) {
-    vm0.invoke(new SerializableRunnable("Put an entry") {
+  private void compactDiskStoresRemote(final VM managerVM, final int memberCount) {
+    managerVM.invoke("compactDiskStoresRemote", () -> {
+      Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
+      assertThat(otherMemberSet.size()).isEqualTo(memberCount);
 
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(REGION_NAME);
-        region.put("A", "B");
+      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+
+      for (DistributedMember member : otherMemberSet) {
+        MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
+
+        String[] allDisks = memberMXBean.listDiskStores(true);
+        assertThat(allDisks).isNotNull().hasSize(1);
+
+        String[] compactedDiskStores = memberMXBean.compactAllDiskStores();
+        assertThat(compactedDiskStores).hasSize(1);
       }
     });
   }
 
-  /**
-   * Close the given region REGION_NAME
-   * 
-   * @param vm reference to VM
-   */
-  @SuppressWarnings("serial")
-  protected void closeRegion(final VM vm) {
-    SerializableRunnable closeRegion = new SerializableRunnable("Close persistent region") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(REGION_NAME);
-        region.close();
-      }
-    };
-    vm.invoke(closeRegion);
-  }
-
-  /**
-   * Waiting to blocked waiting for another persistent member to come online
-   * 
-   * @param vm reference to VM
-   */
-  @SuppressWarnings("serial")
-  private void waitForBlockedInitialization(VM vm) {
-    vm.invoke(new SerializableRunnable() {
-
-      public void run() {
-        Wait.waitForCriterion(new WaitCriterion() {
-
-          public String description() {
-            return "Waiting to blocked waiting for another persistent member to come online";
-          }
-
-          public boolean done() {
-            Cache cache = getCache();
-            GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
-            PersistentMemberManager mm = cacheImpl.getPersistentMemberManager();
-            Map<String, Set<PersistentMemberID>> regions = mm.getWaitingRegions();
-            boolean done = !regions.isEmpty();
-            return done;
-          }
-
-        }, MAX_WAIT, 100, true);
-
-      }
-
+  private void updateTheEntry(final VM memberVM, final String value) {
+    memberVM.invoke("updateTheEntry", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      region.put("A", value);
     });
   }
 
-  /**
-   * Creates a persistent region
-   * 
-   * @param vm reference to VM
-   * @throws Throwable
-   */
-  protected void createPersistentRegion(VM vm) throws Throwable {
-    AsyncInvocation future = createPersistentRegionAsync(vm);
-    future.join(MAX_WAIT);
-    if (future.isAlive()) {
-      fail("Region not created within" + MAX_WAIT);
-    }
-    if (future.exceptionOccurred()) {
-      throw new RuntimeException(future.getException());
-    }
+  private void putAnEntry(final VM memberVM) {
+    memberVM.invoke("putAnEntry", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      region.put("A", "B");
+    });
   }
 
-  /**
-   * Creates a persistent region in async manner
-   * 
-   * @param vm reference to VM
-   * @return reference to AsyncInvocation
-   */
-  @SuppressWarnings("serial")
-  protected AsyncInvocation createPersistentRegionAsync(final VM vm) {
-    SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
-      public void run() {
-        Cache cache = getCache();
-        DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        File dir = getDiskDirForVM(vm);
-        dir.mkdirs();
-        dsf.setDiskDirs(new File[] {dir});
-        dsf.setMaxOplogSize(1);
-        dsf.setAllowForceCompaction(true);
-        dsf.setAutoCompact(false);
-        DiskStore ds = dsf.create(REGION_NAME);
-        RegionFactory rf = cache.createRegionFactory();
-        rf.setDiskStoreName(ds.getName());
-        rf.setDiskSynchronous(true);
-        rf.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-        rf.setScope(Scope.DISTRIBUTED_ACK);
-        rf.create(REGION_NAME);
-      }
-    };
-    return vm.invokeAsync(createRegion);
+  private void closeRegion(final VM memberVM) {
+    memberVM.invoke("closeRegion", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      region.close();
+    });
   }
 
-  /**
-   * Validates a persistent region
-   * 
-   * @param vm reference to VM
-   */
-  @SuppressWarnings("serial")
-  protected void validatePersistentRegion(final VM vm) {
-    SerializableRunnable validateDisk = new SerializableRunnable("Validate persistent region") {
-      public void run() {
-        Cache cache = getCache();
-        ManagementService service = getManagementService();
-        DiskStoreMXBean bean = service.getLocalDiskStoreMBean(REGION_NAME);
-        assertNotNull(bean);
-      }
-    };
-    vm.invoke(validateDisk);
+  private void createPersistentRegion(final VM memberVM)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    await(createPersistentRegionAsync(memberVM));
   }
 
-  /**
-   * Appends vm id to disk dir
-   * 
-   * @param vm reference to VM
-   * @return
-   */
-  protected File getDiskDirForVM(final VM vm) {
-    File dir = new File(diskDir, String.valueOf(vm.getPid()));
-    return dir;
+  private AsyncInvocation createPersistentRegionAsync(final VM memberVM) {
+    return memberVM.invokeAsync("createPersistentRegionAsync", () -> {
+      File dir = new File(diskDir, String.valueOf(ProcessUtils.identifyPid()));
+
+      Cache cache = this.managementTestRule.getCache();
+
+      DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+      diskStoreFactory.setDiskDirs(new File[] {dir});
+      diskStoreFactory.setMaxOplogSize(1);
+      diskStoreFactory.setAllowForceCompaction(true);
+      diskStoreFactory.setAutoCompact(false);
+      DiskStore diskStore = diskStoreFactory.create(REGION_NAME);
+
+      RegionFactory regionFactory = cache.createRegionFactory();
+      regionFactory.setDiskStoreName(diskStore.getName());
+      regionFactory.setDiskSynchronous(true);
+      regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+      regionFactory.create(REGION_NAME);
+    });
   }
 
-  /**
-   * Checks recovery status
-   * 
-   * @param vm reference to VM
-   * @param localRecovery local recovery on or not
-   */
-  @SuppressWarnings("serial")
-  private void checkForRecoveryStat(VM vm, final boolean localRecovery) {
-    vm.invoke(new SerializableRunnable("check disk region stat") {
+  private void verifyRecoveryStats(final VM memberVM, final boolean localRecovery) {
+    memberVM.invoke("verifyRecoveryStats", () -> {
+      Cache cache = this.managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      DistributedRegion distributedRegion = (DistributedRegion) region;
+      DiskRegionStats stats = distributedRegion.getDiskRegion().getStats();
 
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(REGION_NAME);
-        DistributedRegion distributedRegion = (DistributedRegion) region;
-        DiskRegionStats stats = distributedRegion.getDiskRegion().getStats();
-        if (localRecovery) {
-          assertEquals(1, stats.getLocalInitializations());
-          assertEquals(0, stats.getRemoteInitializations());
-        } else {
-          assertEquals(0, stats.getLocalInitializations());
-          assertEquals(1, stats.getRemoteInitializations());
-        }
-
+      if (localRecovery) {
+        assertThat(stats.getLocalInitializations()).isEqualTo(1);
+        assertThat(stats.getRemoteInitializations()).isEqualTo(0);
+      } else {
+        assertThat(stats.getLocalInitializations()).isEqualTo(0);
+        assertThat(stats.getRemoteInitializations()).isEqualTo(1);
       }
     });
   }
 
-  /**
-   * 
-   * @return back up directory
-   */
-  protected static File getBackupDir(String name) throws Exception {
-    File backUpDir = new File("BackupDir-" + name).getAbsoluteFile();
-    org.apache.geode.internal.FileUtil.delete(backUpDir);
-    backUpDir.mkdir();
-    backUpDir.deleteOnExit();
-    return backUpDir;
+  private MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
+    SystemManagementService service = this.managementTestRule.getSystemManagementService();
+    ObjectName objectName = service.getMemberMBeanName(member);
+    await()
+        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+    return service.getMBeanProxy(objectName, MemberMXBean.class);
+  }
+
+  private void await(final AsyncInvocation createPersistentRegionAsync)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    createPersistentRegionAsync.await(2, MINUTES);
+  }
+
+  private ConditionFactory await() {
+    return Awaitility.await().atMost(2, MINUTES);
   }
 }

@@ -65,7 +65,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.ManagementTestBase;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -78,27 +77,13 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  *
  * @since GemFire 8.0
  */
-
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@SuppressWarnings("serial")
 public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
-  private static final long serialVersionUID = -254776154266339226L;
-
-  @Parameterized.Parameter
-  public String urlContext;
-
-  @Parameterized.Parameters
-  public static Collection<String> data() {
-    return Arrays.asList("/geode", "/gemfire-api");
-  }
-
-  private ManagementTestBase helper;
-
   public static final String PEOPLE_REGION_NAME = "People";
-
-  // private static RestTemplate restTemplate;
 
   private static final String findAllPeopleQuery =
       "/queries?id=findAllPeople&q=SELECT%20*%20FROM%20/People";
@@ -161,23 +146,12 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       + " \"lastName\": \"Patel\"," + " \"birthDate\": \"23/08/2012\"," + "\"gender\": \"MALE\""
       + "}" + "]";
 
-  public RestAPIsAndInterOpsDUnitTest() {
-    super();
-    this.helper = new ManagementTestBase() {
-      {
-      }
-    };
+  @Parameterized.Parameter
+  public String urlContext;
 
-  }
-
-  @Override
-  public final void preSetUp() throws Exception {
-    disconnectAllFromDS();
-  }
-
-  @Override
-  protected final void postTearDownLocatorTestBase() throws Exception {
-    disconnectAllFromDS();
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    return Arrays.asList("/geode", "/gemfire-api");
   }
 
   public String startBridgeServerWithRestService(final String hostName, final String[] groups,
@@ -828,14 +802,6 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
     // Querying
     doQueryOpsUsingRestApis(restEndpoint);
-
-    // stop the client and make sure the bridge server notifies
-    // stopBridgeMemberVM(client);
-    helper.closeCache(locator);
-    helper.closeCache(manager);
-    helper.closeCache(server);
-    helper.closeCache(client);
-
   }
 
   private void createClientCache(final String host, final int port) throws Exception {
