@@ -20,12 +20,7 @@ MAINTAINER Apache Geode Community <dev@geode.incubator.apache.org>
 LABEL Vendor="Apache Geode (incubating)"
 LABEL version=1.0.0
 
-# download JDK 8
-ENV	JAVA_HOME /jdk1.8.0_111
-
-RUN	yum install -y wget which tar git \
-	&& wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz" \
-	&& tar xf jdk-8u111-linux-x64.tar.gz \
+RUN	yum install -y wget which tar git java-1.8.0-openjdk-devel \
 	&& git clone https://github.com/apache/incubator-geode.git \
 	&& cd incubator-geode \
 	&& git checkout rel/v1.0.0-incubating \
@@ -33,15 +28,12 @@ RUN	yum install -y wget which tar git \
 	&& ls /incubator-geode | grep -v geode-assembly | xargs rm -rf \
 	&& rm -rf /root/.gradle/ \
 	&& rm -rf /incubator-geode/geode-assembly/build/distributions/ \
-	&& rm -rf /jdk-8u111-linux-x64.tar.gz \
-	&& rm -rf /jdk1.8.0_111/lib/missioncontrol/* \
-	&& rm -rf /jdk1.8.0_111/lib/visualvm/* \
 	&& rm -rf /usr/share/locale/* \
 	&& yum remove -y perl \
 	&& yum clean all
 
 ENV GEODE_HOME /incubator-geode/geode-assembly/build/install/apache-geode
-ENV PATH $PATH:$GEODE_HOME/bin:$JAVA_HOME/bin
+ENV PATH $PATH:$GEODE_HOME/bin
 
 # Default ports:
 # RMI/JMX 1099
