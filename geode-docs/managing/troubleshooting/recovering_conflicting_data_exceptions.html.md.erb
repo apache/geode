@@ -46,7 +46,7 @@ In this case the fix is simply to move aside or delete the persistent files for 
 
 ## A Network Failure Occurs and Network Partitioning Detection is Disabled
 
-When `enable-network-partition-detection` is set to true, Geode will detect a network partition and shut down unreachable members to prevent a network partition ("split brain") from occurring. No conflicts should occur when the system is healed.
+When `enable-network-partition-detection` is set to the default value of true, Geode will detect a network partition and shut down unreachable members to prevent a network partition ("split brain") from occurring. No conflicts should occur when the system is healed.
 
 However if `enable-network-partition-detection` is false, Geode will not detect the network partition. Instead, each side of the network partition will end up recording that the other side of the partition has stale data. When the partition is healed and persistent members are restarted, the members will report a conflict because both sides of the partition think the other members are stale.
 
@@ -54,7 +54,7 @@ In some cases it may be possible to choose between sides of the network partitio
 
 ## Salvaging Data
 
-If you receive a ConflictingPersistentDataException, you will not be able to start all of your members and have them join the same distributed system. You have some members with conflicting data.
+If you receive a `ConflictingPersistentDataException`, you will not be able to start all of your members and have them join the same distributed system. You have some members with conflicting data.
 
 First, see if there is part of the system that you can recover. For example if you just added some new members to the system, try to start up without including those members.
 

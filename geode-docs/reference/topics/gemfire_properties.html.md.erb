@@ -160,8 +160,8 @@ See <a href="../../managing/autoreconnect/member-reconnect.html">Handling Forced
 </tr>
 <tr class="odd">
 <td>enable-network-partition-detection</td>
-<td>Boolean instructing the system to detect and handle splits in the distributed system, typically caused by a partitioning of the network (split brain) where the distributed system is running. We recommend setting this property to <code class="ph codeph">true</code>. You must set this property to the same value across all your distributed system members. In addition, you must set this property to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
-<td>false</td>
+<td>Boolean instructing the system to detect and handle splits in the distributed system, typically caused by a partitioning of the network (split brain) where the distributed system is running. You must set this property to the same value across all your distributed system members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
+<td>true</td>
 </tr>
 <tr class="even">
 <td>enable-cluster-configuration</td>
