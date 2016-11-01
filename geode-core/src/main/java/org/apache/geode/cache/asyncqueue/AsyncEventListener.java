@@ -27,7 +27,7 @@ import org.apache.geode.cache.CacheCallback;
  * 
  * <pre>
  * public class MyEventListener implements AsyncEventListener {
- * 
+ *
  *   public boolean processEvents(List<AsyncEvent> events) {
  *     for (Iterator i = events.iterator(); i.hasNext();) {
  *       AsyncEvent event = (AsyncEvent) i.next();
@@ -50,6 +50,7 @@ import org.apache.geode.cache.CacheCallback;
  *       }
  * 
  *     }
+ *     return true;
  *   }
  * }
  * </pre>
