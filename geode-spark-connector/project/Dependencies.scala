@@ -22,7 +22,7 @@ object Dependencies {
   object Compile {
     val sparkStreaming = "org.apache.spark" %% "spark-streaming" % "1.3.0" 
     val sparkSql = "org.apache.spark" %% "spark-sql" % "1.3.0"
-    val geode = "org.apache.geode" % "geode-core" % "1.0.0-incubating-SNAPSHOT" excludeAll(ExclusionRule(organization = "org.jboss.netty") )
+    val geode = "org.apache.geode" % "geode-core" % "1.0.0-incubating" excludeAll(ExclusionRule(organization = "org.jboss.netty") )
   }
 
   object Test {
