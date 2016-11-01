@@ -392,7 +392,7 @@ public class IntegratedSecurityService implements SecurityService {
     Object newValue = null;
 
     // if the data is a byte array, but the data itself is supposed to be an object, we need to
-    // desearized it before we pass
+    // deserialize it before we pass
     // it to the callback.
     if (valueIsSerialized && value instanceof byte[]) {
       try {

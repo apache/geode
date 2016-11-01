@@ -14,16 +14,17 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
 import org.apache.geode.rest.internal.web.controllers.support.RegionData;
 import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.security.RestSecurityService;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
@@ -63,6 +64,11 @@ public class PdxBasedCrudController extends CommonCrudController {
   protected static final String REST_API_VERSION = "/v1";
 
   protected static final String DEFAULT_GETALL_RESULT_LIMIT = "50";
+
+  public PdxBasedCrudController(final RestSecurityService securityService,
+      final ObjectMapper objectMapper) {
+    super(securityService, objectMapper);
+  }
 
   @Override
   protected String getRestApiVersion() {
@@ -114,7 +120,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     headers.setLocation(toUri(region, key));
 
     if (existingPdxObj != null) {
-      final RegionEntryData<Object> data = new RegionEntryData<Object>(region);
+      final RegionEntryData<Object> data = new RegionEntryData<>(region);
       data.add(existingPdxObj);
       headers.setContentType(MediaType.APPLICATION_JSON);
       return new ResponseEntity<RegionEntryData<?>>(data, headers, HttpStatus.CONFLICT);
@@ -150,13 +156,13 @@ public class PdxBasedCrudController extends CommonCrudController {
     region = decode(region);
 
     Map<Object, Object> valueObjs = null;
-    final RegionData<Object> data = new RegionData<Object>(region);
+    final RegionData<Object> data = new RegionData<>(region);
 
     final HttpHeaders headers = new HttpHeaders();
     String keyList = null;
     int regionSize = getRegion(region).size();
-    List<Object> keys = new ArrayList<Object>(regionSize);
-    List<Object> values = new ArrayList<Object>(regionSize);
+    List<Object> keys = new ArrayList<>(regionSize);
+    List<Object> values = new ArrayList<>(regionSize);
 
     for (Map.Entry<Object, Object> entry : getValues(region).entrySet()) {
       Object value = entry.getValue();
@@ -175,8 +181,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         if (maxLimit < 0) {
           String errorMessage =
               String.format("Negative limit param (%1$s) is not valid!", maxLimit);
-          return new ResponseEntity<String>(convertErrorAsJson(errorMessage),
-              HttpStatus.BAD_REQUEST);
+          return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
         }
 
         int mapSize = keys.size();
@@ -191,7 +196,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         // limit param is not specified in proper format. set the HTTPHeader
         // for BAD_REQUEST
         String errorMessage = String.format("limit param (%1$s) is not valid!", limit);
-        return new ResponseEntity<String>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -222,24 +227,21 @@ public class PdxBasedCrudController extends CommonCrudController {
       @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
     logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
 
-    SecurityService securityService = SecurityService.getSecurityService();
     final HttpHeaders headers = new HttpHeaders();
     region = decode(region);
 
     if (keys.length == 1) {
       /* GET op on single key */
       Object value = getValue(region, keys[0]);
-      boolean isSerialized = (!(value instanceof byte[]));
-      Object postProcessed = securityService.postProcess(region, keys[0], value, isSerialized);
       // if region.get(K) return null (i.e INVLD or TOMBSTONE case) We consider 404, NOT Found case
-      if (postProcessed == null) {
+      if (value == null) {
         throw new ResourceNotFoundException(String
             .format("Key (%1$s) does not exist for region (%2$s) in cache!", keys[0], region));
       }
 
       final RegionEntryData<Object> data = new RegionEntryData<>(region);
       headers.set("Content-Location", toUri(region, keys[0]).toASCIIString());
-      data.add(postProcessed);
+      data.add(value);
       return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
 
     } else {
@@ -264,11 +266,6 @@ public class PdxBasedCrudController extends CommonCrudController {
       }
 
       final Map<Object, Object> valueObjs = getValues(region, keys);
-      for (Object key : valueObjs.keySet()) {
-        Object value = valueObjs.get(key);
-        boolean isSerialized = (!(value instanceof byte[]));
-        valueObjs.put(key, securityService.postProcess(region, key, value, isSerialized));
-      }
 
       // Do we need to remove null values from Map..?
       // To Remove null value entries from map.

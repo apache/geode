@@ -15,6 +15,7 @@
 
 package org.apache.geode.rest.internal.web.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -27,6 +28,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.security.RestSecurityService;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.logging.log4j.Logger;
@@ -68,6 +70,11 @@ public class FunctionAccessController extends AbstractBaseController {
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
 
+  public FunctionAccessController(final RestSecurityService securityService,
+      final ObjectMapper objectMapper) {
+    super(securityService, objectMapper);
+  }
+
   /**
    * Gets the version of the REST API implemented by this @Controller.
    * <p>
@@ -102,7 +109,7 @@ public class FunctionAccessController extends AbstractBaseController {
         JSONUtils.formulateJsonForListFunctionsCall(registeredFunctions.keySet());
     final HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri("functions"));
-    return new ResponseEntity<String>(listFunctionsAsJson, headers, HttpStatus.OK);
+    return new ResponseEntity<>(listFunctionsAsJson, headers, HttpStatus.OK);
   }
 
   /**
@@ -144,7 +151,6 @@ public class FunctionAccessController extends AbstractBaseController {
     if (StringUtils.hasText(region)) {
       logger.debug("Executing Function ({}) with arguments ({}) on Region ({})...", functionId,
           ArrayUtils.toString(argsInBody), region);
-
 
       region = decode(region);
       try {
@@ -211,6 +217,7 @@ public class FunctionAccessController extends AbstractBaseController {
         // execute function with no args
         results = function.execute(functionId);
       }
+      // TODO-kjd: here
     } catch (ClassCastException cce) {
       throw new GemfireRestException("Key is of an inappropriate type for this region!", cce);
     } catch (NullPointerException npe) {
@@ -236,7 +243,7 @@ public class FunctionAccessController extends AbstractBaseController {
           @SuppressWarnings("unchecked")
           String functionResultAsJson =
               JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
-          return new ResponseEntity<String>(functionResultAsJson, headers, HttpStatus.OK);
+          return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
         } catch (JSONException e) {
           throw new GemfireRestException(
               "Could not convert function results into Restful (JSON) format!", e);

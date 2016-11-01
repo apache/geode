@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.templates.SamplePostProcessor;
@@ -70,7 +71,11 @@ public class RestSecurityPostProcessorTest {
   @BeforeClass
   public static void before() throws Exception {
     serverStarter.startServer();
-    serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    Region region =
+        serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    region.put("key1",
+        "{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Order\",\"purchaseOrderNo\":1121,\"customerId\":1012,\"description\":\"Order for  XYZ Corp\",\"orderDate\":\"02/10/2014\",\"deliveryDate\":\"02/20/2014\",\"contact\":\"Jelly Bean\",\"email\":\"jelly.bean@example.com\",\"phone\":\"01-2048096\",\"items\":[{\"itemNo\":1,\"description\":\"Product-100\",\"quantity\":12,\"unitPrice\":5,\"totalPrice\":60}],\"totalPrice\":225}");
+    region.put("key2", "bar");
   }
 
   /**
@@ -79,22 +84,8 @@ public class RestSecurityPostProcessorTest {
   @Test
   public void getRegionKey() throws Exception {
 
-    String json =
-        "{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Order\",\"purchaseOrderNo\":1121,\"customerId\":1012,\"description\":\"Order for  XYZ Corp\",\"orderDate\":\"02/10/2014\",\"deliveryDate\":\"02/20/2014\",\"contact\":\"Jelly Bean\",\"email\":\"jelly.bean@example.com\",\"phone\":\"01-2048096\",\"items\":[{\"itemNo\":1,\"description\":\"Product-100\",\"quantity\":12,\"unitPrice\":5,\"totalPrice\":60}],\"totalPrice\":225}";
-    HttpResponse response = restClient.doPut("/" + REGION_NAME + "/key1?op=PUT", "dataWriter",
-        "1234567", "{ \"key1\" : \"foo\" }");
-    assertEquals(200, getCode(response));
-
-    response = restClient.doPut("/" + REGION_NAME + "/key2?op=PUT", "dataWriter", "1234567",
-        "{ \"key2\" : \"bar\" }");
-    assertEquals(200, getCode(response));
-
-    response =
-        restClient.doPut("/" + REGION_NAME + "/key1?op=REPLACE", "key1User", "1234567", json);
-    assertEquals(200, getCode(response));
-
     // Test a single key
-    response = restClient.doGet("/" + REGION_NAME + "/key1", "key1User", "1234567");
+    HttpResponse response = restClient.doGet("/" + REGION_NAME + "/key1", "key1User", "1234567");
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
 
@@ -103,6 +94,21 @@ public class RestSecurityPostProcessorTest {
 
     // Test multiple keys
     response = restClient.doGet("/" + REGION_NAME + "/key1,key2", "dataReader", "1234567");
+    assertEquals(200, getCode(response));
+    assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
+
+    JSONObject jsonObject = getJsonObject(response);
+    JSONArray jsonArray = jsonObject.getJSONArray(REGION_NAME);
+    final int length = jsonArray.length();
+    for (int index = 0; index < length; ++index) {
+      String data = jsonArray.getString(index);
+      assertTrue(data.contains("dataReader/" + REGION_NAME + "/"));
+    }
+  }
+
+  @Test
+  public void getRegion() throws Exception {
+    HttpResponse response = restClient.doGet("/" + REGION_NAME, "dataReader", "1234567");
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
 

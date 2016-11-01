@@ -14,6 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -27,6 +28,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.controllers.support.RestServersResultCollector;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.security.RestSecurityService;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.logging.log4j.Logger;
@@ -54,6 +56,11 @@ import java.util.Set;
 public abstract class CommonCrudController extends AbstractBaseController {
 
   private static final Logger logger = LogService.getLogger();
+
+  public CommonCrudController(final RestSecurityService securityService,
+      final ObjectMapper objectMapper) {
+    super(securityService, objectMapper);
+  }
 
   /**
    * List all available resources (Regions) in the GemFire cluster
