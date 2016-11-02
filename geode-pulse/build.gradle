@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.TestPropertiesWriter
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -126,4 +128,18 @@ war {
   classpath project(':geode-core').webJar.archivePath
 }
 
+task uiTest(type:Test) {
+  useJUnit {
+    includeCategories 'org.apache.geode.test.junit.categories.UITest'
+    excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+  }
+
+  doFirst {
+    TestPropertiesWriter.writeTestProperties(buildDir, name)
+  }
+}
+
 uiTest.dependsOn war
+uiTest.finalizedBy rootProject.combineReports
+rootProject.combineReports.mustRunAfter uiTest
+

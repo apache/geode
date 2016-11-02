@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.util.List;
 
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +66,8 @@ public class SampleCollectorTest {
 
     final StatisticsSampler sampler = new TestStatisticsSampler(manager);
     this.sampleCollector = new SampleCollector(sampler);
-    this.sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime());
+    this.sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
+        new MainWithChildrenRollingFileHandler());
   }
 
   @After

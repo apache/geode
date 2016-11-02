@@ -19,6 +19,7 @@ import java.io.File;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -58,7 +59,11 @@ public class SimpleStatSampler extends HostStatSampler {
   private final StatisticsManager sm;
 
   public SimpleStatSampler(CancelCriterion stopper, StatisticsManager sm) {
-    super(stopper, new StatSamplerStats(sm, sm.getId()));
+    this(stopper, sm, new NanoTimer());
+  }
+
+  public SimpleStatSampler(CancelCriterion stopper, StatisticsManager sm, NanoTimer timer) {
+    super(stopper, new StatSamplerStats(sm, sm.getId()), timer);
     this.sm = sm;
     logger.info(LogMarker.STATISTICS, LocalizedMessage
         .create(LocalizedStrings.SimpleStatSampler_STATSSAMPLERATE_0, getSampleRate()));

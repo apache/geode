@@ -14,27 +14,25 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.ManagerLogWriter;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.List;
 
 /**
  * Extracted from {@link HostStatSampler} and {@link GemFireStatSampler}.
@@ -55,6 +53,8 @@ public class StatArchiveHandler implements SampleHandler {
 
   /** The collector responsible for sample statistics and notifying handlers. */
   private final SampleCollector collector;
+
+  private final RollingFileHandler rollingFileHandler;
 
   /**
    * Indicates if archiving has been disabled by specifying empty string for the archive file name.
@@ -78,9 +78,11 @@ public class StatArchiveHandler implements SampleHandler {
    * Constructs a new instance. The {@link StatArchiveHandlerConfig} and {@link SampleCollector}
    * must not be null.
    */
-  public StatArchiveHandler(StatArchiveHandlerConfig config, SampleCollector sampleCollector) {
+  public StatArchiveHandler(StatArchiveHandlerConfig config, SampleCollector sampleCollector,
+      RollingFileHandler rollingFileHandler) {
     this.config = config;
     this.collector = sampleCollector;
+    this.rollingFileHandler = rollingFileHandler;
   }
 
   /**
@@ -465,13 +467,13 @@ public class StatArchiveHandler implements SampleHandler {
         if (!archiveDir.exists()) {
           archiveDir.mkdirs();
         }
-        mainArchiveId = ManagerLogWriter.calcNextMainId(archiveDir, false);
+        mainArchiveId = this.rollingFileHandler.calcNextMainId(archiveDir, false);
         mainArchiveIdCalculated = true;
       }
       if (mainArchiveId == 0) {
         mainArchiveId = 1;
       }
-      archiveId = ManagerLogWriter.calcNextChildId(archive, mainArchiveId);
+      archiveId = this.rollingFileHandler.calcNextChildId(archive, mainArchiveId);
       if (archiveId > 0) {
         archiveId--;
       }
@@ -482,11 +484,11 @@ public class StatArchiveHandler implements SampleHandler {
       StringBuffer buf = new StringBuffer(archive.getPath());
       int insertIdx = buf.lastIndexOf(".");
       if (insertIdx == -1) {
-        buf.append(ManagerLogWriter.formatId(mainArchiveId))
-            .append(ManagerLogWriter.formatId(archiveId));
+        buf.append(this.rollingFileHandler.formatId(mainArchiveId))
+            .append(this.rollingFileHandler.formatId(archiveId));
       } else {
-        buf.insert(insertIdx, ManagerLogWriter.formatId(archiveId));
-        buf.insert(insertIdx, ManagerLogWriter.formatId(mainArchiveId));
+        buf.insert(insertIdx, this.rollingFileHandler.formatId(archiveId));
+        buf.insert(insertIdx, this.rollingFileHandler.formatId(mainArchiveId));
       }
       result = new File(buf.toString());
     } while (result.exists());
@@ -499,8 +501,8 @@ public class StatArchiveHandler implements SampleHandler {
         markerName = markerName.substring(0, dotIdx);
       }
       StringBuffer buf = new StringBuffer(markerName);
-      buf.append(ManagerLogWriter.formatId(mainArchiveId)).append(ManagerLogWriter.formatId(0))
-          .append(".marker");
+      buf.append(this.rollingFileHandler.formatId(mainArchiveId))
+          .append(this.rollingFileHandler.formatId(0)).append(".marker");
       File marker = new File(buf.toString());
       if (marker.exists()) {
         if (!marker.delete()) {
@@ -520,8 +522,8 @@ public class StatArchiveHandler implements SampleHandler {
         markerName = markerName.substring(0, dotIdx);
       }
       StringBuffer buf = new StringBuffer(markerName);
-      buf.append(ManagerLogWriter.formatId(mainArchiveId)).append(ManagerLogWriter.formatId(0))
-          .append(".marker");
+      buf.append(this.rollingFileHandler.formatId(mainArchiveId))
+          .append(this.rollingFileHandler.formatId(0)).append(".marker");
       File marker = new File(buf.toString());
       if (!marker.exists()) {
         try {
@@ -555,7 +557,7 @@ public class StatArchiveHandler implements SampleHandler {
       if (!archiveDir.exists()) {
         archiveDir.mkdirs();
       }
-      mainArchiveId = ManagerLogWriter.calcNextMainId(archiveDir, false);
+      mainArchiveId = this.rollingFileHandler.calcNextMainId(archiveDir, false);
       mainArchiveId++;
       mainArchiveIdCalculated = true;
     }
@@ -572,8 +574,8 @@ public class StatArchiveHandler implements SampleHandler {
       markerName = markerName.substring(0, dotIdx);
     }
     StringBuffer buf = new StringBuffer(markerName);
-    buf.append(ManagerLogWriter.formatId(mainArchiveId)).append(ManagerLogWriter.formatId(0))
-        .append(".marker");
+    buf.append(this.rollingFileHandler.formatId(mainArchiveId))
+        .append(this.rollingFileHandler.formatId(0)).append(".marker");
     File marker = new File(buf.toString());
     if (!marker.exists()) {
       try {
@@ -596,9 +598,9 @@ public class StatArchiveHandler implements SampleHandler {
    * @return the modified archive file name to use; it is modified by applying the next main id if
    *         any files in the dir already have a main id in the file name
    */
-  private static File getRenameArchiveName(File archive) {
+  private File getRenameArchiveName(File archive) {
     File dir = archive.getAbsoluteFile().getParentFile();
-    int previousMainId = ManagerLogWriter.calcNextMainId(dir, false);
+    int previousMainId = this.rollingFileHandler.calcNextMainId(dir, false);
     if (previousMainId == 0) {
       previousMainId = 1;
     }
@@ -609,10 +611,11 @@ public class StatArchiveHandler implements SampleHandler {
       StringBuffer buf = new StringBuffer(archive.getPath());
       int insertIdx = buf.lastIndexOf(".");
       if (insertIdx == -1) {
-        buf.append(ManagerLogWriter.formatId(previousMainId)).append(ManagerLogWriter.formatId(1));
+        buf.append(this.rollingFileHandler.formatId(previousMainId))
+            .append(this.rollingFileHandler.formatId(1));
       } else {
-        buf.insert(insertIdx, ManagerLogWriter.formatId(1));
-        buf.insert(insertIdx, ManagerLogWriter.formatId(previousMainId));
+        buf.insert(insertIdx, this.rollingFileHandler.formatId(1));
+        buf.insert(insertIdx, this.rollingFileHandler.formatId(previousMainId));
       }
       result = new File(buf.toString());
     } while (result.exists());
@@ -621,52 +624,26 @@ public class StatArchiveHandler implements SampleHandler {
 
   /**
    * Remove old versions of the specified archive file name in order to stay under the specified
-   * disk space limit. Old versions of the archive file are those that match based on using
-   * {@link #getArchivePattern(String)} which ignores mainArchiveId and archiveId.
+   * disk space limit. Old versions of the archive file are those that match based on using a
+   * pattern which ignores mainArchiveId and archiveId.
    * 
    * @param archiveFile the archive file to remove old versions of
    * @param spaceLimit the disk space limit
    */
-  private static void removeOldArchives(File archiveFile, long spaceLimit) {
+  private void removeOldArchives(File archiveFile, long spaceLimit) {
     if (spaceLimit == 0 || archiveFile == null || archiveFile.getPath().equals("")) {
       return;
     }
     File archiveDir = archiveFile.getAbsoluteFile().getParentFile();
-    ManagerLogWriter.checkDiskSpace("archive", archiveFile, spaceLimit, archiveDir,
-        getArchivePattern(archiveFile.getName()), getOrCreateLogWriter());
+    this.rollingFileHandler.checkDiskSpace("archive", archiveFile, spaceLimit, archiveDir,
+        getOrCreateLogWriter());
   }
 
-  private static InternalLogWriter getOrCreateLogWriter() {
+  private InternalLogWriter getOrCreateLogWriter() {
     InternalLogWriter lw = InternalDistributedSystem.getStaticInternalLogWriter();
     if (lw == null) {
       lw = LogWriterLogger.create(logger);
     }
     return lw;
-  }
-
-  /**
-   * Create a regex pattern which will match the specified archive file name even if it has a
-   * mainArchiveId and/or archiveId.
-   * 
-   * @param name archive file name to create a regex pattern for
-   * @return regex pattern to use in finding matching file names
-   */
-  private static Pattern getArchivePattern(String name) {
-    String ext = "";
-
-    int extIdx = name.lastIndexOf('.');
-    if (extIdx != -1) {
-      ext = "\\Q" + name.substring(extIdx) + "\\E";
-      name = name.substring(0, extIdx);
-    }
-
-    /* name may have -DD-DD on the end of it. Trim that part off. */
-    int dashIdx = name.indexOf('-');
-    if (dashIdx != -1) {
-      name = name.substring(0, dashIdx);
-    }
-
-    name = "\\Q" + name + "\\E" + "-\\d+-\\d+" + ext;
-    return Pattern.compile(name);
   }
 }

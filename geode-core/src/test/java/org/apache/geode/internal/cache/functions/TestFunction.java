@@ -92,6 +92,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
   private final Properties props;
   private static final String NOACKTEST = "NoAckTest";
   private static int retryCount = 0;
+  private static int retryCountForExecuteFunctionReexecuteException = 0;
   private static int firstExecutionCount = 0;
 
   // Default constructor for Declarable purposes
@@ -686,16 +687,16 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
     }
   }
 
-  private void executeFunctionReexecuteException(FunctionContext context) {
-    retryCount++;
+  private synchronized void executeFunctionReexecuteException(FunctionContext context) {
+    retryCountForExecuteFunctionReexecuteException++;
     DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     LogWriter logger = ds.getLogWriter();
     logger.fine("Executing executeException in TestFunction on Member : "
         + ds.getDistributedMember() + "with Context : " + context);
-    if (retryCount >= 5) {
+    if (retryCountForExecuteFunctionReexecuteException >= 5) {
       logger.fine("Tried Function Execution 5 times. Now Returning after 5 attempts");
-      context.getResultSender().lastResult(new Integer(retryCount));
-      retryCount = 0;
+      context.getResultSender().lastResult(new Integer(retryCountForExecuteFunctionReexecuteException));
+      retryCountForExecuteFunctionReexecuteException = 0;
       return;
     }
     if (context.getArguments() instanceof Boolean) {
@@ -981,7 +982,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
     }
   }
 
-  private void executeFunctionReexecuteExceptionOnServer(FunctionContext context) {
+  private synchronized void executeFunctionReexecuteExceptionOnServer(FunctionContext context) {
     if (context.isPossibleDuplicate()) {
       retryCount++;
     } else {

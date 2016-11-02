@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -92,6 +93,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   }
 
 
+  @Category(FlakyTest.class) // GEODE-2051
   @Test
   public void testCloseRegionOnClient() {
     server1.invoke(() -> RegionCloseDUnitTest.VerifyClientProxyOnServerBeforeClose());

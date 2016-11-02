@@ -24,7 +24,7 @@ To assist with the quick lookup of multiple values in a Map (or HashMap) type fi
 For example, you could create a map index to support the following query:
 
 ``` pre
-SELECT * fROM /users u WHERE u.name['first'] = 'John' OR u.name['last'] = 'Smith'
+SELECT * FROM /users u WHERE u.name['first'] = 'John' OR u.name['last'] = 'Smith'
 ```
 
 The map index extends regular range indexes created on single key by maintaining indexes for other specified keys, or for all keys if `*` is used. The underlying structure of the map index can be thought of as a wrapper around all these indexes.

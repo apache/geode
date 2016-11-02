@@ -403,7 +403,6 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
    * this is the case of HA then system should retry the function execution. After 5th attempt
    * function will send Boolean as last result.
    */
-  @Category(FlakyTest.class) // GEODE-1932
   @Test
   public void testOnServerExecution_FunctionInvocationTargetException() {
     createScenario();
@@ -664,8 +663,10 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     try {
       ResultCollector rs = execute(member, Boolean.TRUE, function, isByName);
       ArrayList list = (ArrayList) rs.getResult();
-      assertTrue(((Integer) list.get(0)) == 1);
-      assertTrue(((Integer) list.get(1)) == 5);
+      assertTrue("Value of send result of the executed function : " + list.get(0)
+          + "does not match the expected value : " + 1,((Integer) list.get(0)) == 1);
+      assertTrue("Value of last result of the executed function : " + list.get(0)
+          + "is not equal or more than expected value : " + 5,((Integer) list.get(1)) >= 5);
     } catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail("This is not expected Exception", ex);
