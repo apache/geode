@@ -146,7 +146,7 @@ public class LoadMonitor implements ConnectionListener {
     private int skippedLoadUpdates;
 
     public PollingThread(long pollInterval, int forceUpdateFrequency) {
-      super("BridgeServer-LoadPollingThread");
+      super("Cache Server Load Polling Thread");
       this.pollInterval = pollInterval;
       this.forceUpdateFrequency = forceUpdateFrequency;
       this.setDaemon(true);

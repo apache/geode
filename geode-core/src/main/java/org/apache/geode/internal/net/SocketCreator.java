@@ -964,7 +964,7 @@ public class SocketCreator {
           optionalWatcher.beforeConnect(socket);
         }
         socket.connect(sockaddr, Math.max(timeout, 0));
-        configureClientSSLSocket(socket);
+        configureClientSSLSocket(socket, timeout);
         return socket;
       } else {
         if (clientSide && this.clientSocketFactory != null) {
@@ -1063,7 +1063,7 @@ public class SocketCreator {
    * When a socket is accepted from a server socket, it should be passed to this method for SSL
    * configuration.
    */
-  private void configureClientSSLSocket(Socket socket) throws IOException {
+  private void configureClientSSLSocket(Socket socket, int timeout) throws IOException {
     if (socket instanceof SSLSocket) {
       SSLSocket sslSocket = (SSLSocket) socket;
 
@@ -1082,6 +1082,9 @@ public class SocketCreator {
       }
 
       try {
+        if (timeout > 0) {
+          sslSocket.setSoTimeout(timeout);
+        }
         sslSocket.startHandshake();
         SSLSession session = sslSocket.getSession();
         Certificate[] peer = session.getPeerCertificates();
