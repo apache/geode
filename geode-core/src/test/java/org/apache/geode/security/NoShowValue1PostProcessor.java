@@ -14,9 +14,9 @@
  */
 package org.apache.geode.security;
 
-import java.io.Serializable;
+import org.apache.geode.cache.query.Query;
 
-import org.apache.geode.security.PostProcessor;
+import java.util.Collection;
 
 public class NoShowValue1PostProcessor implements PostProcessor {
 
@@ -28,5 +28,11 @@ public class NoShowValue1PostProcessor implements PostProcessor {
     } else {
       return value;
     }
+  }
+
+  @Override
+  public Collection<Object> processQueryResult(Object principal, final Query query,
+      final Collection<String> regionNames, final Collection<Object> results) {
+    return null;
   }
 }

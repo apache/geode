@@ -14,9 +14,12 @@
  */
 package org.apache.geode.security.templates;
 
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.security.PostProcessor;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -38,12 +41,43 @@ public class SamplePostProcessor implements PostProcessor {
    */
   @Override
   public Object processRegionValue(Object principal, String regionName, Object key, Object value) {
+    return getUsername(principal) + "/" + regionName + "/" + key + "/" + value;
+  }
+
+  private String getUsername(final Object principal) {
     String name = null;
     if (principal instanceof Principal) {
       name = ((Principal) principal).getName();
     } else {
       name = principal.toString();
     }
-    return name + "/" + regionName + "/" + key + "/" + value;
+    return name;
   }
+
+  /**
+   * Modify the values within the result set, prepending the user and the list of regions used in
+   * the query.
+   *
+   * @param principal The principal that's accessing the value
+   * @param query The query object that was executed
+   * @param regions A collection of region names
+   * @param results The result(s) of the query
+   * @return the post-processed results
+   */
+  @Override
+  public Collection<Object> processQueryResult(final Object principal, final Query query,
+      final Collection<String> regions, final Collection<Object> results) {
+    final String name = getUsername(principal);
+    Collection<Object> processedResults = new ArrayList<>(results.size());
+    StringBuilder stringBuilder = new StringBuilder(100);
+    for (Object region : regions) {
+      stringBuilder.append(region);
+    }
+    for (Object result : results) {
+      processedResults.add(name + stringBuilder.toString() + "/" + result);
+    }
+    return processedResults;
+  }
+
+
 }

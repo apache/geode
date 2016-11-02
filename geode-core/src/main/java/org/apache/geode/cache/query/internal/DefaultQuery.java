@@ -26,16 +26,39 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
-import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.QueryStatistics;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.cache.*;
-import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PRQueryProcessor;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -771,9 +794,9 @@ public class DefaultQuery implements Query {
 
   /**
    * Returns an unmodifiable Set containing the Region names which are present in the Query. A
-   * region which is assosciated with the query as a bind parameter will not be included in the
-   * list. The Region names returned by the query do not indicate anything about the state of the
-   * region or whether the region actually exists in the GemfireCache etc.
+   * region which is associated with the query as a bind parameter will not be included in the list.
+   * The Region names returned by the query do not indicate anything about the state of the region
+   * or whether the region actually exists in the GemfireCache etc.
    *
    * @param parameters the parameters to be passed in to the query when executed
    * @return Unmodifiable List containing the region names.

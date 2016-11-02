@@ -14,15 +14,15 @@
  */
 package org.apache.geode.security;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.Properties;
-
-import org.apache.geode.security.PostProcessor;
-
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Properties;
 
 public class PDXPostProcessor implements PostProcessor {
   public static byte[] BYTES = {1, 0};
@@ -47,6 +47,12 @@ public class PDXPostProcessor implements PostProcessor {
       assertTrue(value instanceof SimpleClass);
     }
     return value;
+  }
+
+  @Override
+  public Collection<Object> processQueryResult(final Object principal, final Query query,
+      final Collection<String> regionNames, final Collection<Object> results) {
+    return null;
   }
 
   public int getCount() {

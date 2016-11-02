@@ -14,7 +14,12 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -120,7 +125,7 @@ public interface CompiledValue {
 
   /**
    * Populates the Set passed with the name of the Region which, if any , will be the bottommost
-   * object (CompiledRegion). The default implemenation is provided in the AbstractCompiledValue &
+   * object (CompiledRegion). The default implementation is provided in the AbstractCompiledValue &
    * overridden in the CompiledSelect as it can contain multiple iterators
    */
   public void getRegionsInQuery(Set regionNames, Object[] parameters);

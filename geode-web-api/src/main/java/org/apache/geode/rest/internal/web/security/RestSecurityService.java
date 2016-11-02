@@ -15,9 +15,12 @@
 
 package org.apache.geode.rest.internal.web.security;
 
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
 
 @Component("securityService")
 public class RestSecurityService {
@@ -53,5 +56,10 @@ public class RestSecurityService {
   public Object postProcess(String regionPath, Object key, Object value,
       boolean valueIsSerialized) {
     return securityService.postProcess(regionPath, key, value, valueIsSerialized);
+  }
+
+  public Collection<Object> postProcess(Query query, Collection<String> regionNames,
+      Collection<Object> results) {
+    return securityService.postProcess(query, regionNames, results);
   }
 }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.security;
 
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -25,6 +26,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
@@ -86,6 +88,12 @@ public interface SecurityService {
 
   Object postProcess(Object principal, String regionPath, Object key, Object value,
       boolean valueIsSerialized);
+
+  Collection<Object> postProcess(Query query, Collection<String> regionNames,
+      Collection<Object> results);
+
+  Collection<Object> postProcess(Object principal, Query query, Collection<String> regionNames,
+      Collection<Object> results);
 
   boolean isClientSecurityRequired();
 

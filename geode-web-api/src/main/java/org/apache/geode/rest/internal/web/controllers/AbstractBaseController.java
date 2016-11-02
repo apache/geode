@@ -27,7 +27,9 @@ import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -80,7 +82,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 
@@ -196,18 +197,16 @@ public abstract class AbstractBaseController {
     }
   }
 
-  public ResponseEntity<String> processQueryResponse(Object queryResult, String queryId,
+  public ResponseEntity<String> processQueryResponse(Query query, Object queryResult,
       RestSecurityService securityService) throws JSONException {
     if (queryResult instanceof Collection<?>) {
-      Collection<Object> result = (Collection<Object>) queryResult;
-      Collection<Object> postProcessedResult = new ArrayList<>(result.size());
-      postProcessedResult
-          .addAll(result.stream().map(item -> securityService.postProcess(null, null, item, true))
-              .collect(Collectors.toList()));
-      String queryResultAsJson = JSONUtils.convertCollectionToJson(postProcessedResult);
+      Set regionNames = ((DefaultQuery) query).getRegionsInQuery(null);
+      Collection<Object> result = securityService.postProcess(query,
+          (Collection<String>) regionNames, (Collection<Object>) queryResult);
+      String queryResultAsJson = JSONUtils.convertCollectionToJson(result);
 
       final HttpHeaders headers = new HttpHeaders();
-      headers.setLocation(toUri("queries", queryId));
+      headers.setLocation(toUri("queries", query.getQueryString()));
       return new ResponseEntity<>(queryResultAsJson, headers, HttpStatus.OK);
     } else {
       throw new GemfireRestException(

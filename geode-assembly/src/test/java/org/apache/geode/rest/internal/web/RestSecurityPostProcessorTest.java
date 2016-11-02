@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.apache.geode.rest.internal.web.GeodeRestClient.getCode;
 import static org.apache.geode.rest.internal.web.GeodeRestClient.getContentType;
+import static org.apache.geode.rest.internal.web.GeodeRestClient.getJsonArray;
 import static org.apache.geode.rest.internal.web.GeodeRestClient.getJsonObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -43,6 +44,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.http.MediaType;
 
+import java.net.URLEncoder;
 import java.util.Properties;
 
 
@@ -114,6 +116,22 @@ public class RestSecurityPostProcessorTest {
 
     JSONObject jsonObject = getJsonObject(response);
     JSONArray jsonArray = jsonObject.getJSONArray(REGION_NAME);
+    final int length = jsonArray.length();
+    for (int index = 0; index < length; ++index) {
+      String data = jsonArray.getString(index);
+      assertTrue(data.contains("dataReader/" + REGION_NAME + "/"));
+    }
+  }
+
+  @Test
+  public void adhoc() throws Exception {
+    String query =
+        "/queries/adhoc?q=" + URLEncoder.encode("SELECT * FROM /" + REGION_NAME, "UTF-8");
+    HttpResponse response = restClient.doGet(query, "dataReader", "1234567");
+    assertEquals(200, getCode(response));
+    assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
+
+    JSONArray jsonArray = getJsonArray(response);
     final int length = jsonArray.length();
     for (int index = 0; index < length; ++index) {
       String data = jsonArray.getString(index);

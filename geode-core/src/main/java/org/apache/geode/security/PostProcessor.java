@@ -15,6 +15,9 @@
 
 package org.apache.geode.security;
 
+import org.apache.geode.cache.query.Query;
+
+import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -43,6 +46,9 @@ public interface PostProcessor {
    * @return the value that will be returned to the requester
    */
   Object processRegionValue(Object principal, String regionName, Object key, Object value);
+
+  Collection<Object> processQueryResult(Object principal, Query query, Collection<String> regions,
+      Collection<Object> results);
 
   /**
    * Give the implementation a chance to close the resources used. Called when cache is closed.
