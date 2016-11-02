@@ -194,7 +194,7 @@ public class QueryAccessController extends AbstractBaseController {
     // and handle the Exceptions appropriately (500 Server Error)!
     try {
       Object queryResult = query.execute();
-      return processQueryResponse(query, queryResult, securityService);
+      return processQueryResponse(query, null, queryResult, securityService);
     } catch (FunctionDomainException fde) {
       throw new GemfireRestException(
           "A function was applied to a parameter that is improper for that function!", fde);
@@ -275,7 +275,7 @@ public class QueryAccessController extends AbstractBaseController {
       // and handle the Exceptions appropriately (500 Server Error)!
       try {
         Object queryResult = compiledQuery.execute(args);
-        return processQueryResponse(compiledQuery, queryResult, securityService);
+        return processQueryResponse(compiledQuery, args, queryResult, securityService);
       } catch (FunctionDomainException fde) {
         throw new GemfireRestException(
             "A function was applied to a parameter that is improper for that function!", fde);

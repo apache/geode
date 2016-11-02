@@ -197,10 +197,10 @@ public abstract class AbstractBaseController {
     }
   }
 
-  public ResponseEntity<String> processQueryResponse(Query query, Object queryResult,
+  public ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult,
       RestSecurityService securityService) throws JSONException {
     if (queryResult instanceof Collection<?>) {
-      Set regionNames = ((DefaultQuery) query).getRegionsInQuery(null);
+      Set regionNames = ((DefaultQuery) query).getRegionsInQuery(args);
       Collection<Object> result = securityService.postProcess(query,
           (Collection<String>) regionNames, (Collection<Object>) queryResult);
       String queryResultAsJson = JSONUtils.convertCollectionToJson(result);

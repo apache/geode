@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -41,20 +38,20 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 @Category(DistributedTest.class)
 public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBase {
@@ -664,9 +661,9 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
       ResultCollector rs = execute(member, Boolean.TRUE, function, isByName);
       ArrayList list = (ArrayList) rs.getResult();
       assertTrue("Value of send result of the executed function : " + list.get(0)
-          + "does not match the expected value : " + 1,((Integer) list.get(0)) == 1);
+          + "does not match the expected value : " + 1, ((Integer) list.get(0)) == 1);
       assertTrue("Value of last result of the executed function : " + list.get(0)
-          + "is not equal or more than expected value : " + 5,((Integer) list.get(1)) >= 5);
+          + "is not equal or more than expected value : " + 5, ((Integer) list.get(1)) >= 5);
     } catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail("This is not expected Exception", ex);

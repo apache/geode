@@ -124,7 +124,7 @@ public class RestSecurityPostProcessorTest {
   }
 
   @Test
-  public void adhoc() throws Exception {
+  public void adhocQuery() throws Exception {
     String query =
         "/queries/adhoc?q=" + URLEncoder.encode("SELECT * FROM /" + REGION_NAME, "UTF-8");
     HttpResponse response = restClient.doGet(query, "dataReader", "1234567");

@@ -14,9 +14,6 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -36,6 +33,8 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
@@ -82,8 +81,8 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port1);
         ClientCache cache = getClientCache(cf);
-        Region region = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regionName);
+        Region region =
+            cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
 
         for (int i = 0; i < numberOfEntries; i++) {
           PdxInstanceFactory pdxInstanceFactory =

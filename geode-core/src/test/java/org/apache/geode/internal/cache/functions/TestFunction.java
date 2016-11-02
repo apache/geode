@@ -34,7 +34,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.MyFunctionExecutionException;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
@@ -695,7 +694,8 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
         + ds.getDistributedMember() + "with Context : " + context);
     if (retryCountForExecuteFunctionReexecuteException >= 5) {
       logger.fine("Tried Function Execution 5 times. Now Returning after 5 attempts");
-      context.getResultSender().lastResult(new Integer(retryCountForExecuteFunctionReexecuteException));
+      context.getResultSender()
+          .lastResult(new Integer(retryCountForExecuteFunctionReexecuteException));
       retryCountForExecuteFunctionReexecuteException = 0;
       return;
     }

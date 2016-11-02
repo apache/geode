@@ -761,10 +761,8 @@ public class RestAPIsQueryAndFEJUnitTest {
       try {
         expectedEx = addExpectedException(index);
         final String restRequestUrl = createRestURL(this.baseURL, TEST_DATA[index][URL_INDEX]);
-        System.out.println(restRequestUrl + "\n------");
 
         entity = new HttpEntity<>(TEST_DATA[index][REQUEST_BODY_INDEX], headers);
-        // System.out.println(entity.getBody().toString()+ "\n==========");
         ResponseEntity<String> result = RestTestUtils.getRestTemplate().exchange(restRequestUrl,
             (HttpMethod) TEST_DATA[index][METHOD_INDEX], entity, String.class);
         validateGetAllResult(index, result);
@@ -773,7 +771,6 @@ public class RestAPIsQueryAndFEJUnitTest {
         assertEquals(result.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
         assertEquals(result.hasBody(),
             ((Boolean) TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
-        System.out.println(result.getBody() + "****************************");
 
         verifyRegionSize(index, result);
         // TODO:
