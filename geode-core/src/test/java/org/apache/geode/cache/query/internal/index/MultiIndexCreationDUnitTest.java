@@ -131,12 +131,12 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    ThreadUtils.join(a1, 6000);
+    ThreadUtils.join(a1, 120000);
 
     if (a1.exceptionOccurred()) {
       fail(a1.getException().getMessage());
     }
-    ThreadUtils.join(a2, 6000);
+    ThreadUtils.join(a2, 120000);
     if (a2.exceptionOccurred()) {
       fail(a2.getException().getMessage());
     }
