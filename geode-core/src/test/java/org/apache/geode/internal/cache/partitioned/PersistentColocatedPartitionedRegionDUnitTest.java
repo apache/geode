@@ -93,7 +93,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   private static final String PATTERN_FOR_MISSING_CHILD_LOG =
       "(?s)Persistent data recovery for region .*is prevented by offline colocated region.*";
   private static final int NUM_BUCKETS = 15;
-  private static final int MAX_WAIT = 30 * 1000;
+  private static final int MAX_WAIT = 60 * 1000;
   private static final int DEFAULT_NUM_EXPECTED_LOG_MESSAGES = 1;
   private static int numExpectedLogMessages = DEFAULT_NUM_EXPECTED_LOG_MESSAGES;
   private static int numChildPRs = 1;
@@ -1188,6 +1188,13 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     CHILD_REGION_RESTART_ORDER.add(new Object[] {"Gen2_C2_2", "Gen1_C2", 0});
   }
 
+  /**
+   * This thread starts up multiple colocated child regions in the sequence defined by
+   * {@link #CHILD_REGION_RESTART_ORDER}. The complete startup sequence, which includes timed
+   * periods waiting for log messages, takes at least 28 secs. Tests waiting for this
+   * {@link SerializableCallable} to complete must have sufficient overhead in the wait for runtime
+   * variations that exceed the minimum time to complete.
+   */
   private SerializableCallable createPRsSequencedColocationTreeCreationThread =
       new SerializableCallable("createPRsSequencedColocationTreeCreation") {
         Appender mockAppender;
