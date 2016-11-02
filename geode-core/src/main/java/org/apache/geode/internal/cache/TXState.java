@@ -459,35 +459,38 @@ public class TXState implements TXStateInterface {
          */
 
         attachFilterProfileInformation(entries);
+        
+        lockTXRegions(regions);
 
-        // apply changes to the cache
-        applyChanges(entries);
-        // For internal testing
-        if (this.internalAfterApplyChanges != null) {
-          this.internalAfterApplyChanges.run();
+        try {
+          // apply changes to the cache
+          applyChanges(entries);
+          // For internal testing
+          if (this.internalAfterApplyChanges != null) {
+            this.internalAfterApplyChanges.run();
+          }
+
+          // build and send the message
+          msg = buildMessage();
+          this.commitMessage = msg;
+          if (this.internalBeforeSend != null) {
+            this.internalBeforeSend.run();
+          }
+
+          msg.send(this.locks.getDistributedLockId());
+          // For internal testing
+          if (this.internalAfterSend != null) {
+            this.internalAfterSend.run();
+          }
+
+          firePendingCallbacks();
+          /*
+           * This is to prepare the commit message for the caller, make sure all events are in there.
+           */
+          this.commitMessage = buildCompleteMessage();
+        } finally {
+          unlockTXRegions(regions);
         }
-
-        // build and send the message
-        msg = buildMessage();
-        this.commitMessage = msg;
-        if (this.internalBeforeSend != null) {
-          this.internalBeforeSend.run();
-        }
-
-
-
-        msg.send(this.locks.getDistributedLockId());
-        // For internal testing
-        if (this.internalAfterSend != null) {
-          this.internalAfterSend.run();
-        }
-
-        firePendingCallbacks();
-        /*
-         * This is to prepare the commit message for the caller, make sure all events are in there.
-         */
-        this.commitMessage = buildCompleteMessage();
-
       } finally {
         if (msg != null) {
           msg.releaseViewVersions();
@@ -503,6 +506,24 @@ public class TXState implements TXStateInterface {
     }
   }
 
+  private void lockTXRegions(IdentityHashMap<LocalRegion, TXRegionState> regions) {
+    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = regions.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry<LocalRegion, TXRegionState> me = it.next();
+      LocalRegion r = me.getKey();
+      r.getRegionMap().lockRegionForAtomicTX(r);    
+    }
+  }
+  
+  private void unlockTXRegions(IdentityHashMap<LocalRegion, TXRegionState> regions) {
+    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = regions.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry<LocalRegion, TXRegionState> me = it.next();
+      LocalRegion r = me.getKey();
+      r.getRegionMap().unlockRegionForAtomicTX(r);    
+    }
+  }
+  
   protected void attachFilterProfileInformation(List entries) {
     {
       Iterator/* <TXEntryStateWithRegionAndKey> */ it = entries.iterator();
