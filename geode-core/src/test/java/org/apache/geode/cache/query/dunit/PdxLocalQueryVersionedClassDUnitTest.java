@@ -82,8 +82,8 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port1);
         ClientCache cache = getClientCache(cf);
-        Region region = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regionName);
+        Region region =
+            cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
 
         for (int i = 0; i < numberOfEntries; i++) {
           PdxInstanceFactory pdxInstanceFactory =
