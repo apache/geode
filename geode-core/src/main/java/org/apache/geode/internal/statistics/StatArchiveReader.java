@@ -3228,6 +3228,11 @@ public class StatArchiveReader implements StatArchiveFormat {
       if ((resourceInstId + 1) > this.resourceInstSize) {
         this.resourceInstSize = resourceInstId + 1;
       }
+      ResourceType type = resourceTypeTable[resourceTypeId];
+      if (type == null) {
+        throw new IllegalStateException(
+            "ResourceType is missing for resourceTypeId " + resourceTypeId);
+      }
       boolean loadInstance = loadInstance(name, id, resourceTypeTable[resourceTypeId]);
       resourceInstTable[resourceInstId] = new ResourceInst(this, resourceInstId, name, id,
           resourceTypeTable[resourceTypeId], loadInstance);

@@ -27,6 +27,7 @@ import org.apache.geode.security.generator.DummyAuthzCredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -71,6 +72,7 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
         () -> Instantiator.register(new MyInstantiator(), false));
   }
 
+  @Category(FlakyTest.class) // GEODE-2071: failed with ForcedDisconnectException
   @Test
   public void testAllOpsObjectModWithFailover() throws Exception {
     OperationWithAction[] allOps = allOps();

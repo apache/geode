@@ -423,21 +423,19 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 </tr>
 <tr class="odd">
 <td>security-*</td>
-<td>Used for authentication. Any custom properties needed by your <code class="ph codeph">AuthInitialize</code> or <code class="ph codeph">Authenticator</code> callbacks.
-<div class="note note">
-**Note:**
-<p>Any security-related (properties that begin with <code class="ph codeph">security-*</code>) configuration properties that are normally configured in <code class="ph codeph">gemfire.properties</code> can be moved to a separate <code class="ph codeph">gfsecurity.properties</code> file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your <code class="ph codeph">gemfire.properties</code> file.</p>
-</div></td>
+<td>
+Any security-related (properties that begin with <code class="ph codeph">security-</code>) configuration properties that are normally configured in <code class="ph codeph">gemfire.properties</code> can be moved to a separate <code class="ph codeph">gfsecurity.properties</code> file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your <code class="ph codeph">gemfire.properties</code> file.
+</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-client-accessor</td>
-<td>Used for authorization. Static creation method returning an <code class="ph codeph">AccessControl</code> object, which determines authorization of client-server cache operations. This specifies the callback that should be invoked in the pre-operation phase, which is when the request for the operation is received from the client.</td>
+<td><b>Deprecated.</b> Used for authorization. Static creation method returning an <code class="ph codeph">AccessControl</code> object, which determines authorization of client-server cache operations. This specifies the callback that should be invoked in the pre-operation phase, which is when the request for the operation is received from the client.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-client-accessor-pp</td>
-<td>Used for authorization. The callback that should be invoked in the post-operation phase, which is when the operation has completed on the server but before the result is sent to the client. The post-operation callback is also invoked for the updates that are sent from server to client through the notification channel.</td>
+<td><b>Deprecated.</b> Used for authorization. The callback that should be invoked in the post-operation phase, which is when the operation has completed on the server but before the result is sent to the client. The post-operation callback is also invoked for the updates that are sent from server to client through the notification channel.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -447,7 +445,7 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 </tr>
 <tr class="odd">
 <td>security-client-authenticator</td>
-<td>Used for authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
+<td><b>Deprecated.</b> Used for authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -466,20 +464,30 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 <p>Valid values from lowest to highest are fine, config, info, warning, error, severe, and none.</p></td>
 <td>config</td>
 </tr>
+<tr class="even">
+<td>security-manager</td>
+<td>Specifies the implementation of the <code>SecurityManager</code> interface that implements the callbacks that do authentication and authorization.</td>
+<td><em>not set</em></td>
+</tr>
 <tr class="odd">
 <td>security-peer-auth-init</td>
-<td>Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-peer-authenticator</td>
-<td>Used with authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
+<td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-peer-verifymember-timeout</td>
 <td>Used with authentication. Timeout in milliseconds used by a peer to verify membership of an unknown authenticated peer requesting a secure connection.</td>
 <td>1000</td>
+</tr>
+<tr class="even">
+<td>security-post-processor</td>
+<td>Specifies the implementation of the <code>PostProcessor</code> interface that implements user-defined callbacks that can change the returned results of region get operations.</td>
+<td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>server-bind-address</td>
