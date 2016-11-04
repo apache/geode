@@ -74,7 +74,7 @@ public class QueryAccessController extends AbstractBaseController {
   protected static final String PARAMETERIZED_QUERIES_REGION = "__ParameterizedQueries__";
 
   private final ConcurrentHashMap<String, DefaultQuery> compiledQueries =
-      new ConcurrentHashMap<String, DefaultQuery>();
+      new ConcurrentHashMap<>();
 
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
@@ -259,7 +259,7 @@ public class QueryAccessController extends AbstractBaseController {
       Query compiledQuery = compiledQueries.get(queryId);
       if (compiledQuery == null) {
         // This is first time the query is seen by this server.
-        final String oql = getValue(PARAMETERIZED_QUERIES_REGION, queryId);
+        final String oql = getValue(PARAMETERIZED_QUERIES_REGION, queryId, false);
 
         ValidationUtils.returnValueThrowOnNull(oql, new ResourceNotFoundException(
             String.format("No Query with ID (%1$s) was found!", queryId)));

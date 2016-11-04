@@ -78,6 +78,7 @@ public class RestSecurityPostProcessorTest {
     region.put("key1",
         "{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Order\",\"purchaseOrderNo\":1121,\"customerId\":1012,\"description\":\"Order for  XYZ Corp\",\"orderDate\":\"02/10/2014\",\"deliveryDate\":\"02/20/2014\",\"contact\":\"Jelly Bean\",\"email\":\"jelly.bean@example.com\",\"phone\":\"01-2048096\",\"items\":[{\"itemNo\":1,\"description\":\"Product-100\",\"quantity\":12,\"unitPrice\":5,\"totalPrice\":60}],\"totalPrice\":225}");
     region.put("key2", "bar");
+    serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("customers");
   }
 
   /**
@@ -137,5 +138,31 @@ public class RestSecurityPostProcessorTest {
       String data = jsonArray.getString(index);
       assertTrue(data.contains("dataReader/" + REGION_NAME + "/"));
     }
+  }
+
+  @Test
+  public void namedQuery() throws Exception {
+    String namedQuery = "SELECT c FROM /customers c WHERE c.customerId = $1";
+
+    HttpResponse response = restClient.doPost("/queries?id=selectCustomer&q=" + URLEncoder.encode(namedQuery, "UTF-8"), "dataReader", "1234567", "");
+    assertEquals(201, getCode(response));
+
+    String query = "/queries";
+    response = restClient.doGet(query, "dataReader", "1234567");
+    assertEquals(200, getCode(response));
+    assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
+
+    String customerJson = "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
+        + "\"customerId\": 1," + " \"firstName\": \"Vishal\"," + " \"lastName\": \"Roa\"" + "}";
+    response = restClient.doPut("/customers/1", "dataWriter", "1234567", customerJson);
+    assertEquals(200, getCode(response));
+
+
+    response = restClient.doPost("/queries/selectCustomer", "dataReader", "1234567", "{" + "\"@type\": \"int\"," + "\"@value\": 1" + "}");
+    assertEquals(200, getCode(response));
+
+    JSONArray jsonArray = getJsonArray(response);
+    assertTrue(jsonArray.length() == 1);
+    assertTrue(jsonArray.getString(0).startsWith("dataReader/customers"));
   }
 }

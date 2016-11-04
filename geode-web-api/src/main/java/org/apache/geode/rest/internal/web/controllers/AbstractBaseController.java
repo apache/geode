@@ -893,12 +893,19 @@ public abstract class AbstractBaseController {
 
   @SuppressWarnings("unchecked")
   protected <T> T getValue(final String regionNamePath, final Object key) {
+    return getValue(regionNamePath, key, true);
+  }
+
+  protected <T> T getValue(final String regionNamePath, final Object key, boolean postProcess) {
     Assert.notNull(key, "The Cache Region key to read the value for cannot be null!");
 
     Region r = getRegion(regionNamePath);
     try {
       Object value = r.get(key);
-      return (T) securityService.postProcess(regionNamePath, key, value, false);
+      if (postProcess)
+        return (T) securityService.postProcess(regionNamePath, key, value, false);
+      else
+        return (T) value;
     } catch (SerializationException se) {
       throw new DataTypeNotSupportedException(
           "The resource identified could not convert into the supported content characteristics (JSON)!",
