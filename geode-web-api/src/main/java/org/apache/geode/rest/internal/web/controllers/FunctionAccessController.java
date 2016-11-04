@@ -65,10 +65,9 @@ import java.util.Set;
 @RequestMapping(FunctionAccessController.REST_API_VERSION + "/functions")
 @SuppressWarnings("unused")
 public class FunctionAccessController extends AbstractBaseController {
-  private static final Logger logger = LogService.getLogger();
-
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
+  private static final Logger logger = LogService.getLogger();
 
   public FunctionAccessController(final RestSecurityService securityService,
       final ObjectMapper objectMapper) {
@@ -78,7 +77,7 @@ public class FunctionAccessController extends AbstractBaseController {
   /**
    * Gets the version of the REST API implemented by this @Controller.
    * <p>
-   *
+   * 
    * @return a String indicating the REST API version.
    */
   @Override
@@ -88,7 +87,7 @@ public class FunctionAccessController extends AbstractBaseController {
 
   /**
    * list all registered functions in Gemfire data node
-   *
+   * 
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
@@ -115,7 +114,7 @@ public class FunctionAccessController extends AbstractBaseController {
   /**
    * Execute a function on Gemfire data node using REST API call. Arguments to the function are
    * passed as JSON string in the request body.
-   *
+   * 
    * @param functionId represents function to be executed
    * @param region list of regions on which function to be executed.
    * @param members list of nodes on which function to be executed.
@@ -123,6 +122,7 @@ public class FunctionAccessController extends AbstractBaseController {
    * @param filter list of keys which the function will use to determine on which node to execute
    *        the function.
    * @param argsInBody function argument as a JSON document
+   *
    * @return result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId}",
@@ -236,13 +236,17 @@ public class FunctionAccessController extends AbstractBaseController {
       Object functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {
+        List processed = new ArrayList(((List) functionResult).size());
+        for (Object value : ((List) functionResult)) {
+          processed.add(securityService.postProcess("/functions", functionId, value, false));
+        }
         final HttpHeaders headers = new HttpHeaders();
         headers.setLocation(toUri("functions", functionId));
 
         try {
           @SuppressWarnings("unchecked")
           String functionResultAsJson =
-              JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
+              JSONUtils.convertCollectionToJson((ArrayList<Object>) processed);
           return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
         } catch (JSONException e) {
           throw new GemfireRestException(

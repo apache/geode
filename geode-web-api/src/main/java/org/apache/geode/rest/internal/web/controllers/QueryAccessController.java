@@ -73,8 +73,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   protected static final String PARAMETERIZED_QUERIES_REGION = "__ParameterizedQueries__";
 
-  private final ConcurrentHashMap<String, DefaultQuery> compiledQueries =
-      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, DefaultQuery> compiledQueries = new ConcurrentHashMap<>();
 
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
