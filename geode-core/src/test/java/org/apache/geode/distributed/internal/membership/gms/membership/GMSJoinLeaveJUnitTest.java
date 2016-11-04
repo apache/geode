@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.distributed.internal.membership.gms.messages.*;
 import org.apache.geode.internal.Version;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Assert;
@@ -486,7 +487,7 @@ public class GMSJoinLeaveJUnitTest {
         view.getCrashedMembers().contains(mockMembers[0]));
   }
 
-
+  @Category(FlakyTest.class) // GEODE-2074: timed out waiting for view #7
   @Test
   public void testDuplicateJoinRequestDoesNotCauseNewView() throws Exception {
     initMocks();
