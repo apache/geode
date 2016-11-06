@@ -16,8 +16,8 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.Set;
 
-import joptsimple.internal.Strings;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -409,8 +409,8 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     }
 
     if (regionCreateArgs.isPartitionResolverSet()) {
-      Class<?> partitionResolverClass = forName(regionCreateArgs.getPartitionResolver(),
-          CliStrings.CREATE_REGION__PARTITION_RESOLVER);
+      Class<PartitionResolver> partitionResolverClass = forName(
+          regionCreateArgs.getPartitionResolver(), CliStrings.CREATE_REGION__PARTITION_RESOLVER);
       prAttrFactory
           .setPartitionResolver((PartitionResolver<K, V>) newInstance(partitionResolverClass,
               CliStrings.CREATE_REGION__PARTITION_RESOLVER));
@@ -419,12 +419,14 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
   }
 
 
-  private static Class<?> forName(String className, String neededFor) {
-    if (Strings.isNullOrEmpty(className)) {
-      return null;
+  private static Class<PartitionResolver> forName(String className, String neededFor) {
+    if (StringUtils.isBlank(className)) {
+      throw new IllegalArgumentException(
+          CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
+              new Object[] {className, neededFor}));
     }
     try {
-      return ClassPathLoader.getLatest().forName(className);
+      return (Class<PartitionResolver>) ClassPathLoader.getLatest().forName(className);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(CliStrings.format(
           CliStrings.CREATE_REGION_PARTITION_RESOLVER__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
@@ -436,7 +438,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     }
   }
 
-  private static Object newInstance(Class<?> klass, String neededFor) {
+  private static PartitionResolver newInstance(Class<PartitionResolver> klass, String neededFor) {
     try {
       return klass.newInstance();
     } catch (InstantiationException e) {
