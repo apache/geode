@@ -31,7 +31,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import joptsimple.internal.Strings;
 import org.apache.geode.cache.*;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -905,26 +904,17 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     }
 
     if (regionFunctionArgs.hasPartitionAttributes()) {
-      boolean partitionResolverFailure = false;
       if (regionFunctionArgs.isPartitionResolverSet()) {
         String partitionResolverClassName = regionFunctionArgs.getPartitionResolver();
-        Object partitionResolver = null;
-
         try {
-          Class<?> compressorClass =
-              (Class<?>) ClassPathLoader.getLatest().forName(partitionResolverClassName);
-          partitionResolver = compressorClass.newInstance();
-        } catch (InstantiationException e) {
-          partitionResolverFailure = true;
-        } catch (IllegalAccessException e) {
-          partitionResolverFailure = true;
-        } catch (ClassNotFoundException e) {
-          partitionResolverFailure = true;
-        }
-        if (partitionResolverFailure || !(partitionResolver instanceof PartitionResolver)) {
+          Class<PartitionResolver> resolverClass = (Class<PartitionResolver>) ClassPathLoader
+              .getLatest().forName(partitionResolverClassName);
+          PartitionResolver partitionResolver = resolverClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
           throw new IllegalArgumentException(
               CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-                  new Object[] {regionFunctionArgs.getCompressor()}));
+                  new Object[] {regionFunctionArgs.getCompressor()}),
+              e);
         }
       }
     }

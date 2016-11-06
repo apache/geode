@@ -1112,13 +1112,14 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     ClassBuilder classBuilder = new ClassBuilder();
     // classBuilder.addToClassPath(".");
-    final File prJarFile = new File(new File(".").getAbsolutePath(), "myPartitionResolver.jar");
+    final File prJarFile = new File(temporaryFolder.getRoot().getCanonicalPath() + File.separator,
+        "myPartitionResolver.jar");
     this.filesToBeDeleted.add(prJarFile.getAbsolutePath());
     byte[] jarBytes =
         classBuilder.createJarFromClassContent("com/cadrdunit/TestPartitionResolver", PR_STRING);
     writeJarBytesToFile(prJarFile, jarBytes);
 
-    CommandResult cmdResult = executeCommand("deploy --jar=myPartitionResolver.jar");
+    CommandResult cmdResult = executeCommand("deploy --jar=" + prJarFile.getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
 
@@ -1194,7 +1195,6 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
     commandStringBuilder.addOption(CliStrings.CREATE_REGION__PARTITION_RESOLVER, "a.b.c.d");
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
-    System.out.println("Result --> " + cmdResult);
     assertEquals(Result.Status.ERROR, cmdResult.getStatus());
 
     // Assert that our region was not created
