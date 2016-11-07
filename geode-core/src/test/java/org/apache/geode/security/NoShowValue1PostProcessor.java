@@ -14,10 +14,6 @@
  */
 package org.apache.geode.security;
 
-import org.apache.geode.cache.query.Query;
-
-import java.util.Collection;
-
 public class NoShowValue1PostProcessor implements PostProcessor {
 
   @Override
@@ -28,11 +24,5 @@ public class NoShowValue1PostProcessor implements PostProcessor {
     } else {
       return value;
     }
-  }
-
-  @Override
-  public Collection<Object> processQueryResult(Object principal, final Query query,
-      final Collection<String> regionNames, final Collection<Object> results) {
-    return null;
   }
 }

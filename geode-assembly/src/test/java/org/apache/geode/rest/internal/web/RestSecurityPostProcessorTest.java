@@ -29,9 +29,8 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.io.IOUtils;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.rest.internal.web.controllers.GetRegions;
+import org.apache.geode.rest.internal.web.controllers.Customer;
 import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
@@ -74,14 +73,16 @@ public class RestSecurityPostProcessorTest {
 
   @BeforeClass
   public static void before() throws Exception {
-    serverStarter.startServer();
     Region region =
         serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
-    region.put("key1",
-        "{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Order\",\"purchaseOrderNo\":1121,\"customerId\":1012,\"description\":\"Order for  XYZ Corp\",\"orderDate\":\"02/10/2014\",\"deliveryDate\":\"02/20/2014\",\"contact\":\"Jelly Bean\",\"email\":\"jelly.bean@example.com\",\"phone\":\"01-2048096\",\"items\":[{\"itemNo\":1,\"description\":\"Product-100\",\"quantity\":12,\"unitPrice\":5,\"totalPrice\":60}],\"totalPrice\":225}");
-    region.put("key2", "bar");
-    serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("customers");
-    FunctionService.registerFunction(new GetRegions());
+    region.put("key1", "key1Value");
+    region.put("key2", "key2Value");
+    region = serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("customers");
+    Customer customer = new Customer();
+    customer.setCustomerId(1L);
+    customer.setFirstName("John");
+    customer.setLastName("Doe");
+    region.put(customer.getCustomerId().toString(), customer);
   }
 
   /**
@@ -139,7 +140,7 @@ public class RestSecurityPostProcessorTest {
     final int length = jsonArray.length();
     for (int index = 0; index < length; ++index) {
       String data = jsonArray.getString(index);
-      assertTrue(data.contains("dataReader/" + REGION_NAME + "/"));
+      assertTrue(data.startsWith("dataReader/null/null/"));
     }
   }
 
@@ -157,29 +158,12 @@ public class RestSecurityPostProcessorTest {
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
 
-    String customerJson =
-        "{" + "\"@type\": \"org.apache.geode.rest.internal.web.controllers.Customer\","
-            + "\"customerId\": 1," + " \"firstName\": \"Vishal\"," + " \"lastName\": \"Roa\"" + "}";
-    response = restClient.doPut("/customers/1", "dataWriter", "1234567", customerJson);
-    assertEquals(200, getCode(response));
-
     response = restClient.doPost("/queries/selectCustomer", "dataReader", "1234567",
         "{" + "\"@type\": \"int\"," + "\"@value\": 1" + "}");
     assertEquals(200, getCode(response));
 
     JSONArray jsonArray = getJsonArray(response);
     assertTrue(jsonArray.length() == 1);
-    assertTrue(jsonArray.getString(0).startsWith("dataReader/customers"));
-  }
-
-  @Test
-  public void functions() throws Exception {
-
-    HttpResponse response = restClient.doPost("/functions/GetRegions", "dataWriter", "1234567", "");
-    assertEquals(200, getCode(response));
-
-    JSONArray jsonArray = getJsonArray(response);
-    assertTrue(jsonArray.length() == 1);
-    assertTrue(jsonArray.getString(0).startsWith("dataWriter/functions/GetRegions"));
+    assertTrue(jsonArray.getString(0).startsWith("dataReader/null/null/"));
   }
 }

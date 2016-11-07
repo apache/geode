@@ -29,7 +29,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -200,10 +199,11 @@ public abstract class AbstractBaseController {
   public ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult,
       RestSecurityService securityService) throws JSONException {
     if (queryResult instanceof Collection<?>) {
-      Set regionNames = ((DefaultQuery) query).getRegionsInQuery(args);
-      Collection<Object> result = securityService.postProcess(query,
-          (Collection<String>) regionNames, (Collection<Object>) queryResult);
-      String queryResultAsJson = JSONUtils.convertCollectionToJson(result);
+      Collection processedResults = new ArrayList(((Collection) queryResult).size());
+      for (Object result : (Collection) queryResult) {
+        processedResults.add(securityService.postProcess(null, null, result, false));
+      }
+      String queryResultAsJson = JSONUtils.convertCollectionToJson(processedResults);
 
       final HttpHeaders headers = new HttpHeaders();
       headers.setLocation(toUri("queries", query.getQueryString()));

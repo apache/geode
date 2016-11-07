@@ -23,7 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIR
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.cache.query.Query;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.shiro.CustomAuthRealm;
@@ -55,7 +54,6 @@ import org.apache.shiro.util.ThreadState;
 
 import java.io.IOException;
 import java.security.AccessController;
-import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -443,23 +441,6 @@ public class IntegratedSecurityService implements SecurityService {
       principal = subject.getPrincipal();
     }
     return principal;
-  }
-
-  @Override
-  public Collection<Object> postProcess(Query query, Collection<String> regionNames,
-      Collection<Object> results) {
-    return postProcess(null, query, regionNames, results);
-  }
-
-  @Override
-  public Collection<Object> postProcess(Object principal, Query query,
-      Collection<String> regionNames, Collection<Object> results) {
-    if (!needPostProcess())
-      return results;
-    principal = getPrincipal(principal);
-    if (principal == null)
-      return results;
-    return postProcessor.processQueryResult(principal, query, regionNames, results);
   }
 
   @Override

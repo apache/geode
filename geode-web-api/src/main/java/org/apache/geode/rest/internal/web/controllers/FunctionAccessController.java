@@ -217,7 +217,6 @@ public class FunctionAccessController extends AbstractBaseController {
         // execute function with no args
         results = function.execute(functionId);
       }
-      // TODO-kjd: here
     } catch (ClassCastException cce) {
       throw new GemfireRestException("Key is of an inappropriate type for this region!", cce);
     } catch (NullPointerException npe) {
@@ -236,17 +235,13 @@ public class FunctionAccessController extends AbstractBaseController {
       Object functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {
-        List processed = new ArrayList(((List) functionResult).size());
-        for (Object value : ((List) functionResult)) {
-          processed.add(securityService.postProcess("/functions", functionId, value, false));
-        }
         final HttpHeaders headers = new HttpHeaders();
         headers.setLocation(toUri("functions", functionId));
 
         try {
           @SuppressWarnings("unchecked")
           String functionResultAsJson =
-              JSONUtils.convertCollectionToJson((ArrayList<Object>) processed);
+              JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
           return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
         } catch (JSONException e) {
           throw new GemfireRestException(
