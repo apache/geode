@@ -3965,7 +3965,16 @@ public class PartitionedRegion extends LocalRegion
         if (allowRetry) {
           retryNode = getNodeForBucketReadOrLoad(bucketId);
         } else {
-          return null;
+          // Only transactions set allowRetry to false,
+          // fail the transaction here as region is destroyed.
+          Throwable cause = pde.getCause();
+          if (cause != null && cause instanceof RegionDestroyedException) {
+            throw (RegionDestroyedException) cause;
+          } else {
+            // Should not see it currently, all current constructors of PRLocallyDestroyedException
+            // set the cause to RegionDestroyedException.
+            throw new RegionDestroyedException(toString(), getFullPath());
+          }
         }
       } catch (ForceReattemptException prce) {
         prce.checkKey(key);
@@ -3990,6 +3999,7 @@ public class PartitionedRegion extends LocalRegion
             retryTime.waitToRetryNode();
           }
         } else {
+          // with transaction
           if (prce instanceof BucketNotFoundException) {
             TransactionException ex = new TransactionDataNotColocatedException(
                 LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -4002,8 +4012,18 @@ public class PartitionedRegion extends LocalRegion
             throw (PrimaryBucketException) cause;
           } else if (cause instanceof TransactionDataRebalancedException) {
             throw (TransactionDataRebalancedException) cause;
+          } else if (cause instanceof RegionDestroyedException) {
+            TransactionException ex = new TransactionDataRebalancedException(
+                LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
+                    .toLocalizedString(key));
+            ex.initCause(cause);
+            throw ex;
           } else {
-            return null;
+            // Make transaction fail so client could retry
+            // instead of returning null if ForceReattemptException is thrown.
+            // Should not see it currently, added to be protected against future changes.
+            TransactionException ex = new TransactionException("Failed to get key: " + key, prce);
+            throw ex;
           }
         }
       } catch (PrimaryBucketException notPrimary) {
