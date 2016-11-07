@@ -11664,12 +11664,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Override
-    public void incNonSingleHopsCount() {
-      this.stats.incLong(nonSingleHopsCountId, 1);
-      this.cachePerfStats.incNonSingleHopsCount();
-    }
-
-    @Override
     public void incMetaDataRefreshCount() {
       this.stats.incLong(metaDataRefreshCountId, 1);
       this.cachePerfStats.incMetaDataRefreshCount();

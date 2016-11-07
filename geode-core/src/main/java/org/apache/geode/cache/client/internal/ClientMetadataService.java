@@ -15,15 +15,33 @@
 package org.apache.geode.cache.client.internal;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.FixedPartitionResolver;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketServerLocation66;
+import org.apache.geode.internal.cache.EntryOperationImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -32,9 +50,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * will consult this service to identify the server locations on which the data for the client
  * operation is residing
  * 
- * 
  * @since GemFire 6.5
- * 
  */
 public final class ClientMetadataService {
 
@@ -51,7 +67,9 @@ public final class ClientMetadataService {
 
   public static final int INITIAL_VERSION = 0;
 
-  /** random number generator used in pruning */
+  /**
+   * random number generator used in pruning
+   */
   private final Random rand = new Random();
 
   private volatile boolean isMetadataStable = true;
@@ -149,9 +167,10 @@ public final class ClientMetadataService {
 
     ServerLocation bucketServerLocation = getServerLocation(region, operation, bucketId);
     ServerLocation location = null;
-    if (bucketServerLocation != null)
+    if (bucketServerLocation != null) {
       location =
           new ServerLocation(bucketServerLocation.getHostName(), bucketServerLocation.getPort());
+    }
     return location;
   }
 
@@ -166,18 +185,6 @@ public final class ClientMetadataService {
       }
       return null;
     }
-
-    // if (prAdvisor.getColocatedWith() != null) {
-    // prAdvisor = this.getClientPartitionAdvisor(prAdvisor.getColocatedWith());
-    // if (prAdvisor == null) {
-    // if (this.logger.fineEnabled()) {
-    // this.logger.fine(
-    // "ClientMetadataService#getServerLocation : Region "
-    // + regionFullPath + "prAdvisor does not exist.");
-    // }
-    // return null;
-    // }
-    // }
 
     if (operation.isGet()) {
       return prAdvisor.adviseServerLocation(bucketId);
@@ -410,8 +417,9 @@ public final class ClientMetadataService {
 
     // return node;
     Random r = new Random();
-    if (nodesOfEqualSize.size() > 0)
+    if (nodesOfEqualSize.size() > 0) {
       return nodesOfEqualSize.get(r.nextInt(nodesOfEqualSize.size()));
+    }
 
     return null;
   }
@@ -486,13 +494,11 @@ public final class ClientMetadataService {
   }
 
 
-
   public void scheduleGetPRMetaData(final LocalRegion region, final boolean isRecursive) {
     if (this.nonPRs.contains(region.getFullPath())) {
       return;
     }
     this.setMetadataStable(false);
-    region.getCachePerfStats().incNonSingleHopsCount();
     if (isRecursive) {
       try {
         getClientPRMetadata(region);
@@ -600,7 +606,6 @@ public final class ClientMetadataService {
       }
     }
     if (isRecursive) {
-      region.getCachePerfStats().incNonSingleHopsCount();
       try {
         getClientPRMetadata(region);
       } catch (VirtualMachineError e) {
@@ -617,7 +622,6 @@ public final class ClientMetadataService {
         if (regionsBeingRefreshed.contains(region.getFullPath())) {
           return;
         }
-        region.getCachePerfStats().incNonSingleHopsCount();
         regionsBeingRefreshed.add(region.getFullPath());
         refreshTaskCount++;
       }
