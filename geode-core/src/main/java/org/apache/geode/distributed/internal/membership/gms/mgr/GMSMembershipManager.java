@@ -1702,6 +1702,16 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         throw ex; // see bug 41416
       }
     } catch (ConnectExceptions ex) {
+      // Check if the connect exception is due to system shutting down.
+      if (shutdownInProgress()) {
+        if (services.getShutdownCause() != null) {
+          throw new DistributedSystemDisconnectedException("DistributedSystem is shutting down",
+              services.getShutdownCause());
+        } else {
+          throw new DistributedSystemDisconnectedException();
+        }
+      }
+
       if (allDestinations)
         return null;
 

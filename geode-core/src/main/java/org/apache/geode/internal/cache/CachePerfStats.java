@@ -120,8 +120,6 @@ public class CachePerfStats {
   protected static final int indexInitializationCompletedId;
   protected static final int indexInitializationTimeId;
 
-  /** Id of two hops statistic */
-  protected static final int nonSingleHopsCountId;
   /** Id of the meta data refresh statistic */
   protected static final int metaDataRefreshCountId;
 
@@ -597,7 +595,6 @@ public class CachePerfStats {
     evictorQueueSizeId = type.nameToId("evictorQueueSize");
     evictWorkTimeId = type.nameToId("evictWorkTime");
 
-    nonSingleHopsCountId = type.nameToId("nonSingleHopsCount");
     metaDataRefreshCountId = type.nameToId("metaDataRefreshCount");
 
     conflatedEventsId = type.nameToId("conflatedEvents");
@@ -1496,14 +1493,6 @@ public class CachePerfStats {
         incEvictorQueueSize(count * -1);
       }
     };
-  }
-
-  public void incNonSingleHopsCount() {
-    this.stats.incLong(nonSingleHopsCountId, 1);
-  }
-
-  public long getNonSingleHopsCount() {
-    return this.stats.getLong(nonSingleHopsCountId);
   }
 
   public void incMetaDataRefreshCount() {

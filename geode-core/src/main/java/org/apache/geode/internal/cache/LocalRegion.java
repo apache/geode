@@ -5875,6 +5875,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           }
         } catch (QueryException e) {
           throw new IndexMaintenanceException(e);
+        } finally {
+          IndexManager.setIndexBufferTime(lastModifiedTime, cacheTimeMillis());
         }
       }
     }
@@ -7369,7 +7371,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       lastModified = cacheTimeMillis();
     }
     entry.updateStatsForPut(lastModified);
-    IndexManager.setIndexBufferTime(lastModified, cacheTimeMillis());
     if (this.statisticsEnabled && !isProxy()) {
       // do not reschedule if there is already a task in the queue.
       // this prevents bloat in the TimerTask since cancelled tasks
@@ -11660,12 +11661,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     public void incPRQueryRetries() {
       this.stats.incLong(partitionedRegionQueryRetriesId, 1);
       this.cachePerfStats.incPRQueryRetries();
-    }
-
-    @Override
-    public void incNonSingleHopsCount() {
-      this.stats.incLong(nonSingleHopsCountId, 1);
-      this.cachePerfStats.incNonSingleHopsCount();
     }
 
     @Override

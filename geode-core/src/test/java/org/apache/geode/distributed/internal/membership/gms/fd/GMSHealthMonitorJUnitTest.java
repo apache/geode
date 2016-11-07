@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequ
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.jgroups.util.UUID;
 import org.junit.After;
@@ -163,6 +164,7 @@ public class GMSHealthMonitorJUnitTest {
     Assert.assertEquals(mockMembers.get(4), gmsHealthMonitor.getNextNeighbor());
   }
 
+  @Category(FlakyTest.class) // GEODE-2073
   @Test
   public void testHMNextNeighborAfterTimeout() throws Exception {
     System.out.println("testHMNextNeighborAfterTimeout starting");

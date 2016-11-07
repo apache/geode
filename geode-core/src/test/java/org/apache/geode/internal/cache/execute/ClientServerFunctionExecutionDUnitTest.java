@@ -664,9 +664,9 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
       ResultCollector rs = execute(member, Boolean.TRUE, function, isByName);
       ArrayList list = (ArrayList) rs.getResult();
       assertTrue("Value of send result of the executed function : " + list.get(0)
-          + "does not match the expected value : " + 1,((Integer) list.get(0)) == 1);
+          + "does not match the expected value : " + 1, ((Integer) list.get(0)) == 1);
       assertTrue("Value of last result of the executed function : " + list.get(0)
-          + "is not equal or more than expected value : " + 5,((Integer) list.get(1)) >= 5);
+          + "is not equal or more than expected value : " + 5, ((Integer) list.get(1)) >= 5);
     } catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail("This is not expected Exception", ex);

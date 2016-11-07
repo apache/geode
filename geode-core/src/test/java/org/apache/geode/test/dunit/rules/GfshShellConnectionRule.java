@@ -14,12 +14,11 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
 import org.junit.runner.Description;
@@ -32,39 +31,41 @@ import org.junit.runner.Description;
 public class GfshShellConnectionRule extends DescribedExternalResource {
 
   private int port = 0;
-  private boolean useHttp = false;
+  private PortType portType = null;
   private HeadlessGfsh gfsh;
-  private boolean authenticated;
+  private boolean connected;
 
-  /**
-   * Rule constructor
-   */
-
-  public GfshShellConnectionRule(int port) {
-    this.useHttp = false;
+  public GfshShellConnectionRule(int port, PortType portType) {
+    this.portType = portType;
     this.port = port;
-  }
-
-  public GfshShellConnectionRule(int port, boolean useHttp) {
-    this.useHttp = useHttp;
-    this.port = port;
+    try {
+      this.gfsh = new HeadlessGfsh(getClass().getName(), 30, "gfsh_files");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    this.connected = false;
   }
 
   protected void before(Description description) throws Throwable {
-    CliUtil.isGfshVM = true;
-    String shellId = getClass().getSimpleName() + "_" + description.getMethodName();
-    gfsh = new HeadlessGfsh(shellId, 30, "gfsh_files"); // TODO: move to TemporaryFolder
-
-    final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
-
     ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
     if (config != null) {
-      connectCommand.addOption(CliStrings.CONNECT__USERNAME, config.user());
-      connectCommand.addOption(CliStrings.CONNECT__PASSWORD, config.password());
+      connect(CliStrings.CONNECT__USERNAME, config.user(), CliStrings.CONNECT__PASSWORD,
+          config.password());
+    } else {
+      connect();
     }
+  }
+
+  public void connect(String... options) throws Exception {
+    CliUtil.isGfshVM = true;
+    final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
 
     String endpoint;
-    if (useHttp) {
+    if (portType == PortType.locator) {
+      // port is the locator port
+      endpoint = "localhost[" + port + "]";
+      connectCommand.addOption(CliStrings.CONNECT__LOCATOR, endpoint);
+    } else if (portType == PortType.http) {
       endpoint = "http://localhost:" + port + "/gemfire/v1";
       connectCommand.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
       connectCommand.addOption(CliStrings.CONNECT__URL, endpoint);
@@ -72,30 +73,32 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       endpoint = "localhost[" + port + "]";
       connectCommand.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
     }
-    System.out.println(getClass().getSimpleName() + " using endpoint: " + endpoint);
+
+    // add the extra options
+    if (options != null) {
+      for (int i = 0; i < options.length; i += 2) {
+        connectCommand.addOption(options[i], options[i + 1]);
+      }
+    }
 
     gfsh.executeCommand(connectCommand.toString());
 
     CommandResult result = (CommandResult) gfsh.getResult();
-    if (result.getResultData() instanceof ErrorResultData) {
-      ErrorResultData errorResultData = (ErrorResultData) result.getResultData();
-      this.authenticated =
-          !(errorResultData.getErrorCode() == ResultBuilder.ERRORCODE_CONNECTION_ERROR);
-    } else {
-      this.authenticated = true;
-    }
+    connected = (result.getStatus() == Result.Status.OK);
   }
 
   /**
    * Override to tear down your specific external resource.
    */
   protected void after(Description description) throws Throwable {
+    close();
+  }
+
+  public void close() throws Exception {
     if (gfsh != null) {
-      gfsh.clearEvents();
-      gfsh.executeCommand("disconnect");
+      gfsh.clear();
       gfsh.executeCommand("exit");
       gfsh.terminate();
-      gfsh.setThreadLocalInstance();
       gfsh = null;
     }
     CliUtil.isGfshVM = false;
@@ -105,7 +108,11 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return gfsh;
   }
 
-  public boolean isAuthenticated() {
-    return authenticated;
+  public boolean isConnected() {
+    return connected;
+  }
+
+  public enum PortType {
+    locator, jmxManger, http
   }
 }

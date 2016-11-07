@@ -695,7 +695,8 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
         + ds.getDistributedMember() + "with Context : " + context);
     if (retryCountForExecuteFunctionReexecuteException >= 5) {
       logger.fine("Tried Function Execution 5 times. Now Returning after 5 attempts");
-      context.getResultSender().lastResult(new Integer(retryCountForExecuteFunctionReexecuteException));
+      context.getResultSender()
+          .lastResult(new Integer(retryCountForExecuteFunctionReexecuteException));
       retryCountForExecuteFunctionReexecuteException = 0;
       return;
     }

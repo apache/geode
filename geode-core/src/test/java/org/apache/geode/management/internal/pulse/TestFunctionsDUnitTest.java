@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.pulse;
 
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -80,6 +81,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     return Integer.valueOf(bean.getNumRunningFunctions());
   }
 
+  @Category(FlakyTest.class) // GEODE-2072: waitForCriterion times out
   @Test
   public void testNumOfRunningFunctions() throws Exception {
     initManagement(false);

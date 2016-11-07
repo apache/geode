@@ -18,31 +18,6 @@ import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_REQUES
 import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_RESPONSE;
 import static org.apache.geode.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.*;
-
-import org.apache.logging.log4j.Logger;
-import org.jgroups.util.UUID;
-
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
@@ -64,24 +39,59 @@ import org.apache.geode.internal.ConnectionWatcher;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.logging.log4j.Logger;
+import org.jgroups.util.UUID;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Failure Detection
- * 
+ * <p>
  * This class make sure that each member is alive and communicating to this member. To make sure
  * that we create the ring of members based on current view. On this ring, each member make sure
  * that next-member in ring is communicating with it. For that we record last message timestamp from
  * next-member. And if it sees this member has not communicated in last period(member-timeout) then
  * we check whether this member is still alive or not. Based on that we informed probable
  * coordinators to remove that member from view.
- * 
+ * <p>
  * It has {@link #suspect(InternalDistributedMember, String)} api, which can be used to initiate
  * suspect processing for any member. First is checks whether the member is responding or not. Then
  * it informs probable coordinators to remove that member from view.
- * 
+ * <p>
  * It has {@link #checkIfAvailable(DistributedMember, String, boolean)} api to see if that member is
  * alive. Then based on removal flag it initiates the suspect processing for that member.
- * 
  */
 @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "NullableProblems"})
 public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
@@ -94,7 +104,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   volatile private boolean isStopping = false;
   private final AtomicInteger requestId = new AtomicInteger();
 
-  /** membership logger */
+  /**
+   * membership logger
+   */
   private static final Logger logger = Services.getLogger();
 
   /**
@@ -111,13 +123,17 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public static final int LOGICAL_INTERVAL =
       Integer.getInteger("geode.logical-message-received-interval", 2);
 
-  /** stall time to wait for members leaving concurrently */
+  /**
+   * stall time to wait for members leaving concurrently
+   */
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL =
       Long.getLong("geode.suspect-member-collection-interval", 200);
 
   private volatile long currentTimeStamp;
 
-  /** this member's ID */
+  /**
+   * this member's ID
+   */
   private InternalDistributedMember localAddress;
 
   /**
@@ -157,10 +173,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private ScheduledFuture<?> monitorFuture;
 
-  /** test hook */
+  /**
+   * test hook
+   */
   private volatile boolean playingDead = false;
 
-  /** test hook */
+  /**
+   * test hook
+   */
   private volatile boolean beingSick = false;
 
   // For TCP check
@@ -170,13 +190,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private volatile int socketPort;
   private volatile ServerSocket serverSocket;
 
-  /** Statistics about health monitor */
+  /**
+   * Statistics about health monitor
+   */
   private DMStats stats;
 
   /**
    * this class is to avoid garbage
    */
   private static class TimeStamp {
+
     private volatile long timeStamp;
 
     TimeStamp(long timeStamp) {
@@ -196,11 +219,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * This class sets start interval timestamp to record the activity of all members. That is used by
    * {@link GMSHealthMonitor#contactedBy(InternalDistributedMember)} to record the activity of
    * member.
-   * 
+   *
    * It initiates the suspect processing for next neighbour if it doesn't see any activity from that
    * member in last interval(member-timeout)
    */
   private class Monitor implements Runnable {
+
     final long memberTimeoutInMillis;
 
     public Monitor(long memberTimeout) {
@@ -249,6 +273,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * waiting thread.
    */
   private class Response {
+
     private DistributionMessage responseMsg;
 
     public DistributionMessage getResponseMsg() {
@@ -360,8 +385,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
     if (suspectedMemberInView.remove(sender) != null) {
       logger.info("No longer suspecting {}", sender);
+      setNextNeighbor(currentView, null);
     }
-    setNextNeighbor(currentView, null);
   }
 
 
@@ -673,12 +698,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               continue;
             }
             serverSocketExecutor.execute(new ClientSocketHandler(socket)); // start(); [bruce] I'm
-                                                                           // seeing a lot of
-                                                                           // failures due to this
-                                                                           // thread not being
-                                                                           // created fast enough,
-                                                                           // sometimes as long as
-                                                                           // 30 seconds
+            // seeing a lot of
+            // failures due to this
+            // thread not being
+            // created fast enough,
+            // sometimes as long as
+            // 30 seconds
 
           } catch (RejectedExecutionException e) {
             // this can happen during shutdown
@@ -822,9 +847,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   /***
    * This method sets next neighbour which it needs to watch in current view.
-   * 
+   *
    * if nextTo == null then it watches member next to it.
-   * 
+   *
    * It becomes null when we suspect current neighbour, during that time it watches member next to
    * suspect member.
    */
@@ -837,14 +862,32 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     List<InternalDistributedMember> allMembers = newView.getMembers();
+    //
+    // Set<InternalDistributedMember> checkAllSuspected = new HashSet<>(allMembers);
+    // checkAllSuspected.removeAll(suspectedMemberInView.keySet());
+    // checkAllSuspected.remove(localAddress);
+    // if (checkAllSuspected.isEmpty() && allMembers.size() > 1) {
+    // logger.info("All other members are suspect at this point");
+    // nextNeighbor = null;
+    // return;
+    // }
 
-    Set<InternalDistributedMember> checkAllSuspected = new HashSet<>(allMembers);
-    checkAllSuspected.removeAll(suspectedMemberInView.keySet());
-    checkAllSuspected.remove(localAddress);
-    if (checkAllSuspected.isEmpty() && allMembers.size() > 1) {
-      logger.info("All other members are suspect at this point");
-      nextNeighbor = null;
-      return;
+    if (allMembers.size() > 1 && suspectedMemberInView.size() >= allMembers.size() - 1) {
+      boolean nonSuspectFound = false;
+      for (InternalDistributedMember member : allMembers) {
+        if (member.equals(localAddress)) {
+          continue;
+        }
+        if (!suspectedMemberInView.containsKey(member)) {
+          nonSuspectFound = true;
+          break;
+        }
+      }
+      if (!nonSuspectFound) {
+        logger.info("All other members are suspect at this point");
+        nextNeighbor = null;
+        return;
+      }
     }
 
     int index = allMembers.indexOf(nextTo);
@@ -1054,10 +1097,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private void processHeartbeat(HeartbeatMessage m) {
     this.stats.incHeartbeatsReceived();
-    if (m.getRequestId() < 0) {
-      // a periodic heartbeat
-      contactedBy(m.getSender(), System.currentTimeMillis());
-    } else {
+    if (m.getRequestId() >= 0) {
       Response resp = requestIdVsResponse.get(m.getRequestId());
       logger.trace("Got heartbeat from member {}. {}", m.getSender(),
           (resp != null ? "Check thread still waiting" : "Check thread is not waiting"));
@@ -1067,9 +1107,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           resp.notify();
         }
       }
-      // we got heartbeat lets update timestamp
-      contactedBy(m.getSender(), System.currentTimeMillis());
+
     }
+    // we got heartbeat lets update timestamp
+    contactedBy(m.getSender(), System.currentTimeMillis());
   }
 
   /**
@@ -1116,7 +1157,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         }
       }
     }
-
 
     if (cv.getCoordinator().equals(localAddress)) {
       for (SuspectRequest req : incomingRequest.getMembers()) {
@@ -1336,6 +1376,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private static class ConnectTimeoutTask extends TimerTask implements ConnectionWatcher {
+
     final Timer scheduler;
     Socket socket;
     final long timeout;
