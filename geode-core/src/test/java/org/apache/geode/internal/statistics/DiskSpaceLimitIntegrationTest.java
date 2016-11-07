@@ -117,7 +117,7 @@ public class DiskSpaceLimitIntegrationTest {
   }
 
   @Test
-  public void aboveZeroKeepsAtLeastOneFile() throws Exception {
+  public void aboveZeroDeletesOldestFile() throws Exception {
     when(this.config.getArchiveDiskSpaceLimit()).thenReturn(DISK_SPACE_LIMIT);
     sampleUntilFileExists(archiveFile(1));
     sampleUntilFileExists(archiveFile(2));
