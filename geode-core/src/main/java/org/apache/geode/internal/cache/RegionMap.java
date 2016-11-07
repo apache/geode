@@ -372,10 +372,10 @@ public interface RegionMap extends LRUMapCallbacks {
 
   public void close();
 
-  default void lockRegionForAtomicTX(LocalRegion r) {}  
-  
-  default void unlockRegionForAtomicTX(LocalRegion r) {}  
-  
+  default void lockRegionForAtomicTX(LocalRegion r) {}
+
+  default void unlockRegionForAtomicTX(LocalRegion r) {}
+
   public ARMLockTestHook getARMLockTestHook();
 
 }

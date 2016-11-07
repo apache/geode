@@ -126,7 +126,7 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   // Local methods
-  
+
   private void setOpAndClearVM(VM opsTarget, VM clearTarget) {
     opsVM = opsTarget;
     clearVM = clearTarget;
@@ -149,18 +149,20 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void checkForConsistencyErrors(String rname) {
-    Map<Object, Object> r0Contents = (Map<Object, Object>) vm0.invoke(() -> getRegionContents(rname));
-    Map<Object, Object> r1Contents = (Map<Object, Object>) vm1.invoke(() -> getRegionContents(rname));
+    Map<Object, Object> r0Contents =
+        (Map<Object, Object>) vm0.invoke(() -> getRegionContents(rname));
+    Map<Object, Object> r1Contents =
+        (Map<Object, Object>) vm1.invoke(() -> getRegionContents(rname));
 
     for (int i = 0; i < NUMBER_OF_PUTS; i++) {
       String theKey = rname + THE_KEY + i;
       if (r0Contents.containsKey(theKey)) {
         softly.assertThat(r1Contents.get(theKey))
-        .as("region contents are not consistent for key %s", theKey)
-        .isEqualTo(r0Contents.get(theKey));
+            .as("region contents are not consistent for key %s", theKey)
+            .isEqualTo(r0Contents.get(theKey));
       } else {
         softly.assertThat(r1Contents).as("expected containsKey for %s to return false", theKey)
-        .doesNotContainKey(theKey);
+            .doesNotContainKey(theKey);
       }
     }
   }

@@ -3695,11 +3695,11 @@ public abstract class AbstractRegionMap implements RegionMap {
     if (vector != null && !r.hasServerProxy()) {
       vector.lockForCacheModification();
     }
-    
+
     if (armLockTestHook != null)
       armLockTestHook.afterLock(r, null);
   }
-  
+
   /** get version-generation permission from the region's version vector */
   private void lockForTXCacheModification(LocalRegion owner, VersionTag tag) {
 
@@ -3727,11 +3727,11 @@ public abstract class AbstractRegionMap implements RegionMap {
     if (vector != null && !r.hasServerProxy()) {
       vector.releaseCacheModificationLock();
     }
-    
+
     if (armLockTestHook != null)
       armLockTestHook.afterRelease(r, null);
   }
-  
+
   /** release version-generation permission from the region's version vector */
   private void releaseTXCacheModificationLock(LocalRegion owner, VersionTag tag) {
 
