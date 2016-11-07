@@ -363,8 +363,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   @SuppressWarnings("EmptyMethod")
-  public static void loadEmergencyClasses() {
-  }
+  public static void loadEmergencyClasses() {}
 
   /*
    * Record the member activity for current time interval.
@@ -506,6 +505,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /**
    * During final check, establish TCP connection between current member and suspect member. And
    * exchange PING/PONG message to see if the suspect member is still alive.
+   * 
    * @param suspectMember member that does not respond to HeartbeatRequestMessage
    * @return true if successfully exchanged PING/PONG with TCP connection, otherwise false.
    */
@@ -787,7 +787,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
         int index = startIndex;
         int numSent = 0;
-        for (; ; ) {
+        for (;;) {
           index--;
           if (index < 0) {
             index = mbrs.size() - 1;
@@ -824,13 +824,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       viewVsSuspectedMembers.clear();
     }
     for (Iterator<InternalDistributedMember> it = memberTimeStamps.keySet().iterator(); it
-        .hasNext(); ) {
+        .hasNext();) {
       if (!newView.contains(it.next())) {
         it.remove();
       }
     }
     for (Iterator<InternalDistributedMember> it = suspectedMemberInView.keySet().iterator(); it
-        .hasNext(); ) {
+        .hasNext();) {
       if (!newView.contains(it.next())) {
         it.remove();
       }
@@ -1009,8 +1009,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   @Override
   public void memberSuspected(InternalDistributedMember initiator,
-                              InternalDistributedMember suspect, String reason) {
-  }
+      InternalDistributedMember suspect, String reason) {}
 
   @Override
   public void beSick() {
@@ -1143,7 +1142,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     // take care of any suspicion of this member by sending a heartbeat back
     if (!playingDead) {
-      for (Iterator<SuspectRequest> it = incomingRequest.getMembers().iterator(); it.hasNext(); ) {
+      for (Iterator<SuspectRequest> it = incomingRequest.getMembers().iterator(); it.hasNext();) {
         SuspectRequest req = it.next();
         if (req.getSuspectMember().equals(localAddress)) {
           HeartbeatMessage message = new HeartbeatMessage(-1);
@@ -1219,7 +1218,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * the expected member. Otherwise we send a heartbeat request and wait for a reply.
    */
   private void checkIfAvailable(final InternalDistributedMember initiator,
-                                List<SuspectRequest> sMembers, final NetView cv) {
+      List<SuspectRequest> sMembers, final NetView cv) {
 
     for (final SuspectRequest sr : sMembers) {
       final InternalDistributedMember mbr = sr.getSuspectMember();
@@ -1260,9 +1259,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private boolean inlineCheckIfAvailable(final InternalDistributedMember initiator,
-                                         final NetView cv, boolean initiateRemoval,
-                                         final InternalDistributedMember mbr,
-                                         final String reason) {
+      final NetView cv, boolean initiateRemoval, final InternalDistributedMember mbr,
+      final String reason) {
 
     if (services.getJoinLeave().isMemberLeaving(mbr)) {
       return false;
@@ -1328,8 +1326,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   @Override
-  public void memberShutdown(DistributedMember mbr, String reason) {
-  }
+  public void memberShutdown(DistributedMember mbr, String reason) {}
 
   @Override
   public int getFailureDetectionPort() {
@@ -1353,7 +1350,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     if (currentView.size() > 4) {
       HashSet<InternalDistributedMember> filter = new HashSet<>();
       for (Enumeration<InternalDistributedMember> e = suspectedMemberInView.keys(); e
-          .hasMoreElements(); ) {
+          .hasMoreElements();) {
         filter.add(e.nextElement());
       }
       filter.addAll(
