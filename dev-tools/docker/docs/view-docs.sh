@@ -26,7 +26,6 @@ docker run -i -t \
   -w "/home/${USER_NAME}/incubator-geode/geode-book/final_app/public" \
   -u "${USER_NAME}" \
   -v "$PWD:/home/${USER_NAME}/incubator-geode" \
-  -v "/home/${USER_NAME}/.m2:/home/${USER_NAME}/.m2" \
   -p 127.0.0.1:8080:8080 \
   ${IMAGE_NAME}-${USER_NAME} \
   python -m SimpleHTTPServer 8080
