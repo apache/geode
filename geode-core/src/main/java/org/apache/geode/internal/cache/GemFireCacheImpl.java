@@ -1186,8 +1186,6 @@ public class GemFireCacheImpl
     GemFireCacheImpl.instance = this;
     GemFireCacheImpl.pdxInstance = this;
 
-    MinimumSystemRequirements.checkAndLog();
-
     for (Iterator<CacheLifecycleListener> iter = cacheLifecycleListeners.iterator(); iter
         .hasNext();) {
       CacheLifecycleListener listener = (CacheLifecycleListener) iter.next();
