@@ -15,17 +15,14 @@
 
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Java6Assertions.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
@@ -34,8 +31,15 @@ import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
@@ -51,9 +55,9 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
         .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
-    props.put(JMX_MANAGER, "false");
-    props.put(JMX_MANAGER_START, "false");
-    props.put(JMX_MANAGER_PORT, 0);
+    props.setProperty(JMX_MANAGER, "false");
+    props.setProperty(JMX_MANAGER_START, "false");
+    props.setProperty(JMX_MANAGER_PORT, 0 + "");
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
     lsRule.getLocatorVM(0, props);
   }

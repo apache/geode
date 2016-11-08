@@ -15,13 +15,10 @@
 
 package org.apache.geode.rest.internal.web;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -30,76 +27,52 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.junit.Assert;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class GeodeRestClient {
-
-  public final static String PROTOCOL = "http";
   public final static String CONTEXT = "/geode/v1";
 
   private int restPort = 0;
   private String bindAddress = null;
+  private String protocol = "http";
+  private boolean useHttps = false;
+  private KeyStore keyStore;
 
   public GeodeRestClient(String bindAddress, int restPort) {
     this.bindAddress = bindAddress;
     this.restPort = restPort;
   }
 
-  public HttpResponse doHEAD(String query, String username, String password)
-      throws MalformedURLException {
-    HttpHead httpHead = new HttpHead(CONTEXT + query);
-    return doRequest(httpHead, username, password);
-  }
-
-  public HttpResponse doPost(String query, String username, String password, String body)
-      throws MalformedURLException {
-    HttpPost httpPost = new HttpPost(CONTEXT + query);
-    httpPost.addHeader("content-type", "application/json");
-    httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
-    return doRequest(httpPost, username, password);
-  }
-
-  public HttpResponse doPut(String query, String username, String password, String body)
-      throws MalformedURLException {
-    HttpPut httpPut = new HttpPut(CONTEXT + query);
-    httpPut.addHeader("content-type", "application/json");
-    httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
-    return doRequest(httpPut, username, password);
-  }
-
-  public HttpResponse doGet(String uri, String username, String password)
-      throws MalformedURLException {
-    HttpGet getRequest = new HttpGet(CONTEXT + uri);
-    return doRequest(getRequest, username, password);
-  }
-
-  public HttpResponse doGetRequest(String url) throws MalformedURLException {
-    HttpGet getRequest = new HttpGet(url);
-    return doRequest(getRequest, null, null);
-  }
-
-
-  public HttpResponse doDelete(String uri, String username, String password)
-      throws MalformedURLException {
-    HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
-    return doRequest(httpDelete, username, password);
+  public GeodeRestClient(String bindAddress, int restPort, boolean useHttps) {
+    if (useHttps) {
+      this.protocol = "https";
+      this.useHttps = true;
+    } else {
+      this.protocol = "http";
+      this.useHttps = false;
+    }
+    this.bindAddress = bindAddress;
+    this.restPort = restPort;
   }
 
   public static String getContentType(HttpResponse response) {
@@ -108,9 +81,8 @@ public class GeodeRestClient {
 
   /**
    * Retrieve the status code of the HttpResponse
-   *
+   * 
    * @param response The HttpResponse message received from the server
-   *
    * @return a numeric value
    */
   public static int getCode(HttpResponse response) {
@@ -127,33 +99,83 @@ public class GeodeRestClient {
     return new JSONArray(tokener);
   }
 
+  public HttpResponse doHEAD(String query, String username, String password) throws Exception {
+    HttpHead httpHead = new HttpHead(CONTEXT + query);
+    return doRequest(httpHead, username, password);
+  }
+
+  public HttpResponse doPost(String query, String username, String password, String body)
+      throws Exception {
+    HttpPost httpPost = new HttpPost(CONTEXT + query);
+    httpPost.addHeader("content-type", "application/json");
+    httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
+    return doRequest(httpPost, username, password);
+  }
+
+  public HttpResponse doPut(String query, String username, String password, String body)
+      throws Exception {
+    HttpPut httpPut = new HttpPut(CONTEXT + query);
+    httpPut.addHeader("content-type", "application/json");
+    httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
+    return doRequest(httpPut, username, password);
+  }
+
+  public HttpResponse doGet(String uri, String username, String password) throws Exception {
+    HttpGet getRequest = new HttpGet(CONTEXT + uri);
+    return doRequest(getRequest, username, password);
+  }
+
+  public HttpResponse doGetRequest(String url) throws Exception {
+    HttpGet getRequest = new HttpGet(url);
+    return doRequest(getRequest, null, null);
+  }
+
+  public HttpResponse doDelete(String uri, String username, String password) throws Exception {
+    HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
+    return doRequest(httpDelete, username, password);
+  }
+
   public HttpResponse doRequest(HttpRequestBase request, String username, String password)
-      throws MalformedURLException {
-    HttpHost targetHost = new HttpHost(bindAddress, restPort, PROTOCOL);
-    CloseableHttpClient httpclient = HttpClients.custom().build();
+      throws Exception {
+    HttpHost targetHost = new HttpHost(bindAddress, restPort, protocol);
+
+    HttpClientBuilder clientBuilder = HttpClients.custom();
     HttpClientContext clientContext = HttpClientContext.create();
-    // if username is null, do not put in authentication
+
+    // configures the clientBuilder and clientContext
     if (username != null) {
       CredentialsProvider credsProvider = new BasicCredentialsProvider();
       credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()),
           new UsernamePasswordCredentials(username, password));
-      httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-      AuthCache authCache = new BasicAuthCache();
-      BasicScheme basicAuth = new BasicScheme();
-      authCache.put(targetHost, basicAuth);
-      clientContext.setCredentialsProvider(credsProvider);
-      clientContext.setAuthCache(authCache);
+      clientBuilder.setDefaultCredentialsProvider(credsProvider);
     }
 
-    try {
-      return httpclient.execute(targetHost, request, clientContext);
-    } catch (ClientProtocolException e) {
-      e.printStackTrace();
-      Assert.fail("Rest GET should not have thrown ClientProtocolException!");
-    } catch (IOException e) {
-      e.printStackTrace();
-      Assert.fail("Rest GET Request should not have thrown IOException!");
+    if (useHttps) {
+      SSLContext ctx = SSLContext.getInstance("TLS");
+      ctx.init(new KeyManager[0], new TrustManager[]{new DefaultTrustManager()},
+          new SecureRandom());
+      clientBuilder.setSSLContext(ctx);
+      clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
     }
-    return null;
+
+    return clientBuilder.build().execute(targetHost, request, clientContext);
+  }
+
+  private static class DefaultTrustManager implements X509TrustManager {
+
+    @Override
+    public void checkClientTrusted(X509Certificate[] arg0, String arg1)
+        throws CertificateException {
+    }
+
+    @Override
+    public void checkServerTrusted(X509Certificate[] arg0, String arg1)
+        throws CertificateException {
+    }
+
+    @Override
+    public X509Certificate[] getAcceptedIssuers() {
+      return null;
+    }
   }
 }
