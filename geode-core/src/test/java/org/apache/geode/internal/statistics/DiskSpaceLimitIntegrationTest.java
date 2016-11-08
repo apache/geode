@@ -117,12 +117,24 @@ public class DiskSpaceLimitIntegrationTest {
   }
 
   @Test
-  public void sameKeepsOneFile() throws Exception {
+  public void aboveZeroDeletesOldestFile() throws Exception {
     when(this.config.getArchiveDiskSpaceLimit()).thenReturn(DISK_SPACE_LIMIT);
     sampleUntilFileExists(archiveFile(1));
     sampleUntilFileExists(archiveFile(2));
+    sampleUntilFileDeleted(archiveFile(1));
+
     assertThat(archiveFile(1)).doesNotExist();
-    assertThat(archiveFile(2)).exists();
+
+    // different file systems may have different children created/deleted
+    int childFile = 2;
+    for (; childFile < 10; childFile++) {
+      if (archiveFile(childFile).exists()) {
+        break;
+      }
+    }
+    assertThat(childFile).isLessThan(10);
+
+    assertThat(archiveFile(childFile)).exists();
     assertThat(everExisted(archiveFile(1))).isTrue();
   }
 
@@ -141,6 +153,23 @@ public class DiskSpaceLimitIntegrationTest {
           + " samples within " + minutes + " " + MINUTES);
     }
     System.out.println("Sampled " + count + " times to create " + file);
+  }
+
+  private void sampleUntilFileDeleted(final File file)
+      throws InterruptedException, TimeoutException {
+    long minutes = 1;
+    long timeout = System.nanoTime() + MINUTES.toNanos(minutes);
+    int count = 0;
+    do {
+      sample(advanceNanosTimeStamp());
+      count++;
+      Thread.sleep(10);
+    } while (file.exists() && System.nanoTime() < timeout);
+    if (file.exists()) {
+      throw new TimeoutException("File " + file + " does not exist after " + count
+          + " samples within " + minutes + " " + MINUTES);
+    }
+    System.out.println("Sampled " + count + " times to delete " + file);
   }
 
   private boolean everExisted(final File file) {
@@ -177,10 +206,6 @@ public class DiskSpaceLimitIntegrationTest {
   private File archiveFile(final int child) {
     return new File(this.dir,
         this.testName.getMethodName() + "-01-" + String.format("%02d", child) + ".gfs");
-  }
-
-  private File archiveFile() {
-    return new File(this.archiveFileName);
   }
 
   /**

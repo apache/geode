@@ -2371,10 +2371,14 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void putOrderPartitionedRegion(String partitionedRegionName) {
+    putOrderPartitionedRegion(partitionedRegionName, 10);
+  }
+
+  public static void putOrderPartitionedRegion(String partitionedRegionName, int numOfCust) {
     assertNotNull(basicGetCache());
     Region partitionedregion = basicGetCache().getRegion(Region.SEPARATOR + partitionedRegionName);
     assertNotNull(partitionedregion);
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= numOfCust; i++) {
       CustId custid = new CustId(i);
       for (int j = 1; j <= 10; j++) {
         int oid = (i * 10) + j;

@@ -43,6 +43,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.junit.After;
 import org.junit.Before;
@@ -90,10 +91,10 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
     securityProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
 
-
     setUpLocatorAndConnect(securityProps);
   }
 
+  @Category(FlakyTest.class) // GEODE-2079
   @Test
   public void testConnectToLocatorWithLegacyClusterSSL() throws Exception {
     securityProps.setProperty(CLUSTER_SSL_ENABLED, "true");

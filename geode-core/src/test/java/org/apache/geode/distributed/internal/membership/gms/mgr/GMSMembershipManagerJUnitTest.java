@@ -34,6 +34,7 @@ import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.assertj.core.api.Assertions;
 import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Before;
@@ -333,6 +334,24 @@ public class GMSMembershipManagerJUnitTest {
     assertTrue(failures == null);
     verify(dc).send(isA(GMSMembershipManager.class), isA(mockMembers.getClass()),
         isA(DistributionMessage.class), anyInt(), anyInt());
+  }
+
+  @Test
+  public void testDirectChannelSendFailureDueToForcedDisconnect() throws Exception {
+    setUpDirectChannelMock();
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    InternalDistributedMember[] recipients =
+        new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
+    m.setRecipients(Arrays.asList(recipients));
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+    manager.setShutdown();
+    ConnectExceptions exception = new ConnectExceptions();
+    exception.addFailure(recipients[0], new Exception("testing"));
+    when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()),
+        any(DistributionMessage.class), anyInt(), anyInt())).thenThrow(exception);
+    Assertions.assertThatThrownBy(() -> {
+      manager.directChannelSend(recipients, m, null);
+    }).isInstanceOf(DistributedSystemDisconnectedException.class);
   }
 
   /**

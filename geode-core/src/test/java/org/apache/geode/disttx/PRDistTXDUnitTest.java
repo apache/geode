@@ -39,6 +39,10 @@ public class PRDistTXDUnitTest extends PRTransactionDUnitTest {
   @Test
   public void testTxWithNonColocatedGet() {}
 
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
+  @Test
+  public void testTxWithGetOnMovedBucket() {}
+
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Test
   public void testBasicPRTransactionRedundancy0() {}

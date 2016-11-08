@@ -39,13 +39,17 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -341,8 +345,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
     setAttributes(CustomerPartitionedRegionName, null);
 
-    dataStore1.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
-    dataStore2.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
+    createPRInTwoNodes();
 
     // Put the customer 1-2 in CustomerPartitionedRegion
     dataStore1.invoke(
@@ -404,17 +407,14 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     }
   }
 
-  @SuppressWarnings("unchecked")
+
   private void performGetTx() {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
         .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
     CacheTransactionManager mgr = pr.getCache().getCacheTransactionManager();
     CustId cust1 = new CustId(1);
     CustId cust2 = new CustId(2);
-    int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
-    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
-    assertTrue(localPrimaryBucketList.size() == 1);
-    boolean isCust1Local = (Integer) localPrimaryBucketList.get(0) == bucketId1;
+    boolean isCust1Local = isCust1Local(pr, cust1);
 
     // touch first get on remote node -- using TXStateStub
     Assertions.assertThatThrownBy(() -> getTx(!isCust1Local, mgr, pr, cust1, cust2))
@@ -423,6 +423,14 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     // touch first get on local node-- using TXState
     Assertions.assertThatThrownBy(() -> getTx(isCust1Local, mgr, pr, cust1, cust2))
         .isInstanceOf(TransactionDataNotColocatedException.class);
+  }
+
+  @SuppressWarnings("unchecked")
+  private boolean isCust1Local(PartitionedRegion pr, CustId cust1) {
+    int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
+    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
+    assertTrue(localPrimaryBucketList.size() == 1);
+    return (Integer) localPrimaryBucketList.get(0) == bucketId1;
   }
 
   private void getTx(boolean doCust1First, CacheTransactionManager mgr, PartitionedRegion pr,
@@ -445,9 +453,158 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     }
   }
 
+  /**
+   * This method executes a transaction with get on a key in a moved bucket, and expects transaction
+   * to fail with TransactionDataRebalancedException.
+   * 
+   * @param bucketRedundancy redundancy for the colocated PRs
+   */
+  @SuppressWarnings("unchecked")
+  protected void baiscPRTXWithGetOnMovedBucket(int bucketRedundancy) {
+    dataStore1.invoke(runGetCache);
+    dataStore2.invoke(runGetCache);
+    redundancy = new Integer(bucketRedundancy);
+    localMaxmemory = new Integer(50);
+    totalNumBuckets = new Integer(1);
+
+    setAttributes(CustomerPartitionedRegionName, null);
+
+    createPRInTwoNodes();
+
+    setAttributes(OrderPartitionedRegionName, CustomerPartitionedRegionName);
+
+    createPRInTwoNodes();
+
+    // Put the customer 1 in CustomerPartitionedRegion
+    dataStore1.invoke(
+        () -> PRColocationDUnitTest.putCustomerPartitionedRegion(CustomerPartitionedRegionName, 1));
+
+    // Put the associated order in colocated OrderPartitionedRegion
+    dataStore1.invoke(
+        () -> PRColocationDUnitTest.putOrderPartitionedRegion(OrderPartitionedRegionName, 1));
+
+    DistributedMember dm1 = (DistributedMember) dataStore1.invoke(getDM());
+    DistributedMember dm2 = (DistributedMember) dataStore2.invoke(getDM());
+
+    // First get transaction.
+    TransactionId txId = (TransactionId) dataStore1.invoke(beginTx());
+    dataStore1.invoke(resumeTx(txId, dm1, dm2));
+
+    // Second one. Will go through different path (using TXState or TXStateStub)
+    txId = (TransactionId) dataStore1.invoke(beginTx());
+    dataStore1.invoke(resumeTx(txId, dm1, dm2));
+  }
+
+  @SuppressWarnings({"rawtypes", "serial"})
+  private SerializableCallable getDM() {
+    return new SerializableCallable("getDM") {
+      @Override
+      public Object call() {
+        return ((GemFireCacheImpl) basicGetCache()).getMyId();
+      }
+    };
+  }
+
+  @SuppressWarnings({"rawtypes", "serial"})
+  private SerializableCallable beginTx() {
+    return new SerializableCallable("begin tx") {
+      @Override
+      public Object call() {
+        PartitionedRegion pr = (PartitionedRegion) basicGetCache()
+            .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
+        CustId cust1 = new CustId(1);
+        mgr.begin();
+        Object value = pr.get(cust1);
+        assertNotNull(value);
+        return mgr.suspend();
+      }
+    };
+  }
+
+  @SuppressWarnings("serial")
+  private SerializableRunnable resumeTx(TransactionId txId, DistributedMember dm1,
+      DistributedMember dm2) {
+    return new SerializableRunnable("resume tx") {
+      @Override
+      public void run() {
+        PartitionedRegion pr = (PartitionedRegion) basicGetCache()
+            .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+        CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
+
+        moveBucket(dm1, dm2);
+
+        Assertions.assertThatThrownBy(() -> _resumeTx(txId, pr, mgr))
+            .isInstanceOf(TransactionDataRebalancedException.class);
+      }
+
+      private void _resumeTx(TransactionId txId, PartitionedRegion pr,
+          CacheTransactionManager mgr) {
+        CustId cust1 = new CustId(1);
+        OrderId order1 = new OrderId(11, cust1);
+        mgr.resume(txId);
+        try {
+          pr.get(order1);
+        } finally {
+          mgr.rollback();
+        }
+      }
+
+      @SuppressWarnings("unchecked")
+      private void moveBucket(DistributedMember dm1, DistributedMember dm2) {
+        PartitionedRegion pr = (PartitionedRegion) basicGetCache()
+            .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+        CustId cust1 = new CustId(1);
+        OrderId order1 = new OrderId(11, cust1);
+        boolean isCust1Local = isCust1LocalSingleBucket(pr, cust1);
+        DistributedMember source = isCust1Local ? dm1 : dm2;
+        DistributedMember destination = isCust1Local ? dm2 : dm1;
+        PartitionedRegion prOrder = (PartitionedRegion) basicGetCache()
+            .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+
+        LogService.getLogger().info("source ={}, destination ={}", source, destination);
+        if (isCust1Local) {
+          // Use TXState
+          setBucketReadHook(order1, source, destination, prOrder);
+        } else {
+          // Use TXStateStub -- transaction data on remote node
+          PartitionRegionHelper.moveBucketByKey(prOrder, source, destination, order1);
+        }
+      }
+
+      private void setBucketReadHook(OrderId order1, DistributedMember source,
+          DistributedMember destination, PartitionedRegion prOrder) {
+        prOrder.getDataStore().setBucketReadHook(new Runnable() {
+          @SuppressWarnings("unchecked")
+          public void run() {
+            LogService.getLogger().info("In bucketReadHook");
+            PartitionRegionHelper.moveBucketByKey(prOrder, source, destination, order1);
+          }
+        });
+      }
+    };
+  }
+
+  @SuppressWarnings("unchecked")
+  private boolean isCust1LocalSingleBucket(PartitionedRegion pr, CustId cust1) {
+    List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
+    return (Integer) localPrimaryBucketList.size() == 1;
+  }
+
+
+  private void createPRInTwoNodes() {
+    dataStore1.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
+    dataStore2.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
+  }
+
   @Test
   public void testTxWithNonColocatedGet() {
     baiscPRTXWithNonColocatedGet(0);
+  }
+
+  @Test
+  public void testTxWithGetOnMovedBucket() {
+    baiscPRTXWithGetOnMovedBucket(0);
   }
 
   @Test
