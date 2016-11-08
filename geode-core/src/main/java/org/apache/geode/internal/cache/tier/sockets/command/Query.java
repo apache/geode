@@ -18,13 +18,17 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
@@ -40,7 +44,7 @@ public class Query extends BaseCommandQuery {
     return singleton;
   }
 
-  private Query() {}
+  protected Query() {}
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
@@ -97,4 +101,7 @@ public class Query extends BaseCommandQuery {
     }
   }
 
+  protected CollectionType getCollectionType(SelectResults selectResults) {
+    return new CollectionTypeImpl(List.class, selectResults.getCollectionType().getElementType());
+  }
 }

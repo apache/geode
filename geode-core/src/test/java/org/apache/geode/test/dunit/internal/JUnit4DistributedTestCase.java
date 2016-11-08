@@ -484,13 +484,16 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   @After
   public final void tearDown() throws Exception {
     try {
-      preTearDownAssertions();
+      try {
+        preTearDownAssertions();
+      } finally {
+        preTearDown();
+        tearDownDistributedTestCase();
+      }
     } finally {
-      preTearDown();
-      tearDownDistributedTestCase();
       postTearDown();
+      postTearDownAssertions();
     }
-    postTearDownAssertions();
   }
 
   private final void tearDownDistributedTestCase() throws Exception {

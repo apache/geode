@@ -177,7 +177,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
         // Get the collection type (which includes the element type)
         // (used to generate the appropriate instance on the client)
-        collectionType = selectResults.getCollectionType();
+        collectionType = getCollectionType(selectResults);
         isStructs = collectionType.getElementType().isStructType();
 
         // Check if the Query is from CQ execution.
@@ -298,6 +298,10 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
     stats.incWriteQueryResponseTime(DistributionStats.getStatTime() - start);
     return true;
+  }
+
+  protected CollectionType getCollectionType(SelectResults results) {
+    return results.getCollectionType();
   }
 
   private boolean sendCqResultsWithKey(ServerConnection servConn) {
