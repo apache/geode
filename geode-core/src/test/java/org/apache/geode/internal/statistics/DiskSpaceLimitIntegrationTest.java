@@ -43,7 +43,7 @@ import java.util.concurrent.TimeoutException;
 public class DiskSpaceLimitIntegrationTest {
 
   private static final long FILE_SIZE_LIMIT = 256;
-  private static final long DISK_SPACE_LIMIT = FILE_SIZE_LIMIT*2;
+  private static final long DISK_SPACE_LIMIT = FILE_SIZE_LIMIT * 2;
 
   private File dir;
   private File dirOfDeletedFiles;
