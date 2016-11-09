@@ -15,7 +15,6 @@
 
 package org.apache.geode.rest.internal.web.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -28,7 +27,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.security.RestSecurityService;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.logging.log4j.Logger;
@@ -68,11 +66,6 @@ public class FunctionAccessController extends AbstractBaseController {
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
   private static final Logger logger = LogService.getLogger();
-
-  public FunctionAccessController(final RestSecurityService securityService,
-      final ObjectMapper objectMapper) {
-    super(securityService, objectMapper);
-  }
 
   /**
    * Gets the version of the REST API implemented by this @Controller.

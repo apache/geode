@@ -26,12 +26,11 @@ import static org.apache.geode.rest.internal.web.GeodeRestClient.getJsonObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rest.internal.web.controllers.Customer;
-import org.apache.geode.security.templates.SamplePostProcessor;
+import org.apache.geode.rest.internal.web.controllers.RedactingPostProcessor;
 import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -52,8 +51,6 @@ import java.util.Properties;
 @Category({IntegrationTest.class, SecurityTest.class})
 public class RestSecurityPostProcessorTest {
 
-  static final String REGION_NAME = "AuthRegion";
-
   static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();
   static Properties properties = new Properties() {
     {
@@ -63,7 +60,7 @@ public class RestSecurityPostProcessorTest {
       setProperty(START_DEV_REST_API, "true");
       setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
       setProperty(HTTP_SERVICE_PORT, restPort + "");
-      setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+      setProperty(SECURITY_POST_PROCESSOR, RedactingPostProcessor.class.getName());
     }
   };
 
@@ -74,15 +71,11 @@ public class RestSecurityPostProcessorTest {
   @BeforeClass
   public static void before() throws Exception {
     Region region =
-        serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
-    region.put("key1", "key1Value");
-    region.put("key2", "key2Value");
-    region = serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("customers");
-    Customer customer = new Customer();
-    customer.setCustomerId(1L);
-    customer.setFirstName("John");
-    customer.setLastName("Doe");
-    region.put(customer.getCustomerId().toString(), customer);
+        serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("customers");
+    region.put("1", new Customer(1L, "John", "Doe", "555555555"));
+    region.put("2", new Customer(2L, "Richard", "Roe", "222533554"));
+    region.put("3", new Customer(3L, "Jane", "Doe", "555223333"));
+    region.put("4", new Customer(4L, "Jane", "Roe", "555443333"));
   }
 
   /**
@@ -90,48 +83,66 @@ public class RestSecurityPostProcessorTest {
    */
   @Test
   public void getRegionKey() throws Exception {
-
     // Test a single key
-    HttpResponse response = restClient.doGet("/" + REGION_NAME + "/key1", "key1User", "1234567");
+    HttpResponse response = restClient.doGet("/customers/1", "dataReader", "1234567");
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
 
-    String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-    assertTrue(body.startsWith("\"key1User/" + REGION_NAME + "/key1/"));
+    // Ensure SSN is hidden
+    JSONObject jsonObject = getJsonObject(response);
+    assertEquals("*********", jsonObject.getString("socialSecurityNumber"));
+    assertEquals(1L, jsonObject.getLong("customerId"));
 
-    // Test multiple keys
-    response = restClient.doGet("/" + REGION_NAME + "/key1,key2", "dataReader", "1234567");
+    // Try with super-user
+    response = restClient.doGet("/customers/1", "super-user", "1234567");
+    assertEquals(200, getCode(response));
+    assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
+
+    // ensure SSN is readable
+    jsonObject = getJsonObject(response);
+    assertEquals("555555555", jsonObject.getString("socialSecurityNumber"));
+    assertEquals(1L, jsonObject.getLong("customerId"));
+  }
+
+  // Test multiple keys
+  @Test
+  public void getMultipleRegionKeys() throws Exception {
+    HttpResponse response = restClient.doGet("/customers/1,3", "dataReader", "1234567");
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
 
     JSONObject jsonObject = getJsonObject(response);
-    JSONArray jsonArray = jsonObject.getJSONArray(REGION_NAME);
+    JSONArray jsonArray = jsonObject.getJSONArray("customers");
     final int length = jsonArray.length();
-    for (int index = 0; index < length; ++index) {
-      String data = jsonArray.getString(index);
-      assertTrue(data.contains("dataReader/" + REGION_NAME + "/"));
-    }
+    assertEquals(2, length);
+    JSONObject customer = jsonArray.getJSONObject(0);
+    assertEquals("*********", customer.getString("socialSecurityNumber"));
+    assertEquals(1, customer.getLong("customerId"));
+    customer = jsonArray.getJSONObject(1);
+    assertEquals("*********", customer.getString("socialSecurityNumber"));
+    assertEquals(3, customer.getLong("customerId"));
   }
 
   @Test
   public void getRegion() throws Exception {
-    HttpResponse response = restClient.doGet("/" + REGION_NAME, "dataReader", "1234567");
+    HttpResponse response = restClient.doGet("/customers", "dataReader", "1234567");
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
 
     JSONObject jsonObject = getJsonObject(response);
-    JSONArray jsonArray = jsonObject.getJSONArray(REGION_NAME);
+    JSONArray jsonArray = jsonObject.getJSONArray("customers");
     final int length = jsonArray.length();
     for (int index = 0; index < length; ++index) {
-      String data = jsonArray.getString(index);
-      assertTrue(data.contains("dataReader/" + REGION_NAME + "/"));
+      JSONObject customer = jsonArray.getJSONObject(index);
+      assertEquals("*********", customer.getString("socialSecurityNumber"));
+      assertEquals((long) index + 1, customer.getLong("customerId"));
     }
   }
 
   @Test
   public void adhocQuery() throws Exception {
-    String query =
-        "/queries/adhoc?q=" + URLEncoder.encode("SELECT * FROM /" + REGION_NAME, "UTF-8");
+    String query = "/queries/adhoc?q="
+        + URLEncoder.encode("SELECT * FROM /customers order by customerId", "UTF-8");
     HttpResponse response = restClient.doGet(query, "dataReader", "1234567");
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
@@ -139,31 +150,39 @@ public class RestSecurityPostProcessorTest {
     JSONArray jsonArray = getJsonArray(response);
     final int length = jsonArray.length();
     for (int index = 0; index < length; ++index) {
-      String data = jsonArray.getString(index);
-      assertTrue(data.startsWith("dataReader/null/null/"));
+      JSONObject customer = jsonArray.getJSONObject(index);
+      assertEquals("*********", customer.getString("socialSecurityNumber"));
+      assertEquals((long) index + 1, customer.getLong("customerId"));
     }
   }
 
   @Test
   public void namedQuery() throws Exception {
+    // Declare the named query
     String namedQuery = "SELECT c FROM /customers c WHERE c.customerId = $1";
 
+    // Install the named query
     HttpResponse response =
         restClient.doPost("/queries?id=selectCustomer&q=" + URLEncoder.encode(namedQuery, "UTF-8"),
             "dataReader", "1234567", "");
     assertEquals(201, getCode(response));
 
+    // Verify the query has been installed
     String query = "/queries";
     response = restClient.doGet(query, "dataReader", "1234567");
     assertEquals(200, getCode(response));
     assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, getContentType(response));
 
+    // Execute the query
     response = restClient.doPost("/queries/selectCustomer", "dataReader", "1234567",
         "{" + "\"@type\": \"int\"," + "\"@value\": 1" + "}");
     assertEquals(200, getCode(response));
 
+    // Validate the result
     JSONArray jsonArray = getJsonArray(response);
     assertTrue(jsonArray.length() == 1);
-    assertTrue(jsonArray.getString(0).startsWith("dataReader/null/null/"));
+    JSONObject customer = jsonArray.getJSONObject(0);
+    assertEquals("*********", customer.getString("socialSecurityNumber"));
+    assertEquals(1L, customer.getLong("customerId"));
   }
 }

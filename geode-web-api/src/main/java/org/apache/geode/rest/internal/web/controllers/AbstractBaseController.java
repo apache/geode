@@ -102,15 +102,10 @@ public abstract class AbstractBaseController {
   private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
 
   // private Cache cache = GemFireCacheImpl.getExisting(null);
-  protected final RestSecurityService securityService;
-  private final ObjectMapper objectMapper;
-
   @Autowired
-  public AbstractBaseController(final RestSecurityService securityService,
-      final ObjectMapper objectMapper) {
-    this.securityService = securityService;
-    this.objectMapper = objectMapper;
-  }
+  protected RestSecurityService securityService;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @PostConstruct
   private void init() {
@@ -196,8 +191,8 @@ public abstract class AbstractBaseController {
     }
   }
 
-  public ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult,
-      RestSecurityService securityService) throws JSONException {
+  public ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult)
+      throws JSONException {
     if (queryResult instanceof Collection<?>) {
       Collection processedResults = new ArrayList(((Collection) queryResult).size());
       for (Object result : (Collection) queryResult) {
@@ -902,10 +897,11 @@ public abstract class AbstractBaseController {
     Region r = getRegion(regionNamePath);
     try {
       Object value = r.get(key);
-      if (postProcess)
+      if (postProcess) {
         return (T) securityService.postProcess(regionNamePath, key, value, false);
-      else
+      } else {
         return (T) value;
+      }
     } catch (SerializationException se) {
       throw new DataTypeNotSupportedException(
           "The resource identified could not convert into the supported content characteristics (JSON)!",

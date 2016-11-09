@@ -14,7 +14,6 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -24,7 +23,6 @@ import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
 import org.apache.geode.rest.internal.web.controllers.support.RegionData;
 import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.security.RestSecurityService;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
@@ -64,11 +62,6 @@ public class PdxBasedCrudController extends CommonCrudController {
   protected static final String REST_API_VERSION = "/v1";
 
   protected static final String DEFAULT_GETALL_RESULT_LIMIT = "50";
-
-  public PdxBasedCrudController(final RestSecurityService securityService,
-      final ObjectMapper objectMapper) {
-    super(securityService, objectMapper);
-  }
 
   @Override
   protected String getRestApiVersion() {

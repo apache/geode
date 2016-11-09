@@ -15,7 +15,6 @@
 
 package org.apache.geode.rest.internal.web.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -33,7 +32,6 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.security.RestSecurityService;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
 import org.apache.logging.log4j.Logger;
@@ -77,11 +75,6 @@ public class QueryAccessController extends AbstractBaseController {
 
   // Constant String value indicating the version of the REST API.
   protected static final String REST_API_VERSION = "/v1";
-
-  public QueryAccessController(final RestSecurityService securityService,
-      final ObjectMapper objectMapper) {
-    super(securityService, objectMapper);
-  }
 
   /**
    * Gets the version of the REST API implemented by this @Controller.
@@ -193,7 +186,7 @@ public class QueryAccessController extends AbstractBaseController {
     // and handle the Exceptions appropriately (500 Server Error)!
     try {
       Object queryResult = query.execute();
-      return processQueryResponse(query, null, queryResult, securityService);
+      return processQueryResponse(query, null, queryResult);
     } catch (FunctionDomainException fde) {
       throw new GemfireRestException(
           "A function was applied to a parameter that is improper for that function!", fde);
@@ -274,7 +267,7 @@ public class QueryAccessController extends AbstractBaseController {
       // and handle the Exceptions appropriately (500 Server Error)!
       try {
         Object queryResult = compiledQuery.execute(args);
-        return processQueryResponse(compiledQuery, args, queryResult, securityService);
+        return processQueryResponse(compiledQuery, args, queryResult);
       } catch (FunctionDomainException fde) {
         throw new GemfireRestException(
             "A function was applied to a parameter that is improper for that function!", fde);

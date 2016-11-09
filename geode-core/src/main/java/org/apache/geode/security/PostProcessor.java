@@ -39,7 +39,7 @@ public interface PostProcessor {
    *        depend on how you implemented your SecurityManager
    * @param regionName The region that's been accessed. This could be null.
    * @param key the key of the value that's been accessed. This could be null.
-   * @param value the original value. The orginal value could be null as well.
+   * @param value the original value. The original value could be null as well.
    * @return the value that will be returned to the requester
    */
   Object processRegionValue(Object principal, String regionName, Object key, Object value);

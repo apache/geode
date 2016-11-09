@@ -14,8 +14,12 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.geode.internal.lang.ObjectUtils;
+
+import java.io.Serializable;
 
 /**
  * The Customer class models a customer entity.
@@ -23,12 +27,15 @@ import org.apache.geode.internal.lang.ObjectUtils;
  * 
  * @since GemFire 8.0
  */
-
+@JsonInclude(Include.NON_NULL)
 public class Customer implements Serializable {
 
+  @JsonProperty("id")
   private Long customerId;
   private String firstName;
   private String lastName;
+  @JsonProperty("ssn")
+  private String socialSecurityNumber;
 
   public Customer() {}
 
@@ -36,10 +43,11 @@ public class Customer implements Serializable {
     this.customerId = custId;
   }
 
-  public Customer(final Long custId, final String fname, final String lname) {
+  public Customer(final Long custId, final String fname, final String lname, final String ssn) {
     this.customerId = custId;
     this.firstName = fname;
     this.lastName = lname;
+    this.socialSecurityNumber = ssn;
   }
 
   public Long getCustomerId() {
@@ -80,7 +88,16 @@ public class Customer implements Serializable {
 
     return (ObjectUtils.equals(this.getCustomerId(), that.getCustomerId())
         && ObjectUtils.equals(this.getLastName(), that.getLastName())
-        && ObjectUtils.equals(this.getFirstName(), that.getFirstName()));
+        && ObjectUtils.equals(this.getFirstName(), that.getFirstName())
+        && ObjectUtils.equals(this.getSocialSecurityNumber(), that.getSocialSecurityNumber()));
+  }
+
+  public String getSocialSecurityNumber() {
+    return socialSecurityNumber;
+  }
+
+  public void setSocialSecurityNumber(final String ssn) {
+    this.socialSecurityNumber = ssn;
   }
 
   @Override
@@ -99,6 +116,7 @@ public class Customer implements Serializable {
     buffer.append(", customerId = ").append(getCustomerId());
     buffer.append(", firstName = ").append(getFirstName());
     buffer.append(", lastName = ").append(getLastName());
+    buffer.append(", ssn = ").append(getSocialSecurityNumber());
     buffer.append(" }");
     return buffer.toString();
   }

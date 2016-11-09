@@ -15,32 +15,27 @@
 
 package org.apache.geode.rest.internal.web.util;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.hateoas.Link;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.util.CollectionUtils;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.springframework.hateoas.Link;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The JsonWriter class is an utility to write various java types as a JSON string.
@@ -456,52 +451,10 @@ public class JsonWriter {
 
     if (value == null) {
       generator.writeNull();
-    } else if (value.getClass().equals(Boolean.class)) {
-      boolean b = (Boolean) value;
-      generator.writeBoolean(b);
-    } else if (value.getClass().equals(Byte.class)) {
-      Byte b = (Byte) value;
-      generator.writeNumber(b);
-    } else if (value.getClass().equals(Short.class)) {
-      Short b = (Short) value;
-      generator.writeNumber(b);
-    } else if (value.getClass().equals(Integer.class)) {
-      int i = (Integer) value;
-      generator.writeNumber(i);
-    } else if (value.getClass().equals(Long.class)) {
-      long i = (Long) value;
-      generator.writeNumber(i);
-    } else if (value.getClass().equals(BigInteger.class)) {
-      BigInteger i = (BigInteger) value;
-      generator.writeNumber(i);
-    } else if (value.getClass().equals(Float.class)) {
-      float i = (Float) value;
-      generator.writeNumber(i);
-    } else if (value.getClass().equals(BigDecimal.class)) {
-      BigDecimal i = (BigDecimal) value;
-      generator.writeNumber(i);
-    } else if (value.getClass().equals(Double.class)) {
-      double d = (Double) value;
-      generator.writeNumber(d);
-    } else if (value.getClass().equals(String.class)) {
-      String s = (String) value;
-      generator.writeString(s);
     } else if (value.getClass().isArray()) {
       writeArrayAsJson(generator, value, pdxField);
     } else if (value.getClass().equals(Link.class)) {
       writeLinkAsJson(generator, (Link) value, pdxField);
-    } else if (value.getClass().equals(Date.class)) {
-      generator.writeObject((Date) value);
-    } else if (value.getClass().equals(EnumInfo.class)) {
-      /*
-       * try { generator.writeString(((EnumInfo)value).getEnum().name()); } catch
-       * (ClassNotFoundException e) { throw new
-       * IllegalStateException("PdxInstance returns unknwon pdxfield " + pdxField + " for type " +
-       * value); }
-       */
-      generator.writeString(value.toString());
-    } else if (value.getClass().equals(PdxInstanceEnumInfo.class)) {
-      generator.writeString(value.toString());
     } else {
       if (value instanceof Struct) {
         writeStructAsJson(generator, (StructImpl) value);
@@ -512,21 +465,7 @@ public class JsonWriter {
       } else if (value instanceof Map) {
         writeMapAsJson(generator, (Map) value, pdxField);
       } else {
-        // TODO:: can value be a domain object...? As we have configured PdxInstance based storage,
-        // Throw GemfireRestException for value of type domain objects.
-
-        // TODO:Do we need to convert domain objects into the JSON using ObjectMapper. There is no
-        // gurantee that domain class is in classpath.
-        /*
-         * ObjectMapper mapper = new ObjectMapper(); mapper.setDateFormat(new
-         * SimpleDateFormat("MM/dd/yyyy"));
-         * mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-         * mapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.
-         * ALLOW_UNQUOTED_FIELD_NAMES, true); mapper.writeValueAsString(value)
-         * 
-         * Object classInstance = mapper.readValue(JSON, Class.forName(className));
-         */
-        throw new GemfireRestException("Requested data could not convert into REST format[JSON] ");
+        generator.writeObject(value);
       }
     }
   }
