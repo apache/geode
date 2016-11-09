@@ -15,6 +15,9 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertTrue;
 
@@ -50,6 +53,17 @@ public class LocatorStarterRule extends ExternalResource implements Serializable
   public void startLocator() throws Exception {
     if (!properties.containsKey(MCAST_PORT)) {
       properties.setProperty(MCAST_PORT, "0");
+    }
+    if (properties.containsKey(JMX_MANAGER_PORT)) {
+      int jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
+      if (jmxPort > 0) {
+        if (!properties.containsKey(JMX_MANAGER)) {
+          properties.put(JMX_MANAGER, "true");
+        }
+        if (!properties.containsKey(JMX_MANAGER_START)) {
+          properties.put(JMX_MANAGER_START, "true");
+        }
+      }
     }
     locator = (InternalLocator) Locator.startLocatorAndDS(0, null, properties);
     int locatorPort = locator.getPort();
