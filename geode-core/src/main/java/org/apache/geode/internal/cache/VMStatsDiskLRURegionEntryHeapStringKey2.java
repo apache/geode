@@ -39,7 +39,7 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 // key string2: KEY_STRING2
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
- * bin/generateRegionEntryClasses.sh from the directory that contains your build.xml.
+ * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMStatsDiskLRURegionEntryHeapStringKey2 extends VMStatsDiskLRURegionEntryHeap {
   public VMStatsDiskLRURegionEntryHeapStringKey2(RegionEntryContext context, String key,
