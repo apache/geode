@@ -15,42 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Logger;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -209,6 +174,42 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReadWriteLock;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different meaning starting
@@ -508,15 +509,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * ThreadLocal used to set the current region being initialized.
    * 
-   * Currently used by the OpLog layer to initialize the {@link KeyWithRegionContext} if required.
+   * Currently used by the OpLog layer.
    */
   private final static ThreadLocal<LocalRegion> initializingRegion = new ThreadLocal<LocalRegion>();
-
-  /**
-   * Set to true if the region contains keys implementing {@link KeyWithRegionContext} that require
-   * setting up of region specific context after deserialization or recovery from disk.
-   */
-  private boolean keyRequiresRegionContext;
 
   /**
    * Get the current initializing region as set in the ThreadLocal.
@@ -3259,6 +3254,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   protected void validateValue(Object p_value) {
     Object value = p_value;
+
     // check validity of value against valueConstraint
     if (this.valueConstraint != null) {
       if (value != null) {
@@ -3269,11 +3265,28 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             return;
           }
         }
-        if (!this.valueConstraint.isInstance(value))
+        if (!this.valueConstraint.isInstance(value)) {
+          String valueClassName = value.getClass().getName();
+          // check for a REST object, which has a @type field denoting its class
+          if (value instanceof PdxInstance) {
+            PdxInstance pdx = (PdxInstance) value;
+            if (pdx.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
+              Object type = (String) pdx.getField("@type");
+              if (type != null && type instanceof String) {
+                valueClassName = (String) type;
+              } else {
+                return;
+              }
+            }
+            if (valueClassName.equals(this.valueConstraint.getName())) {
+              return;
+            }
+          }
           throw new ClassCastException(
               LocalizedStrings.LocalRegion_VALUE_0_DOES_NOT_SATISFY_VALUECONSTRAINT_1
                   .toLocalizedString(
-                      new Object[] {value.getClass().getName(), this.valueConstraint.getName()}));
+                      new Object[] {valueClassName, this.valueConstraint.getName()}));
+        }
       }
     }
   }

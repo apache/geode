@@ -30,6 +30,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -70,7 +72,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm3 = host.getVM(3);
 
 
-    createServerRegion(vm0);
+    createServerRegion(vm0, SimpleClass.class);
     int port = createServerAccessor(vm3);
     createClientRegion(vm1, port);
     createClientRegion(vm2, port);
@@ -106,7 +108,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    int port = createServerRegion(vm0);
+    int port = createServerRegion(vm0, SimpleClass.class);
     createClientRegion(vm1, port, false, true);
 
     // Define a PDX type with 2 fields that will be cached on the client
@@ -326,7 +328,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
 
 
-    int port = createServerRegion(vm0);
+    int port = createServerRegion(vm0, SimpleClass.class);
     createClientRegion(vm1, port, true);
     createClientRegion(vm2, port, true);
 
@@ -361,7 +363,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
 
 
-    int port = createServerRegion(vm0);
+    int port = createServerRegion(vm0, SimpleClass.class);
     createClientRegion(vm1, port);
     createClientRegion(vm2, port);
 
@@ -482,7 +484,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
 
 
-    int port = createServerRegion(vm0);
+    int port = createServerRegion(vm0, Object.class);
     createClientRegion(vm1, port);
     createClientRegion(vm2, port);
 
@@ -523,7 +525,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
 
 
-    final int port = createServerRegion(vm0);
+    final int port = createServerRegion(vm0, SimpleClass.class);
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
@@ -574,7 +576,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
 
-    final int port = createServerRegion(vm0);
+    final int port = createServerRegion(vm0, SimpleClass.class);
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
@@ -600,14 +602,58 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(createRegion);
   }
 
-  private void createCacheWithAutoSerializer(VM vm, final String... patterns) {
-    vm.invoke(new SerializableRunnable() {
-      public void run() {
-        CacheFactory cf = new CacheFactory();
-        cf.setPdxSerializer(new ReflectionBasedAutoSerializer(patterns));
-        getCache(cf);
+  @Test
+  public void testCacheRejectsJSonPdxInstanceViolatingValueConstraint() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+
+    int port = createServerRegion(vm0, SimpleClass.class);
+
+    vm0.invoke(new SerializableCallable("put value in region") {
+      public Object call() throws Exception {
+        Region r = basicGetCache().getRegion("testSimplePdx");
+        String className = "objects.PersonWithoutID";
+        try {
+          r.put("pdxObject", getTypedJSONPdxInstance(className));
+          fail("expected a ClassCastException");
+        } catch (ClassCastException e) {
+          assertTrue("wrong ClassCastException message: " + e.getMessage(),
+              e.getMessage().contains(className));
+        }
+        return null;
       }
     });
+  }
+
+
+  public PdxInstance getTypedJSONPdxInstance(String className) throws Exception {
+
+    String aRESTishDoc = "{\"@type\": \" " + className
+        + "\" , \" firstName\" : \" John\" , \" lastName\" : \" Smith\" , \" age\" : 25 }";
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(aRESTishDoc);
+
+    return pdxInstance;
+  }
+
+  private int createServerRegion(VM vm, final Class constraintClass) {
+    SerializableCallable createRegion = new SerializableCallable() {
+      public Object call() throws Exception {
+        CacheFactory cf = new CacheFactory(getDistributedSystemProperties());
+        Cache cache = getCache(cf);
+        RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
+        rf.setValueConstraint(constraintClass);
+        rf.create("testSimplePdx");
+        CacheServer server = cache.addCacheServer();
+        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        server.setPort(port);
+        server.start();
+        return port;
+      }
+    };
+
+    return (Integer) vm.invoke(createRegion);
   }
 
   private int createServerRegion(VM vm) {
