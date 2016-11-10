@@ -3178,7 +3178,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                     {
                       long lastMod = owner.cacheTimeMillis();
                       EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                      re.updateStatsForPut(lastMod);
+                      re.updateStatsForPut(lastMod, lastMod);
                       owner.txApplyPutPart2(re, re.getKey(), newValue, lastMod, false, didDestroy,
                           clearOccured);
                     }
@@ -3276,9 +3276,9 @@ public abstract class AbstractRegionMap implements RegionMap {
                       clearOccured = true;
                     }
                     {
-                      long lastMod = System.currentTimeMillis();
+                      long lastMod = owner.cacheTimeMillis();
                       EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                      oldRe.updateStatsForPut(lastMod);
+                      oldRe.updateStatsForPut(lastMod, lastMod);
                       owner.txApplyPutPart2(oldRe, oldRe.getKey(), newValue, lastMod, false,
                           didDestroy, clearOccured);
                     }
@@ -3342,9 +3342,9 @@ public abstract class AbstractRegionMap implements RegionMap {
                   clearOccured = true;
                 }
                 {
-                  long lastMod = System.currentTimeMillis();
+                  long lastMod = owner.cacheTimeMillis();
                   EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                  newRe.updateStatsForPut(lastMod);
+                  newRe.updateStatsForPut(lastMod, lastMod);
                   owner.txApplyPutPart2(newRe, newRe.getKey(), newValue, lastMod, true, didDestroy,
                       clearOccured);
                 }

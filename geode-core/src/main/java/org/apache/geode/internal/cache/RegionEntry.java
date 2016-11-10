@@ -78,7 +78,7 @@ public interface RegionEntry {
 
   public long getMissCount() throws InternalStatisticsDisabledException;
 
-  public void updateStatsForPut(long lastModifiedTime);
+  public void updateStatsForPut(long lastModifiedTime, long lastAccessedTime);
 
   /**
    * @return the version information for this entry

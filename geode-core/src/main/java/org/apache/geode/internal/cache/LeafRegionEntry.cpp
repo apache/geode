@@ -499,10 +499,10 @@ public class LEAF_CLASS extends PARENT_CLASS {
     }
   }
   @Override
-  protected final void setLastModified(long lastModified) {
+  protected final void setLastModifiedAndAccessedTimes(long lastAccessed) {
     _setLastModified(lastModified);
     if (!DISABLE_ACCESS_TIME_UPDATE_ON_PUT) { 
-      setLastAccessed(lastModified);
+      setLastAccessed(lastAccessed);
     }
   }
   private volatile long lastAccessed;

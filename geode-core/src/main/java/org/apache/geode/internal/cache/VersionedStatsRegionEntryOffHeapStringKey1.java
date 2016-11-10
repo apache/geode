@@ -192,10 +192,10 @@ public class VersionedStatsRegionEntryOffHeapStringKey1 extends VersionedStatsRe
   }
 
   @Override
-  protected final void setLastModified(long lastModified) {
+  protected final void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
     _setLastModified(lastModified);
     if (!DISABLE_ACCESS_TIME_UPDATE_ON_PUT) {
-      setLastAccessed(lastModified);
+      setLastAccessed(lastAccessed);
     }
   }
 

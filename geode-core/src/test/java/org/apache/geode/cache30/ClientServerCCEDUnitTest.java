@@ -17,6 +17,8 @@ package org.apache.geode.cache30;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
+import com.jayway.awaitility.Awaitility;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,7 +27,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,6 +51,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.AbstractRegionEntry;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -68,15 +77,88 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   public static LocalRegion TestRegion;
 
+  @Before
   public void setup() {
     // for bug #50683 we need a short queue-removal-message processing interval
     HARegionQueue.setMessageSyncInterval(5);
+    IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
   @Override
   public final void preTearDownCacheTestCase() {
     disconnectAllFromDS();
     HARegionQueue.setMessageSyncInterval(HARegionQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
+    TestRegion = null;
+  }
+
+
+  @Test
+  public void testClientDoesNotExpireEntryPrematurely() throws Exception {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName() + "Region";
+    final String key = "testKey";
+
+    int port = createServerRegion(vm0, name, true);
+
+    vm0.invoke(new SerializableCallable("create old entry") {
+      public Object call() throws Exception {
+        LocalRegion r = (LocalRegion) basicGetCache().getRegion(name);
+        r.put(key, "value");
+        AbstractRegionEntry entry = (AbstractRegionEntry) r.basicGetEntry(key);
+        // set an old timestamp in the entry - thirty minutes ago
+        entry.getVersionStamp().setVersionTimeStamp(System.currentTimeMillis() - 1800000L);
+        return null;
+      }
+    });
+
+    createClientRegion(vm1, name, port, true, ClientRegionShortcut.CACHING_PROXY, false);
+
+    vm1.invoke(new SerializableCallable("fetch entry and validate") {
+      public Object call() throws Exception {
+        final Long[] expirationTimeMillis = new Long[1];
+        int expirationSeconds = 15;
+
+        LocalRegion r = (LocalRegion) basicGetCache().getRegion(name);
+        AttributesMutator mutator = r.getAttributesMutator();
+        mutator.setEntryIdleTimeout(
+            new ExpirationAttributes(expirationSeconds, ExpirationAction.LOCAL_DESTROY));
+        mutator.addCacheListener(new CacheListenerAdapter() {
+          @Override
+          public void afterDestroy(EntryEvent event) {
+            expirationTimeMillis[0] = System.currentTimeMillis();
+          }
+        });
+
+        // fetch the entry from the server and make sure it doesn't expire early
+        if (!r.containsKey(key)) {
+          r.get(key);
+        }
+
+        final long expirationTime = System.currentTimeMillis() + (expirationSeconds * 1000);
+
+        Awaitility.await("waiting for object to expire")
+            .atMost(expirationSeconds * 2, TimeUnit.SECONDS).until(() -> {
+              return expirationTimeMillis[0] != null;
+            });
+
+        disconnectFromDS();
+
+        assertTrue(
+            "entry expired " + (expirationTime - expirationTimeMillis[0]) + " milliseconds early",
+            expirationTimeMillis[0] >= expirationTime);
+
+        return null;
+      }
+    });
+
+    vm0.invoke(new SerializableRunnable() {
+      public void run() {
+        disconnectFromDS();
+      }
+    });
+
   }
 
   public ClientServerCCEDUnitTest() {
@@ -644,17 +726,28 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void createClientRegion(final VM vm, final String regionName, final int port,
       final boolean ccEnabled, final ClientRegionShortcut clientRegionShortcut) {
+    createClientRegion(vm, regionName, port, ccEnabled, clientRegionShortcut, true);
+  }
+
+  private void createClientRegion(final VM vm, final String regionName, final int port,
+      final boolean ccEnabled, final ClientRegionShortcut clientRegionShortcut,
+      final boolean registerInterest) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
-        cf.setPoolSubscriptionEnabled(true);
+        if (registerInterest) {
+          cf.setPoolSubscriptionEnabled(true);
+        }
         cf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(clientRegionShortcut);
         crf.setConcurrencyChecksEnabled(ccEnabled);
+        crf.setStatisticsEnabled(true);
         TestRegion = (LocalRegion) crf.create(regionName);
-        TestRegion.registerInterestRegex(".*", InterestResultPolicy.KEYS_VALUES, false, true);
+        if (registerInterest) {
+          TestRegion.registerInterestRegex(".*", InterestResultPolicy.KEYS_VALUES, false, true);
+        }
         return null;
       }
     };

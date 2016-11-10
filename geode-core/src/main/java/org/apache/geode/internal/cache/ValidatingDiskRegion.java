@@ -268,7 +268,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     }
 
     @Override
-    public void updateStatsForPut(long lastModifiedTime) {
+    public void updateStatsForPut(long lastModifiedTime, long lastAccessedTime) {
       // TODO Auto-generated method stub
     }
 

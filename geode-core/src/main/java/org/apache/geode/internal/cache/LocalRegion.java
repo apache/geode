@@ -154,7 +154,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -7364,13 +7363,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   long updateStatsForPut(RegionEntry entry, long p_lastModified, boolean lruRecentUse) {
     long lastModified = p_lastModified;
+    long lastAccessed = cacheTimeMillis();
     if (lruRecentUse) {
       entry.setRecentlyUsed(); // fix for bug 31102
     }
     if (lastModified == 0L) {
-      lastModified = cacheTimeMillis();
+      lastModified = lastAccessed;
     }
-    entry.updateStatsForPut(lastModified);
+    entry.updateStatsForPut(lastModified, lastAccessed);
     if (this.statisticsEnabled && !isProxy()) {
       // do not reschedule if there is already a task in the queue.
       // this prevents bloat in the TimerTask since cancelled tasks

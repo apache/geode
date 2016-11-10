@@ -23,7 +23,6 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
@@ -219,7 +218,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   // now for the fun part
-  public void updateStatsForPut(long lastModifiedTime) {
+  public void updateStatsForPut(long lastModifiedTime, long lastAccessedTime) {
     throw new UnsupportedOperationException(
         LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
             .toLocalizedString());

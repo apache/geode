@@ -438,7 +438,7 @@ final class ProxyRegionMap implements RegionMap {
       return;
     }
 
-    public void updateStatsForPut(long lastModifiedTime) {
+    public void updateStatsForPut(long lastModifiedTime, long lastAccessedTime) {
       // do nothing; called by LocalRegion.updateStatsForPut
     }
 

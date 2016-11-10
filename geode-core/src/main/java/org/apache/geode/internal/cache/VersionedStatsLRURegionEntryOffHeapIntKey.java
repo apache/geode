@@ -21,7 +21,6 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -274,10 +273,10 @@ public class VersionedStatsLRURegionEntryOffHeapIntKey extends VersionedStatsLRU
   }
 
   @Override
-  protected final void setLastModified(long lastModified) {
+  protected final void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
     _setLastModified(lastModified);
     if (!DISABLE_ACCESS_TIME_UPDATE_ON_PUT) {
-      setLastAccessed(lastModified);
+      setLastAccessed(lastAccessed);
     }
   }
 

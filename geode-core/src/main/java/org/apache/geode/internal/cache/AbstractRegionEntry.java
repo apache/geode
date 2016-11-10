@@ -163,16 +163,34 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     throw new InternalStatisticsDisabledException();
   }
 
+  /**
+   * This sets the lastModified time for the entry. In subclasses with statistics it will also set
+   * the lastAccessed time unless the system property gemfire.disableAccessTimeUpdateOnPut is set to
+   * true.
+   * 
+   * @param lastModified the time of last modification of the entry
+   */
   protected void setLastModified(long lastModified) {
+    setLastModifiedAndAccessedTimes(lastModified, lastModified);
+  }
+
+  /**
+   * This sets the lastModified and lastAccessed time for the entry. Subclasses that do not keep
+   * track of lastAccessed time will ignore the second parameter.
+   * 
+   * @param lastModified the time of last modification of the entry
+   * @param lastAccessed the time the entry was last accessed
+   */
+  protected void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
     _setLastModified(lastModified);
   }
 
   public void txDidDestroy(long currTime) {
-    setLastModified(currTime);
+    setLastModifiedAndAccessedTimes(currTime, currTime);
   }
 
-  public final void updateStatsForPut(long lastModifiedTime) {
-    setLastModified(lastModifiedTime);
+  public final void updateStatsForPut(long lastModifiedTime, long lastAccessedTime) {
+    setLastModifiedAndAccessedTimes(lastModifiedTime, lastAccessedTime);
   }
 
   public void setRecentlyUsed() {
