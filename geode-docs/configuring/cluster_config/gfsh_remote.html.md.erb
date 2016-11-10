@@ -28,13 +28,13 @@ To connect `gfsh` using the HTTP protocol to a remote GemFire cluster:
 
     ``` pre
     gfsh>start server --name=server1 --J=-Dgemfire.jmx-manager=true \
-    --J=-Dgemfire.jmx-manager-start=true --J=-Dgemfire.http-service-port=8080 \
-    --J=-Dgemfire.http-service-bind-address=myremotecluster.example.com
+    --J=-Dgemfire.jmx-manager-start=true --http-service-port=8080 \
+    --http-service-bind-address=myremotecluster.example.com
     ```
 
     This command must be executed directly on the host machine that will ultimately act as the remote GemFire server that hosts the HTTP service for remote administration. (You cannot launch a GemFire server remotely.)
 
-3.  On your local system, run the `gfsh` `connect` command to connect to the remote system. Include the `--use-http` and `--url` parameters. For example:
+3.  On your local system, run the `gfsh connect` command to connect to the remote system. Include the `--use-http` and `--url` parameters. For example:
 
     ``` pre
     gfsh>connect --use-http=true --url="http://myremotecluster.example.com:8080/gemfire/v1"

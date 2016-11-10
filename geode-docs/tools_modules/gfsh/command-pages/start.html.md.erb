@@ -499,6 +499,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--hostname-for-clients=value] [--max-connections=value]
     [--message-time-to-live=value] [--max-message-count=value] [--max-threads=value]
     [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value]
+    [--start-rest-api=value]
+    [--http-service-port=value] [--http-service-bind-address=value]
 ```
 
 <a id="topic_3764EE2DB18B4AE4A625E0354471738A__table_at5_bwg_2w"></a>
@@ -745,10 +747,24 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>The integer quantity of off-heap memory to be used for storing region values. Specified in Gigabytes with a 'g' suffix, or Megabytes with an 'm' suffix. For example, allocate a 2 Gigabyte off-heap space with <code class="ph codeph">--off-heap-memory-size=2g</code>. The default value of 0 does not use any off-heap memory.</td>
 <td>0</td>
 </tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-start-rest-api</span></td>
+<td>When true, starts the REST API service.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-http-service-port</span></td>
+<td>Specifies the port on which the HTTP service will listen.</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-http-service-bind-address</span></td>
+<td>Specifies the IP address to which the HTTP service will be bound.
+</td>
+<td>all local addresses</td>
+</tr>
 </tbody>
 </table>
-
-<span class="tablecap">Table 7. Start Server Parameters</span>
 
 ### <a id="topic_3764EE2DB18B4AE4A625E0354471738A__section_A50120613D3C4A848463236C4EFF18C7" class="no-quick-link"></a>Examples
 
