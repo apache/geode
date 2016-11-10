@@ -21,6 +21,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -40,7 +42,7 @@ import java.util.Set;
 /**
  * The JsonWriter class is an utility to write various java types as a JSON string.
  * <p/>
- * 
+ *
  * @since GemFire 8.0
  */
 public class JsonWriter {
@@ -451,10 +453,52 @@ public class JsonWriter {
 
     if (value == null) {
       generator.writeNull();
+    } else if (value.getClass().equals(Boolean.class)) {
+      boolean b = (Boolean) value;
+      generator.writeBoolean(b);
+    } else if (value.getClass().equals(Byte.class)) {
+      Byte b = (Byte) value;
+      generator.writeNumber(b);
+    } else if (value.getClass().equals(Short.class)) {
+      Short b = (Short) value;
+      generator.writeNumber(b);
+    } else if (value.getClass().equals(Integer.class)) {
+      int i = (Integer) value;
+      generator.writeNumber(i);
+    } else if (value.getClass().equals(Long.class)) {
+      long i = (Long) value;
+      generator.writeNumber(i);
+    } else if (value.getClass().equals(BigInteger.class)) {
+      BigInteger i = (BigInteger) value;
+      generator.writeNumber(i);
+    } else if (value.getClass().equals(Float.class)) {
+      float i = (Float) value;
+      generator.writeNumber(i);
+    } else if (value.getClass().equals(BigDecimal.class)) {
+      BigDecimal i = (BigDecimal) value;
+      generator.writeNumber(i);
+    } else if (value.getClass().equals(Double.class)) {
+      double d = (Double) value;
+      generator.writeNumber(d);
+    } else if (value.getClass().equals(String.class)) {
+      String s = (String) value;
+      generator.writeString(s);
     } else if (value.getClass().isArray()) {
       writeArrayAsJson(generator, value, pdxField);
     } else if (value.getClass().equals(Link.class)) {
       writeLinkAsJson(generator, (Link) value, pdxField);
+      // } else if (value.getClass().equals(Date.class)) {
+      // generator.writeObject((Date) value);
+    } else if (value.getClass().equals(EnumInfo.class)) {
+      /*
+       * try { generator.writeString(((EnumInfo)value).getEnum().name()); } catch
+       * (ClassNotFoundException e) { throw new
+       * IllegalStateException("PdxInstance returns unknwon pdxfield " + pdxField + " for type " +
+       * value); }
+       */
+      generator.writeString(value.toString());
+    } else if (value.getClass().equals(PdxInstanceEnumInfo.class)) {
+      generator.writeString(value.toString());
     } else {
       if (value instanceof Struct) {
         writeStructAsJson(generator, (StructImpl) value);
