@@ -123,6 +123,10 @@ r=server1 --lines=5".
 
 Display or export metrics for the entire distributed system, a member or a region.
 
+When no command line arguments are given,
+metrics under the categories of cluster, cache, diskstore, and query
+are displayed.
+
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
@@ -167,9 +171,8 @@ show metrics [--member=value] [--region=value] [--file=value]
 <td><span class="keyword parmname">\-\-categories</span></td>
 <td>Categories available based upon the parameters specified (listed above) are:
 <ul>
-<li><strong>no parameters specified</strong>: cluster, cache, diskstore, query</li>
 <li><strong>region specified</strong>: cluster, region, partition, diskstore, callback, eviction</li>
-<li><strong>member specified</strong>: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution</li>
+<li><strong>member specified</strong>: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution, offheap</li>
 <li><strong>member and region specified</strong>: region, partition, diskstore, callback, eviction</li>
 </ul></td>
 </tr>
