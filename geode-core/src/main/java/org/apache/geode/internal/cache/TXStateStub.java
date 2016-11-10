@@ -135,6 +135,10 @@ public abstract class TXStateStub implements TXStateInterface {
     return stub;
   }
 
+  public Map<Region<?, ?>, TXRegionStub> getRegionStubs() {
+    return this.regionStubs;
+  }
+
 
   @Override
   public String toString() {

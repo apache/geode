@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tx;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
@@ -24,6 +25,7 @@ import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
@@ -46,6 +48,7 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,6 +67,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     super(txstate, r);
   }
 
+  public Map<Integer, Boolean> getBuckets() {
+    return buckets;
+  }
 
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
@@ -107,16 +113,15 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       }
       ex = ex.getCause();
     }
-    if (keyInfo != null && !buckets.isEmpty() && !buckets.containsKey(keyInfo.getBucketId())) {
-      // for parent region if previous ops were successful and for child colocated regions
-      // where the bucketId was not previously encountered
+
+    if (isKeyInNonColocatedBucket(keyInfo)) {
       return new TransactionDataNotColocatedException(
           LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
               .toLocalizedString(keyInfo.getKey()));
     }
     ex = cause;
     while (ex != null) {
-      if (ex instanceof PrimaryBucketException) {
+      if (ex instanceof PrimaryBucketException || ex instanceof BucketNotFoundException) {
         return new TransactionDataRebalancedException(
             LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
                 .toLocalizedString());
@@ -124,6 +129,23 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       ex = ex.getCause();
     }
     return new TransactionDataNodeHasDepartedException(cause.getLocalizedMessage());
+  }
+
+  // is this key in a different bucket from all the existing buckets
+  // of the underlying PR or its colocated PRs touched by the transaction.
+  private boolean isKeyInNonColocatedBucket(KeyInfo keyInfo) {
+    Map<Region<?, ?>, TXRegionStub> regionStubs = this.state.getRegionStubs();
+    Collection<PartitionedRegion> colcatedRegions = (Collection<PartitionedRegion>) ColocationHelper
+        .getAllColocationRegions((PartitionedRegion) this.region).values();
+    // get all colocated region buckets touched in the transaction
+    for (PartitionedRegion colcatedRegion : colcatedRegions) {
+      PartitionedTXRegionStub regionStub =
+          (PartitionedTXRegionStub) regionStubs.get(colcatedRegion);
+      if (regionStub != null) {
+        buckets.putAll(regionStub.getBuckets());
+      }
+    }
+    return keyInfo != null && !buckets.isEmpty() && !buckets.containsKey(keyInfo.getBucketId());
   }
 
 
@@ -232,7 +254,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       throw re;
     } catch (ForceReattemptException e) {
       if (isBucketNotFoundException(e)) {
-        return false;
+        RuntimeException re = getTransactionException(keyInfo, e);
+        re.initCause(e);
+        throw re;
       }
       waitToRetry();
       RuntimeException re = new TransactionDataNodeHasDepartedException(
@@ -274,7 +298,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       throw re;
     } catch (ForceReattemptException e) {
       if (isBucketNotFoundException(e)) {
-        return false;
+        RuntimeException re = getTransactionException(keyInfo, e);
+        re.initCause(e);
+        throw re;
       }
       waitToRetry();
       RuntimeException re = new TransactionDataNodeHasDepartedException(
@@ -306,7 +332,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       throw re;
     } catch (ForceReattemptException e) {
       if (isBucketNotFoundException(e)) {
-        return null;
+        RuntimeException re = getTransactionException(keyInfo, e);
+        re.initCause(e);
+        throw re;
       }
       waitToRetry();
       RuntimeException re = getTransactionException(keyInfo, e);
