@@ -97,6 +97,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   public void close() throws Exception {
     if (gfsh != null) {
       gfsh.clear();
+      gfsh.executeCommand("disconnect");
       gfsh.executeCommand("exit");
       gfsh.terminate();
       gfsh = null;

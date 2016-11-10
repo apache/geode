@@ -14,6 +14,22 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PREFIX;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
+
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CommandRequest;
+import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.commands.ShellCommands;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,22 +61,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
-
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.util.ArrayUtils;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.CommandRequest;
-import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.commands.ShellCommands;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * OperationInvoker JMX Implementation
@@ -120,16 +120,13 @@ public class JmxOperationInvoker implements OperationInvoker {
         Entry<String, String> entry = it.next();
         String key = entry.getKey();
         String value = entry.getValue();
-        if (key.startsWith("javax.") || key.startsWith(DistributionConfig.CLUSTER_SSL_PREFIX)
-            || key.startsWith(JMX_MANAGER_SSL_PREFIX)) {
-          key = checkforSystemPropertyPrefix(entry.getKey());
-          if ((key.equals(Gfsh.SSL_ENABLED_CIPHERS) || key.equals(Gfsh.SSL_ENABLED_PROTOCOLS))
-              && "any".equals(value)) {
-            continue;
-          }
-          System.setProperty(key, value);
-          propsToClear.add(key);
+        key = checkforSystemPropertyPrefix(key);
+        if ((key.equals(Gfsh.SSL_ENABLED_CIPHERS) || key.equals(Gfsh.SSL_ENABLED_PROTOCOLS))
+            && "any".equals(value)) {
+          continue;
         }
+        System.setProperty(key, value);
+        propsToClear.add(key);
       }
 
       if (!sslConfigProps.isEmpty()) {
@@ -242,7 +239,8 @@ public class JmxOperationInvoker implements OperationInvoker {
     if (key.startsWith("javax.")) {
       returnKey = key;
     }
-    if (key.startsWith(CLUSTER_SSL_PREFIX) || key.startsWith(JMX_MANAGER_SSL_PREFIX)) {
+    if (key.startsWith(CLUSTER_SSL_PREFIX) || key.startsWith(JMX_MANAGER_SSL_PREFIX)
+        || key.startsWith("ssl-")) {
       if (key.endsWith("keystore")) {
         returnKey = Gfsh.SSL_KEYSTORE;
       } else if (key.endsWith("keystore-password")) {

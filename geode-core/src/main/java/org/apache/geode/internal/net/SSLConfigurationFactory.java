@@ -15,17 +15,16 @@
 
 package org.apache.geode.internal.net;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.lang.ArrayUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class SSLConfigurationFactory {
 
@@ -149,7 +148,7 @@ public class SSLConfigurationFactory {
   private SSLConfig createSSLConfig(final SecurableCommunicationChannel sslEnabledComponent) {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setCiphers(getDistributionConfig().getSSLCiphers());
-    sslConfig.setEnabled(determineIfSSLEnabledForSSLComponent(sslEnabledComponent));
+    sslConfig.setEnabled(isSSLEnabledForComponent(getDistributionConfig(), sslEnabledComponent));
     sslConfig.setKeystore(getDistributionConfig().getSSLKeyStore());
     sslConfig.setKeystorePassword(getDistributionConfig().getSSLKeyStorePassword());
     sslConfig.setKeystoreType(getDistributionConfig().getSSLKeyStoreType());
@@ -161,18 +160,17 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  private boolean determineIfSSLEnabledForSSLComponent(
+  public static boolean isSSLEnabledForComponent(DistributionConfig dc,
       final SecurableCommunicationChannel sslEnabledComponent) {
-    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
+    if (ArrayUtils.contains(dc.getSecurableCommunicationChannels(),
         SecurableCommunicationChannel.NONE)) {
       return false;
     }
-    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
+    if (ArrayUtils.contains(dc.getSecurableCommunicationChannels(),
         SecurableCommunicationChannel.ALL)) {
       return true;
     }
-    return ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
-        sslEnabledComponent) ? true : false;
+    return ArrayUtils.contains(dc.getSecurableCommunicationChannels(), sslEnabledComponent);
   }
 
   /**

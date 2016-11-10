@@ -15,10 +15,17 @@
 package org.apache.geode.management.internal;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 
@@ -110,7 +117,9 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
       }
       if (port != 0) {
         if (!usingJdkConfig) {
-          ssl = dc.getJmxManagerSSLEnabled();
+          SSLConfig jmxSSL =
+              SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.JMX);
+          ssl = jmxSSL.isEnabled();
           host = dc.getJmxManagerHostnameForClients();
           if (host == null || host.equals("")) {
             host = dc.getJmxManagerBindAddress();
