@@ -53,7 +53,6 @@ import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.Set;
@@ -85,6 +84,7 @@ public class IntegratedSecurityService implements SecurityService {
    *
    * @return the shiro subject, null if security is not enabled
    */
+  @Override
   public Subject getSubject() {
     if (!isIntegratedSecurity()) {
       return null;
@@ -120,6 +120,7 @@ public class IntegratedSecurityService implements SecurityService {
   /**
    * convenient method for testing
    */
+  @Override
   public Subject login(String username, String password) {
     if (StringUtils.isBlank(username) || StringUtils.isBlank(password))
       return null;
@@ -133,6 +134,7 @@ public class IntegratedSecurityService implements SecurityService {
   /**
    * @return null if security is not enabled, otherwise return a shiro subject
    */
+  @Override
   public Subject login(Properties credentials) {
     if (!isIntegratedSecurity()) {
       return null;
@@ -158,6 +160,7 @@ public class IntegratedSecurityService implements SecurityService {
     return currentUser;
   }
 
+  @Override
   public void logout() {
     Subject currentUser = getSubject();
     if (currentUser == null) {
@@ -175,6 +178,7 @@ public class IntegratedSecurityService implements SecurityService {
     ThreadContext.remove();
   }
 
+  @Override
   public Callable associateWith(Callable callable) {
     Subject currentUser = getSubject();
     if (currentUser == null) {
@@ -190,6 +194,7 @@ public class IntegratedSecurityService implements SecurityService {
    * ThreadState state = null; try{ state = IntegratedSecurityService.bindSubject(subject); //do the
    * rest of the work as this subject } finally{ if(state!=null) state.clear(); }
    */
+  @Override
   public ThreadState bindSubject(Subject subject) {
     if (subject == null) {
       return null;
@@ -200,6 +205,7 @@ public class IntegratedSecurityService implements SecurityService {
     return threadState;
   }
 
+  @Override
   public void authorize(ResourceOperation resourceOperation) {
     if (resourceOperation == null) {
       return;
@@ -208,67 +214,83 @@ public class IntegratedSecurityService implements SecurityService {
     authorize(resourceOperation.resource().name(), resourceOperation.operation().name(), null);
   }
 
+  @Override
   public void authorizeClusterManage() {
     authorize("CLUSTER", "MANAGE");
   }
 
+  @Override
   public void authorizeClusterWrite() {
     authorize("CLUSTER", "WRITE");
   }
 
+  @Override
   public void authorizeClusterRead() {
     authorize("CLUSTER", "READ");
   }
 
+  @Override
   public void authorizeDataManage() {
     authorize("DATA", "MANAGE");
   }
 
+  @Override
   public void authorizeDataWrite() {
     authorize("DATA", "WRITE");
   }
 
+  @Override
   public void authorizeDataRead() {
     authorize("DATA", "READ");
   }
 
+  @Override
   public void authorizeRegionManage(String regionName) {
     authorize("DATA", "MANAGE", regionName);
   }
 
+  @Override
   public void authorizeRegionManage(String regionName, String key) {
     authorize("DATA", "MANAGE", regionName, key);
   }
 
+  @Override
   public void authorizeRegionWrite(String regionName) {
     authorize("DATA", "WRITE", regionName);
   }
 
+  @Override
   public void authorizeRegionWrite(String regionName, String key) {
     authorize("DATA", "WRITE", regionName, key);
   }
 
+  @Override
   public void authorizeRegionRead(String regionName) {
     authorize("DATA", "READ", regionName);
   }
 
+  @Override
   public void authorizeRegionRead(String regionName, String key) {
     authorize("DATA", "READ", regionName, key);
   }
 
+  @Override
   public void authorize(String resource, String operation) {
     authorize(resource, operation, null);
   }
 
+  @Override
   public void authorize(String resource, String operation, String regionName) {
     authorize(resource, operation, regionName, null);
   }
 
+  @Override
   public void authorize(String resource, String operation, String regionName, String key) {
     regionName = StringUtils.stripStart(regionName, "/");
     authorize(new ResourcePermission(resource, operation, regionName, key));
   }
 
+  @Override
   public void authorize(ResourcePermission context) {
     Subject currentUser = getSubject();
     if (currentUser == null) {
@@ -295,6 +317,7 @@ public class IntegratedSecurityService implements SecurityService {
   /**
    * initialize Shiro's Security Manager and Security Utilities
    */
+  @Override
   public void initSecurity(Properties securityProps) {
     if (securityProps == null) {
       return;
@@ -345,6 +368,7 @@ public class IntegratedSecurityService implements SecurityService {
     }
   }
 
+  @Override
   public void close() {
     if (securityManager != null) {
       securityManager.close();
@@ -367,32 +391,32 @@ public class IntegratedSecurityService implements SecurityService {
    * call postProcess. But if your postProcess is pretty involved with preparations and you need to
    * bypass it entirely, call this first.
    */
+  @Override
   public boolean needPostProcess() {
     return (isIntegratedSecurity() && postProcessor != null);
   }
 
+  @Override
   public Object postProcess(String regionPath, Object key, Object value,
       boolean valueIsSerialized) {
     return postProcess(null, regionPath, key, value, valueIsSerialized);
   }
 
+  @Override
   public Object postProcess(Object principal, String regionPath, Object key, Object value,
       boolean valueIsSerialized) {
     if (!needPostProcess())
       return value;
 
-    if (principal == null) {
-      Subject subject = getSubject();
-      if (subject == null)
-        return value;
-      principal = (Serializable) subject.getPrincipal();
-    }
+    principal = getPrincipal(principal);
+    if (principal == null)
+      return value;
 
     String regionName = StringUtils.stripStart(regionPath, "/");
     Object newValue = null;
 
     // if the data is a byte array, but the data itself is supposed to be an object, we need to
-    // desearized it before we pass
+    // deserialize it before we pass
     // it to the callback.
     if (valueIsSerialized && value instanceof byte[]) {
       try {
@@ -409,6 +433,17 @@ public class IntegratedSecurityService implements SecurityService {
     return newValue;
   }
 
+  private Object getPrincipal(Object principal) {
+    if (principal == null) {
+      Subject subject = getSubject();
+      if (subject == null)
+        return null;
+      principal = subject.getPrincipal();
+    }
+    return principal;
+  }
+
+  @Override
   public SecurityManager getSecurityManager() {
     return securityManager;
   }
@@ -427,10 +462,12 @@ public class IntegratedSecurityService implements SecurityService {
     isPeerAuthenticator = false;
   }
 
+  @Override
   public PostProcessor getPostProcessor() {
     return postProcessor;
   }
 
+  @Override
   public void setPostProcessor(PostProcessor postProcessor) {
     if (postProcessor == null) {
       return;
@@ -444,6 +481,7 @@ public class IntegratedSecurityService implements SecurityService {
    * 
    * @return true if configured, false if not
    */
+  @Override
   public boolean isIntegratedSecurity() {
     if (isIntegratedSecurity != null) {
       return isIntegratedSecurity;
@@ -457,10 +495,12 @@ public class IntegratedSecurityService implements SecurityService {
     return isIntegratedSecurity;
   }
 
+  @Override
   public boolean isClientSecurityRequired() {
     return isClientAuthenticator || isIntegratedSecurity();
   }
 
+  @Override
   public boolean isPeerSecurityRequired() {
     return isPeerAuthenticator || isIntegratedSecurity();
   }

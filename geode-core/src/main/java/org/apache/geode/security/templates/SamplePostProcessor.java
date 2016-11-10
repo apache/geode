@@ -14,10 +14,10 @@
  */
 package org.apache.geode.security.templates;
 
+import org.apache.geode.security.PostProcessor;
+
 import java.security.Principal;
 import java.util.Properties;
-
-import org.apache.geode.security.PostProcessor;
 
 /**
  * This is example that implements PostProcessor
@@ -38,12 +38,16 @@ public class SamplePostProcessor implements PostProcessor {
    */
   @Override
   public Object processRegionValue(Object principal, String regionName, Object key, Object value) {
+    return getUsername(principal) + "/" + regionName + "/" + key + "/" + value;
+  }
+
+  private String getUsername(final Object principal) {
     String name = null;
     if (principal instanceof Principal) {
       name = ((Principal) principal).getName();
     } else {
       name = principal.toString();
     }
-    return name + "/" + regionName + "/" + key + "/" + value;
+    return name;
   }
 }
