@@ -89,9 +89,9 @@ To enable compression on your region, set the following region attribute in your
     version="1.0” lock-lease="120"  lock-timeout= "60" search-timeout= "300"  is-server= "true"  copy-on-read= "false" > 
    <region name="compressedRegion" > 
       <region-attributes data-policy="replicate" ... /> 
-         <Compressor>
+         <compressor>
              <class-name>org.apache.geode.compression.SnappyCompressor</class-name>
-         </Compressor>
+         </compressor>
         ...
       </region-attributes>
    </region> 
