@@ -54,9 +54,10 @@ import org.junit.experimental.categories.Category;
  * operation.
  * 
  * GEODE-1740: It was observed that operations performed within a transaction were not holding
- * region modification locks for the duration of commit processing. This lock is used to ensure region
- * consistency during CLEAR processing.  By not holding the lock for the duration of commit processing,
- * a window was opened that allowed region operations such as clear to occur in mid-commit.
+ * region modification locks for the duration of commit processing. This lock is used to ensure
+ * region consistency during CLEAR processing. By not holding the lock for the duration of commit
+ * processing, a window was opened that allowed region operations such as clear to occur in
+ * mid-commit.
  * 
  * The fix for GEODE-1740 was to acquire and hold read locks for any region involved in the commit.
  * This forces CLEAR to wait until commit processing is complete.
@@ -68,15 +69,15 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   @Rule
   public transient JUnitSoftAssertions softly = new JUnitSoftAssertions();
   /*
-   * This test performs operations within a transaction and during commit processing
-   * schedules a clear to be performed on the relevant region. The scheduled clear should wait until
-   * commit processing is complete before clearing the region. Failure to do so, would result in
-   * region inconsistencies.
+   * This test performs operations within a transaction and during commit processing schedules a
+   * clear to be performed on the relevant region. The scheduled clear should wait until commit
+   * processing is complete before clearing the region. Failure to do so, would result in region
+   * inconsistencies.
    */
   VM vm0, vm1, opsVM, regionVM;
 
   static Cache cache;
-  
+
   ArmLockHook theArmHook;
 
   DistributedMember vm0ID, vm1ID;
@@ -113,10 +114,10 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     setClearHook(REGION_NAME1, opsVM, regionVM);
     performTestAndCheckResults(putOperationsTest);
   }
-  
+
   /*
-   * The CLOSE tests are ignored until the close operation has been
-   * updated to acquire a write lock during processing.
+   * The CLOSE tests are ignored until the close operation has been updated to acquire a write lock
+   * during processing.
    */
   @Ignore
   @Test
@@ -135,10 +136,10 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     setCloseHook(REGION_NAME1, opsVM, regionVM);
     performTestAndCheckResults(putOperationsTest);
   }
-      
+
   /*
-   * The DESTROY_REGION tests are ignored until the destroy operation has been
-   * updated to acquire a write lock during processing.
+   * The DESTROY_REGION tests are ignored until the destroy operation has been updated to acquire a
+   * write lock during processing.
    */
   @Ignore
   @Test
@@ -157,13 +158,14 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     setDestroyRegionHook(REGION_NAME1, opsVM, regionVM);
     performTestAndCheckResults(putOperationsTest);
   }
-      
+
   // Local methods
 
   /*
    * This method executes a runnable test and then checks for region consistency
    */
-  private void performTestAndCheckResults(SerializableRunnable operationsTest) throws InterruptedException {
+  private void performTestAndCheckResults(SerializableRunnable operationsTest)
+      throws InterruptedException {
     try {
       runLockingTest(opsVM, operationsTest);
       checkForConsistencyErrors(REGION_NAME1);
@@ -174,17 +176,17 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   /*
-   * We will be using 2 vms.  One for the transaction and one for the clear
+   * We will be using 2 vms. One for the transaction and one for the clear
    */
   private void getVMs() {
     Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
   }
-  
+
   /*
-   * Set which vm will perform the transaction and which will perform the region operation
-   * and create the regions on the vms
+   * Set which vm will perform the transaction and which will perform the region operation and
+   * create the regions on the vms
    */
   private void setupRegions(VM opsTarget, VM regionTarget) {
     opsVM = opsTarget;
@@ -205,7 +207,7 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   /*
-   * Runnable used to invoke the actual test 
+   * Runnable used to invoke the actual test
    */
   SerializableRunnable putOperationsTest = new SerializableRunnable("perform PUT") {
     @Override
@@ -215,8 +217,8 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   };
 
   /*
-   * Set arm hook to detect when region operation is attempting to acquire write lock
-   * and stage the clear that will be released half way through commit processing.
+   * Set arm hook to detect when region operation is attempting to acquire write lock and stage the
+   * clear that will be released half way through commit processing.
    */
   public void setClearHook(String rname, VM whereOps, VM whereClear) {
     whereOps.invoke(() -> setArmHook(rname));
@@ -226,8 +228,8 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   // remote test methods
 
   /*
-   * Wait to be notified and then execute the clear.
-   * Once the clear completes, notify waiter to perform region verification. 
+   * Wait to be notified and then execute the clear. Once the clear completes, notify waiter to
+   * perform region verification.
    */
   private static void stageClear(String rname, VM whereOps) throws InterruptedException {
     regionOperationWait();
@@ -264,8 +266,8 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   /*
-   * Set the abstract region map lock hook to detect 
-   * attempt to acquire write lock by region operation.
+   * Set the abstract region map lock hook to detect attempt to acquire write lock by region
+   * operation.
    */
   public void setArmHook(String rname) {
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
@@ -288,11 +290,11 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     regionLatch = new CountDownLatch(1);
     regionLatch.await();
   }
-  
+
   /*
-   * A simple transaction that will have a region operation execute during commit.
-   * opsLatch is used to wait until region operation has been scheduled during commit
-   * and verifyLatch is used to ensure commit and clear processing have both completed.
+   * A simple transaction that will have a region operation execute during commit. opsLatch is used
+   * to wait until region operation has been scheduled during commit and verifyLatch is used to
+   * ensure commit and clear processing have both completed.
    */
   private static void doPuts(Cache cache, VM whereRegion) throws InterruptedException {
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
@@ -301,8 +303,8 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     verifyLatch = new CountDownLatch(1);
 
     txManager.begin();
-    TXStateInterface txState = ((TXStateProxyImpl)txManager.getTXState()).getRealDeal(null,null);
-    ((TXState)txState).setDuringApplyChanges(new CommitTestCallback(whereRegion));
+    TXStateInterface txState = ((TXStateProxyImpl) txManager.getTXState()).getRealDeal(null, null);
+    ((TXState) txState).setDuringApplyChanges(new CommitTestCallback(whereRegion));
 
     Region region1 = cache.getRegion(REGION_NAME1);
     Region region2 = cache.getRegion(REGION_NAME2);
@@ -384,34 +386,37 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     }
     return result;
   }
-  
+
   /*
-   * Test callback called for each operation during commit processing.
-   * Half way through commit processing, release the region operation.
+   * Test callback called for each operation during commit processing. Half way through commit
+   * processing, release the region operation.
    */
   static class CommitTestCallback implements Runnable {
     VM whereRegionOperation;
     static int callCount;
     /* entered twice for each put lap since there are 2 regions */
     static int releasePoint = NUMBER_OF_PUTS;
-    
+
     public CommitTestCallback(VM whereRegion) {
       whereRegionOperation = whereRegion;
       callCount = 0;
     }
-    
+
     public void run() {
       callCount++;
-      if(callCount==releasePoint) {
+      if (callCount == releasePoint) {
         releaseRegionOperation(whereRegionOperation);
-        try {opsLatch.await();} catch (InterruptedException e) {}
+        try {
+          opsLatch.await();
+        } catch (InterruptedException e) {
+        }
       }
     }
   }
-  
+
   /*
-   * The region operations attempt to acquire the write lock will hang while
-   * commit processing is occurring.  Before this occurs, resume commit processing.
+   * The region operations attempt to acquire the write lock will hang while commit processing is
+   * occurring. Before this occurs, resume commit processing.
    */
   public class ArmLockHook extends ARMLockTestHookAdapter {
     int txCalls = 0;
@@ -420,8 +425,9 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void beforeLock(LocalRegion owner, CacheEvent event) {
-      if(event!=null) {
-        if (event.getOperation().isClear() || event.getOperation().isRegionDestroy() || event.getOperation().isClose()) {
+      if (event != null) {
+        if (event.getOperation().isClear() || event.getOperation().isRegionDestroy()
+            || event.getOperation().isClose()) {
           releaseOps();
         }
       }
