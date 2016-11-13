@@ -26,6 +26,8 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
+import java.io.File;
+
 @Category(IntegrationTest.class)
 public class GfshConfigInitFileJUnitTest {
 
@@ -167,4 +169,9 @@ public class GfshConfigInitFileJUnitTest {
     assertNull(result);
   }
 
+  @Test
+  public void historyFileLocationTest() throws Exception {
+    GfshConfig gfshConfig = new GfshConfig();
+    assertEquals(".geode", (new File(gfshConfig.getHistoryFileName())).getParentFile().getName());
+  }
 }

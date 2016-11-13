@@ -201,7 +201,7 @@ public class GfshConfig {
 
   private static String getHomeGemFireDirectory() {
     String userHome = System.getProperty("user.home");
-    String homeDirPath = userHome + "/.gemfire";
+    String homeDirPath = userHome + "/.geode";
     File alternateDir = new File(homeDirPath);
     if (!alternateDir.exists()) {
       if (!alternateDir.mkdirs()) {
