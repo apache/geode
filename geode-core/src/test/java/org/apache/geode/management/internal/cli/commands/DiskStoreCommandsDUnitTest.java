@@ -102,6 +102,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
 
+  @Category(FlakyTest.class) // GEODE-2102
   @Test
   public void testMissingDiskStore() {
     final String regionName = "testShowMissingDiskStoreRegion";
