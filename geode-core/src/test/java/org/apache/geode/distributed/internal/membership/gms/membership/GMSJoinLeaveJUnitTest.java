@@ -487,7 +487,7 @@ public class GMSJoinLeaveJUnitTest {
         view.getCrashedMembers().contains(mockMembers[0]));
   }
 
-//  @Category(FlakyTest.class) // GEODE-2074: timed out waiting for view #7
+  // @Category(FlakyTest.class) // GEODE-2074: timed out waiting for view #7
   @Test
   public void testDuplicateJoinRequestDoesNotCauseNewView() throws Exception {
     initMocks();
@@ -532,9 +532,8 @@ public class GMSJoinLeaveJUnitTest {
         && (!gmsJoinLeave.getViewRequests().isEmpty()
             || gmsJoinLeave.getView().getViewId() != viewId)) {
       if (sleeps++ > 20) {
-        throw new RuntimeException(
-            "timeout waiting for view #" + viewId + " current view: " + gmsJoinLeave.getView()
-                + "; view requests: " + gmsJoinLeave.getViewRequests());
+        throw new RuntimeException("timeout waiting for view #" + viewId + " current view: "
+            + gmsJoinLeave.getView() + "; view requests: " + gmsJoinLeave.getViewRequests());
       }
       Thread.sleep(1000);
     }
