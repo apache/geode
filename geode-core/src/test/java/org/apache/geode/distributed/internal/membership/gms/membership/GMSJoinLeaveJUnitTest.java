@@ -487,7 +487,7 @@ public class GMSJoinLeaveJUnitTest {
         view.getCrashedMembers().contains(mockMembers[0]));
   }
 
-  @Category(FlakyTest.class) // GEODE-2074: timed out waiting for view #7
+//  @Category(FlakyTest.class) // GEODE-2074: timed out waiting for view #7
   @Test
   public void testDuplicateJoinRequestDoesNotCauseNewView() throws Exception {
     initMocks();
@@ -532,9 +532,9 @@ public class GMSJoinLeaveJUnitTest {
         && (!gmsJoinLeave.getViewRequests().isEmpty()
             || gmsJoinLeave.getView().getViewId() != viewId)) {
       if (sleeps++ > 20) {
-        System.out.println("view requests: " + gmsJoinLeave.getViewRequests());
-        System.out.println("current view: " + gmsJoinLeave.getView());
-        throw new RuntimeException("timeout waiting for view #" + viewId);
+        throw new RuntimeException(
+            "timeout waiting for view #" + viewId + " current view: " + gmsJoinLeave.getView()
+                + "; view requests: " + gmsJoinLeave.getViewRequests());
       }
       Thread.sleep(1000);
     }
@@ -1030,7 +1030,7 @@ public class GMSJoinLeaveJUnitTest {
         msg.setSender(gmsJoinLeaveMemberId);
         gmsJoinLeave.processMessage(msg);
       }
-      Timeout to = new Timeout(2 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, new Times(1));
+      Timeout to = new Timeout(3 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, new Times(1));
       verify(messenger, to).send(isA(NetworkPartitionMessage.class));
 
     } finally {
