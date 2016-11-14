@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.util;
 
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -24,9 +27,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
-
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
 
 /**
  * Reusable Input/Output operation utility methods.
@@ -168,7 +168,8 @@ public abstract class IOUtils {
     ObjectInputStream objIn = null;
 
     try {
-      objIn = new ClassLoaderObjectInputStream(new ByteArrayInputStream(objBytes), loader);
+      ByteArrayInputStream bis = new ByteArrayInputStream(objBytes);
+      objIn = new ClassLoaderObjectInputStream(bis, loader);
       return objIn.readObject();
     } finally {
       close(objIn);
