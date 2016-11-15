@@ -7578,7 +7578,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     this.entries.removeEntry(event.getKey(), re, false);
   }
 
-  static void validateRegionName(String name, InternalRegionArguments internalRegionArgs) {
+  public static void validateRegionName(String name, InternalRegionArguments internalRegionArgs) {
     if (name == null) {
       throw new IllegalArgumentException(
           LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
