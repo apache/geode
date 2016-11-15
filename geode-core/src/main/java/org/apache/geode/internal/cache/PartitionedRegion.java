@@ -4001,8 +4001,8 @@ public class PartitionedRegion extends LocalRegion
         } else {
           // with transaction
           if (prce instanceof BucketNotFoundException) {
-            TransactionException ex = new TransactionDataNotColocatedException(
-                LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
+            TransactionException ex = new TransactionDataRebalancedException(
+                LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
                     .toLocalizedString(key));
             ex.initCause(prce);
             throw ex;

@@ -45,6 +45,10 @@ public class PRDistTXDUnitTest extends PRTransactionDUnitTest {
 
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
   @Test
+  public void testTxWithGetOnMovedBucketUsingBucketReadHook() {}
+
+  @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
+  @Test
   public void testTxWithContainsValueForKeyOnMovedBucket() {}
 
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")

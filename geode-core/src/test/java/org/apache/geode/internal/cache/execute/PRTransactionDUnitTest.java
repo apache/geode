@@ -580,11 +580,11 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   @SuppressWarnings("unchecked")
   private void moveBucketForGet(OrderId order1, boolean isCust1Local, DistributedMember source,
       DistributedMember destination, PartitionedRegion prOrder) {
-    if (isCust1Local) {
+    if (isCust1Local && useBucketReadHook) {
       // Use TXState
       setBucketReadHook(order1, source, destination, prOrder);
     } else {
-      // Use TXStateStub -- transaction data on remote node
+      // Use TXState and TXStateStub -- transaction data on remote node
       PartitionRegionHelper.moveBucketByKey(prOrder, source, destination, order1);
     }
   }
@@ -646,6 +646,15 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     Op op = Op.GET;
     basicPRTXWithOpOnMovedBucket(op, 0);
   }
+
+  @Test
+  public void testTxWithGetOnMovedBucketUsingBucketReadHook() {
+    Op op = Op.GET;
+    useBucketReadHook = true;
+    basicPRTXWithOpOnMovedBucket(op, 0);
+  }
+
+  private boolean useBucketReadHook = false;
 
   @Test
   public void testTxWithContainsValueForKeyOnMovedBucket() {
