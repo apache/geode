@@ -224,8 +224,18 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
 
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    driver.close();
-    jetty.stop();
+    if (driver != null) {
+      driver.close();
+      driver = null;
+    }
+    if (jetty != null) {
+      jetty.stop();
+      jetty = null;
+    }
+    if (server != null) {
+      server.stop();
+      server = null;
+    }
   }
 
   @Before
@@ -402,10 +412,7 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
   @Test
   public void testClusterGridViewMemberID() throws InterruptedException {
     searchByIdAndClick("default_grid_button");
-    List<WebElement> elements = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr")); // gives
-                                                                                                     // me
-                                                                                                     // 11
-                                                                                                     // rows
+    List<WebElement> elements = driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
 
     for (int memberCount = 1; memberCount < elements.size(); memberCount++) {
       String memberId = driver
@@ -932,7 +939,6 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
       String loadAvgM1 = JMXProperties.getInstance().getProperty("member.M" + (i) + ".loadAverage");
       assertEquals(df2.format(Double.valueOf(loadAvgM1)), LoadAvgM1);
 
-
       String ThreadsM1 = driver
           .findElement(
               By.xpath("//div[@id='_tooltip']/div/div/div[2]/div[" + (j + 3) + "]/div[2]/div"))
@@ -1034,7 +1040,6 @@ public abstract class PulseAbstractTest extends PulseBaseTest {
     WebDriverWait wait = new WebDriverWait(driver, 20);
     wait.until(ExpectedConditions
         .visibilityOf(driver.findElement(By.xpath("//label[text()='Data Browser']"))));
-
 
     // Verify all elements must be displayed on data browser screen
     assertTrue(driver.findElement(By.xpath("//a[text()='Data Regions']")).isDisplayed());
