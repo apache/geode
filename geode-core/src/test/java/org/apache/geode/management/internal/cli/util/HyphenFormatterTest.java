@@ -207,4 +207,70 @@ public class HyphenFormatterTest {
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
 
+  @Test
+  public void optionAfterOneJOption() {
+    String cmd = "start locator --name=loc1 --J=-Dfoo=bar --http-service=8080";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\" --http-service=8080";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+  @Test
+  public void optionWithMoreThanOneHyphen() {
+    String cmd = "start locator --name=loc1 --http-service-port=8080";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected = "start locator --name=loc1 --http-service-port=8080";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+  @Test
+  public void optionWithOneHyphenAfterOneJOption() {
+    String cmd = "start server --name=me3 --J=-Dgemfire.jmx-manager=true --redis-port=8080";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected =
+        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --redis-port=8080";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+  @Test // reproduces GEODE-2104
+  public void optionWithMoreThanOneHyphenAfterOneJOption() {
+    String cmd = "start server --name=me3 --J=-Dgemfire.jmx-manager=true --http-service-port=8080";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected =
+        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --http-service-port=8080";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+  @Test
+  public void optionWithOneHyphenAfterTwoJOptions() {
+    String cmd =
+        "start server --name=me3 --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true --redis-port=8080";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected =
+        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --J=\"-Dgemfire.jmx-manager-start=true\" --redis-port=8080";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+  @Test // reproduces GEODE-2104
+  public void optionWithMoreThanOneHyphenAfterTwoJOptions() {
+    String cmd =
+        "start server --name=me3 --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true --http-service-port=8080";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected =
+        "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --J=\"-Dgemfire.jmx-manager-start=true\" --http-service-port=8080";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+  @Test // reproduces GEODE-2075
+  public void optionWithMoreThanOneHyphenWithoutValueAfterJOptions() {
+    String cmd =
+        "start server --name=Server2 --log-level=config --J=-Dgemfire.locators=localhost[10334] --disable-default-server";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected =
+        "start server --name=Server2 --log-level=config --J=\"-Dgemfire.locators=localhost[10334]\" --disable-default-server";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+
+
 }

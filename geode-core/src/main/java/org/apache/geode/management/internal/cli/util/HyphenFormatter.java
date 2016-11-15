@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
  */
 public class HyphenFormatter {
 
-  private static final String OPTION_PATTERN = "\\-\\-[a-zA-Z]+\\-?[a-zA-Z]*\\=";
+  private static final String OPTION_PATTERN = "--[a-zA-Z]+[a-zA-Z\\-]*=*";
 
   private static final String QUOTE = "\"";
   private static final String EQUAL_HYPHEN = "=-";
@@ -67,13 +68,12 @@ public class HyphenFormatter {
 
   private List<String> split(String cmd) {
     List<String> strings = new ArrayList<>();
-
     Matcher matcher = Pattern.compile(OPTION_PATTERN).matcher(cmd);
 
     int index = 0; // first index of --option=
 
     while (matcher.find()) {
-      if (matcher.start() - index > 0) {
+      if (matcher.start() > index) {
         String option = cmd.substring(index, matcher.start()).trim();
         strings.add(option);
       }
