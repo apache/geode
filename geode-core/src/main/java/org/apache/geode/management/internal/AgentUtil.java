@@ -34,7 +34,7 @@ public class AgentUtil {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ERROR_VARIABLE_NOT_SET =
-      "The GEMFIRE environment variable must be set!";
+      "The GEODE_HOME environment variable must be set!";
 
   private String gemfireVersion = null;
 
@@ -52,7 +52,7 @@ public class AgentUtil {
    *        geode-web-api
    */
   public String findWarLocation(String warFilePrefix) {
-    String gemfireHome = getGemFireHome();
+    String gemfireHome = getGeodeHome();
     if (!StringUtils.isBlank(gemfireHome)) {
       String[] possibleFiles =
           {gemfireHome + "/tools/Extensions/" + warFilePrefix + "-" + gemfireVersion + ".war",
@@ -104,26 +104,26 @@ public class AgentUtil {
     return false;
   }
 
-  public String getGemFireHome() {
+  public String getGeodeHome() {
 
-    String gemFireHome = System.getenv("GEMFIRE");
+    String geodeHome = System.getenv("GEODE_HOME");
 
-    logger.info("GEMFIRE HOME:" + gemFireHome);
+    logger.info("GEODE_HOME:" + geodeHome);
     // Check for empty variable. if empty, then log message and exit HTTP server
     // startup
-    if (StringUtils.isBlank(gemFireHome)) {
-      gemFireHome = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "home");
-      logger.info("Reading gemfire.home System Property -> {}", gemFireHome);
-      if (StringUtils.isBlank(gemFireHome)) {
-        logger.info("GEMFIRE environment variable not set; HTTP service will not start.");
-        gemFireHome = null;
+    if (StringUtils.isBlank(geodeHome)) {
+      geodeHome = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "home");
+      logger.info("Reading geode.home System Property -> {}", geodeHome);
+      if (StringUtils.isBlank(geodeHome)) {
+        logger.info("GEODE_HOME environment variable not set; HTTP service will not start.");
+        geodeHome = null;
       }
     }
-    return gemFireHome;
+    return geodeHome;
   }
 
-  public boolean isGemfireHomeDefined() {
-    String gemfireHome = getGemFireHome();
-    return !StringUtils.isBlank(gemfireHome);
+  public boolean isGeodeHomeDefined() {
+    String geodeHome = getGeodeHome();
+    return !StringUtils.isBlank(geodeHome);
   }
 }
