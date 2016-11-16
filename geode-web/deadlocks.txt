@@ -1,0 +1,615 @@
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Timer-0 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.TaskQueue@7fa8e777
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:CallbackSampler is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5af3e0ac
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Replicate/Partition Region Garbage Collector is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:org.apache.geode.internal.cache.TombstoneService$ReplicateTombstoneSweeper@1f9e859e
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:GC Daemon is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:sun.misc.GC$LatencyLock@19b70ef8
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-30 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.io.BufferedInputStream@a7cadf8 is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:main
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@7b9800c2
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Finalizer is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.lang.ref.ReferenceQueue$Lock@5d2025b9
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Thread-1 StatSampler is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:org.apache.geode.internal.statistics.GemFireStatSampler@312a2162
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5e969233
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:sun.nio.ch.Util$2@1e3a369a is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-28
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:sun.nio.ch.EPollSelectorImpl@70623662 is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-28
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.Collections$UnmodifiableSet@15546c78 is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-28
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Scheduler-706895319 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@68166fb1
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-25 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.Collections$UnmodifiableSet@24c5f419 is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-32
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:SystemFailure WatchDog is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.lang.Object@625827da
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Management Task is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@c2ad5ec
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:sun.nio.ch.EPollSelectorImpl@374a533b is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-32
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:RMI Reaper is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.lang.ref.ReferenceQueue$Lock@998af51
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-3-thread-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@36b858ec
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:SessionValidationThread-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@521d8f86
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-12-thread-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1daaed04
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-2 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-3 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-5-thread-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@7ba8232f
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Cache Server Load Polling Thread is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.lang.Object@42878afe
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:org.eclipse.jetty.server.session.HashSessionManager@77ee25f1Timer is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@37a49705
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-4 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:org.eclipse.jetty.server.session.HashSessionManager@34c01041Timer is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@490a2b75
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-29 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Idle OplogCompactor is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@470478ad
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-5 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6c189df5
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-10-thread-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@149e9f69
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Timer-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.TaskQueue@5b9bafac
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5036026b
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4decdb3a
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@8d30d82
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:DiskStoreMonitor is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3aab4fbd
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Non-replicate Region Garbage Collector is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:org.apache.geode.internal.cache.TombstoneService$NonReplicateTombstoneSweeper@4541ad6f
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Reference Handler is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.lang.ref.Reference$Lock@3d612e4e
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.lang.Object@436ba5fd is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-27-acceptor-0@3241f81c-ServerConnector@71a06021{HTTP/1.1,[http/1.1]}{0.0.0.0:26629}
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:process reaper is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.SynchronousQueue$TransferStack@7c584b4c
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:GlobalTXTimeoutMonitor is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.Collections$SynchronizedSortedSet@79c8c1e1
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:sun.net.www.protocol.http.HttpURLConnection@321cab5f is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:main
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-8-thread-1 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@76494b21
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-26 is waiting on hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:sun.nio.ch.Util$2@686b3c62 is held by thread hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-32
+
+
+Stack traces for involved threads
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Timer-0 ID=18 state=TIMED_WAITING
+	waiting to lock <java.util.TaskQueue@7fa8e777>
+	at java.lang.Object.wait(Native Method)
+	at java.util.TimerThread.mainLoop(Timer.java:552)
+	at java.util.TimerThread.run(Timer.java:505)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-1 ID=51 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:CallbackSampler ID=15 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5af3e0ac>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Replicate/Partition Region Garbage Collector ID=19 state=TIMED_WAITING
+	waiting to lock <org.apache.geode.internal.cache.TombstoneService$ReplicateTombstoneSweeper@1f9e859e>
+	at java.lang.Object.wait(Native Method)
+	at org.apache.geode.internal.cache.TombstoneService$TombstoneSweeper.doSleep(TombstoneService.java:915)
+	at org.apache.geode.internal.cache.TombstoneService$TombstoneSweeper.run(TombstoneService.java:881)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:GC Daemon ID=37 state=TIMED_WAITING
+	waiting to lock <sun.misc.GC$LatencyLock@19b70ef8>
+	at java.lang.Object.wait(Native Method)
+	at sun.misc.GC$Daemon.run(GC.java:117)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-30 ID=30 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:392)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.idleJobPoll(QueuedThreadPool.java:546)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.access$800(QueuedThreadPool.java:47)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:609)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:main ID=1 state=RUNNABLE
+	at java.net.SocketInputStream.socketRead0(Native Method)
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116)
+	at java.net.SocketInputStream.read(SocketInputStream.java:170)
+	at java.net.SocketInputStream.read(SocketInputStream.java:141)
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:246)
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:286)
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:345)
+	locked <java.io.BufferedInputStream@a7cadf8>
+	at sun.net.www.http.HttpClient.parseHTTPHeader(HttpClient.java:704)
+	at sun.net.www.http.HttpClient.parseHTTP(HttpClient.java:647)
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1536)
+	locked <sun.net.www.protocol.http.HttpURLConnection@321cab5f>
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1441)
+	locked <sun.net.www.protocol.http.HttpURLConnection@321cab5f>
+	at java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:480)
+	at org.springframework.http.client.SimpleBufferingClientHttpRequest.executeInternal(SimpleBufferingClientHttpRequest.java:84)
+	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:53)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:619)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:595)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:516)
+	at org.apache.geode.management.internal.web.shell.AbstractHttpOperationInvoker.send(AbstractHttpOperationInvoker.java:608)
+	at org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker.processCommand(RestHttpOperationInvoker.java:397)
+	at org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker.processCommand(RestHttpOperationInvoker.java:61)
+	at org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy.executeOnRemote(GfshExecutionStrategy.java:237)
+	at org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy.execute(GfshExecutionStrategy.java:101)
+	at org.springframework.shell.core.AbstractShell.executeCommand(AbstractShell.java:134)
+	at org.springframework.shell.core.AbstractShell.executeScriptLine(AbstractShell.java:74)
+	at org.apache.geode.management.internal.cli.shell.Gfsh.executeScriptLine(Gfsh.java:448)
+	at org.apache.geode.management.internal.cli.HeadlessGfsh.executeCommand(HeadlessGfsh.java:104)
+	at org.apache.geode.management.internal.security.GfshCommandsSecurityTest.runCommandsWithAndWithout(GfshCommandsSecurityTest.java:166)
+	at org.apache.geode.management.internal.security.GfshCommandsSecurityTest.testClusterReader(GfshCommandsSecurityTest.java:109)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.apache.geode.test.junit.rules.DescribedExternalResource$1.evaluate(DescribedExternalResource.java:37)
+	at org.junit.rules.RunRules.evaluate(RunRules.java:20)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+	at com.intellij.junit4.JUnit4IdeaTestRunner.startRunnerWithArgs(JUnit4IdeaTestRunner.java:117)
+	at com.intellij.junit4.JUnit4IdeaTestRunner.startRunnerWithArgs(JUnit4IdeaTestRunner.java:42)
+	at com.intellij.rt.execution.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:262)
+	at com.intellij.rt.execution.junit.JUnitStarter.main(JUnitStarter.java:84)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:147)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher ID=75 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@7b9800c2>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at org.apache.geode.management.internal.cli.HeadlessGfsh$HeadlessGfshShell.promptLoop(HeadlessGfsh.java:240)
+	at org.springframework.shell.core.JLineShell.run(JLineShell.java:179)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Finalizer ID=3 state=WAITING
+	waiting to lock <java.lang.ref.ReferenceQueue$Lock@5d2025b9>
+	at java.lang.Object.wait(Native Method)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:143)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:164)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:209)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Thread-1 StatSampler ID=16 state=TIMED_WAITING
+	waiting to lock <org.apache.geode.internal.statistics.GemFireStatSampler@312a2162>
+	at java.lang.Object.wait(Native Method)
+	at org.apache.geode.internal.statistics.HostStatSampler.delay(HostStatSampler.java:520)
+	at org.apache.geode.internal.statistics.HostStatSampler.run(HostStatSampler.java:208)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher ID=70 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5e969233>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at org.apache.geode.management.internal.cli.HeadlessGfsh$HeadlessGfshShell.promptLoop(HeadlessGfsh.java:240)
+	at org.springframework.shell.core.JLineShell.run(JLineShell.java:179)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-28 ID=28 state=RUNNABLE
+	at sun.nio.ch.EPollArrayWrapper.epollWait(Native Method)
+	at sun.nio.ch.EPollArrayWrapper.poll(EPollArrayWrapper.java:269)
+	at sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:93)
+	at sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:86)
+	locked <sun.nio.ch.Util$2@1e3a369a>
+	locked <java.util.Collections$UnmodifiableSet@15546c78>
+	locked <sun.nio.ch.EPollSelectorImpl@70623662>
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:97)
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:101)
+	at org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:232)
+	at org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:180)
+	at org.eclipse.jetty.util.thread.strategy.ExecuteProduceConsume.produceAndRun(ExecuteProduceConsume.java:162)
+	at org.eclipse.jetty.util.thread.strategy.ExecuteProduceConsume.run(ExecuteProduceConsume.java:147)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:654)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:572)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Scheduler-706895319 ID=47 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@68166fb1>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-25 ID=25 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:392)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.idleJobPoll(QueuedThreadPool.java:546)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.access$800(QueuedThreadPool.java:47)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:609)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-32 ID=32 state=RUNNABLE
+	at sun.nio.ch.EPollArrayWrapper.epollWait(Native Method)
+	at sun.nio.ch.EPollArrayWrapper.poll(EPollArrayWrapper.java:269)
+	at sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:93)
+	at sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:86)
+	locked <sun.nio.ch.Util$2@686b3c62>
+	locked <java.util.Collections$UnmodifiableSet@24c5f419>
+	locked <sun.nio.ch.EPollSelectorImpl@374a533b>
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:97)
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:101)
+	at org.eclipse.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:232)
+	at org.eclipse.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:180)
+	at org.eclipse.jetty.util.thread.strategy.ExecuteProduceConsume.produceAndRun(ExecuteProduceConsume.java:162)
+	at org.eclipse.jetty.util.thread.strategy.ExecuteProduceConsume.run(ExecuteProduceConsume.java:147)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:654)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:572)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:SystemFailure WatchDog ID=13 state=TIMED_WAITING
+	waiting to lock <java.lang.Object@625827da>
+	at java.lang.Object.wait(Native Method)
+	at org.apache.geode.SystemFailure.runWatchDog(SystemFailure.java:442)
+	at org.apache.geode.SystemFailure$3.run(SystemFailure.java:362)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Management Task ID=23 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@c2ad5ec>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at org.apache.geode.management.internal.LocalManager$1$1.run(LocalManager.java:122)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:RMI Reaper ID=36 state=WAITING
+	waiting to lock <java.lang.ref.ReferenceQueue$Lock@998af51>
+	at java.lang.Object.wait(Native Method)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:143)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:164)
+	at sun.rmi.transport.ObjectTable$Reaper.run(ObjectTable.java:351)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-3-thread-1 ID=50 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@36b858ec>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:SessionValidationThread-1 ID=48 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@521d8f86>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-12-thread-1 ID=79 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1daaed04>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-2 ID=52 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-3 ID=58 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-5-thread-1 ID=57 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@7ba8232f>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Cache Server Load Polling Thread ID=38 state=TIMED_WAITING
+	waiting to lock <java.lang.Object@42878afe>
+	at java.lang.Object.wait(Native Method)
+	at org.apache.geode.cache.server.internal.LoadMonitor$PollingThread.run(LoadMonitor.java:170)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:org.eclipse.jetty.server.session.HashSessionManager@77ee25f1Timer ID=34 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@37a49705>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-4 ID=62 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:org.eclipse.jetty.server.session.HashSessionManager@34c01041Timer ID=33 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@490a2b75>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-29 ID=29 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:392)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.idleJobPoll(QueuedThreadPool.java:546)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.access$800(QueuedThreadPool.java:47)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:609)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Idle OplogCompactor ID=61 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@470478ad>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1066)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:asyncTaskExecutor-5 ID=64 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2d697039>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher ID=77 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6c189df5>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at org.apache.geode.management.internal.cli.HeadlessGfsh$HeadlessGfshShell.promptLoop(HeadlessGfsh.java:240)
+	at org.springframework.shell.core.JLineShell.run(JLineShell.java:179)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-10-thread-1 ID=74 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@149e9f69>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Timer-1 ID=21 state=WAITING
+	waiting to lock <java.util.TaskQueue@5b9bafac>
+	at java.lang.Object.wait(Native Method)
+	at java.lang.Object.wait(Object.java:502)
+	at java.util.TimerThread.mainLoop(Timer.java:526)
+	at java.util.TimerThread.run(Timer.java:505)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher ID=53 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5036026b>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at org.apache.geode.management.internal.cli.HeadlessGfsh$HeadlessGfshShell.promptLoop(HeadlessGfsh.java:240)
+	at org.springframework.shell.core.JLineShell.run(JLineShell.java:179)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher ID=65 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4decdb3a>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at org.apache.geode.management.internal.cli.HeadlessGfsh$HeadlessGfshShell.promptLoop(HeadlessGfsh.java:240)
+	at org.springframework.shell.core.JLineShell.run(JLineShell.java:179)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Gfsh Launcher ID=42 state=WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@8d30d82>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
+	at org.apache.geode.management.internal.cli.HeadlessGfsh$HeadlessGfshShell.promptLoop(HeadlessGfsh.java:240)
+	at org.springframework.shell.core.JLineShell.run(JLineShell.java:179)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:DiskStoreMonitor ID=22 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3aab4fbd>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Non-replicate Region Garbage Collector ID=20 state=TIMED_WAITING
+	waiting to lock <org.apache.geode.internal.cache.TombstoneService$NonReplicateTombstoneSweeper@4541ad6f>
+	at java.lang.Object.wait(Native Method)
+	at org.apache.geode.internal.cache.TombstoneService$TombstoneSweeper.doSleep(TombstoneService.java:915)
+	at org.apache.geode.internal.cache.TombstoneService$TombstoneSweeper.run(TombstoneService.java:881)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:Reference Handler ID=2 state=WAITING
+	waiting to lock <java.lang.ref.Reference$Lock@3d612e4e>
+	at java.lang.Object.wait(Native Method)
+	at java.lang.Object.wait(Object.java:502)
+	at java.lang.ref.Reference.tryHandlePending(Reference.java:191)
+	at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:153)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-27-acceptor-0@3241f81c-ServerConnector@71a06021{HTTP/1.1,[http/1.1]}{0.0.0.0:26629} ID=27 state=RUNNABLE
+	at sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)
+	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:422)
+	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)
+	locked <java.lang.Object@436ba5fd>
+	at org.eclipse.jetty.server.ServerConnector.accept(ServerConnector.java:382)
+	at org.eclipse.jetty.server.AbstractConnector$Acceptor.run(AbstractConnector.java:564)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:654)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:572)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:process reaper ID=41 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.SynchronousQueue$TransferStack@7c584b4c>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:460)
+	at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+	at java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:941)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1066)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:GlobalTXTimeoutMonitor ID=17 state=WAITING
+	waiting to lock <java.util.Collections$SynchronizedSortedSet@79c8c1e1>
+	at java.lang.Object.wait(Native Method)
+	at java.lang.Object.wait(Object.java:502)
+	at org.apache.geode.internal.jta.TransactionManagerImpl$TransactionTimeOutThread.run(TransactionManagerImpl.java:777)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:pool-8-thread-1 ID=69 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@76494b21>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1093)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:809)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1067)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1127)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+hp-pun-02(org.apache.geode.test.dunit.rules.ServerStarterRule:8741:loner):39863:47f6015e:org.apache.geode.test.dunit.rules.ServerStarterRule:qtp939199469-26 ID=26 state=TIMED_WAITING
+	waiting to lock <java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f839724>
+	at sun.misc.Unsafe.park(Native Method)
+	at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2078)
+	at org.eclipse.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:392)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.idleJobPoll(QueuedThreadPool.java:546)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.access$800(QueuedThreadPool.java:47)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:609)
+	at java.lang.Thread.run(Thread.java:745)
+
