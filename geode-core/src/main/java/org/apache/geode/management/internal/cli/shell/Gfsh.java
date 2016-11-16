@@ -282,7 +282,7 @@ public class Gfsh extends JLineShell {
     env.put(ENV_SYS_JAVA_VERSION, System.getProperty("java.version"));
     env.put(ENV_SYS_OS, System.getProperty("os.name"));
     env.put(ENV_SYS_OS_LINE_SEPARATOR, System.getProperty("line.separator"));
-    env.put(ENV_SYS_GEMFIRE_DIR, System.getenv("GEMFIRE"));
+    env.put(ENV_SYS_GEMFIRE_DIR, System.getenv("GEODE_HOME"));
 
     env.put(ENV_APP_NAME, org.apache.geode.management.internal.cli.shell.Gfsh.GFSH_APP_NAME);
     readonlyAppEnv.add(ENV_APP_NAME);
