@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.partitioned;
 
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -28,6 +27,7 @@ import static org.junit.Assert.*;
 
 import static com.jayway.awaitility.Awaitility.await;
 
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -46,8 +46,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.jayway.awaitility.core.ConditionTimeoutException;
 
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.AttributesFactory;
@@ -400,15 +398,12 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             createPR(PR_REGION_NAME, true);
             // Let this thread continue running long enough for the missing region to be logged a
             // couple times.
-            // Child regions do not get created by this thread. (1.5*logInterval < delay <
-            // 2*logInterval)
-            await().atMost((int) (1.75 * logInterval), TimeUnit.MILLISECONDS).until(() -> {
+            // Child regions do not get created by this thread.
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
               verify(mockAppender, times(numExpectedLogMessages))
                   .append(loggingEventCaptor.capture());
             });
             // createPR("region2", PR_REGION_NAME, true); // This child region is never created
-          } catch (Exception e) {
-            e.printStackTrace();
           } finally {
             logEvents = loggingEventCaptor.getAllValues();
             assertEquals(String.format("Expected %d messages to be logged, got %d.",
@@ -446,15 +441,14 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             createPR(PR_REGION_NAME, true);
             // Delay creation of second (i.e child) region to see missing colocated region log
             // message (logInterval/2 < delay < logInterval)
-            await().atMost((int) (.75 * logInterval), TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
               verify(mockAppender, times(1)).append(loggingEventCaptor.capture());
             });
             logEvents = loggingEventCaptor.getAllValues();
             createPR("region2", PR_REGION_NAME, true);
             // Another delay before exiting the thread to make sure that missing region logging
-            // doesn't continue after
-            // missing region is created (delay > logInterval)
-            await().atMost((int) (1.25 * logInterval), TimeUnit.MILLISECONDS).until(() -> {
+            // doesn't continue after missing region is created (delay > logInterval)
+            await().atMost(logInterval * 2, TimeUnit.MILLISECONDS).until(() -> {
               verifyNoMoreInteractions(mockAppender);
             });
             fail("Unexpected missing colocated region log message");
@@ -494,7 +488,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
           createPR(PR_REGION_NAME, true);
           // Delay creation of child generation regions to see missing colocated region log message
-          // (logInterval/2 < delay < logInterval)
           // parent region is generation 1, child region is generation 2, grandchild is 3, etc.
           for (int generation = 2; generation < (numChildPRGenerations + 2); ++generation) {
             String childPRName = "region" + generation;
@@ -502,36 +495,34 @@ public class PersistentColocatedPartitionedRegionDUnitTest
                 generation == 2 ? PR_REGION_NAME : "region" + (generation - 1);
             loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
 
-            // delay between starting generations of child regions
-            try {
-              await().atMost(delayForChildCreation, TimeUnit.MILLISECONDS).until(() -> {
-                return false;
-              });
-            } catch (ConditionTimeoutException e) {
-            }
+            // delay between starting generations of child regions until the expected missing
+            // colocation messages are logged
+            int n = (generation - 1) * generation / 2;
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+              verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
+            });
             // check for log messages
-            verify(mockAppender, times((generation - 1) * generation / 2))
-                .append(loggingEventCaptor.capture());
             logEvents = loggingEventCaptor.getAllValues();
             String logMsg = loggingEventCaptor.getValue().getMessage().getFormattedMessage();
 
             // Start the child region
             createPR(childPRName, colocatedWithRegionName, true);
           }
-          // Another delay before exiting the thread to make sure that missing region logging
-          // doesn't continue after
-          // all regions created (delay > logInterval)
           String logMsg = "";
+          logEvents = loggingEventCaptor.getAllValues();
+          assertEquals(String.format("Expected warning messages to be logged."),
+              numExpectedLogMessages, logEvents.size());
+          logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+
+          // acknowledge interactions with the mock that have occurred
+          verify(mockAppender, atLeastOnce()).getName();
+          verify(mockAppender, atLeastOnce()).isStarted();
           try {
-            await().atMost((int) (delayForChildCreation * 1.2), TimeUnit.MILLISECONDS).until(() -> {
-              return false;
-            });
-          } catch (ConditionTimeoutException e) {
+            // Another delay before exiting the thread to make sure that missing region logging
+            // doesn't continue after all regions are created (delay > logInterval)
+            Thread.sleep(logInterval * 2);
+            verifyNoMoreInteractions(mockAppender);
           } finally {
-            logEvents = loggingEventCaptor.getAllValues();
-            assertEquals(String.format("Expected warning messages to be logged."),
-                numExpectedLogMessages, logEvents.size());
-            logMsg = logEvents.get(0).getMessage().getFormattedMessage();
             logger.removeAppender(mockAppender);
           }
           numExpectedLogMessages = 1;
@@ -563,51 +554,44 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
           createPR(PR_REGION_NAME, true);
           // Delay creation of child generation regions to see missing colocated region log message
-          // (logInterval/2 < delay < logInterval)
           for (int regionNum = 2; regionNum < (numChildPRs + 2); ++regionNum) {
             String childPRName = "region" + regionNum;
             loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
 
-            // delay between starting generations of child regions
-            try {
-              await().atMost(delayForChildCreation, TimeUnit.MILLISECONDS).until(() -> {
-                return false;
-              });
-            } catch (ConditionTimeoutException e) {
-            }
-            // check for log messages
-            verify(mockAppender, times(regionNum - 1)).append(loggingEventCaptor.capture());
+            // delay between starting generations of child regions until the expected missing
+            // colocation messages are logged
+            int n = regionNum - 1;
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+              verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
+            });
+            // check for expected number of log messages
             logEvents = loggingEventCaptor.getAllValues();
             String logMsg = loggingEventCaptor.getValue().getMessage().getFormattedMessage();
             numLogEvents = logEvents.size();
             assertEquals("Expected warning messages to be logged.", regionNum - 1, numLogEvents);
 
             // Start the child region
-            try {
-              createPR(childPRName, PR_REGION_NAME, true);
-            } catch (Exception e) {
-            }
+            createPR(childPRName, PR_REGION_NAME, true);
           }
-          // Another delay before exiting the thread to make sure that missing region logging
-          // doesn't continue after
-          // all regions created (delay > logInterval)
+          String logMsg = "";
+          logEvents = loggingEventCaptor.getAllValues();
+          assertEquals(String.format("Expected warning messages to be logged."),
+              numExpectedLogMessages, logEvents.size());
+          logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+
+          // acknowledge interactions with the mock that have occurred
+          verify(mockAppender, atLeastOnce()).getName();
+          verify(mockAppender, atLeastOnce()).isStarted();
           try {
-            await().atMost((int) (delayForChildCreation * 1.2), TimeUnit.MILLISECONDS).until(() -> {
-              return false;
-            });
-          } catch (ConditionTimeoutException e) {
-          }
-          String logMsg;
-          try {
-            logEvents = loggingEventCaptor.getAllValues();
-            assertEquals(String.format("Expected warning messages to be logged."),
-                numExpectedLogMessages, logEvents.size());
-            logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+            // Another delay before exiting the thread to make sure that missing region logging
+            // doesn't continue after all regions are created (delay > logInterval)
+            Thread.sleep(logInterval * 2);
+            verifyNoMoreInteractions(mockAppender);
           } finally {
             logger.removeAppender(mockAppender);
-            numExpectedLogMessages = 1;
-            mockAppender = null;
           }
+          numExpectedLogMessages = 1;
+          mockAppender = null;
           return logMsg;
         }
       };
@@ -1226,38 +1210,33 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             String colocatedWithRegionName = (String) regionInfo[1];
             int nLogsAfterRegionCreation = (int) regionInfo[2];
 
-            // delay between starting generations of child regions
-            try {
-              await().atMost(delayForChildCreation, TimeUnit.MILLISECONDS).until(() -> {
-                return false;
-              });
-            } catch (ConditionTimeoutException e) {
-            }
-            // check for log messages that occurred during the delay
-            verify(mockAppender, times(nExpectedLogs)).append(loggingEventCaptor.capture());
-            nExpectedLogs += nLogsAfterRegionCreation;
-            logEvents = loggingEventCaptor.getAllValues();
-            String logMsg = loggingEventCaptor.getValue().getMessage().getFormattedMessage();
+            // delay between starting generations of child regions and verify expected logging
+            int n = nExpectedLogs;
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+              verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
+            });
 
             // Finally start the next child region
             createPR(childPRName, colocatedWithRegionName, true);
           }
-          // Another delay before exiting the thread to make sure that missing region logging
-          // doesn't continue after
-          // all regions created (delay > logInterval)
           String logMsg = "";
+          logEvents = loggingEventCaptor.getAllValues();
+          assertEquals(String.format("Expected warning messages to be logged."), nExpectedLogs,
+              logEvents.size());
+          logMsg = logEvents.get(0).getMessage().getFormattedMessage();
+
+          // acknowledge interactions with the mock that have occurred
+          verify(mockAppender, atLeastOnce()).getName();
+          verify(mockAppender, atLeastOnce()).isStarted();
           try {
-            await().atMost((int) (delayForChildCreation * 1.2), TimeUnit.MILLISECONDS).until(() -> {
-              return false;
-            });
-          } catch (ConditionTimeoutException e) {
+            // Another delay before exiting the thread to make sure that missing region logging
+            // doesn't continue after all regions are created (delay > logInterval)
+            Thread.sleep(logInterval * 2);
+            verifyNoMoreInteractions(mockAppender);
           } finally {
-            logEvents = loggingEventCaptor.getAllValues();
-            assertEquals(String.format("Expected warning messages to be logged."), nExpectedLogs,
-                logEvents.size());
-            logMsg = logEvents.get(0).getMessage().getFormattedMessage();
             logger.removeAppender(mockAppender);
           }
+
           numExpectedLogMessages = 1;
           mockAppender = null;
           return logMsg;
