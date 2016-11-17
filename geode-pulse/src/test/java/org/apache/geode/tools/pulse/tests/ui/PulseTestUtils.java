@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -36,68 +38,67 @@ import org.apache.geode.tools.pulse.tests.PulseTestData;
 import org.apache.geode.tools.pulse.tests.PulseTestLocators;
 import org.apache.geode.tools.pulse.tests.Region;
 
-public class PulseBaseTest {
+public final class PulseTestUtils {
+  private static Supplier<WebDriver> driverProvider;
+
+  public static void setDriverProvider(Supplier<WebDriver> driverProvider) {
+    PulseTestUtils.driverProvider = driverProvider;
+  }
+
+  public static WebDriver getDriver() {
+    if (driverProvider == null) {
+      throw new IllegalStateException("No WebdriverProvider has been set.");
+    } else {
+      return driverProvider.get();
+    }
+  }
 
   public static int maxWaitTime = 20;
 
-  WebElement element = null;
-
-  public WebElement findElementUsingId(String id) {
-    return PulseAbstractTest.driver.findElement(By.id(id));
+  public static WebElement waitForElementWithId(String id) {
+    WebElement element =
+        (new WebDriverWait(driverProvider.get(), 10)).until(new ExpectedCondition<WebElement>() {
+          @Override
+          public WebElement apply(WebDriver d) {
+            return d.findElement(By.id(id));
+          }
+        });
+    assertNotNull(element);
+    return element;
   }
 
-  public WebElement findElementUsingXpath(String xpath) {
-    return PulseAbstractTest.driver.findElement(By.xpath(xpath));
+
+  public static WebElement findElementUsingXpath(String xpath) {
+    return getDriver().findElement(By.xpath(xpath));
   }
 
-  public void clickElementUsingId(String id) {
-    findElementUsingId(id).click();
+  public static void clickElementUsingId(String id) {
+    waitForElementWithId(id).click();
   }
 
-  public void clickElementUsingXpath(String xpath) {
+  public static void clickElementUsingXpath(String xpath) {
     findElementUsingXpath(xpath).click();
   }
 
-  public void enterTextUsingId(String id, String textToEnter) {
-    findElementUsingId(id).sendKeys(textToEnter);
 
+  public static void sendKeysUsingId(String Id, String textToEnter) {
+    waitForElementWithId(Id).sendKeys(textToEnter);
   }
 
-  public void enterTextUsingXpath(String xpath, String textToEnter) {
-    findElementUsingXpath(xpath).sendKeys(textToEnter);
+
+  public static WebElement findElementByXpath(String xpath) {
+    return getDriver().findElement(By.xpath(xpath));
   }
 
-  public String getValueFromPropertiesFile(String key) {
-    return JMXProperties.getInstance().getProperty(key);
-  }
-
-  public void sendKeysUsingId(String Id, String textToEnter) {
-    findElementById(Id).sendKeys(textToEnter);
-  }
-
-  public void waitForElement(WebElement element) {
-    PulseAbstractTest.driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
-    WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, 20);
-    wait.until(ExpectedConditions.visibilityOf(element));
-  }
-
-  public WebElement findElementById(String id) {
-    return PulseAbstractTest.driver.findElement(By.id(id));
-  }
-
-  public WebElement findElementByXpath(String xpath) {
-    return PulseAbstractTest.driver.findElement(By.xpath(xpath));
-  }
-
-  public String getTextUsingXpath(String xpath) {
+  public static String getTextUsingXpath(String xpath) {
     return findElementByXpath(xpath).getText();
   }
 
-  public String getTextUsingId(String id) {
-    return findElementById(id).getText();
+  public static String getTextUsingId(String id) {
+    return waitForElementWithId(id).getText();
   }
 
-  public String getPersistanceEnabled(Region r) {
+  public static String getPersistanceEnabled(Region r) {
     String persitance = null;
 
     if (r.getPersistentEnabled()) {
@@ -108,7 +109,7 @@ public class PulseBaseTest {
     return persitance;
   }
 
-  public String getPersistanceEnabled(String trueOrFalse) {
+  public static String getPersistanceEnabled(String trueOrFalse) {
     String persitance = null;
 
     if (trueOrFalse.contains("true")) {
@@ -119,34 +120,15 @@ public class PulseBaseTest {
     return persitance;
   }
 
-  public String HeapUsage(String valueInKB) {
-
-    return null;
-  }
-
-  // WIP - need to work on this --
-  public HashMap<String, HashMap<String, Region>> getRegionDetailsFromUI(String regionName) {
-
-    String[] regionNames = JMXProperties.getInstance().getProperty("regions").split(" ");
-    HashMap<String, HashMap<String, Region>> regionUiMap =
-        new HashMap<String, HashMap<String, Region>>();
-
-    for (String region : regionNames) {
-      HashMap<String, Region> regionMap = regionUiMap.get(region);
-    }
-
-    return regionUiMap;
-  }
-
-  public void validateServerGroupGridData() {
+  public static void validateServerGroupGridData() {
     List<WebElement> serverGridRows =
-        PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberListSG']/tbody/tr"));
+        getDriver().findElements(By.xpath("//table[@id='memberListSG']/tbody/tr"));
     int rowsCount = serverGridRows.size();
     String[][] gridDataFromUI = new String[rowsCount][7];
 
     for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
       for (int i = 0; i <= 6; i++) {
-        gridDataFromUI[x][i] = PulseAbstractTest.driver
+        gridDataFromUI[x][i] = getDriver()
             .findElement(
                 By.xpath("//table[@id='memberListSG']/tbody/tr[" + j + "]/td[" + (i + 1) + "]"))
             .getText();
@@ -185,15 +167,15 @@ public class PulseBaseTest {
 
   }
 
-  public void validateRedundancyZonesGridData() {
+  public static void validateRedundancyZonesGridData() {
     List<WebElement> rzGridRows =
-        PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberListRZ']/tbody/tr"));
+        getDriver().findElements(By.xpath("//table[@id='memberListRZ']/tbody/tr"));
     int rowsCount = rzGridRows.size();
     String[][] gridDataFromUI = new String[rowsCount][7];
 
     for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
       for (int i = 0; i <= 6; i++) {
-        gridDataFromUI[x][i] = PulseAbstractTest.driver
+        gridDataFromUI[x][i] = getDriver()
             .findElement(
                 By.xpath("//table[@id='memberListRZ']/tbody/tr[" + j + "]/td[" + (i + 1) + "]"))
             .getText();
@@ -235,15 +217,15 @@ public class PulseBaseTest {
 
   }
 
-  public void validateTopologyGridData() {
+  public static void validateTopologyGridData() {
     List<WebElement> rzGridRows =
-        PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
+        getDriver().findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
     int rowsCount = rzGridRows.size();
     String[][] gridDataFromUI = new String[rowsCount][8];
 
     for (int j = 2, x = 0; j <= rzGridRows.size(); j++, x++) {
       for (int i = 0; i <= 7; i++) {
-        gridDataFromUI[x][i] = PulseAbstractTest.driver
+        gridDataFromUI[x][i] = getDriver()
             .findElement(
                 By.xpath("//table[@id='memberList']/tbody/tr[" + j + "]/td[" + (i + 1) + "]"))
             .getText();
@@ -272,21 +254,21 @@ public class PulseBaseTest {
     }
   }
 
-  public void validateDataPrespectiveGridData() {
+  public static void validateDataPrespectiveGridData() {
     List<WebElement> serverGridRows =
-        PulseAbstractTest.driver.findElements(By.xpath("//table[@id='regionsList']/tbody/tr"));
+        getDriver().findElements(By.xpath("//table[@id='regionsList']/tbody/tr"));
     int rowsCount = serverGridRows.size();
     String[][] gridDataFromUI = new String[rowsCount][7];
 
     for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
       for (int i = 0; i <= 6; i++) {
         if (i < 5) {
-          gridDataFromUI[x][i] = PulseAbstractTest.driver
+          gridDataFromUI[x][i] = getDriver()
               .findElement(
                   By.xpath("//table[@id='regionsList']/tbody/tr[" + j + "]/td[" + (i + 1) + "]"))
               .getText();
         } else if (i == 5) {
-          gridDataFromUI[x][i] = PulseAbstractTest.driver
+          gridDataFromUI[x][i] = getDriver()
               .findElement(
                   By.xpath("//table[@id='regionsList']/tbody/tr[" + j + "]/td[" + (i + 4) + "]"))
               .getText();
@@ -316,15 +298,15 @@ public class PulseBaseTest {
     }
   }
 
-  public void validateRegionDetailsGridData() {
+  public static void validateRegionDetailsGridData() {
     List<WebElement> serverGridRows =
-        PulseAbstractTest.driver.findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
+        getDriver().findElements(By.xpath("//table[@id='memberList']/tbody/tr"));
     int rowsCount = serverGridRows.size();
     String[][] gridDataFromUI = new String[rowsCount][7];
 
     for (int j = 2, x = 0; j <= serverGridRows.size(); j++, x++) {
       for (int i = 0; i < 2; i++) {
-        gridDataFromUI[x][i] = PulseAbstractTest.driver
+        gridDataFromUI[x][i] = getDriver()
             .findElement(
                 By.xpath("//table[@id='memberList']/tbody/tr[" + j + "]/td[" + (i + 1) + "]"))
             .getText();
@@ -348,53 +330,43 @@ public class PulseBaseTest {
 
   }
 
-  public void navigateToToplogyView() {
+  public static void navigateToToplogyView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.TopologyView.radioButtonXpath);
   }
 
-  public void navigateToServerGroupGView() {
-    clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
-    clickElementUsingXpath(PulseTestLocators.ServerGroups.radioButtonXpath);
-  }
-
-  public void navigateToRedundancyZoneView() {
-    clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
-    clickElementUsingXpath(PulseTestLocators.RedundancyZone.radioButtonXpath);
-  }
-
   // ------ Topology / Server Group / Redundancy Group - Tree View
 
-  public void navigateToTopologyTreeView() {
+  public static void navigateToTopologyTreeView() {
     navigateToToplogyView();
     clickElementUsingId(PulseTestLocators.TopologyView.treeMapButtonId);
   }
 
-  public void navigateToServerGroupTreeView() {
+  public static void navigateToServerGroupTreeView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.ServerGroups.radioButtonXpath);
   }
 
-  public void navigateToRedundancyZonesTreeView() {
+  public static void navigateToRedundancyZonesTreeView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.RedundancyZone.radioButtonXpath);
   }
 
   // ------ Topology / Server Group / Redundancy Group - Grid View
 
-  public void navigateToTopologyGridView() {
+  public static void navigateToTopologyGridView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.TopologyView.radioButtonXpath);
     clickElementUsingId(PulseTestLocators.TopologyView.gridButtonId);
   }
 
-  public void navigateToServerGroupGridView() {
+  public static void navigateToServerGroupGridView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.ServerGroups.radioButtonXpath);
     clickElementUsingId(PulseTestLocators.ServerGroups.gridButtonId);
   }
 
-  public void navigateToRedundancyZonesGridView() {
+  public static void navigateToRedundancyZonesGridView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.RedundancyZone.radioButtonXpath);
     clickElementUsingId(PulseTestLocators.RedundancyZone.gridButtonId);
@@ -402,14 +374,14 @@ public class PulseBaseTest {
 
   // ----- Data perspective / region details
 
-  public void navigateToDataPrespectiveGridView() {
+  public static void navigateToDataPrespectiveGridView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.DataPerspectiveView.downarrowButtonXpath);
     clickElementUsingXpath(PulseTestLocators.DataPerspectiveView.dataViewButtonXpath);
     clickElementUsingId(PulseTestLocators.DataPerspectiveView.gridButtonId);
   }
 
-  public void navigateToRegionDetailsView() {
+  public static void navigateToRegionDetailsView() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
     clickElementUsingXpath(PulseTestLocators.DataPerspectiveView.downarrowButtonXpath);
     clickElementUsingXpath(PulseTestLocators.DataPerspectiveView.dataViewButtonXpath);
@@ -418,85 +390,67 @@ public class PulseBaseTest {
     clickElementUsingXpath(PulseTestLocators.RegionDetailsView.treeMapCanvasXpath);
   }
 
-  public void navigateToRegionDetailsGridView() {
+  public static void navigateToRegionDetailsGridView() {
     navigateToRegionDetailsView();
     clickElementUsingXpath(PulseTestLocators.RegionDetailsView.gridButtonXpath);
   }
 
-  public String getPropertyValue(String propertyKey) {
+  public static String getPropertyValue(String propertyKey) {
     String propertyValue = JMXProperties.getInstance().getProperty(propertyKey);
     return propertyValue;
   }
 
-  public void verifyElementPresentById(String id) {
-    WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
+  public static void verifyElementPresentById(String id) {
+    WebDriverWait wait = new WebDriverWait(getDriver(), maxWaitTime, 500);
     wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id(id)));
   }
 
-  public void verifyElementPresentByLinkText(String lnkText) {
-    WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
+  public static void verifyElementPresentByLinkText(String lnkText) {
+    WebDriverWait wait = new WebDriverWait(getDriver(), maxWaitTime, 500);
     wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.linkText(lnkText)));
   }
 
-  public void verifyElementPresentByXpath(String xpath) {
-    WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
+  public static void verifyElementPresentByXpath(String xpath) {
+    WebDriverWait wait = new WebDriverWait(getDriver(), maxWaitTime, 500);
     wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(xpath)));
   }
 
-  public void verifyTextPresrntById(String id, String text) {
-    WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
+  public static void verifyTextPresrntById(String id, String text) {
+    WebDriverWait wait = new WebDriverWait(getDriver(), maxWaitTime, 500);
     wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id(id), text));
   }
 
-  public void verifyTextPresrntByXpath(String xpath, String text) {
-    WebDriverWait wait = new WebDriverWait(PulseAbstractTest.driver, maxWaitTime, 500);
+  public static void verifyTextPresrntByXpath(String xpath, String text) {
+    WebDriverWait wait = new WebDriverWait(getDriver(), maxWaitTime, 500);
     wait.until(ExpectedConditions.textToBePresentInElementLocated(By.xpath(xpath), text));
   }
 
-  public void verifyElementAttributeById(String id, String attribute, String value) {
-    String actualValue = findElementById(id).getAttribute(attribute);
+  public static void verifyElementAttributeById(String id, String attribute, String value) {
+    String actualValue = waitForElementWithId(id).getAttribute(attribute);
     assertTrue(actualValue.equals(value) || actualValue.contains(value));
   }
 
 
-  public void mouseReleaseById(String id) {
+  public static void mouseReleaseById(String id) {
     verifyElementPresentById(id);
-    Actions action = new Actions(PulseAbstractTest.driver);
-    WebElement we = PulseAbstractTest.driver.findElement(By.id(id));
+    Actions action = new Actions(getDriver());
+    WebElement we = getDriver().findElement(By.id(id));
     action.moveToElement(we).release().perform();
   }
 
-  public void mouseClickAndHoldOverElementById(String id) {
+  public static void mouseClickAndHoldOverElementById(String id) {
     verifyElementPresentById(id);
-    Actions action = new Actions(PulseAbstractTest.driver);
-    WebElement we = PulseAbstractTest.driver.findElement(By.id(id));
+    Actions action = new Actions(getDriver());
+    WebElement we = getDriver().findElement(By.id(id));
     action.moveToElement(we).clickAndHold().perform();
   }
 
-  public void mouseOverElementByXpath(String xpath) {
-    Actions action = new Actions(PulseAbstractTest.driver);
-    WebElement we = PulseAbstractTest.driver.findElement(By.xpath(xpath));
-    action.moveToElement(we).build().perform();
-  }
-
-
-  public float stringToFloat(String stringValue) {
-    float floatNum = Float.parseFloat(stringValue);
-    return floatNum;
-  }
-
-  public String floatToString(float floatValue) {
-    String stringValue = Float.toString(floatValue);
-    return stringValue;
-  }
-
-
-  public String[] splitString(String stringToSplit, String splitDelimiter) {
+  public static String[] splitString(String stringToSplit, String splitDelimiter) {
     String[] stringArray = stringToSplit.split(splitDelimiter);
     return stringArray;
   }
 
-  public void assertMemberSortingByCpuUsage() {
+  public static void assertMemberSortingByCpuUsage() {
     Map<Double, String> memberMap = new TreeMap<>(Collections.reverseOrder());
     String[] membersNames = splitString(JMXProperties.getInstance().getProperty("members"), " ");
     for (String member : membersNames) {
@@ -515,11 +469,11 @@ public class PulseBaseTest {
         refMemberCPUUsage = PulseTestData.Topology.cpuUsagePaintStyleM3;
       }
       assertTrue(
-          findElementById(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
+          waitForElementWithId(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
     }
   }
 
-  public void assertMemberSortingByHeapUsage() {
+  public static void assertMemberSortingByHeapUsage() {
     Map<Long, String> memberMap = new TreeMap<Long, String>(Collections.reverseOrder());
     String[] membersNames = splitString(JMXProperties.getInstance().getProperty("members"), " ");
     for (String member : membersNames) {
@@ -537,36 +491,13 @@ public class PulseBaseTest {
       } else {
         refMemberHeapUsage = PulseTestData.Topology.heapUsagePaintStyleM3;
       }
-      assertTrue(
-          findElementById(entry.getValue()).getAttribute("style").contains(refMemberHeapUsage));
-    }
-  }
-
-  public void assertMemberSortingBySGCpuUsage() {
-    Map<Double, String> memberMap = new TreeMap<>(Collections.reverseOrder());
-    String[] membersNames = splitString(JMXProperties.getInstance().getProperty("members"), " ");
-    for (String member : membersNames) {
-      Member thisMember = new Member(member);
-      memberMap.put(thisMember.getCpuUsage(), thisMember.getMember());
-    }
-    for (Map.Entry<Double, String> entry : memberMap.entrySet()) {
-      // here matching painting style to validation that the members are painted according to their
-      // cpu usage
-      String refMemberCPUUsage = null;
-      if (entry.getValue().equalsIgnoreCase("M1")) {
-        refMemberCPUUsage = PulseTestData.Topology.cpuUsagePaintStyleM1;
-      } else if (entry.getValue().equalsIgnoreCase("M2")) {
-        refMemberCPUUsage = PulseTestData.Topology.cpuUsagePaintStyleM2;
-      } else {
-        refMemberCPUUsage = PulseTestData.Topology.cpuUsagePaintStyleM3;
-      }
-      assertTrue(
-          findElementById(entry.getValue()).getAttribute("style").contains(refMemberCPUUsage));
+      assertTrue(waitForElementWithId(entry.getValue()).getAttribute("style")
+          .contains(refMemberHeapUsage));
     }
   }
 
 
-  public void assertMemberSortingBySgHeapUsage() {
+  public static void assertMemberSortingBySgHeapUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
     HashMap<String, HashMap<String, Member>> sgMap = new HashMap<String, HashMap<String, Member>>();
     for (String member : memberNames) {
@@ -602,14 +533,14 @@ public class PulseBaseTest {
       } else {
         refMemberCPUUsage = PulseTestData.ServerGroups.heapUsagePaintStyleSG1M3;
       }
-      assertTrue(findElementById("SG1(!)" + entry.getValue()).getAttribute("style")
+      assertTrue(waitForElementWithId("SG1(!)" + entry.getValue()).getAttribute("style")
           .contains(refMemberCPUUsage));
     }
   }
 
 
 
-  public void assertMemberSortingBySgCpuUsage() {
+  public static void assertMemberSortingBySgCpuUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
     HashMap<String, HashMap<String, Member>> sgMap = new HashMap<String, HashMap<String, Member>>();
     for (String member : memberNames) {
@@ -645,12 +576,12 @@ public class PulseBaseTest {
       } else {
         refMemberCPUUsage = PulseTestData.ServerGroups.cpuUsagePaintStyleSG1M3;
       }
-      assertTrue(findElementById("SG1(!)" + entry.getValue()).getAttribute("style")
+      assertTrue(waitForElementWithId("SG1(!)" + entry.getValue()).getAttribute("style")
           .contains(refMemberCPUUsage));
     }
   }
 
-  public void assertMemberSortingByRzHeapUsage() {
+  public static void assertMemberSortingByRzHeapUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
     HashMap<String, HashMap<String, Member>> rzMap = new HashMap<String, HashMap<String, Member>>();
     for (String member : memberNames) {
@@ -682,12 +613,12 @@ public class PulseBaseTest {
       } else {
         refMemberHeapUsage = PulseTestData.RedundancyZone.heapUsagePaintStyleRZ3M3;
       }
-      assertTrue(findElementById("RZ1 RZ2(!)" + entry.getValue()).getAttribute("style")
+      assertTrue(waitForElementWithId("RZ1 RZ2(!)" + entry.getValue()).getAttribute("style")
           .contains(refMemberHeapUsage));
     }
   }
 
-  public void assertMemeberSortingByRzCpuUsage() {
+  public static void assertMemeberSortingByRzCpuUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
     HashMap<String, HashMap<String, Member>> rzMap = new HashMap<String, HashMap<String, Member>>();
     for (String member : memberNames) {
@@ -717,13 +648,13 @@ public class PulseBaseTest {
       } else if (entry.getValue().equalsIgnoreCase("M2")) {
         refMemberCPUUsage = PulseTestData.RedundancyZone.cpuUsagePaintStyleRZ1RZ2M2;
       }
-      assertTrue(findElementById("RZ1 RZ2(!)" + entry.getValue()).getAttribute("style")
+      assertTrue(waitForElementWithId("RZ1 RZ2(!)" + entry.getValue()).getAttribute("style")
           .contains(refMemberCPUUsage));
     }
   }
 
-  public List<WebElement> getRegionsFromDataBrowser() {
-    List<WebElement> regionList = PulseAbstractTest.driver
+  public static List<WebElement> getRegionsFromDataBrowser() {
+    List<WebElement> regionList = getDriver()
         .findElements(By.xpath("//span[starts-with(@ID,'treeDemo_')][contains(@id,'_span')]"));
     return regionList;
   }

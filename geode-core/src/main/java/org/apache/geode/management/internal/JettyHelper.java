@@ -54,8 +54,7 @@ public class JettyHelper {
 
   private static int port = 0;
 
-  public static Server initJetty(final String bindAddress, final int port, SSLConfig sslConfig)
-      throws Exception {
+  public static Server initJetty(final String bindAddress, final int port, SSLConfig sslConfig) {
 
     final Server jettyServer = new Server();
 

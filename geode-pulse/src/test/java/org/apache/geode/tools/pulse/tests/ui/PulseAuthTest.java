@@ -16,17 +16,41 @@
 package org.apache.geode.tools.pulse.tests.ui;
 
 import org.apache.geode.test.junit.categories.UITest;
+import org.apache.geode.tools.pulse.tests.rules.ServerRule;
+import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
+import org.openqa.selenium.WebDriver;
 
 @Category(UITest.class)
 @FixMethodOrder(MethodSorters.JVM)
-public class PulseAuthTest extends PulseAbstractTest {
+public class PulseAuthTest extends PulseBase {
 
-  @BeforeClass
-  public static void beforeClassSetup() throws Exception {
-    setUpServer("pulseUser", "12345", "pulse-auth.json");
+  @ClassRule
+  public static ServerRule serverRule = new ServerRule("pulse-auth.json");
+
+  @Rule
+  public WebDriverRule webDriverRule =
+      new WebDriverRule("pulseUser", "12345", serverRule.getPulseURL());
+
+  @Override
+  public WebDriver getWebDriver() {
+    return webDriverRule.getDriver();
   }
+
+  @Override
+  public String getPulseURL() {
+    return serverRule.getPulseURL();
+  }
+
+  @Before
+  public void setupPulseTestUtils() {
+    PulseTestUtils.setDriverProvider(() -> webDriverRule.getDriver());
+  }
+
 }

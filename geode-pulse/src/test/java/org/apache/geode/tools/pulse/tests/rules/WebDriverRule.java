@@ -1,0 +1,122 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
+package org.apache.geode.tools.pulse.tests.rules;
+
+import static org.junit.Assert.assertNotNull;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.Rule;
+import org.junit.rules.ExternalResource;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.util.concurrent.TimeUnit;
+
+public class WebDriverRule extends ExternalResource {
+  private WebDriver driver;
+
+  private String pulseUrl;
+  private String username;
+  private String password;
+
+  public WebDriverRule(String pulseUrl) {
+    this.pulseUrl = pulseUrl;
+  }
+
+  public WebDriverRule(String username, String password, String pulseUrl) {
+    this.username = username;
+    this.password = password;
+    this.pulseUrl = pulseUrl;
+  }
+
+  public WebDriver getDriver() {
+    return this.driver;
+  }
+
+  @Rule
+  public ScreenshotOnFailureRule screenshotOnFailureRule =
+      new ScreenshotOnFailureRule(() -> driver);
+
+  public String getPulseURL() {
+    return pulseUrl;
+  }
+
+
+  @Override
+  protected void before() throws Throwable {
+    if (driver == null) {
+      setUpWebDriver();
+    }
+    driver.get(getPulseURL());
+    if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+      login();
+    }
+    driver.navigate().refresh();
+  }
+
+  @Override
+  protected void after() {
+    driver.close();
+  }
+
+  private void login() {
+    WebElement userNameElement = waitForElementById("user_name");
+    WebElement passwordElement = waitForElementById("user_password");
+    userNameElement.sendKeys(username);
+    passwordElement.sendKeys(password);
+    passwordElement.submit();
+
+    driver.get(getPulseURL() + "/clusterDetail.html");
+    WebElement userNameOnPulsePage =
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<WebElement>() {
+          @Override
+          public WebElement apply(WebDriver d) {
+            return d.findElement(By.id("userName"));
+          }
+        });
+    assertNotNull(userNameOnPulsePage);
+  }
+
+  private void setUpWebDriver() {
+    DesiredCapabilities capabilities = new DesiredCapabilities();
+    capabilities.setJavascriptEnabled(true);
+    capabilities.setCapability("takesScreenshot", true);
+    capabilities.setCapability("phantomjs.page.settings.userAgent",
+        "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:16.0) Gecko/20121026 Firefox/16.0");
+
+    driver = new PhantomJSDriver(capabilities);
+    driver.manage().window().maximize();
+    driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+    driver.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS);
+  }
+
+  public WebElement waitForElementById(final String id) {
+    WebElement element = (new WebDriverWait(driver, 10)).until(new ExpectedCondition<WebElement>() {
+      @Override
+      public WebElement apply(WebDriver d) {
+        return d.findElement(By.id(id));
+      }
+    });
+    assertNotNull(element);
+    return element;
+  }
+}
