@@ -1130,6 +1130,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           // interrupted
         }
       }
+    } else {
+      this.sender.getSenderAdvisor().notifyPrimaryLock();
     }
 
     setIsStopped(true);
