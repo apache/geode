@@ -146,6 +146,8 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
 
       CommandResult cmdResult = executeCommand(gfsh, csb.getCommandString());
 
+      System.out.println("cmdResult = " + cmdResult);
+
       assertEquals(Status.OK, cmdResult.getStatus());
     }
     return serverNames;
