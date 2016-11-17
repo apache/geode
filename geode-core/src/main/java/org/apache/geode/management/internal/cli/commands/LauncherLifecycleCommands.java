@@ -177,8 +177,10 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   protected static final String JAVA_HOME = System.getProperty("java.home");
   protected static final String LOCALHOST = "localhost";
 
+
+
   // MUST CHANGE THIS TO REGEX SINCE VERSION CHANGES IN JAR NAME
-  protected static final String GEMFIRE_JAR_PATHNAME =
+  protected static final String GEODE_JAR_PATHNAME =
       IOUtils.appendToPath(GEODE_HOME, "lib", GemFireVersion.getGemFireJarFileName());
 
   protected static final String CORE_DEPENDENCIES_JAR_PATHNAME =
@@ -1182,7 +1184,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   protected String getGemFireJarPath() {
     String classpath = getSystemClasspath();
-    String gemfireJarPath = GEMFIRE_JAR_PATHNAME;
+    String gemfireJarPath = GEODE_JAR_PATHNAME;
 
     for (String classpathElement : classpath.split(File.pathSeparator)) {
       // MUST CHANGE THIS TO REGEX SINCE VERSION CHANGES IN JAR NAME
@@ -1493,6 +1495,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse)
   // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
   {
+    System.out.println("GEODE_HOME = " + GEODE_HOME);
     try {
       // prompt for password is username is specified in the command
       if (!StringUtils.isBlank(userName)) {

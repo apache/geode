@@ -96,7 +96,7 @@ test {
 }
 
 tasks.withType(Test){
-  environment 'GEMFIRE', "$buildDir/install/${distributions.main.baseName}/lib"
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}/lib"
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
@@ -385,7 +385,7 @@ distributions {
 def dependOnInstalledProduct = {
   dependsOn installDist
   def install = file("$buildDir/install/${distributions.main.baseName}")
-  environment ('GEMFIRE', install)
+  environment ('GEODE_HOME', install)
 }
 
 // Add the configuration closure to the test targets so they depend on the install directory
