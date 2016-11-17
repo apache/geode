@@ -24,9 +24,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import org.apache.geode.tools.pulse.tests.ui.PulseAbstractTest;
-
 public class DataBrowserResultLoader {
+  /* Constants for executing Data Browser queries */
+  public static final String QUERY_TYPE_ONE = "query1";
+  public static final String QUERY_TYPE_TWO = "query2";
+  public static final String QUERY_TYPE_THREE = "query3";
+  public static final String QUERY_TYPE_FOUR = "query4";
+  public static final String QUERY_TYPE_FIVE = "query5";
+  public static final String QUERY_TYPE_SIX = "query6";
+  public static final String QUERY_TYPE_SEVENE = "query7";
+
   private static DataBrowserResultLoader dbResultLoader = new DataBrowserResultLoader();
 
   public static DataBrowserResultLoader getInstance() {
@@ -44,19 +51,19 @@ public class DataBrowserResultLoader {
     try {
       ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-      if (queryString.equals(PulseAbstractTest.QUERY_TYPE_ONE)) {
+      if (queryString.equals(QUERY_TYPE_ONE)) {
         url = classLoader.getResource("testQueryResultClusterSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_TWO)) {
+      } else if (queryString.equals(QUERY_TYPE_TWO)) {
         url = classLoader.getResource("testQueryResultSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_THREE)) {
+      } else if (queryString.equals(QUERY_TYPE_THREE)) {
         url = classLoader.getResource("testQueryResult.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_FOUR)) {
+      } else if (queryString.equals(QUERY_TYPE_FOUR)) {
         url = classLoader.getResource("testQueryResultWithStructSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_FIVE)) {
+      } else if (queryString.equals(QUERY_TYPE_FIVE)) {
         url = classLoader.getResource("testQueryResultClusterWithStruct.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_SIX)) {
+      } else if (queryString.equals(QUERY_TYPE_SIX)) {
         url = classLoader.getResource("testQueryResultHashMapSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_SEVENE)) {
+      } else if (queryString.equals(QUERY_TYPE_SEVENE)) {
         url = classLoader.getResource("testQueryResult1000.txt");
       } else {
         url = classLoader.getResource("testQueryResult.txt");
