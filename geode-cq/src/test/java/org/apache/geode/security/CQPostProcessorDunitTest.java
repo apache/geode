@@ -16,12 +16,8 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -34,16 +30,19 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
-import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class CQPostProcessorDunitTest extends AbstractSecureServerDUnitTest {
 
   public Properties getProperties() {
     Properties properties = super.getProperties();
-    properties.setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    properties.setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     return properties;
   }
 

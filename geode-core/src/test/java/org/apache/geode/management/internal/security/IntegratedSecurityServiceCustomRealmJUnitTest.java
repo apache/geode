@@ -14,15 +14,14 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.junit.BeforeClass;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
 import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 
 /**
  * Integration tests for {@link IntegratedSecurityService} using shiro-ini.json.
@@ -35,9 +34,9 @@ public class IntegratedSecurityServiceCustomRealmJUnitTest
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    props.put(SampleSecurityManager.SECURITY_JSON,
+    props.put(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/management/internal/security/shiro-ini.json");
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
     IntegratedSecurityService.getSecurityService().initSecurity(props);
   }
 

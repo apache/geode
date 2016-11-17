@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
@@ -69,7 +69,7 @@ public class GfshCommandsSecurityTest {
     {
       setProperty(JMX_MANAGER_PORT, jmxPort + "");
       setProperty(HTTP_SERVICE_PORT, httpPort + "");
-      setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
       setProperty("security-json",
           "org/apache/geode/management/internal/security/cacheServer.json");
     }

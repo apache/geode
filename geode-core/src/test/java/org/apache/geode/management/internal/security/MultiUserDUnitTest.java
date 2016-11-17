@@ -14,20 +14,13 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.jayway.awaitility.Awaitility;
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.json.JSONException;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
@@ -35,6 +28,7 @@ import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -42,6 +36,14 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.json.JSONException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class MultiUserDUnitTest extends CliCommandTestBase {
@@ -51,7 +53,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
   public void testMultiUser() throws IOException, JSONException, InterruptedException {
     Properties properties = new Properties();
     properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
-    properties.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
 
     // set up vm_0 the secure jmx manager
     Object[] results = setUpJMXManagerOnVM(0, properties,
