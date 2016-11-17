@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.wan;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -53,7 +54,7 @@ public final class GatewaySenderEventCallbackArgument extends WrappedCallbackArg
    * <code>GatewayReceiver</code> s don't resend the event to the same
    * <code>GatewayReceiver</code>s.
    */
-  private Set<Integer> receipientDSIds;
+  private IntOpenHashSet receipientDSIds;
 
   /**
    * No arg constructor for DataSerializable.
@@ -75,7 +76,7 @@ public final class GatewaySenderEventCallbackArgument extends WrappedCallbackArg
     // _originalEventId = geca._originalEventId;
     originatingDSId = geca.originatingDSId;
     if (geca.receipientDSIds != null) {
-      receipientDSIds = new HashSet<Integer>(geca.receipientDSIds);
+      receipientDSIds = new IntOpenHashSet(geca.receipientDSIds);
     }
   }
 
@@ -119,7 +120,7 @@ public final class GatewaySenderEventCallbackArgument extends WrappedCallbackArg
    * 
    * @return the list of <code>Gateway</code> s to which the event has been sent
    */
-  public Set<Integer> getRecipientDSIds() {
+  public IntOpenHashSet getRecipientDSIds() {
     return this.receipientDSIds;
   }
 
@@ -129,7 +130,7 @@ public final class GatewaySenderEventCallbackArgument extends WrappedCallbackArg
    * @param originalGatewaysReceivers The original recipient <code>Gateway</code>s.
    */
   public void initializeReceipientDSIds(List<Integer> originalGatewaysReceivers) {
-    this.receipientDSIds = new HashSet<Integer>();
+    this.receipientDSIds = new IntOpenHashSet(2);
     for (Integer id : originalGatewaysReceivers) {
       this.receipientDSIds.add(id);
     }
@@ -157,7 +158,7 @@ public final class GatewaySenderEventCallbackArgument extends WrappedCallbackArg
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.originatingDSId = DataSerializer.readInteger(in);
-    this.receipientDSIds = new HashSet<Integer>();
+    this.receipientDSIds = new IntOpenHashSet(2);
     int numberOfRecipientGateways = in.readInt();
     for (int i = 0; i < numberOfRecipientGateways; i++) {
       this.receipientDSIds.add(in.readInt());
