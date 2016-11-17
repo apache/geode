@@ -342,14 +342,14 @@ public class LauncherLifecycleCommandsJUnitTest {
     String[] userClasspaths = {"/path/to/classes:/path/to/libs/1.jar:/path/to/libs/2.jar",
         "/path/to/ext/libs/1.jar:/path/to/ext/classes:/path/to/ext/lib/10.jar"};
 
-    String expectedClasspath = LauncherLifecycleCommands.GEMFIRE_JAR_PATHNAME
+    String expectedClasspath = LauncherLifecycleCommands.GEODE_JAR_PATHNAME
         .concat(File.pathSeparator).concat(toClasspath(userClasspaths)).concat(File.pathSeparator)
         .concat(toClasspath(jarFilePathnames));
 
     assertEquals(expectedClasspath, getLauncherLifecycleCommands()
         .toClasspath(EXCLUDE_SYSTEM_CLASSPATH, jarFilePathnames, userClasspaths));
 
-    expectedClasspath = LauncherLifecycleCommands.GEMFIRE_JAR_PATHNAME.concat(File.pathSeparator)
+    expectedClasspath = LauncherLifecycleCommands.GEODE_JAR_PATHNAME.concat(File.pathSeparator)
         .concat(toClasspath(userClasspaths)).concat(File.pathSeparator)
         .concat(System.getProperty("java.class.path")).concat(File.pathSeparator)
         .concat(toClasspath(jarFilePathnames));
@@ -357,16 +357,16 @@ public class LauncherLifecycleCommandsJUnitTest {
     assertEquals(expectedClasspath, getLauncherLifecycleCommands()
         .toClasspath(INCLUDE_SYSTEM_CLASSPATH, jarFilePathnames, userClasspaths));
 
-    expectedClasspath = LauncherLifecycleCommands.GEMFIRE_JAR_PATHNAME.concat(File.pathSeparator)
+    expectedClasspath = LauncherLifecycleCommands.GEODE_JAR_PATHNAME.concat(File.pathSeparator)
         .concat(System.getProperty("java.class.path"));
 
     assertEquals(expectedClasspath, getLauncherLifecycleCommands()
         .toClasspath(INCLUDE_SYSTEM_CLASSPATH, null, (String[]) null));
 
-    assertEquals(LauncherLifecycleCommands.GEMFIRE_JAR_PATHNAME, getLauncherLifecycleCommands()
+    assertEquals(LauncherLifecycleCommands.GEODE_JAR_PATHNAME, getLauncherLifecycleCommands()
         .toClasspath(EXCLUDE_SYSTEM_CLASSPATH, null, (String[]) null));
 
-    assertEquals(LauncherLifecycleCommands.GEMFIRE_JAR_PATHNAME,
+    assertEquals(LauncherLifecycleCommands.GEODE_JAR_PATHNAME,
         getLauncherLifecycleCommands().toClasspath(EXCLUDE_SYSTEM_CLASSPATH, new String[0], ""));
   }
 
