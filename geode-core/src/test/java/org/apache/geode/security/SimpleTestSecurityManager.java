@@ -30,7 +30,7 @@ import java.util.Properties;
  * are authorized. e.g. username = data: is authorized for all data operations: data; data:manage
  * data:read data:write username = dataWrite: is authorized for data writes on all regions:
  * data:write data:write:regionA username = cluster: authorized for all cluster operations username
- * = cluserRead: authorzed for all cluster read operations
+ * = cluserRead: authorized for all cluster read operations
  */
 public class SimpleTestSecurityManager implements SecurityManager {
   @Override

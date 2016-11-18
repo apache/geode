@@ -12,12 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security;
+package org.apache.geode.examples.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.SecurityManager;
 import org.apache.shiro.authz.Permission;
 
 import java.io.IOException;
