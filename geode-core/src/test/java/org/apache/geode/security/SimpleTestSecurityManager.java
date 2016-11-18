@@ -13,13 +13,9 @@
  * the License.
  */
 
-package org.apache.geode.security.templates;
+package org.apache.geode.security;
 
 import java.util.Properties;
-
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.SecurityManager;
 
 /**
  * This class provides a simple implementation of {@link SecurityManager} for authentication and
@@ -34,9 +30,9 @@ import org.apache.geode.security.SecurityManager;
  * are authorized. e.g. username = data: is authorized for all data operations: data; data:manage
  * data:read data:write username = dataWrite: is authorized for data writes on all regions:
  * data:write data:write:regionA username = cluster: authorized for all cluster operations username
- * = cluserRead: authorzed for all cluster read operations
+ * = cluserRead: authorized for all cluster read operations
  */
-public class SimpleSecurityManager implements SecurityManager {
+public class SimpleTestSecurityManager implements SecurityManager {
   @Override
   public void init(final Properties securityProps) {}
 

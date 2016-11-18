@@ -14,16 +14,9 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
@@ -35,16 +28,22 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
   public Properties getProperties() {
     Properties properties = super.getProperties();
-    properties.setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    properties.setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     return properties;
   }
 

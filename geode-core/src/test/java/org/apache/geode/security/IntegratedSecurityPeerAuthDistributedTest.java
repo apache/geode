@@ -14,17 +14,16 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -33,6 +32,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCase {
@@ -61,7 +64,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = createProperties(locators);
-      properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+      properties.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "locator1");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
@@ -75,7 +78,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
       spySecurityManager = new SpySecurityManager();
 
       final Properties properties = createProperties(locators);
-      properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+      properties.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "server1");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
@@ -88,7 +91,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
       spySecurityManager = new SpySecurityManager();
 
       final Properties properties = createProperties(locators);
-      properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+      properties.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/security/peerAuth.json");
       properties.setProperty(UserPasswordAuthInit.USER_NAME, "server2");
       properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
@@ -103,7 +106,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     spySecurityManager = new SpySecurityManager();
 
     final Properties properties = createProperties(locators);
-    properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+    properties.setProperty(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/security/peerAuth.json");
     properties.setProperty(UserPasswordAuthInit.USER_NAME, "stranger");
     properties.setProperty(UserPasswordAuthInit.PASSWORD, "1234567");
@@ -132,7 +135,7 @@ public class IntegratedSecurityPeerAuthDistributedTest extends JUnit4CacheTestCa
     return allProperties;
   }
 
-  public static class SpySecurityManager extends SampleSecurityManager {
+  public static class SpySecurityManager extends TestSecurityManager {
 
     static int initInvoked = 0;
     static int closeInvoked = 0;

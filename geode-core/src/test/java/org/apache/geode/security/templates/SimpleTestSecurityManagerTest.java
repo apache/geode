@@ -16,28 +16,29 @@
 package org.apache.geode.security.templates;
 
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-import java.util.Properties;
-
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
 
 @Category({UnitTest.class, SecurityTest.class})
-public class SimpleSecurityManagerTest {
-  private SimpleSecurityManager manager;
+public class SimpleTestSecurityManagerTest {
+  private SimpleTestSecurityManager manager;
   private Properties credentials;
 
   @Before
   public void before() {
-    manager = new SimpleSecurityManager();
+    manager = new SimpleTestSecurityManager();
     credentials = new Properties();
   }
 

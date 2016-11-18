@@ -15,18 +15,18 @@
 
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.jayway.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -44,12 +44,18 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTestCase {
@@ -72,9 +78,9 @@ public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTes
     int jmxPort = ports[1];
     locator.invoke(() -> {
       Properties props = new Properties();
-      props.setProperty(SampleSecurityManager.SECURITY_JSON,
+      props.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/clientServer.json");
-      props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
       props.setProperty(MCAST_PORT, "0");
       props.put(JMX_MANAGER, "true");
       props.put(JMX_MANAGER_START, "true");
@@ -89,9 +95,9 @@ public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTes
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, locators);
-      props.setProperty(SampleSecurityManager.SECURITY_JSON,
+      props.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/clientServer.json");
-      props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
       props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
       props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 

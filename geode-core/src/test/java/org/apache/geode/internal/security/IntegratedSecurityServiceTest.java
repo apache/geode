@@ -24,9 +24,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.templates.SamplePostProcessor;
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.apache.geode.security.templates.SimpleSecurityManager;
+import org.apache.geode.security.TestPostProcessor;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
@@ -104,9 +103,8 @@ public class IntegratedSecurityServiceTest {
 
   @Test
   public void testInitWithSecurityManager() {
-    properties.setProperty(SECURITY_MANAGER,
-        "org.apache.geode.security.templates.SampleSecurityManager");
-    properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+    properties.setProperty(SECURITY_MANAGER, "org.apache.geode.security.TestSecurityManager");
+    properties.setProperty(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/security/templates/security.json");
 
     securityService.initSecurity(properties);
@@ -185,14 +183,14 @@ public class IntegratedSecurityServiceTest {
     assertFalse(securityService.isPeerSecurityRequired());
 
     // set a security manager
-    securityService.setSecurityManager(new SimpleSecurityManager());
+    securityService.setSecurityManager(new TestSecurityManager());
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
     assertTrue(securityService.isPeerSecurityRequired());
     assertFalse(securityService.needPostProcess());
 
     // set a post processor
-    securityService.setPostProcessor(new SamplePostProcessor());
+    securityService.setPostProcessor(new TestPostProcessor());
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.needPostProcess());
   }

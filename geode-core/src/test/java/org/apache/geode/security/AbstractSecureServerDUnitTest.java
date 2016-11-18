@@ -27,7 +27,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -56,8 +55,8 @@ public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTes
   public Properties getProperties() {
     return new Properties() {
       {
-        setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-        setProperty(SampleSecurityManager.SECURITY_JSON,
+        setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
+        setProperty(TestSecurityManager.SECURITY_JSON,
             "org/apache/geode/management/internal/security/clientServer.json");
       }
     };

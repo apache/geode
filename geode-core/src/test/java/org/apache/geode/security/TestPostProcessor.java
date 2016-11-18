@@ -12,17 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.templates;
+package org.apache.geode.security;
 
 import java.security.Principal;
 import java.util.Properties;
 
-import org.apache.geode.security.PostProcessor;
-
 /**
  * This is example that implements PostProcessor
  */
-public class SamplePostProcessor implements PostProcessor {
+public class TestPostProcessor implements PostProcessor {
 
   @Override
   public void init(final Properties securityProps) {}

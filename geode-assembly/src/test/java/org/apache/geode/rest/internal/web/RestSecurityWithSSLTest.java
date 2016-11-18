@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.security.templates.SimpleSecurityManager;
+import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -54,7 +54,7 @@ public class RestSecurityWithSSLTest {
         RestSecurityWithSSLTest.class.getClassLoader().getResource("ssl/trusted.keystore");
 
     Properties properties = new Properties();
-    properties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     properties.setProperty(START_DEV_REST_API, "true");
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     properties.setProperty(HTTP_SERVICE_PORT, restPort + "");

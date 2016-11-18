@@ -15,18 +15,18 @@
 
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
-import java.io.Serializable;
-import java.util.Properties;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.rules.ExternalResource;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.security.templates.SampleSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import java.io.Serializable;
+import java.util.Properties;
 
 /**
  * this rule would help you start up a cache server with the given properties in the current VM
@@ -46,8 +46,8 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
       properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
     }
     if (jsonFile != null) {
-      properties.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-      properties.put(SampleSecurityManager.SECURITY_JSON, jsonFile);
+      properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+      properties.put(TestSecurityManager.SECURITY_JSON, jsonFile);
     }
     serverStarter = new ServerStarterRule(properties);
   }
