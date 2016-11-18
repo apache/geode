@@ -251,7 +251,7 @@ public class PdxType implements DataSerializable {
   }
 
   public int getDSId() {
-    return this.typeId >> 24;
+    return this.typeId >> 24 & 0xFF;
   }
 
   public int getTypeNum() {

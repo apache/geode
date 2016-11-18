@@ -113,6 +113,67 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize_PDX(getTestMethodName() + "_RR", 2));
   }
 
+
+  @Test
+  public void testWANPDX_CacheWriterCheck() {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    vm2.invoke(() -> setSystemProperty("gemfire.disk.recoverValues", "false"));
+
+    vm2.invoke(() -> WANTestBase.createReceiver_PDX(nyPort));
+
+    vm3.invoke(() -> WANTestBase.createCache_PDX(lnPort));
+
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
+
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+
+    vm3.invoke(() -> WANTestBase.startSender("ln"));
+
+    vm3.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+
+    vm3.invoke(() -> WANTestBase.doPutsPDXSerializable(getTestMethodName() + "_RR", 1));
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize_PDX(getTestMethodName() + "_RR", 1));
+
+    // Close VM2 cache
+    vm2.invoke(() -> WANTestBase.closeCache());
+
+    // do some puts on VM3 and create extra pdx id
+    vm3.invoke(() -> WANTestBase.doPutsPDXSerializable2(getTestMethodName() + "_RR", 2));
+
+    // start cache in vm2 again, now it should receive pdx id from vm3
+    vm2.invoke(() -> WANTestBase.createReceiver_PDX(nyPort));
+
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+
+
+    try {
+      Wait.pause(10000);
+      // Define a different type from vm3
+      vm3.invoke(() -> WANTestBase.doPutsPDXSerializable2(getTestMethodName() + "_RR", 2));
+
+      // Give the updates some time to make it over the WAN
+      Wait.pause(10000);
+
+      vm2.invoke(() -> WANTestBase.validateRegionSizeOnly_PDX(getTestMethodName() + "_RR", 2));
+
+      vm3.invoke(() -> WANTestBase.closeCache());
+
+      vm2.invoke(() -> WANTestBase.closeCache());
+    } finally {
+      vm2.invoke(() -> setSystemProperty("gemfire.disk.recoverValues", "true"));
+    }
+  }
+
+  private void setSystemProperty(String key, String value) {
+    System.setProperty(key, value);
+  }
+
   /**
    * Test 1> Site 1 : 1 locator, 1 member 2> Site 2 : 1 locator, 1 member 3> DR is defined on member
    * 1 on site1 4> Serial GatewaySender is defined on member 1 on site1 5> Same DR is defined on
@@ -173,7 +234,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
       // Give the updates some time to make it over the WAN
       Wait.pause(10000);
 
-      vm2.invoke(() -> WANTestBase.validateRegionSize_PDX(getTestMethodName() + "_RR", 1));
+      vm2.invoke(() -> WANTestBase.validateRegionSizeOnly_PDX(getTestMethodName() + "_RR", 2));
 
       vm3.invoke(() -> WANTestBase.closeCache());
     } finally {

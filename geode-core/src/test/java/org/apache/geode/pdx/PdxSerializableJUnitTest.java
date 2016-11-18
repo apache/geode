@@ -63,6 +63,7 @@ import org.apache.geode.pdx.internal.DataSize;
 import org.apache.geode.pdx.internal.PdxReaderImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -84,6 +85,16 @@ public class PdxSerializableJUnitTest {
 
   private int getLastPdxTypeId() {
     return this.c.getPdxRegistry().getLastAllocatedTypeId();
+  }
+
+  private int getPdxTypeIdForClass(Class c) {
+    // here we are assuming Dsid == 0
+    return this.c.getPdxRegistry().getExistingTypeForClass(c).hashCode()
+        & PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID;
+  }
+
+  private int getNumPdxTypes() {
+    return this.c.getPdxRegistry().typeMap().size();
   }
 
   @Test
@@ -264,7 +275,7 @@ public class PdxSerializableJUnitTest {
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     PdxSerializable object = new SimpleClass(1, (byte) 5, null);
     DataSerializer.writeObject(object, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(SimpleClass.class);
     byte[] actual = out.toByteArray();
     byte[] expected = new byte[] {DSCODE.PDX, // byte
         0, 0, 0, 4 + 1 + 1, // int - length of byte stream = 4(myInt) + 1(myByte) + 1 (myEnum)
@@ -316,7 +327,7 @@ public class PdxSerializableJUnitTest {
     SimpleClass1 pdx =
         new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(SimpleClass1.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -543,7 +554,7 @@ public class PdxSerializableJUnitTest {
     SimpleClass1 pdx =
         new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(SimpleClass1.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -753,7 +764,7 @@ public class PdxSerializableJUnitTest {
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     PdxSerializable pdx = new NestedPdx(myString1, myLong, myHashMap, myString2, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(NestedPdx.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -846,7 +857,7 @@ public class PdxSerializableJUnitTest {
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     PdxSerializable pdx = new DSInsidePdx(myString1, myLong, myDS, myString2, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(DSInsidePdx.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -2078,10 +2089,12 @@ public class PdxSerializableJUnitTest {
     assertEquals(7, pdxv1.f1);
     assertEquals(0, pdxv1.f2);
 
+    int numPdxTypes = getNumPdxTypes();
     // now reserialize and make sure f2 is preserved
     byte[] v1actual = createBlob(pdxv1);
+
     int mergedTypeId = getBlobPdxTypeId(v1actual);
-    assertEquals(v3typeId + 1, mergedTypeId);
+    assertEquals(numPdxTypes + 1, getNumPdxTypes());
     TypeRegistry tr = c.getPdxRegistry();
     PdxType v3Type = tr.getType(v3typeId);
     PdxType mergedType = tr.getType(mergedTypeId);
@@ -2114,10 +2127,11 @@ public class PdxSerializableJUnitTest {
     assertEquals(0, pdxv2.f2);
     pdxv2.f2 = 23;
 
+    int numPdxTypes = getNumPdxTypes();
     // now reserialize and make sure it is version2 and not version1
     byte[] v2actual = createBlob(pdxv2);
     int v2typeId = getBlobPdxTypeId(v2actual);
-    assertEquals(v1typeId + 1, v2typeId);
+    assertEquals(numPdxTypes + 1, getNumPdxTypes());
 
     TypeRegistry tr = c.getPdxRegistry();
     PdxType v2Type = tr.getType(v2typeId);

@@ -77,11 +77,11 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   public static final String REGION_NAME = "PdxTypes";
   public static final String REGION_FULL_PATH = "/" + REGION_NAME;
+  public static final int PLACE_HOLDER_FOR_TYPE_ID = 0xFFFFFF;
+  public static final int PLACE_HOLDER_FOR_DS_ID = 0xFF000000;
 
-  private int nextTypeId;
+  private int dsId;
   private final int maxTypeId;
-  private int nextEnumId;
-  private final int maxEnumId;
   private volatile DistributedLockService dls;
   private final Object dlsLock = new Object();
   private GemFireCacheImpl cache;
@@ -116,10 +116,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (distributedSystemId == -1) {
       distributedSystemId = 0;
     }
-    this.nextTypeId = distributedSystemId << 24;
-    this.maxTypeId = distributedSystemId << 24 | 0xFFFFFF;
-    this.nextEnumId = distributedSystemId << 24;
-    this.maxEnumId = distributedSystemId << 24 | 0xFFFFFF;
+    this.dsId = distributedSystemId << 24;
+    this.maxTypeId = 0xFFFFFF;
   }
 
   private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> getIdToType() {
@@ -170,7 +168,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
       @Override
       public void beforeUpdate(EntryEvent<Object, Object> event) throws CacheWriterException {
-        if (!event.getOldValue().equals(event.getNewValue())) {
+        if (!event.getRegion().get(event.getKey()).equals(event.getNewValue())) {
           PdxRegistryMismatchException ex = new PdxRegistryMismatchException(
               "Trying to add a PDXType with the same id as an existing PDX type. id="
                   + event.getKey() + ", existing pdx type " + event.getOldValue() + ", new type "
@@ -229,43 +227,63 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   private static final String LOCK_NAME = "PDX_LOCK";
 
-  private int allocateTypeId() {
+  private int allocateTypeId(PdxType newType) {
     TXStateProxy currentState = suspendTX();
     Region<Object, Object> r = getIdToType();
+
+    int id = newType.hashCode() & PLACE_HOLDER_FOR_TYPE_ID;
+    int newTypeId = id | this.dsId;
+
     try {
-      // Find the next available type id.
-      do {
-        this.nextTypeId++;
-        if (this.nextTypeId == maxTypeId) {
+      int maxTry = maxTypeId;
+      while (r.get(newTypeId) != null) {
+        maxTry--;
+        if (maxTry == 0) {
           throw new InternalGemFireError(
               "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
                   + maxTypeId);
         }
-      } while (r.get(nextTypeId) != null);
 
-      this.lastAllocatedTypeId = this.nextTypeId;
-      return this.nextTypeId;
+        // Find the next available type id.
+        id++;
+        if (id > this.maxTypeId) {
+          id = 1;
+        }
+        newTypeId = id | this.dsId;
+      }
+
+      return newTypeId;
     } finally {
       resumeTX(currentState);
     }
   }
 
-  private EnumId allocateEnumId() {
+  private EnumId allocateEnumId(EnumInfo ei) {
     TXStateProxy currentState = suspendTX();
     Region<Object, Object> r = getIdToType();
-    try {
-      // Find the next available type id.
-      do {
-        this.nextEnumId++;
-        if (this.nextEnumId == maxEnumId) {
-          throw new InternalGemFireError(
-              "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
-                  + maxEnumId);
-        }
-      } while (r.get(new EnumId(nextEnumId)) != null);
 
-      this.lastAllocatedEnumId = this.nextEnumId;
-      return new EnumId(this.nextEnumId);
+    int id = ei.hashCode() & PLACE_HOLDER_FOR_TYPE_ID;
+    int newEnumId = id | this.dsId;
+    try {
+      int maxTry = this.maxTypeId;
+      // Find the next available type id.
+      while (r.get(new EnumId(newEnumId)) != null) {
+        maxTry--;
+        if (maxTry == 0) {
+          throw new InternalGemFireError(
+              "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
+                  + this.maxTypeId);
+        }
+
+        // Find the next available type id.
+        id++;
+        if (id > this.maxTypeId) {
+          id = 1;
+        }
+        newEnumId = id | this.dsId;
+      }
+
+      return new EnumId(newEnumId);
     } finally {
       resumeTX(currentState);
     }
@@ -354,7 +372,7 @@ public class PeerTypeRegistration implements TypeRegistration {
         return id;
       }
 
-      id = allocateTypeId();
+      id = allocateTypeId(newType);
       newType.setTypeId(id);
 
       updateIdToTypeRegion(newType);
@@ -527,6 +545,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   /** Should be called holding the dlock */
   private int getExistingIdForType(PdxType newType) {
+    int totalPdxTypeIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
       int result = -1;
@@ -540,11 +559,21 @@ public class PeerTypeRegistration implements TypeRegistration {
         } else {
           PdxType foundType = (PdxType) v;
           Integer id = (Integer) k;
+          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
+          if (tmpDsId == this.dsId) {
+            totalPdxTypeIdInDS++;
+          }
+
           typeToId.put(foundType, id);
           if (foundType.equals(newType)) {
             result = foundType.getTypeId();
           }
         }
+      }
+      if (totalPdxTypeIdInDS == this.maxTypeId) {
+        throw new InternalGemFireError(
+            "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
+                + this.maxTypeId);
       }
       return result;
     } finally {
@@ -555,6 +584,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   /** Should be called holding the dlock */
   private EnumId getExistingIdForEnum(EnumInfo ei) {
     TXStateProxy currentState = suspendTX();
+    int totalEnumIdInDS = 0;
     try {
       EnumId result = null;
       for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
@@ -564,12 +594,22 @@ public class PeerTypeRegistration implements TypeRegistration {
           EnumId id = (EnumId) k;
           EnumInfo info = (EnumInfo) v;
           enumToId.put(info, id);
+          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
+          if (tmpDsId == this.dsId) {
+            totalEnumIdInDS++;
+          }
           if (ei.equals(info)) {
             result = id;
           }
         } else {
           typeToId.put((PdxType) v, (Integer) k);
         }
+      }
+
+      if (totalEnumIdInDS == this.maxTypeId) {
+        throw new InternalGemFireError(
+            "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
+                + this.maxTypeId);
       }
       return result;
     } finally {
@@ -605,7 +645,7 @@ public class PeerTypeRegistration implements TypeRegistration {
         return id.intValue();
       }
 
-      id = allocateEnumId();
+      id = allocateEnumId(ei);
 
       updateIdToEnumRegion(id, ei);
 
@@ -652,7 +692,7 @@ public class PeerTypeRegistration implements TypeRegistration {
         return id.intValue();
       }
 
-      id = allocateEnumId();
+      id = allocateEnumId(newInfo);
 
       updateIdToEnumRegion(id, newInfo);
 

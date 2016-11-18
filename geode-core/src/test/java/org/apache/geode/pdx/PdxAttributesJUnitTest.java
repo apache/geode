@@ -18,11 +18,16 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.ToDataException;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.SimpleClass.SimpleEnum;
+import org.apache.geode.pdx.internal.EnumId;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
@@ -34,6 +39,8 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -100,6 +107,149 @@ public class PdxAttributesJUnitTest {
       assertEquals(DataPolicy.PERSISTENT_REPLICATE, pdxRegion.getAttributes().getDataPolicy());
       cache.close();
     }
+  }
+
+  @Test
+  public void testPdxTypeId() throws Exception {
+
+    int dsId = 5;
+    CacheFactory cf = new CacheFactory();
+    cf.set(MCAST_PORT, "0");
+    cf.set(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, String.valueOf(dsId));
+    Cache cache = cf.create();
+
+    // define a type.
+    defineAType();
+
+    Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
+    Iterator itr = pdxRegion.entrySet().iterator();
+
+    boolean found = false;
+    boolean foundEnum = false;
+    while (itr.hasNext()) {
+      Map.Entry ent = (Map.Entry) itr.next();
+      if (ent.getKey() instanceof Integer) {
+        int pdxTypeId = (int) ent.getKey();
+        PdxType pdxType = (PdxType) ent.getValue();
+
+        int pdxTypeHashcode = pdxType.hashCode();
+        System.out.println("pdx hashcode " + pdxTypeHashcode);
+        int expectedPdxTypeId =
+            (dsId << 24) | (PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & pdxTypeHashcode);
+
+        assertEquals(expectedPdxTypeId, pdxTypeId);
+
+        found = true;
+      } else {
+        EnumId enumId = (EnumId) ent.getKey();
+        EnumInfo enumInfo = (EnumInfo) ent.getValue();
+
+        EnumInfo expectedEnumInfo = new EnumInfo(SimpleEnum.TWO);
+        int expectKey = (dsId << 24)
+            | (PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode());;
+
+        assertEquals(expectKey, enumId.intValue());
+        foundEnum = true;
+      }
+    }
+
+    assertEquals(true, found);
+    assertEquals(true, foundEnum);
+    cache.close();
+
+  }
+
+  @Test
+  public void testDuplicatePdxTypeId() throws Exception {
+
+    int dsId = 5;
+    CacheFactory cf = new CacheFactory();
+    cf.set(MCAST_PORT, "0");
+    cf.set(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, String.valueOf(dsId));
+    Cache cache = cf.create();
+
+    // define a type.
+    defineAType();
+
+    Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
+    Iterator itr = pdxRegion.entrySet().iterator();
+
+    boolean foundException = false;
+    boolean foundEnumException = false;
+    while (itr.hasNext()) {
+      Map.Entry ent = (Map.Entry) itr.next();
+      if (ent.getKey() instanceof Integer) {
+        int pdxTypeId = (int) ent.getKey();
+
+        try {
+          pdxRegion.put(pdxTypeId, new PdxType());
+        } catch (CacheWriterException cwe) {
+          foundException = true;
+        }
+      } else {
+        EnumId enumId = (EnumId) ent.getKey();
+
+        EnumInfo enumInfo = new EnumInfo(SimpleEnum.ONE);
+        try {
+          pdxRegion.put(enumId, enumInfo);
+        } catch (CacheWriterException cwe) {
+          foundEnumException = true;
+        }
+      }
+    }
+
+    assertEquals(true, foundException);
+    assertEquals(true, foundEnumException);
+    cache.close();
+
+  }
+
+  @Test
+  public void testPdxTypeIdWithNegativeDsId() throws Exception {
+    // in this case geode will use 0 as dsId
+    int dsId = -1;
+    CacheFactory cf = new CacheFactory();
+    cf.set(MCAST_PORT, "0");
+    cf.set(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, String.valueOf(dsId));
+    Cache cache = cf.create();
+
+    // define a type.
+    defineAType();
+
+    Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
+    Iterator itr = pdxRegion.entrySet().iterator();
+
+    boolean found = false;
+    boolean foundEnum = false;
+    while (itr.hasNext()) {
+      Map.Entry ent = (Map.Entry) itr.next();
+      if (ent.getKey() instanceof Integer) {
+        int pdxTypeId = (int) ent.getKey();
+        PdxType pdxType = (PdxType) ent.getValue();
+
+        int pdxTypeHashcode = pdxType.hashCode();
+        System.out.println("pdx hashcode " + pdxTypeHashcode);
+        int expectedPdxTypeId = PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & pdxTypeHashcode;
+
+        assertEquals(expectedPdxTypeId, pdxTypeId);
+
+        found = true;
+      } else {
+        EnumId enumId = (EnumId) ent.getKey();
+        EnumInfo enumInfo = (EnumInfo) ent.getValue();
+
+        EnumInfo expectedEnumInfo = new EnumInfo(SimpleEnum.TWO);
+        int expectKey =
+            PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode();;
+
+        assertEquals(expectKey, enumId.intValue());
+        foundEnum = true;
+      }
+    }
+
+    assertEquals(true, found);
+    cache.close();
+
   }
 
   @Test

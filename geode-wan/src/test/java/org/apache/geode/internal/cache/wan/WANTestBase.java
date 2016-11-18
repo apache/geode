@@ -2802,6 +2802,17 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     }
   }
 
+  public static void validateRegionSizeOnly_PDX(String regionName, final int regionSize) {
+    final Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
+    Awaitility.await().atMost(200, TimeUnit.SECONDS)
+        .until(
+            () -> assertEquals(
+                "Expected region entries: " + regionSize + " but actual entries: "
+                    + r.keySet().size() + " present region keyset " + r.keySet(),
+                true, (regionSize <= r.keySet().size())));
+  }
+
   public static void validateQueueSizeStat(String id, final int queueSize) {
     final AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(id);
     Awaitility.await().atMost(30, TimeUnit.SECONDS)

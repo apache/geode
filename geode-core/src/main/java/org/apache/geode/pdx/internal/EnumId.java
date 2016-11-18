@@ -48,7 +48,7 @@ public class EnumId implements DataSerializableFixedID {
   }
 
   public int getDSId() {
-    return this.id >> 24;
+    return this.id >> 24 & 0xFF;
   }
 
   public int getEnumNum() {
