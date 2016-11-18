@@ -145,6 +145,51 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static OldClientSupportService oldClientSupportService;
 
   /**
+   * For backward compatibility we must swizzle the package of some classes that had to be moved
+   * when GemFire was open- sourced. This preserves backward-compatibility.
+   * 
+   * @param name the fully qualified class name
+   * @return the name of the class in this implementation
+   */
+  public static String processIncomingClassName(String name) {
+    // TCPServer classes are used before a cache exists and support for old clients has been
+    // initialized
+    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
+    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
+    if (name.startsWith(oldPackage)) {
+      return newPackage + name.substring(oldPackage.length());
+    }
+    OldClientSupportService svc = getOldClientSupportService();
+    if (svc != null) {
+      return svc.processIncomingClassName(name);
+    }
+    return name;
+  }
+
+  /**
+   * For backward compatibility we must swizzle the package of some classes that had to be moved
+   * when GemFire was open- sourced. This preserves backward-compatibility.
+   * 
+   * @param name the fully qualified class name
+   * @param out the consumer of the serialized object
+   * @return the name of the class in this implementation
+   */
+  public static String processOutgoingClassName(String name, DataOutput out) {
+    // TCPServer classes are used before a cache exists and support for old clients has been
+    // initialized
+    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
+    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
+    if (name.startsWith(newPackage)) {
+      return oldPackage + name.substring(newPackage.length());
+    }
+    OldClientSupportService svc = getOldClientSupportService();
+    if (svc != null) {
+      return svc.processOutgoingClassName(name, out);
+    }
+    return name;
+  }
+
+  /**
    * Any time new serialization format is added then a new enum needs to be added here.
    * 
    * @since GemFire 6.6.2
@@ -3954,7 +3999,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       LOAD_CLASS_EACH_TIME ? null : new CopyOnWriteHashMap<String, WeakReference<Class<?>>>();
   private static final Object cacheAccessLock = new Object();
 
-  public static Class<?> getCachedClass(String className) throws ClassNotFoundException {
+  public static Class<?> getCachedClass(String p_className) throws ClassNotFoundException {
+    String className = processIncomingClassName(p_className);
     if (LOAD_CLASS_EACH_TIME) {
       return ClassPathLoader.getLatest().forName(className);
     } else {

@@ -59,7 +59,6 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -221,7 +220,7 @@ public abstract class DataSerializer {
       // one indicates it's a non-primitive Class
       out.writeByte(DSCODE.CLASS);
       String cname = c.getName();
-      cname = swizzleClassNameForWrite(cname, out);
+      cname = InternalDataSerializer.processOutgoingClassName(cname, out);
       writeString(cname, out);
     }
   }
@@ -243,7 +242,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER, "Writing Class name {}", className);
     }
 
-    writeString(swizzleClassNameForWrite(className, out), out);
+    writeString(InternalDataSerializer.processOutgoingClassName(className, out), out);
   }
 
   /**
@@ -261,58 +260,11 @@ public abstract class DataSerializer {
     byte typeCode = in.readByte();
     if (typeCode == DSCODE.CLASS) {
       String className = readString(in);
-      className = swizzleClassNameForRead(className, in);
       Class<?> c = InternalDataSerializer.getCachedClass(className); // fix for bug 41206
       return c;
     } else {
       return InternalDataSerializer.decodePrimitiveClass(typeCode);
     }
-  }
-
-  /**
-   * For backward compatibility we must swizzle the package of some classes that had to be moved
-   * when GemFire was open- sourced. This preserves backward-compatibility.
-   * 
-   * @param name the fully qualified class name
-   * @param in the source of the class name
-   * @return the name of the class in this implementation
-   */
-  private static String swizzleClassNameForRead(String name, DataInput in) {
-    // TCPServer classes are used before a cache exists and support for old clients has been
-    // initialized
-    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
-    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
-    if (name.startsWith(oldPackage)) {
-      return newPackage + name.substring(oldPackage.length());
-    }
-    OldClientSupportService svc = InternalDataSerializer.getOldClientSupportService();
-    if (svc != null) {
-      return svc.processIncomingClassName(name, in);
-    }
-    return name;
-  }
-
-  /**
-   * For backward compatibility we must swizzle the package of some classes that had to be moved
-   * when GemFire was open- sourced. This preserves backward-compatibility.
-   * 
-   * @param name the fully qualified class name
-   * @param out the consumer of the serialized object
-   * @return the name of the class in this implementation
-   */
-  private static String swizzleClassNameForWrite(String name, DataOutput out) {
-    // TCPServer classes are used before a cache exists and support for old clients has been
-    // initialized
-    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
-    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
-    if (name.startsWith(newPackage)) {
-      return oldPackage + name.substring(newPackage.length());
-    }
-    OldClientSupportService svc = InternalDataSerializer.getOldClientSupportService();
-    if (svc != null) {
-      return svc.processOutgoingClassName(name, out);
-    }
-    return name;
   }
 
   /**
@@ -327,7 +279,7 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    return swizzleClassNameForRead(readString(in), in);
+    return InternalDataSerializer.processIncomingClassName(readString(in));
   }
 
   /**
