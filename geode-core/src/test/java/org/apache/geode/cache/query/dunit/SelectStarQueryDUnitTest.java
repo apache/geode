@@ -92,6 +92,141 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
+  public void functionWithStructTypeInInnerQueryShouldNotThrowException() throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server1 = host.getVM(0);
+    final VM client = host.getVM(3);
+    PortfolioPdx[] portfolios = new PortfolioPdx[10];
+    for (int i = 0; i < portfolios.length; i++) {
+      portfolios[i] = new PortfolioPdx(i);
+    }
+
+    // create servers and regions
+    final int port1 = startPartitionedCacheServer(server1, portfolios);
+
+    // create client
+    client.invoke(new SerializableCallable("Create client") {
+      @Override
+      public Object call() throws Exception {
+        ClientCacheFactory cf = new ClientCacheFactory();
+        cf.addPoolServer(getServerHostName(server1.getHost()), port1);
+        ClientCache cache = getClientCache(cf);
+        cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regName);
+        return null;
+      }
+    });
+
+    // put serialized PortfolioPdx objects
+    client.invoke(new SerializableCallable("Put objects") {
+      @Override
+      public Object call() throws Exception {
+        Region r1 = getRootRegion(regName);
+        for (int i = 10; i < 100; i++) {
+          r1.put("key-" + i, new PortfolioPdx(i));
+        }
+        return null;
+      }
+    });
+
+    // query remotely from client
+    client.invoke(new SerializableCallable("Query") {
+      @Override
+      public Object call() throws Exception {
+        getLogWriter().info("Querying remotely from client");
+        QueryService remoteQS = null;
+        try {
+          remoteQS = ((ClientCache) getCache()).getQueryService();
+          SelectResults sr = (SelectResults) remoteQS
+              .newQuery("select distinct oP.ID, oP.status, oP.getType from /" + regName
+                  + " oP where element(select distinct p.ID, p.status, p.getType from /" + regName
+                  + " p where p.ID = oP.ID).status = 'inactive'")
+              .execute();
+          assertEquals(50, sr.size());
+        } catch (Exception e) {
+          fail("Exception getting query service ", e);
+        }
+
+        return null;
+      }
+    });
+
+    closeCache(client);
+    closeCache(server1);
+  }
+
+  @Test
+  public void functionWithStructTypeInInnerQueryShouldNotThrowExceptionWhenRunOnMultipleNodes()
+      throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server1 = host.getVM(0);
+    final VM server2 = host.getVM(1);
+    final VM server3 = host.getVM(2);
+    final VM client = host.getVM(3);
+    PortfolioPdx[] portfolios = new PortfolioPdx[10];
+    for (int i = 0; i < portfolios.length; i++) {
+      portfolios[i] = new PortfolioPdx(i);
+    }
+
+    // create servers and regions
+    final int port1 = startPartitionedCacheServer(server1, portfolios);
+    final int port2 = startPartitionedCacheServer(server2, portfolios);
+    final int port3 = startPartitionedCacheServer(server3, portfolios);
+
+    // create client
+    client.invoke(new SerializableCallable("Create client") {
+      @Override
+      public Object call() throws Exception {
+        ClientCacheFactory cf = new ClientCacheFactory();
+        cf.addPoolServer(getServerHostName(server1.getHost()), port1);
+        cf.addPoolServer(getServerHostName(server2.getHost()), port2);
+        cf.addPoolServer(getServerHostName(server3.getHost()), port3);
+        ClientCache cache = getClientCache(cf);
+        cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regName);
+        return null;
+      }
+    });
+
+    // put serialized PortfolioPdx objects
+    client.invoke(new SerializableCallable("Put objects") {
+      @Override
+      public Object call() throws Exception {
+        Region r1 = getRootRegion(regName);
+        for (int i = 10; i < 100; i++) {
+          r1.put("key-" + i, new PortfolioPdx(i));
+        }
+        return null;
+      }
+    });
+
+    // query remotely from client
+    client.invoke(new SerializableCallable("Query") {
+      @Override
+      public Object call() throws Exception {
+        getLogWriter().info("Querying remotely from client");
+        QueryService remoteQS = null;
+        try {
+          remoteQS = ((ClientCache) getCache()).getQueryService();
+          SelectResults sr = (SelectResults) remoteQS
+              .newQuery("select distinct oP.ID, oP.status, oP.getType from /" + regName
+                  + " oP where element(select distinct p.ID, p.status, p.getType from /" + regName
+                  + " p where p.ID = oP.ID).status = 'inactive'")
+              .execute();
+          assertEquals(50, sr.size());
+        } catch (Exception e) {
+          fail("Exception getting query service ", e);
+        }
+        return null;
+      }
+    });
+
+
+    closeCache(client);
+    closeCache(server1);
+    closeCache(server2);
+    closeCache(server3);
+  }
+
+  @Test
   public void testSelectStarQueryForPartitionedRegion() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);

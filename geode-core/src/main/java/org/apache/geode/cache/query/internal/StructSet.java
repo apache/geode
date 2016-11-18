@@ -240,15 +240,25 @@ public final class StructSet /* extends ObjectOpenCustomHashSet */ implements Se
   public boolean addAll(Collection c) {
     if (c instanceof StructSet) {
       return addAll((StructSet) c);
+    } else {
+      boolean modified = false;
+      for (Object o : c) {
+        modified = add(o);
+      }
+      return modified;
     }
-    return this.contents.addAll(c);
   }
 
   public boolean removeAll(Collection c) {
     if (c instanceof StructSet) {
       return removeAll((StructSet) c);
+    } else {
+      boolean modified = false;
+      for (Object o : c) {
+        modified = remove(o);
+      }
+      return modified;
     }
-    return this.contents.removeAll(c);
   }
 
   public boolean retainAll(Collection c) {
