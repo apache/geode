@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -64,7 +65,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * and made available for the client. After that , S1 's server is stopped. The client fails over to
  * S2. The client should receive all the puts . These puts have arrived on S2 via GII of HARegion.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

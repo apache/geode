@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -38,7 +39,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * 
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class StartupMessageDataJUnitTest {
 
   @Test

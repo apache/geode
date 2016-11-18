@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -63,7 +64,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * s2 c1: unregister k1,k2,k3 see interest list on s1 contains only s4, s5 s2 ----> unavaliable //
  * fail over should to s1 with intrest list s4,s5 see only k4 and k5 are registerd on s1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME =

@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -58,7 +59,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * This is a test for the APIs of a HARegionQueue and verifies that the head, tail and size counters
  * are updated properly.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class HARegionQueueJUnitTest {
 
   /** The cache instance */

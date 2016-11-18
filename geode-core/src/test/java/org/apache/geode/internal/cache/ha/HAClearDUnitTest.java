@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -53,7 +54,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This is the Dunit test to verify clear and destroyRegion operation in Client-Server
  * configuration.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
   static VM server1 = null;

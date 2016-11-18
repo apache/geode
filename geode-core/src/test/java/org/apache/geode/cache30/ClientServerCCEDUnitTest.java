@@ -33,6 +33,7 @@ import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -73,7 +74,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * 
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   public static LocalRegion TestRegion;
 

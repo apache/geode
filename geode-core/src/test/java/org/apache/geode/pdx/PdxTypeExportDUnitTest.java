@@ -14,6 +14,7 @@
  */
 package org.apache.geode.pdx;
 
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SerializationTest.class})
 public class PdxTypeExportDUnitTest extends JUnit4CacheTestCase {
   public PdxTypeExportDUnitTest() {
     super();

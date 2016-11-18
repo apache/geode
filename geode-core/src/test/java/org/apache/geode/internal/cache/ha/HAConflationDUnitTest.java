@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -56,7 +57,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * invalidate. 4) Do a create , update , update & destroy. The client should receive 3 callbacks (
  * craete , conflated update & destroy).
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   VM server1 = null;

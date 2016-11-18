@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.categories.*;
  * Tests cases that are particular for the auto connection source - dynamically discovering servers,
  * locators, handling locator disappearance, etc.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   protected static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";

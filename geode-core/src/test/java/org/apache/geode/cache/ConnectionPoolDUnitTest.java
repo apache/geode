@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -81,7 +82,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  *
  * Test uses Groboutils TestRunnable objects to achieve multi threading behavior in the test.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 @FixMethodOrder(NAME_ASCENDING)
 public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 

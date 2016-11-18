@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -36,7 +37,7 @@ import java.util.Properties;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
 
   public ClientServerTimeSyncDUnitTest() {

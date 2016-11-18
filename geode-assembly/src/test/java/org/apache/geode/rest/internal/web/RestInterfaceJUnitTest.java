@@ -50,6 +50,7 @@ import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +86,7 @@ import org.springframework.web.client.RestTemplate;
 // @RunWith(SpringJUnit4ClassRunner.class)
 // @ContextConfiguration
 @SuppressWarnings("unused")
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RestAPITest.class})
 public class RestInterfaceJUnitTest {
 
   protected static int DEFAULT_HTTP_SERVICE_PORT = 8189;

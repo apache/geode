@@ -25,6 +25,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.pdx.internal.*;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,7 @@ import java.util.*;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class PdxInstanceFactoryJUnitTest {
   private GemFireCacheImpl cache;
 

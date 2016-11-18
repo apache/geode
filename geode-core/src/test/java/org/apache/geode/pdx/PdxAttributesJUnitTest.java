@@ -25,6 +25,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class PdxAttributesJUnitTest {
 
   private File diskDir;

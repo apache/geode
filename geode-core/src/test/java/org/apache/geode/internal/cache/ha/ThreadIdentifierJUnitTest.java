@@ -16,13 +16,14 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.ha.ThreadIdentifier.WanType;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class ThreadIdentifierJUnitTest {
 
   @Test

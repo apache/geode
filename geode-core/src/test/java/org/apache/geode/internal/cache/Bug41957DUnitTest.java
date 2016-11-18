@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -51,7 +52,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 6.5
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug41957DUnitTest extends ClientServerTestCase {
 
   @Override

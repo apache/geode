@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * Test verifies the properties of a HARegion which allows localPuts and localDestroys on a
  * MirroredRegion
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class HARegionJUnitTest {
 
   /**

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -65,7 +66,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * The test has two regions. In one scenario they share a common bridgewriter and in the second
  * scenario, each has a unique bridgewriter.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

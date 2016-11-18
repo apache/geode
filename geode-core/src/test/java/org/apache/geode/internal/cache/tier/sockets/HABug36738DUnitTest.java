@@ -19,6 +19,7 @@ import static com.jayway.awaitility.Awaitility.*;
 import static com.jayway.awaitility.Duration.*;
 import static org.junit.Assert.*;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -47,7 +48,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * HARegion with the value as ClientUpdateMessage. 3. Create server2 and HARegion in it so that GII
  * will happen. 4. Perform get operations from server2.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = "HABug36738DUnitTest_Region";

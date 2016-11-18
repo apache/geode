@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -42,7 +44,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class GMSQuorumCheckerJUnitTest {
 
   private InternalDistributedMember[] mockMembers;

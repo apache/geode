@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,7 +62,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * 
  * @see ClientSocketFactoryIntegrationTest
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class SSLSocketIntegrationTest {
 
   private static final String MESSAGE = SSLSocketIntegrationTest.class.getName() + " Message";

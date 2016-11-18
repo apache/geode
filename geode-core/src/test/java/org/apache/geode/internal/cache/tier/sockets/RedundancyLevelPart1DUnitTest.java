@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,7 +32,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests Redundancy Level Functionality
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase {
 
   @BeforeClass

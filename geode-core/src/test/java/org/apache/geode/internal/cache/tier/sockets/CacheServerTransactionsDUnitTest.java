@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,7 +55,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests behaviour of transactions in client server model
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase {
 
   private static final int PAUSE = 5 * 1000;

@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -56,7 +57,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * make some of the events in the queue expire before dispatcher can start picking them up for
  * delivery to the client.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
 
   /** Cache-server */

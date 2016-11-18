@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -53,7 +54,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Written to test fix for Bug #47132
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
 
   private Cache cache;

@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -40,7 +41,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class JSONFormatterJUnitTest {
 
   private GemFireCacheImpl c;

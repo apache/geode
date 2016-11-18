@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_RES
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.junit.BeforeClass;
@@ -30,7 +31,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RestAPITest.class})
 public class RestServersJUnitTest {
 
   private static int defaultPort = 7070;

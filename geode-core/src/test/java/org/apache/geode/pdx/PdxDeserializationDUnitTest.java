@@ -14,6 +14,7 @@
  */
 package org.apache.geode.pdx;
 
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -60,7 +61,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
  * 
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SerializationTest.class})
 public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
   public PdxDeserializationDUnitTest() {

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -39,7 +40,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * 
  * 
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
 
   /**

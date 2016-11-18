@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -50,7 +51,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * Test to verify that client side region.close() should unregister the client with the server. It
  * also checks that client region queue also gets removed properly.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

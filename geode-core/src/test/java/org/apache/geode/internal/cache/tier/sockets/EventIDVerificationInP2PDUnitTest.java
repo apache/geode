@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,7 +48,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * P2P for a propagation of given operation. In case of NO-ACK EventIDs should be
  * different.Currently this test is commented because of a bug.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

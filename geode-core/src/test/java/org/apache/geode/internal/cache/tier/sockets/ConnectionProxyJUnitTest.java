@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -52,7 +53,7 @@ import static org.junit.Assert.*;
  *
  * Tests the functionality of operations of AbstractConnectionProxy & its derived classes.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class ConnectionProxyJUnitTest {
   private static final String expectedRedundantErrorMsg =
       "Could not find any server to create redundant client queue on.";

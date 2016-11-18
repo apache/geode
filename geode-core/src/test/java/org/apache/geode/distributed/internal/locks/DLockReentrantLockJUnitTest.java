@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.locks;
 
 import org.apache.geode.cache.*;
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,7 +29,7 @@ import java.util.concurrent.locks.Lock;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, DLockTest.class})
 public class DLockReentrantLockJUnitTest {
   final long id = 1213L;
 

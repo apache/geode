@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,7 +63,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
  *
  * @since GemFire 6.0.3
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
 
   class EventListener extends CacheListenerAdapter {

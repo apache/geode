@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -42,7 +43,7 @@ import org.apache.geode.test.dunit.VM;
 /**
  * This class tests distributed locking of global region entries.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, DLockTest.class})
 public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
   public static Region region_testBug32356;

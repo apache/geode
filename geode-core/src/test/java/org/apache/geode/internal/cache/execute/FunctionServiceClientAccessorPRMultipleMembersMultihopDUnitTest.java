@@ -15,15 +15,15 @@
 package org.apache.geode.internal.cache.execute;
 
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
 /**
  * Tests onRegion using multiple servers from a single client that has single hop disabled
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class FunctionServiceClientAccessorPRMultipleMembersMultihopDUnitTest
     extends FunctionServiceClientAccessorPRBase {
 

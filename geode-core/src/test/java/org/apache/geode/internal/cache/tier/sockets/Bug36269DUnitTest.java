@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -51,7 +52,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * does the p2p messaging has provision of sending Context object in the DestroyRegionMessage. This
  * can cause sender to recieve it own region destruction message.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug36269DUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

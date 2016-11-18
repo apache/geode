@@ -20,6 +20,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 import org.junit.After;
@@ -36,7 +37,7 @@ import static org.junit.Assert.assertNotNull;
  * Tests the proper intialization of redundancyLevel property.
  * 
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class RedundancyLevelJUnitTest {
   private static final String expectedRedundantErrorMsg =
       "Could not find any server to create redundant client queue on.";

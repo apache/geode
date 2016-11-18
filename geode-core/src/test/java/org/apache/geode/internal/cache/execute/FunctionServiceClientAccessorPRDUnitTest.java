@@ -14,26 +14,14 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 /**
  * Tests function execution with a client accessing a single member with a PR using onRegion calls.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class FunctionServiceClientAccessorPRDUnitTest extends FunctionServiceClientAccessorPRBase {
 
   @Override

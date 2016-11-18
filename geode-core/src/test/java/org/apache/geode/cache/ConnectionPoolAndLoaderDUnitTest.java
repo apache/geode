@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,7 +40,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * This tests cases where we have both a connection pool and a bridge loader.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
 
   private static int bridgeServerPort;

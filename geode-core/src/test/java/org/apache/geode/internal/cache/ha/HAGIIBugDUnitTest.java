@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -60,7 +61,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * asynchronously till HARegion Queue gets created in vm1. 6. Validate the data. Puts happened
  * during GII should be missed.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

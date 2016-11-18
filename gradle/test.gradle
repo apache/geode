@@ -134,6 +134,55 @@ subprojects {
     reports.junitXml.destination = file "$buildDir/test-reports-security"
 
   }
+
+
+  task clientServerTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.ClientServerTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-security"
+  }
+  task dlockTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.DLockTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-dlock"
+  }
+  task membershipTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.MembershipTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-membership"
+  }
+  task restAPITest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.RestAPITest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    forkEvery 1
+    reports.junitXml.destination = file "$buildDir/test-reports-restAPI"
+  }
+  task serializationTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.serializationTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-serialization"
+  }
+
   // By proving a file with an arbitrary list of test classes, we can select only those
   // tests to run. Activated using -Dcustom.tests=<file> customTest
   def customTestList = []

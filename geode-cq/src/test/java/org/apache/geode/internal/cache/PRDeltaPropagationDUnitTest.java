@@ -22,6 +22,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -71,7 +73,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests the PR delta propagation functionality.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SerializationTest.class, ClientSubscriptionTest.class})
 public class PRDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private final static Compressor compressor = SnappyCompressor.getDefaultInstance();

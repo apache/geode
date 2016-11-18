@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,7 +46,7 @@ import org.apache.geode.util.test.TestUtil;
 /**
  * Test for GEODE-396
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
   private Cache cache;

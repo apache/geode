@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,7 +56,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * directy from the server1. 3. Stop the server1 so that fail over happens 4. Validate the
  * duplicates received by the client1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

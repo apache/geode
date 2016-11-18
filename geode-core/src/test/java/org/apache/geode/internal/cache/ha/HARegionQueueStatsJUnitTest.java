@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -34,7 +35,7 @@ import static org.junit.Assert.assertNotNull;
  * 
  * 
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class HARegionQueueStatsJUnitTest {
 
   /** The cache instance */

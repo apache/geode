@@ -34,6 +34,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
@@ -59,7 +60,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class GMSHealthMonitorJUnitTest {
 
   private Services services;

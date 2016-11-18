@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -89,7 +90,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * client connects to the server c1 register(k1,k2,k3) and c2 register (k4,k5) then verify that
  * updates has occurred as a result of interest registration.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = "InterestListDUnitTest_region";

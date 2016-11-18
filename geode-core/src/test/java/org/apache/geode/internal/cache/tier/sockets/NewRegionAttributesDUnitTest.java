@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This tests that basic entry operations work properly when regions are configured with newly added
  * RegionAttributes in a P2P environment.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /** test VM */

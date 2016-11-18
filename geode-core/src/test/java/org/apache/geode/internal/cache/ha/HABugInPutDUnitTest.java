@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +47,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * and NotifyBySubscription is false then it follows normal path and then again calls put of region
  * on which region queue is based. so recurssion is happening.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = HABugInPutDUnitTest.class.getSimpleName() + "_region";

@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * 1)put() on a mirrored HARegion does not propagate 2)localDestroy() allowed on a mirrored region
  * 3) GII happens normally
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HARegionDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

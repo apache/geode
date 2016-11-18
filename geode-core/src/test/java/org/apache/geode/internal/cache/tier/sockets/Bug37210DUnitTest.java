@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,7 +51,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This tests the fix for bug 73210. Reason for the bug was that HARegionQueue's destroy was not
  * being called on CacheClientProxy's closure. As a result, stats were left open.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /** the cache server */

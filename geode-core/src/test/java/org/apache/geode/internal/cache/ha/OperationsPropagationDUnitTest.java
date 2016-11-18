@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,7 +51,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * one server1 to another server2 do get delivered to the client connected to server2 (server2 is
  * primary for client)
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

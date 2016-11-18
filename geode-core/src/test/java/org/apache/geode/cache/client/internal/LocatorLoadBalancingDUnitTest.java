@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -65,7 +66,7 @@ import java.util.concurrent.TimeUnit;
 /**
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
   /**

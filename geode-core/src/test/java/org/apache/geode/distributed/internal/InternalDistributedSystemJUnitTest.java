@@ -30,6 +30,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -54,7 +55,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * 
  * @since GemFire 2.1
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class InternalDistributedSystemJUnitTest {
 
   /**

@@ -28,6 +28,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,7 +50,7 @@ import static org.apache.geode.test.dunit.Host.getHost;
  * 
  * @since GemFire 8.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final int TIMEOUT_MILLISECONDS = 5 * 60 * 1000; // 5 minutes

@@ -27,6 +27,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.junit.ClassRule;
@@ -35,8 +36,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-@Category(IntegrationTest.class)
-
+@Category({IntegrationTest.class, RestAPITest.class})
 public class SwaggerVerificationTest {
 
   private static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();

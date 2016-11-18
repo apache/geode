@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -51,7 +52,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * DUnit Test for use-cases of various {@link InterestResultPolicy} types.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
 
   /** test VM */

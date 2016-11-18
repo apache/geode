@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,7 +51,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * Test code copied from UpdatePropagationDUnitTest Tests that registering interest KEYS works
  * correctly.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

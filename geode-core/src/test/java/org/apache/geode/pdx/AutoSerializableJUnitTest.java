@@ -26,6 +26,7 @@ import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,7 @@ import static org.junit.Assert.*;
 /**
  * TODO: fails (on Windows 7?)
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class AutoSerializableJUnitTest {
 
   private GemFireCacheImpl c;

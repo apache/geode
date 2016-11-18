@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -59,7 +60,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This is the DUnit Test to verify clear and DestroyRegion operation in Client-Server
  * Configuration.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

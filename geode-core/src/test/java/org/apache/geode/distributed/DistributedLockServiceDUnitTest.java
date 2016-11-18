@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -60,7 +61,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * This class tests distributed ownership via the DistributedLockService api.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, DLockTest.class})
 public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   private static DistributedSystem dlstSystem;
@@ -1455,7 +1456,6 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
    * Test that suspend locking behaves under various usage patterns. This ensures that suspend and
    * regular locks behave as ReadWriteLocks and processing occurs in order.
    */
-  @Ignore
   @Test
   public void testSuspendLockingBehaves() throws Exception {
     try {

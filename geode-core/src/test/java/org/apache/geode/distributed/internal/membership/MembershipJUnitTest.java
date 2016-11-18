@@ -65,7 +65,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipJUnitTest.class})
 public class MembershipJUnitTest {
   static Level baseLogLevel;
 

@@ -32,6 +32,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Test;
@@ -49,7 +50,7 @@ import static org.junit.Assert.fail;
  * 
  * 
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientHealthMonitorJUnitTest {
   /**
    * Default to 0; override in sub tests to add thread pool

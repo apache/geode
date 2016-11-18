@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -62,7 +63,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     extends PRClientServerTestBase {
 
