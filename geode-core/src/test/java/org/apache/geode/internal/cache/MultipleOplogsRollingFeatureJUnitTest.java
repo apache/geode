@@ -82,7 +82,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
       addEntries(1 /* oplogNumber */, 50 /* byte array size */);
 
       ((LocalRegion) region).getDiskStore().forceCompaction();
-      Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(()->FLAG==true);
+      Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> FLAG == true);
       logWriter.info("testMultipleRolling after waitForCompactor");
       // the compactor copied two tombstone and 1 entry to oplog #2
       // The total oplog size will become 429, that why we need to
@@ -139,7 +139,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
     }
 
     // let the main thread sleep so that rolling gets over
-    Awaitility.waitAtMost(25, TimeUnit.SECONDS).until(()->FLAG==true);
+    Awaitility.waitAtMost(25, TimeUnit.SECONDS).until(() -> FLAG == true);
 
     assertTrue("Number of Oplogs to be rolled is not null : this is unexpected",
         diskRegion.getOplogToBeCompacted() == null);
