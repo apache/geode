@@ -43,10 +43,10 @@ public class AgentUtil {
   }
 
   /**
-   * this method will try to find the named war files in the following order: 1. if GEMFIRE is
+   * this method will try to find the named war files in the following order: 1. if GEODE_HOME is
    * defined, it will look under tools/Extensions, tools/Pulse and lib folder (in this order) to
-   * find either the name-version.war or the name.war file 2. If GEMFIRE is not defined, it will try
-   * to find either the name-version.war/name.war (in that order) on the classpath
+   * find either the name-version.war or the name.war file 2. If GEODE_HOME is not defined, it will
+   * try to find either the name-version.war/name.war (in that order) on the classpath
    *
    * @param warFilePrefix : the prefix of the war file, e.g. geode-web, geode-pulse, or
    *        geode-web-api
@@ -69,8 +69,8 @@ public class AgentUtil {
       }
     }
 
-    // if $GEMFIRE is not set or we are not able to find it in all the possible locations under
-    // $GEMFIRE, try to
+    // if $GEODE_HOME is not set or we are not able to find it in all the possible locations under
+    // $GEODE_HOME, try to
     // find in the classpath
     String[] possibleFiles = {warFilePrefix + "-" + gemfireVersion + ".war",
         "tools/Pulse/" + warFilePrefix + "-" + gemfireVersion + ".war",
