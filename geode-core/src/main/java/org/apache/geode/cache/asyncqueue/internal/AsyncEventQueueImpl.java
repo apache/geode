@@ -191,7 +191,7 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public void destroy() {
-    ((AbstractGatewaySender) this.sender).destroy();
+    this.sender.destroy();
   }
 
   public boolean isBucketSorted() {

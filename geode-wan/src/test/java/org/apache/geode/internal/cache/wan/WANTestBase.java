@@ -3394,7 +3394,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
         break;
       }
     }
-    ((AbstractGatewaySender) sender).destroy();
+    sender.destroy();
   }
 
   public static void verifySenderDestroyed(String senderId, boolean isParallel) {
