@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,6 +40,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+@Category({DistributedTest.class, MembershipTest.class})
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
 
   public LocatorUDPSecurityDUnitTest() {}

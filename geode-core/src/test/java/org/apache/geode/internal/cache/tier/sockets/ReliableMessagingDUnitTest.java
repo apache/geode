@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -59,7 +60,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  * Tests the reliable messaging functionality - Client sends a periodic ack to the primary server
  * for the messages received.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
 
   static VM server1 = null;

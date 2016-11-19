@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -66,7 +67,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * The key is to verify that the memberid being used by the client to register with the server is
  * the same across servers
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
   private static final String REGION_NAME = "UpdatePropagationDUnitTest_region";

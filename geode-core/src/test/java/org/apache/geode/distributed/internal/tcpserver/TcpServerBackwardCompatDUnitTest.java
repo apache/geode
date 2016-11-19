@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,7 +44,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * This tests the rolling upgrade for locators with different GOSSIPVERSION.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase {
 
   @Override

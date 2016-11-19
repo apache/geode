@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -56,7 +57,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SerializationTest.class})
 public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
   public PdxClientServerDUnitTest() {

@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +66,7 @@ import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class PdxSerializableJUnitTest {
 
   private GemFireCacheImpl c;

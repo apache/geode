@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,7 +46,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * 
  * @since GemFire 6.1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug40396DUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache;

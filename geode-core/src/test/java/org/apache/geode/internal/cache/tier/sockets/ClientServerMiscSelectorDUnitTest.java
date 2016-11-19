@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest {
   public ClientServerMiscSelectorDUnitTest() {
     super();

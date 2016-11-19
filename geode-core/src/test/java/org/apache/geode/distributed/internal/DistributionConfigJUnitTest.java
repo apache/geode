@@ -33,12 +33,13 @@ import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class DistributionConfigJUnitTest {
 
   private Map<Class<?>, Class<?>> classMap;

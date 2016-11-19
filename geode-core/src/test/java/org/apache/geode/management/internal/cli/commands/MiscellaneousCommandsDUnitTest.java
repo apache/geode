@@ -144,6 +144,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-2126
   @Test
   public void testShowLogNumLines() {
     Properties props = new Properties();

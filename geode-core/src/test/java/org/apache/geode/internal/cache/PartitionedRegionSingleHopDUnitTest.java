@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -81,7 +82,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PR_NAME = "single_hop_pr";

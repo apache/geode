@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -29,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests MembershipAttributes and SubscriptionAttributes to make sure they are Serializable
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class MembershipAttributesAreSerializableTest {
 
   /**

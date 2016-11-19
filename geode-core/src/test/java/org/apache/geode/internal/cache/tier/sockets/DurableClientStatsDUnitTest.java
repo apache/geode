@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -52,7 +53,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * In the given test DurableClient comes up and goes down discreetly with different
  * DurableClientTimeouts so as to increment the counts
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;

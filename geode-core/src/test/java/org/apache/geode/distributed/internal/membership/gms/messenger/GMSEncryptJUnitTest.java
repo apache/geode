@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,7 +51,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.DHParameterSpec;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class GMSEncryptJUnitTest {
 
   Services services;

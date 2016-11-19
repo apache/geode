@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,7 +47,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Make sure max-connections on cache server is enforced
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class CacheServerMaxConnectionsJUnitTest {
 
   private static final int MAX_CNXS = 100;

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -55,7 +56,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * unnecessary callback). The unregister encounters an error because the region has been destroyed
  * on the server and hence falsely marks the server dead.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug36457DUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

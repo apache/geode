@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Iterator;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +47,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * (k1 -> vm2-key-1) and (k6 -> vm2-key-6) c1 : validate (r.getEntry("key-1").getValue() ==
  * "vm2-key-1") (r.getEntry("key-6").getValue() == "key-6") // as it is not registered *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME =

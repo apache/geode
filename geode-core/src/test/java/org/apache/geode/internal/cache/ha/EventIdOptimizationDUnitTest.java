@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -67,7 +68,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
  * p2p and then finally to client-2. It is verified that client-2 recieves the same values for
  * thread-id and sequence-id.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /** Cache-server1 */

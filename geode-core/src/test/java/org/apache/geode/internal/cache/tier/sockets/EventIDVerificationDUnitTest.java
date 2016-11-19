@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -57,7 +58,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * create, update, remove and destroy operations.It also checks that peer nodes also get the same
  * EventID.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

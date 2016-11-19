@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,7 +43,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
 

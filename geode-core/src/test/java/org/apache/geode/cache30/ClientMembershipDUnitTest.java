@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import com.jayway.awaitility.Awaitility;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -72,7 +73,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 4.2.1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   protected static final boolean CLIENT = true;

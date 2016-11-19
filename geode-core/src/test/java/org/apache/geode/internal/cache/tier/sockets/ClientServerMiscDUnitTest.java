@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,7 +63,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests client server corner cases between Region and Pool
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
 
   protected static PoolImpl pool = null;

@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.Assert.*;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -57,7 +58,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * failing to S2.During fail over duration do some puts on S1. The client on failing to S2 may
  * receive duplicate events but should not miss any events.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class FailoverDUnitTest extends JUnit4DistributedTestCase {
 
   protected static Cache cache = null;

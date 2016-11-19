@@ -16,8 +16,12 @@ package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.jayway.awaitility.Awaitility;
 
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -78,7 +82,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
       addEntries(1 /* oplogNumber */, 50 /* byte array size */);
 
       ((LocalRegion) region).getDiskStore().forceCompaction();
-      waitForCompactor(3000/* wait for forceRolling to finish */);
+      Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> FLAG == true);
       logWriter.info("testMultipleRolling after waitForCompactor");
       // the compactor copied two tombstone and 1 entry to oplog #2
       // The total oplog size will become 429, that why we need to
@@ -135,7 +139,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
     }
 
     // let the main thread sleep so that rolling gets over
-    waitForCompactor(5000);
+    Awaitility.waitAtMost(25, TimeUnit.SECONDS).until(() -> FLAG == true);
 
     assertTrue("Number of Oplogs to be rolled is not null : this is unexpected",
         diskRegion.getOplogToBeCompacted() == null);
@@ -146,22 +150,6 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
 
     closeDown();
     deleteFiles();
-  }
-
-  private void waitForCompactor(long maxWaitingTime) {
-    long maxWaitTime = maxWaitingTime;
-    long start = System.currentTimeMillis();
-    while (!FLAG) { // wait until
-      // condition is met
-      assertTrue("Waited over " + maxWaitTime + "entry to get refreshed",
-          (System.currentTimeMillis() - start) < maxWaitTime);
-      try {
-        Thread.sleep(1);
-
-      } catch (InterruptedException ie) {
-        fail("Interrupted while waiting " + ie);
-      }
-    }
   }
 
   private void addEntries(int opLogNum, int valueSize) {

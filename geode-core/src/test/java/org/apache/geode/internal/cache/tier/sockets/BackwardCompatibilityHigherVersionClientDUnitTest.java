@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +47,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Test to verify that server responds to a higher versioned client.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4DistributedTestCase {
 
   /** the cache */

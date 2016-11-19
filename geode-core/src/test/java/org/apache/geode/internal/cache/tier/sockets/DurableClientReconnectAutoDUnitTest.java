@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,7 +32,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.7
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DurableClientReconnectAutoDUnitTest extends DurableClientReconnectDUnitTest {
 
   @BeforeClass

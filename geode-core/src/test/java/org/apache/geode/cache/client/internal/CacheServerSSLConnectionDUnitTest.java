@@ -38,6 +38,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 import org.junit.Test;
@@ -47,7 +48,7 @@ import org.junit.experimental.categories.Category;
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for
  * details
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String TRUSTED_STORE = "trusted.keystore";

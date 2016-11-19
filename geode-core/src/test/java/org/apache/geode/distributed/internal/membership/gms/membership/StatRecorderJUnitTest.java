@@ -23,6 +23,7 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.membership.gms.messenger.StatRecorder;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.jgroups.Event;
 import org.jgroups.Message;
@@ -47,7 +48,7 @@ import static org.mockito.Mockito.*;
 /**
  * This class tests the GMS StatRecorder class, which records JGroups messaging statistics
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class StatRecorderJUnitTest {
 
   private Protocol mockDownProtocol;

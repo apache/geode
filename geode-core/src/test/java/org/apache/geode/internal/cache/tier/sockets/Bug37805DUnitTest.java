@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * The test is written to verify that the rootRegion() in GemfireCache.java doesn't return any
  * metaRegions or HA Regions.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug37805DUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;

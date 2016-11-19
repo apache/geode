@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,7 +59,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests client server FORCE_INVALIDATE
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   private static final Logger logger = LogService.getLogger();

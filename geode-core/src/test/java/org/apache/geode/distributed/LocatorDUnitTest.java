@@ -73,7 +73,7 @@ import org.apache.geode.util.test.TestUtil;
  * 
  * @since GemFire 4.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile InternalDistributedSystem system = null;

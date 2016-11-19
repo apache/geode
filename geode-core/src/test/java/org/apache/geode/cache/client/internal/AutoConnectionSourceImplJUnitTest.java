@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -68,7 +69,7 @@ import com.jayway.awaitility.Awaitility;
  *
  */
 @SuppressWarnings("deprecation")
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class AutoConnectionSourceImplJUnitTest {
 
   private Cache cache;

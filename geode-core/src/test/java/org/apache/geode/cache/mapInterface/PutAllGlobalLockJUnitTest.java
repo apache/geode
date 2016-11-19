@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,7 +37,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, DLockTest.class})
 public class PutAllGlobalLockJUnitTest { // TODO: reformat
 
   Region testRegion = null;
@@ -46,36 +47,28 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
 
   @Before
   public void setUp() throws Exception {
-    try {
-      Properties properties = new Properties();
-      properties.setProperty(MCAST_PORT, "0");
-      properties.setProperty(LOCATORS, "");
-      DistributedSystem distributedSystem = DistributedSystem.connect(properties);
-      Cache cache = CacheFactory.create(distributedSystem);
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.GLOBAL);
-      factory.setCacheListener(new Listener());
-      RegionAttributes regionAttributes = factory.create();
-      testRegion = cache.createRegion("TestRegion", regionAttributes);
-    } catch (Exception e) {
-      throw new AssertionError("test failed to create a distributed system/cache", e);
-    }
+    Properties properties = new Properties();
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
+    DistributedSystem distributedSystem = DistributedSystem.connect(properties);
+    Cache cache = CacheFactory.create(distributedSystem);
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.GLOBAL);
+    factory.setCacheListener(new Listener());
+    RegionAttributes regionAttributes = factory.create();
+    testRegion = cache.createRegion("TestRegion", regionAttributes);
   }
 
 
   @Test
-  public void testPutAllGlobalLock() {
+  public void testPutAllGlobalLock() throws Exception {
     TreeMap trialMap = new TreeMap();
     for (long i = 0; i < 1000; i++) {
       trialMap.put(new Long(i), new Long(i));
     }
-    try {
-      testRegion.putAll(trialMap);
-      ThreadUtils.join(this.thread, 30 * 1000);
-      assertTrue(this.testOK);
-    } catch (Exception e) {
-      throw new AssertionError("Test has failed due to ", e);
-    }
+    testRegion.putAll(trialMap);
+    ThreadUtils.join(this.thread, 30 * 1000);
+    assertTrue(this.testOK);
   }
 
   protected class Listener extends CacheListenerAdapter {

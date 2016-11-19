@@ -14,24 +14,14 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 /**
  * Tests onServers using multiple servers from a single client.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class FunctionServiceClientMultipleOnServerDUnitTest
     extends FunctionServiceClientOnServerBase {
 

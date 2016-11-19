@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -57,7 +58,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
 
   private static VM server = null;

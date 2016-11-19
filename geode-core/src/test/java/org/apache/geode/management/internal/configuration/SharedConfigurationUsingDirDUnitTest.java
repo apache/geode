@@ -163,6 +163,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1989: need to increase await timeouts in these tests
   @Test
   public void updateClusterConfigDirWithTwoLocatorsAndRollingServerRestart() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);

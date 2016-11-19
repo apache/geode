@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -56,7 +57,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * tombstones are treated in a similar manner. The ticket complains that a client that does a get(K)
  * does not end up with the entry in its cache if K is invalid on the server.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTestCase {
 
   @Override

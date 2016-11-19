@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -53,7 +54,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * expiration period. 5. Checks size of the regionqueue. Size of the regionqueue should be equal to
  * 0.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

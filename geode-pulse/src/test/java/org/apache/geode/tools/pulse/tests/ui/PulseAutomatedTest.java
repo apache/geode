@@ -27,24 +27,48 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import org.apache.geode.tools.pulse.tests.DataBrowserResultLoader;
+import org.apache.geode.tools.pulse.tests.rules.ServerRule;
+import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import org.apache.geode.test.junit.categories.UITest;
 import org.apache.geode.tools.pulse.tests.PulseTestData;
 import org.apache.geode.tools.pulse.tests.PulseTestLocators;
+import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.*;
 
 @Category(UITest.class)
-public class PulseAutomatedTest extends PulseAbstractTest {
+public class PulseAutomatedTest extends PulseBase {
 
-  @BeforeClass
-  public static void beforeClassSetup() throws Exception {
-    setUpServer("pulseUser", "12345", "pulse-auth.json");
+  @ClassRule
+  public static ServerRule serverRule = new ServerRule("pulse-auth.json");
+
+  @Rule
+  public WebDriverRule webDriverRule =
+      new WebDriverRule("pulseUser", "12345", serverRule.getPulseURL());
+
+  @Override
+  public WebDriver getWebDriver() {
+    return webDriverRule.getDriver();
+  }
+
+  @Override
+  public String getPulseURL() {
+    return serverRule.getPulseURL();
+  }
+
+  @Before
+  public void setupPulseTestUtils() {
+    PulseTestUtils.setDriverProvider(() -> webDriverRule.getDriver());
   }
 
   @Test
@@ -203,7 +227,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
       verifyTextPresrntByXpath(PulseTestLocators.TopologyView.soketsTTXpath,
           getPropertyValue("member.M" + i + ".totalFileDescriptorOpen"));
       mouseReleaseById("h" + i);
-      driver.navigate().refresh();
+      webDriverRule.getDriver().navigate().refresh();
     }
   }
 
@@ -738,8 +762,8 @@ public class PulseAutomatedTest extends PulseAbstractTest {
     // type each region name in region filter and verify respective region(s) are displayed in
     // region list
     for (String region : regionNames) {
-      findElementById(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId).clear();
-      findElementById(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId).sendKeys(region);
+      waitForElementWithId(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId).clear();
+      waitForElementWithId(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId).sendKeys(region);
 
       List<WebElement> regionLst1 = getRegionsFromDataBrowser();
 
@@ -754,11 +778,11 @@ public class PulseAutomatedTest extends PulseAbstractTest {
   public void testDataBrowserFilterPartialRegionName() {
     // navigate to Data browser page
     loadDataBrowserpage();
-    findElementById(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId).clear();
+    waitForElementWithId(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId).clear();
 
     // type partial region name in region filter and verify that all the regions that contains that
     // text displays
-    findElementById(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId)
+    waitForElementWithId(PulseTestLocators.DataBrowser.rgnFilterTxtBoxId)
         .sendKeys(PulseTestData.DataBrowser.partialRgnName);
     List<WebElement> regionLst = getRegionsFromDataBrowser();
 
@@ -791,8 +815,8 @@ public class PulseAutomatedTest extends PulseAbstractTest {
     // navigate to Data browser page
     loadDataBrowserpage();
 
-    List<WebElement> numOfReg =
-        driver.findElements(By.xpath(PulseTestLocators.DataBrowser.divDataRegions));
+    List<WebElement> numOfReg = webDriverRule.getDriver()
+        .findElements(By.xpath(PulseTestLocators.DataBrowser.divDataRegions));
 
     for (int i = 1; i <= numOfReg.size(); i++) {
       if (getTextUsingId("treeDemo_" + i + "_span").equals(PulseTestData.DataBrowser.regName)) {
@@ -802,7 +826,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
     }
 
     sendKeysUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId,
-        PulseAbstractTest.QUERY_TYPE_ONE);
+        DataBrowserResultLoader.QUERY_TYPE_ONE);
     clickElementUsingId(PulseTestLocators.DataBrowser.btnExecuteQueryId);
 
     // Get required datetime format and extract date and hours from date time.
@@ -814,7 +838,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 
     clickElementUsingId(PulseTestLocators.DataBrowser.historyIcon);
     List<WebElement> historyLst =
-        driver.findElements(By.xpath(PulseTestLocators.DataBrowser.historyLst));
+        webDriverRule.getDriver().findElements(By.xpath(PulseTestLocators.DataBrowser.historyLst));
     String queryText = findElementByXpath(PulseTestLocators.DataBrowser.historyLst)
         .findElement(By.cssSelector(PulseTestLocators.DataBrowser.queryText)).getText();
     String historyDateTime = findElementByXpath(PulseTestLocators.DataBrowser.historyLst)
@@ -822,8 +846,10 @@ public class PulseAutomatedTest extends PulseAbstractTest {
     System.out.println("Query Text from History Table: " + queryText);
     System.out.println("Query Time from History Table: " + historyDateTime);
     // verify the query text, query datetime in history panel
-    assertTrue(PulseAbstractTest.QUERY_TYPE_ONE.equals(queryText));
+    assertTrue(DataBrowserResultLoader.QUERY_TYPE_ONE.equals(queryText));
     assertTrue(historyDateTime.contains(queryTime[0]));
 
   }
+
+
 }

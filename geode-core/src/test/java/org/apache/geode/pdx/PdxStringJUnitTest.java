@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +35,7 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class PdxStringJUnitTest {
 
   private GemFireCacheImpl c;

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -71,7 +72,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * @since GemFire 5.7
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   private final static int CREATE = 0;

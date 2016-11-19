@@ -51,6 +51,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
@@ -75,7 +76,7 @@ import org.junit.experimental.categories.Category;
  * (Here K1, K3) // Step 12: Modify values on the server for all the Keys // Step 13: Check the
  * values for the ones not unregistered and the Unregistered Keys' Values should be null
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;

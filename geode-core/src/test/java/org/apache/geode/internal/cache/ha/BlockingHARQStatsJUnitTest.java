@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.ha;
 
 import java.io.IOException;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
@@ -27,7 +28,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * 
  * 
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class BlockingHARQStatsJUnitTest extends HARegionQueueStatsJUnitTest {
 
   /**

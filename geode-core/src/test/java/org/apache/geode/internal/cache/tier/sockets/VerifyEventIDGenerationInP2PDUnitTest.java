@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,7 +45,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * To verify that new events get generated on the node by get operation for key that is not present
  * in the node's region. Currently test is commented because of the bug.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

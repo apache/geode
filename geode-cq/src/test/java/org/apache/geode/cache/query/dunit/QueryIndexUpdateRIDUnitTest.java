@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -65,7 +66,7 @@ import org.apache.geode.cache30.CertifiableTestCacheListener;
  * 
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
   /** The port on which the bridge server was started in this VM */

@@ -34,6 +34,7 @@ import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.*;
 import org.junit.experimental.categories.Category;
 
@@ -55,7 +56,7 @@ import static org.junit.Assert.*;
  * @see InternalDistributedSystemJUnitTest
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
   public void postSetUp() throws Exception {

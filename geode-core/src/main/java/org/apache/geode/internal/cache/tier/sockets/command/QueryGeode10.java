@@ -1,5 +1,4 @@
 /*
- *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -12,31 +11,29 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.tools.pulse.tests;
+/**
+ * 
+ */
+package org.apache.geode.internal.cache.tier.sockets.command;
 
-import javax.management.NotificationBroadcasterSupport;
+import java.util.List;
 
-public class GemFireXDAggregateTable extends NotificationBroadcasterSupport
-    implements GemFireXDAggregateTableMBean {
-  private String name = null;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.internal.cache.tier.Command;
 
-  public GemFireXDAggregateTable(String name) {
-    this.name = name;
+
+public class QueryGeode10 extends Query {
+
+  private final static QueryGeode10 singleton = new QueryGeode10();
+
+  public static Command getCommand() {
+    return singleton;
   }
 
-  private String getKey(String propName) {
-    return "table." + name + "." + propName;
-  }
-
-  @Override
-  public long getEntrySize() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("EntrySize")));
-  }
-
-  @Override
-  public int getNumberOfRows() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("NumberOfRows")));
+  protected CollectionType getCollectionType(SelectResults selectResults) {
+    return selectResults.getCollectionType();
   }
 }

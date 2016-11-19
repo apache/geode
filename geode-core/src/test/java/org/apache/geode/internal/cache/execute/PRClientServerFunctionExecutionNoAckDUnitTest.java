@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.test.dunit.LogWriterUtils;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServerTestBase {
   /**
    * 

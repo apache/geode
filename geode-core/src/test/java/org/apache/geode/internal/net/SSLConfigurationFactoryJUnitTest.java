@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,7 +31,7 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class SSLConfigurationFactoryJUnitTest {
 
   @After

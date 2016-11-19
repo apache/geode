@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -61,7 +62,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 /**
  * Tests propagation of destroy entry operation across the vms
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME =

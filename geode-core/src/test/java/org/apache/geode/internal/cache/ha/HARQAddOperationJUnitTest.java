@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -48,7 +49,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Test to verify Add operation to HARegion Queue with and without conflation.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class HARQAddOperationJUnitTest {
   private static final Logger logger = LogService.getLogger();
 

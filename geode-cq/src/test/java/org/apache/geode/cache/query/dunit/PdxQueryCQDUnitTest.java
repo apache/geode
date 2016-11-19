@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -53,7 +55,7 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SerializationTest.class, ClientSubscriptionTest.class})
 public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
   public PdxQueryCQDUnitTest() {

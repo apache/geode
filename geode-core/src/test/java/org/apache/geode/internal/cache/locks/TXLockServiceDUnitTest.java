@@ -41,6 +41,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,7 +58,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * This class tests distributed ownership via the DistributedLockService api.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, DLockTest.class})
 public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   private static DistributedSystem system;

@@ -16,6 +16,7 @@ package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -26,7 +27,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for DistributedSystem class.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class DistributedSystemJUnitTest {
 
   @Rule

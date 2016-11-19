@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -51,7 +52,7 @@ import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.*;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class LocatorJUnitTest {

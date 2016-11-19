@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -59,7 +60,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRClientServerTestBase {
 
   private static Locator locator = null;

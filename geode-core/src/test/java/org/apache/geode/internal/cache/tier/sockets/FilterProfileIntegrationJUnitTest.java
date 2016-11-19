@@ -14,12 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.text.ParseException;
-import java.util.concurrent.CountDownLatch;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -29,9 +23,15 @@ import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+import java.text.ParseException;
+import java.util.concurrent.CountDownLatch;
+
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class FilterProfileIntegrationJUnitTest {
 
   private static String regionName = "test";

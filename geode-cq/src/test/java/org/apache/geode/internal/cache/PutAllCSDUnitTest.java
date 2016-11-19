@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -98,7 +100,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  * 
  * @since GemFire 5.0.23
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class, ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class PutAllCSDUnitTest extends ClientServerTestCase {
 

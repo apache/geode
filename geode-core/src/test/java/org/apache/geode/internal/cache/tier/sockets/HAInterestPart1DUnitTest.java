@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HAInterestPart1DUnitTest extends HAInterestTestCase {
 
   public HAInterestPart1DUnitTest() {

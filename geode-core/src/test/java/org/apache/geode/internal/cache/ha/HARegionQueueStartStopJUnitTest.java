@@ -24,6 +24,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,7 +39,7 @@ import static org.junit.Assert.fail;
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class HARegionQueueStartStopJUnitTest {
 
   /**

@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,7 +33,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * methods written in <code>EventID</code> class for the above optimization. For distributed testing
  * for the same , please refer {@link EventIdOptimizationDUnitTest}.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class EventIdOptimizationJUnitTest {
 
   /** The long id (threadId or sequenceId) having value equivalent to byte */

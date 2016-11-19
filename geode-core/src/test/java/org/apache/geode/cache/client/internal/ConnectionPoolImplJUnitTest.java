@@ -25,6 +25,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -42,7 +43,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ConnectionPoolImplJUnitTest {
 
   private static final String expectedRedundantErrorMsg =

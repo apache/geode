@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * Extracted from {@code JSSESocketJUnitTest}.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientSocketFactoryIntegrationTest {
 
   private static final String EXCEPTION_MESSAGE =

@@ -17,6 +17,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -27,6 +30,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.QueryInvalidException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 public class Query651 extends BaseCommandQuery {
@@ -37,7 +41,7 @@ public class Query651 extends BaseCommandQuery {
     return singleton;
   }
 
-  private Query651() {}
+  protected Query651() {}
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
@@ -130,5 +134,10 @@ public class Query651 extends BaseCommandQuery {
       throw new QueryInvalidException(e.getMessage() + queryString);
     }
   }
+
+  protected CollectionType getCollectionType(SelectResults selectResults) {
+    return new CollectionTypeImpl(List.class, selectResults.getCollectionType().getElementType());
+  }
+
 
 }

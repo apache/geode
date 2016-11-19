@@ -845,6 +845,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     setNextNeighbor(newView, null);
   }
 
+  /**
+   * this method is primarily for tests. The current view should be pulled from JoinLeave or the
+   * MembershipManager (which includes surprise members)
+   */
+  public synchronized NetView getView() {
+    return currentView;
+  }
+
   /***
    * This method sets next neighbour which it needs to watch in current view.
    *

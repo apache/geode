@@ -398,13 +398,23 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       eventProcessor.removeCacheListener();
     }
 
+    logger.info(LocalizedMessage.create(
+        LocalizedStrings.SerialGatewaySenderImpl_0__BECOMING_PRIMARY_GATEWAYSENDER, this.sender));
+    notifyAndBecomePrimary();
+    new UpdateAttributesProcessor(this.sender).distribute(false);
+  }
+
+  public void notifyAndBecomePrimary() {
     synchronized (this.primaryLock) {
-      this.isPrimary = true;
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.SerialGatewaySenderImpl_0__BECOMING_PRIMARY_GATEWAYSENDER, this.sender));
+      setIsPrimary(true);
+      notifyPrimaryLock();
+    }
+  }
+
+  public void notifyPrimaryLock() {
+    synchronized (this.primaryLock) {
       this.primaryLock.notifyAll();
     }
-    new UpdateAttributesProcessor(this.sender).distribute(false);
   }
 
   public void makeSecondary() {
@@ -470,11 +480,14 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       return;
     }
     synchronized (this.primaryLock) {
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.GatewayImpl_0__WAITING_TO_BECOME_PRIMARY_GATEWAY, this.sender.getId()));
       while (!isPrimary()) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.GatewayImpl_0__WAITING_TO_BECOME_PRIMARY_GATEWAY,
-            this.sender.getId()));
-        this.primaryLock.wait();
+        this.primaryLock.wait(1000);
+        if (sender.getEventProcessor() != null && sender.getEventProcessor().isStopped()) {
+          logger.info("The event processor is stopped, not to wait for being primary any more.");
+          return;
+        }
       }
     }
   }

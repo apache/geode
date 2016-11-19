@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -64,7 +65,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * This class tests the functionality of the {@link DistributionManager} class.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
   private static final Logger logger = LogService.getLogger();
 

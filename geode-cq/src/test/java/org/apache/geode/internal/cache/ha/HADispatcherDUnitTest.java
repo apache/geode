@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -60,7 +61,7 @@ import static org.apache.geode.test.dunit.Wait.waitForCriterion;
  * QRM is envoked 7. Again the entry in the regionque of client2 on server2.It should not be
  * present. 8. close client1 and client2 9. close server1 and server2
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = HADispatcherDUnitTest.class.getSimpleName() + "_region";

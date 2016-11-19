@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +31,7 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class) // Fails on Windows -- see GEODE-373
+@Category({UnitTest.class, MembershipTest.class}) // Fails on Windows -- see GEODE-373
 public class ProductUseLogJUnitTest {
 
   private long oldMax;

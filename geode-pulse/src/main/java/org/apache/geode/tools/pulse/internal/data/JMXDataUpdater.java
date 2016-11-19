@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
+import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -65,8 +66,7 @@ import java.util.Set;
 
 /**
  * Class JMXDataUpdater Class used for creating JMX connection and getting all the required MBeans
- *
- *
+ * 
  * @since GemFire version 7.0.Beta 2012-09-23
  */
 public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
@@ -261,8 +261,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         connection = JMXConnectorFactory.connect(url, env);
 
         // Register Pulse URL if not already present in the JMX Manager
-        if (registerURL)
+        if (registerURL) {
           registerPulseUrlToManager(connection);
+        }
       }
     } catch (Exception e) {
       if (e instanceof UnknownHostException) {
@@ -567,10 +568,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster System and map them to cluster vo
-   *
+   * 
    * @param mbeanName Cluster System MBean
-   * @throws IOException
-   *
    */
   private void updateClusterSystem(ObjectName mbeanName) throws IOException {
     try {
@@ -787,17 +786,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used to get attribute values of Gateway Receiver and map them to GatewayReceiver inner
    * class object
-   *
-   * @param mbeanName
+   * 
    * @return GatewayReceiver object
-   * @throws InstanceNotFoundException
-   * @throws IntrospectionException
-   * @throws ReflectionException
-   * @throws IOException
-   * @throws AttributeNotFoundException
-   * @throws MBeanException
-   *
-   *
    */
   private Cluster.GatewayReceiver initGatewayReceiver(ObjectName mbeanName)
       throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException,
@@ -831,15 +821,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used to get attribute values of Gateway Sender and map them to GatewaySender inner
    * class object
-   *
-   * @param mbeanName
-   * @return
-   * @throws InstanceNotFoundException
-   * @throws IntrospectionException
-   * @throws ReflectionException
-   * @throws IOException
-   * @throws AttributeNotFoundException
-   * @throws MBeanException
    */
   private Cluster.GatewaySender initGatewaySender(ObjectName mbeanName)
       throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException,
@@ -943,15 +924,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used to get attribute values of Async Event Queue and map them to Async Event Queue
    * inner class object
-   *
-   * @param mbeanName
-   * @return
-   * @throws InstanceNotFoundException
-   * @throws IntrospectionException
-   * @throws ReflectionException
-   * @throws IOException
-   * @throws AttributeNotFoundException
-   * @throws MBeanException
    */
   private Cluster.AsyncEventQueue initAsyncEventQueue(ObjectName mbeanName)
       throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException,
@@ -1168,10 +1140,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * Add member specific region information on the region
-   *
+   * 
    * @param regionObjectName: used to construct the jmx objectname. For region name that has special
    *        characters in, it will have double quotes around it.
-   * @param region
    */
   private void updateRegionOnMembers(String regionObjectName, String regionFullPath,
       Cluster.Region region) throws IOException {
@@ -1350,7 +1321,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster Region and map them to cluster region vo
-   *
+   * 
    * @param mbeanName Cluster Region MBean
    */
   private void updateClusterRegion(ObjectName mbeanName) throws IOException {
@@ -1767,7 +1738,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster Member and map them to cluster member vo
-   *
+   * 
    * @param mbeanName Cluster Member MBean
    */
   private void updateClusterMember(ObjectName mbeanName) throws IOException {
@@ -1950,25 +1921,27 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to handle Double data type if the value for mbean for an attribute is null then
    * return 0.0 as default value else return the attribute value
    */
-  private Double getDoubleAttribute(Object object, String name) {
+  Double getDoubleAttribute(Object object, String name) {
     if (object == null) {
       return Double.valueOf(0);
     }
 
     try {
-      if (!(object.getClass().equals(Double.class))) {
+      if (object instanceof Float) {
+        return BigDecimal.valueOf((Float) object).doubleValue();
+      } else if (object instanceof Double) {
+        return (Double) object;
+      } else {
         if (LOGGER.infoEnabled()) {
           LOGGER.info("************************Unexpected type for attribute: " + name
               + " Expected type: " + Double.class.getName() + " Received type: "
               + object.getClass().getName() + "************************");
         }
         return Double.valueOf(0);
-      } else {
-        return (Double) object;
       }
     } catch (Exception e) {
       if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception occurred: " + e.getMessage());
+        LOGGER.info("Exception occurred: ", e);
       }
       return Double.valueOf(0);
     }
@@ -1976,7 +1949,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Member Region and map them to Member vo
-   *
+   * 
    * @param mbeanName Member Region MBean
    */
   private void updateMemberRegion(ObjectName mbeanName) throws IOException {

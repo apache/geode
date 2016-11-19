@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,7 +47,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class OpExecutorImplJUnitTest {
 
   DummyManager manager;

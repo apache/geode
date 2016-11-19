@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,7 +60,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * put on region1 in server1 - mirrored region1 is created on server2 - data will come to region1 on
  * server2 via GII - data should be sent to client2
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4DistributedTestCase {
 
   /** Server1 VM **/

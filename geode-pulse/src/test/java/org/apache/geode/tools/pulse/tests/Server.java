@@ -123,12 +123,8 @@ public class Server {
     return jmxSerURL;
   }
 
-  public void stop() {
-    try {
-      cs.stop();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public void stop() throws IOException {
+    cs.stop();
   }
 
   private synchronized void loadMBeans() {
@@ -194,19 +190,10 @@ public class Server {
     }
   }
 
-  private void addMemberMBean(String m)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException,
-      MalformedObjectNameException, NullPointerException {
+  private void addMemberMBean(String m) throws InstanceAlreadyExistsException,
+      MBeanRegistrationException, NotCompliantMBeanException, MalformedObjectNameException {
     Member m1 = new Member(m);
     mbs.registerMBean(m1, new ObjectName(Member.OBJECT_NAME + ",member=" + m));
-  }
-
-  // For GemFire XD
-  private void addGemFireXDMemberMBean(String xdm)
-      throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException,
-      MalformedObjectNameException, NullPointerException {
-    GemFireXDMember xdmo = new GemFireXDMember(xdm);
-    mbs.registerMBean(xdmo, new ObjectName(GemFireXDMember.OBJECT_NAME + ",member=" + xdm));
   }
 
   private void addRegionMBean(String reg)
@@ -236,8 +223,7 @@ public class Server {
     return propVal.split(" ");
   }
 
-  public static Server createServer(int port, String properties, String jsonAuthFile)
-      throws MalformedObjectNameException {
+  public static Server createServer(int port, String properties, String jsonAuthFile) {
     Server s = null;
     try {
       s = new Server(port, properties, jsonAuthFile);

@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.OffHeapTestUtil;
@@ -30,7 +31,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * 
  * @since Geode 1.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class ForceInvalidateOffHeapEvictionDUnitTest extends ForceInvalidateEvictionDUnitTest {
 
   public ForceInvalidateOffHeapEvictionDUnitTest() {

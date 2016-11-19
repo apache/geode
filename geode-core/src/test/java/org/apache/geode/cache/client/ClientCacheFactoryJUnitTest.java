@@ -31,6 +31,7 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.jgroups.util.UUID;
 import org.junit.After;
@@ -60,7 +61,7 @@ import static org.junit.runners.MethodSorters.NAME_ASCENDING;
  * @since GemFire 6.5
  */
 @FixMethodOrder(NAME_ASCENDING)
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientCacheFactoryJUnitTest {
 
   private ClientCache cc;

@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.net.URL;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -33,7 +34,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for DistributedSystem class. These tests require file system I/O.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class DistributedSystemIntegrationJUnitTest {
 
   @Rule

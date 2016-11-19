@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class TcpServerJUnitTest {
 
   private/* GemStoneAddition */ InetAddress localhost;

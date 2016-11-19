@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,7 +34,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
   private transient DistributionAdvisor.Profile profiles[];

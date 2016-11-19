@@ -60,6 +60,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.SerializationException;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
@@ -86,7 +87,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class JGroupsMessengerJUnitTest {
 
   private Services services;

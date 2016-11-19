@@ -81,6 +81,8 @@ import org.apache.geode.internal.cache.tier.sockets.command.PutAll80;
 import org.apache.geode.internal.cache.tier.sockets.command.PutAllWithCallback;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.cache.tier.sockets.command.Query651;
+import org.apache.geode.internal.cache.tier.sockets.command.QueryGeode10;
+import org.apache.geode.internal.cache.tier.sockets.command.QueryWithParametersGeode10;
 import org.apache.geode.internal.cache.tier.sockets.command.RegisterDataSerializers;
 import org.apache.geode.internal.cache.tier.sockets.command.RegisterInstantiators;
 import org.apache.geode.internal.cache.tier.sockets.command.RegisterInterest;
@@ -325,6 +327,9 @@ public class CommandInitializer {
       Map<Integer, Command> gfe90Commands = new HashMap<Integer, Command>();
       gfe90Commands.putAll(ALL_COMMANDS.get(Version.GFE_82));
       ALL_COMMANDS.put(Version.GFE_90, gfe90Commands);
+      gfe90Commands.put(MessageType.QUERY_WITH_PARAMETERS, QueryWithParametersGeode10.getCommand());
+      gfe90Commands.put(MessageType.QUERY, QueryGeode10.getCommand());
+
     }
   }
 

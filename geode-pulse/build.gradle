@@ -134,6 +134,7 @@ task uiTest(type:Test) {
     excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
   }
 
+  forkEvery(1)
   doFirst {
     TestPropertiesWriter.writeTestProperties(buildDir, name)
   }

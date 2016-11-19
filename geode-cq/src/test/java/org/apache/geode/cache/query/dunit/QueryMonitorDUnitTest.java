@@ -59,6 +59,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -74,7 +75,7 @@ import static org.junit.Assert.*;
  * 
  * @since GemFire 6.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
   private final String exampleRegionName = "exampleRegion";

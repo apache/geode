@@ -14,13 +14,18 @@
  */
 package org.apache.geode;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -42,6 +47,16 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
 
   static private final List<String> allGeodeThrowableClasses =
       Arrays.asList(new String[] {"org.apache.geode.cache.execute.EmptyRegionFunctionException",});
+
+  static private final List<String> newArrayClassNames = Arrays.asList(new String[] {
+      "[Lorg.apache.geode.class1", "[[Lorg.apache.geode.class1", "[[[Lorg.apache.geode.class1"});
+
+  static private final List<String> oldArrayClassNames =
+      Arrays.asList(new String[] {"[Lcom.gemstone.gemfire.class1", "[[Lcom.gemstone.gemfire.class1",
+          "[[[Lcom.gemstone.gemfire.class1"});
+
+  static private final List<String> allNonconformingArrayClassNames = Arrays.asList(
+      new String[] {"[Lmypackage.org.apache.geode.class2", "[[Lmypackage.org.apache.geode.class2"});
 
   private Cache myCache;
 
@@ -67,7 +82,7 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
 
     for (String geodeClassName : allGeodeThrowableClasses) {
       try {
-        convertThrowableForOldClient(geodeClassName);
+        convertThrowable(geodeClassName);
       } catch (Exception e) {
         System.out.println("-- failed");
         Exception failure =
@@ -82,7 +97,35 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private void convertThrowableForOldClient(String geodeClassName) throws Exception {
+  @Test
+  public void testConversionOfArrayTypes() throws Exception {
+    OldClientSupportService oldClientSupport = OldClientSupportProvider.getService(myCache);
+
+    Version oldClientVersion = Version.GFE_82;
+    VersionedDataOutputStream dout = new VersionedDataOutputStream(
+        new HeapDataOutputStream(10, oldClientVersion), oldClientVersion);
+
+    for (String geodeClassName : newArrayClassNames) {
+      String newName = oldClientSupport.processOutgoingClassName(geodeClassName, dout);
+      Assert.assertNotEquals(geodeClassName, newName);
+    }
+
+    for (String className : allNonconformingArrayClassNames) {
+      String newName = oldClientSupport.processOutgoingClassName(className, dout);
+      Assert.assertEquals(className, newName);
+    }
+
+    VersionedDataInputStream din = new VersionedDataInputStream(
+        new DataInputStream(new ByteArrayInputStream(new byte[10])), oldClientVersion);
+
+    for (String oldClassName : oldArrayClassNames) {
+      String newName = oldClientSupport.processIncomingClassName(oldClassName, din);
+      Assert.assertNotEquals(oldClassName, newName);
+    }
+
+  }
+
+  private void convertThrowable(String geodeClassName) throws Exception {
     Version oldClientVersion = Version.GFE_82;
     final String comGemstoneGemFire = "com.gemstone.gemfire";
     final int comGemstoneGemFireLength = comGemstoneGemFire.length();
