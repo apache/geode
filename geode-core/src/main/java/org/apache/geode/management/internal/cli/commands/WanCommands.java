@@ -44,11 +44,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction;
-import org.apache.geode.management.internal.cli.functions.GatewayReceiverFunctionArgs;
-import org.apache.geode.management.internal.cli.functions.GatewaySenderCreateFunction;
-import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionArgs;
+import org.apache.geode.management.internal.cli.functions.*;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -205,50 +201,38 @@ public class WanCommands implements CommandMarker {
           help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
               valueSeparator = ",") String onMember,
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
+          optionContext = ConverterHint.GATEWAY_SENDER_ID,
           help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id) {
     Result result = null;
-    // XmlEntity xmlEntity = null;
-    // try {
-    // GatewaySenderFunctionArgs gatewaySenderFunctionArgs = new GatewaySenderFunctionArgs(id,
-    // remoteDistributedSystemId, parallel, manualStart, socketBufferSize, socketReadTimeout,
-    // enableBatchConflation, batchSize, batchTimeInterval, enablePersistence, diskStoreName,
-    // diskSynchronous, maxQueueMemory, alertThreshold, dispatcherThreads, orderPolicy,
-    // gatewayEventFilters, gatewayTransportFilter);
-    //
-    // Set<DistributedMember> membersToCreateGatewaySenderOn =
-    // CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
-    //
-    // ResultCollector<?, ?> resultCollector =
-    // CliUtil.executeFunction(GatewaySenderCreateFunction.INSTANCE, gatewaySenderFunctionArgs,
-    // membersToCreateGatewaySenderOn);
-    // @SuppressWarnings("unchecked")
-    // List<CliFunctionResult> gatewaySenderCreateResults =
-    // (List<CliFunctionResult>) resultCollector.getResult();
-    //
-    // TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    // final String errorPrefix = "ERROR: ";
-    // for (CliFunctionResult gatewaySenderCreateResult : gatewaySenderCreateResults) {
-    // boolean success = gatewaySenderCreateResult.isSuccessful();
-    // tabularResultData.accumulate("Member", gatewaySenderCreateResult.getMemberIdOrName());
-    // tabularResultData.accumulate("Status",
-    // (success ? "" : errorPrefix) + gatewaySenderCreateResult.getMessage());
-    //
-    // if (success && xmlEntity == null) {
-    // xmlEntity = gatewaySenderCreateResult.getXmlEntity();
-    // }
-    // }
-    // result = ResultBuilder.buildResult(tabularResultData);
-    // } catch (IllegalArgumentException e) {
-    // LogWrapper.getInstance().info(e.getMessage());
-    // result = ResultBuilder.createUserErrorResult(e.getMessage());
-    // } catch (CommandResultException crex) {
-    // result = handleCommandResultException(crex);
-    // }
-    //
-    // if (xmlEntity != null) {
-    // result
-    // .setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, onGroups));
-    // }
+    try {
+      GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
+          new GatewaySenderDestroyFunctionArgs(id);
+
+      Set<DistributedMember> membersToCreateGatewaySenderOn =
+          CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
+
+      ResultCollector<?, ?> resultCollector =
+          CliUtil.executeFunction(GatewaySenderDestroyFunction.INSTANCE,
+              gatewaySenderDestroyFunctionArgs, membersToCreateGatewaySenderOn);
+      @SuppressWarnings("unchecked")
+      List<CliFunctionResult> gatewaySenderDestroyResults =
+          (List<CliFunctionResult>) resultCollector.getResult();
+
+      TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
+      final String errorPrefix = "ERROR: ";
+      for (CliFunctionResult gatewaySenderDestroyResult : gatewaySenderDestroyResults) {
+        boolean success = gatewaySenderDestroyResult.isSuccessful();
+        tabularResultData.accumulate("Member", gatewaySenderDestroyResult.getMemberIdOrName());
+        tabularResultData.accumulate("Status",
+            (success ? "" : errorPrefix) + gatewaySenderDestroyResult.getMessage());
+      }
+      result = ResultBuilder.buildResult(tabularResultData);
+    } catch (IllegalArgumentException e) {
+      LogWrapper.getInstance().info(e.getMessage());
+      result = ResultBuilder.createUserErrorResult(e.getMessage());
+    } catch (CommandResultException crex) {
+      result = handleCommandResultException(crex);
+    }
     return result;
   }
 
