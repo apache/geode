@@ -1495,7 +1495,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse)
   // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
   {
-    System.out.println("GEODE_HOME = " + GEODE_HOME);
     try {
       // prompt for password is username is specified in the command
       if (!StringUtils.isBlank(userName)) {
