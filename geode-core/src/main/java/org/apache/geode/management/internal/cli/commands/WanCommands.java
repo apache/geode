@@ -189,6 +189,70 @@ public class WanCommands implements CommandMarker {
     return result;
   }
 
+
+  @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
+      help = CliStrings.DESTROY_GATEWAYSENDER__HELP)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN, writesToSharedConfiguration = true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  public Result destroyGatewaySender(
+      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__GROUP,
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
+              valueSeparator = ",") String[] onGroups,
+      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__MEMBER,
+          optionContext = ConverterHint.MEMBERIDNAME,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
+              valueSeparator = ",") String onMember,
+      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
+          help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id) {
+    Result result = null;
+    // XmlEntity xmlEntity = null;
+    // try {
+    // GatewaySenderFunctionArgs gatewaySenderFunctionArgs = new GatewaySenderFunctionArgs(id,
+    // remoteDistributedSystemId, parallel, manualStart, socketBufferSize, socketReadTimeout,
+    // enableBatchConflation, batchSize, batchTimeInterval, enablePersistence, diskStoreName,
+    // diskSynchronous, maxQueueMemory, alertThreshold, dispatcherThreads, orderPolicy,
+    // gatewayEventFilters, gatewayTransportFilter);
+    //
+    // Set<DistributedMember> membersToCreateGatewaySenderOn =
+    // CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
+    //
+    // ResultCollector<?, ?> resultCollector =
+    // CliUtil.executeFunction(GatewaySenderCreateFunction.INSTANCE, gatewaySenderFunctionArgs,
+    // membersToCreateGatewaySenderOn);
+    // @SuppressWarnings("unchecked")
+    // List<CliFunctionResult> gatewaySenderCreateResults =
+    // (List<CliFunctionResult>) resultCollector.getResult();
+    //
+    // TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
+    // final String errorPrefix = "ERROR: ";
+    // for (CliFunctionResult gatewaySenderCreateResult : gatewaySenderCreateResults) {
+    // boolean success = gatewaySenderCreateResult.isSuccessful();
+    // tabularResultData.accumulate("Member", gatewaySenderCreateResult.getMemberIdOrName());
+    // tabularResultData.accumulate("Status",
+    // (success ? "" : errorPrefix) + gatewaySenderCreateResult.getMessage());
+    //
+    // if (success && xmlEntity == null) {
+    // xmlEntity = gatewaySenderCreateResult.getXmlEntity();
+    // }
+    // }
+    // result = ResultBuilder.buildResult(tabularResultData);
+    // } catch (IllegalArgumentException e) {
+    // LogWrapper.getInstance().info(e.getMessage());
+    // result = ResultBuilder.createUserErrorResult(e.getMessage());
+    // } catch (CommandResultException crex) {
+    // result = handleCommandResultException(crex);
+    // }
+    //
+    // if (xmlEntity != null) {
+    // result
+    // .setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, onGroups));
+    // }
+    return result;
+  }
+
+
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
@@ -1179,7 +1243,7 @@ public class WanCommands implements CommandMarker {
       CliStrings.STOP_GATEWAYSENDER, CliStrings.CREATE_GATEWAYRECEIVER,
       CliStrings.START_GATEWAYRECEIVER, CliStrings.STOP_GATEWAYRECEIVER, CliStrings.LIST_GATEWAY,
       CliStrings.STATUS_GATEWAYSENDER, CliStrings.STATUS_GATEWAYRECEIVER,
-      CliStrings.LOAD_BALANCE_GATEWAYSENDER})
+      CliStrings.LOAD_BALANCE_GATEWAYSENDER, CliStrings.DESTROY_GATEWAYSENDER})
   public boolean isWanCommandsAvailable() {
     boolean isAvailable = true; // always available on server
     if (CliUtil.isGfshVM()) {
