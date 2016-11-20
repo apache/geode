@@ -2241,6 +2241,9 @@ public class CliStrings {
       "Name/Id of the member on which to destroy the Gateway Sender.";
   public static final String DESTROY_GATEWAYSENDER__ID = "id";
   public static final String DESTROY_GATEWAYSENDER__ID__HELP = "Id of the GatewaySender.";
+  public static final String DESTROY_GATEWAYSENDER__MSG__GATEWAYSENDER_0_DESTROYED_ON_1 =
+      "GatewaySender \"{0}\" destroyed on \"{1}\"";
+
 
 
   /* start gfmon command */

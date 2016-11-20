@@ -50,23 +50,7 @@ public class WanCommandDestroyGatewaySenderDUnitTest extends WANCommandTestBase 
 
   @Test
   public void testDestroyGatewaySenderWithDefault() {
-    createGatewaySenderWithDefault();
-
-    String command =
-        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
-    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-    } else {
-      fail("testDestroyGatewaySenderWithDefault failed as did not get CommandResult");
-    }
-  }
-
-  private void createGatewaySenderWithDefault() {
     Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
-
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
@@ -79,6 +63,22 @@ public class WanCommandDestroyGatewaySenderDUnitTest extends WANCommandTestBase 
     vm4.invoke(() -> createCache(punePort));
     vm5.invoke(() -> createCache(punePort));
 
+    createGatewaySenderWithDefault();
+
+    String command =
+        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
+
+    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
+    if (cmdResult != null) {
+      String strCmdResult = commandResultToString(cmdResult);
+      getLogWriter().info("testCreateGatewaySender stringResult : " + strCmdResult + ">>>>");
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+    } else {
+      fail("testDestroyGatewaySenderWithDefault failed as did not get CommandResult");
+    }
+  }
+
+  private void createGatewaySenderWithDefault() {
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
         + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
