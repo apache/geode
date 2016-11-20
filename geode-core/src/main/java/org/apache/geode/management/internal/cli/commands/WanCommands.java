@@ -208,12 +208,12 @@ public class WanCommands implements CommandMarker {
       GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
           new GatewaySenderDestroyFunctionArgs(id);
 
-      Set<DistributedMember> membersToCreateGatewaySenderOn =
+      Set<DistributedMember> membersToDestroyGatewaySenderOn =
           CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(GatewaySenderDestroyFunction.INSTANCE,
-              gatewaySenderDestroyFunctionArgs, membersToCreateGatewaySenderOn);
+              gatewaySenderDestroyFunctionArgs, membersToDestroyGatewaySenderOn);
       @SuppressWarnings("unchecked")
       List<CliFunctionResult> gatewaySenderDestroyResults =
           (List<CliFunctionResult>) resultCollector.getResult();
