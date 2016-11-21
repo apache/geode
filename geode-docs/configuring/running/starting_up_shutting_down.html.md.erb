@@ -127,6 +127,17 @@ Shut down the distributed system members according to the type of member. For ex
     gfsh>stop locator --dir=<locator_working_dir>
     ```
 
+-   Do not use the command line `kill -9` to shut down a server under
+ordinary circumstances.
+Especially on systems with a small number of members,
+using a `kill` instead of a `gfsh stop` can cause the partition detection
+mechanism to place the system in an end state that will wait forever to
+reconnect to the killed server,
+and there will be no way to restart that killed server.
+If a `kill` command appears the only way to rid the system of a server,
+then `kill` *all* the processes of the distributed system
+or use `kill -INT`, which will allow an orderly shutdown of the process. 
+
 ## <a id="starting_up_shutting_down__section_7CF680CF8A924C57A7052AE2F975DA81" class="no-quick-link"></a>Option for System Member Shutdown Behavior
 
 The `DISCONNECT_WAIT` command line argument sets the maximum time for each individual step in the shutdown process. If any step takes longer than the specified amount, it is forced to end. Each operation is given this grace period, so the total length of time the cache member takes to shut down depends on the number of operations and the `DISCONNECT_WAIT` setting. During the shutdown process, Geode produces messages such as:
