@@ -70,7 +70,7 @@ public class ExecuteFunctionNoAckOp {
           logger.debug("ExecuteFunctionNoAckOp#execute : Sending Function Execution Message:"
               + op.getMessage() + " to all servers using pool: " + pool);
         }
-        servers = pool.getCurrentServers();
+        servers = pool.getConnectionSource().getAllServers();
         Iterator i = servers.iterator();
         while (i.hasNext()) {
           pool.executeOn((ServerLocation) i.next(), op);
@@ -111,7 +111,7 @@ public class ExecuteFunctionNoAckOp {
           logger.debug("ExecuteFunctionNoAckOp#execute : Sending Function Execution Message:"
               + op.getMessage() + " to all servers using pool: " + pool);
         }
-        servers = pool.getCurrentServers();
+        servers = pool.getConnectionSource().getAllServers();
         Iterator i = servers.iterator();
         while (i.hasNext()) {
           pool.executeOn((ServerLocation) i.next(), op);
@@ -235,5 +235,4 @@ public class ExecuteFunctionNoAckOp {
       return new Message(1, Version.CURRENT);
     }
   }
-
 }
