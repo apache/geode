@@ -51,7 +51,7 @@ public class GatewaySenderDestroyFunction extends FunctionAdapter implements Int
         gatewaySender.destroy();
       } else {
         throw new GatewaySenderException(
-            "GateWaySender with Id " + gatewaySenderDestroyFunctionArgs.getId() + "not found");
+            "GateWaySender with Id " + gatewaySenderDestroyFunctionArgs.getId() + " not found");
       }
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,
           CliStrings.format(CliStrings.DESTROY_GATEWAYSENDER__MSG__GATEWAYSENDER_0_DESTROYED_ON_1,
