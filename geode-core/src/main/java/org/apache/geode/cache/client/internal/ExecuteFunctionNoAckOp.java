@@ -70,7 +70,7 @@ public class ExecuteFunctionNoAckOp {
           logger.debug("ExecuteFunctionNoAckOp#execute : Sending Function Execution Message:"
               + op.getMessage() + " to all servers using pool: " + pool);
         }
-        servers = pool.getCurrentServers();
+        servers = getAllServers(pool);
         Iterator i = servers.iterator();
         while (i.hasNext()) {
           pool.executeOn((ServerLocation) i.next(), op);
@@ -111,7 +111,7 @@ public class ExecuteFunctionNoAckOp {
           logger.debug("ExecuteFunctionNoAckOp#execute : Sending Function Execution Message:"
               + op.getMessage() + " to all servers using pool: " + pool);
         }
-        servers = pool.getCurrentServers();
+        servers = getAllServers(pool);
         Iterator i = servers.iterator();
         while (i.hasNext()) {
           pool.executeOn((ServerLocation) i.next(), op);
@@ -234,6 +234,18 @@ public class ExecuteFunctionNoAckOp {
     protected Message createResponseMessage() {
       return new Message(1, Version.CURRENT);
     }
+  }
+
+  private static List<ServerLocation> getAllServers(PoolImpl pool) {
+    List<ServerLocation> servers;
+    if (pool.getLocators() == null || pool.getLocators().isEmpty()) {
+      servers = ((ExplicitConnectionSourceImpl) pool.getConnectionSource()).getAllServers();
+    } else {
+      servers = ((AutoConnectionSourceImpl) pool.getConnectionSource()).findAllServers(); // n/w
+                                                                                          // call on
+                                                                                          // locator
+    }
+    return servers;
   }
 
 }
