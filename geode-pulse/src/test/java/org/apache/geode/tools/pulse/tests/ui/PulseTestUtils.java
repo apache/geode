@@ -53,11 +53,11 @@ public final class PulseTestUtils {
     }
   }
 
-  public static int maxWaitTime = 20;
+  public static int maxWaitTime = 30;
 
   public static WebElement waitForElementWithId(String id) {
-    WebElement element =
-        (new WebDriverWait(driverProvider.get(), 10)).until(new ExpectedCondition<WebElement>() {
+    WebElement element = (new WebDriverWait(driverProvider.get(), maxWaitTime))
+        .until(new ExpectedCondition<WebElement>() {
           @Override
           public WebElement apply(WebDriver d) {
             return d.findElement(By.id(id));
