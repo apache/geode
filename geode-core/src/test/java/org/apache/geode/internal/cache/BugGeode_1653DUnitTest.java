@@ -54,7 +54,8 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
   @Test
   public void testBugGeode_1653() {
 
-    // Test case for Executing a fire-and-forget function on all servers as opposed to only executing on the ones the
+    // Test case for Executing a fire-and-forget function on all servers as opposed to only
+    // executing on the ones the
     // client is currently connected to.
 
     Host host = Host.getHost(0);
@@ -73,20 +74,21 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
 
     // Step 2. Start a server and create a replicated region "R1".
     server1.invoke("Start BridgeServer",
-      () -> startBridgeServer(new String[] {"R1"}, locString, new String[] {"R1"}));
+        () -> startBridgeServer(new String[] {"R1"}, locString, new String[] {"R1"}));
 
     // Step 3. Create a client cache with pool mentioning locator.
     client.invoke("create client cache and pool mentioning locator", () -> {
       ClientCacheFactory ccf = new ClientCacheFactory();
       ccf.addPoolLocator(locatorHost, locatorPort);
       ClientCache cache = ccf.create();
-      Pool pool1 = PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R1")
-        .create("R1");
+      Pool pool1 = PoolManager.createFactory().addLocator(locatorHost, locatorPort)
+          .setServerGroup("R1").create("R1");
 
-      Region region1 = cache.createClientRegionFactory(ClientRegionShortcut.PROXY)
-        .setPoolName("R1").create("R1");
+      Region region1 = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).setPoolName("R1")
+          .create("R1");
 
-      // Step 4. Execute the function to put DistributedMemberID into above created replicated region.
+      // Step 4. Execute the function to put DistributedMemberID into above created replicated
+      // region.
       Function function = new TestFunction(false, TestFunction.TEST_FUNCTION_1653);
       FunctionService.registerFunction(function);
 
@@ -102,10 +104,11 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
 
       // Step 6. Start another server mentioning locator and create a replicated region "R1".
       server2.invoke("Start BridgeServer",
-        () -> startBridgeServer(new String[]{"R1"}, locString, new String[]{"R1"}));
+          () -> startBridgeServer(new String[] {"R1"}, locString, new String[] {"R1"}));
 
 
-      // Step 7. Execute the same function to put DistributedMemberID into above created replicated region.
+      // Step 7. Execute the same function to put DistributedMemberID into above created replicated
+      // region.
       function = new TestFunction(false, TestFunction.TEST_FUNCTION_1653);
       FunctionService.registerFunction(function);
 
@@ -113,16 +116,17 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
       dataSet.withArgs(regionName).execute(function);
       Thread.sleep(1000);
 
-      // Step 8. Assert for the region keyset size with 2, since above function was executed on 2 servers.
+      // Step 8. Assert for the region keyset size with 2, since above function was executed on 2
+      // servers.
       Assert.assertEquals(2, region1.keySetOnServer().size());
 
       region1.clear();
 
       // Step 8.Stop one of the servers.
-      server1.invoke("Stop BridgeServer",
-        () -> stopBridgeMemberVM(server1));
+      server1.invoke("Stop BridgeServer", () -> stopBridgeMemberVM(server1));
 
-      // Step 9. Execute the same function to put DistributedMemberID into above created replicated region.
+      // Step 9. Execute the same function to put DistributedMemberID into above created replicated
+      // region.
       function = new TestFunction(false, TestFunction.TEST_FUNCTION_1653);
       FunctionService.registerFunction(function);
 
@@ -130,7 +134,7 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
       dataSet.withArgs(regionName).execute(function);
       Thread.sleep(1000);
 
-      // Step 5. Assert for the region keyset size with 1, since only one server was running.
+      // Step 10. Assert for the region keyset size with 1, since only one server was running.
       Assert.assertEquals(1, region1.keySetOnServer().size());
 
       region1.clear();

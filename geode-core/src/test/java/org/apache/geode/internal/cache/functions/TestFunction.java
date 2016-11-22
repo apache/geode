@@ -179,7 +179,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
       execute1(context);
     } else if (id.equals(TEST_FUNCTION_1653)) {
       execute_1653(context);
-    }else if (noAckTest.equals("true")) {
+    } else if (noAckTest.equals("true")) {
       execute1(context);
     }
   }
@@ -239,7 +239,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
     DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     LogWriter logger = ds.getLogWriter();
     Cache cache = CacheFactory.getAnyInstance();
-    String regionName = (String)context.getArguments();
+    String regionName = (String) context.getArguments();
     Region<String, Integer> region1 = cache.getRegion(regionName);
     if (region1 == null) {
       RegionFactory<String, Integer> rf;
@@ -249,7 +249,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
     region1.put(ds.getDistributedMember().toString(), 1);
 
     logger.info("Executing execute_1653 in TestFunction on Member : " + ds.getDistributedMember()
-      + "with Context : " + context);
+        + "with Context : " + context);
 
     if (!hasResult()) {
       return;
