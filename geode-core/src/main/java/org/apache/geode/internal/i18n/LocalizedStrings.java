@@ -7201,7 +7201,8 @@ public class LocalizedStrings {
       "Hostname is unknown: {0}. Creating pool with unknown host in case the host becomes known later.");
 
   public static final StringId GatewaySenderEventRemoteDispatcher_GATEWAY_SENDER_0_RECEIVED_ACK_FOR_BATCH_ID_1_WITH_EXCEPTION =
-      new StringId(5302, "Gateway Sender {0} : Received ack for batch id {1} with exception:");
+      new StringId(5302,
+          "Gateway Sender {0} : Received ack for batch id {1} with one or more exceptions");
 
   public static final StringId Region_REGION_0_HAS_1_GATEWAY_SENDER_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_GATEWAY_SENDER_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_GATEWAY_SENDER_IDS_SHOULD_BE_SAME =
       new StringId(5303,
@@ -7653,6 +7654,9 @@ public class LocalizedStrings {
   public static StringId GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2 =
       new StringId(6645, "A server must use cluster configuration when joining a secured cluster.");
 
+  public static final StringId GatewayEventRemoteDispatcher_AN_EXCEPTION_OCCURRED_PROCESSING_A_BATCHEXCEPTION__0 =
+      new StringId(6646,
+          "An unexpected exception occurred processing a BatchException. The thread will continue.");
 
   /** Testing strings, messageId 90000-99999 **/
 

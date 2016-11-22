@@ -556,7 +556,11 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     private volatile boolean ackReaderThreadRunning = false;
 
     public AckReaderThread(GatewaySender sender, AbstractGatewaySenderEventProcessor processor) {
-      super("AckReaderThread for : " + processor.getName());
+      this(sender, processor.getName());
+    }
+
+    public AckReaderThread(GatewaySender sender, String name) {
+      super("AckReaderThread for : " + name);
       this.setDaemon(true);
       this.cache = (GemFireCacheImpl) ((AbstractGatewaySender) sender).getCache();
     }
@@ -610,9 +614,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
             // If the batch is successfully processed, remove it from the
             // queue.
             if (gotBatchException) {
-              logger.info(LocalizedMessage.create(
+              logger.warn(LocalizedMessage.create(
                   LocalizedStrings.GatewaySenderEventRemoteDispatcher_GATEWAY_SENDER_0_RECEIVED_ACK_FOR_BATCH_ID_1_WITH_EXCEPTION,
-                  new Object[] {processor.getSender(), ack.getBatchId()}, ack.getBatchException()));
+                  new Object[] {processor.getSender(), ack.getBatchId()}));
               // If we get PDX related exception in the batch exception then try
               // to resend all the pdx events as well in the next batch.
               final GatewaySenderStats statistics = sender.getStatistics();
@@ -674,57 +678,64 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
      * @param exception
      * 
      */
-    private void logBatchExceptions(BatchException70 exception) {
-      for (BatchException70 be : exception.getExceptions()) {
-        boolean logWarning = true;
-        if (be.getCause() instanceof RegionDestroyedException) {
-          RegionDestroyedException rde = (RegionDestroyedException) be.getCause();
-          synchronized (notFoundRegionsSync) {
-            if (notFoundRegions.contains(rde.getRegionFullPath())) {
-              logWarning = false;
-            } else {
-              notFoundRegions.add(rde.getRegionFullPath());
+    protected void logBatchExceptions(BatchException70 exception) {
+      try {
+        for (BatchException70 be : exception.getExceptions()) {
+          boolean logWarning = true;
+          if (be.getCause() instanceof RegionDestroyedException) {
+            RegionDestroyedException rde = (RegionDestroyedException) be.getCause();
+            synchronized (notFoundRegionsSync) {
+              if (notFoundRegions.contains(rde.getRegionFullPath())) {
+                logWarning = false;
+              } else {
+                notFoundRegions.add(rde.getRegionFullPath());
+              }
             }
+          } else if (be.getCause() instanceof IllegalStateException
+              && be.getCause().getMessage().contains("Unknown pdx type")) {
+            List<GatewaySenderEventImpl> pdxEvents =
+                processor.getBatchIdToPDXEventsMap().get(be.getBatchId());
+            if (logWarning) {
+              logger.warn(LocalizedMessage.create(
+                  LocalizedStrings.GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_PDX_EVENT__0,
+                  be.getIndex()), be);
+            }
+            if (pdxEvents != null) {
+              for (GatewaySenderEventImpl senderEvent : pdxEvents) {
+                senderEvent.isAcked = false;
+              }
+              GatewaySenderEventImpl gsEvent = pdxEvents.get(be.getIndex());
+              if (logWarning) {
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.GatewayEventRemoteDispatcher_THE_EVENT_BEING_PROCESSED_WHEN_THE_BATCHEXCEPTION_OCCURRED_WAS__0,
+                    gsEvent));
+              }
+            }
+            continue;
           }
-        } else if (be.getCause() instanceof IllegalStateException
-            && be.getCause().getMessage().contains("Unknown pdx type")) {
-          List<GatewaySenderEventImpl> pdxEvents =
-              processor.getBatchIdToPDXEventsMap().get(be.getBatchId());
           if (logWarning) {
             logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_PDX_EVENT__0,
+                LocalizedStrings.GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_EVENT__0,
                 be.getIndex()), be);
           }
-          if (pdxEvents != null) {
-            for (GatewaySenderEventImpl senderEvent : pdxEvents) {
-              senderEvent.isAcked = false;
-            }
-            GatewaySenderEventImpl gsEvent = pdxEvents.get(be.getIndex());
+          List<GatewaySenderEventImpl>[] eventsArr =
+              processor.getBatchIdToEventsMap().get(be.getBatchId());
+          if (eventsArr != null) {
+            List<GatewaySenderEventImpl> filteredEvents = eventsArr[1];
+            GatewaySenderEventImpl gsEvent =
+                (GatewaySenderEventImpl) filteredEvents.get(be.getIndex());
             if (logWarning) {
               logger.warn(LocalizedMessage.create(
                   LocalizedStrings.GatewayEventRemoteDispatcher_THE_EVENT_BEING_PROCESSED_WHEN_THE_BATCHEXCEPTION_OCCURRED_WAS__0,
                   gsEvent));
             }
           }
-          continue;
         }
-        if (logWarning) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewayEventRemoteDispatcher_A_BATCHEXCEPTION_OCCURRED_PROCESSING_EVENT__0,
-              be.getIndex()), be);
-        }
-        List<GatewaySenderEventImpl>[] eventsArr =
-            processor.getBatchIdToEventsMap().get(be.getBatchId());
-        if (eventsArr != null) {
-          List<GatewaySenderEventImpl> filteredEvents = eventsArr[1];
-          GatewaySenderEventImpl gsEvent =
-              (GatewaySenderEventImpl) filteredEvents.get(be.getIndex());
-          if (logWarning) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GatewayEventRemoteDispatcher_THE_EVENT_BEING_PROCESSED_WHEN_THE_BATCHEXCEPTION_OCCURRED_WAS__0,
-                gsEvent));
-          }
-        }
+      } catch (Exception e) {
+        logger.warn(
+            LocalizedMessage.create(
+                LocalizedStrings.GatewayEventRemoteDispatcher_AN_EXCEPTION_OCCURRED_PROCESSING_A_BATCHEXCEPTION__0),
+            e);
       }
     }
 

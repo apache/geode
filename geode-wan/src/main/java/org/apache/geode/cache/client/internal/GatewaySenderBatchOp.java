@@ -257,10 +257,11 @@ public class GatewaySenderBatchOp {
             if (obj instanceof List) {
               List<BatchException70> l = (List<BatchException70>) part0.getObject();
 
-              // if (logger.isDebugEnabled()) {
-              logger.info("We got an exception from the GatewayReceiver. MessageType : {} obj :{}",
-                  msg.getMessageType(), obj);
-              // }
+              if (logger.isDebugEnabled()) {
+                logger.info(
+                    "We got an exception from the GatewayReceiver. MessageType : {} obj :{}",
+                    msg.getMessageType(), obj);
+              }
               // don't throw Exception but set it in the Ack
               BatchException70 be = new BatchException70(l);
               ack = new GatewayAck(be, l.get(0).getBatchId());
