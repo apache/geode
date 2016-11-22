@@ -224,19 +224,7 @@ public class SessionCachingFilter implements Filter {
 
       Cookie cookie = new Cookie(manager.getSessionCookieName(), session.getId());
       cookie.setPath("".equals(getContextPath()) ? "/" : getContextPath());
-      // Clear out all old cookies and just set ours
       response.addCookie(cookie);
-
-      // Replace all other cookies which aren't JSESSIONIDs
-      if (cookies != null) {
-        for (Cookie c : cookies) {
-          if (manager.getSessionCookieName().equals(c.getName())) {
-            continue;
-          }
-          response.addCookie(c);
-        }
-      }
-
     }
 
     private String getCookieString(Cookie c) {
