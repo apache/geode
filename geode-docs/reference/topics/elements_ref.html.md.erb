@@ -29,16 +29,18 @@ This section documents cache.xml file requirements and variables. It also points
 
 The cache.xml file has these requirements:
 
--   The contents must conform to the XML schema definition provided in cache-1.0.xsd. The schema definition file is available in the product distribution at `$GEMFIRE/schemas/geode.apache.org/schema/cache/cache-1.0.xsd`.
+-   The contents must conform to the XML schema definition provided in cache-1.0.xsd.
+The schema definition file is available at
+[http://geode.apache.org/schema/cache/cache-1.0.xsd](http://geode.apache.org/schema/cache/cache-1.0.xsd).
 -   The file must include a &lt;cache&gt; schema declaration of one of the following forms:
     -   Server or peer cache:
 
         ``` pre
         <?xml version="1.0" encoding="UTF-8"?>
         <cache
-            xmlns="http://geode.incubator.apache.org/schema/cache"
+            xmlns="http://geode.apache.org/schema/cache"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+            xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
             version="1.0">
         ...
         </cache>
@@ -49,9 +51,9 @@ The cache.xml file has these requirements:
         ``` pre
         <?xml version="1.0" encoding="UTF-8"?>
         <client-cache
-            xmlns="http://geode.incubator.apache.org/schema/cache"
+            xmlns="http://geode.apache.org/schema/cache"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+            xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
             version="1.0">
         ...
         </client-cache>
@@ -70,9 +72,9 @@ Example cache.xml with variables and the gfsh `start server` command that sets t
 ``` pre
 <?xml version="1.0" encoding="UTF-8"?>
 <cache
-    xmlns="http://geode.incubator.apache.org/schema/cache"
+    xmlns="http://geode.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
     version="1.0">
   <cache-server port="${PORT}" max-connections="${MAXCNXS}"/>
   <region name="root">
