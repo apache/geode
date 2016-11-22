@@ -47,6 +47,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
+import com.meterware.httpunit.GetMethodWebRequest;
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebRequest;
+import com.meterware.httpunit.WebResponse;
+
 /**
  * In-container testing using Jetty. This allows us to test context listener events as well as
  * dispatching actions.
@@ -384,6 +389,53 @@ public class SessionReplicationIntegrationJUnitTest {
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
     assertNull(((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
+  }
+
+  /**
+   * Test that a servlet can modify cookies
+   */
+  @Test
+  public void testUserCanModifyTheirOwnCookie() throws Exception {
+    Callback c = new Callback() {
+      @Override
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
+        Cookie userCookie = findUserCookie(request.getCookies());
+        if (userCookie == null) {
+          userCookie = new Cookie("myCookie", "0");
+        } else {
+          userCookie =
+              new Cookie("myCookie", Integer.toString(Integer.valueOf(userCookie.getValue()) + 1));
+        }
+
+        response.addCookie(userCookie);
+        request.getSession().setAttribute("dummy", "value");
+      }
+    };
+
+    tester.setAttribute("callback_1", c);
+    String url = tester.createConnector(true);
+    tester.start();
+
+    WebConversation wc = new WebConversation();
+    WebRequest req = new GetMethodWebRequest(url + "/test/hello");
+    req.setHeaderField("Cookie", "myCookie=" + 5);
+
+    final WebResponse webResponse = wc.getResponse(req);
+    assertEquals("6", webResponse.getNewCookieValue("myCookie"));
+  }
+
+  private Cookie findUserCookie(Cookie[] cookies) {
+    if (cookies == null) {
+      return null;
+    }
+    Cookie userCookie = null;
+    for (Cookie cookie : cookies) {
+      if (cookie.getName().equals("myCookie")) {
+        userCookie = cookie;
+      }
+    }
+    return userCookie;
   }
 
   // Don't see how to do this currently as the SessionListener needs a full
