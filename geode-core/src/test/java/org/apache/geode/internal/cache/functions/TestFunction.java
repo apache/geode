@@ -15,8 +15,7 @@
 package org.apache.geode.internal.cache.functions;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
+import org.apache.geode.cache.*;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
@@ -62,6 +61,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
   public static final String TEST_FUNCTION3 = "TestFunction3";
   public static final String TEST_FUNCTION2 = "TestFunction2";
   public static final String TEST_FUNCTION1 = "TestFunction1";
+  public static final String TEST_FUNCTION_1653 = "TestFunction_1653";
   public static final String TEST_FUNCTION_EXCEPTION = "TestFunctionException";
   public static final String TEST_FUNCTION_RESULT_SENDER = "TestFunctionResultSender";
   public static final String MEMBER_FUNCTION = "MemberFunction";
@@ -177,7 +177,9 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
       executeFunctionBucketFilter(context);
     } else if (id.equals(TEST_FUNCTION_NONHA_NOP)) {
       execute1(context);
-    } else if (noAckTest.equals("true")) {
+    } else if (id.equals(TEST_FUNCTION_1653)) {
+      execute_1653(context);
+    }else if (noAckTest.equals("true")) {
       execute1(context);
     }
   }
@@ -231,6 +233,27 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
     }
 
 
+  }
+
+  public void execute_1653(FunctionContext context) {
+    DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+    LogWriter logger = ds.getLogWriter();
+    Cache cache = CacheFactory.getAnyInstance();
+    String regionName = (String)context.getArguments();
+    Region<String, Integer> region1 = cache.getRegion(regionName);
+    if (region1 == null) {
+      RegionFactory<String, Integer> rf;
+      rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      region1 = rf.create(regionName);
+    }
+    region1.put(ds.getDistributedMember().toString(), 1);
+
+    logger.info("Executing execute_1653 in TestFunction on Member : " + ds.getDistributedMember()
+      + "with Context : " + context);
+
+    if (!hasResult()) {
+      return;
+    }
   }
 
   public void execute1(FunctionContext context) {
