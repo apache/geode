@@ -903,8 +903,8 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter()
-          .info("testDestroyGatewaySender_NotCreatedSender stringResult : " + strCmdResult + ">>>>");
+      getLogWriter().info(
+          "testDestroyGatewaySender_NotCreatedSender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
