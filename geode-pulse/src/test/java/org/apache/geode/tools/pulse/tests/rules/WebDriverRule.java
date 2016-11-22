@@ -43,9 +43,9 @@ public class WebDriverRule extends ExternalResource {
   }
 
   public WebDriverRule(String username, String password, String pulseUrl) {
+    this(pulseUrl);
     this.username = username;
     this.password = password;
-    this.pulseUrl = pulseUrl;
   }
 
   public WebDriver getDriver() {
@@ -63,9 +63,7 @@ public class WebDriverRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    if (driver == null) {
-      setUpWebDriver();
-    }
+    setUpWebDriver();
     driver.get(getPulseURL());
     if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
       login();
@@ -75,7 +73,7 @@ public class WebDriverRule extends ExternalResource {
 
   @Override
   protected void after() {
-    driver.close();
+    driver.quit();
   }
 
   private void login() {
