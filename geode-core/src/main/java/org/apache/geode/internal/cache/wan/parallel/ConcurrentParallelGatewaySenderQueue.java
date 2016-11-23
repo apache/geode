@@ -123,7 +123,11 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public int localSize() {
-    return ((ParallelGatewaySenderQueue) (processors[0].getQueue())).localSize();
+    return localSize(false);
+  }
+
+  public int localSize(boolean includeSecondary) {
+    return ((ParallelGatewaySenderQueue) (processors[0].getQueue())).localSize(includeSecondary);
   }
 
   @Override

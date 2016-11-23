@@ -2400,6 +2400,15 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     return sizeOfLocalPrimaries;
   }
 
+  public int getSizeOfLocalBuckets(boolean includeSecondary) {
+    int sizeOfLocal = 0;
+    Set<BucketRegion> primaryBuckets = getAllLocalBucketRegions();
+    for (BucketRegion br : primaryBuckets) {
+      sizeOfLocal += br.size();
+    }
+    return sizeOfLocal;
+  }
+
 
   /**
    * Interface for visiting buckets

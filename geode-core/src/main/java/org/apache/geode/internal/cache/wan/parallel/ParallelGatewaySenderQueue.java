@@ -964,7 +964,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   /**
    * TODO: Optimization needed. We are creating 1 array list for each peek!!
-   * 
+   *
    * @return BucketRegionQueue
    */
   private final BucketRegionQueue getRandomBucketRegionQueue() {
@@ -1033,7 +1033,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
        * Collections.shuffle(thisProcessorBuckets); for (Integer bucketId : thisProcessorBuckets) {
        * BucketRegionQueue br = (BucketRegionQueue)prQ.getDataStore()
        * .getBucketRegionQueueByBucketId(bucketId);
-       * 
+       *
        * if (br != null && br.isReadyForPeek()) { return br.getId(); } }
        */
     }
@@ -1455,12 +1455,19 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return (BucketRegionQueue) prQ.getDataStore().getLocalBucketById(bucketId);
   }
 
-
   public int localSize() {
+    return localSize(false);
+  }
+
+  public int localSize(boolean includeSecondary) {
     int size = 0;
     for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
       if (prQ != null && prQ.getDataStore() != null) {
-        size += prQ.getDataStore().getSizeOfLocalPrimaryBuckets();
+        if (includeSecondary) {
+          size += prQ.getDataStore().getSizeOfLocalBuckets(true);
+        } else {
+          size += prQ.getDataStore().getSizeOfLocalPrimaryBuckets();
+        }
       }
       if (logger.isDebugEnabled()) {
         logger.debug("The name of the queue region is {} and the size is {}", prQ.getFullPath(),

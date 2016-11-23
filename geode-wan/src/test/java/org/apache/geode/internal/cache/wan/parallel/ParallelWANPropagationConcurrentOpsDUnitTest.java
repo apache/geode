@@ -80,8 +80,6 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
-    Wait.pause(5000);
-
     AsyncInvocation async1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 700));
     AsyncInvocation async2 =
@@ -96,7 +94,7 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     async3.join();
     async4.join();
 
-    int queueSize = (Integer) vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
+    int queueSize = (Integer) vm4.invoke(() -> WANTestBase.getQueueContentSize("ln", true));
     assertEquals("Actual queue size is not matching with the expected", 3500, queueSize);
 
     // resume the senders now
@@ -195,13 +193,10 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.addQueueListener("ln", true));
     vm7.invoke(() -> WANTestBase.addQueueListener("ln", true));
 
-    Wait.pause(2000);
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
     vm7.invoke(() -> WANTestBase.pauseSender("ln"));
-
-    Wait.pause(2000);
 
     vm6.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 4));
     vm4.invoke(() -> WANTestBase.addListenerOnBucketRegion(getTestMethodName() + "_PR", 4));
