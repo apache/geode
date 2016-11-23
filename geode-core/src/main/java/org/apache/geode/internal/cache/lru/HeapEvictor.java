@@ -423,7 +423,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
         };
 
         // Submit the first pass at eviction into the pool
-        this.evictorThreadPool.submit(evictionManagerTask);
+        this.evictorThreadPool.execute(evictionManagerTask);
 
       } else {
         this.mustEvict.set(false);

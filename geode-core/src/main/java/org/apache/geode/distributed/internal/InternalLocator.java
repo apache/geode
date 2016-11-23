@@ -1158,7 +1158,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.isSharedConfigurationStarted = true;
       if (isSharedConfigurationEnabled()) {
         ExecutorService es = newCache.getDistributionManager().getThreadPool();
-        es.submit(new SharedConfigurationRunnable());
+        es.execute(new SharedConfigurationRunnable());
       }
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
@@ -1435,7 +1435,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.isSharedConfigurationStarted = true;
       installSharedConfigStatus();
       ExecutorService es = gfc.getDistributionManager().getThreadPool();
-      es.submit(new SharedConfigurationRunnable());
+      es.execute(new SharedConfigurationRunnable());
     } else {
       logger.info("Cluster configuration service is disabled");
     }

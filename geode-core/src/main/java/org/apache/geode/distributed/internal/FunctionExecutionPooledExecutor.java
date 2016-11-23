@@ -131,7 +131,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
               Runnable task = takeQueue.take();
               if (forFnExec) {
                 if (!putQueue.offer(task, retryFor, TimeUnit.MILLISECONDS)) {
-                  submit(task);
+                  execute(task);
                 }
               } else {
                 putQueue.put(task);
