@@ -143,14 +143,6 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
         .serverSingleKeyExecutionOnRegion_SingleConnection());
   }
 
-  // @Ignore("Bug47584")
-  @Test
-  public void testServerSingleKeyExecution_Bug43513_OnServer() {
-    createScenario_SingleConnection();
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .serverSingleKeyExecutionOnServer_SingleConnection());
-  }
-
   @Test
   public void testServerSingleKeyExecution_SendException() {
     createScenario();

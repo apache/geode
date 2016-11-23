@@ -31,13 +31,15 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by amey on 22/11/16.
  */
 @Category(DistributedTest.class)
-public class BugGeode_1653DUnitTest extends LocatorTestBase {
+public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase {
 
-  public BugGeode_1653DUnitTest() {
+  public FireAndForgetFunctionOnAllServersDUnitTest() {
     super();
   }
 
@@ -51,8 +53,24 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
     disconnectAllFromDS();
   }
 
+  private void waitUntilDeterministic(int maxWaitInMillisecond, Region region) {
+    if (region != null) {
+      long start = System.nanoTime();
+      while (System.nanoTime() - start < TimeUnit.MILLISECONDS.toNanos(maxWaitInMillisecond)) {
+        if (0 != region.size()) {
+          break;
+        } else {
+          try {
+            Thread.sleep(200);
+          } catch (InterruptedException e) {
+          }
+        }
+      }
+    }
+  }
+
   @Test
-  public void testBugGeode_1653() {
+  public void testFireAndForgetFunctionOnAllServers() {
 
     // Test case for Executing a fire-and-forget function on all servers as opposed to only
     // executing on the ones the
@@ -89,13 +107,16 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
 
       // Step 4. Execute the function to put DistributedMemberID into above created replicated
       // region.
-      Function function = new TestFunction(false, TestFunction.TEST_FUNCTION_1653);
+      Function function =
+          new TestFunction(false, TestFunction.TEST_FUNCTION_FIREANDFORGET_ONALL_SERVERS);
       FunctionService.registerFunction(function);
 
       String regionName = "R1";
       Execution dataSet = FunctionService.onServers(pool1);
       dataSet.withArgs(regionName).execute(function);
-      Thread.sleep(1000);
+
+      // wait for determinstic time
+      waitUntilDeterministic(1000, region1);
 
       // Step 5. Assert for the region keyset size with 1.
       Assert.assertEquals(1, region1.keySetOnServer().size());
@@ -106,18 +127,20 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
       server2.invoke("Start BridgeServer",
           () -> startBridgeServer(new String[] {"R1"}, locString, new String[] {"R1"}));
 
-
       // Step 7. Execute the same function to put DistributedMemberID into above created replicated
       // region.
-      function = new TestFunction(false, TestFunction.TEST_FUNCTION_1653);
+      function = new TestFunction(false, TestFunction.TEST_FUNCTION_FIREANDFORGET_ONALL_SERVERS);
       FunctionService.registerFunction(function);
 
       dataSet = FunctionService.onServers(pool1);
       dataSet.withArgs(regionName).execute(function);
-      Thread.sleep(1000);
+
+      // wait for determinstic time
+      waitUntilDeterministic(1000, region1);
 
       // Step 8. Assert for the region keyset size with 2, since above function was executed on 2
       // servers.
+
       Assert.assertEquals(2, region1.keySetOnServer().size());
 
       region1.clear();
@@ -127,12 +150,14 @@ public class BugGeode_1653DUnitTest extends LocatorTestBase {
 
       // Step 9. Execute the same function to put DistributedMemberID into above created replicated
       // region.
-      function = new TestFunction(false, TestFunction.TEST_FUNCTION_1653);
+      function = new TestFunction(false, TestFunction.TEST_FUNCTION_FIREANDFORGET_ONALL_SERVERS);
       FunctionService.registerFunction(function);
 
       dataSet = FunctionService.onServers(pool1);
       dataSet.withArgs(regionName).execute(function);
-      Thread.sleep(1000);
+
+      // wait for determinstic time
+      waitUntilDeterministic(1000, region1);
 
       // Step 10. Assert for the region keyset size with 1, since only one server was running.
       Assert.assertEquals(1, region1.keySetOnServer().size());

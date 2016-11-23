@@ -61,7 +61,8 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
   public static final String TEST_FUNCTION3 = "TestFunction3";
   public static final String TEST_FUNCTION2 = "TestFunction2";
   public static final String TEST_FUNCTION1 = "TestFunction1";
-  public static final String TEST_FUNCTION_1653 = "TestFunction_1653";
+  public static final String TEST_FUNCTION_FIREANDFORGET_ONALL_SERVERS =
+      "execute_FireAndForgetFunctionOnAllServers";
   public static final String TEST_FUNCTION_EXCEPTION = "TestFunctionException";
   public static final String TEST_FUNCTION_RESULT_SENDER = "TestFunctionResultSender";
   public static final String MEMBER_FUNCTION = "MemberFunction";
@@ -177,8 +178,8 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
       executeFunctionBucketFilter(context);
     } else if (id.equals(TEST_FUNCTION_NONHA_NOP)) {
       execute1(context);
-    } else if (id.equals(TEST_FUNCTION_1653)) {
-      execute_1653(context);
+    } else if (id.equals(TEST_FUNCTION_FIREANDFORGET_ONALL_SERVERS)) {
+      execute_FireAndForgetFunctionOnAllServers(context);
     } else if (noAckTest.equals("true")) {
       execute1(context);
     }
@@ -235,7 +236,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
 
   }
 
-  public void execute_1653(FunctionContext context) {
+  public void execute_FireAndForgetFunctionOnAllServers(FunctionContext context) {
     DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     LogWriter logger = ds.getLogWriter();
     Cache cache = CacheFactory.getAnyInstance();
@@ -248,8 +249,8 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
     }
     region1.put(ds.getDistributedMember().toString(), 1);
 
-    logger.info("Executing execute_1653 in TestFunction on Member : " + ds.getDistributedMember()
-        + "with Context : " + context);
+    logger.info("Executing execute_FireAndForgetFunctionOnAllServers in TestFunction on Member : "
+        + ds.getDistributedMember() + "with Context : " + context);
 
     if (!hasResult()) {
       return;
