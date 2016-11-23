@@ -384,7 +384,7 @@ public class SingleHopClientExecutor {
   }
 
   static void submitTask(Runnable task) {
-    execService.submit(task);
+    execService.execute(task);
   }
 
   // Find out what exception to throw?

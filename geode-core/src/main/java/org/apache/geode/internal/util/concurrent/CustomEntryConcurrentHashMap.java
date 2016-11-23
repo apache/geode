@@ -1814,7 +1814,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
         InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
         if (ids != null) {
           try {
-            ids.getDistributionManager().getWaitingThreadPool().submit(runnable);
+            ids.getDistributionManager().getWaitingThreadPool().execute(runnable);
             submitted = true;
           } catch (RejectedExecutionException e) {
             // fall through with submitted false
