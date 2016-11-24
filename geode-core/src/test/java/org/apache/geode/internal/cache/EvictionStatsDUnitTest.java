@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.test.dunit.IgnoredException;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -84,6 +85,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testEntryLruLimitNDestroyLimit() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", 100);
     putData("PR2", 60);
@@ -164,6 +167,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testEntryLruCounter() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", 10);
     putData("PR2", 16);
@@ -194,6 +199,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testHeapLruCounter() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_HEAP);
     System.setProperty(HeapLRUCapacityController.TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY,
         Float.toString(0));
