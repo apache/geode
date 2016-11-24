@@ -31,7 +31,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.concurrent.TimeUnit;
+import static com.jayway.awaitility.Awaitility.*;
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * Created by amey on 22/11/16.
@@ -51,22 +52,6 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
   @Override
   protected final void postTearDownLocatorTestBase() throws Exception {
     disconnectAllFromDS();
-  }
-
-  private void waitUntilDeterministic(int maxWaitInMillisecond, Region region) {
-    if (region != null) {
-      long start = System.nanoTime();
-      while (System.nanoTime() - start < TimeUnit.MILLISECONDS.toNanos(maxWaitInMillisecond)) {
-        if (0 != region.size()) {
-          break;
-        } else {
-          try {
-            Thread.sleep(200);
-          } catch (InterruptedException e) {
-          }
-        }
-      }
-    }
   }
 
   @Test
@@ -115,8 +100,11 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
       Execution dataSet = FunctionService.onServers(pool1);
       dataSet.withArgs(regionName).execute(function);
 
-      // wait for determinstic time
-      waitUntilDeterministic(1000, region1);
+      // Using Awatility, if the condition is not met during the timeout, a
+      // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
+      await().atMost(1, SECONDS).until(() -> {
+        return (region1.keySetOnServer().size() == 1);
+      });
 
       // Step 5. Assert for the region keyset size with 1.
       Assert.assertEquals(1, region1.keySetOnServer().size());
@@ -135,8 +123,11 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
       dataSet = FunctionService.onServers(pool1);
       dataSet.withArgs(regionName).execute(function);
 
-      // wait for determinstic time
-      waitUntilDeterministic(1000, region1);
+      // Using Awatility, if the condition is not met during the timeout, a
+      // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
+      await().atMost(1, SECONDS).until(() -> {
+        return (region1.keySetOnServer().size() == 2);
+      });
 
       // Step 8. Assert for the region keyset size with 2, since above function was executed on 2
       // servers.
@@ -156,8 +147,11 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
       dataSet = FunctionService.onServers(pool1);
       dataSet.withArgs(regionName).execute(function);
 
-      // wait for determinstic time
-      waitUntilDeterministic(1000, region1);
+      // Using Awatility, if the condition is not met during the timeout, a
+      // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
+      await().atMost(1, SECONDS).until(() -> {
+        return (region1.keySetOnServer().size() == 1);
+      });
 
       // Step 10. Assert for the region keyset size with 1, since only one server was running.
       Assert.assertEquals(1, region1.keySetOnServer().size());
