@@ -310,12 +310,8 @@ public class FederatingManager extends Manager {
     List<Future<DistributedMember>> futureTaskList;
 
     while (it.hasNext()) {
-      giiTaskList.add(new Callable<DistributedMember>() {
-        @Override
-        public DistributedMember call() throws Exception {
-          return new GIITask(it.next()).call();
-        }
-      });
+      member = it.next();
+      giiTaskList.add(new GIITask(member));
     }
 
     try {
@@ -402,7 +398,7 @@ public class FederatingManager extends Manager {
    * 
    */
 
-  private class GIITask {
+  private class GIITask implements Callable {
 
     private DistributedMember member;
 
