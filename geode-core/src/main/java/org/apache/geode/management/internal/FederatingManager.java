@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.management.InstanceNotFoundException;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
@@ -196,7 +195,12 @@ public class FederatingManager extends Manager {
    */
   public void addMember(DistributedMember member) {
     GIITask giiTask = new GIITask(member);
-    submitTask(giiTask);
+    executeTask(new Runnable() {
+      @Override
+      public void run() {
+        giiTask.call();
+      }
+    });
   }
 
 
@@ -211,7 +215,7 @@ public class FederatingManager extends Manager {
    */
   public void removeMember(DistributedMember member, boolean crashed) {
     RemoveMemberTask removeTask = new RemoveMemberTask(member, crashed);
-    submitTask(removeTask);
+    executeTask(removeTask);
   }
 
   private void submitTask(Callable<DistributedMember> task) {
@@ -222,7 +226,15 @@ public class FederatingManager extends Manager {
     }
   }
 
-  private class RemoveMemberTask implements Callable<DistributedMember> {
+  private void executeTask(Runnable task) {
+    try {
+      pooledMembershipExecutor.execute(task);
+    } catch (java.util.concurrent.RejectedExecutionException ex) {
+      // Ignore, we are getting shutdown
+    }
+  }
+
+  private class RemoveMemberTask implements Runnable {
 
     private DistributedMember member;
 
@@ -233,8 +245,8 @@ public class FederatingManager extends Manager {
       this.crashed = crashed;
     }
 
-    public DistributedMember call() {
-      return removeMemberArtifacts(member, crashed);
+    public void run() {
+      removeMemberArtifacts(member, crashed);
     }
   }
 
@@ -293,13 +305,17 @@ public class FederatingManager extends Manager {
     DistributedMember member;
 
 
-    List<GIITask> giiTaskList = new ArrayList<GIITask>();
+    final List<Callable<DistributedMember>> giiTaskList = new ArrayList<>();
 
     List<Future<DistributedMember>> futureTaskList;
 
     while (it.hasNext()) {
-      member = it.next();
-      giiTaskList.add(new GIITask(member));
+      giiTaskList.add(new Callable<DistributedMember>() {
+        @Override
+        public DistributedMember call() throws Exception {
+          return new GIITask(it.next()).call();
+        }
+      });
     }
 
     try {
@@ -386,7 +402,7 @@ public class FederatingManager extends Manager {
    * 
    */
 
-  private class GIITask implements Callable<DistributedMember> {
+  private class GIITask {
 
     private DistributedMember member;
 
