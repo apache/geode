@@ -4559,7 +4559,7 @@ public class DiskStoreImpl implements DiskStore {
    * tasks may take a while.
    */
   public boolean executeDiskStoreTask(final Runnable runnable) {
-    return executeDiskStoreTask(runnable, this.diskStoreTaskPool) != null;
+    return executeDiskStoreAsyncTask(runnable, this.diskStoreTaskPool);
   }
 
   /**
@@ -4617,6 +4617,32 @@ public class DiskStoreImpl implements DiskStore {
     return result;
   }
 
+  private boolean executeDiskStoreAsyncTask(final Runnable runnable, ThreadPoolExecutor executor) {
+    // schedule another thread to do it
+    incBackgroundTasks();
+    boolean isTaskAccepted = executeDiskStoreAsyncTask(new DiskStoreTask() {
+      public void run() {
+        try {
+          markBackgroundTaskThread(); // for bug 42775
+          // getCache().getCachePerfStats().decDiskTasksWaiting();
+          runnable.run();
+        } finally {
+          decBackgroundTasks();
+        }
+      }
+
+      public void taskCancelled() {
+        decBackgroundTasks();
+      }
+    }, executor);
+
+    if (!isTaskAccepted) {
+      decBackgroundTasks();
+    }
+
+    return isTaskAccepted;
+  }
+
   private Future<?> executeDiskStoreTask(DiskStoreTask r, ThreadPoolExecutor executor) {
     try {
       return executor.submit(r);
@@ -4626,6 +4652,18 @@ public class DiskStoreImpl implements DiskStore {
       }
     }
     return null;
+  }
+
+  private boolean executeDiskStoreAsyncTask(DiskStoreTask r, ThreadPoolExecutor executor) {
+    try {
+      executor.execute(r);
+      return true;
+    } catch (RejectedExecutionException ex) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Ignored compact schedule during shutdown", ex);
+      }
+    }
+    return false;
   }
 
   private void stopDiskStoreTaskPool() {
