@@ -126,6 +126,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testMemLruLimitNDestroyLimit() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
     putData("PR1", 100);
     putData("PR2", 60);
@@ -184,6 +186,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testMemLruCounter() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
     putData("PR1", 10);
     putData("PR2", 16);
@@ -215,6 +219,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testEntryLruAllCounterMethods() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     final long ONE_MEG = 1024L * 1024L;
     createCache();
     createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 2, 1, 10000);
@@ -284,6 +290,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testEntryLRUEvictionNDestroyNNumOverflowOnDiskCount() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     final int extraEnteries = 24;
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", maxEnteries + extraEnteries);
@@ -331,6 +339,8 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testMemLRUEvictionNDestroyNNumOverflowOnDiskCount() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     int localMaxMem = 50;
     final int extraEntries = 6;
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
