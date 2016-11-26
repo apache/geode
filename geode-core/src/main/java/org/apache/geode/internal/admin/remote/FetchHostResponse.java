@@ -47,7 +47,7 @@ public final class FetchHostResponse extends AdminResponse {
   // instance variables
 
   InetAddress host;
-  File gemfireDir;
+  File geodeHomeDir;
   File workingDir;
   long birthDate;
   boolean isDedicatedCacheServer = false;
@@ -98,15 +98,15 @@ public final class FetchHostResponse extends AdminResponse {
       File gemfireJar = new File(path);
       File lib = gemfireJar.getParentFile();
       File product = lib.getParentFile();
-      m.gemfireDir = product.getCanonicalFile();// may thro' IOException if url is not in a proper
-                                                // format
+      m.geodeHomeDir = product.getCanonicalFile();// may thro' IOException if url is not in a proper
+      // format
     } catch (Exception ex) {
       if (dm != null && !dm.getCancelCriterion().isCancelInProgress()) {
         logger.debug(ex.getMessage(), ex);
       }
       m.name = m.name != null ? m.name : DistributionConfig.DEFAULT_NAME;
       m.host = m.host != null ? m.host : null;
-      m.gemfireDir = m.gemfireDir != null ? m.gemfireDir : new File("");
+      m.geodeHomeDir = m.geodeHomeDir != null ? m.geodeHomeDir : new File("");
       m.workingDir = m.workingDir != null ? m.workingDir
           : new File(System.getProperty("user.dir")).getAbsoluteFile();
     }
@@ -119,8 +119,8 @@ public final class FetchHostResponse extends AdminResponse {
     return this.host;
   }
 
-  public File getGemFireDir() {
-    return this.gemfireDir;
+  public File getGeodeHomeDir() {
+    return this.geodeHomeDir;
   }
 
   public File getWorkingDirectory() {
@@ -148,7 +148,7 @@ public final class FetchHostResponse extends AdminResponse {
     super.toData(out);
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeObject(this.host, out);
-    DataSerializer.writeObject(this.gemfireDir, out);
+    DataSerializer.writeObject(this.geodeHomeDir, out);
     DataSerializer.writeObject(this.workingDir, out);
     out.writeLong(this.birthDate);
     out.writeBoolean(this.isDedicatedCacheServer);
@@ -159,7 +159,7 @@ public final class FetchHostResponse extends AdminResponse {
     super.fromData(in);
     this.name = DataSerializer.readString(in);
     this.host = (InetAddress) DataSerializer.readObject(in);
-    this.gemfireDir = (File) DataSerializer.readObject(in);
+    this.geodeHomeDir = (File) DataSerializer.readObject(in);
     this.workingDir = (File) DataSerializer.readObject(in);
     this.birthDate = in.readLong();
     this.isDedicatedCacheServer = in.readBoolean();
