@@ -1023,21 +1023,30 @@ public class MiscellaneousCommands implements CommandMarker {
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_STACKTRACE__GROUP) String group,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE, mandatory = true,
-          help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName) {
+      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
+          help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
+
+      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
+          unspecifiedDefaultValue = "false",
+          help = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT__HELP) boolean failIfFilePresent) {
 
     Result result = null;
+    StringBuffer filePrefix = new StringBuffer("stacktrace");
     try {
+      if (fileName == null) {
+        fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
+      }
+      final File outFile = new File(fileName);
+      if (outFile.exists() && failIfFilePresent) {
+        return ResultBuilder.createShellClientErrorResult(CliStrings.format(
+            CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
+      }
+
       Cache cache = CacheFactory.getAnyInstance();
       GemFireCacheImpl gfeCacheImpl = (GemFireCacheImpl) cache;
       InternalDistributedSystem ads = gfeCacheImpl.getSystem();
 
       InfoResultData resultData = ResultBuilder.createInfoResultData();
-
-      if (!fileName.endsWith(".txt")) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENTION, ".txt"));
-      }
 
       Map<String, byte[]> dumps = new HashMap<String, byte[]>();
       Set<DistributedMember> targetMembers = null;
@@ -1072,6 +1081,33 @@ public class MiscellaneousCommands implements CommandMarker {
           .createGemFireErrorResult(CliStrings.EXPORT_STACKTRACE__ERROR + ex.getMessage());
     }
     return result;
+  }
+
+  /**
+   * Interceptor used by gfsh to intercept execution of shutdownall.
+   */
+  public static class ExportStackTraceInterceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+
+      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
+      String fileName = paramValueMap.get(CliStrings.EXPORT_STACKTRACE__FILE);
+
+      Response response = readYesNo(
+          CliStrings.format(CliStrings.EXPORT_STACKTRACE_WARN_USER, fileName), Response.YES);
+      if (response == Response.NO) {
+        return ResultBuilder
+            .createShellClientAbortOperationResult(CliStrings.EXPORT_STACKTRACE_MSG_ABORTING);
+      } else {
+        // we dont to show any info result
+        return ResultBuilder.createInfoResult("");
+      }
+    }
+
+    @Override
+    public Result postExecution(GfshParseResult parseResult, Result commandResult) {
+      return commandResult;
+    }
   }
 
   /***
