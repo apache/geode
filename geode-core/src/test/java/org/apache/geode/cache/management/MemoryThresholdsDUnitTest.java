@@ -581,7 +581,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   @Test
   public void testPR_RemotePutRejectionCacheClose() throws Exception {
     // Ignore this excetion as this can happen if pool is shutting down
-    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prRemotePutRejection(true, false, false);
   }
 
@@ -598,7 +599,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   @Test
   public void testPR_RemotePutRejectionCacheCloseWithTx() throws Exception {
     // Ignore this excetion as this can happen if pool is shutting down
-    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prRemotePutRejection(true, false, true);
   }
 

@@ -66,7 +66,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testHeapLRUWithOverflowToDisk() {
     // Ignore this excetion as this can happen if pool is shutting down
-    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
@@ -210,7 +211,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testHeapLRUWithLocalDestroy() {
     // Ignore this excetion as this can happen if pool is shutting down
-    IgnoredException.addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
