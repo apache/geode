@@ -229,7 +229,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
         LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
   }
 
-  public java.io.File getGemFireDir() {
+  public java.io.File getGeodeHomeDir() {
     throw new UnsupportedOperationException(
         LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
   }

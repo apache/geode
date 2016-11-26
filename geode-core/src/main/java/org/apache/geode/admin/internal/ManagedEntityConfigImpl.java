@@ -116,7 +116,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
   protected ManagedEntityConfigImpl(GemFireVM vm) {
     this.host = SocketCreator.getHostName(vm.getHost());
     this.workingDirectory = vm.getWorkingDirectory().getAbsolutePath();
-    this.productDirectory = vm.getGemFireDir().getAbsolutePath();
+    this.productDirectory = vm.getGeodeHomeDir().getAbsolutePath();
     this.remoteCommand = null;
   }
 

@@ -26,7 +26,7 @@ The `gfsh.bat` and `gfsh` bash script automatically append the required Apache G
 
 When you start up `gfsh`, it will automatically load required JAR files that have been packaged in the `gfsh-dependencies.jar` file. You do not need to modify your CLASSPATH to run gfsh. When starting servers and locators in gfsh, the start server and start locator commands will load `server-dependencies.jar` and `locator-dependencies.jar` files into the process CLASSPATH for you.
 
-These dependency JAR files are packaged in your Apache Geode installation in the `$GEMFIRE/lib` (or on Windows, the `%GEMFIRE%\lib`) directory.
+These dependency JAR files are packaged in your Apache Geode installation in the `$GEMFIRE/lib` (or on Windows, the `%GEODE_HOME%\lib`) directory.
 
 **Note:**
 The `gfsh` command-line utility also searches for `tools.jar` (included with JDK) and adds it to gfsh's CLASSPATH. If you do not have a JDK installed, gfsh uses file-based communication instead for the `status` and `stop` commands. If using a JRE instead of JDK, gfsh must have read-write permissions in the working directory of the server and locator processes.

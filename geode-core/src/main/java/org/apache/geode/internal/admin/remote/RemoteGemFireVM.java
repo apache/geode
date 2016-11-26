@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -175,7 +174,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return this.workingDir;
   }
 
-  public File getGemFireDir() {
+  public File getGeodeHomeDir() {
     if (this.gemfireDir == null) {
       initialize();
     }
@@ -201,7 +200,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     this.name = response.getName();
     this.host = response.getHost();
     this.workingDir = response.getWorkingDirectory();
-    this.gemfireDir = response.getGemFireDir();
+    this.gemfireDir = response.getGeodeHomeDir();
     this.birthDate = new Date(response.getBirthDate());
     this.isDedicatedCacheServer = Boolean.valueOf(response.isDedicatedCacheServer());
   }

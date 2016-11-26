@@ -1339,7 +1339,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
       InetAddress vmHost = vm.getHost();
       File vmWorkingDir = vm.getWorkingDirectory();
-      File vmProdDir = vm.getGemFireDir();
+      File vmProdDir = vm.getGeodeHomeDir();
 
       if (vmHost.equals(managedHost) && isSameFile(vmWorkingDir, managedWorkingDir)
           && isSameFile(vmProdDir, managedProdDir)) {

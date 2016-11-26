@@ -71,9 +71,9 @@ public interface GemFireVM {
   public java.io.File getWorkingDirectory();
 
   /**
-   * Returns the product directory (the value of GEMFIRE env variable)
+   * Returns the product directory (the value of GEODE_HOME env variable)
    */
-  public java.io.File getGemFireDir();
+  public java.io.File getGeodeHomeDir();
 
   /**
    * Returns the time the system was started
