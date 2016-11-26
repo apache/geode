@@ -1013,7 +1013,8 @@ public class MiscellaneousCommands implements CommandMarker {
    * @return Stack Trace
    */
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
+  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL},
+      interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ExportStackTraceInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -1033,11 +1034,6 @@ public class MiscellaneousCommands implements CommandMarker {
       InternalDistributedSystem ads = gfeCacheImpl.getSystem();
 
       InfoResultData resultData = ResultBuilder.createInfoResultData();
-
-      if (!fileName.endsWith(".txt")) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENTION, ".txt"));
-      }
 
       Map<String, byte[]> dumps = new HashMap<String, byte[]>();
       Set<DistributedMember> targetMembers = null;
@@ -1072,6 +1068,33 @@ public class MiscellaneousCommands implements CommandMarker {
           .createGemFireErrorResult(CliStrings.EXPORT_STACKTRACE__ERROR + ex.getMessage());
     }
     return result;
+  }
+
+  /**
+   * Interceptor used by gfsh to intercept execution of shutdownall.
+   */
+  public static class ExportStackTraceInterceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+
+      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
+      String fileName = paramValueMap.get(CliStrings.EXPORT_STACKTRACE__FILE);
+
+      Response response = readYesNo(
+          CliStrings.format(CliStrings.EXPORT_STACKTRACE_WARN_USER, fileName), Response.YES);
+      if (response == Response.NO) {
+        return ResultBuilder
+            .createShellClientAbortOperationResult(CliStrings.EXPORT_STACKTRACE_MSG_ABORTING);
+      } else {
+        // we dont to show any info result
+        return ResultBuilder.createInfoResult("");
+      }
+    }
+
+    @Override
+    public Result postExecution(GfshParseResult parseResult, Result commandResult) {
+      return commandResult;
+    }
   }
 
   /***

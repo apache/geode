@@ -90,6 +90,20 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
   public void testExportStacktrace() throws ClassNotFoundException, IOException {
     setupSystem();
 
+    // Test non txt extension file is allowed
+    File stacktracesFile = new File("allStackTraces.log");
+    stacktracesFile.createNewFile();
+    stacktracesFile.deleteOnExit();
+    CommandStringBuilder commandStringBuilder =
+        new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
+        stacktracesFile.getCanonicalPath());
+    String exportCommandString = commandStringBuilder.toString();
+    getLogWriter().info("CommandString : " + exportCommandString);
+    CommandResult exportCommandResult = executeCommand(exportCommandString);
+    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
+    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
+
     File allStacktracesFile = new File("allStackTraces.txt");
     allStacktracesFile.createNewFile();
     allStacktracesFile.deleteOnExit();
