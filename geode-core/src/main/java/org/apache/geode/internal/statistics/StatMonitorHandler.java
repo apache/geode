@@ -16,12 +16,11 @@ package org.apache.geode.internal.statistics;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 
@@ -38,7 +37,8 @@ public class StatMonitorHandler implements SampleHandler {
   private final boolean enableMonitorThread;
 
   /** The registered monitors */
-  private volatile List<StatisticsMonitor> monitors = Collections.<StatisticsMonitor>emptyList();
+  private final ConcurrentHashSet<StatisticsMonitor> monitors =
+      new ConcurrentHashSet<StatisticsMonitor>();
 
   /** Protected by synchronization on this handler instance */
   private volatile StatMonitorNotifier notifier;
@@ -52,11 +52,8 @@ public class StatMonitorHandler implements SampleHandler {
   public boolean addMonitor(StatisticsMonitor monitor) {
     synchronized (this) {
       boolean added = false;
-      List<StatisticsMonitor> oldMonitors = this.monitors;
-      if (!oldMonitors.contains(monitor)) {
-        List<StatisticsMonitor> newMonitors = new ArrayList<StatisticsMonitor>(oldMonitors);
-        added = newMonitors.add(monitor);
-        this.monitors = Collections.unmodifiableList(newMonitors);
+      if (!this.monitors.contains(monitor)) {
+        added = this.monitors.add(monitor);
       }
       if (!this.monitors.isEmpty()) {
         startNotifier_IfEnabledAndNotRunning();
@@ -69,11 +66,8 @@ public class StatMonitorHandler implements SampleHandler {
   public boolean removeMonitor(StatisticsMonitor monitor) {
     synchronized (this) {
       boolean removed = false;
-      List<StatisticsMonitor> oldMonitors = this.monitors;
-      if (oldMonitors.contains(monitor)) {
-        List<StatisticsMonitor> newMonitors = new ArrayList<StatisticsMonitor>(oldMonitors);
-        removed = newMonitors.remove(monitor);
-        this.monitors = Collections.unmodifiableList(newMonitors);
+      if (this.monitors.contains(monitor)) {
+        removed = this.monitors.remove(monitor);
       }
       if (this.monitors.isEmpty()) {
         stopNotifier_IfEnabledAndRunning();
@@ -110,8 +104,7 @@ public class StatMonitorHandler implements SampleHandler {
   }
 
   private void monitor(final long sampleTimeMillis, final List<ResourceInstance> resourceInstance) {
-    List<StatisticsMonitor> currentMonitors = StatMonitorHandler.this.monitors;
-    for (StatisticsMonitor monitor : currentMonitors) {
+    for (StatisticsMonitor monitor : StatMonitorHandler.this.monitors) {
       try {
         monitor.monitor(sampleTimeMillis, resourceInstance);
       } catch (VirtualMachineError e) {
@@ -138,15 +131,13 @@ public class StatMonitorHandler implements SampleHandler {
   public void destroyedResourceInstance(ResourceInstance resourceInstance) {}
 
   /** For testing only */
-  List<StatisticsMonitor> getMonitorsSnapshot() {
-    return Collections.unmodifiableList(this.monitors);
+  ConcurrentHashSet<StatisticsMonitor> getMonitorsSnapshot() {
+    return this.monitors;
   }
 
   /** For testing only */
   StatMonitorNotifier getStatMonitorNotifier() {
-    synchronized (this) {
-      return this.notifier;
-    }
+    return this.notifier;
   }
 
   private void startNotifier_IfEnabledAndNotRunning() {
@@ -228,8 +219,7 @@ public class StatMonitorHandler implements SampleHandler {
             }
           }
           if (working && latestTask != null) {
-            List<StatisticsMonitor> currentMonitors = StatMonitorHandler.this.monitors;
-            for (StatisticsMonitor monitor : currentMonitors) {
+            for (StatisticsMonitor monitor : StatMonitorHandler.this.monitors) {
               try {
                 monitor.monitor(latestTask.getSampleTimeMillis(),
                     latestTask.getResourceInstances());
