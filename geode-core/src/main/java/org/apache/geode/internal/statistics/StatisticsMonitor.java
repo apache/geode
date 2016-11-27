@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+
 import java.util.List;
 
 /**
@@ -29,9 +29,11 @@ public abstract class StatisticsMonitor {
 
   private final Object mutex = new Object();
 
-  private volatile List<StatisticsListener> listeners = Collections.<StatisticsListener>emptyList();
+  private volatile ConcurrentHashSet<StatisticsListener> listeners =
+      new ConcurrentHashSet<StatisticsListener>();
 
-  private volatile List<StatisticId> statisticIds = Collections.<StatisticId>emptyList();
+  private volatile ConcurrentHashSet<StatisticId> statisticIds =
+      new ConcurrentHashSet<StatisticId>();
 
   public StatisticsMonitor() {}
 
@@ -39,13 +41,8 @@ public abstract class StatisticsMonitor {
     if (statId == null) {
       throw new NullPointerException("StatisticId is null");
     }
-    synchronized (this.mutex) {
-      List<StatisticId> oldStatisticIds = this.statisticIds;
-      if (!oldStatisticIds.contains(statId)) {
-        List<StatisticId> newStatisticIds = new ArrayList<StatisticId>(oldStatisticIds);
-        newStatisticIds.add(statId);
-        this.statisticIds = Collections.unmodifiableList(newStatisticIds);
-      }
+    if (!this.statisticIds.contains(statId)) {
+      this.statisticIds.add(statId);
     }
     return this;
   }
@@ -54,13 +51,8 @@ public abstract class StatisticsMonitor {
     if (statId == null) {
       throw new NullPointerException("StatisticId is null");
     }
-    synchronized (this.mutex) {
-      List<StatisticId> oldStatisticIds = this.statisticIds;
-      if (oldStatisticIds.contains(statId)) {
-        List<StatisticId> newStatisticIds = new ArrayList<StatisticId>(oldStatisticIds);
-        newStatisticIds.remove(statId);
-        this.statisticIds = Collections.unmodifiableList(newStatisticIds);
-      }
+    if (this.statisticIds.contains(statId)) {
+      this.statisticIds.remove(statId);
     }
     return this;
   }
@@ -70,11 +62,8 @@ public abstract class StatisticsMonitor {
       throw new NullPointerException("StatisticsListener is null");
     }
     synchronized (this.mutex) {
-      List<StatisticsListener> oldListeners = this.listeners;
-      if (!oldListeners.contains(listener)) {
-        List<StatisticsListener> newListeners = new ArrayList<StatisticsListener>(oldListeners);
-        newListeners.add(listener);
-        this.listeners = Collections.unmodifiableList(newListeners);
+      if (!this.listeners.contains(listener)) {
+        this.listeners.add(listener);
         getStatMonitorHandler().addMonitor(this);
       }
     }
@@ -85,18 +74,15 @@ public abstract class StatisticsMonitor {
       throw new NullPointerException("StatisticsListener is null");
     }
     synchronized (this.mutex) {
-      List<StatisticsListener> oldListeners = this.listeners;
-      if (oldListeners.contains(listener)) {
-        List<StatisticsListener> newListeners = new ArrayList<StatisticsListener>(oldListeners);
-        newListeners.remove(listener);
-        if (newListeners.isEmpty()) {
+      if (this.listeners.contains(listener)) {
+        this.listeners.remove(listener);
+        if (this.listeners.isEmpty()) {
           try {
             getStatMonitorHandler().removeMonitor(this);
           } catch (IllegalStateException ignore) {
             // sample collector and handlers were closed (ok on removal)
           }
         }
-        this.listeners = Collections.unmodifiableList(newListeners);
       }
     }
   }
@@ -114,14 +100,14 @@ public abstract class StatisticsMonitor {
 
   private final void monitorStatisticIds(long millisTimeStamp,
       List<ResourceInstance> resourceInstances) {
-    List<StatisticId> statisticIdsToMonitor = statisticIds;
+    ConcurrentHashSet<StatisticId> statisticIdsToMonitor = statisticIds;
     if (!statisticIdsToMonitor.isEmpty()) {
       // TODO:
     }
   }
 
   protected final void notifyListeners(StatisticsNotification notification) {
-    List<StatisticsListener> listenersToNotify = this.listeners;
+    ConcurrentHashSet<StatisticsListener> listenersToNotify = this.listeners;
     for (StatisticsListener listener : listenersToNotify) {
       listener.handleNotification(notification);
     }
@@ -136,7 +122,7 @@ public abstract class StatisticsMonitor {
   }
 
   /** For testing only */
-  List<StatisticsListener> getStatisticsListenersSnapshot() {
+  ConcurrentHashSet<StatisticsListener> getStatisticsListenersSnapshot() {
     return this.listeners;
   }
 
