@@ -17,6 +17,16 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.memcached.GemFireMemcachedServer;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -27,16 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.Config;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
@@ -53,6 +53,10 @@ import org.apache.geode.memcached.GemFireMemcachedServer;
 public interface DistributionConfig extends Config, LogConfig {
 
   //////////////////// Instance Methods ////////////////////
+  /**
+   * The static String definition of the prefix used to defined ssl-* properties
+   */
+  String SSL_PREFIX = "ssl-";
 
   /**
    * The prefix used for Gemfire properties set through java system properties

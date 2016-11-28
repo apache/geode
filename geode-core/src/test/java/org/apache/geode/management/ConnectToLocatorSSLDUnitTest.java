@@ -43,10 +43,10 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -91,14 +91,27 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
 
     GfshShellConnectionRule gfshConnector =
         new GfshShellConnectionRule(lsRule.getPort(0), GfshShellConnectionRule.PortType.locator);
-    gfshConnector.connect(CliStrings.CONNECT__SECURITY_PROPERTIES,
-        securityPropsFile.getCanonicalPath());
-    assertTrue(gfshConnector.isConnected());
 
+    // when we connect too soon, we would get "Failed to retrieve RMIServer stub:
+    // javax.naming.CommunicationException [Root exception is java.rmi.NoSuchObjectException: no
+    // such object in table]" Exception.
+    // Tried to wait on jmx connector server being ready, but it doesn't work.
+    // Add the retry logic here to try at most 10 times for connection.
+    for (int i = 0; i < 10; i++) {
+      gfshConnector.connect(CliStrings.CONNECT__SECURITY_PROPERTIES,
+          securityPropsFile.getCanonicalPath());
+      if (gfshConnector.isConnected()) {
+        break;
+      }
+      Thread.currentThread().sleep(3000);
+    }
+
+    assertTrue(gfshConnector.isConnected());
     gfshConnector.close();
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-2099
   public void testConnectToLocatorWithSSLJMX() throws Exception {
     securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.JMX);
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
@@ -112,7 +125,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Ignore("GEODE-2099")
+  @Category(FlakyTest.class) // GEODE-2099
   public void testConnectToLocatorWithLegacyClusterSSL() throws Exception {
     securityProps.setProperty(CLUSTER_SSL_ENABLED, "true");
     securityProps.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
@@ -125,7 +138,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Ignore("GEODE-2099")
+  @Category(FlakyTest.class) // GEODE-2099
   public void testConnectToLocatorWithLegacyJMXSSL() throws Exception {
     securityProps.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
     securityProps.setProperty(JMX_MANAGER_SSL_KEYSTORE, jks.getCanonicalPath());

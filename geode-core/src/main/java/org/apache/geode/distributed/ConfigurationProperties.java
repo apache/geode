@@ -165,7 +165,10 @@ public interface ConfigurationProperties {
    * with other <i>cluster-ssl-*</i> properties property <a name="cluster-ssl"/a>
    * </p>
    * <U>Description</U>: The cluster-ssl property prefix
+   *
+   * @deprecated Since Geode1.0, use ssl-* properties and ssl-enabled-components
    */
+  @Deprecated
   String CLUSTER_SSL_PREFIX = "cluster-ssl";
 
   /**
@@ -827,8 +830,12 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: Optional
    * </p>
+   * 
+   * @deprecated Since Geode1.0, use ssl-* properties and ssl-enabled-components
    */
+  @Deprecated
   String JMX_MANAGER_SSL_PREFIX = "jmx-manager-ssl-";
+
   /**
    * The static String definition of the <i>"jmx-manager"</i> property <a name="jmx-manager"/a>
    * </p>

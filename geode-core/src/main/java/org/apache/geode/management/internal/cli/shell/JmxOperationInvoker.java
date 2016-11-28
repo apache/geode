@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.shell;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PREFIX;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.internal.util.IOUtils;
@@ -240,7 +241,7 @@ public class JmxOperationInvoker implements OperationInvoker {
       returnKey = key;
     }
     if (key.startsWith(CLUSTER_SSL_PREFIX) || key.startsWith(JMX_MANAGER_SSL_PREFIX)
-        || key.startsWith("ssl-")) {
+        || key.startsWith(DistributionConfig.SSL_PREFIX)) {
       if (key.endsWith("keystore")) {
         returnKey = Gfsh.SSL_KEYSTORE;
       } else if (key.endsWith("keystore-password")) {

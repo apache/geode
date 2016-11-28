@@ -148,7 +148,7 @@ public class SSLConfigurationFactory {
   private SSLConfig createSSLConfig(final SecurableCommunicationChannel sslEnabledComponent) {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setCiphers(getDistributionConfig().getSSLCiphers());
-    sslConfig.setEnabled(isSSLEnabledForComponent(getDistributionConfig(), sslEnabledComponent));
+    sslConfig.setEnabled(determineIfSSLEnabledForSSLComponent(sslEnabledComponent));
     sslConfig.setKeystore(getDistributionConfig().getSSLKeyStore());
     sslConfig.setKeystorePassword(getDistributionConfig().getSSLKeyStorePassword());
     sslConfig.setKeystoreType(getDistributionConfig().getSSLKeyStoreType());
@@ -160,17 +160,18 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  public static boolean isSSLEnabledForComponent(DistributionConfig dc,
+  private boolean determineIfSSLEnabledForSSLComponent(
       final SecurableCommunicationChannel sslEnabledComponent) {
-    if (ArrayUtils.contains(dc.getSecurableCommunicationChannels(),
+    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
         SecurableCommunicationChannel.NONE)) {
       return false;
     }
-    if (ArrayUtils.contains(dc.getSecurableCommunicationChannels(),
+    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
         SecurableCommunicationChannel.ALL)) {
       return true;
     }
-    return ArrayUtils.contains(dc.getSecurableCommunicationChannels(), sslEnabledComponent);
+    return ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
+        sslEnabledComponent) ? true : false;
   }
 
   /**
