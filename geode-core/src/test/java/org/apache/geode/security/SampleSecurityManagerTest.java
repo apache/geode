@@ -12,32 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.templates;
+package org.apache.geode.security;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.Properties;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.geode.security.TestSecurityManager.User;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.security.templates.SampleSecurityManager.Role;
-import org.apache.geode.security.templates.SampleSecurityManager.User;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.Properties;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class SampleSecurityManagerTest {
 
-  private SampleSecurityManager sampleSecurityManager;
+  private TestSecurityManager sampleSecurityManager;
   private String jsonResource;
   private File jsonFile;
   private String json;
@@ -59,7 +57,7 @@ public class SampleSecurityManagerTest {
 
     // string
     this.json = FileUtils.readFileToString(this.jsonFile, "UTF-8");
-    this.sampleSecurityManager = new SampleSecurityManager();
+    this.sampleSecurityManager = new TestSecurityManager();
   }
 
   @Test
@@ -83,7 +81,7 @@ public class SampleSecurityManagerTest {
   @Test
   public void initShouldUsePropertyAsJsonResource() throws Exception {
     Properties securityProperties = new Properties();
-    securityProperties.setProperty(SampleSecurityManager.SECURITY_JSON, this.jsonResource);
+    securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, this.jsonResource);
     this.sampleSecurityManager.init(securityProperties);
     verifySecurityManagerState();
   }

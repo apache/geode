@@ -26,7 +26,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.templates.DummyAuthenticator;
-import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -46,7 +45,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedT
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties server0Props = new Properties();
-    server0Props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    server0Props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     server0Props.setProperty("start-locator", "localhost[" + locatorPort + "]");
     lsRule.getServerVM(0, server0Props);
 

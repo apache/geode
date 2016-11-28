@@ -24,8 +24,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.templates.DummyAuthenticator;
-import org.apache.geode.security.templates.SamplePostProcessor;
-import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.After;
@@ -46,7 +44,7 @@ public class CacheFactoryWithSecurityObjectTest {
   @Before
   public void before() throws Exception {
     securityService = SecurityService.getSecurityService();
-    simpleSecurityManager = new SimpleSecurityManager();
+    simpleSecurityManager = new SimpleTestSecurityManager();
     properties.setProperty("mcast-port", "0");
   }
 
@@ -61,7 +59,7 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Test
   public void testCreateCacheWithPostProcessor() throws Exception {
-    cache = new CacheFactory(properties).setPostProcessor(new SamplePostProcessor())
+    cache = new CacheFactory(properties).setPostProcessor(new TestPostProcessor())
         .setSecurityManager(null).create();
     assertFalse(securityService.isIntegratedSecurity());
     assertFalse(securityService.needPostProcess());
@@ -74,7 +72,7 @@ public class CacheFactoryWithSecurityObjectTest {
         DummyAuthenticator.class.getName());
 
     cache = new CacheFactory(properties).setSecurityManager(simpleSecurityManager)
-        .setPostProcessor(new SamplePostProcessor()).create();
+        .setPostProcessor(new TestPostProcessor()).create();
 
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());

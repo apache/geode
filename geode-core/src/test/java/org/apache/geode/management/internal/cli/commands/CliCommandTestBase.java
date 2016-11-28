@@ -27,7 +27,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestSecurityManager;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -136,7 +136,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       }
 
       if (jsonFile != null) {
-        localProps.setProperty(SampleSecurityManager.SECURITY_JSON, jsonFile);
+        localProps.setProperty(TestSecurityManager.SECURITY_JSON, jsonFile);
       }
 
       final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);

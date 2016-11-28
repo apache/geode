@@ -21,7 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -304,7 +304,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
   private static Properties buildSecurityProperties(String username, String password) {
     Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
     props.put("security-json", "org/apache/geode/security/templates/security.json");
     props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswdAI.class.getName());
     props.put("security-username", username);

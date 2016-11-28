@@ -44,7 +44,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -72,9 +71,9 @@ public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTes
     int jmxPort = ports[1];
     locator.invoke(() -> {
       Properties props = new Properties();
-      props.setProperty(SampleSecurityManager.SECURITY_JSON,
+      props.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/clientServer.json");
-      props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
       props.setProperty(MCAST_PORT, "0");
       props.put(JMX_MANAGER, "true");
       props.put(JMX_MANAGER_START, "true");
@@ -89,9 +88,9 @@ public class PDXGfshPostProcessorOnRemoteServerTest extends JUnit4DistributedTes
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, locators);
-      props.setProperty(SampleSecurityManager.SECURITY_JSON,
+      props.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/clientServer.json");
-      props.setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
       props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
       props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 

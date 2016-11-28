@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -65,7 +64,7 @@ public class ClusterConfigWithoutSecurityDUnitTest extends JUnit4DistributedTest
   @Test
   public void serverShouldBeAllowedToStartWithSecurityIfNotUsingClusterConfig() throws Exception {
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
 
     props.setProperty("use-cluster-configuration", "false");
@@ -78,7 +77,8 @@ public class ClusterConfigWithoutSecurityDUnitTest extends JUnit4DistributedTest
     // after cache is created, the configuration won't chagne
     Properties secProps = ds.getSecurityProperties();
     assertEquals(2, secProps.size());
-    assertEquals(SimpleSecurityManager.class.getName(), secProps.getProperty("security-manager"));
+    assertEquals(SimpleTestSecurityManager.class.getName(),
+        secProps.getProperty("security-manager"));
     assertEquals(PDXPostProcessor.class.getName(), secProps.getProperty("security-post-processor"));
   }
 

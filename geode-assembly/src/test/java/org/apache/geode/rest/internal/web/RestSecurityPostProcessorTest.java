@@ -31,7 +31,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rest.internal.web.controllers.Customer;
 import org.apache.geode.rest.internal.web.controllers.RedactingPostProcessor;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -54,9 +54,9 @@ public class RestSecurityPostProcessorTest {
   static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();
   static Properties properties = new Properties() {
     {
-      setProperty(SampleSecurityManager.SECURITY_JSON,
+      setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/clientServer.json");
-      setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
       setProperty(START_DEV_REST_API, "true");
       setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
       setProperty(HTTP_SERVICE_PORT, restPort + "");
