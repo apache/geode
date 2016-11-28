@@ -22,8 +22,8 @@ import static org.apache.geode.internal.Assert.assertTrue;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
-import org.apache.geode.security.templates.SamplePostProcessor;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestPostProcessor;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
@@ -44,8 +44,8 @@ public class GfshCommandsPostProcessorTest {
   static Properties properties = new Properties() {
     {
       setProperty(JMX_MANAGER_PORT, jmxPort + "");
-      setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
-      setProperty(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+      setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
+      setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
       setProperty("security-json",
           "org/apache/geode/management/internal/security/cacheServer.json");
     }

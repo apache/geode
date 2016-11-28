@@ -25,7 +25,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.security.templates.SampleSecurityManager;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -63,7 +62,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
       DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
       final Properties properties = new Properties();
-      properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+      properties.setProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/clientServer.json");
       properties.setProperty(LOCATORS, locators);
       properties.setProperty(MCAST_PORT, "0");
@@ -102,7 +101,7 @@ public class IntegratedSecurityCacheLifecycleDistributedTest extends JUnit4Cache
 
   private void connect() throws IOException {
     final Properties properties = new Properties();
-    properties.setProperty(SampleSecurityManager.SECURITY_JSON,
+    properties.setProperty(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/management/internal/security/clientServer.json");
     properties.setProperty(LOCATORS, locators);
     properties.setProperty(MCAST_PORT, "0");

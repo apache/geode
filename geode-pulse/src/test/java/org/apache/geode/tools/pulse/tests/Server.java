@@ -37,7 +37,7 @@ import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
@@ -73,8 +73,8 @@ public class Server {
 
       // set up Shiro Security Manager
       Properties securityProperties = new Properties();
-      securityProperties.setProperty(SampleSecurityManager.SECURITY_JSON, jsonAuthFile);
-      Realm realm = new CustomAuthRealm(SampleSecurityManager.class.getName(), securityProperties);
+      securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonAuthFile);
+      Realm realm = new CustomAuthRealm(TestSecurityManager.class.getName(), securityProperties);
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
 

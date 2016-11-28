@@ -34,7 +34,6 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
-import org.apache.geode.security.templates.SamplePostProcessor;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -43,7 +42,7 @@ public class CQPostProcessorDunitTest extends AbstractSecureServerDUnitTest {
 
   public Properties getProperties() {
     Properties properties = super.getProperties();
-    properties.setProperty(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    properties.setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     return properties;
   }
 

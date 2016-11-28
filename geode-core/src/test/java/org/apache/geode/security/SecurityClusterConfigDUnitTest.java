@@ -27,7 +27,6 @@ import static org.junit.Assert.assertTrue;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -54,7 +53,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     IgnoredException
         .addIgnoredException(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toString());
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(JMX_MANAGER, "false");
     props.setProperty(JMX_MANAGER_START, "false");
     props.setProperty(JMX_MANAGER_PORT, 0 + "");
@@ -90,7 +89,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
     props.setProperty("use-cluster-configuration", "true");
-    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
 
     // initial security properties should only contain initial set of values
     ServerStarterRule serverStarter = new ServerStarterRule(props);

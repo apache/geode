@@ -23,7 +23,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestSecurityManager;
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -51,7 +51,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
   public void testMultiUser() throws IOException, JSONException, InterruptedException {
     Properties properties = new Properties();
     properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
-    properties.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
+    properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
 
     // set up vm_0 the secure jmx manager
     Object[] results = setUpJMXManagerOnVM(0, properties,

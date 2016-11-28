@@ -26,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.security.templates.SimpleSecurityManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -42,7 +41,7 @@ public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
   @Before
   public void before() throws Exception {
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     lsRule.getLocatorVM(0, props);
   }
 

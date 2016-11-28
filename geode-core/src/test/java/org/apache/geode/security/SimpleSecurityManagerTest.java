@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.security.templates;
+package org.apache.geode.security;
 
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.*;
@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.security.SimpleTestSecurityManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,12 +33,12 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class SimpleSecurityManagerTest {
-  private SimpleSecurityManager manager;
+  private SimpleTestSecurityManager manager;
   private Properties credentials;
 
   @Before
   public void before() {
-    manager = new SimpleSecurityManager();
+    manager = new SimpleTestSecurityManager();
     credentials = new Properties();
   }
 

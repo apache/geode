@@ -31,8 +31,8 @@ import java.util.Properties;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.security.templates.SamplePostProcessor;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestPostProcessor;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
@@ -334,8 +334,8 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityProps() {
     Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);
@@ -348,8 +348,8 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityPropsWithNoSetter() {
     Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);
