@@ -29,11 +29,10 @@ public abstract class StatisticsMonitor {
 
   private final Object mutex = new Object();
 
-  private volatile ConcurrentHashSet<StatisticsListener> listeners =
+  private final ConcurrentHashSet<StatisticsListener> listeners =
       new ConcurrentHashSet<StatisticsListener>();
 
-  private volatile ConcurrentHashSet<StatisticId> statisticIds =
-      new ConcurrentHashSet<StatisticId>();
+  private final ConcurrentHashSet<StatisticId> statisticIds = new ConcurrentHashSet<StatisticId>();
 
   public StatisticsMonitor() {}
 
@@ -100,15 +99,13 @@ public abstract class StatisticsMonitor {
 
   private final void monitorStatisticIds(long millisTimeStamp,
       List<ResourceInstance> resourceInstances) {
-    ConcurrentHashSet<StatisticId> statisticIdsToMonitor = statisticIds;
-    if (!statisticIdsToMonitor.isEmpty()) {
+    if (!this.statisticIds.isEmpty()) {
       // TODO:
     }
   }
 
   protected final void notifyListeners(StatisticsNotification notification) {
-    ConcurrentHashSet<StatisticsListener> listenersToNotify = this.listeners;
-    for (StatisticsListener listener : listenersToNotify) {
+    for (StatisticsListener listener : this.listeners) {
       listener.handleNotification(notification);
     }
   }

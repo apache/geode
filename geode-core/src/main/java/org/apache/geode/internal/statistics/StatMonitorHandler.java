@@ -37,7 +37,7 @@ public class StatMonitorHandler implements SampleHandler {
   private final boolean enableMonitorThread;
 
   /** The registered monitors */
-  private volatile ConcurrentHashSet<StatisticsMonitor> monitors =
+  private final ConcurrentHashSet<StatisticsMonitor> monitors =
       new ConcurrentHashSet<StatisticsMonitor>();
 
   /** Protected by synchronization on this handler instance */
@@ -100,8 +100,7 @@ public class StatMonitorHandler implements SampleHandler {
   }
 
   private void monitor(final long sampleTimeMillis, final List<ResourceInstance> resourceInstance) {
-    ConcurrentHashSet<StatisticsMonitor> currentMonitors = StatMonitorHandler.this.monitors;
-    for (StatisticsMonitor monitor : currentMonitors) {
+    for (StatisticsMonitor monitor : StatMonitorHandler.this.monitors) {
       try {
         monitor.monitor(sampleTimeMillis, resourceInstance);
       } catch (VirtualMachineError e) {
@@ -222,8 +221,7 @@ public class StatMonitorHandler implements SampleHandler {
             }
           }
           if (working && latestTask != null) {
-            ConcurrentHashSet<StatisticsMonitor> currentMonitors = StatMonitorHandler.this.monitors;
-            for (StatisticsMonitor monitor : currentMonitors) {
+            for (StatisticsMonitor monitor : StatMonitorHandler.this.monitors) {
               try {
                 monitor.monitor(latestTask.getSampleTimeMillis(),
                     latestTask.getResourceInstances());
