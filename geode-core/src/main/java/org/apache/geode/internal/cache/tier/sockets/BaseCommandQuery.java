@@ -271,6 +271,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
             servConn.getName(), MessageType.getString(msg.getMessageType()), servConn.getProxyID());
       }
       servConn.setFlagProcessMessagesAsFalse();
+      servConn.setClientDisconnectedException(se);
       return false;
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it

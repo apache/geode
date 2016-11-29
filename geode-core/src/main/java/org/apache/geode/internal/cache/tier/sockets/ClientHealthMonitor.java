@@ -202,7 +202,8 @@ public class ClientHealthMonitor {
    * 
    * @param proxyID The id of the client to be unregistered
    */
-  private void unregisterClient(ClientProxyMembershipID proxyID) {
+  private void unregisterClient(ClientProxyMembershipID proxyID, boolean clientDisconnectedCleanly,
+      Throwable clientDisconnectException) {
     boolean unregisterClient = false;
     synchronized (_clientHeartbeatsLock) {
       Map oldClientHeartbeats = this._clientHeartbeats;
@@ -215,10 +216,17 @@ public class ClientHealthMonitor {
     }
 
     if (unregisterClient) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(LocalizedMessage.create(
-            LocalizedStrings.ClientHealthMonitor_CLIENTHEALTHMONITOR_UNREGISTERING_CLIENT_WITH_MEMBER_ID_0,
-            new Object[] {proxyID}));
+      if (clientDisconnectedCleanly) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(LocalizedMessage.create(
+              LocalizedStrings.ClientHealthMonitor_CLIENTHEALTHMONITOR_UNREGISTERING_CLIENT_WITH_MEMBER_ID_0,
+              new Object[] {proxyID}));
+        }
+      } else {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.ClientHealthMonitor_CLIENTHEALTHMONITOR_UNREGISTERING_CLIENT_WITH_MEMBER_ID_0_DUE_TO_1,
+            new Object[] {proxyID, clientDisconnectException == null ? "Unknown reason"
+                : clientDisconnectException.getLocalizedMessage()}));
       }
       if (this.stats != null) {
         this.stats.incClientUnRegisterRequests();
@@ -236,8 +244,8 @@ public class ClientHealthMonitor {
    * @param clientDisconnectedCleanly Whether the client disconnected cleanly or crashed
    */
   public void unregisterClient(ClientProxyMembershipID proxyID, AcceptorImpl acceptor,
-      boolean clientDisconnectedCleanly) {
-    unregisterClient(proxyID);
+      boolean clientDisconnectedCleanly, Throwable clientDisconnectException) {
+    unregisterClient(proxyID, clientDisconnectedCleanly, clientDisconnectException);
     // Unregister any CacheClientProxy instances associated with this member id
     // if this method was invoked from a ServerConnection and the client did
     // not disconnect cleanly.
@@ -302,11 +310,12 @@ public class ClientHealthMonitor {
     }
   }
 
-  public void removeAllConnectionsAndUnregisterClient(ClientProxyMembershipID proxyID) {
+  public void removeAllConnectionsAndUnregisterClient(ClientProxyMembershipID proxyID,
+      Throwable t) {
     // Remove all connections
     cleanupClientThreads(proxyID, false);
 
-    unregisterClient(proxyID);
+    unregisterClient(proxyID, false, t);
   }
 
   /**

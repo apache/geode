@@ -691,6 +691,7 @@ public class ServerConnection implements Runnable {
   private boolean doHandshake = true;
 
   private boolean clientDisconnectedCleanly = false;
+  private Throwable clientDisconnectedException;
   private int failureCount = 0;
   private boolean processMessages = true;
 
@@ -804,6 +805,9 @@ public class ServerConnection implements Runnable {
 
   // package access allowed so AcceptorImpl can call
   void handleTermination() {
+    if (this.crHelper.isShutdown()) {
+      setClientDisconnectCleanly();
+    }
     handleTermination(false);
   }
 
@@ -886,7 +890,7 @@ public class ServerConnection implements Runnable {
         this.acceptor.getClientHealthMonitor().removeConnection(this.proxyId, this);
         if (unregisterClient) {
           this.acceptor.getClientHealthMonitor().unregisterClient(this.proxyId, getAcceptor(),
-              this.clientDisconnectedCleanly);
+              this.clientDisconnectedCleanly, this.clientDisconnectedException);
         }
       }
     }
@@ -1138,6 +1142,7 @@ public class ServerConnection implements Runnable {
       } catch (IOException ex) {
         logger.warn(
             LocalizedMessage.create(LocalizedStrings.ServerConnection_0__UNEXPECTED_EXCEPTION, ex));
+        setClientDisconnectedException(ex);
       } finally {
         getAcceptor().releaseCommBuffer(Message.setTLCommBuffer(null));
         // DistributedSystem.releaseThreadsSockets();
@@ -1852,5 +1857,9 @@ public class ServerConnection implements Runnable {
 
   public void setClientDisconnectCleanly() {
     this.clientDisconnectedCleanly = true;
+  }
+
+  public void setClientDisconnectedException(Throwable e) {
+    this.clientDisconnectedException = e;
   }
 }

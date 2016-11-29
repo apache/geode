@@ -399,6 +399,9 @@ public class LocalizedStrings {
   public static final StringId DiskRegion_COMPLEXDISKREGIONGETNEXTDIR_MAX_DIRECTORY_SIZE_WILL_GET_VIOLATED__GOING_AHEAD_WITH_THE_SWITCHING_OF_OPLOG_ANY_WAYS_CURRENTLY_AVAILABLE_SPACE_IN_THE_DIRECTORY_IS__0__THE_CAPACITY_OF_DIRECTORY_IS___1 =
       new StringId(1200,
           "Even though the configured directory size limit has been exceeded a new oplog will be created because compaction is enabled. The configured limit is {1}. The current space used in the directory by this disk store is {0}.");
+  public static final StringId ClientHealthMonitor_CLIENTHEALTHMONITOR_UNREGISTERING_CLIENT_WITH_MEMBER_ID_0_DUE_TO_1 =
+      new StringId(1201,
+          "ClientHealthMonitor: Unregistering client with member id {0} due to: {1}");
 
   public static final StringId AttributesFactory_CLONENOTSUPPORTEDEXCEPTION_THROWN_IN_CLASS_THAT_IMPLEMENTS_CLONEABLE =
       new StringId(1213, "CloneNotSupportedException thrown in class that implements cloneable.");

@@ -2585,7 +2585,7 @@ public class CacheClientProxy implements ClientSession {
               // See isAlive().
               // getProxy().close(false);
 
-              pauseOrUnregisterProxy();
+              pauseOrUnregisterProxy(e);
             } // _isStopped
           } // synchronized
           exceptionOccured = true;
@@ -2700,7 +2700,7 @@ public class CacheClientProxy implements ClientSession {
 
     }
 
-    private void pauseOrUnregisterProxy() {
+    private void pauseOrUnregisterProxy(Throwable t) {
       if (getProxy().isDurable()) {
         try {
           getProxy().pauseDispatching();
@@ -2727,7 +2727,7 @@ public class CacheClientProxy implements ClientSession {
       // been caught and here, so the _proxy will be null.
       if (chm != null) {
         ClientProxyMembershipID proxyID = getProxy().proxyID;
-        chm.removeAllConnectionsAndUnregisterClient(proxyID);
+        chm.removeAllConnectionsAndUnregisterClient(proxyID, t);
         if (!getProxy().isDurable()) {
           getProxy().getCacheClientNotifier().unregisterClient(proxyID, false);
         }
@@ -2917,7 +2917,7 @@ public class CacheClientProxy implements ClientSession {
                 LocalizedMessage.create(
                     LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this),
                 e);
-            pauseOrUnregisterProxy();
+            pauseOrUnregisterProxy(e);
           }
         }
       } catch (Exception e) {

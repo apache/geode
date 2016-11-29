@@ -78,6 +78,7 @@ public class DestroyRegion extends BaseCommand {
         }
 
         servConn.setFlagProcessMessagesAsFalse();
+        servConn.setClientDisconnectedException(se);
         return;
       } catch (Exception e) {
         writeException(msg, e, false, servConn);
@@ -146,6 +147,7 @@ public class DestroyRegion extends BaseCommand {
               servConn.getProxyID());
         }
         servConn.setFlagProcessMessagesAsFalse();
+        servConn.setClientDisconnectedException(e);
       } else {
         writeException(msg, e, false, servConn);
         servConn.setAsTrue(RESPONDED);

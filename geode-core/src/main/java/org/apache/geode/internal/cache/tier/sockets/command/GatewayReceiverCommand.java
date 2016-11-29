@@ -490,6 +490,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                         servConn.getProxyID());
                   }
                   servConn.setFlagProcessMessagesAsFalse();
+                  servConn.setClientDisconnectedException(e);
                 } else {
                   throw e;
                 }
@@ -683,6 +684,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               servConn.getProxyID());
         }
         servConn.setFlagProcessMessagesAsFalse();
+        servConn.setClientDisconnectedException(e);
         return;
       } catch (Exception e) {
         // If an interrupted exception is thrown , rethrow it

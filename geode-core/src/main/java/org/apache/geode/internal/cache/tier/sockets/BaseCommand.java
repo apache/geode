@@ -305,6 +305,7 @@ public abstract class BaseCommand implements Command {
       }
     }
     servConn.setFlagProcessMessagesAsFalse();
+    servConn.setClientDisconnectedException(eof);
   }
 
   private static void handleInterruptedIOException(Message msg, ServerConnection servConn,
@@ -317,6 +318,7 @@ public abstract class BaseCommand implements Command {
       }
     }
     servConn.setFlagProcessMessagesAsFalse();
+    servConn.setClientDisconnectedException(e);
   }
 
   private static void handleIOException(Message msg, ServerConnection servConn, Exception e) {
@@ -339,6 +341,7 @@ public abstract class BaseCommand implements Command {
       }
     }
     servConn.setFlagProcessMessagesAsFalse();
+    servConn.setClientDisconnectedException(e);
   }
 
   private static void handleShutdownException(Message msg, ServerConnection servConn, Exception e) {
@@ -359,6 +362,7 @@ public abstract class BaseCommand implements Command {
       }
     }
     servConn.setFlagProcessMessagesAsFalse();
+    servConn.setClientDisconnectedException(e);
   }
 
   // Handle GemfireSecurityExceptions separately since the connection should not
@@ -499,6 +503,7 @@ public abstract class BaseCommand implements Command {
       }
     } finally {
       servConn.setFlagProcessMessagesAsFalse();
+      servConn.setClientDisconnectedException(th);
     }
   }
 
