@@ -173,16 +173,18 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   protected static final String ATTACH_API_CLASS_NAME =
       "com.sun.tools.attach.AttachNotSupportedException";
-  protected static final String GEMFIRE_HOME = System.getenv("GEMFIRE");
+  protected static final String GEODE_HOME = System.getenv("GEODE_HOME");
   protected static final String JAVA_HOME = System.getProperty("java.home");
   protected static final String LOCALHOST = "localhost";
 
+
+
   // MUST CHANGE THIS TO REGEX SINCE VERSION CHANGES IN JAR NAME
-  protected static final String GEMFIRE_JAR_PATHNAME =
-      IOUtils.appendToPath(GEMFIRE_HOME, "lib", GemFireVersion.getGemFireJarFileName());
+  protected static final String GEODE_JAR_PATHNAME =
+      IOUtils.appendToPath(GEODE_HOME, "lib", GemFireVersion.getGemFireJarFileName());
 
   protected static final String CORE_DEPENDENCIES_JAR_PATHNAME =
-      IOUtils.appendToPath(GEMFIRE_HOME, "lib", "geode-dependencies.jar");
+      IOUtils.appendToPath(GEODE_HOME, "lib", "geode-dependencies.jar");
 
   protected static boolean isAttachApiAvailable() {
     if (ATTACH_API_AVAILABLE.get() == null) {
@@ -1182,7 +1184,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   protected String getGemFireJarPath() {
     String classpath = getSystemClasspath();
-    String gemfireJarPath = GEMFIRE_JAR_PATHNAME;
+    String gemfireJarPath = GEODE_JAR_PATHNAME;
 
     for (String classpathElement : classpath.split(File.pathSeparator)) {
       // MUST CHANGE THIS TO REGEX SINCE VERSION CHANGES IN JAR NAME
@@ -2435,12 +2437,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   public Result startVsd(@CliOption(key = CliStrings.START_VSD__FILE,
       help = CliStrings.START_VSD__FILE__HELP) final String[] statisticsArchiveFilePathnames) {
     try {
-      String gemfireHome = System.getenv("GEMFIRE");
+      String geodeHome = System.getenv("GEODE_HOME");
 
-      assertState(!StringUtils.isBlank(gemfireHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
+      assertState(!StringUtils.isBlank(geodeHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
 
       assertState(IOUtils.isExistingPathname(getPathToVsd()),
-          String.format(CliStrings.START_VSD__NOT_FOUND_ERROR_MESSAGE, gemfireHome));
+          String.format(CliStrings.START_VSD__NOT_FOUND_ERROR_MESSAGE, geodeHome));
 
       String[] vsdCommandLine = createdVsdCommandLine(statisticsArchiveFilePathnames);
 
@@ -2493,7 +2495,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   protected String getPathToVsd() {
     String vsdPathname =
-        IOUtils.appendToPath(System.getenv("GEMFIRE"), "tools", "vsd", "bin", "vsd");
+        IOUtils.appendToPath(System.getenv("GEODE_HOME"), "tools", "vsd", "bin", "vsd");
 
     if (SystemUtils.isWindows()) {
       vsdPathname += ".bat";
@@ -2551,16 +2553,16 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_M_AND_M})
   public Result startDataBrowser() {
     try {
-      String gemfireHome = System.getenv("GEMFIRE");
+      String geodeHome = System.getenv("GEODE_HOME");
 
-      assertState(!StringUtils.isBlank(gemfireHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
+      assertState(!StringUtils.isBlank(geodeHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
 
       if (isConnectedAndReady()
           && (getGfsh().getOperationInvoker() instanceof JmxOperationInvoker)) {
         String dataBrowserPath = getPathToDataBrowser();
 
         assertState(IOUtils.isExistingPathname(dataBrowserPath),
-            String.format(CliStrings.START_DATABROWSER__NOT_FOUND_ERROR_MESSAGE, gemfireHome));
+            String.format(CliStrings.START_DATABROWSER__NOT_FOUND_ERROR_MESSAGE, geodeHome));
 
         JmxOperationInvoker operationInvoker =
             (JmxOperationInvoker) getGfsh().getOperationInvoker();
@@ -2607,7 +2609,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   protected String getPathToDataBrowser() {
     String dataBrowserPathName =
-        IOUtils.appendToPath(GEMFIRE_HOME, "tools", "DataBrowser", "bin", "databrowser");
+        IOUtils.appendToPath(GEODE_HOME, "tools", "DataBrowser", "bin", "databrowser");
 
     if (SystemUtils.isWindows()) {
       dataBrowserPathName += ".bat";
