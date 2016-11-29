@@ -268,6 +268,29 @@ public class WanCommandsController extends AbstractCommandsController {
     return processCommand(command.toString());
   }
 
+
+  @RequestMapping(method = RequestMethod.DELETE, value = "/gateways/senders/{id}")
+  @ResponseBody
+  public String destroyGatewaySender(@PathVariable("id") final String gatewaySenderId,
+      @RequestParam(value = CliStrings.DESTROY_GATEWAYSENDER__GROUP,
+          required = false) final String[] groups,
+      @RequestParam(value = CliStrings.DESTROY_GATEWAYSENDER__MEMBER,
+          required = false) final String[] members) {
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.DESTROY_GATEWAYSENDER);
+    command.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, gatewaySenderId);
+
+    if (hasValue(groups)) {
+      command.addOption(CliStrings.CREATE_GATEWAYSENDER__GROUP,
+          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+    }
+
+    if (hasValue(members)) {
+      command.addOption(CliStrings.CREATE_GATEWAYSENDER__MEMBER,
+          StringUtils.concat(members, StringUtils.COMMA_DELIMITER));
+    }
+    return processCommand(command.toString());
+  }
+
   @RequestMapping(method = RequestMethod.POST, value = "/gateways/senders/{id}",
       params = "op=load-balance")
   @ResponseBody

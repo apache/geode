@@ -400,4 +400,18 @@ public interface GatewaySender {
 
   public int getMaxParallelismForReplicatedRegion();
 
+
+  /**
+   * Destroys the GatewaySender. Before destroying the sender, caller needs to to ensure that the
+   * sender is stopped so that all the resources (threads, connection pool etc.) will be released
+   * properly. Stopping the sender is not handled in the destroy. Destroy is carried out in
+   * following steps: 1. Take the lifeCycleLock. 2. If the sender is attached to any application
+   * region, throw an exception. 3. Close the GatewaySenderAdvisor. 4. Remove the sender from the
+   * cache. 5. Destroy the region underlying the GatewaySender.
+   *
+   * In case of ParallelGatewaySender, the destroy operation does distributed destroy of the QPR. In
+   * case of SerialGatewaySender, the queue region is destroyed locally.
+   */
+  public void destroy();
+
 }
