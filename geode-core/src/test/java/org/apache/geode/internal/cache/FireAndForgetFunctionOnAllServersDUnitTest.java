@@ -102,7 +102,7 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
 
       // Using Awatility, if the condition is not met during the timeout, a
       // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
-      await().atMost(1, SECONDS).until(() -> {
+      await().atMost(60, SECONDS).until(() -> {
         return (region1.keySetOnServer().size() == 1);
       });
 
@@ -125,7 +125,7 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
 
       // Using Awatility, if the condition is not met during the timeout, a
       // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
-      await().atMost(1, SECONDS).until(() -> {
+      await().atMost(60, SECONDS).until(() -> {
         return (region1.keySetOnServer().size() == 2);
       });
 
@@ -149,7 +149,7 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
 
       // Using Awatility, if the condition is not met during the timeout, a
       // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
-      await().atMost(1, SECONDS).until(() -> {
+      await().atMost(60, SECONDS).until(() -> {
         return (region1.keySetOnServer().size() == 1);
       });
 
