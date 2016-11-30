@@ -243,7 +243,7 @@ public final class StructSet /* extends ObjectOpenCustomHashSet */ implements Se
     } else {
       boolean modified = false;
       for (Object o : c) {
-        modified = add(o);
+        modified |= add(o);
       }
       return modified;
     }
@@ -255,7 +255,7 @@ public final class StructSet /* extends ObjectOpenCustomHashSet */ implements Se
     } else {
       boolean modified = false;
       for (Object o : c) {
-        modified = remove(o);
+        modified |= remove(o);
       }
       return modified;
     }
