@@ -188,7 +188,6 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test of bug 47338 - what happens to the client type registry if the server is restarted.
    */
-  @Category(FlakyTest.class) // GEODE-2011
   @Test
   public void testNonPersistentServerRestartAutoSerializer() {
     Host host = Host.getHost(0);
