@@ -14,13 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -43,13 +36,20 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -77,7 +77,6 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG}, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public final Result deploy(
       @CliOption(key = {CliStrings.DEPLOY__GROUP}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) @CliMetaData(
@@ -85,6 +84,14 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
       @CliOption(key = {CliStrings.DEPLOY__JAR}, help = CliStrings.DEPLOY__JAR__HELP) String jar,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir) {
     try {
+
+      // since deploy function can potentially do a lot of damage to security, this action should
+      // require these following privileges
+      securityService.authorizeClusterManage();
+      securityService.authorizeClusterWrite();
+      securityService.authorizeDataManage();
+      securityService.authorizeDataWrite();
+
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
       byte[][] shellBytesData = CommandExecutionContext.getBytesFromShell();
@@ -140,6 +147,9 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
             (new SharedConfigurationWriter()).addJars(jarNames, jarBytes, groups));
       }
       return result;
+    } catch (NotAuthorizedException e) {
+      // for NotAuthorizedException, will catch this later in the code
+      throw e;
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;

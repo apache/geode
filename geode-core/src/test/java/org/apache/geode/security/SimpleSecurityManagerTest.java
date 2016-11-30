@@ -16,20 +16,17 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-import java.util.Properties;
-
-import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class SimpleSecurityManagerTest {
@@ -76,6 +73,18 @@ public class SimpleSecurityManagerTest {
     assertTrue(manager.authorize("dataWriteRegionA", permission));
     assertTrue(manager.authorize("dataWriteRegionAKey1", permission));
     assertFalse(manager.authorize("dataRead", permission));
+  }
+
+  @Test
+  public void testMultipleRoleAuthorization() {
+    ResourcePermission permission = new ResourcePermission("CLUSTER", "READ");
+    assertTrue(manager.authorize("clusterRead,clusterWrite", permission));
+    assertTrue(manager.authorize("cluster,data", permission));
+    assertFalse(manager.authorize("clusterWrite,data", permission));
+
+    permission = new ResourcePermission("DATA", "WRITE", "regionA", "key1");
+    assertTrue(manager.authorize("data,cluster", permission));
+    assertTrue(manager.authorize("dataWrite,clusterWrite", permission));
   }
 
 }
