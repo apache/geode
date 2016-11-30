@@ -59,15 +59,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
     props.setProperty(HTTP_SERVICE_PORT, String.valueOf(servicePort));
 
-    Cache c = null;
-    try {
-      c = CacheFactory
-          .getInstance(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
-      c.close();
-    } catch (CacheClosedException ignore) {
-    }
-
-    c = CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
+    CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
     FunctionService.registerFunction(new OnMembersFunction());
 
     return "http://" + hostName + ":" + servicePort + urlContext + "/v1";
@@ -80,17 +72,16 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-1594 HTTP server fails to respond
   public void testFunctionExecutionOnAllMembers() {
     createCacheForVMs();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 5; i++) {
       CloseableHttpResponse response =
           executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, null);
       assertHttpResponse(response, 200, 4);
     }
 
-    assertCorrectInvocationCount(40, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount(20, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
@@ -110,13 +101,13 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   public void testFunctionExecutionEOnSelectedMembers() {
     createCacheForVMs();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 5; i++) {
       CloseableHttpResponse response =
           executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, "m1,m2,m3");
       assertHttpResponse(response, 200, 3);
     }
 
-    assertCorrectInvocationCount(30, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount(15, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
@@ -125,7 +116,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   public void testFunctionExecutionOnMembersWithFilter() {
     createCacheForVMs();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 5; i++) {
       CloseableHttpResponse response =
           executeFunctionThroughRestCall("OnMembersFunction", null, "key2", null, null, "m1,m2,m3");
       assertHttpResponse(response, 500, 0);

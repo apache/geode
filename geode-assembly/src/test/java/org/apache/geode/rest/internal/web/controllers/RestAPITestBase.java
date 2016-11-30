@@ -56,11 +56,11 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 class RestAPITestBase extends JUnit4DistributedTestCase {
 
   protected Cache cache = null;
-  List<String> restURLs = new ArrayList<>();
-  VM vm0 = null;
-  VM vm1 = null;
-  VM vm2 = null;
-  VM vm3 = null;
+  protected List<String> restURLs = new ArrayList<>();
+  protected VM vm0 = null;
+  protected VM vm1 = null;
+  protected VM vm2 = null;
+  protected VM vm3 = null;
 
   @Override
   public final void postSetUp() throws Exception {
