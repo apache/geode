@@ -398,7 +398,7 @@ public class FederatingManager extends Manager {
    * 
    */
 
-  private class GIITask implements Callable {
+  private class GIITask implements Callable<DistributedMember> {
 
     private DistributedMember member;
 
