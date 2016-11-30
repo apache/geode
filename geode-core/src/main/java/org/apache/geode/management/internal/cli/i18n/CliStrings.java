@@ -1427,9 +1427,14 @@ public class CliStrings {
   public static final String EXPORT_STACKTRACE__FILE = "file";
   public static final String EXPORT_STACKTRACE__FILE__HELP =
       "Name of the file to which the stack traces will be written.";
+  public static final String EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT = "abort-if-file-exists";
+  public static final String EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT__HELP =
+      "Abort the command if already exists at locator directory";
   public static final String EXPORT_STACKTRACE__MEMBER__NOT__FOUND = "Member not found";
   public static final String EXPORT_STACKTRACE__SUCCESS = "stack-trace(s) exported to file: {0}";
   public static final String EXPORT_STACKTRACE__ERROR = "Error occured while showing stack-traces";
+  public static final String EXPORT_STACKTRACE__ERROR__FILE__PRESENT =
+      "Error occured while exporting stack-traces, file {0} already present";
   public static final String EXPORT_STACKTRACE__HOST = "On host : ";
   public static final String EXPORT_STACKTRACE_WARN_USER =
       "If file {0} already present at locator directory it will be overwritten, do you want to continue?";

@@ -1013,8 +1013,7 @@ public class MiscellaneousCommands implements CommandMarker {
    * @return Stack Trace
    */
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL},
-      interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ExportStackTraceInterceptor")
+  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportStackTrace(@CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -1024,11 +1023,25 @@ public class MiscellaneousCommands implements CommandMarker {
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_STACKTRACE__GROUP) String group,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE, mandatory = true,
-          help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName) {
+      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
+          help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
+
+      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
+          unspecifiedDefaultValue = "false",
+          help = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT__HELP) boolean failIfFilePresent) {
 
     Result result = null;
+    StringBuffer filePrefix = new StringBuffer("stacktrace");
     try {
+      if (fileName == null) {
+        fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
+      }
+      final File outFile = new File(fileName);
+      if (outFile.exists() && failIfFilePresent) {
+        return ResultBuilder.createShellClientErrorResult(CliStrings.format(
+            CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
+      }
+
       Cache cache = CacheFactory.getAnyInstance();
       GemFireCacheImpl gfeCacheImpl = (GemFireCacheImpl) cache;
       InternalDistributedSystem ads = gfeCacheImpl.getSystem();

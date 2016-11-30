@@ -163,4 +163,57 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertFalse(commandResult.getStatus().equals(Status.OK));
   }
+
+  /***
+   * Tests the behavior of the show stack-trace command when file is already present
+   *
+   * @throws ClassNotFoundException
+   * @throws IOException
+   */
+  @Test
+  public void testExportStacktraceWhenFilePresent() throws ClassNotFoundException, IOException {
+    setupSystem();
+
+    // Test non txt extension file is allowed
+    File stacktracesFile = new File("allStackTraces.log");
+    stacktracesFile.createNewFile();
+    stacktracesFile.deleteOnExit();
+    CommandStringBuilder commandStringBuilder =
+      new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
+      stacktracesFile.getCanonicalPath());
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,"true");
+    String exportCommandString = commandStringBuilder.toString();
+    getLogWriter().info("CommandString : " + exportCommandString);
+    CommandResult exportCommandResult = executeCommand(exportCommandString);
+    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
+    assertTrue(exportCommandResult.getStatus().equals(Status.ERROR));
+
+    stacktracesFile = new File("allStackTraces.log");
+    stacktracesFile.createNewFile();
+    stacktracesFile.deleteOnExit();
+    commandStringBuilder =
+      new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
+      stacktracesFile.getCanonicalPath());
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,"false");
+    exportCommandString = commandStringBuilder.toString();
+    getLogWriter().info("CommandString : " + exportCommandString);
+    exportCommandResult = executeCommand(exportCommandString);
+    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
+    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
+
+    stacktracesFile = new File("allStackTraces.log");
+    stacktracesFile.createNewFile();
+    stacktracesFile.deleteOnExit();
+    commandStringBuilder =
+      new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
+      stacktracesFile.getCanonicalPath());
+    exportCommandString = commandStringBuilder.toString();
+    getLogWriter().info("CommandString : " + exportCommandString);
+    exportCommandResult = executeCommand(exportCommandString);
+    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
+    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
+  }
 }
