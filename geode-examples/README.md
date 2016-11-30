@@ -1,6 +1,6 @@
 # Apache Geode examples
 
-This is the home of Apache Geode examples that are bundled with the project. Contributions<sup>[2]</sup> and corrections are welcome. Please talk to us about your suggestions at [dev@geode.incubator.apache.org](mailto:dev@geode.incubator.apache.org) or submit a [pull request](https://github.com/apache/incubator-geode/pull/new/develop).
+This is the home of Apache Geode examples that are bundled with the project. Contributions<sup>[2]</sup> and corrections are welcome. Please talk to us about your suggestions at [dev@geode.apache.org](mailto:dev@geode.apache.org) or submit a [pull request](https://github.com/apache/incubator-geode/pull/new/develop).
 
 ## Example requirements
 

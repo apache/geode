@@ -28,7 +28,7 @@ import org.apache.geode.cache.Region;
  * {@link org.apache.geode.cache.Declarable}
  * </p>
  * 
- * Note : Please request help on the Geode developer mailing list (dev@geode.incubator.apache.org)
+ * Note : Please request help on the Geode developer mailing list (dev@geode.apache.org)
  * before using these APIs.
  *
  * 

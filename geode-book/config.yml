@@ -25,12 +25,12 @@ sections:
   subnav_template: geode-subnav
 
 template_variables:
-  support_url: http://geode.incubator.apache.org/community
-  product_url: http://geode.incubator.apache.org/
-  book_title: Apache Geode (Incubating) Documentation
-  support_link: <a href="http://geode.incubator.apache.org/community" target="_blank">Community</a>
-  support_call_to_action: <a href="http://geode.incubator.apache.org/community" target="_blank">Need Help?</a>
-  product_link: <div class="header-item"><a href="http://geode.incubator.apache.org/">Back to Geode Page</a></div>
+  support_url: http://geode.apache.org/community
+  product_url: http://geode.apache.org/
+  book_title: Apache Geode Documentation
+  support_link: <a href="http://geode.apache.org/community" target="_blank">Community</a>
+  support_call_to_action: <a href="http://geode.apache.org/community" target="_blank">Need Help?</a>
+  product_link: <div class="header-item"><a href="http://geode.apache.org/">Back to Geode Page</a></div>
   domain_name: apache.org
   book_title_short: Geode Docs
 

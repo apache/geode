@@ -6,7 +6,7 @@ Geode Connector functionalities.
 ### Prerequisites
 
 Before you start, you should have basic knowledge of Geode and Spark. 
-Please refer to [Geode Documentation](http://geode.incubator.apache.org/docs/)
+Please refer to [Geode Documentation](http://geode.apache.org/docs/)
 and [Spark Documentation](https://spark.apache.org/docs/latest/index.html) for
 details. If you are new to Geode, this 
 [Quick Start Guide](http://geode-docs.cfapps.io/docs/getting_started/15_minute_quickstart_gfsh.html)

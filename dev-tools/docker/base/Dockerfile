@@ -15,7 +15,7 @@
 # limitations under the License.
 
 FROM centos:centos7
-MAINTAINER Geode Community <dev@geode.incubator.apache.org>
+MAINTAINER Geode Community <dev@geode.apache.org>
 
 LABEL Vendor="Apache Geode"
 LABEL version=unstable

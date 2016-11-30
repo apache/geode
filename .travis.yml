@@ -32,7 +32,7 @@ after_failure:
 notifications:
   email:
     recipients:
-      - dev@geode.incubator.apache.org
+      - dev@geode.apache.org
     on_success: change
     on_failure: change
 

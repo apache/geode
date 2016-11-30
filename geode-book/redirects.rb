@@ -13,6 +13,6 @@
 #express or implied. See the License for the specific language governing
 #permissions and limitations under the License.
 
-r301 %r{/releases/latest/javadoc/(.*)}, 'http://geode.incubator.apache.org/releases/latest/javadoc/$1'
+r301 %r{/releases/latest/javadoc/(.*)}, 'http://geode.apache.org/releases/latest/javadoc/$1'
 rewrite '/', '/docs/guide/about_geode.html'
 rewrite '/index.html', '/docs/guide/about_geode.html'

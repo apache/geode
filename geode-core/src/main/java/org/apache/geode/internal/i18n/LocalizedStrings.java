@@ -7584,7 +7584,7 @@ public class LocalizedStrings {
   public static final StringId SwaggerConfig_EULA_LINK =
       new StringId(6619, "http://www.apache.org/licenses/");
   public static final StringId SwaggerConfig_DEVELOPER_EMAIL =
-      new StringId(6620, "dev@geode.incubator.apache.org");
+      new StringId(6620, "dev@geode.apache.org");
   public static final StringId SwaggerConfig_DOC_TITLE =
       new StringId(6621, "Apache Geode Documentation");
   public static final StringId SwaggerConfig_PRODUCT_LINK =
