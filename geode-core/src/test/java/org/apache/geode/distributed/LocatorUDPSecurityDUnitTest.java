@@ -14,37 +14,31 @@
  */
 package org.apache.geode.distributed;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.FlakyTest;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.util.Properties;
 
 @Category({DistributedTest.class, MembershipTest.class})
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
 
   public LocatorUDPSecurityDUnitTest() {}
-
 
   @Override
   protected void addDSProps(Properties p) {
@@ -52,7 +46,6 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
   }
 
   @Override
-  @Category(FlakyTest.class)
   @Test
   public void testStartTwoLocators() throws Exception {
     super.testStartTwoLocators();
@@ -63,30 +56,12 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
 
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
     final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
-    final String uniqueName = getUniqueName();
 
-    vm0.invoke(new SerializableRunnable("Start locator " + locators) {
-      public void run() {
-        File logFile = new File("");
-        try {
-          Properties locProps = new Properties();
-          locProps.setProperty(MCAST_PORT, "0");
-          locProps.setProperty(MEMBER_TIMEOUT, "1000");
-          locProps.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-
-          addDSProps(locProps);
-          Locator.startLocatorAndDS(port, logFile, locProps);
-        } catch (IOException ex) {
-          org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port, ex);
-        }
-      }
-    });
+    vm0.invoke("Start locator " + locators, () -> startLocator(port));
     try {
 
       Properties props = new Properties();
@@ -99,7 +74,7 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
     } catch (GemFireConfigException gce) {
       Assert.assertTrue(gce.getMessage().contains("Rejecting findCoordinatorRequest"));
     } finally {
-      vm0.invoke(getStopLocatorRunnable());
+      vm0.invoke(() -> stopLocator());
     }
   }
 }
