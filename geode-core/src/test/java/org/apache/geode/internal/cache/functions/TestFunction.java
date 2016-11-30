@@ -61,8 +61,6 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
   public static final String TEST_FUNCTION3 = "TestFunction3";
   public static final String TEST_FUNCTION2 = "TestFunction2";
   public static final String TEST_FUNCTION1 = "TestFunction1";
-  public static final String TEST_FUNCTION_FIREANDFORGET_ONALL_SERVERS =
-      "execute_FireAndForgetFunctionOnAllServers";
   public static final String TEST_FUNCTION_EXCEPTION = "TestFunctionException";
   public static final String TEST_FUNCTION_RESULT_SENDER = "TestFunctionResultSender";
   public static final String MEMBER_FUNCTION = "MemberFunction";
@@ -178,8 +176,6 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
       executeFunctionBucketFilter(context);
     } else if (id.equals(TEST_FUNCTION_NONHA_NOP)) {
       execute1(context);
-    } else if (id.equals(TEST_FUNCTION_FIREANDFORGET_ONALL_SERVERS)) {
-      execute_FireAndForgetFunctionOnAllServers(context);
     } else if (noAckTest.equals("true")) {
       execute1(context);
     }
@@ -234,27 +230,6 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
     }
 
 
-  }
-
-  public void execute_FireAndForgetFunctionOnAllServers(FunctionContext context) {
-    DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    LogWriter logger = ds.getLogWriter();
-    Cache cache = CacheFactory.getAnyInstance();
-    String regionName = (String) context.getArguments();
-    Region<String, Integer> region1 = cache.getRegion(regionName);
-    if (region1 == null) {
-      RegionFactory<String, Integer> rf;
-      rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-      region1 = rf.create(regionName);
-    }
-    region1.put(ds.getDistributedMember().toString(), 1);
-
-    logger.info("Executing execute_FireAndForgetFunctionOnAllServers in TestFunction on Member : "
-        + ds.getDistributedMember() + "with Context : " + context);
-
-    if (!hasResult()) {
-      return;
-    }
   }
 
   public void execute1(FunctionContext context) {

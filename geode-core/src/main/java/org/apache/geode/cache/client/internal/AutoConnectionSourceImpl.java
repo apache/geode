@@ -120,6 +120,20 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     return isBalanced;
   }
 
+  @Override
+  public List<ServerLocation> getAllServers() {
+    if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
+      return null;
+    }
+    GetAllServersRequest request = new GetAllServersRequest(serverGroup);
+    GetAllServersResponse response = (GetAllServersResponse) queryLocators(request);
+    if (response != null) {
+      return response.getServers();
+    } else {
+      return null;
+    }
+  }
+
   public ServerLocation findReplacementServer(ServerLocation currentServer,
       Set/* <ServerLocation> */ excludedServers) {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
@@ -158,20 +172,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     // }
 
     return response.getServer();
-  }
-
-
-  public ArrayList<ServerLocation> findAllServers() {
-    if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
-      return null;
-    }
-    GetAllServersRequest request = new GetAllServersRequest(serverGroup);
-    GetAllServersResponse response = (GetAllServersResponse) queryLocators(request);
-    if (response != null) {
-      return response.getServers();
-    } else {
-      return null;
-    }
   }
 
   public List/* ServerLocation */ findServersForQueue(Set/* <ServerLocation> */ excludedServers,

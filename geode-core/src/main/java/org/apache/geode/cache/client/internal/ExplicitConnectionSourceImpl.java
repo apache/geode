@@ -257,7 +257,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     return sb.toString();
   }
 
-  ArrayList<ServerLocation> getAllServers() {
+  public ArrayList<ServerLocation> getAllServers() {
     ArrayList<ServerLocation> list = new ArrayList<ServerLocation>();
     list.addAll(this.serverList);
     return list;

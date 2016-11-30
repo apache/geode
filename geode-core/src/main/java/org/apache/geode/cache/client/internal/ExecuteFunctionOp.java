@@ -337,15 +337,7 @@ public class ExecuteFunctionOp {
       Object args, MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
       boolean isFnSerializationReqd, UserAttributes attributes) {
     final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
-    ArrayList<ServerLocation> servers = null;
-    if (pool.getLocators() == null || pool.getLocators().isEmpty()) {
-      servers = ((ExplicitConnectionSourceImpl) pool.getConnectionSource()).getAllServers();
-    } else {
-      servers = ((AutoConnectionSourceImpl) pool.getConnectionSource()).findAllServers(); // n/w
-                                                                                          // call on
-                                                                                          // locator
-    }
-
+    List<ServerLocation> servers = pool.getConnectionSource().getAllServers();
     for (ServerLocation server : servers) {
       final AbstractOp op = new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult,
           rc, isFnSerializationReqd, (byte) 0, null/* onGroups does not use single-hop for now */,
@@ -362,15 +354,7 @@ public class ExecuteFunctionOp {
       boolean isFnSerializationReqd, boolean isHA, boolean optimizeForWrite,
       UserAttributes properties) {
     final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
-    ArrayList<ServerLocation> servers = null;
-    if (pool.getLocators() == null || pool.getLocators().isEmpty()) {
-      servers = ((ExplicitConnectionSourceImpl) pool.getConnectionSource()).getAllServers();
-    } else {
-      servers = ((AutoConnectionSourceImpl) pool.getConnectionSource()).findAllServers(); // n/w
-                                                                                          // call on
-                                                                                          // locator
-    }
-
+    List<ServerLocation> servers = pool.getConnectionSource().getAllServers();
     for (ServerLocation server : servers) {
       final AbstractOp op = new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
           rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0,

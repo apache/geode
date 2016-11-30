@@ -592,6 +592,11 @@ public class QueueManagerJUnitTest {
     public boolean isBalanced() {
       return false;
     }
+
+    @Override
+    public List<ServerLocation> getAllServers() {
+      return Collections.emptyList();
+    }
   }
 
   private class DummyConnection implements Connection {
