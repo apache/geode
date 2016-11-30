@@ -50,26 +50,30 @@ public class StatMonitorHandler implements SampleHandler {
 
   /** Adds a monitor which will be notified of samples */
   public boolean addMonitor(StatisticsMonitor monitor) {
-    boolean added = false;
-    if (!this.monitors.contains(monitor)) {
-      added = this.monitors.add(monitor);
+    synchronized (this) {
+      boolean added = false;
+      if (!this.monitors.contains(monitor)) {
+        added = this.monitors.add(monitor);
+      }
+      if (!this.monitors.isEmpty()) {
+        startNotifier_IfEnabledAndNotRunning();
+      }
+      return added;
     }
-    if (!this.monitors.isEmpty()) {
-      startNotifier_IfEnabledAndNotRunning();
-    }
-    return added;
   }
 
   /** Removes a monitor that will no longer be used */
   public boolean removeMonitor(StatisticsMonitor monitor) {
-    boolean removed = false;
-    if (this.monitors.contains(monitor)) {
-      removed = this.monitors.remove(monitor);
+    synchronized (this) {
+      boolean removed = false;
+      if (this.monitors.contains(monitor)) {
+        removed = this.monitors.remove(monitor);
+      }
+      if (this.monitors.isEmpty()) {
+        stopNotifier_IfEnabledAndRunning();
+      }
+      return removed;
     }
-    if (this.monitors.isEmpty()) {
-      stopNotifier_IfEnabledAndRunning();
-    }
-    return removed;
   }
 
   /**
@@ -133,26 +137,20 @@ public class StatMonitorHandler implements SampleHandler {
 
   /** For testing only */
   StatMonitorNotifier getStatMonitorNotifier() {
-    synchronized (this) {
-      return this.notifier;
-    }
+    return this.notifier;
   }
 
   private void startNotifier_IfEnabledAndNotRunning() {
-    synchronized (this) {
-      if (this.enableMonitorThread && this.notifier == null) {
-        this.notifier = new StatMonitorNotifier();
-        this.notifier.start();
-      }
+    if (this.enableMonitorThread && this.notifier == null) {
+      this.notifier = new StatMonitorNotifier();
+      this.notifier.start();
     }
   }
 
   private void stopNotifier_IfEnabledAndRunning() {
-    synchronized (this) {
-      if (this.enableMonitorThread && this.notifier != null) {
-        this.notifier.stop();
-        this.notifier = null;
-      }
+    if (this.enableMonitorThread && this.notifier != null) {
+      this.notifier.stop();
+      this.notifier = null;
     }
   }
 
