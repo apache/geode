@@ -59,7 +59,7 @@ public final class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 45;
+  public static final int HIGHEST_VERSION = 50;
 
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
 
@@ -180,11 +180,16 @@ public final class Version implements Comparable<Version> {
   public static final Version GFE_90 =
       new Version("GFE", "9.0", (byte) 9, (byte) 0, (byte) 0, (byte) 0, GFE_90_ORDINAL);
 
+  private static final byte GFE_91_ORDINAL = 50;
+
+  public static final Version GFE_91 =
+      new Version("GFE", "9.1", (byte) 9, (byte) 1, (byte) 0, (byte) 0, GFE_91_ORDINAL);
+
   /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
    * HIGHEST_VERSION when changing CURRENT !!!
    */
-  public static final Version CURRENT = GFE_90;
+  public static final Version CURRENT = GFE_91;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal

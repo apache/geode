@@ -45,12 +45,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.*;
+
+import com.jayway.awaitility.Awaitility;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 @RunWith(Parameterized.class)
@@ -108,7 +111,7 @@ public class LocatorJUnitTest {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not
                                                                                           // needed
     try {
-      locator = Locator.startLocatorAndDS(port, new File("testJmxManager.log"), dsprops);
+      locator = Locator.startLocatorAndDS(port, null, dsprops);
       List<JmxManagerProfile> alreadyManaging =
           GemFireCacheImpl.getInstance().getJmxManagerAdvisor().adviseAlreadyManaging();
       assertEquals(1, alreadyManaging.size());
@@ -177,7 +180,7 @@ public class LocatorJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
-    locator = Locator.startLocatorAndDS(port, tmpFile, null, props);
+    locator = Locator.startLocatorAndDS(port, new File(""), null, props);
     assertTrue(locator.isPeerLocator());
     assertTrue(locator.isServerLocator());
     Thread.sleep(1000);

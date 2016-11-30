@@ -17,9 +17,12 @@ package org.apache.geode.distributed.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 
+import com.jayway.awaitility.Awaitility;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.logging.log4j.Logger;
@@ -105,34 +108,21 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Send the distribution manager a message it can't deserialize
    */
-  @Ignore("TODO: use Awaitility and reenable assertions")
   @Test
   public void testExceptionInThreads() throws InterruptedException {
-    DM dm = getSystem().getDistributionManager();
+    DistributionManager dm = (DistributionManager) getSystem().getDistributionManager();
     String p1 = "ItsOkayForMyClassNotToBeFound";
     logger.info("<ExpectedException action=add>" + p1 + "</ExpectedException>");
     DistributionMessage m = new ItsOkayForMyClassNotToBeFound();
     dm.putOutgoing(m);
     Thread.sleep(1 * 1000);
     logger.info("<ExpectedException action=remove>" + p1 + "</ExpectedException>");
-    // assertTrue(dm.exceptionInThreads());
-    // dm.clearExceptionInThreads();
-    // assertTrue(!dm.exceptionInThreads());
-  }
-
-  @Ignore("TODO: this passes when enabled")
-  @Test
-  public void testGetDistributionManagerIds() {
-    int systemCount = 0;
-    for (int h = 0; h < Host.getHostCount(); h++) {
-      Host host = Host.getHost(h);
-      systemCount += host.getSystemCount();
-    }
-
-    DM dm = getSystem().getDistributionManager();
-    systemCount += 1;
-
-    assertEquals(systemCount, dm.getNormalDistributionManagerIds().size());
+    Awaitility.await("waiting for exceptionInThreads to be true").atMost(15, TimeUnit.SECONDS)
+        .until(() -> {
+          return dm.exceptionInThreads();
+        });
+    dm.clearExceptionInThreads();
+    assertTrue(!dm.exceptionInThreads());
   }
 
   /**

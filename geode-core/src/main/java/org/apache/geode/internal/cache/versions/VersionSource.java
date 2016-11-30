@@ -35,6 +35,4 @@ public interface VersionSource<T> extends DataSerializableFixedID, Comparable<T>
 
   public void writeEssentialData(DataOutput out) throws IOException;
 
-  public int getSizeInBytes();
-
 }

@@ -22,11 +22,11 @@ import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import org.jgroups.util.UUID;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -54,13 +54,13 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   private byte memberWeight;
   private InetAddress inetAddr;
   private int processId;
-  private int vmKind;
+  private byte vmKind;
   private int vmViewId = -1;
   private int directPort;
   private String name;
   private DurableClientAttributes durableClientAttributes;
   private String[] groups;
-  private short versionOrdinal;
+  private short versionOrdinal = Version.CURRENT_ORDINAL;
   private long uuidLSBs;
   private long uuidMSBs;
 
@@ -80,7 +80,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
       attr = MemberAttributes.INVALID;
     }
     processId = attr.getVmPid();
-    vmKind = attr.getVmKind();
+    vmKind = (byte) attr.getVmKind();
     directPort = attr.getPort();
     vmViewId = attr.getVmViewId();
     name = attr.getName();
@@ -260,6 +260,24 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
 
   @Override
+  public int compareAdditionalData(NetMember other) {
+    GMSMember his = (GMSMember) other;
+    int result = 0;
+    if (this.uuidMSBs != 0 && his.uuidMSBs != 0) {
+      if (this.uuidMSBs < his.uuidMSBs) {
+        result = -1;
+      } else if (his.uuidMSBs < this.uuidMSBs) {
+        result = 1;
+      } else if (this.uuidLSBs < his.uuidLSBs) {
+        result = -1;
+      } else if (his.uuidLSBs < this.uuidLSBs) {
+        result = 1;
+      }
+    }
+    return result;
+  }
+
+  @Override
   public boolean equals(Object obj) {
     // GemStone fix for 29125
     if ((obj == null) || !(obj instanceof GMSMember)) {
@@ -309,12 +327,17 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return processId;
   }
 
-  public int getVmKind() {
+  public byte getVmKind() {
     return vmKind;
   }
 
   public int getVmViewId() {
     return vmViewId;
+  }
+
+  @Override
+  public void setVmViewId(int id) {
+    this.vmViewId = id;
   }
 
   public int getDirectPort() {
@@ -354,7 +377,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
 
   public void setVmKind(int vmKind) {
-    this.vmKind = vmKind;
+    this.vmKind = (byte) vmKind;
   }
 
   public void setVersion(Version v) {
@@ -375,6 +398,11 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   public void setDurableClientAttributes(DurableClientAttributes durableClientAttributes) {
     this.durableClientAttributes = durableClientAttributes;
+  }
+
+  @Override
+  public String[] getGroups() {
+    return groups;
   }
 
   public void setGroups(String[] groups) {
@@ -462,6 +490,11 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
 
   @Override
+  public boolean hasAdditionalData() {
+    return uuidMSBs != 0 || uuidLSBs != 0 || memberWeight != 0;
+  }
+
+  @Override
   public void writeAdditionalData(DataOutput out) throws IOException {
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
@@ -470,8 +503,12 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   @Override
   public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException {
-    this.uuidMSBs = in.readLong();
-    this.uuidLSBs = in.readLong();
-    memberWeight = (byte) (in.readByte() & 0xFF);
+    try {
+      this.uuidMSBs = in.readLong();
+      this.uuidLSBs = in.readLong();
+      memberWeight = (byte) (in.readByte() & 0xFF);
+    } catch (EOFException e) {
+      // some IDs do not have UUID or membership weight information
+    }
   }
 }

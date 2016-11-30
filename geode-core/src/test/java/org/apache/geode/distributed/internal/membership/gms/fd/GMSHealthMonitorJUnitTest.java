@@ -52,6 +52,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.assertFalse;
@@ -59,6 +60,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
+
+import com.jayway.awaitility.Awaitility;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSHealthMonitorJUnitTest {
@@ -336,11 +339,11 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.processMessage(sm);
 
-    Thread.sleep(2 * memberTimeout + 200);
-
-    System.out.println("testRemoveMemberCalled ending");
-    verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
-        any(String.class));
+    Awaitility.await("waiting for remove(member) to be invoked")
+        .atMost(3 * memberTimeout, TimeUnit.SECONDS).until(() -> {
+          verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
+              any(String.class));
+        });
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
 

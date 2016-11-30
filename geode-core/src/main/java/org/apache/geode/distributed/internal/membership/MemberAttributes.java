@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.internal.DistributionManager;
 
 /**
  * The attributes of a distributed member. This is largely deprecated as GMSMember holds all of this
@@ -30,6 +31,8 @@ public class MemberAttributes {
 
   public static final MemberAttributes INVALID =
       new MemberAttributes(-1, -1, -1, -1, null, null, null);
+  public static final MemberAttributes DEFAULT =
+      new MemberAttributes(-1, -1, DistributionManager.NORMAL_DM_TYPE, -1, null, null, null);
 
   private int dcPort;
   private int vmPid;

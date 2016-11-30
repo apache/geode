@@ -279,26 +279,6 @@ public class InternalDistributedSystemJUnitTest {
   }
 
   /**
-   * Test a configuration with an <code>mcastPort</code> of zero and an empty <code>locators</code>.
-   * 
-   * @deprecated This test creates a "loner" distributed system
-   */
-  @Ignore
-  @Test
-  public void testEmptyLocators() {
-    Properties props = new Properties();
-    props.put(MCAST_PORT, String.valueOf(0));
-    props.put(LOCATORS, "");
-    try {
-      createSystem(props);
-      fail("Should have thrown an IllegalArgumentException");
-
-    } catch (IllegalArgumentException ex) {
-      // pass...
-    }
-  }
-
-  /**
    * Tests that getting the log level is what we expect.
    */
   @Test
@@ -356,10 +336,10 @@ public class InternalDistributedSystemJUnitTest {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(MEMBERSHIP_PORT_RANGE, "5100-5200");
+    props.setProperty(MEMBERSHIP_PORT_RANGE, "45100-45200");
     DistributionConfig config = createSystem(props).getConfig();
-    assertEquals(5100, config.getMembershipPortRange()[0]);
-    assertEquals(5200, config.getMembershipPortRange()[1]);
+    assertEquals(45100, config.getMembershipPortRange()[0]);
+    assertEquals(45200, config.getMembershipPortRange()[1]);
   }
 
   @Test
@@ -387,41 +367,6 @@ public class InternalDistributedSystemJUnitTest {
     props.put(STATISTIC_ARCHIVE_FILE, fileName);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(fileName, config.getStatisticArchiveFile().getName());
-  }
-
-  /**
-   * @deprecated This test cannot be run because the gemfire.ack-wait-threshold system property is
-   *             set on this VM, thus overriding the value passed into the API.
-   */
-  @Ignore
-  @Test
-  public void testGetAckWaitThreshold() {
-    String time = String.valueOf(DistributionConfig.MIN_ACK_WAIT_THRESHOLD);
-    Properties props = new Properties();
-    // a loner is all this test needs
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.put(ACK_WAIT_THRESHOLD, time);
-    DistributionConfig config = createSystem(props).getConfig();
-    assertEquals(Integer.parseInt(time), config.getAckWaitThreshold());
-  }
-
-  /**
-   * @deprecated This test cannot be run because the gemfire.ack-wait-threshold system property is
-   *             set on this VM, thus overriding the value passed into the API.
-   */
-  @Ignore
-  @Test
-  public void testInvalidAckWaitThreshold() {
-    Properties props = new Properties();
-    props.put(ACK_WAIT_THRESHOLD, "blah");
-    try {
-      createSystem(props);
-      fail("Should have thrown an IllegalArgumentException");
-
-    } catch (IllegalArgumentException ex) {
-      // pass...
-    }
   }
 
   @Test

@@ -66,11 +66,10 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
    * @return <code>null</code> if the locator cannot be contacted
    */
   static DistributionLocatorConfig createConfigFor(String host, int port, InetAddress bindAddress) {
-    TcpClient client = new TcpClient();
     String[] info = new String[] {"unknown", "unknown"};
 
     try {
-      client = new TcpClient();
+      TcpClient client = new TcpClient();
       if (bindAddress != null) {
         info = client.getInfo(bindAddress, port);
       } else {

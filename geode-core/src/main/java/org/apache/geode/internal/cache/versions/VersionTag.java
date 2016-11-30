@@ -415,15 +415,6 @@ public abstract class VersionTag<T extends VersionSource>
   public abstract void writeMember(T memberID, DataOutput out) throws IOException;
 
 
-  public int getSizeInBytes() {
-    int size =
-        org.apache.geode.internal.cache.lru.Sizeable.PER_OBJECT_OVERHEAD + VersionTag.TAG_SIZE;
-    // member size calculation
-    size += memberID.getSizeInBytes();
-    return size;
-
-  }
-
   @Override
   public String toString() {
     StringBuilder s = new StringBuilder();

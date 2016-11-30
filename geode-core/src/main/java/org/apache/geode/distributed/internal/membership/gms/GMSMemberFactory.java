@@ -71,7 +71,7 @@ public class GMSMemberFactory implements MemberServices {
    * @return the new NetMember
    */
   public NetMember newNetMember(InetAddress i, int p) {
-    return new GMSMember(MemberAttributes.INVALID, i, p, false, true, Version.CURRENT_ORDINAL, 0,
+    return new GMSMember(MemberAttributes.DEFAULT, i, p, false, true, Version.CURRENT_ORDINAL, 0,
         0);
   }
 

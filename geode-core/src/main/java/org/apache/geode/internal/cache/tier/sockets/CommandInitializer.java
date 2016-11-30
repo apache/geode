@@ -329,8 +329,13 @@ public class CommandInitializer {
       ALL_COMMANDS.put(Version.GFE_90, gfe90Commands);
       gfe90Commands.put(MessageType.QUERY_WITH_PARAMETERS, QueryWithParametersGeode10.getCommand());
       gfe90Commands.put(MessageType.QUERY, QueryGeode10.getCommand());
-
     }
+    {
+      Map<Integer, Command> gfe91Commands = new HashMap<Integer, Command>();
+      gfe91Commands.putAll(ALL_COMMANDS.get(Version.GFE_90));
+      ALL_COMMANDS.put(Version.GFE_91, gfe91Commands);
+    }
+
   }
 
   public static Map<Integer, Command> getCommands(Version version) {

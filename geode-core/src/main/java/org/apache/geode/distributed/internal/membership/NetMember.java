@@ -19,7 +19,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.shared.StringPrintWriter;
 
 /**
  * This is the SPI for the basic element of membership provided in the GemFire system.
@@ -70,10 +72,44 @@ public interface NetMember extends Comparable<NetMember> {
 
   public void setVersion(Version v);
 
+  public int getProcessId();
+
+  public void setProcessId(int id);
+
+  public byte getVmKind();
+
+  public void setVmKind(int kind);
+
+  public int getVmViewId();
+
+  public void setVmViewId(int id);
+
+  public int getDirectPort();
+
+  public void setDirectPort(int port);
+
+  public String getName();
+
+  public void setName(String name);
+
+  public DurableClientAttributes getDurableClientAttributes();
+
+  public void setDurableClientAttributes(DurableClientAttributes attributes);
+
+  public String[] getGroups();
+
+  public void setGroups(String[] groups);
+
+  /** whether this NetMember has additional data to be serialized as part of a DistributedMember */
+  public boolean hasAdditionalData();
+
   /** write identity information not known by DistributedMember instances */
   public void writeAdditionalData(DataOutput out) throws IOException;
 
   /** read identity information not known by DistributedMember instances */
   public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException;
+
+  /** compare data that is not known to DistributedMember instances */
+  public int compareAdditionalData(NetMember other);
 
 }

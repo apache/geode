@@ -451,8 +451,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testStartTwoLocatorsOneWithSSLAndTheOtherNonSSL() throws Exception {
-    IgnoredException expectedException =
-        IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
+    IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
+    IgnoredException.addIgnoredException("LocatorCancelException");
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM loc1 = host.getVM(1);
@@ -496,7 +496,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
       } finally {
         loc1.invoke("stop locator", () -> stopLocator());
-        expectedException.remove();
       }
     }
   }
@@ -510,11 +509,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testStartTwoLocatorsOneWithNonSSLAndTheOtherSSL() throws Exception {
-    IgnoredException expectedException =
-        IgnoredException.addIgnoredException("Remote host closed connection during handshake");
+    IgnoredException.addIgnoredException("Remote host closed connection during handshake");
+    IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
+    IgnoredException.addIgnoredException("LocatorCancelException");
 
-    IgnoredException expectedException2 =
-        IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM loc1 = host.getVM(1);
@@ -559,23 +557,19 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
       } finally {
         loc1.invoke("stop locator", () -> stopLocator());
-        expectedException.remove();
-        expectedException2.remove();
       }
     }
   }
 
   @Test
   public void testStartTwoLocatorsWithDifferentSSLCertificates() throws Exception {
-    IgnoredException expectedException =
-        IgnoredException.addIgnoredException("Remote host closed connection during handshake");
-    IgnoredException expectedException2 = IgnoredException
+    IgnoredException.addIgnoredException("Remote host closed connection during handshake");
+    IgnoredException
         .addIgnoredException("unable to find valid certification path to requested target");
-    IgnoredException expectedException3 =
-        IgnoredException.addIgnoredException("Received fatal alert: certificate_unknown");
+    IgnoredException.addIgnoredException("Received fatal alert: certificate_unknown");
+    IgnoredException.addIgnoredException("LocatorCancelException");
     disconnectAllFromDS();
-    IgnoredException expectedException4 =
-        IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
+    IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM loc1 = host.getVM(1);
@@ -622,10 +616,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         loc1.invoke("verifyLocatorNotInSplitBrain", () -> verifyLocatorNotInSplitBrain(1));
       } finally {
         loc1.invoke("stop locator", () -> stopLocator());
-        expectedException.remove();
-        expectedException2.remove();
-        expectedException3.remove();
-        expectedException4.remove();
       }
     }
   }

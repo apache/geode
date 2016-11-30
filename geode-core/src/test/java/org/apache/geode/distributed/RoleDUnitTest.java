@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,7 +37,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests the setting of Roles in a DistributedSystem
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class})
 public class RoleDUnitTest extends JUnit4DistributedTestCase {
 
   static Properties distributionProperties = new Properties();
