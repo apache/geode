@@ -3,13 +3,13 @@
 **[Location of Directions for Building from Source](#building)**  
 **[Geode in 5 minutes](#started)**  
 **[Application Development](#development)**  
-**[Documentation](http://geode.incubator.apache.org/docs/)**  
+**[Documentation](http://geode.apache.org/docs/)**
 **[wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)**  
 **Continuous Integration** [![Build Status](https://travis-ci.org/apache/incubator-geode.svg?branch=develop)](https://travis-ci.org/apache/incubator-geode)  
 
 ## <a name="overview"></a>Overview
 
-[Apache Geode] (http://geode.incubator.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
+[Apache Geode] (http://geode.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
 
 Apache Geode pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Apache Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
 
@@ -41,7 +41,7 @@ Apache Geode includes the following features:
 
 ## <a name="building"></a>Building this Release from Source
 
-Directions to build Apache Geode (incubating) from source are in the source distribution, file `BUILDING.md`.
+Directions to build Apache Geode from source are in the source distribution, file `BUILDING.md`.
 
 ## <a name="started"></a>Geode in 5 minutes
 
