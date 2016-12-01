@@ -389,8 +389,12 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       }
       InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
       InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
-      byte[] myData = hdos.toByteArray();
-      DataSerializer.writeByteArray(myData, out);
+      if (out instanceof HeapDataOutputStream) {
+        ((HeapDataOutputStream) out).writeAsSerializedByteArray(hdos);
+      } else {
+        byte[] myData = hdos.toByteArray();
+        DataSerializer.writeByteArray(myData, out);
+      }
     }
 
 
@@ -424,8 +428,12 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
         }
         InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
         InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
-        byte[] myData = hdos.toByteArray();
-        DataSerializer.writeByteArray(myData, out);
+        if (out instanceof HeapDataOutputStream) {
+          ((HeapDataOutputStream) out).writeAsSerializedByteArray(hdos);
+        } else {
+          byte[] myData = hdos.toByteArray();
+          DataSerializer.writeByteArray(myData, out);
+        }
       } else {
         DataSerializer.writeHashMap(this.cqs, out);
         InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, out);
