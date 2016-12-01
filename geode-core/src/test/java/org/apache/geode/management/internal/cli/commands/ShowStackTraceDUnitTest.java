@@ -222,8 +222,8 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
   }
 
   /***
-   * Tests the behavior of the show stack-trace command when file option is not provided
-   * File should get auto-generated
+   * Tests the behavior of the show stack-trace command when file option is not provided File should
+   * get auto-generated
    *
    * @throws ClassNotFoundException
    * @throws IOException
@@ -237,7 +237,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     stacktracesFile.createNewFile();
     stacktracesFile.deleteOnExit();
     CommandStringBuilder commandStringBuilder =
-      new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+        new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     String exportCommandString = commandStringBuilder.toString();
     getLogWriter().info("CommandString : " + exportCommandString);
     CommandResult exportCommandResult = executeCommand(exportCommandString);
@@ -245,8 +245,8 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     assertTrue(exportCommandResult.getStatus().equals(Status.OK));
     try {
       assertTrue(
-        ((String) exportCommandResult.getResultData().getGfJsonObject().getJSONObject("content")
-          .getJSONArray("message").get(0)).contains("stack-trace(s) exported to file:"));
+          ((String) exportCommandResult.getResultData().getGfJsonObject().getJSONObject("content")
+              .getJSONArray("message").get(0)).contains("stack-trace(s) exported to file:"));
     } catch (GfJsonException e) {
       fail("Exception while parsing command result", e.getCause());
     }
