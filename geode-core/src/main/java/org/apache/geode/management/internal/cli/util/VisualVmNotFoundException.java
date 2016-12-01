@@ -27,6 +27,7 @@ import org.apache.geode.GemFireException;
  */
 @SuppressWarnings("unused")
 public class VisualVmNotFoundException extends GemFireException {
+  private static final long serialVersionUID = -8491645604829510102L;
 
   public VisualVmNotFoundException() {}
 

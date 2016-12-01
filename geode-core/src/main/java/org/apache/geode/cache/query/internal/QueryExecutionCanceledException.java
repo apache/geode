@@ -27,6 +27,7 @@ import org.apache.geode.cache.control.ResourceManager;
  * @since GemFire 7.0
  */
 public class QueryExecutionCanceledException extends CacheRuntimeException {
+  private static final long serialVersionUID = -2699578956684551688L;
 
   /**
    * Creates a new instance of <code>QueryExecutionCanceledException</code> without detail message.

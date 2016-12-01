@@ -25,6 +25,7 @@ package org.apache.geode;
  * @since GemFire 6.5
  */
 public class DeltaSerializationException extends RuntimeException {
+  private static final long serialVersionUID = -2630435945840206466L;
 
   /**
    * Default constructor

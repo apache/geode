@@ -23,6 +23,7 @@ package org.apache.geode.internal.cache;
  *
  */
 public class BucketNotFoundException extends ForceReattemptException {
+  private static final long serialVersionUID = 2898657229184289911L;
 
   /**
    * @param message

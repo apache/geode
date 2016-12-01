@@ -22,6 +22,8 @@ package org.apache.geode.cache;
  * @since GemFire 6.0
  */
 public abstract class ResourceException extends CacheRuntimeException {
+  private static final long serialVersionUID = -5559328592343363268L;
+
   /**
    * Creates a new instance of <code>ResourceException</code> without detail message.
    */

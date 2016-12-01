@@ -28,6 +28,7 @@ import org.apache.geode.GemFireException;
 // TODO this GemFireException should be moved to a more appropriate package!
 @SuppressWarnings("unused")
 public class MemberNotFoundException extends GemFireException {
+  private static final long serialVersionUID = 5686788909239181174L;
 
   public MemberNotFoundException() {}
 

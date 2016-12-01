@@ -25,6 +25,7 @@ package org.apache.geode.lang;
  */
 @SuppressWarnings("unused")
 public class AttachAPINotFoundException extends RuntimeException {
+  private static final long serialVersionUID = -5953162090462085551L;
 
   /**
    * Constructs an instance of the AttachAPINotFoundException class.

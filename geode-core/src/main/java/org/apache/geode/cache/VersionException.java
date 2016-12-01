@@ -23,6 +23,7 @@ import org.apache.geode.GemFireCheckedException;
  * @since GemFire 5.7
  */
 public abstract class VersionException extends GemFireCheckedException {
+  private static final long serialVersionUID = 5530501399086757174L;
 
   /** Constructs a new <code>VersionException</code>. */
   public VersionException() {

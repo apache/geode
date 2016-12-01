@@ -26,6 +26,7 @@ package org.apache.geode.internal.util;
  */
 @SuppressWarnings("unused")
 public class SunAPINotFoundException extends RuntimeException {
+  private static final long serialVersionUID = 75895915344106684L;
 
   public SunAPINotFoundException() {}
 

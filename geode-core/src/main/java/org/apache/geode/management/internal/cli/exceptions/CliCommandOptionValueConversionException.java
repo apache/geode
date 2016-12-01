@@ -19,6 +19,7 @@ import org.apache.geode.management.internal.cli.parser.Option;
 import org.apache.geode.management.internal.cli.parser.OptionSet;
 
 public class CliCommandOptionValueConversionException extends CliCommandOptionValueException {
+  private static final long serialVersionUID = 5144720637801591L;
 
   public CliCommandOptionValueConversionException(final CommandTarget commandTarget,
       final Option option, final String value) {

@@ -20,6 +20,7 @@ package org.apache.geode.cache;
  * @since GemFire 6.5
  */
 public class UnsupportedOperationInTransactionException extends UnsupportedOperationException {
+  private static final long serialVersionUID = 7150156075377908268L;
 
   public UnsupportedOperationInTransactionException(String s) {
     super(s);

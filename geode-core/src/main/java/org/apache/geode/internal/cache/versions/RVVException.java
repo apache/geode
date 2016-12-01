@@ -53,6 +53,8 @@ import org.apache.geode.internal.VersionedDataSerializable;
  */
 abstract class RVVException
     implements Comparable<RVVException>, Cloneable, VersionedDataSerializable {
+  private static final long serialVersionUID = 2021977010704105114L;
+
   protected static boolean UseTreeSetsForTesting = false;
 
   /**
