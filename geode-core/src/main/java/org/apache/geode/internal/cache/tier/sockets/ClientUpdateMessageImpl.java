@@ -1464,12 +1464,11 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * much smaller memory footprint than a HashMap with one entry.
    */
   public static class CqNameToOpSingleEntry implements CqNameToOp {
-    private String name;
+    private String[] name;
     private int op;
 
     private static final String[] EMPTY_NAMES_ARRAY = new String[0];
 
-    private static Map<String, String[]> NAMES_ARRAY = new ConcurrentHashMap<String, String[]>();
 
     public CqNameToOpSingleEntry(String name, Integer op) {
       initializeName(name);
@@ -1477,10 +1476,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
 
     private void initializeName(String name) {
-      this.name = name;
-      if (!NAMES_ARRAY.containsKey(name)) {
-        NAMES_ARRAY.put(name, new String[] {name});
-      }
+      this.name = new String[] {name};
     }
 
     @Override
@@ -1490,7 +1486,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       int size = size();
       InternalDataSerializer.writeArrayLength(size, out);
       if (size > 0) {
-        DataSerializer.writeObject(this.name, out);
+        DataSerializer.writeObject(this.name[0], out);
         DataSerializer.writeObject(Integer.valueOf(this.op), out);
       }
     }
@@ -1503,7 +1499,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     @Override
     public void addToMessage(Message message) {
       if (!isEmpty()) {
-        message.addStringPart(this.name, true);
+        message.addStringPart(this.name[0], true);
         message.addIntPart(this.op);
       }
     }
@@ -1515,15 +1511,15 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     @Override
     public String[] getNames() {
-      return (isEmpty()) ? EMPTY_NAMES_ARRAY : NAMES_ARRAY.get(this.name);
+      return (isEmpty()) ? EMPTY_NAMES_ARRAY : this.name;
     }
 
     @Override
     public void add(String name, Integer op) {
       if (isEmpty()) {
-        this.name = name;
+        this.name = new String[] {name};
         this.op = op.intValue();
-      } else if (this.name.equals(name)) {
+      } else if (this.name[0].equals(name)) {
         this.op = op.intValue();
       } else {
         throw new IllegalStateException("tried to add to a full CqNameToOpSingleEntry");
@@ -1532,7 +1528,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     @Override
     public void delete(String name) {
-      if (name.equals(this.name)) {
+      if (name.equals(this.name[0])) {
         this.name = null;
       }
     }
@@ -1552,7 +1548,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     public CqNameToOpHashMap(CqNameToOpSingleEntry se) {
       super(2, 1.0f);
-      add(se.name, se.op);
+      add(se.name[0], se.op);
     }
 
     @Override
