@@ -22,7 +22,7 @@ limitations under the License.
 The  `PostProcessor` interface allows the definition of a callback
 that is invoked after any and all client and `gfsh` operations that get data,
 but before the data is returned.
-It permits the callback to intervene and modify of the data
+It permits the callback to intervene and format the data
 that is to be returned.
 The callbacks do not modify the region data,
 only the data to be returned.
@@ -32,14 +32,16 @@ operation requester.
 The operation will already have been completed, 
 implying that the principal will have been authorized to complete
 the requested operation.
-The post processing can therefore modify the returned data based
+The post processing can therefore format the returned data based
 on the identity of the requester (principal).
 
+<!-- GEODE-2153 aims to make this possible:
 A use of post processing will be to sanitize or mask out sensitive
 region information,
 while providing the remainder of a region entry unchanged.
 An implementation can alter the entry for some requesters,
 but not other requesters.
+-->
 
 The `processRegionValue` method is invoked for these API calls:
  
