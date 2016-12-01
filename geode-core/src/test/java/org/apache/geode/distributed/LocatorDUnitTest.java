@@ -1812,21 +1812,21 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     });
-    vm3.invoke("Start locator on " + port2,()->{
-        File logFile = new File("");
-        try {
-          Properties props = new Properties();
-          props.setProperty(MCAST_PORT, String.valueOf(mcastport));
-          props.setProperty(LOCATORS, locators);
-          props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-          props.setProperty(MCAST_TTL, "0");
-          props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-          props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-          addDSProps(props);
-          Locator.startLocatorAndDS(port2, logFile, null, props);
-        } catch (IOException ex) {
-          org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port2, ex);
-        }
+    vm3.invoke("Start locator on " + port2, () -> {
+      File logFile = new File("");
+      try {
+        Properties props = new Properties();
+        props.setProperty(MCAST_PORT, String.valueOf(mcastport));
+        props.setProperty(LOCATORS, locators);
+        props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+        props.setProperty(MCAST_TTL, "0");
+        props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+        props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+        addDSProps(props);
+        Locator.startLocatorAndDS(port2, logFile, null, props);
+      } catch (IOException ex) {
+        org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port2, ex);
+      }
     });
 
     SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
@@ -1977,7 +1977,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     Locator locator = Locator.startLocatorAndDS(port1, logFile, p);
     try {
 
-      vm0.invoke(()->DistributedSystem.connect(p));
+      vm0.invoke(() -> DistributedSystem.connect(p));
 
       LogWriterUtils.getLogWriter().info("Stopping locator");
       locator.stop();
@@ -1985,7 +1985,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       LogWriterUtils.getLogWriter().info("Starting locator");
       locator = Locator.startLocatorAndDS(port1, logFile, p);
 
-      vm0.invoke("disconnect",()->DistributedSystem.connect(p).disconnect());
+      vm0.invoke("disconnect", () -> DistributedSystem.connect(p).disconnect());
 
     } finally {
       locator.stop();
