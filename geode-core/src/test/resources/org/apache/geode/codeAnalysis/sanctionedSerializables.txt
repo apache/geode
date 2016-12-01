@@ -292,7 +292,7 @@ org/apache/geode/internal/cache/PartitionedRegionException,true,5113786059279106
 org/apache/geode/internal/cache/PartitionedRegionQueryEvaluator$MemberResultsList,false,isLastChunkReceived:boolean
 org/apache/geode/internal/cache/PartitionedRegionStatus,true,-6755318987122602065,numberOfLocalEntries:int
 org/apache/geode/internal/cache/PrimaryBucketException,true,1
-org/apache/geode/internal/cache/PutAllPartialResultException,false,result:org/apache/geode/internal/cache/PutAllPartialResultException$PutAllPartialResult
+org/apache/geode/internal/cache/PutAllPartialResultException,true,2411654400733621071,result:org/apache/geode/internal/cache/PutAllPartialResultException$PutAllPartialResult
 org/apache/geode/internal/cache/PutAllPartialResultException$PutAllPartialResult,false,firstCauseOfFailure:java/lang/Exception,firstFailedKey:java/lang/Object,succeededKeys:org/apache/geode/internal/cache/tier/sockets/VersionedObjectList,totalMapSize:int
 org/apache/geode/internal/cache/RegionClearedException,true,1266503771775907997
 org/apache/geode/internal/cache/RegionQueueException,true,4159307586325821105
