@@ -97,7 +97,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop locators running in remote VMs.
- * 
  * @since GemFire 4.0
  */
 @Category({DistributedTest.class, MembershipTest.class})
@@ -407,7 +406,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void startVerifyAndStopLocator(VM loc1, VM loc2, int port1, int port2,
-      Properties properties) {
+                                         Properties properties) {
     try {
       loc2.invoke("startLocator2", () -> startLocatorWithPortAndProperties(port2, properties));
       loc1.invoke("startLocator1", () -> startLocatorWithPortAndProperties(port1, properties));
@@ -633,7 +632,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     try {
       DistributedSystem sys = locator.getDistributedSystem();
 
-      Object[] connectArgs = new Object[] {properties};
+      Object[] connectArgs = new Object[]{properties};
 
       assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
 
@@ -683,7 +682,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void assertLeadMember(final DistributedMember member, final DistributedSystem sys,
-      long timeout) {
+                                long timeout) {
     Awaitility.waitAtMost(timeout, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
         .until(() -> {
           DistributedMember lead = MembershipManagerHelper.getLeadMember(sys);
@@ -756,7 +755,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         }
       });
 
-      Object[] connectArgs = new Object[] {properties};
+      Object[] connectArgs = new Object[]{properties};
 
       SerializableRunnable crashLocator = new SerializableRunnable("Crash locator") {
         public void run() {
@@ -886,7 +885,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         }
       });
 
-      Object[] connectArgs = new Object[] {properties};
+      Object[] connectArgs = new Object[]{properties};
 
       SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
         public void run() {
@@ -1032,7 +1031,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         }
       });
 
-      Object[] connectArgs = new Object[] {properties};
+      Object[] connectArgs = new Object[]{properties};
 
       SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
         public void run() {
@@ -1168,7 +1167,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       DistributedSystem sys = locator.getDistributedSystem();
       sys.getLogWriter().info(
           "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-      Object[] connectArgs = new Object[] {properties};
+      Object[] connectArgs = new Object[]{properties};
 
       assertTrue(MembershipManagerHelper.getLeadMember(sys) == null);
 
@@ -1617,9 +1616,9 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     dsProps.setProperty(MCAST_PORT, "0");
 
     addDSProps(dsProps);
-    vm0.invoke(() -> startLocatorAsync(new Object[] {port1, dsProps}));
-    vm1.invoke(() -> startLocatorAsync(new Object[] {port2, dsProps}));
-    vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
+    vm0.invoke(() -> startLocatorAsync(new Object[]{port1, dsProps}));
+    vm1.invoke(() -> startLocatorAsync(new Object[]{port2, dsProps}));
+    vm2.invoke(() -> startLocatorAsync(new Object[]{port3, dsProps}));
 
     try {
       try {
@@ -1671,11 +1670,11 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         DistributedMember vm3ID = vm3.invoke(() -> GMSJoinLeaveTestHelper
             .getInternalDistributedSystem().getDM().getDistributionManagerId());
         assertTrue("View is " + system.getDM().getMembershipManager().getView()
-            + " and vm3's ID is " + vm3ID,
+                + " and vm3's ID is " + vm3ID,
             vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
 
-        vm1.invoke(() -> startLocatorAsync(new Object[] {port2, dsProps}));
-        vm2.invoke(() -> startLocatorAsync(new Object[] {port3, dsProps}));
+        vm1.invoke(() -> startLocatorAsync(new Object[]{port2, dsProps}));
+        vm2.invoke(() -> startLocatorAsync(new Object[]{port3, dsProps}));
 
         Awaitility.waitAtMost(30000, TimeUnit.MILLISECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
             .until(() -> {
@@ -1857,13 +1856,13 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       Awaitility.waitAtMost(WAIT2_MS, TimeUnit.MILLISECONDS)
           .pollInterval(200, TimeUnit.MILLISECONDS).until(() -> {
-            try {
-              return system.getDM().getViewMembers().size() == 5;
-            } catch (Exception e) {
-              org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
-            }
-            return false; // NOTREACHED
-          });
+        try {
+          return system.getDM().getViewMembers().size() == 5;
+        } catch (Exception e) {
+          org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
+        }
+        return false; // NOTREACHED
+      });
       system.disconnect();
 
       vm1.invoke(() -> disconnectDistributedSystem());
@@ -1953,7 +1952,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Tests starting, stopping, and restarting a locator. See bug 32856.
-   * 
    * @since GemFire 4.1
    */
   @Test
@@ -1977,7 +1975,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     Locator locator = Locator.startLocatorAndDS(port1, logFile, p);
     try {
 
-      vm0.invoke(() -> DistributedSystem.connect(p));
+      vm0.invoke(() -> {
+        DistributedSystem.connect(p);
+        return null;
+      });
 
       LogWriterUtils.getLogWriter().info("Stopping locator");
       locator.stop();
@@ -1985,7 +1986,10 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       LogWriterUtils.getLogWriter().info("Starting locator");
       locator = Locator.startLocatorAndDS(port1, logFile, p);
 
-      vm0.invoke("disconnect", () -> DistributedSystem.connect(p).disconnect());
+      vm0.invoke("disconnect", () -> {
+        DistributedSystem.connect(p).disconnect();
+        return null;
+      });
 
     } finally {
       locator.stop();
@@ -2084,7 +2088,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    public void afterMembershipFailure(String reason, Throwable cause) {}
+    public void afterMembershipFailure(String reason, Throwable cause) {
+    }
 
     public void reset() {
       unboundedWait = false;
@@ -2097,17 +2102,19 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     boolean quorumLostInvoked;
     List<String> suspectReasons = new ArrayList<>(50);
 
-    public void memberJoined(InternalDistributedMember id) {}
+    public void memberJoined(InternalDistributedMember id) {
+    }
 
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {}
+    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    }
 
     public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {
+                              String reason) {
       suspectReasons.add(reason);
     }
 
     public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {
+                           List<InternalDistributedMember> remaining) {
       quorumLostInvoked = true;
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
           .info("quorumLost invoked in test code");
