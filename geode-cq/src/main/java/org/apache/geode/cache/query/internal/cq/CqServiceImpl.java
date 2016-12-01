@@ -125,6 +125,15 @@ public final class CqServiceImpl implements CqService {
 
 
   /**
+   * Access and modification to the contents of this map do not necessarily need to be lock
+   * protected. This is just used to optimize construction of a server side cq name. Missing values
+   * in this cache will mean a look up for a specific proxy id and cq name will miss and reconstruct
+   * the string before adding it back to the cache
+   */
+  private static final ConcurrentHashMap<String, ConcurrentHashMap<ClientProxyMembershipID, String>> serverCqNameCache =
+      new ConcurrentHashMap<>();
+
+  /**
    * Constructor.
    * 
    * @param c The cache used for the service
@@ -631,6 +640,7 @@ public final class CqServiceImpl implements CqService {
     String serverCqName = cqName;
     if (clientId != null) {
       serverCqName = this.constructServerCqName(cqName, clientId);
+      removeFromCacheForServerToConstructedCQName(cqName, clientId);
     }
 
     ServerCQImpl cQuery = null;
@@ -693,6 +703,7 @@ public final class CqServiceImpl implements CqService {
     String serverCqName = cqName;
     if (clientProxyId != null) {
       serverCqName = this.constructServerCqName(cqName, clientProxyId);
+      removeFromCacheForServerToConstructedCQName(cqName, clientProxyId);
     }
 
     ServerCQImpl cQuery = null;
@@ -1021,21 +1032,12 @@ public final class CqServiceImpl implements CqService {
     this.isRunning = true;
   }
 
-  private static final ConcurrentHashMap<String, ConcurrentHashMap<ClientProxyMembershipID, String>> serverCqNameCache =
-      new ConcurrentHashMap<>();
-
   /**
    * @return Returns the serverCqName.
    */
   public String constructServerCqName(String cqName, ClientProxyMembershipID clientProxyId) {
-    ConcurrentHashMap<ClientProxyMembershipID, String> cache = serverCqNameCache.get(cqName);
-    if (null == cache) {
-      final ConcurrentHashMap<ClientProxyMembershipID, String> old = serverCqNameCache
-          .putIfAbsent(cqName, cache = new ConcurrentHashMap<ClientProxyMembershipID, String>());
-      if (null != old) {
-        cache = old;
-      }
-    }
+    ConcurrentHashMap<ClientProxyMembershipID, String> cache = serverCqNameCache
+        .computeIfAbsent(cqName, key -> new ConcurrentHashMap<ClientProxyMembershipID, String>());
 
     String cName = cache.get(clientProxyId);
     if (null == cName) {
@@ -1050,6 +1052,17 @@ public final class CqServiceImpl implements CqService {
     }
 
     return cName;
+  }
+
+  private void removeFromCacheForServerToConstructedCQName(final String cqName,
+      ClientProxyMembershipID clientProxyMembershipID) {
+    ConcurrentHashMap<ClientProxyMembershipID, String> cache = serverCqNameCache.get(cqName);
+    if (cache != null) {
+      cache.remove(clientProxyMembershipID);
+      if (cache.size() == 0) {
+        serverCqNameCache.remove(cqName);
+      }
+    }
   }
 
   /*
