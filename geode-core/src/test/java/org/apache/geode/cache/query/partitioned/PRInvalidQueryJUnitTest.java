@@ -48,57 +48,6 @@ public class PRInvalidQueryJUnitTest {
   }
 
   /**
-   * Tests the execution of an Invalid query <br>
-   * (of the nature Select Distinct * from /Portfolios ) <br>
-   * on a PartitionedRegion created on a single data store. <br>
-   * 1. Creates a PR with redundancy=0 on a single VM.<br>
-   * 2. Puts some test Objects in cache.<br>
-   * 3. Fires querie on the data and verifies the result.<br>
-   * 4. Since region#query() doesn't support this type of query syntax it should throw
-   * QueryInvalidException <br>
-   * 
-   * @throws Exception
-   */
-  @Test
-  public void testInvalidQueryOnSingleDS() throws Exception {
-    logger.info("PRInvalidQueryJUnitTest#testInvalidQueryOnSingleDS: Test Started  ");
-    Region region = PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
-
-    logger
-        .info("PRInvalidQueryJUnitTest#testInvalidQueryOnSingleDS: creating portfolioData objects");
-    PortfolioData[] portfolios = new PortfolioData[100];
-    for (int j = 0; j < 100; j++) {
-      portfolios[j] = new PortfolioData(j);
-    }
-    populateData(region, portfolios);
-
-    logger.info("PRInvalidQueryJUnitTest#testInvalidQueryOnSingleDS: creating Select Query");
-
-    String queryString = "SELECT DISTINCT * FROM /Portfolios WHERE pkid < '5'";
-
-    final String expectedQueryInvalidException = QueryInvalidException.class.getName();
-    logger.info(
-        "<ExpectedException action=add>" + expectedQueryInvalidException + "</ExpectedException>");
-    try {
-      region.query(queryString);
-      fail(
-          "PRInvalidQueryJUnitTest#testInvalidQueryOnSingleDS: Expected an Invalid Query Exception for the query :"
-              + queryString + " this is not supported for region#query()");
-    } catch (QueryInvalidException qe) {
-
-      logger.info(
-          "PRInvalidQueryJUnitTest#testInvalidQueryOnSingleDS: Caught an Invalid Query Exception for the query :"
-              + queryString + " this is not supported for region#query()");
-
-    }
-
-    logger.info("PRInvalidQueryJUnitTest#testInvalidQueryOnSingleDS: Test Ended");
-
-    logger.info("<ExpectedException action=remove>" + expectedQueryInvalidException
-        + "</ExpectedException>");
-  }
-
-  /**
    * Populates the region with the Objects stores in the data Object array.
    * 
    * @param region

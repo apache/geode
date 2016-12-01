@@ -1284,7 +1284,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new CacheSerializableRunnable("Execute queries") {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
-        String queryString = "select distinct * from /" + name + ",/" + name + "_2";
+        String queryString = "select distinct * from /" + name;
         // SelectResults results = null;
         try {
           region.query(queryString);

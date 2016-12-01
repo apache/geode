@@ -1240,8 +1240,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * When executed from a client, this method always runs on the server. However application should
    * use QueryService to execute queries.
    *
-   * When executed from a client, this method always runs on the server. However application should
-   * use QueryService to execute queries.
    *
    * @see Pool#getQueryService
    * @see Cache#getQueryService()

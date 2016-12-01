@@ -20,8 +20,10 @@ import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -35,6 +37,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 // for internal access test
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.rules.ExpectedException;
 
 /**
  * RegionJUnitTest.java
@@ -53,6 +56,32 @@ public class RegionJUnitTest {
   Region region;
   QueryService qs;
   Cache cache;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
+  @Test
+  public void regionQueryWithFullQueryShouldNotFail() throws Exception {
+    SelectResults results = region.query("SeLeCt * FROM /pos where ID = 1");
+    assertEquals(1, results.size());
+
+    results = region.query("SELECT * FROM /pos");
+    assertEquals(4 /* num entries added in setup */, results.size());
+  }
+
+  @Test
+  public void regionQueryExecuteWithFullQueryWithDifferentRegionShouldFail() throws Exception {
+    expectedException.expect(QueryInvalidException.class);
+    cache.createRegionFactory(RegionShortcut.REPLICATE).create("otherRegion");
+    SelectResults results = region.query("select * FROM /otherRegion where ID = 1");
+  }
+
+  @Test
+  public void regionQueryExecuteWithMulipleRegionsInFullQueryShouldFail() throws Exception {
+    expectedException.expect(QueryInvalidException.class);
+    cache.createRegionFactory(RegionShortcut.REPLICATE).create("otherRegion");
+    SelectResults results = region.query("select * FROM /pos, /otherRegion where ID = 1");
+  }
 
 
   @Test
