@@ -6,7 +6,7 @@ Source files for the website are in `${geode-project-dir}/geode-site/website/con
 
 Generated files for the website are in `${geode-project-dir}/geode-site/content`.
 
-NOTE: To make changes to the [Apache Geode User Guide](http://geode.incubator.apache.org/docs/guide/About_Geode.html):
+NOTE: To make changes to the [Apache Geode User Guide](http://geode.apache.org/docs/guide/About_Geode.html):
 
 - See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for information about contributing to the documentation source files.
 - See `${geode-project-dir}/geode-book/README.md` for information about building a local version of the guide and adding it to the website.
@@ -15,7 +15,7 @@ The website is updated by a "sync" tool that monitors the __asf-site__ branch
 of our Git repo, so after making changes you must place your updated source
 and generated files on the __asf-site__ branch and push.
 The content will be published to the
-Geode website](http://geode.incubator.apache.org) after a 5-20 minute delay.
+Geode website](http://geode.apache.org) after a 5-20 minute delay.
 
 ## Prerequisites
 
@@ -48,7 +48,7 @@ If you need to change the layout or styling of the site,
 then you will probably need to change an HTML, JS or CSS file 
 within the ``${geode-project-dir}/geode-site/website/content`` directory.
 
-NOTE: The [Apache Geode User Guide](http://geode.incubator.apache.org/docs/guide/About_Geode.html) source files are in `${geode-project-dir}/geode-docs/`. See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for more information.
+NOTE: The [Apache Geode User Guide](http://geode.apache.org/docs/guide/About_Geode.html) source files are in `${geode-project-dir}/geode-docs/`. See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for more information.
 
 ### 2. Locally generate the site and test your changes
 
