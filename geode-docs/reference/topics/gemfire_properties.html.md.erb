@@ -145,7 +145,13 @@ See <a href="../../managing/autoreconnect/member-reconnect.html">Handling Forced
 </tr>
 <tr class="even">
 <td>distributed-system-id</td>
-<td>Identifier used to distinguish messages from different distributed systems. Set this to different values for different systems in a multi-site (WAN) configuration. This is required for Portable Data eXchange (PDX) data serialization. This setting must be the same for every member in the same distributed system and unique to the distributed system within the WAN installation. -1 means no setting. Valid values are integers in the range -1...255.</td>
+<td>Identifier used to distinguish messages from different distributed systems. 
+This is required for Portable Data eXchange (PDX) data serialization. 
+Set <code class="ph codeph">distributed-system-id</code> to different values for different systems in a multi-site (WAN) configuration, and to different values for production vs. development environments.
+This setting must be the same for every member of a given distributed system and unique to each distributed system within a WAN installation. 
+<br/>Valid values are integers in the range -1...255.
+-1 means no setting. 
+</td>
 <td>-1</td>
 </tr>
 <tr class="odd">

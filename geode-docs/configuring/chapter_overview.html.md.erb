@@ -19,9 +19,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-You use the `gfsh` command-line utility to configure your Apache Geode cluster (also called a "distributed system"). The cluster configuration service persists the cluster configurations and distributes the configurations to members of the cluster. There are also several additional ways to configure a cluster.
+Use the `gfsh` command-line utility to configure your Apache Geode cluster (also called a "distributed system"). The cluster configuration service persists the cluster configurations and distributes the configurations to members of the cluster. There are also several additional ways to configure a cluster.
 
-You use `gfsh` to configure regions, disk stores, members, and other Geode objects. You also use `gfsh` to start and stop locators, servers, and Geode monitoring tools. As you execute these commands, the cluster configuration service persists the configuration. When new members join the cluster, the service distributes the configuration to the new members.
+Use `gfsh` to configure regions, disk stores, members, and other Geode objects. 
+You can also use `gfsh` to start and stop locators, servers, and Geode monitoring tools. As you execute these commands, the cluster configuration service persists the configuration. When new members join the cluster, the service distributes the configuration to the new members.
 
 `gfsh` is the recommended means of configuring and managing your Apache Geode cluster, however you can still configure many aspects of a cluster using the older methods of the cache.xml and gemfire.properties files. See [cache.xml](../reference/topics/chapter_overview_cache_xml.html#cache_xml) and the [Reference](../reference/book_intro.html#reference) for configuration parameters. You can also configure some aspects of a cluster using a Java API. See [Managing Apache Geode](../managing/book_intro.html#managing_gemfire_intro).
 

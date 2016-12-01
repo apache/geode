@@ -24,7 +24,7 @@ When you use the cluster configuration service in Geode, you can examine the gen
 The following directories and configuration files are available on the locator running the cluster configuration service:
 
 **Cluster-level configuration**  
-For configurations that apply to all members of a cluster, the locator creates a `cluster` subdirectory within the `cluster_config` directory (or in the cluster configuration directory when starting up the locator with the `--cluster-config-dir=value` parameter) specified All servers receive this configuration when they are started using `gfsh`. This directory contains:
+For configurations that apply to all members of a cluster, the locator creates a `cluster` subdirectory within the `cluster_config` directory (or in the cluster configuration directory when starting up the locator with the `--cluster-config-dir=value` parameter) specified. All servers receive this configuration when they are started using `gfsh`. This directory contains:
 
 -   `cluster.xml` -- A Geode `cache.xml` file containing configuration common to all members
 -   `cluster.properties` -- a Geode ` gemfire.properties` file containing properties common to all members
