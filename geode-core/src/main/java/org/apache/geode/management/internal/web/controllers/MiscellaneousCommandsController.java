@@ -100,14 +100,18 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @RequestMapping(method = RequestMethod.GET, value = "/stacktraces")
   @ResponseBody
   public String exportStackTraces(
-      @RequestParam(value = CliStrings.EXPORT_STACKTRACE__FILE) final String file,
+      @RequestParam(value = CliStrings.EXPORT_STACKTRACE__FILE, required = false) final String file,
       @RequestParam(value = CliStrings.EXPORT_STACKTRACE__GROUP,
           required = false) final String groupName,
       @RequestParam(value = CliStrings.EXPORT_STACKTRACE__MEMBER,
-          required = false) final String memberNameId) {
+          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
+          required = false) final boolean failIfFilePresent) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
 
-    command.addOption(CliStrings.EXPORT_STACKTRACE__FILE, decode(file));
+    if (hasValue(file)) {
+      command.addOption(CliStrings.EXPORT_STACKTRACE__FILE, decode(file));
+    }
 
     if (hasValue(groupName)) {
       command.addOption(CliStrings.EXPORT_STACKTRACE__GROUP, groupName);
@@ -115,6 +119,11 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
 
     if (hasValue(memberNameId)) {
       command.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, memberNameId);
+    }
+
+    if (hasValue(failIfFilePresent)) {
+      command.addOption(CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
+          String.valueOf(failIfFilePresent));
     }
 
     return processCommand(command.toString());
