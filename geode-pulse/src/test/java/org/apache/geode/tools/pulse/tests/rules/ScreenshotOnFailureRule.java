@@ -47,7 +47,7 @@ public class ScreenshotOnFailureRule extends TestWatcher {
       try {
         File screenshot = new File("build/screenshots/" + screenshotName + ".png");
         FileUtils.copyFile(tempFile, screenshot);
-        System.err.println("Screenshot saved to: " + screenshot.getCanonicalPath());
+        System.out.println("Screenshot saved to: " + screenshot.getCanonicalPath());
       } catch (IOException e) {
         throw new Error(e);
       }

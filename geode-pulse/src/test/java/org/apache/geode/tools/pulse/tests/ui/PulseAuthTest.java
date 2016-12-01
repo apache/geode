@@ -16,10 +16,10 @@
 package org.apache.geode.tools.pulse.tests.ui;
 
 import org.apache.geode.test.junit.categories.UITest;
+import org.apache.geode.tools.pulse.tests.rules.ScreenshotOnFailureRule;
 import org.apache.geode.tools.pulse.tests.rules.ServerRule;
 import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -37,6 +37,10 @@ public class PulseAuthTest extends PulseBase {
   @Rule
   public WebDriverRule webDriverRule =
       new WebDriverRule("pulseUser", "12345", serverRule.getPulseURL());
+
+  @Rule
+  public ScreenshotOnFailureRule screenshotOnFailureRule =
+      new ScreenshotOnFailureRule(this::getWebDriver);
 
   @Override
   public WebDriver getWebDriver() {
