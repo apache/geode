@@ -52,14 +52,9 @@ public class WebDriverRule extends ExternalResource {
     return this.driver;
   }
 
-  @Rule
-  public ScreenshotOnFailureRule screenshotOnFailureRule =
-      new ScreenshotOnFailureRule(() -> driver);
-
   public String getPulseURL() {
     return pulseUrl;
   }
-
 
   @Override
   protected void before() throws Throwable {
