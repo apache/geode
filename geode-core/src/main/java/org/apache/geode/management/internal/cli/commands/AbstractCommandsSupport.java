@@ -15,11 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
@@ -27,12 +22,17 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
-
 import org.springframework.shell.core.CommandMarker;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality
@@ -48,6 +48,7 @@ import org.springframework.shell.core.CommandMarker;
  */
 @SuppressWarnings("unused")
 public abstract class AbstractCommandsSupport implements CommandMarker {
+  protected static SecurityService securityService = SecurityService.getSecurityService();
 
   protected static void assertArgument(final boolean valid, final String message,
       final Object... args) {

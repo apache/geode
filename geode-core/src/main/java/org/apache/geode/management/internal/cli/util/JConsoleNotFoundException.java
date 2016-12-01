@@ -27,6 +27,7 @@ import org.apache.geode.GemFireException;
  */
 @SuppressWarnings("unused")
 public class JConsoleNotFoundException extends GemFireException {
+  private static final long serialVersionUID = -1485615321440327206L;
 
   public JConsoleNotFoundException() {}
 

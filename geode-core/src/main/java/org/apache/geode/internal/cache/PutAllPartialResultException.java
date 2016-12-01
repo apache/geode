@@ -32,6 +32,7 @@ import java.util.*;
 public class PutAllPartialResultException extends GemFireException {
 
   private static final long serialVersionUID = 2411654400733621071L;
+
   private PutAllPartialResult result;
 
   //////////////////// Constructors ////////////////////
@@ -93,6 +94,8 @@ public class PutAllPartialResultException extends GemFireException {
   }
 
   public static class PutAllPartialResult implements Serializable {
+    private static final long serialVersionUID = -2168767259323206954L;
+
     private VersionedObjectList succeededKeys;
     private Object firstFailedKey;
     private Exception firstCauseOfFailure;

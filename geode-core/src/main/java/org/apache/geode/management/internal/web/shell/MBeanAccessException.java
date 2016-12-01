@@ -24,6 +24,7 @@ package org.apache.geode.management.internal.web.shell;
  */
 @SuppressWarnings("unused")
 public class MBeanAccessException extends RuntimeException {
+  private static final long serialVersionUID = 813768898269516238L;
 
   public MBeanAccessException() {}
 

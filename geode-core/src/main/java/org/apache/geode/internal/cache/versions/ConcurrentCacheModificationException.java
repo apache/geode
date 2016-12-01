@@ -26,6 +26,8 @@ import java.util.ConcurrentModificationException;
  * @since GemFire 7.0
  */
 public class ConcurrentCacheModificationException extends ConcurrentModificationException {
+  private static final long serialVersionUID = 2316928221010347462L;
+
   public ConcurrentCacheModificationException() {}
 
   public ConcurrentCacheModificationException(String message) {

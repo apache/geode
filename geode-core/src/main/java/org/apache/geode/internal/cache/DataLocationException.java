@@ -24,6 +24,8 @@ import org.apache.geode.GemFireCheckedException;
  * @see PrimaryBucketException
  */
 public abstract class DataLocationException extends GemFireCheckedException {
+  private static final long serialVersionUID = -7385193860335007389L;
+
   public DataLocationException() {}
 
   public DataLocationException(String msg) {

@@ -23,6 +23,7 @@ package org.apache.geode.management.internal.web.shell;
  */
 @SuppressWarnings("unused")
 public class RestApiCallForCommandNotFoundException extends RuntimeException {
+  private static final long serialVersionUID = 6686566370779394304L;
 
   public RestApiCallForCommandNotFoundException() {}
 

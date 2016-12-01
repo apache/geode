@@ -34,6 +34,7 @@ import org.apache.geode.cache.execute.FunctionService;
  */
 
 public class InternalFunctionException extends FunctionException {
+  private static final long serialVersionUID = 3532698050312820319L;
 
   /**
    * Creates new internal function exception with given error message.

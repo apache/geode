@@ -30,6 +30,7 @@ import org.apache.geode.cache.control.ResourceManager;
  * @since GemFire 7.0
  */
 public class QueryExecutionLowMemoryException extends CacheRuntimeException {
+  private static final long serialVersionUID = -8070816454346497899L;
 
   /**
    * Creates a new instance of <code>QueryExecutionLowMemoryException</code> without detail message.

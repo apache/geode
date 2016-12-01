@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.exceptions;
 
 public abstract class CliException extends Exception {
+  private static final long serialVersionUID = -7603040667204839200L;
 
   public CliException() {
     this(null, null);

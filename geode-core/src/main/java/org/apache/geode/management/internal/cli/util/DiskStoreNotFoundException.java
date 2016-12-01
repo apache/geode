@@ -28,6 +28,7 @@ import org.apache.geode.GemFireException;
 // TODO this GemFireException should be moved to a more appropriate package!
 @SuppressWarnings("unused")
 public class DiskStoreNotFoundException extends GemFireException {
+  private static final long serialVersionUID = -5184836041554948093L;
 
   public DiskStoreNotFoundException() {}
 

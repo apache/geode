@@ -25,6 +25,7 @@ import org.apache.geode.GemFireException;
  *
  */
 public class ReenteredConnectException extends GemFireException {
+  private static final long serialVersionUID = 2878977454669428469L;
 
   public ReenteredConnectException() {
     super();

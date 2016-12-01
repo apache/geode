@@ -25,6 +25,7 @@ import java.io.DataInput;
  * @since GemFire 6.1
  */
 public class InvalidDeltaException extends GemFireException {
+  private static final long serialVersionUID = 7846464807353214091L;
 
   /**
    * Creates a new <code>InvalidDeltaException</code>.

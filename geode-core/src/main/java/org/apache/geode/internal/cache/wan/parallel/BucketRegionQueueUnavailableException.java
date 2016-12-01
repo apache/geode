@@ -22,6 +22,7 @@ import org.apache.geode.GemFireException;
  * cleaned up.
  */
 public class BucketRegionQueueUnavailableException extends GemFireException {
+  private static final long serialVersionUID = -1860388334938028312L;
 
   public BucketRegionQueueUnavailableException() {}
 

@@ -24,6 +24,7 @@ import org.apache.geode.cache.CacheRuntimeException;
  * @since GemFire 6.0
  */
 public class QueryExecutionTimeoutException extends CacheRuntimeException {
+  private static final long serialVersionUID = 3153027985663954674L;
 
   /**
    * Creates a new instance of <code>QueryExecutionTimeoutException</code> without detail message.

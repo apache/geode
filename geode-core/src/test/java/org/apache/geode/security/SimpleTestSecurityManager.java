@@ -31,6 +31,8 @@ import java.util.Properties;
  * data:read data:write username = dataWrite: is authorized for data writes on all regions:
  * data:write data:write:regionA username = cluster: authorized for all cluster operations username
  * = cluserRead: authorzed for all cluster read operations
+ *
+ * a user could be a comma separated list of roles as well.
  */
 public class SimpleTestSecurityManager implements SecurityManager {
   @Override
@@ -48,9 +50,13 @@ public class SimpleTestSecurityManager implements SecurityManager {
 
   @Override
   public boolean authorize(final Object principal, final ResourcePermission permission) {
-    String permissionString = permission.toString().replace(":", "").toLowerCase();
-    String principle = principal.toString().toLowerCase();
-    return permissionString.startsWith(principle);
+    String[] principals = principal.toString().toLowerCase().split(",");
+    for (String role : principals) {
+      String permissionString = permission.toString().replace(":", "").toLowerCase();
+      if (permissionString.startsWith(role))
+        return true;
+    }
+    return false;
   }
 
   @Override

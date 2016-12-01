@@ -25,6 +25,7 @@ package org.apache.geode;
  * @since GemFire 5.1
  */
 public abstract class GemFireCheckedException extends Exception {
+  private static final long serialVersionUID = -8659184576090173188L;
 
   ////////////////////// Constructors //////////////////////
 

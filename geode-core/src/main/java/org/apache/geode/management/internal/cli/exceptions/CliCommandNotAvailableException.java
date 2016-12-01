@@ -18,6 +18,7 @@ import org.apache.geode.management.internal.cli.parser.CommandTarget;
 import org.apache.geode.management.internal.cli.parser.OptionSet;
 
 public class CliCommandNotAvailableException extends CliCommandException {
+  private static final long serialVersionUID = -631339463163773007L;
 
   public CliCommandNotAvailableException(final CommandTarget commandTarget) {
     this(commandTarget, null, null);

@@ -20,6 +20,7 @@ import org.apache.geode.GemFireException;
  *
  */
 public class RedundancyAlreadyMetException extends GemFireException {
+  private static final long serialVersionUID = -1876426827930995062L;
 
   public RedundancyAlreadyMetException() {
     super();

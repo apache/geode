@@ -22,6 +22,7 @@ package org.apache.geode.cache;
  * @since GemFire 6.6
  */
 public class GatewayConfigurationException extends GatewayException {
+  private static final long serialVersionUID = 3112317608711263007L;
 
   public GatewayConfigurationException() {
     super();
