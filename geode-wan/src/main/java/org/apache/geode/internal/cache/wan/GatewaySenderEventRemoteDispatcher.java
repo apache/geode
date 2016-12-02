@@ -802,7 +802,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   @Override
   public boolean isConnectedToRemote() {
-    return connection != null;
+    return connection != null && !connection.isDestroyed();
   }
 
   public void stop() {
