@@ -66,4 +66,11 @@ public interface ConnectionSource {
    * @return true if the servers have balanced load.
    */
   boolean isBalanced();
+
+  /**
+   * get the list of all the servers
+   * 
+   * @return a list of all servers
+   */
+  List<ServerLocation> getAllServers();
 }
