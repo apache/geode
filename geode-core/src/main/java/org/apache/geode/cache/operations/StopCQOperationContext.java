@@ -23,6 +23,7 @@ import java.util.Set;
  * operation for the pre-operation case.
  * 
  * @since GemFire 5.5
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class StopCQOperationContext extends ExecuteCQOperationContext {
 

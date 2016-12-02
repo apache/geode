@@ -14,14 +14,13 @@
  */
 package org.apache.geode.cache.operations;
 
-import java.io.Serializable;
 import java.util.Set;
 
 /**
  * OperationContext for Function execution operation. This is for the pre-operation case
  * 
  * @since GemFire 6.0
- *
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class ExecuteFunctionOperationContext extends OperationContext {
 

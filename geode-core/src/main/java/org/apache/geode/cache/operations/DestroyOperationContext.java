@@ -22,6 +22,7 @@ package org.apache.geode.cache.operations;
  * updates.
  * 
  * @since GemFire 5.5
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class DestroyOperationContext extends KeyOperationContext {
 

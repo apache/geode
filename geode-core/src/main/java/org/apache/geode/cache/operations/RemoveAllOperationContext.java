@@ -18,13 +18,12 @@ package org.apache.geode.cache.operations;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.geode.cache.operations.OperationContext;
-
 /**
  * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REMOVEALL}
  * operation for both the pre-operation and post-operation cases.
  * 
  * @since GemFire 8.1
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class RemoveAllOperationContext extends OperationContext {
 

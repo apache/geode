@@ -23,6 +23,7 @@ import org.apache.geode.cache.Region;
  * post-operation updates.
  * 
  * @since GemFire 5.5
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class PutOperationContext extends KeyValueOperationContext {
 
