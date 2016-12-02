@@ -894,7 +894,10 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     short version = netMbr.getVersionOrdinal();
     Version.writeOrdinal(out, version, true);
 
-    if (version >= Version.GFE_90.ordinal() && writeNetMbrData) {
+    Version streamVersion = InternalDataSerializer.getVersionForDataStream(out);
+    
+    if (streamVersion.ordinal() >= Version.GFE_90.ordinal() 
+        && version >= Version.GFE_90.ordinal() && writeNetMbrData) {
       getNetMember().writeAdditionalData(out);
     }
   }
@@ -991,7 +994,11 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
-    if (version >= Version.GFE_90.ordinal() && (flags & NETMBR_DATA_BIT) == NETMBR_DATA_BIT) {
+    Version streamVersion = InternalDataSerializer.getVersionForDataStream(in);
+
+    if (streamVersion.ordinal() >= Version.GFE_90.ordinal()
+        && version >= Version.GFE_90.ordinal() 
+        && (flags & NETMBR_DATA_BIT) == NETMBR_DATA_BIT) {
       netMbr.readAdditionalData(in);
     }
   }
