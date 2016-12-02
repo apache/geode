@@ -108,6 +108,7 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Send the distribution manager a message it can't deserialize
    */
+  @Ignore
   @Test
   public void testExceptionInThreads() throws InterruptedException {
     DistributionManager dm = (DistributionManager) getSystem().getDistributionManager();
