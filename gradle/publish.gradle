@@ -78,9 +78,9 @@ subprojects {
       url 'http://geode.apache.org'
   
       scm {
-        url 'https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=tree'
-        connection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
-        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+        url 'https://git-wip-us.apache.org/repos/asf?p=geode.git;a=tree'
+        connection 'scm:https://git-wip-us.apache.org/repos/asf/geode.git'
+        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/geode.git'
       }
   
       licenses {

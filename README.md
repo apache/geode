@@ -5,7 +5,7 @@
 **[Application Development](#development)**  
 **[Documentation](http://geode.apache.org/docs/)**
 **[wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)**  
-**Continuous Integration** [![Build Status](https://travis-ci.org/apache/incubator-geode.svg?branch=develop)](https://travis-ci.org/apache/incubator-geode)  
+**Continuous Integration** [![Build Status](https://travis-ci.org/apache/geode.svg?branch=develop)](https://travis-ci.org/apache/geode)  
 
 ## <a name="overview"></a>Overview
 

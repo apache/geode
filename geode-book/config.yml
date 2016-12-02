@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-book_repo: apache/incubator-geode/geode-book
+book_repo: apache/geode/geode-book
 public_host: localhost
 
 sections:
