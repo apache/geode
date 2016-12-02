@@ -23,8 +23,8 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 /**
  * This subclass's job is to keep customers from getting a reference to a value that is off-heap.
  * Any access to an off-heap value should appear to the customer as a serialized value.
- * 
  *
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class GetOperationContextImpl extends GetOperationContext implements Releasable {
 

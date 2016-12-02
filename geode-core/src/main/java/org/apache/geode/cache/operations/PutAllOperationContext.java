@@ -15,16 +15,16 @@
 
 package org.apache.geode.cache.operations;
 
-import java.util.Map;
-
-import org.apache.geode.cache.operations.OperationContext;
 import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
+
+import java.util.Map;
 
 /**
  * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUTALL}
  * operation for both the pre-operation and post-operation cases.
  * 
  * @since GemFire 5.7
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class PutAllOperationContext extends OperationContext {
 
