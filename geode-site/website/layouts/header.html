@@ -248,15 +248,12 @@
                 <li class="<%= 'active' if @community %>"><a href="/community/"><span class="fa fa-users"></span></a></li>
                 <li class="<%= 'active' if @docs %>"><a href="/docs/"><span class="fa fa-book"></span></a></li>
                 <li><a href="http://github.com/apache/geode" target="_blank"><span class="fa fa-github-square"></span></a></li>
-                <!--<li><a href="https://trello.com/b/exQmJIOn/usergrid" target="_blank"><span class="icns icon-trello"></span></a></li>-->
-                <li><a href="https://issues.apache.org/jira/browse/GEODE/"
-                       target="_blank"><span class="fa fa-bug"></span></a></li>
+                <li><a href="https://issues.apache.org/jira/browse/GEODE/" target="_blank"><span class="fa fa-bug"></span></a></li>
                 <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank"><span class="fa fa-stack-overflow"></span></a></li>
                 <li><a href="/community/#mailing-lists"><span class="fa fa-envelope"></span></a></li>
-                <!-- <li><a href="/community/#live"><span class="icns icon-comments"></span></a></li> -->
                 <li><a href="https://twitter.com/apachegeode" target="_blank"><span class="fa fa-twitter"></span></a></li>
                 <li><a href="https://cwiki.apache.org/confluence/display/geode/" target="_blank"><span class="fa fa-pencil-square-o"></span></a></li>
-                <li><a href="/releases/"><span class="fa fa-arrow-circle-o-down"></span></a></li>
+                <li class="<%= 'active' if @releases %>"><a href="/releases/"><span class="fa fa-arrow-circle-o-down"></span></a></li>
             </ul>
         </nav>
     </div>
