@@ -337,10 +337,10 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR_1", "ln", isOffHeap()));
 
     // senders are created on local site
-    vm4.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 500, false, false,
-        null, true, 5, OrderPolicy.KEY));
-    vm5.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 500, false, false,
-        null, true, 5, OrderPolicy.KEY));
+    vm4.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 10, false, false, null,
+        true, 5, OrderPolicy.KEY));
+    vm5.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 10, false, false, null,
+        true, 5, OrderPolicy.KEY));
 
     // start the senders on local site
     startSenderInVMs("ln", vm4, vm5);
@@ -350,7 +350,7 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
     // start puts in RR_1 in another thread
     AsyncInvocation inv1 =
-        vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR_1", 10000));
+        vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR_1", 100));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(getTestMethodName() + "_RR_1"));
 
@@ -362,12 +362,11 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     }
 
     // verify that all is well in local site. All the events should be present in local region
-    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR_1", 10000));
-    // assuming some events might have been dispatched before the remote region was destroyed,
-    // sender's region queue will have events less than 1000 but the queue will not be empty.
-    // NOTE: this much verification might be sufficient in DUnit. Hydra will take care of
-    // more in depth validations.
-    vm4.invoke(() -> WANTestBase.verifyRegionQueueNotEmptyForConcurrentSender("ln"));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR_1", 100));
+
+    // Wait for the queue to drain. The queue will drain because when the region is destroyed,
+    // the failed batches will be logged and discarded
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }
 
   /**

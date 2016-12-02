@@ -3317,23 +3317,18 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void verifyRegionQueueNotEmptyForConcurrentSender(String senderId) {
+  public static void waitForConcurrentSerialSenderQueueToDrain(String senderId) {
     Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
+    GatewaySender sender =
+        senders.stream().filter(s -> s.getId().equals(senderId)).findFirst().get();
 
-    if (!sender.isParallel()) {
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
       Set<RegionQueue> queues =
           ((AbstractGatewaySender) sender).getQueuesForConcurrentSerialGatewaySender();
       for (RegionQueue q : queues) {
-        assertTrue(q.size() > 0);
+        assertEquals(0, q.size());
       }
-    }
+    });
   }
 
   /**
