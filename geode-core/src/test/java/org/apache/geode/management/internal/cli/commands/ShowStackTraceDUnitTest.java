@@ -15,6 +15,12 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -25,16 +31,11 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import org.junit.rules.TemporaryFolder;
 
 /***
  * DUnit test for 'show stack-trace' command
@@ -43,6 +44,9 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
+
+  @Rule
+  public TemporaryFolder workDirectory = new SerializableTemporaryFolder();
 
   private void createCache(Properties props) {
     getSystem(props);
@@ -90,23 +94,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
   public void testExportStacktrace() throws ClassNotFoundException, IOException {
     setupSystem();
 
-    // Test non txt extension file is allowed
-    File stacktracesFile = new File("allStackTraces.log");
-    stacktracesFile.createNewFile();
-    stacktracesFile.deleteOnExit();
-    CommandStringBuilder commandStringBuilder =
-        new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
-    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
-        stacktracesFile.getCanonicalPath());
-    String exportCommandString = commandStringBuilder.toString();
-    getLogWriter().info("CommandString : " + exportCommandString);
-    CommandResult exportCommandResult = executeCommand(exportCommandString);
-    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
-    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
-
-    File allStacktracesFile = new File("allStackTraces.txt");
-    allStacktracesFile.createNewFile();
-    allStacktracesFile.deleteOnExit();
+    File allStacktracesFile = workDirectory.newFile("allStackTraces.txt");
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, allStacktracesFile.getCanonicalPath());
     String commandString = csb.toString();
@@ -115,9 +103,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
-    File mgrStacktraceFile = new File("managerStacktrace.txt");
-    mgrStacktraceFile.createNewFile();
-    mgrStacktraceFile.deleteOnExit();
+    File mgrStacktraceFile = workDirectory.newFile("managerStacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, mgrStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Manager");
@@ -127,9 +113,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
-    File serverStacktraceFile = new File("serverStacktrace.txt");
-    serverStacktraceFile.createNewFile();
-    serverStacktraceFile.deleteOnExit();
+    File serverStacktraceFile = workDirectory.newFile("serverStacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, serverStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Server");
@@ -139,9 +123,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
-    File groupStacktraceFile = new File("groupstacktrace.txt");
-    groupStacktraceFile.createNewFile();
-    groupStacktraceFile.deleteOnExit();
+    File groupStacktraceFile = workDirectory.newFile("groupstacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, groupStacktraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__GROUP, "G2");
@@ -151,9 +133,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     getLogWriter().info("Output : \n" + commandResultToString(commandResult));
     assertTrue(commandResult.getStatus().equals(Status.OK));
 
-    File wrongStackTraceFile = new File("wrongStackTrace.txt");
-    wrongStackTraceFile.createNewFile();
-    wrongStackTraceFile.deleteOnExit();
+    File wrongStackTraceFile = workDirectory.newFile("wrongStackTrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, wrongStackTraceFile.getCanonicalPath());
     csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "WrongMember");
@@ -165,7 +145,44 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
   }
 
   /***
-   * Tests the behavior of the show stack-trace command when file is already present
+   * Tests the behavior of the show stack-trace command to verify that files with any extension are
+   * allowed Refer: GEODE-734
+   *
+   * @throws ClassNotFoundException
+   * @throws IOException
+   */
+  @Test
+  public void testExportStacktraceWithNonTXTFile() throws ClassNotFoundException, IOException {
+    setupSystem();
+
+    // Test non txt extension file is allowed
+    File stacktracesFile = workDirectory.newFile("allStackTraces.log");
+    CommandStringBuilder commandStringBuilder =
+        new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
+        stacktracesFile.getCanonicalPath());
+    String exportCommandString = commandStringBuilder.toString();
+    getLogWriter().info("CommandString : " + exportCommandString);
+    CommandResult exportCommandResult = executeCommand(exportCommandString);
+    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
+    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
+
+    // test file with-out any extension
+    File allStacktracesFile = workDirectory.newFile("allStackTraces");
+    commandStringBuilder = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
+        allStacktracesFile.getCanonicalPath());
+    exportCommandString = commandStringBuilder.toString();
+    getLogWriter().info("CommandString : " + exportCommandString);
+    exportCommandResult = executeCommand(exportCommandString);
+    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
+    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
+  }
+
+  /***
+   * Tests the behavior of the show stack-trace command when file is already present and
+   * abort-if-file-exists option is set to false(which is default). As a result it should overwrite
+   * the file and return OK status
    *
    * @throws ClassNotFoundException
    * @throws IOException
@@ -174,51 +191,51 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
   public void testExportStacktraceWhenFilePresent() throws ClassNotFoundException, IOException {
     setupSystem();
 
-    // test fail if file present
-    File stacktracesFile = new File("allStackTraces.log");
-    stacktracesFile.createNewFile();
-    stacktracesFile.deleteOnExit();
-    getLogWriter().info("ShowStackTraceDUnitTest.testExportStacktraceWhenFilePresent :: "
-        + "Created file at: " + stacktracesFile.getCanonicalPath());
+    // test pass although file present
+    File stacktracesFile = workDirectory.newFile("allStackTraces.log");
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
         stacktracesFile.getCanonicalPath());
-    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
-        Boolean.FALSE.toString());
     String exportCommandString = commandStringBuilder.toString();
     getLogWriter().info("CommandString : " + exportCommandString);
     CommandResult exportCommandResult = executeCommand(exportCommandString);
     getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
     assertTrue(exportCommandResult.getStatus().equals(Status.OK));
 
-    // test pass although file present
-    stacktracesFile = new File("allStackTraces.log");
-    stacktracesFile.createNewFile();
-    stacktracesFile.deleteOnExit();
-    commandStringBuilder = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
+  }
+
+  /***
+   * Tests the behavior of the show stack-trace command when file is already present and when
+   * abort-if-file-exists option is set to true. As a result it should fail with ERROR status
+   *
+   * @throws ClassNotFoundException
+   * @throws IOException
+   */
+  @Test
+  public void testExportStacktraceFilePresentWithAbort()
+      throws ClassNotFoundException, IOException {
+    setupSystem();
+
+    File stacktracesFile = workDirectory.newFile("allStackTraces.log");
+    CommandStringBuilder commandStringBuilder =
+        new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
         stacktracesFile.getCanonicalPath());
-    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT, "false");
-    exportCommandString = commandStringBuilder.toString();
+    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
+        Boolean.TRUE.toString());
+    String exportCommandString = commandStringBuilder.toString();
     getLogWriter().info("CommandString : " + exportCommandString);
-    exportCommandResult = executeCommand(exportCommandString);
+    CommandResult exportCommandResult = executeCommand(exportCommandString);
     getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
-    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
-
-    // test default pass although file present
-    stacktracesFile = new File("allStackTraces.log");
-    stacktracesFile.createNewFile();
-    stacktracesFile.deleteOnExit();
-    commandStringBuilder = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
-    commandStringBuilder.addOption(CliStrings.EXPORT_STACKTRACE__FILE,
-        stacktracesFile.getCanonicalPath());
-    exportCommandString = commandStringBuilder.toString();
-    getLogWriter().info("CommandString : " + exportCommandString);
-    exportCommandResult = executeCommand(exportCommandString);
-    getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
-    assertTrue(exportCommandResult.getStatus().equals(Status.OK));
-
+    assertTrue(exportCommandResult.getStatus().equals(Status.ERROR));
+    try {
+      assertTrue(((String) exportCommandResult.getResultData().getGfJsonObject()
+          .getJSONObject("content").getJSONArray("message").get(0))
+              .contains("file " + stacktracesFile.getCanonicalPath() + " already present"));
+    } catch (GfJsonException e) {
+      fail("Exception while parsing command result", e.getCause());
+    }
   }
 
   /***
@@ -233,9 +250,6 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     setupSystem();
 
     // test auto generated file when file name is not provided
-    File stacktracesFile = new File("allStackTraces.log");
-    stacktracesFile.createNewFile();
-    stacktracesFile.deleteOnExit();
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     String exportCommandString = commandStringBuilder.toString();
