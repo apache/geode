@@ -65,14 +65,12 @@ public class TypedIteratorJUnitTest {
         "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" + "SELECT DISTINCT *\n"
             + "FROM /pos TYPE Portfolio\n" + "WHERE ID = 3  ");
     Object r = q.execute();
-    CacheUtils.getLogger().fine(Utils.printResult(r));
 
 
     q = this.qs.newQuery( // must quote "query" because it is a reserved word
         "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;\n" + "SELECT DISTINCT *\n"
             + "FROM /pos ptfo TYPE Portfolio\n" + "WHERE ID = 3  ");
     r = q.execute();
-    CacheUtils.getLogger().fine(Utils.printResult(r));
   }
 
 
@@ -83,14 +81,12 @@ public class TypedIteratorJUnitTest {
             + "FROM (collection<Portfolio>)/pos\n" + "WHERE ID = 3  ");
     // org.apache.geode.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
     Object r = q.execute();
-    CacheUtils.getLogger().fine(Utils.printResult(r));
 
     q = this.qs.newQuery( // must quote "query" because it is a reserved word
         "IMPORT org.apache.geode.cache.\"query\".data.Position;\n" + "SELECT DISTINCT *\n"
             + "FROM /pos p, (collection<Position>)p.positions.values\n" + "WHERE secId = 'IBM'");
     // org.apache.geode.internal.util.DebuggerSupport.waitForJavaDebugger(this.cache.getLogger());
     r = q.execute();
-    CacheUtils.getLogger().fine(Utils.printResult(r));
   }
 
   @Before

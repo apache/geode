@@ -149,7 +149,6 @@ public class IndependentOperandsInWhereClause2JUnitTest {
       if (!observer.isIndexesUsed) {
         CacheUtils.log("NO INDEX USED");
       }
-      CacheUtils.log(Utils.printResult(r));
       if (((Collection) r).size() != sizeOfResult[i]) {
         fail("SIZE NOT as expected for QUery no :" + (i + 1));
       }
@@ -173,7 +172,6 @@ public class IndependentOperandsInWhereClause2JUnitTest {
 
         Object r2 = q2.execute();
         sr[j][1] = (SelectResults) r2;
-        CacheUtils.log("With Index =" + Utils.printResult(r2));
         if (((Collection) r2).size() != sizeOfResult[j]) {
           fail("SIZE NOT as expected for QUery no :" + (j + 1));
         }

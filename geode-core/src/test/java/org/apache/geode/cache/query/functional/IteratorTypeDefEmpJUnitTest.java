@@ -73,7 +73,6 @@ public class IteratorTypeDefEmpJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());

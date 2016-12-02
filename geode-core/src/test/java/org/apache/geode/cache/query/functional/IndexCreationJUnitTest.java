@@ -317,14 +317,8 @@ public class IndexCreationJUnitTest {
       QueryObserverHolder.setInstance(observer);
       r[i][0] = (SelectResults) q.execute(params);
 
-      if (!observer.isIndexesUsed) {
-        CacheUtils.log("NO INDEX USED");
-      }
-      CacheUtils.log(Utils.printResult(r[i][0]));
       resType1 = (r[i][0]).getCollectionType().getElementType();
       resSize1 = ((r[i][0]).size());
-      CacheUtils.log("Result Type= " + resType1);
-      CacheUtils.log("Result Size= " + resSize1);
       set1 = ((r[i][0]).asSet());
       // Iterator iter=set1.iterator();
     }
@@ -342,12 +336,9 @@ public class IndexCreationJUnitTest {
       QueryObserverImpl observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
       r[i][1] = (SelectResults) q.execute(params);
-      if (observer2.isIndexesUsed) {
-        CacheUtils.log("YES INDEX IS USED!");
-      } else {
+      if (!observer2.isIndexesUsed) {
         fail("FAILED: Index NOT Used");
       }
-      CacheUtils.log(Utils.printResult(r[i][1]));
       resType2 = (r[i][1]).getCollectionType().getElementType();
       resSize2 = ((r[i][1]).size());
       set2 = ((r[i][1]).asSet());

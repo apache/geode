@@ -71,7 +71,6 @@ public class IteratorTypeDefJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -89,7 +88,6 @@ public class IteratorTypeDefJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
         if (!(r instanceof SelectResults))
           fail(
               "testIteratorDefSyntaxForObtainingResultBag: Test failed as obtained Result Data not an instance of SelectResults. Query= "
@@ -116,7 +114,6 @@ public class IteratorTypeDefJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -140,7 +137,6 @@ public class IteratorTypeDefJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());

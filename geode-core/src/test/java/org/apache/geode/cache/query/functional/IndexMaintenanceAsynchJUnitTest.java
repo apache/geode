@@ -25,6 +25,8 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.ResultsSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,7 +92,6 @@ public class IndexMaintenanceAsynchJUnitTest {
       query = CacheUtils.getQueryService().newQuery(queryString);
 
       result = query.execute();
-      CacheUtils.log(Utils.printResult(result));
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -100,70 +101,49 @@ public class IndexMaintenanceAsynchJUnitTest {
 
   @Test
   public void testAddEntry() throws Exception {
-
-    new NewThread(region, index);
-    // assertIndexDetailsEquals(5, stats.getNumberOfValues());
-    Thread.sleep(12000);
-  }
-
-
-  class NewThread implements Runnable {
     String queryString;
-    Query query;
     Object result;
-    Thread t;
-    Region region;
-    IndexProtocol index;
-
-    NewThread(Region region, IndexProtocol index) {
-      t = new Thread(this, "Demo");
-      this.region = region;
-      this.index = index;
-      t.setPriority(10);
-      t.start();
-    }
-
-    public void run() {
-      try {
-        IndexStatistics stats = index.getStatistics();
-        for (int i = 5; i < 9; i++) {
-          region.put("" + i, new Portfolio(i));
-        }
-        final IndexStatistics st = stats;
-        WaitCriterion ev = new WaitCriterion() {
-          public boolean done() {
-            return st.getNumUpdates() == 8;
-          }
-
-          public String description() {
-            return "index updates never became 8";
-          }
-        };
-        Wait.waitForCriterion(ev, 5000, 200, true);
-
-        // queryString= "SELECT DISTINCT * FROM /portfolios p, p.positions.values pos where
-        // pos.secId='IBM'";
-        queryString = "SELECT DISTINCT * FROM /portfolios where status = 'active'";
-        query = CacheUtils.getQueryService().newQuery(queryString);
-        QueryObserverImpl observer = new QueryObserverImpl();
-        QueryObserverHolder.setInstance(observer);
-
-        result = query.execute();
-        if (!observer.isIndexesUsed) {
-          fail("NO INDEX USED");
-        }
-        CacheUtils.log(Utils.printResult(result));
-        if (((Collection) result).size() != 4) {
-          fail("Did not obtain expected size of result for the query");
-        }
-        // Task ID: IMA 1
-
-      } catch (Exception e) {
-        e.printStackTrace();
-
+    Query query;
+    try {
+      IndexStatistics stats = index.getStatistics();
+      for (int i = 5; i < 9; i++) {
+        region.put("" + i, new Portfolio(i));
       }
+      final IndexStatistics st = stats;
+      WaitCriterion ev = new WaitCriterion() {
+        public boolean done() {
+          return st.getNumUpdates() == 8;
+        }
+
+        public String description() {
+          return "index updates never became 8";
+        }
+      };
+      Wait.waitForCriterion(ev, 5000, 200, true);
+
+      // queryString= "SELECT DISTINCT * FROM /portfolios p, p.positions.values pos where
+      // pos.secId='IBM'";
+      queryString = "SELECT DISTINCT * FROM /portfolios where status = 'active'";
+      query = CacheUtils.getQueryService().newQuery(queryString);
+      QueryObserverImpl observer = new QueryObserverImpl();
+      QueryObserverHolder.setInstance(observer);
+
+      result = query.execute();
+      if (!observer.isIndexesUsed) {
+        fail("NO INDEX USED");
+      }
+
+      if (((Collection) result).size() != 4) {
+        fail("Did not obtain expected size of result for the query");
+      }
+      // Task ID: IMA 1
+
+    } catch (Exception e) {
+      e.printStackTrace();
+
     }
   }
+
   class QueryObserverImpl extends QueryObserverAdapter {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
@@ -178,4 +158,5 @@ public class IndexMaintenanceAsynchJUnitTest {
       }
     }
   }
+
 }

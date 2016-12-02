@@ -195,7 +195,6 @@ public class IndexMaintainceJUnitTest {
     // index.query("active", OQLLexerTokenTypes.TOK_EQ, results, new ExecutionContext(null,
     // CacheUtils.getCache()));
     SelectResults results = region.query("status = 'active'");
-    CacheUtils.log(Utils.printResult(results));
     assertEquals(3, results.size());
   }
 

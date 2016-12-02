@@ -58,19 +58,15 @@ public class RegionJUnitTest {
   @Test
   public void testShortcutMethods() throws Exception {
     for (int i = 0; i < queries.length; i++) {
-      CacheUtils.log("Query = " + queries[i]);
       Object r = region.query(queries[i]);
-      CacheUtils.getLogger().fine(Utils.printResult(r));
     }
   }
 
   @Test
   public void testQueryServiceInterface() throws Exception {
     for (int i = 0; i < queries.length; i++) {
-      CacheUtils.log("Query = select distinct * from /pos where " + queries[i]);
       Query q = qs.newQuery("select distinct * from /pos where " + queries[i]);
       Object r = q.execute();
-      CacheUtils.getLogger().fine(Utils.printResult(r));
     }
   }
 
@@ -80,12 +76,10 @@ public class RegionJUnitTest {
     Query q = qs.newQuery("select distinct * from /pos where ID = $1");
     Object[] params = new Object[] {new Integer(0)};// {"active"};
     Object r = q.execute(params);
-    CacheUtils.getLogger().fine(Utils.printResult(r));
 
     q = qs.newQuery("select distinct * from $1 where status = $2 and ID = $3");
     params = new Object[] {this.region, "active", new Integer(0)};
     r = q.execute(params);
-    CacheUtils.getLogger().fine(Utils.printResult(r));
   }
 
 
@@ -98,10 +92,8 @@ public class RegionJUnitTest {
         "select distinct * from /pos.entries where value.status = 'active'"};
 
     for (int i = 0; i < queries.length; i++) {
-      CacheUtils.log("Query = " + queries[i]);
       Query q = qs.newQuery(queries[i]);
       Object r = q.execute();
-      CacheUtils.getLogger().fine(Utils.printResult(r));
     }
   }
 
@@ -147,7 +139,6 @@ public class RegionJUnitTest {
 
   @Test
   public void testRegionNames() {
-
     String queryStrs[] =
         new String[] {"SELECT * FROM /pos", "SELECT * FROM /pos where status='active'"};
 

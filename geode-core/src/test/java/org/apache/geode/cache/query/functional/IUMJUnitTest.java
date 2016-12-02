@@ -183,7 +183,6 @@ public class IUMJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r3 = q.execute();
-        CacheUtils.log(Utils.printResult(r3));
         resType3 = (StructType) ((SelectResults) r3).getCollectionType().getElementType();
         resSize3 = (((SelectResults) r3).size());
         // CacheUtils.log(resType3);

@@ -81,7 +81,6 @@ public class StructMemberAccessJUnitTest {
       try {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
         fail(queries[i]);
       } catch (Exception e) {
         // e.printStackTrace();
@@ -116,7 +115,6 @@ public class StructMemberAccessJUnitTest {
       try {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
       } catch (Exception e) {
         e.printStackTrace();
         fail(queries[i]);
@@ -192,12 +190,9 @@ public class StructMemberAccessJUnitTest {
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       Object r = q.execute();
-      CacheUtils.log(Utils.printResult(r));
       String className =
           (((SelectResults) r).getCollectionType()).getElementType().getSimpleClassName();
-      if (className.equals("Employee")) {
-        CacheUtils.log("pass");
-      } else {
+      if (!className.equals("Employee")) {
         fail(
             "StructMemberAccessTest::testSubClassQuery:failed .Expected class name Employee. Actualy obtained="
                 + className);
@@ -223,12 +218,10 @@ public class StructMemberAccessJUnitTest {
       for (i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
         StructType type = ((StructType) ((SelectResults) r).getCollectionType().getElementType());
         String fieldNames[] = type.getFieldNames();
         for (i = 0; i < fieldNames.length; ++i) {
           String name = fieldNames[i];
-          CacheUtils.log("Struct Field name = " + name);
           if (name.equals("/root/portfolios") || name.equals("positions.values")) {
             fail("The field name in struct = " + name);
           }
@@ -249,7 +242,6 @@ public class StructMemberAccessJUnitTest {
       for (i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
         StructType type = ((StructType) ((SelectResults) r).getCollectionType().getElementType());
         String fieldNames[] = type.getFieldNames();
         for (i = 0; i < fieldNames.length; ++i) {

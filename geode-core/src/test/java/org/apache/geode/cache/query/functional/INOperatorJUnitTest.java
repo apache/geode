@@ -144,7 +144,6 @@ public class INOperatorJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery("2 IN SET(1,2,3)");
 
     Object result = q.execute();
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.TRUE))
       fail("Failed for IN operator");
   }
@@ -155,7 +154,6 @@ public class INOperatorJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery("'a' IN SET('x','y','z')");
 
     Object result = q.execute();
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.FALSE))
       fail("Failed for StringSet with IN operator");
   }
@@ -165,11 +163,8 @@ public class INOperatorJUnitTest {
     Short num = Short.valueOf("1");
     Object params[] = new Object[1];
     params[0] = num;
-
     Query q = CacheUtils.getQueryService().newQuery("$1 IN SET(1,2,3)");
-
     Object result = q.execute(params);
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.TRUE))
       fail("Failed for ShortNum with IN operator");
   }
@@ -190,7 +185,6 @@ public class INOperatorJUnitTest {
 
     Query q = CacheUtils.getQueryService().newQuery("$3 IN $2");
     Object result = q.execute(params);
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.TRUE))
       fail("Failed for Collection with IN operator");
   }
@@ -207,7 +201,6 @@ public class INOperatorJUnitTest {
     params[1] = H1;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN $2");
     Object result = q.execute(params);
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.TRUE))
       fail("Failed for String set with IN operator");
   }
@@ -225,7 +218,6 @@ public class INOperatorJUnitTest {
     params[2] = AL1;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN $3");
     Object result = q.execute(params);
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.TRUE))
       fail("Failed for ArrayList with IN operator");
   }
@@ -234,13 +226,11 @@ public class INOperatorJUnitTest {
   public void testNULL() throws Exception {
     Query q = CacheUtils.getQueryService().newQuery(" null IN SET('x','y','z')");
     Object result = q.execute();
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.FALSE))
       fail("Failed for NULL in IN operator Test");
 
     q = CacheUtils.getQueryService().newQuery(" null IN SET(null)");
     result = q.execute();
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.TRUE))
       fail("Failed for NULL in IN operator Test");
 
@@ -250,19 +240,16 @@ public class INOperatorJUnitTest {
   public void testUNDEFINED() throws Exception {
     Query q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(1,2,3)");
     Object result = q.execute();
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(Boolean.FALSE))
       fail("Failed for UNDEFINED with IN operator");
 
     q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(UNDEFINED)");
     result = q.execute();
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(QueryService.UNDEFINED))
       fail("Failed for UNDEFINED with IN operator");
 
     q = CacheUtils.getQueryService().newQuery(" UNDEFINED IN SET(UNDEFINED,UNDEFINED)");
     result = q.execute();
-    CacheUtils.log(Utils.printResult(result));
     if (!result.equals(QueryService.UNDEFINED))
       fail("Failed for UNDEFINED with IN operator");
   }
@@ -275,7 +262,6 @@ public class INOperatorJUnitTest {
     for (int i = 1; i < params.length; i++) {
       params[0] = params[i];
       Object result = q.execute(params);
-      CacheUtils.log(Utils.printResult(result));
       if (!result.equals(Boolean.TRUE))
         fail("Failed for Mix set with IN operator");
     }

@@ -19,6 +19,7 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static javafx.scene.input.KeyCode.Q;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -81,10 +82,6 @@ public class TestNewFunctionSSorRSIntegrationTest {
       QueryObserverImpl observer1 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer1);
       r[i][0] = q.execute();
-      if (!observer1.isIndexesUsed) {
-        CacheUtils.log("NO INDEX IS USED!");
-      }
-      CacheUtils.log(Utils.printResult(r[i][0]));
     }
 
     qs.createIndex("sIndex", IndexType.FUNCTIONAL, "status", "/portfolios");
@@ -95,12 +92,9 @@ public class TestNewFunctionSSorRSIntegrationTest {
       QueryObserverImpl observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
       r[i][1] = q.execute();
-      if (observer2.isIndexesUsed) {
-        CacheUtils.log("YES INDEX IS USED!");
-      } else {
+      if (!observer2.isIndexesUsed) {
         fail("Index NOT Used");
       }
-      CacheUtils.log(Utils.printResult(r[i][1]));
     }
 
     StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();

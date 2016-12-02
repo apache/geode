@@ -94,31 +94,26 @@ public class NestedQueryJUnitTest {
         "SELECT DISTINCT * FROM /Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
-    CacheUtils.log(Utils.printResult(result));
     // Fails
     queryString =
         "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
-    CacheUtils.log(Utils.printResult(result));
     // Executes successfully
     queryString =
         "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where x.ID = p.ID).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
-    CacheUtils.log(Utils.printResult(result));
     // Fails
     queryString =
         "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = x.ID).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
-    CacheUtils.log(Utils.printResult(result));
 
     queryString =
         "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status";
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
-    CacheUtils.log(Utils.printResult(result));
   }
 
   @Test
@@ -173,11 +168,8 @@ public class NestedQueryJUnitTest {
         if (!observer.isIndexesUsed) {
           CacheUtils.log("NO INDEX USED");
         }
-        CacheUtils.log(Utils.printResult(r));
         resType1 = (r[i][0]).getCollectionType().getElementType();
         resSize1 = ((r[i][0]).size());
-        CacheUtils.log("Result Type= " + resType1);
-        CacheUtils.log("Result Size= " + resSize1);
         set1 = ((r[i][0]).asSet());
         // Iterator iter=set1.iterator();
 
@@ -204,15 +196,11 @@ public class NestedQueryJUnitTest {
         r[i][1] = (SelectResults) q.execute();
 
         if (observer2.isIndexesUsed == true) {
-          CacheUtils.log("YES INDEX IS USED!");
         } else if (i != 3) {
           fail("Index not used");
         }
-        CacheUtils.log(Utils.printResult(r[i][1]));
         resType2 = (r[i][1]).getCollectionType().getElementType();
         resSize2 = ((r[i][1]).size());
-        // CacheUtils.log("Result Type= "+resType2);
-        // CacheUtils.log("Result Size= "+resSize2);
         set2 = ((r[i][1]).asSet());
 
       } catch (Exception e) {
@@ -284,14 +272,9 @@ public class NestedQueryJUnitTest {
         r[i][0] = (SelectResults) q.execute();
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        if (!observer.isIndexesUsed) {
-          CacheUtils.log("NO INDEX USED");
-        }
-        CacheUtils.log(Utils.printResult(r[i][0]));
+
         resType1 = (r[i][0]).getCollectionType().getElementType();
         resSize1 = ((r[i][0]).size());
-        CacheUtils.log("Result Type= " + resType1);
-        CacheUtils.log("Result Size= " + resSize1);
         set1 = ((r[i][0]).asSet());
         // Iterator iter=set1.iterator();
 
@@ -313,10 +296,6 @@ public class NestedQueryJUnitTest {
 
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
-        if (observer2.isIndexesUsed == true) {
-          CacheUtils.log("YES INDEX IS USED!");
-        }
-        CacheUtils.log(Utils.printResult(r[i][1]));
         resType2 = (r[i][1]).getCollectionType().getElementType();
         resSize2 = ((r[i][1]).size());
         set2 = ((r[i][1]).asSet());

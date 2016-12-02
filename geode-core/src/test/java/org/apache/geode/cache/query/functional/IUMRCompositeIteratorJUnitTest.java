@@ -181,9 +181,7 @@ public class IUMRCompositeIteratorJUnitTest {
       Query q = null;
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
-        CacheUtils.getLogger().info("Executing query: " + queries[i]);
         r[i][0] = (SelectResults) q.execute();
-        CacheUtils.log(Utils.printResult(r[i][0]));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());

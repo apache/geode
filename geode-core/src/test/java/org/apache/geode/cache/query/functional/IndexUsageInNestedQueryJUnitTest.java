@@ -98,7 +98,6 @@ public class IndexUsageInNestedQueryJUnitTest {
         if (!observer.isIndexesUsed) {
           CacheUtils.log("NO INDEX USED");
         }
-        CacheUtils.log(Utils.printResult(r[i][0]));
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -119,10 +118,7 @@ public class IndexUsageInNestedQueryJUnitTest {
         QueryObserverHolder.setInstance(observer2);
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         r[i][1] = (SelectResults) q.execute();
-        if (observer2.isIndexesUsed == true) {
-          CacheUtils.log("YES INDEX IS USED!");
-        }
-        CacheUtils.log(Utils.printResult(r[i][1]));
+
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());

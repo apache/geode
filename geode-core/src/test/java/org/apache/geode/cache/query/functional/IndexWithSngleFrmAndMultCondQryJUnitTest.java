@@ -156,15 +156,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
-        if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-        } else {
+        if (!observer2.isIndexesUsed) {
           fail("FAILED: Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = (StructType) ((SelectResults) sr[i][1]).getCollectionType().getElementType();
         resSize2 = (((SelectResults) sr[i][1]).size());
-        CacheUtils.log(resType2);
         strg2 = resType2.getFieldNames();
 
         set2 = (((SelectResults) sr[i][1]).asSet());
@@ -274,17 +270,13 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
-        if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-        } else {
+        if (!observer2.isIndexesUsed) {
           fail("FAILED: Index NOT Used");
         }
         assertTrue(observer2.indexesUsed.size() < 2);
 
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = (StructType) ((SelectResults) sr[i][1]).getCollectionType().getElementType();
         resSize2 = (((SelectResults) sr[i][1]).size());
-        CacheUtils.log(resType2);
         strg2 = resType2.getFieldNames();
 
         set2 = (((SelectResults) sr[i][1]).asSet());
@@ -395,14 +387,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
-        if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-        } else {
+        if (!observer2.isIndexesUsed) {
           fail("FAILED: Index NOT Used");
         }
         assertEquals(observer2.indexesUsed.size(), 1);
 
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = (StructType) ((SelectResults) sr[i][1]).getCollectionType().getElementType();
         resSize2 = (((SelectResults) sr[i][1]).size());
         CacheUtils.log(resType2);
@@ -551,13 +540,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
         if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-          CacheUtils.log("Indexes used =" + observer2.indexesUsed);
           assertEquals(1, observer2.indexesUsed.size());
         } else {
           fail("FAILED: Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
         resSize2 = (((SelectResults) sr[i][1]).size());
         CacheUtils.log(resType2);
@@ -711,13 +697,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
         if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-          CacheUtils.log("Indexes used =" + observer2.indexesUsed);
           assertEquals(1, observer2.indexesUsed.size());
         } else {
           fail("FAILED: Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
         resSize2 = (((SelectResults) sr[i][1]).size());
         CacheUtils.log(resType2);
@@ -935,13 +918,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
         if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-          CacheUtils.log("Indexes used =" + observer2.indexesUsed);
           assertEquals(1, observer2.indexesUsed.size());
         } else {
           fail("FAILED: Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
         resSize2 = (((SelectResults) sr[i][1]).size());
         CacheUtils.log(resType2);
@@ -1148,16 +1128,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
         if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-          CacheUtils.log("Indexes used =" + observer2.indexesUsed);
           assertEquals(1, observer2.indexesUsed.size());
         } else {
           fail("FAILED: Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
         resSize2 = (((SelectResults) sr[i][1]).size());
-        CacheUtils.log(resType2);
         // strg2=resType2.getFieldNames();
 
         set2 = (((SelectResults) sr[i][1]).asSet());

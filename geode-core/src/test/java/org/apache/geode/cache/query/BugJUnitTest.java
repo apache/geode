@@ -147,9 +147,7 @@ public class BugJUnitTest {
         + "select distinct * from /pos, (select distinct * from /pos p TYPE Portfolio, p.positions where value!=null)";
     q = qs.newQuery(queryStr);
     // DebuggerSupport.waitForJavaDebugger(cache.getLogger());
-    CacheUtils.getLogger().fine(queryStr);
     r = q.execute();
-    CacheUtils.getLogger().fine(Utils.printResult(r));
   }
 
 
@@ -168,9 +166,7 @@ public class BugJUnitTest {
     queryStr = "Select distinct ID from /pos";
     q = qs.newQuery(queryStr);
     // DebuggerSupport.waitForJavaDebugger(cache.getLogger());
-    CacheUtils.getLogger().fine(queryStr);
     r = q.execute();
-    CacheUtils.getLogger().fine(Utils.printResult(r));
     Set expectedSet = createAndPopulateSet(4);
     assertEquals(expectedSet, ((SelectResults) r).asSet());
 
@@ -294,7 +290,6 @@ public class BugJUnitTest {
       CacheUtils.getLogger().info("Executing query: " + queries);
       // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
       SelectResults rs = (SelectResults) q.execute();
-      CacheUtils.log(Utils.printResult(rs));
       assertTrue("Resultset size should be > 0", rs.size() > 0);
     } catch (Exception e) {
       e.printStackTrace();

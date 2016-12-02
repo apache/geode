@@ -131,7 +131,6 @@ public class IndexOperatorJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery("$1[0][0]");
     Object params[] = {array, new Integer(0)};
     Character result = (Character) q.execute(params);
-    CacheUtils.log(Utils.printResult(result));
     if (result == null || result.charValue() != 'a')
       fail();
   }
@@ -206,7 +205,6 @@ public class IndexOperatorJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery("$1[$2]");
     Object params[] = {array, index};
     Object result = q.execute(params);
-    CacheUtils.log(Utils.printResult(result));
     return result;
   }
 
@@ -214,7 +212,6 @@ public class IndexOperatorJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery("$1[$2]");
     Object params[] = {array, new Integer(index)};
     Object result = q.execute(params);
-    CacheUtils.log(Utils.printResult(result));
     return result;
   }
 

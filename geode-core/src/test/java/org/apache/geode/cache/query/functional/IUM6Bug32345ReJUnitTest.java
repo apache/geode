@@ -104,10 +104,6 @@ public class IUM6Bug32345ReJUnitTest {
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
         sr[i][0] = (SelectResults) q.execute();
-        if (!observer.isIndexesUsed) {
-          CacheUtils.log("NO INDEX USED");
-        }
-        CacheUtils.log(Utils.printResult(sr[i][0]));
         resType1 = (StructType) (sr[i][0]).getCollectionType().getElementType();
         resSize1 = ((sr[i][0]).size());
 
@@ -146,12 +142,9 @@ public class IUM6Bug32345ReJUnitTest {
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
         sr[i][1] = (SelectResults) q.execute();
-        if (observer2.isIndexesUsed) {
-          CacheUtils.log("YES INDEX IS USED!");
-        } else {
+        if (!observer2.isIndexesUsed) {
           fail("Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(sr[i][1]));
         resType2 = (StructType) (sr[i][1]).getCollectionType().getElementType();
         resSize2 = ((sr[i][1]).size());
         // CacheUtils.log(resType2);

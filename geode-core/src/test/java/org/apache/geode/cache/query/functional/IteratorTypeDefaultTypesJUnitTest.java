@@ -74,8 +74,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefIntegerArray: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
-
 
       } catch (Exception e) {
         e.printStackTrace();
@@ -103,7 +101,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefIntegerArrayList: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -130,7 +127,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefString: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
 
       } catch (Exception e) {
         e.printStackTrace();
@@ -157,7 +153,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefBoolean: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -184,7 +179,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefByte: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -210,7 +204,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefShort: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -236,7 +229,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefLong: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -262,7 +254,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefDouble: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -288,7 +279,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefFloat: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -314,7 +304,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1)
           fail("testIteratorDefChar: Query fetched zero results ");
-        CacheUtils.log(Utils.printResult(rs));
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -348,7 +337,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         SelectResults rs = (SelectResults) q.execute(params);
-        CacheUtils.log(Utils.printResult(rs));
         if (rs.size() != 1)
           fail("testNonStaticInnerClassTypeDef: Query fetched results with size =" + rs.size()
               + " FOr Query number = " + (i + 1));
@@ -386,7 +374,6 @@ public class IteratorTypeDefaultTypesJUnitTest {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         SelectResults rs = (SelectResults) q.execute(params);
-        CacheUtils.log(Utils.printResult(rs));
         if (rs.size() != 1)
           fail("testStaticInnerClassTypeDef: Query fetched results with size =" + rs.size()
               + " FOr Query number = " + (i + 1));

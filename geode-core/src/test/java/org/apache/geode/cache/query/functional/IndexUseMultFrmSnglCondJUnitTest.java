@@ -96,12 +96,9 @@ public class IndexUseMultFrmSnglCondJUnitTest {
         QueryObserverHolder.setInstance(observer);
         r[i][0] = (SelectResults) q.execute();
 
-        if (!observer.isIndexesUsed) {
-          CacheUtils.log("NO INDEX USED");
-        } else {
+        if (observer.isIndexesUsed) {
           fail("If index were not there how did they get used ???? ");
         }
-        CacheUtils.log(Utils.printResult(r));
         resArType1 = (StructType) (r[i][0]).getCollectionType().getElementType();
         resArSize1 = ((r[i][0]).size());
         CacheUtils.log(resArType1);
@@ -132,12 +129,9 @@ public class IndexUseMultFrmSnglCondJUnitTest {
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
         r[j][1] = (SelectResults) q2.execute();
-        if (observer2.isIndexesUsed == true)
-          CacheUtils.log("YES,INDEX IS USED!!");
-        else {
+        if (observer2.isIndexesUsed != true) {
           fail("FAILED: Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(r[j][1]));
         resArType2 = (StructType) (r[j][1]).getCollectionType().getElementType();
         CacheUtils.log(resArType2);
         resArSize2 = (r[j][1]).size();

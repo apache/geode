@@ -89,7 +89,6 @@ public class IndexPrimaryKeyUsageJUnitTest {
         if (!observer.isIndexesUsed) {
           CacheUtils.log("NO INDEX USED");
         }
-        CacheUtils.log(Utils.printResult(r[i][0]));
         if ((r[i][0]).size() != 0) {
           CacheUtils.log("As Expected, Results Size is NON ZERO");
         } else {
@@ -120,10 +119,7 @@ public class IndexPrimaryKeyUsageJUnitTest {
         } else {
           fail("FAILED: INDEX IS NOT USED!");
         }
-        CacheUtils.log(Utils.printResult(r[i][1]));
-        if ((r[i][1]).size() != 0) {
-          CacheUtils.log("As Expected, Results Size is NON ZERO");
-        } else {
+        if ((r[i][1]).size() == 0) {
           fail("FAILED:Search result Size is zero");
         }
       } catch (Exception e) {
@@ -154,13 +150,8 @@ public class IndexPrimaryKeyUsageJUnitTest {
         r[i] = q.execute();
         if (!observer.isIndexesUsed == false) {
           fail("FAILED: INDEX IS USED!");
-        } else {
-          CacheUtils.log("As Expected, INDEX is NOT USED");
         }
-        CacheUtils.log(Utils.printResult(r[i]));
-        if (((SelectResults) r[i]).size() != 0) {
-          CacheUtils.log("As Expected, Results Size is NON ZERO");
-        } else {
+        if (((SelectResults) r[i]).size() == 0) {
           fail("FAILED:Search result Size is zero");
         }
       } catch (Exception e) {
@@ -192,10 +183,7 @@ public class IndexPrimaryKeyUsageJUnitTest {
         } else {
           CacheUtils.log("As Expected, Index Is Not Used");
         }
-        CacheUtils.log(Utils.printResult(r[i]));
-        if (((SelectResults) r[i]).size() != 0) {
-          CacheUtils.log("As Expected, Results Size is NON ZERO");
-        } else {
+        if (((SelectResults) r[i]).size() == 0) {
           fail("FAILED:Search result Size is zero");
         }
       } catch (Exception e) {
@@ -229,12 +217,9 @@ public class IndexPrimaryKeyUsageJUnitTest {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         r[i] = q.execute();
 
-        if (observer.isIndexesUsed) {
-          CacheUtils.log("YES, INDEX IS USED!");
-        } else {
+        if (!observer.isIndexesUsed) {
           fail("ERROR:Index Is Not Used");
         }
-        CacheUtils.log(Utils.printResult(r[i]));
         if (observer.IndexTypeFunctional != 1) {
           fail("IMPROPER INDEX USAGE: INDEX USED IS NOT OF TYPE FUNCTIONAL");
         }
@@ -278,19 +263,13 @@ public class IndexPrimaryKeyUsageJUnitTest {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         r[i] = q.execute();
 
-        if (observer.isIndexesUsed) {
-          CacheUtils.log("YES, INDEX IS USED!");
-
-        } else {
+        if (!observer.isIndexesUsed) {
           fail("FAILED:Index Is Not Used");
         }
-        CacheUtils.log(Utils.printResult(r[i]));
         if (observer.IndexTypePrimKey != 2) {
           fail("IMPROPER INDEX USAGE: INDEX USED IS NOT OF TYPE PRIMARY_KEY");
         }
-        if (((SelectResults) r[i]).size() != 0) {
-          CacheUtils.log("As Expected, Results Size is NON ZERO");
-        } else {
+        if (((SelectResults) r[i]).size() == 0) {
           fail("FAILED:Search result Size is zero");
         }
       } catch (Exception e) {
