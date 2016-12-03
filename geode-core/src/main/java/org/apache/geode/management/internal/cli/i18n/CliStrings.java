@@ -2229,6 +2229,24 @@ public class CliStrings {
   public static final String START_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to start the Gateway Sender.";
 
+
+  /* destroy gateway-sender */
+  public static final String DESTROY_GATEWAYSENDER = "destroy gateway-sender";
+  public static final String DESTROY_GATEWAYSENDER__HELP =
+      "Destroy the Gateway Sender on a member or members.";
+  public static final String DESTROY_GATEWAYSENDER__GROUP = "group";
+  public static final String DESTROY_GATEWAYSENDER__GROUP__HELP =
+      "Group(s) of members on which to destroy the Gateway Sender.";
+  public static final String DESTROY_GATEWAYSENDER__MEMBER = "member";
+  public static final String DESTROY_GATEWAYSENDER__MEMBER__HELP =
+      "Name/Id of the member on which to destroy the Gateway Sender.";
+  public static final String DESTROY_GATEWAYSENDER__ID = "id";
+  public static final String DESTROY_GATEWAYSENDER__ID__HELP = "Id of the GatewaySender.";
+  public static final String DESTROY_GATEWAYSENDER__MSG__GATEWAYSENDER_0_DESTROYED_ON_1 =
+      "GatewaySender \"{0}\" destroyed on \"{1}\"";
+
+
+
   /* start gfmon command */
   public static final String START_PULSE = "start pulse";
   public static final String START_PULSE__ERROR =
