@@ -86,7 +86,7 @@ public class PDXCommands extends AbstractCommandsSupport {
           && (patterns != null && patterns.length > 0)) {
         return ResultBuilder.createUserErrorResult(CliStrings.CONFIGURE_PDX__ERROR__MESSAGE);
       }
-      if (CliUtil.getAllNormalMembers(CliUtil.getCacheIfExists()).isEmpty()) {
+      if (!CliUtil.getAllNormalMembers(CliUtil.getCacheIfExists()).isEmpty()) {
         ird.addLine(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
       }
       // Set persistent and the disk-store
