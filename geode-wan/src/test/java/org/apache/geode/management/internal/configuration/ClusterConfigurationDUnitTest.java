@@ -614,6 +614,15 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     });
   }
 
+  @Test
+  public void testConfigurePDXForWarning() throws Exception {
+    setup();
+    CommandResult commandResult = configurePDX("com.foo.*", "true", "true", null, "true");
+    String result = (String) commandResult.getResultData().getGfJsonObject()
+        .getJSONObject("content").getJSONArray("message").get(0);
+    assertEquals(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING, result);
+  }
+
   private Object[] setup() throws IOException {
     final int[] ports = getRandomAvailableTCPPorts(3);
     final int locator1Port = ports[0];
@@ -800,13 +809,14 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     executeAndVerifyCommand(csb.getCommandString());
   }
 
-  private void executeAndVerifyCommand(String commandString) {
+  private CommandResult executeAndVerifyCommand(String commandString) {
     CommandResult cmdResult = executeCommand(commandString);
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Command : " + commandString);
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
         .info("Command Result : " + commandResultToString(cmdResult));
     assertEquals(Status.OK, cmdResult.getStatus());
     assertFalse(cmdResult.failedToPersist());
+    return cmdResult;
   }
 
   private void createIndex(String indexName, String expression, String regionName, String group) {
@@ -939,7 +949,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     }
   }
 
-  private void configurePDX(String autoSerializerClasses, String ignoreUnreadFields,
+  private CommandResult configurePDX(String autoSerializerClasses, String ignoreUnreadFields,
       String persistent, String portableAutoSerializerClasses, String readSerialized) {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CONFIGURE_PDX);
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
@@ -950,7 +960,8 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
         portableAutoSerializerClasses);
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__READ__SERIALIZED, readSerialized);
-    executeAndVerifyCommand(csb.getCommandString());
+
+    return executeAndVerifyCommand(csb.getCommandString());
   }
 
   private void createAndDeployJar(String jarName, String group) throws IOException {
