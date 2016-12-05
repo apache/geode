@@ -53,18 +53,13 @@ public class SingleHopClientExecutorSubmitTaskWithExceptionTest {
       }
     });
 
-    final Callable<Boolean> isLogFound = new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return systemErrRule.getLog().contains(erroMsg) == true;
-      }
-    };
-
     /**
      * Sometimes need to wait for more than sec as thread execution takes time.
      */
-    Awaitility.await("Waiting for exception").atMost(1000 * 2l, TimeUnit.MILLISECONDS)
-        .until(isLogFound);
+    Awaitility.await("Waiting for exception").atMost(60l, TimeUnit.SECONDS).until(() -> {
+      systemErrRule.getLog().contains(erroMsg);
+    });
+
     assertTrue(systemErrRule.getLog().contains(erroMsg));
   }
 
