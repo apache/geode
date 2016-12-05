@@ -247,10 +247,7 @@ public class MemoryIndexStore implements IndexStore {
    * Find the old key by traversing the forward map in case of in-place update modification If not
    * found it means the value object was modified with same value. So oldKey is same as newKey.
    * 
-   * @param newKey
-   * @param entry
    * @return oldKey
-   * @throws TypeMismatchException
    */
   private Object getOldKey(Object newKey, RegionEntry entry) throws TypeMismatchException {
     for (Object mapEntry : valueToEntriesMap.entrySet()) {
@@ -406,7 +403,6 @@ public class MemoryIndexStore implements IndexStore {
    * RegionEntry) { return Collections.singleton(regionEntries); } return (Collection)
    * regionEntries; }
    */
-
   @Override
   public CloseableIterator<IndexStoreEntry> get(Object indexKey) {
     return new MemoryIndexStoreIterator(
@@ -574,7 +570,6 @@ public class MemoryIndexStore implements IndexStore {
   /**
    * A bi-directional iterator over the CSL. Iterates over the entries of CSL where entry is a
    * mapping (value -> Collection) as well as over the Collection.
-   * 
    */
   private class MemoryIndexStoreIterator implements CloseableIterator<IndexStoreEntry> {
     final Map map;
@@ -662,8 +657,9 @@ public class MemoryIndexStore implements IndexStore {
       }
 
       RegionEntry re = (RegionEntry) valuesIterator.next();
-      if (re == null)
+      if (re == null) {
         throw new NoSuchElementException();
+      }
 
       currentEntry.setMemoryIndexStoreEntry(currKey, re);
       return currentEntry;
@@ -718,7 +714,6 @@ public class MemoryIndexStore implements IndexStore {
 
   /**
    * A wrapper over the entry in the CSL index map. It maps IndexKey -> RegionEntry
-   * 
    */
   class MemoryIndexStoreEntry implements IndexStoreEntry {
     private Object deserializedIndexKey;
@@ -771,6 +766,9 @@ public class MemoryIndexStore implements IndexStore {
     private Object key, value;
 
     public CachedEntryWrapper(LocalRegion.NonTXEntry entry) {
+      if (IndexManager.testHook != null) {
+        IndexManager.testHook.hook(201);
+      }
       this.key = entry.getKey();
       this.value = entry.getValue();
     }

@@ -14,6 +14,10 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
@@ -91,7 +95,15 @@ public class IndexOnEntrySetJUnitTest {
   public void testQueriesOnReplicatedRegion() throws Exception {
     testRegion = createReplicatedRegion(testRegionName);
     String regionPath = "/" + testRegionName + ".entrySet entry";
-    executeQueryTest(getQueriesOnRegion(testRegionName), "entry.key.Index", regionPath);
+    executeQueryTest(getQueriesOnRegion(testRegionName), "entry.key.Index", regionPath, 200);
+  }
+
+  @Test
+  public void testEntryDestroyedRaceWithSizeEstimateReplicatedRegion() throws Exception {
+    testRegion = createReplicatedRegion(testRegionName);
+    String regionPath = "/" + testRegionName + ".entrySet entry";
+    executeQueryTestDestroyDuringSizeEstimation(getQueriesOnRegion(testRegionName),
+        "entry.key.Index", regionPath, 201);
   }
 
   /**
@@ -102,7 +114,7 @@ public class IndexOnEntrySetJUnitTest {
   public void testQueriesOnPartitionedRegion() throws Exception {
     testRegion = createPartitionedRegion(testRegionName);
     String regionPath = "/" + testRegionName + ".entrySet entry";
-    executeQueryTest(getQueriesOnRegion(testRegionName), "entry.key.Index", regionPath);
+    executeQueryTest(getQueriesOnRegion(testRegionName), "entry.key.Index", regionPath, 200);
   }
 
   private Region createReplicatedRegion(String regionName) throws ParseException {
@@ -140,24 +152,26 @@ public class IndexOnEntrySetJUnitTest {
     }
   }
 
-  /**** Query Execution Helpers ****/
+  /****
+   * Query Execution Helpers
+   ****/
 
-  private void executeQueryTest(String[] queries, String indexedExpression, String regionPath)
-      throws Exception {
+  private void executeQueryTest(String[] queries, String indexedExpression, String regionPath,
+      int testHookSpot) throws Exception {
     Cache cache = CacheUtils.getCache();
     boolean[] booleanVals = {true, false};
     for (String query : queries) {
       for (boolean isDestroy : booleanVals) {
         clearData(testRegion);
         populateRegion(testRegion);
-        Assert.assertNotNull(cache.getRegion(testRegionName));
-        Assert.assertEquals(numElem, cache.getRegion(testRegionName).size());
+        assertNotNull(cache.getRegion(testRegionName));
+        assertEquals(numElem, cache.getRegion(testRegionName).size());
         if (isDestroy) {
           helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath,
-              new DestroyEntryTestHook(testRegion));
+              new DestroyEntryTestHook(testRegion, testHookSpot), 1);
         } else {
           helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath,
-              new InvalidateEntryTestHook(testRegion));
+              new InvalidateEntryTestHook(testRegion, testHookSpot), 1);
         }
       }
     }
@@ -166,22 +180,18 @@ public class IndexOnEntrySetJUnitTest {
     for (String query : queries) {
       clearData(testRegion);
       populateRegion(testRegion);
-      Assert.assertNotNull(cache.getRegion(testRegionName));
-      Assert.assertEquals(numElem, cache.getRegion(testRegionName).size());
+      assertNotNull(cache.getRegion(testRegionName));
+      assertEquals(numElem, cache.getRegion(testRegionName).size());
       helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath,
-          new PutEntryTestHook(testRegion));
+          new PutEntryTestHook(testRegion, testHookSpot), 1);
     }
   }
 
   /**
    * helper method to test against a functional index make sure there is no UNDEFINED result
-   * 
-   * @param query
-   * 
-   * @throws Exception
    */
   private SelectResults helpTestFunctionalIndexForQuery(String query, String indexedExpression,
-      String regionPath, AbstractTestHook testHook) throws Exception {
+      String regionPath, AbstractTestHook testHook, int expectedSize) throws Exception {
     MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
     QueryObserverHolder.setInstance(observer);
     IndexManager.testHook = testHook;
@@ -194,25 +204,38 @@ public class IndexOnEntrySetJUnitTest {
       if (row instanceof Struct) {
         Object[] fields = ((Struct) row).getFieldValues();
         for (Object field : fields) {
-          Assert.assertTrue(field != QueryService.UNDEFINED);
+          assertTrue(field != QueryService.UNDEFINED);
           if (field instanceof String) {
-            Assert.assertTrue(((String) field).compareTo(newValue) != 0);
+            assertTrue(((String) field).compareTo(newValue) != 0);
           }
         }
       } else {
-        Assert.assertTrue(row != QueryService.UNDEFINED);
+        assertTrue(row != QueryService.UNDEFINED);
         if (row instanceof String) {
-          Assert.assertTrue(((String) row).compareTo(newValue) != 0);
+          assertTrue(((String) row).compareTo(newValue) != 0);
         }
       }
     }
-    Assert.assertTrue(indexedResults.size() > 0);
-    Assert.assertTrue(observer.indexUsed);
-    Assert.assertTrue(((AbstractTestHook) IndexManager.testHook).isTestHookCalled());
+    assertTrue(indexedResults.size() >= expectedSize);
+    assertTrue(observer.indexUsed);
+    assertTrue(((AbstractTestHook) IndexManager.testHook).isTestHookCalled());
     ((AbstractTestHook) IndexManager.testHook).reset();
     qs.removeIndex(index);
 
     return indexedResults;
+  }
+
+  private void executeQueryTestDestroyDuringSizeEstimation(String[] queries,
+      String indexedExpression, String regionPath, int testHookSpot) throws Exception {
+    Cache cache = CacheUtils.getCache();
+    for (String query : queries) {
+      clearData(testRegion);
+      populateRegion(testRegion);
+      assertNotNull(cache.getRegion(testRegionName));
+      assertEquals(numElem, cache.getRegion(testRegionName).size());
+      helpTestFunctionalIndexForQuery(query, indexedExpression, regionPath,
+          new DestroyEntryTestHook(testRegion, testHookSpot), 0);
+    }
   }
 
   class MyQueryObserverAdapter extends QueryObserverAdapter {
@@ -255,6 +278,12 @@ public class IndexOnEntrySetJUnitTest {
     Object waitObj = new Object();
     Region r;
 
+    private int testHookSpot;
+
+    public AbstractTestHook(int testHookSpot) {
+      this.testHookSpot = testHookSpot;
+    }
+
     public void reset() {
       isTestHookCalled = false;
     }
@@ -270,7 +299,7 @@ public class IndexOnEntrySetJUnitTest {
 
     @Override
     public void hook(int spot) throws RuntimeException {
-      if (spot == 200) {
+      if (spot == testHookSpot) {
         if (!isTestHookCalled) {
           isTestHookCalled = true;
           try {
@@ -297,7 +326,9 @@ public class IndexOnEntrySetJUnitTest {
 
   class DestroyEntryTestHook extends AbstractTestHook {
 
-    DestroyEntryTestHook(Region r) {
+    DestroyEntryTestHook(Region r, int testHookSpot) {
+
+      super(testHookSpot);
       this.r = r;
     }
 
@@ -312,7 +343,8 @@ public class IndexOnEntrySetJUnitTest {
 
   class InvalidateEntryTestHook extends AbstractTestHook {
 
-    InvalidateEntryTestHook(Region r) {
+    InvalidateEntryTestHook(Region r, int testHookSpot) {
+      super(testHookSpot);
       this.r = r;
     }
 
@@ -327,7 +359,8 @@ public class IndexOnEntrySetJUnitTest {
 
   class PutEntryTestHook extends AbstractTestHook {
 
-    PutEntryTestHook(Region r) {
+    PutEntryTestHook(Region r, int testHookSpot) {
+      super(testHookSpot);
       this.r = r;
     }
 

@@ -437,6 +437,8 @@ public class CompactRangeIndex extends AbstractIndex {
           }
           break;
       }
+    } catch (EntryDestroyedException e) {
+      return Integer.MAX_VALUE;
     } finally {
       updateIndexUseEndStats(start, false);
     }
