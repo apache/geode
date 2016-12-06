@@ -28,8 +28,8 @@ import org.apache.geode.cache.Region;
  * {@link org.apache.geode.cache.Declarable}
  * </p>
  * 
- * Note : Please request help on the Geode developer mailing list (dev@geode.apache.org)
- * before using these APIs.
+ * Note : Please request help on the Geode developer mailing list (dev@geode.apache.org) before
+ * using these APIs.
  *
  * 
  * @since GemFire 6.6.2
