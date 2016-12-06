@@ -15,9 +15,9 @@
 # limitations under the License.
 
 FROM centos:7
-MAINTAINER Apache Geode Community <dev@geode.incubator.apache.org>
+MAINTAINER Apache Geode Community <dev@geode.apache.org>
 
-LABEL Vendor="Apache Geode (incubating)"
+LABEL Vendor="Apache Geode"
 LABEL version=1.0.0
 
 RUN	yum install -y wget which tar git java-1.8.0-openjdk-devel \
