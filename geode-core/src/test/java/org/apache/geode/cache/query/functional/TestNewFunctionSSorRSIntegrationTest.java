@@ -19,7 +19,6 @@
  */
 package org.apache.geode.cache.query.functional;
 
-import static javafx.scene.input.KeyCode.Q;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
