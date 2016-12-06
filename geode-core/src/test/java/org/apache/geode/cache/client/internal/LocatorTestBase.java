@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 import org.apache.geode.cache.*;
@@ -161,14 +162,21 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators,
       final String[] regions) {
-    return startBridgeServerInVM(vm, groups, locators, regions, CacheServer.DEFAULT_LOAD_PROBE);
+    return startBridgeServerInVM(vm, groups, locators, regions, CacheServer.DEFAULT_LOAD_PROBE,
+        false);
+  }
+
+  protected int startBridgeServerInVM(VM vm, String[] groups, String locators,
+      boolean useGroupsProperty) {
+    return startBridgeServerInVM(vm, groups, locators, new String[] {REGION_NAME},
+        CacheServer.DEFAULT_LOAD_PROBE, useGroupsProperty);
   }
 
   protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators,
-      final String[] regions, final ServerLoadProbe probe) {
+      final String[] regions, final ServerLoadProbe probe, final boolean useGroupsProperty) {
     SerializableCallable connect = new SerializableCallable("Start bridge server") {
       public Object call() throws IOException {
-        return startBridgeServer(groups, locators, regions, probe);
+        return startBridgeServer(groups, locators, regions, probe, useGroupsProperty);
       }
     };
     Integer port = (Integer) vm.invoke(connect);
@@ -181,14 +189,18 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected int startBridgeServer(final String[] groups, final String locators,
       final String[] regions) throws IOException {
-    return startBridgeServer(groups, locators, regions, CacheServer.DEFAULT_LOAD_PROBE);
+    return startBridgeServer(groups, locators, regions, CacheServer.DEFAULT_LOAD_PROBE, false);
   }
 
   protected int startBridgeServer(final String[] groups, final String locators,
-      final String[] regions, final ServerLoadProbe probe) throws IOException {
+      final String[] regions, final ServerLoadProbe probe, final boolean useGroupsProperty)
+      throws IOException {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, locators);
+    if (useGroupsProperty) {
+      props.setProperty(GROUPS, StringUtils.concat(groups, ","));
+    }
     DistributedSystem ds = getSystem(props);
     Cache cache = CacheFactory.create(ds);
     AttributesFactory factory = new AttributesFactory();
@@ -201,7 +213,9 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     }
     CacheServer server = cache.addCacheServer();
     server.setPort(0);
-    server.setGroups(groups);
+    if (!useGroupsProperty) {
+      server.setGroups(groups);
+    }
     server.setLoadProbe(probe);
     server.start();
 
