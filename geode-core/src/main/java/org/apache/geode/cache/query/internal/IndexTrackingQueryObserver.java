@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.TestHook;
 public class IndexTrackingQueryObserver extends QueryObserverAdapter {
 
   private static final ThreadLocal indexInfo = new ThreadLocal();
+  private static final ThreadLocal lastKeyUsed = new ThreadLocal();
   private static final ThreadLocal lastIndexUsed = new ThreadLocal();
   private volatile TestHook th;
 
@@ -50,15 +51,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
       this.indexInfo.set(indexMap);
     }
     IndexInfo iInfo;
-    String indexName;
-    // Dont create new IndexInfo if one is already there in map for aggregation
-    // of results later for whole partition region on this node.
-    if ((index instanceof MapRangeIndex || index instanceof CompactMapRangeIndex)
-        && key instanceof Object[]) {
-      indexName = index.getName() + "-" + ((Object[]) key)[1];
-    } else {
-      indexName = index.getName();
-    }
+    String indexName = getIndexName(index, key);
     if (indexMap.containsKey(indexName)) {
       iInfo = indexMap.get(indexName);
     } else {
@@ -67,6 +60,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     iInfo.addRegionId(index.getRegion().getFullPath());
     indexMap.put(indexName, iInfo);
     this.lastIndexUsed.set(index);
+    this.lastKeyUsed.set(key);
     if (th != null) {
       th.hook(1);
     }
@@ -108,18 +102,31 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     // append the size of the lookup results (and bucket id if its an Index on bucket)
     // to IndexInfo results Map.
     Map indexMap = (Map) this.indexInfo.get();
-    if (lastIndexUsed.get() != null) {
-      IndexInfo indexInfo = (IndexInfo) indexMap.get(((Index) this.lastIndexUsed.get()).getName());
+    Index index = (Index) lastIndexUsed.get();
+    if (index != null) {
+      IndexInfo indexInfo = (IndexInfo) indexMap.get(getIndexName(index, this.lastKeyUsed.get()));
       if (indexInfo != null) {
-        indexInfo.getResults().put(((Index) this.lastIndexUsed.get()).getRegion().getFullPath(),
-            new Integer(results.size()));
+        indexInfo.getResults().put(index.getRegion().getFullPath(), new Integer(results.size()));
       }
     }
     this.lastIndexUsed.set(null);
+    this.lastKeyUsed.set(null);
     if (th != null) {
       th.hook(3);
     }
   }
+
+  private String getIndexName(Index index, Object key) {
+    String indexName;
+    if ((index instanceof MapRangeIndex || index instanceof CompactMapRangeIndex)
+        && key instanceof Object[]) {
+      indexName = index.getName() + "-" + ((Object[]) key)[1];
+    } else {
+      indexName = index.getName();
+    }
+    return indexName;
+  }
+
 
   /**
    * This should be called only when one query execution on one gemfire node is done. NOT for each

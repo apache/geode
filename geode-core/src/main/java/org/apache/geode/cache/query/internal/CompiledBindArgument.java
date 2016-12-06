@@ -46,13 +46,19 @@ public class CompiledBindArgument extends AbstractCompiledValue {
   public void generateCanonicalizedExpression(StringBuffer clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
 
-    Object bindArg;
-    if (context.isBindArgsSet()
-        && (bindArg = context.getBindArgument(this.index)) instanceof Region) {
-      clauseBuffer.insert(0, ((Region) bindArg).getFullPath());
-    } else {
-      clauseBuffer.insert(0, "$" + this.index);
+    // When compiling a new query, a context is created where there are no bind arguments at this
+    // point
+    if (context.isBindArgsSet()) {
+      Object bindArgumentValue = context.getBindArgument(this.index);
+      if (bindArgumentValue instanceof Region) {
+        clauseBuffer.insert(0, ((Region) bindArgumentValue).getFullPath());
+      } else if (bindArgumentValue instanceof String) {
+        clauseBuffer.insert(0, '\'').insert(0, bindArgumentValue).insert(0, '\'');
+      } else {
+        super.generateCanonicalizedExpression(clauseBuffer, context);
+      }
     }
+
   }
 
   public Object evaluate(ExecutionContext context) {

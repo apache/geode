@@ -21,8 +21,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collection;
 import java.util.HashMap;
 
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.data.Instrument;
+import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +67,50 @@ public class MapRangeIndexMaintenanceJUnitTest {
   public void tearDown() throws Exception {
     CacheUtils.closeCache();
     IndexManager.TEST_RANGEINDEX_ONLY = false;
+  }
+
+  @Test
+  public void testMapIndexIsUsedWithBindKeyParameter() throws Exception {
+    // Create Region
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("instrument");
+
+    // Initialize observer
+    MyQueryObserverAdapter observer = new MyQueryObserverAdapter();
+    QueryObserverHolder.setInstance(observer);
+
+    // Create map index
+    qs = CacheUtils.getQueryService();
+    qs.createIndex(INDEX_NAME, "tl.alternateReferences['SOME_KEY', 'SOME_OTHER_KEY']",
+        "/instrument i, i.tradingLines tl");
+
+    // Add instruments
+    int numInstruments = 20;
+    for (int i = 0; i < numInstruments; i++) {
+      String key = String.valueOf(i);
+      Object value = Instrument.getInstrument(key);
+      region.put(key, value);
+    }
+
+    // Execute query
+    Query query = qs.newQuery(
+        "<trace> select distinct i from /instrument i, i.tradingLines t where t.alternateReferences[$1]='SOME_VALUE'");
+    SelectResults results = (SelectResults) query.execute(new Object[] {"SOME_KEY"});
+
+    // Verify index was used
+    assertTrue(observer.indexUsed);
+
+    // Verify the results size
+    assertEquals(numInstruments, results.size());
+  }
+
+  private static class MyQueryObserverAdapter extends IndexTrackingQueryObserver {
+    public boolean indexUsed = false;
+
+    public void afterIndexLookup(Collection results) {
+      super.afterIndexLookup(results);
+      indexUsed = true;
+    }
   }
 
   @Test
