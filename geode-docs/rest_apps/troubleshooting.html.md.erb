@@ -23,10 +23,6 @@ limitations under the License.
 
 This section provides troubleshooting guidance and frequently asked questions about Geode Developer REST APIs.
 
--   **[Key Types and JSON Support](../rest_apps/troubleshooting.html#concept_gsv_zd5_m4)**
-
-    When defining regions (your REST resources), you must only use scalar values for keys and also set value constraints in order to avoid producing JSON that cannot be parsed by Geode.
-
 ## Checking if the REST API Service is Up and Running
 
 Use the ping endpoint to verify whether the REST API server is available.
@@ -52,6 +48,7 @@ If the server is not available, your client will receive an HTTP error code and 
 When defining regions (your REST resources), you must only use scalar values for keys and also set value constraints in order to avoid producing JSON that cannot be parsed by Geode.
 
 If Geode regions are not defined with scalar values as keys and value constraints, then you may receive the following error message (even though the JSON is technically valid) in your REST client applications:
+
 ``` pre
 Json doc specified in request body is malformed..!!'
 ```
