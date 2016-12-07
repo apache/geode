@@ -54,7 +54,9 @@ Response Payload: application/json
 
 | Status Code               | Description                                                                                   |
 |---------------------------|-----------------------------------------------------------------------------------------------|
-| 404 NOT FOUND             | Query with specified ID could not be found.                                                   |
+| 401 UNAUTHORIZED          | Invalid Username or Password                                                                  |
+| 403 FORBIDDEN             | Insufficient privileges for operation                                                         |
+| 404 NOT FOUND             | Query with specified ID could not be found                                                    |
 | 500 INTERNAL SERVER ERROR | Encountered error at server. Check the HTTP response body for a stack trace of the exception. |
 
 
