@@ -115,7 +115,7 @@ public class SampleCollector {
    * 
    * @throws IllegalStateException if no SampleCollector has been created and initialized yet
    */
-  public static StatMonitorHandler getStatMonitorHandler() {
+  static StatMonitorHandler getStatMonitorHandler() {
     // sync SampleCollector.class and then instance.sampleHandlers
     synchronized (SampleCollector.class) {
       if (instance == null) {
@@ -321,7 +321,7 @@ public class SampleCollector {
   }
 
   /** For testing only */
-  public StatArchiveHandler getStatArchiveHandler() {
+  StatArchiveHandler getStatArchiveHandler() {
     synchronized (this.sampleHandlers) {
       return this.statArchiveHandler;
     }

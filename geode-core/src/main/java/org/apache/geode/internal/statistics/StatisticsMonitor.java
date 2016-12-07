@@ -29,14 +29,13 @@ public abstract class StatisticsMonitor {
 
   private final Object mutex = new Object();
 
-  private final ConcurrentHashSet<StatisticsListener> listeners =
-      new ConcurrentHashSet<StatisticsListener>();
+  private final ConcurrentHashSet<StatisticsListener> listeners = new ConcurrentHashSet<>();
 
-  private final ConcurrentHashSet<StatisticId> statisticIds = new ConcurrentHashSet<StatisticId>();
+  private final ConcurrentHashSet<StatisticId> statisticIds = new ConcurrentHashSet<>();
 
   public StatisticsMonitor() {}
 
-  public StatisticsMonitor addStatistic(StatisticId statId) {
+  public StatisticsMonitor addStatistic(final StatisticId statId) {
     if (statId == null) {
       throw new NullPointerException("StatisticId is null");
     }
@@ -46,7 +45,7 @@ public abstract class StatisticsMonitor {
     return this;
   }
 
-  public StatisticsMonitor removeStatistic(StatisticId statId) {
+  public StatisticsMonitor removeStatistic(final StatisticId statId) {
     if (statId == null) {
       throw new NullPointerException("StatisticId is null");
     }
@@ -56,7 +55,7 @@ public abstract class StatisticsMonitor {
     return this;
   }
 
-  public final void addListener(StatisticsListener listener) {
+  public void addListener(final StatisticsListener listener) {
     if (listener == null) {
       throw new NullPointerException("StatisticsListener is null");
     }
@@ -68,7 +67,7 @@ public abstract class StatisticsMonitor {
     }
   }
 
-  public final void removeListener(StatisticsListener listener) {
+  public void removeListener(final StatisticsListener listener) {
     if (listener == null) {
       throw new NullPointerException("StatisticsListener is null");
     }
@@ -93,24 +92,25 @@ public abstract class StatisticsMonitor {
    * @param millisTimeStamp the real time in millis of the sample
    * @param resourceInstances resources with one or more updated values
    */
-  protected void monitor(long millisTimeStamp, List<ResourceInstance> resourceInstances) {
+  protected void monitor(final long millisTimeStamp,
+      final List<ResourceInstance> resourceInstances) {
     monitorStatisticIds(millisTimeStamp, resourceInstances);
   }
 
-  private final void monitorStatisticIds(long millisTimeStamp,
-      List<ResourceInstance> resourceInstances) {
+  private void monitorStatisticIds(final long millisTimeStamp,
+      final List<ResourceInstance> resourceInstances) {
     if (!this.statisticIds.isEmpty()) {
       // TODO:
     }
   }
 
-  protected final void notifyListeners(StatisticsNotification notification) {
+  protected void notifyListeners(final StatisticsNotification notification) {
     for (StatisticsListener listener : this.listeners) {
       listener.handleNotification(notification);
     }
   }
 
-  protected final Object mutex() {
+  protected Object mutex() {
     return this.mutex;
   }
 
@@ -137,7 +137,9 @@ public abstract class StatisticsMonitor {
     return sb.toString();
   }
 
-  /** Override to append to toString() */
+  /**
+   * Override to append to toString()
+   */
   protected StringBuilder appendToString() {
     return null;
   }

@@ -43,31 +43,31 @@ import org.apache.geode.internal.CopyOnWriteHashSet;
  * @since GemFire 7.0
  * @see org.apache.geode.Statistics
  */
-public final class ValueMonitor extends StatisticsMonitor {
+public class ValueMonitor extends StatisticsMonitor {
 
   public enum Type {
     CHANGE, MATCH, DIFFER
   }
 
-  private final CopyOnWriteHashSet<Statistics> statistics = new CopyOnWriteHashSet<Statistics>();
+  private final CopyOnWriteHashSet<Statistics> statistics = new CopyOnWriteHashSet<>();
 
   public ValueMonitor() {
     super();
   }
 
   @Override
-  public ValueMonitor addStatistic(StatisticId statId) {
+  public ValueMonitor addStatistic(final StatisticId statId) {
     super.addStatistic(statId);
     return this;
   }
 
   @Override
-  public ValueMonitor removeStatistic(StatisticId statId) {
+  public ValueMonitor removeStatistic(final StatisticId statId) {
     super.removeStatistic(statId);
     return this;
   }
 
-  public ValueMonitor addStatistics(Statistics statistics) {
+  public ValueMonitor addStatistics(final Statistics statistics) {
     if (statistics == null) {
       throw new NullPointerException("Statistics is null");
     }
@@ -75,7 +75,7 @@ public final class ValueMonitor extends StatisticsMonitor {
     return this;
   }
 
-  public ValueMonitor removeStatistics(Statistics statistics) {
+  public ValueMonitor removeStatistics(final Statistics statistics) {
     if (statistics == null) {
       throw new NullPointerException("Statistics is null");
     }
@@ -83,14 +83,16 @@ public final class ValueMonitor extends StatisticsMonitor {
     return this;
   }
 
-  protected void monitor(long millisTimeStamp, List<ResourceInstance> resourceInstances) {
+  protected void monitor(final long millisTimeStamp,
+      final List<ResourceInstance> resourceInstances) {
     super.monitor(millisTimeStamp, resourceInstances);
     monitorStatistics(millisTimeStamp, resourceInstances);
   }
 
-  protected void monitorStatistics(long millisTimeStamp, List<ResourceInstance> resourceInstances) {
+  protected void monitorStatistics(final long millisTimeStamp,
+      final List<ResourceInstance> resourceInstances) {
     if (!this.statistics.isEmpty()) {
-      Map<StatisticId, Number> stats = new HashMap<StatisticId, Number>();
+      Map<StatisticId, Number> stats = new HashMap<>();
       for (ResourceInstance resource : resourceInstances) {
         if (this.statistics.contains(resource.getStatistics())) {
           ResourceType resourceType = resource.getResourceType();
