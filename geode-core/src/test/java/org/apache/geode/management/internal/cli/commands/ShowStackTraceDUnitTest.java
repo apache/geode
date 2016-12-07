@@ -214,7 +214,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
    */
   @Test
   public void testExportStacktraceFilePresentWithAbort()
-      throws ClassNotFoundException, IOException {
+      throws ClassNotFoundException, IOException, GfJsonException {
     setupSystem();
 
     File stacktracesFile = workDirectory.newFile("allStackTraces.log");
@@ -229,13 +229,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     CommandResult exportCommandResult = executeCommand(exportCommandString);
     getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
     assertTrue(exportCommandResult.getStatus().equals(Status.ERROR));
-    try {
-      assertTrue(((String) exportCommandResult.getResultData().getGfJsonObject()
-          .getJSONObject("content").getJSONArray("message").get(0))
-              .contains("file " + stacktracesFile.getCanonicalPath() + " already present"));
-    } catch (GfJsonException e) {
-      fail("Exception while parsing command result", e.getCause());
-    }
+    assertTrue(((String) exportCommandResult.getResultData().getGfJsonObject()
+        .getJSONObject("content").getJSONArray("message").get(0))
+            .contains("file " + stacktracesFile.getCanonicalPath() + " already present"));
   }
 
   /***
@@ -246,7 +242,8 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
    * @throws IOException
    */
   @Test
-  public void testExportStacktraceAutoGenerateFile() throws ClassNotFoundException, IOException {
+  public void testExportStacktraceAutoGenerateFile()
+      throws ClassNotFoundException, IOException, GfJsonException {
     setupSystem();
 
     // test auto generated file when file name is not provided
@@ -257,12 +254,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     CommandResult exportCommandResult = executeCommand(exportCommandString);
     getLogWriter().info("Output : \n" + commandResultToString(exportCommandResult));
     assertTrue(exportCommandResult.getStatus().equals(Status.OK));
-    try {
-      assertTrue(
-          ((String) exportCommandResult.getResultData().getGfJsonObject().getJSONObject("content")
-              .getJSONArray("message").get(0)).contains("stack-trace(s) exported to file:"));
-    } catch (GfJsonException e) {
-      fail("Exception while parsing command result", e.getCause());
-    }
+    assertTrue(
+        ((String) exportCommandResult.getResultData().getGfJsonObject().getJSONObject("content")
+            .getJSONArray("message").get(0)).contains("stack-trace(s) exported to file:"));
+
   }
 }
