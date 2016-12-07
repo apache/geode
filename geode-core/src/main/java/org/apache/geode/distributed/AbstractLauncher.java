@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
@@ -28,28 +30,37 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and
  * run different GemFire processes, like Cache Servers, Locators, Managers, HTTP servers and so on.
- * 
+ *
  * @see java.lang.Comparable
  * @see java.lang.Runnable
  * @see org.apache.geode.lang.Identifiable
@@ -85,7 +96,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   protected final transient AtomicBoolean running = new AtomicBoolean(false);
 
   protected Logger logger = Logger.getLogger(getClass().getName()); // TODO:KIRK: does this need
-                                                                    // log4j2?
+  // log4j2?
 
   public AbstractLauncher() {
     try {
@@ -135,7 +146,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * Properties. The property is considered "set" if the String value of the property is not
    * non-null, non-empty and non-blank. Therefore, the Properties may "have" a property with name,
    * but having no value as determined by this method.
-   * 
+   *
    * @param properties the Properties used in determining whether the given property is set.
    * @param propertyName a String indicating the name of the property to check if set.
    * @return a boolean indicating whether the specified property with name has been given a value in
@@ -148,7 +159,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Loads the GemFire properties at the specified URL.
-   * 
+   *
    * @param url the URL to the gemfire.properties to load.
    * @return a Properties instance populated with the gemfire.properties.
    * @see java.net.URL
@@ -188,7 +199,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   /**
    * This method attempts to make a best effort determination for whether the Attach API classes are
    * on the classpath.
-   * 
+   *
    * @param t the Throwable being evaluated for missing Attach API classes.
    * @return a boolean indicating whether the Exception or Error condition is a result of the Attach
    *         API missing from the classpath.
@@ -223,7 +234,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Determines if the Attach API is on the classpath.
-   * 
+   *
    * @return a boolean value indicating if the Attach API is on the classpath.
    */
   boolean isAttachAPIOnClasspath() {
@@ -233,7 +244,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Determines whether the Locator launcher is in debug mode.
-   * 
+   *
    * @return a boolean to indicate whether the Locator launcher is in debug mode.
    * @see #setDebug(boolean)
    */
@@ -244,7 +255,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   /**
    * Sets the debug mode of the GemFire launcher class. This mutable property of the launcher
    * enables the user to turn the debug mode on and off programmatically.
-   * 
+   *
    * @param debug a boolean used to enable or disable debug mode.
    * @see #isDebugging()
    */
@@ -254,7 +265,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Determines whether the Locator referenced by this launcher is running.
-   * 
+   *
    * @return a boolean valued indicating if the referenced Locator is running.
    */
   public boolean isRunning() {
@@ -319,7 +330,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Gets the name of the log file used to log information about this GemFire service.
-   * 
+   *
    * @return a String value indicating the name of this GemFire service's log file.
    */
   public abstract String getLogFileName();
@@ -328,7 +339,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * Gets the name or ID of the member in the GemFire distributed system. This method prefers name
    * if specified, otherwise the ID is returned. If name was not specified to the Builder that
    * created this Launcher and this call is not in-process, then null is returned.
-   * 
+   *
    * @return a String value indicating the member's name if specified, otherwise the member's ID is
    *         returned if this call is made in-process, or finally, null is returned if neither name
    *         name was specified or the call is out-of-process.
@@ -367,21 +378,21 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   /**
    * Gets the user-specified process ID (PID) of the running GemFire service that AbstractLauncher
    * implementations can use to determine status, or stop the service.
-   * 
+   *
    * @return an Integer value indicating the process ID (PID) of the running GemFire service.
    */
   public abstract Integer getPid();
 
   /**
    * Gets the name of the GemFire service.
-   * 
+   *
    * @return a String indicating the name of the GemFire service.
    */
   public abstract String getServiceName();
 
   /**
    * Gets the working directory pathname in which the process will be run.
-   * 
+   *
    * @return a String value indicating the pathname of the Server's working directory.
    */
   public String getWorkingDirectory() {
@@ -391,7 +402,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   /**
    * Prints the specified debug message to standard err, replacing any placeholder values with the
    * specified arguments on output, if debugging has been enabled.
-   * 
+   *
    * @param message the String value written to standard err.
    * @param args an Object array containing arguments to replace the placeholder values in the
    *        message.
@@ -412,7 +423,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Prints the stack trace of the given Throwable to standard err if debugging has been enabled.
-   * 
+   *
    * @param t the Throwable who's stack trace is printed to standard err.
    * @see java.lang.System#err
    * @see #isDebugging()
@@ -427,7 +438,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   /**
    * Prints the specified informational message to standard err, replacing any placeholder values
    * with the specified arguments on output.
-   * 
+   *
    * @param message the String value written to standard err.
    * @param args an Object array containing arguments to replace the placeholder values in the
    *        message.
@@ -445,7 +456,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   /**
    * Redirects the standard out and standard err to the configured log file as specified in the
    * GemFire distributed system properties.
-   * 
+   *
    * @param distributedSystem the GemFire model for a distributed system.
    * @throws IOException if the standard out and err redirection was unsuccessful.
    */
@@ -458,7 +469,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Gets the version of GemFire currently running.
-   * 
+   *
    * @return a String representation of GemFire's version.
    */
   public String version() {
@@ -635,7 +646,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the Java classpath used when launching the GemFire service.
-     * 
+     *
      * @return a String value indicating the Java classpath used when launching the GemFire service.
      * @see java.lang.System#getProperty(String) with 'java.class.path'
      */
@@ -645,7 +656,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the version of GemFire used to launch and run the GemFire service.
-     * 
+     *
      * @return a String indicating the version of GemFire used in the running GemFire service.
      */
     public String getGemFireVersion() {
@@ -654,7 +665,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the version of Java used to launch and run the GemFire service.
-     * 
+     *
      * @return a String indicating the version of the Java runtime used in the running GemFire
      *         service.
      * @see java.lang.System#getProperty(String) with 'java.verson'
@@ -665,7 +676,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the arguments passed to the JVM process that is running the GemFire service.
-     * 
+     *
      * @return a List of String value each representing an argument passed to the JVM of the GemFire
      *         service.
      * @see java.lang.management.RuntimeMXBean#getInputArguments()
@@ -676,7 +687,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets GemFire member's name for the process.
-     * 
+     *
      * @return a String indicating the GemFire member's name for the process.
      */
     public String getMemberName() {
@@ -685,7 +696,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the process ID of the running GemFire service if known, otherwise returns null.
-     * 
+     *
      * @return a integer value indicating the process ID (PID) of the running GemFire service, or
      *         null if the PID cannot be determined.
      */
@@ -695,7 +706,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the location of the GemFire service (usually the host in combination with the port).
-     * 
+     *
      * @return a String indication the location (such as host/port) of the GemFire service.
      */
     public String getServiceLocation() {
@@ -704,14 +715,14 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the name of the GemFire service.
-     * 
+     *
      * @return a String indicating the name of the GemFire service.
      */
     protected abstract String getServiceName();
 
     /**
      * Gets the state of the GemFire service.
-     * 
+     *
      * @return a Status enumerated type representing the state of the GemFire service.
      * @see org.apache.geode.distributed.AbstractLauncher.Status
      */
@@ -721,7 +732,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets description of the the service's current state.
-     * 
+     *
      * @return a String describing the service's current state.
      */
     public String getStatusMessage() {
@@ -730,7 +741,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * The date and time the GemFire service was last in this state.
-     * 
+     *
      * @return a Timestamp signifying the last date and time the GemFire service was in this state.
      * @see java.sql.Timestamp
      */
@@ -741,7 +752,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     /**
      * Gets the amount of time in milliseconds that the JVM process with the GemFire service has
      * been running.
-     * 
+     *
      * @return a long value indicating the number of milliseconds that the GemFire service JVM has
      *         been running.
      * @see java.lang.management.RuntimeMXBean#getUptime()
@@ -753,7 +764,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     /**
      * Gets the directory in which the GemFire service is running. This is also the location where
      * all GemFire service files (log files, the PID file, and so on) are written.
-     * 
+     *
      * @return a String value indicating the GemFire service's working (running) directory.
      */
     public String getWorkingDirectory() {
@@ -762,7 +773,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the path of the log file for the process.
-     * 
+     *
      * @return a String value indicating the path of the log file for the process.
      */
     public String getLogFile() {
@@ -771,7 +782,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the host or IP address for the process and its service.
-     * 
+     *
      * @return a String value representing the host or IP address for the process and its service.
      */
     public String getHost() {
@@ -780,7 +791,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the port for the process and its service.
-     * 
+     *
      * @return an Integer value indicating the port for the process and its service.
      */
     public String getPort() {
@@ -789,7 +800,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets a String describing the state of the GemFire service.
-     * 
+     *
      * @return a String describing the state of the GemFire service.
      */
     @Override
@@ -799,14 +810,14 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
           return LocalizedStrings.Launcher_ServiceStatus_STARTING_MESSAGE.toLocalizedString(
               getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
               toString(getTimestamp()), toString(getPid()), toString(getGemFireVersion()),
-              toString(getJavaVersion()), getLogFile(), toString(getJvmArguments().toArray()),
+              toString(getJavaVersion()), getLogFile(), ArgumentRedactor.redact(getJvmArguments()),
               toString(getClasspath()));
         case ONLINE:
           return LocalizedStrings.Launcher_ServiceStatus_RUNNING_MESSAGE.toLocalizedString(
               getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
               getStatus(), toString(getPid()), toDaysHoursMinutesSeconds(getUptime()),
               toString(getGemFireVersion()), toString(getJavaVersion()), getLogFile(),
-              toString(getJvmArguments().toArray()), toString(getClasspath()));
+              ArgumentRedactor.redact(getJvmArguments()), toString(getClasspath()));
         case STOPPED:
           return LocalizedStrings.Launcher_ServiceStatus_STOPPED_MESSAGE
               .toLocalizedString(getServiceName(), getWorkingDirectory(), getServiceLocation());
@@ -856,7 +867,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Looks up the Status enum type by description. The lookup operation is case-insensitive.
-     * 
+     *
      * @param description a String value describing the Locator's status.
      * @return a Status enumerated type matching the description.
      */
@@ -872,7 +883,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the description of the Status enum type.
-     * 
+     *
      * @return a String describing the Status enum type.
      */
     public String getDescription() {
@@ -881,7 +892,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets a String representation of the Status enum type.
-     * 
+     *
      * @return a String representing the Status enum type.
      * @see #getDescription()
      */
