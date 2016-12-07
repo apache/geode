@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 
@@ -53,9 +52,6 @@ import org.apache.geode.test.dunit.VM;
 public class WANManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
-
-
-  public static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
   public WANManagementDUnitTest() throws Exception {
     super();
@@ -91,6 +87,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     managing.invoke(() -> WANTestBase.createManagementCache(punePort));
     startManagingNode(managing);
 
+
     // keep a larger batch to minimize number of exception occurrences in the
     // log
     puneSender
@@ -103,6 +100,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
         1, 100, false));
     managing.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "pn", 1,
         100, false));
+
 
     nyReceiver.invoke(() -> WANTestBase.createCache(nyPort));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null,
@@ -314,11 +312,11 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
         if (service.isManager()) {
           DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
-          Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
-
-          LogWriterUtils.getLogWriter()
-              .info("<ExpectedString> Ds Map is: " + dsMap + "</ExpectedString> ");
-
+          Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+            Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
+            dsMap.entrySet().stream()
+                .forEach(entry -> assertTrue("Should be true " + entry.getKey(), entry.getValue()));
+          });
         }
 
       }

@@ -1566,10 +1566,8 @@ public class DistributedSystemBridge {
         GatewaySenderMXBean bean = it.next();
         Integer dsId = bean.getRemoteDSId();
         if (dsId != null) {
-          senderMap.put(dsId.toString(), bean.isConnected());
+          senderMap.merge(dsId.toString(), bean.isRunning(), Boolean::logicalAnd);
         }
-
-
       }
 
       return senderMap;
