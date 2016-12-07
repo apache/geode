@@ -24,7 +24,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -241,7 +243,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     int totalBucketOnServer = 0;
     SerializableCallableIF<Integer> getBucketCount =
-        () -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated();
+        () -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer();
     totalBucketOnServer += server1.invoke(getBucketCount);
     totalBucketOnServer += server2.invoke(getBucketCount);
     totalBucketOnServer += server3.invoke(getBucketCount);
@@ -293,18 +295,24 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       putIntoPartitionedRegionsThreeQs();
 
       getFromPartitionedRegionsFor3Qs();
-      Wait.pause(2000);
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() ->
+        // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
+        // primary set to true.
+        (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6) &&
+        (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3)
+      );
+
       // TODO: Verify that all the fpa's are in the map
       server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
       server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
 
       int totalBucketOnServer = 0;
       totalBucketOnServer +=
-          (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+          (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
       totalBucketOnServer +=
-          (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
-      int currentRedundancy = 1;
-      verifyMetadata(totalBucketOnServer, currentRedundancy);
+          (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
+
+      verifyMetadata(totalBucketOnServer, 1);
       updateIntoSinglePRFor3Qs();
 
       // now create one more partition
@@ -317,25 +325,26 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       Integer port4 = (Integer) server4.invoke(() -> FixedPRSinglehopDUnitTest
           .createServerWithLocator(locator, false, fpaList, simpleFPR));
 
-      Wait.pause(2000);
       putIntoPartitionedRegions();
-      // Client should get the new partition
-      // TODO: Verify that
+      // Wait to make sure that the buckets have actually moved.
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() ->
+        (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3) &&
+        (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3) &&
+        (server4.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6)
+      );
 
       getFromPartitionedRegions();
-      Wait.pause(2000);
       server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
       server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
       server4.invoke(() -> FixedPRSinglehopDUnitTest.printView());
 
       totalBucketOnServer = 0;
       totalBucketOnServer +=
-          (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+          (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
       totalBucketOnServer +=
-          (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
+          (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
       totalBucketOnServer +=
-          (Integer) server4.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
-
+          (Integer) server4.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
       updateIntoSinglePR();
     } finally {
       server3.invoke(() -> FixedPRSinglehopDUnitTest.stopLocator());
@@ -438,7 +447,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     locator.stop();
   }
 
-  public static int totalNumBucketsCreated() {
+  public static int primaryBucketsOnServer() {
     FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     PartitionedRegion pr = (PartitionedRegion) cache.getRegion(PR_NAME);
     assertNotNull(pr);
