@@ -39,82 +39,6 @@ import java.security.SecureRandom;
 public class InternalDataSerializerRandomizedJUnitTest {
   private static final int ITERATIONS = 1000;
 
-  private static class RandomStringGenerator {
-    public static final int SEED_BYTES = 8;
-    public static final int MAX_STRING_LENGTH = 65538;
-    // UTF-16 can represent any codepoint with 2 chars.
-    public static final int MAX_UTF16_CHARS = MAX_STRING_LENGTH * 2;
-    public static final int UNICODE_MAX = Character.MAX_CODE_POINT;
-    private final byte[] seed;
-    private final SecureRandom rng;
-
-    public byte[] getSeed() {
-      return seed.clone();
-    }
-
-    /**
-     * Returns a string representation of the seed, in xsd:hexBinary. This can be passed directly to
-     * the String constructor of this class to recreate with the same seed.
-     */
-    public String getSeedString() {
-      return DatatypeConverter.printHexBinary(seed);
-    }
-
-    /**
-     * Generate and return a random string made up of a series of Unicode codepoints (integers).
-     * This can be any series of codepoints, even unreserved ones.
-     */
-    public RandomStringGenerator() {
-      this(SecureRandom.getSeed(SEED_BYTES));
-    }
-
-    /**
-     * Construct based on a provided seed. Mostly this should be useful for reproducing tests.
-     * <p>
-     * Technically we can take any size of seed, but we use one of size SEED_BYTES for tests.
-     */
-    public RandomStringGenerator(byte[] seed) {
-      this.seed = seed.clone();
-      rng = new SecureRandom(this.seed);
-    }
-
-    /**
-     * @param seedString an xsd:hexBinary string representing a seed. Normally acquired from
-     *        `getSeedString();`
-     */
-    public RandomStringGenerator(String seedString) {
-      this(DatatypeConverter.parseHexBinary(seedString));
-    }
-
-    public int randomCodepoint() {
-      return rng.nextInt(UNICODE_MAX);
-    }
-
-    /**
-     * @return A random string made of Unicode codepoints in the range from 0 to UNICODE_MAX. These
-     *         strings will not necessarily be valid, as some codepoints in that range may be
-     *         unallocated in the Unicode spec.
-     */
-    public String randomString() {
-      return randomString(rng.nextInt(MAX_UTF16_CHARS));
-    }
-
-    public String randomString(int length) {
-      StringBuilder stringBuilder = new StringBuilder(length * 2);
-
-      for (int i = 0; i < length; i++) {
-        int codepoint = randomCodepoint();
-        try {
-          stringBuilder.appendCodePoint(codepoint);
-        } catch (IllegalArgumentException ex) {
-          System.out.println("Generated illegal codepoint " + codepoint);
-        }
-      }
-      return stringBuilder.toString();
-    }
-  }
-
-
   private static void testStringSerializedDeserializesToSameValue(String originalString)
       throws IOException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -180,5 +104,80 @@ public class InternalDataSerializerRandomizedJUnitTest {
       }
     }
     testStringSerializedDeserializesToSameValue(stringBuilder.toString());
+  }
+
+  private static class RandomStringGenerator {
+    public static final int SEED_BYTES = 8;
+    public static final int MAX_STRING_LENGTH = 65538;
+    // UTF-16 can represent any codepoint with 2 chars.
+    public static final int MAX_UTF16_CHARS = MAX_STRING_LENGTH * 2;
+    public static final int UNICODE_MAX = Character.MAX_CODE_POINT;
+    private final byte[] seed;
+    private final SecureRandom randomNumberGenerator;
+
+    public byte[] getSeed() {
+      return seed.clone();
+    }
+
+    /**
+     * Returns a string representation of the seed, in xsd:hexBinary. This can be passed directly to
+     * the String constructor of this class to recreate with the same seed.
+     */
+    public String getSeedString() {
+      return DatatypeConverter.printHexBinary(seed);
+    }
+
+    /**
+     * Generate and return a random string made up of a series of Unicode codepoints (integers).
+     * This can be any series of codepoints, even unreserved ones.
+     */
+    public RandomStringGenerator() {
+      this(SecureRandom.getSeed(SEED_BYTES));
+    }
+
+    /**
+     * Construct based on a provided seed. Mostly this should be useful for reproducing tests.
+     * <p>
+     * Technically we can take any size of seed, but we use one of size SEED_BYTES for tests.
+     */
+    public RandomStringGenerator(byte[] seed) {
+      this.seed = seed.clone();
+      randomNumberGenerator = new SecureRandom(this.seed);
+    }
+
+    /**
+     * @param seedString an xsd:hexBinary string representing a seed. Normally acquired from
+     *        `getSeedString();`
+     */
+    public RandomStringGenerator(String seedString) {
+      this(DatatypeConverter.parseHexBinary(seedString));
+    }
+
+    public int randomCodepoint() {
+      return randomNumberGenerator.nextInt(UNICODE_MAX);
+    }
+
+    /**
+     * @return A random string made of Unicode codepoints in the range from 0 to UNICODE_MAX. These
+     *         strings will not necessarily be valid, as some codepoints in that range may be
+     *         unallocated in the Unicode spec.
+     */
+    public String randomString() {
+      return randomString(randomNumberGenerator.nextInt(MAX_UTF16_CHARS));
+    }
+
+    public String randomString(int length) {
+      StringBuilder stringBuilder = new StringBuilder(length * 2);
+
+      for (int i = 0; i < length; i++) {
+        int codepoint = randomCodepoint();
+        try {
+          stringBuilder.appendCodePoint(codepoint);
+        } catch (IllegalArgumentException ex) {
+          System.out.println("Generated illegal codepoint " + codepoint);
+        }
+      }
+      return stringBuilder.toString();
+    }
   }
 }
