@@ -285,6 +285,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Category(FlakyTest.class)
   @Test
   public void testParallelPropagationWithLocalCacheClosedAndRebuilt() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
