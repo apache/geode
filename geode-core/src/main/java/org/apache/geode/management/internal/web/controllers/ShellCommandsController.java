@@ -273,6 +273,8 @@ public class ShellCommandsController extends AbstractCommandsController {
             HttpMethod.POST))
         .add(new Link(CliStrings.CREATE_GATEWAYSENDER, toUri("/gateways/senders", scheme),
             HttpMethod.POST))
+        .add(new Link(CliStrings.DESTROY_GATEWAYSENDER, toUri("/gateways/senders/{id}", scheme),
+            HttpMethod.DELETE))
         .add(new Link(CliStrings.LOAD_BALANCE_GATEWAYSENDER,
             toUri("/gateways/senders/{id}?op=load-balance", scheme), HttpMethod.POST))
         .add(new Link(CliStrings.PAUSE_GATEWAYSENDER,

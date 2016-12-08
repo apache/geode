@@ -510,6 +510,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
    * In case of ParallelGatewaySender, the destroy operation does distributed destroy of the QPR. In
    * case of SerialGatewaySender, the queue region is destroyed locally.
    */
+  @Override
   public void destroy() {
     try {
       this.getLifeCycleLock().writeLock().lock();

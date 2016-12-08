@@ -25,7 +25,10 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
 import org.apache.geode.test.dunit.*;
@@ -41,6 +44,7 @@ import java.util.Set;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.junit.Assert.assertNull;
 
 public abstract class WANCommandTestBase extends CliCommandTestBase {
 
@@ -447,6 +451,35 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       }
     }
   }
+
+  public static void verifySenderDestroyed(String senderId, boolean isParallel) {
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    AbstractGatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = (AbstractGatewaySender) s;
+        break;
+      }
+    }
+    assertNull(sender);
+
+    String queueRegionNameSuffix = null;
+    if (isParallel) {
+      queueRegionNameSuffix = ParallelGatewaySenderQueue.QSTRING;
+    } else {
+      queueRegionNameSuffix = "_SERIAL_GATEWAY_SENDER_QUEUE";
+    }
+
+
+    Set<LocalRegion> allRegions = ((GemFireCacheImpl) cache).getAllRegions();
+    for (LocalRegion region : allRegions) {
+      if (region.getName().indexOf(senderId + queueRegionNameSuffix) != -1) {
+        fail("Region underlying the sender is not destroyed.");
+      }
+    }
+  }
+
+
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {

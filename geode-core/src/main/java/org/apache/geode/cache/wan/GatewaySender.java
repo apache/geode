@@ -400,4 +400,17 @@ public interface GatewaySender {
 
   public int getMaxParallelismForReplicatedRegion();
 
+
+  /**
+   * Destroys the GatewaySender.
+   * <p>
+   * In case of ParallelGatewaySender, the destroy operation does distributed destroy of the Queue
+   * Region. In case of SerialGatewaySender, the Queue Region is destroyed locally.
+   * 
+   * @since Geode 1.1
+   *
+   */
+  void destroy();
+
+
 }
