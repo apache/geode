@@ -452,9 +452,6 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
-  // Added for gateway destroy command
-  // Copied from WANTestBase.java
-
   public static void verifySenderDestroyed(String senderId, boolean isParallel) {
     Set<GatewaySender> senders = cache.getGatewaySenders();
     AbstractGatewaySender sender = null;
@@ -472,6 +469,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     } else {
       queueRegionNameSuffix = "_SERIAL_GATEWAY_SENDER_QUEUE";
     }
+
 
     Set<LocalRegion> allRegions = ((GemFireCacheImpl) cache).getAllRegions();
     for (LocalRegion region : allRegions) {

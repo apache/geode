@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.logging.log4j.Logger;
 
 public class GatewaySenderDestroyFunction extends FunctionAdapter implements InternalEntity {
-  private static final long serialVersionUID = 1459761440357690134L;
+  private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LogService.getLogger();
   private static final String ID = GatewaySenderDestroyFunction.class.getName();
