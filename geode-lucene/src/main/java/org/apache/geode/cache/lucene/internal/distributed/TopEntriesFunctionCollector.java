@@ -47,9 +47,6 @@ public class TopEntriesFunctionCollector
   // Use this instance to perform reduce operation
   final CollectorManager<TopEntriesCollector> manager;
 
-  // latch to wait till all results are collected
-  private final CountDownLatch waitForResults = new CountDownLatch(1);
-
   final String id;
 
   // Instance of gemfire cache to check status and other utility methods
@@ -83,36 +80,11 @@ public class TopEntriesFunctionCollector
 
   @Override
   public TopEntries getResult() throws FunctionException {
-    try {
-      waitForResults.await();
-    } catch (InterruptedException e) {
-      logger.debug("Interrupted while waiting for result collection", e);
-      Thread.currentThread().interrupt();
-      if (cache != null) {
-        cache.getCancelCriterion().checkCancelInProgress(e);
-      }
-      throw new FunctionException(e);
-    }
-
     return aggregateResults();
   }
 
   @Override
   public TopEntries getResult(long timeout, TimeUnit unit) throws FunctionException {
-    try {
-      boolean result = waitForResults.await(timeout, unit);
-      if (!result) {
-        throw new FunctionException("Did not receive results from all members within wait time");
-      }
-    } catch (InterruptedException e) {
-      logger.debug("Interrupted while waiting for result collection", e);
-      Thread.currentThread().interrupt();
-      if (cache != null) {
-        cache.getCancelCriterion().checkCancelInProgress(e);
-      }
-      throw new FunctionException(e);
-    }
-
     return aggregateResults();
   }
 
@@ -128,20 +100,11 @@ public class TopEntriesFunctionCollector
   }
 
   @Override
-  public void endResults() {
-    synchronized (subResults) {
-      waitForResults.countDown();
-    }
-  }
+  public void endResults() {}
 
   @Override
   public void clearResults() {
     synchronized (subResults) {
-      if (waitForResults.getCount() == 0) {
-        throw new IllegalStateException(
-            "This collector is closed and cannot accept anymore results");
-      }
-
       subResults.clear();
     }
   }
@@ -149,10 +112,6 @@ public class TopEntriesFunctionCollector
   @Override
   public void addResult(DistributedMember memberID, TopEntriesCollector resultOfSingleExecution) {
     synchronized (subResults) {
-      if (waitForResults.getCount() == 0) {
-        throw new IllegalStateException(
-            "This collector is closed and cannot accept anymore results");
-      }
       subResults.add(resultOfSingleExecution);
     }
   }

@@ -63,25 +63,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
   @Test
   public void testGetResultsBlocksTillEnd() throws Exception {
     final TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
-    final CountDownLatch insideThread = new CountDownLatch(1);
-    final CountDownLatch resultReceived = new CountDownLatch(1);
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        collector.getResult();
-        resultReceived.countDown();
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, resultReceived.getCount());
-
-    collector.endResults();
-    resultReceived.await(1, TimeUnit.SECONDS);
-    assertEquals(0, resultReceived.getCount());
+    TopEntries merged = collector.getResult();
+    assertEquals(0, merged.size());
   }
 
   @Test
@@ -94,109 +77,9 @@ public class TopEntriesFunctionCollectorJUnitTest {
     final CountDownLatch resultReceived = new CountDownLatch(1);
 
     final AtomicReference<TopEntries> result = new AtomicReference<>();
-
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        result.set(collector.getResult(1, TimeUnit.SECONDS));
-        resultReceived.countDown();
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, resultReceived.getCount());
-
-    collector.endResults();
-
-    resultReceived.await(1, TimeUnit.SECONDS);
-    assertEquals(0, resultReceived.getCount());
-
-    TopEntries merged = result.get();
+    TopEntries merged = collector.getResult(1, TimeUnit.SECONDS);
     assertEquals(4, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
-  }
-
-  @Test(expected = FunctionException.class)
-  public void testGetResultsWaitInterrupted() throws Exception {
-    interruptWhileWaiting(false);
-  }
-
-  @Test(expected = FunctionException.class)
-  public void testGetResultsTimedWaitInterrupted() throws Exception {
-    interruptWhileWaiting(false);
-  }
-
-  private void interruptWhileWaiting(final boolean timedWait)
-      throws InterruptedException, Exception {
-    GemFireCacheImpl mockCache = mock(GemFireCacheImpl.class);
-    final TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(null, mockCache);
-
-    final CountDownLatch insideThread = new CountDownLatch(1);
-    final CountDownLatch endGetResult = new CountDownLatch(1);
-    final AtomicReference<Exception> exception = new AtomicReference<>();
-
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        try {
-          if (timedWait) {
-            collector.getResult(1, TimeUnit.SECONDS);
-          } else {
-            collector.getResult();
-          }
-        } catch (FunctionException e) {
-          exception.set(e);
-          endGetResult.countDown();
-        }
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, endGetResult.getCount());
-
-    CancelCriterion mockCriterion = mock(CancelCriterion.class);
-    when(mockCache.getCancelCriterion()).thenReturn(mockCriterion);
-    resultClient.interrupt();
-    endGetResult.await(1, TimeUnit.SECONDS);
-    assertEquals(0, endGetResult.getCount());
-    throw exception.get();
-  }
-
-  @Test(expected = FunctionException.class)
-  public void expectErrorAfterWaitTime() throws Exception {
-    final TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(null);
-
-    final CountDownLatch insideThread = new CountDownLatch(1);
-    final CountDownLatch endGetResult = new CountDownLatch(1);
-    final AtomicReference<Exception> exception = new AtomicReference<>();
-
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        try {
-          collector.getResult(10, TimeUnit.MILLISECONDS);
-        } catch (FunctionException e) {
-          exception.set(e);
-          endGetResult.countDown();
-        }
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, endGetResult.getCount());
-
-    endGetResult.await(1, TimeUnit.SECONDS);
-    assertEquals(0, endGetResult.getCount());
-    throw exception.get();
   }
 
   @Test
@@ -297,20 +180,6 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.endResults();
     collector.getResult();
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void addResultDisallowedAfterEndResult() {
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
-    collector.endResults();
-    collector.addResult(null, new TopEntriesCollector(null));
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void clearResultDisallowedAfterEndResult() {
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
-    collector.endResults();
-    collector.clearResults();
   }
 
   @Test
