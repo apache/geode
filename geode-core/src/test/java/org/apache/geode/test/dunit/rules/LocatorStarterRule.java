@@ -33,11 +33,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
  *
- * If you need a rule to start a server/locator in different VM for Distribution tests, You should
- * use LocatorServerStartupRule
+ * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
+ * use {@link LocatorServerStartupRule}.
  *
- * You may choose to use this class not as a rule or use it in your own rule, (see
- * LocatorServerStartupRule) you will need to call startLocator() and after() manually in that case.
+ * <p>
+ * You may choose to use this class not as a rule or use it in your own rule (see
+ * {@link LocatorServerStartupRule}), in which case you will need to call startLocator() and after()
+ * manually.
+ * </p>
  */
 
 public class LocatorStarterRule extends ExternalResource implements Serializable {

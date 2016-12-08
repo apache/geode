@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.junit.rules.ExternalResource;
 
 import java.io.Serializable;
@@ -34,11 +35,13 @@ import java.util.Properties;
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
  *
- * If you need a rule to start a server/locator in different VM for Distribution tests, You should
- * use LocatorServerStartupRule
- *
- * You may choose to use this class not as a rule or use it in your own rule, (see
- * LocatorServerStartupRule) you will need to call startServer and after() manually in that case.
+ * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
+ * use {@link LocatorServerStartupRule}.
+ * <p>
+ * You may choose to use this class not as a rule or use it in your own rule (see
+ * {@link LocatorServerStartupRule}), in which case you will need to call startLocator() and after()
+ * manually.
+ * </p>
  */
 public class ServerStarterRule extends ExternalResource implements Serializable {
 
@@ -66,10 +69,12 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
     if (!properties.containsKey(NAME)) {
       properties.setProperty(NAME, this.getClass().getName());
     }
-    if (locatorPort > 0) {
-      properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    } else {
-      properties.setProperty(LOCATORS, "");
+    if (!properties.containsKey(LOCATORS)) {
+      if (locatorPort > 0) {
+        properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
+      } else {
+        properties.setProperty(LOCATORS, "");
+      }
     }
     if (properties.containsKey(JMX_MANAGER_PORT)) {
       int jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
@@ -84,7 +89,6 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
     CacheFactory cf = new CacheFactory(properties);
     cf.setPdxReadSerialized(pdxPersistent);
     cf.setPdxPersistent(pdxPersistent);
-
     cache = cf.create();
     server = cache.addCacheServer();
     server.setPort(0);
@@ -102,9 +106,13 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
 
   @Override
   public void after() {
-    if (cache != null)
+    if (cache != null) {
       cache.close();
-    if (server != null)
+      cache = null;
+    }
+    if (server != null) {
       server.stop();
+      server = null;
+    }
   }
 }

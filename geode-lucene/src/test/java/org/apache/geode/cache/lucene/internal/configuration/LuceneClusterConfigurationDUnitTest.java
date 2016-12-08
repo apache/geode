@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.Member;
 import org.apache.lucene.analysis.Analyzer;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +47,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 
@@ -59,8 +60,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexGetsCreatedUsingClusterConfiguration() throws Exception {
-    VM locator = startLocatorWithClusterConfigurationEnabled();
-    VM vm1 = startNodeUsingClusterConfiguration(1, false);
+    Member locator = startLocatorWithClusterConfigurationEnabled();
+    Member vm1 = startNodeUsingClusterConfiguration(1, false);
 
     // Connect Gfsh to locator.
     createAndConnectGfshToLocator();
@@ -72,7 +73,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // Start vm2. This should have lucene index created using cluster
     // configuration.
-    VM vm2 = startNodeUsingClusterConfiguration(2, false);
+    Member vm2 = startNodeUsingClusterConfiguration(2, false);
     vm2.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
@@ -83,8 +84,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexWithAnalyzerGetsCreatedUsingClusterConfiguration() throws Exception {
-    VM locator = startLocatorWithClusterConfigurationEnabled();
-    VM vm1 = startNodeUsingClusterConfiguration(1, false);
+    Member locator = startLocatorWithClusterConfigurationEnabled();
+    Member vm1 = startNodeUsingClusterConfiguration(1, false);
 
     // Connect Gfsh to locator.
     createAndConnectGfshToLocator();
@@ -97,7 +98,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // Start vm2. This should have lucene index created using cluster
     // configuration.
-    VM vm2 = startNodeUsingClusterConfiguration(2, false);
+    Member vm2 = startNodeUsingClusterConfiguration(2, false);
     vm2.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
@@ -115,14 +116,14 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexGetsCreatedOnGroupOfNodes() throws Exception {
-    VM locator = startLocatorWithClusterConfigurationEnabled();
+    Member locator = startLocatorWithClusterConfigurationEnabled();
 
     // Start vm1, vm2 in group
-    VM vm1 = startNodeUsingClusterConfiguration(1, true);
-    VM vm2 = startNodeUsingClusterConfiguration(2, true);
+    Member vm1 = startNodeUsingClusterConfiguration(1, true);
+    Member vm2 = startNodeUsingClusterConfiguration(2, true);
 
     // Start vm3 outside the group. The Lucene index should not be present here.
-    VM vm3 = startNodeUsingClusterConfiguration(3, true);
+    Member vm3 = startNodeUsingClusterConfiguration(3, true);
 
     // Connect Gfsh to locator.
     createAndConnectGfshToLocator();
@@ -151,14 +152,14 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexNotCreatedOnNodeOutSideTheGroup() throws Exception {
-    VM locator = startLocatorWithClusterConfigurationEnabled();
+    Member locator = startLocatorWithClusterConfigurationEnabled();
 
     // Start vm1, vm2 in group
-    VM vm1 = startNodeUsingClusterConfiguration(1, true);
-    VM vm2 = startNodeUsingClusterConfiguration(2, true);
+    Member vm1 = startNodeUsingClusterConfiguration(1, true);
+    Member vm2 = startNodeUsingClusterConfiguration(2, true);
 
     // Start vm3 outside the group. The Lucene index should not be present here.
-    VM vm3 = startNodeUsingClusterConfiguration(3, false);
+    Member vm3 = startNodeUsingClusterConfiguration(3, false);
 
     // Connect Gfsh to locator.
     createAndConnectGfshToLocator();
@@ -187,10 +188,10 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexAreCreatedInValidGroupOfNodesJoiningLater() throws Exception {
-    VM locator = startLocatorWithClusterConfigurationEnabled();
+    Member locator = startLocatorWithClusterConfigurationEnabled();
 
     // Start vm1 in group
-    VM vm1 = startNodeUsingClusterConfiguration(1, true);
+    Member vm1 = startNodeUsingClusterConfiguration(1, true);
     // Connect Gfsh to locator.
     createAndConnectGfshToLocator();
 
@@ -200,10 +201,10 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, groupName);
 
     // Start vm2 in group
-    VM vm2 = startNodeUsingClusterConfiguration(2, true);
+    Member vm2 = startNodeUsingClusterConfiguration(2, true);
 
     // Start vm3 outside the group. The Lucene index should not be present here.
-    VM vm3 = startNodeUsingClusterConfiguration(3, false);
+    Member vm3 = startNodeUsingClusterConfiguration(3, false);
 
     // VM2 should have lucene index created using gfsh execution
     vm2.invoke(() -> {
@@ -226,7 +227,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     connect(jmxHost, jmxPort, httpPort, gfsh);
   }
 
-  private VM startNodeUsingClusterConfiguration(int vmIndex, boolean addGroup) throws Exception {
+  private Member startNodeUsingClusterConfiguration(int vmIndex, boolean addGroup)
+      throws Exception {
     File dir = this.temporaryFolder.newFolder();
     Properties nodeProperties = new Properties();
     nodeProperties.setProperty(USE_CLUSTER_CONFIGURATION, "true");
@@ -234,10 +236,10 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     if (addGroup) {
       nodeProperties.setProperty(GROUPS, groupName);
     }
-    return ls.getServerVM(vmIndex, nodeProperties, ls.getPort(0));
+    return ls.startServerVM(vmIndex, nodeProperties, ls.getMember(0).getPort());
   }
 
-  private VM startLocatorWithClusterConfigurationEnabled() throws Exception {
+  private Member startLocatorWithClusterConfigurationEnabled() throws Exception {
     try {
       jmxHost = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException ignore) {
@@ -258,7 +260,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
     locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
     locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, dir.getCanonicalPath());
-    return ls.getLocatorVM(0, locatorProps);
+    return ls.startLocatorVM(0, locatorProps);
   }
 
   private void createLuceneIndexUsingGfsh(boolean addGroup) throws Exception {
