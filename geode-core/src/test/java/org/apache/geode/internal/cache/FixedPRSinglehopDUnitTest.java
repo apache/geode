@@ -260,7 +260,6 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
    * Validate that the metadata are fetched and then later up one more partition and do some
    * operations on them. It should fetch new fpa.
    */
-  @Category(FlakyTest.class) // GEODE-1923
   @Test
   public void test_FPAmetadataFetch() {
 
@@ -295,12 +294,11 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       putIntoPartitionedRegionsThreeQs();
 
       getFromPartitionedRegionsFor3Qs();
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() ->
-        // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
-        // primary set to true.
-        (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6) &&
-        (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3)
-      );
+      // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
+      // primary set to true.
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(
+          () -> (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6)
+              && (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3));
 
       // TODO: Verify that all the fpa's are in the map
       server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
@@ -327,11 +325,10 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
       putIntoPartitionedRegions();
       // Wait to make sure that the buckets have actually moved.
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() ->
-        (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3) &&
-        (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3) &&
-        (server4.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6)
-      );
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(
+          () -> (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3)
+              && (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3)
+              && (server4.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6));
 
       getFromPartitionedRegions();
       server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
