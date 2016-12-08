@@ -23,11 +23,13 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -95,32 +97,11 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     vm4.invoke(() -> verifySenderState("ln", true, false));
     vm5.invoke(() -> verifySenderState("ln", true, false));
 
-    // Test Destroy Command.
-    command =
-        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testCreateDestroyGatewaySenderWithDefault stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-
-    } else {
-      fail("testCreateDestroyGatewaySenderWithDefault failed as did not get CommandResult");
-    }
-
-    vm3.invoke(() -> verifySenderDestroyed("ln", false));
-    vm4.invoke(() -> verifySenderDestroyed("ln", false));
-    vm5.invoke(() -> verifySenderDestroyed("ln", false));
+    doDestroyAndVerifyGatewaySender("ln", null, null, "testCreateDestroyGatewaySenderWithDefault",
+        Arrays.asList(vm3, vm4, vm5), 5, false);
   }
+
+
 
   /**
    * + * GatewaySender with given attribute values +
@@ -186,29 +167,8 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     vm5.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
         1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null));
 
-    // Test Destroy Command.
-    command =
-        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateDestroyGatewaySender stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-    } else {
-      fail("testCreateDestroyGatewaySender failed as did not get CommandResult");
-    }
-
-    vm3.invoke(() -> verifySenderDestroyed("ln", false));
-    vm4.invoke(() -> verifySenderDestroyed("ln", false));
-    vm5.invoke(() -> verifySenderDestroyed("ln", false));
+    doDestroyAndVerifyGatewaySender("ln", null, null, "testCreateDestroyGatewaySender",
+        Arrays.asList(vm3, vm4, vm5), 5, false);
   }
 
   /**
@@ -336,31 +296,9 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     vm5.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
         1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, eventFilters, null));
 
-    // Test Destroy Command.
-    command =
-        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateDestroyGatewaySenderWithGatewayEventFilters stringResult : "
-          + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-    } else {
-      fail(
-          "testCreateDestroyGatewaySenderWithGatewayEventFilters failed as did not get CommandResult");
-    }
-
-    vm3.invoke(() -> verifySenderDestroyed("ln", false));
-    vm4.invoke(() -> verifySenderDestroyed("ln", false));
-    vm5.invoke(() -> verifySenderDestroyed("ln", false));
+    doDestroyAndVerifyGatewaySender("ln", null, null,
+        "testCreateDestroyGatewaySenderWithGatewayEventFilters", Arrays.asList(vm3, vm4, vm5), 5,
+        false);
 
   }
 
@@ -435,33 +373,9 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     vm5.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
         1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, transportFilters));
 
-    // Test Destroy Command.
-    command =
-        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter()
-          .info("testCreateDestroyGatewaySenderWithGatewayTransportFilters stringResult : "
-              + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-
-    } else {
-      fail(
-          "testCreateDestroyGatewaySenderWithGatewayTransportFilters failed as did not get CommandResult");
-    }
-
-    vm3.invoke(() -> verifySenderDestroyed("ln", false));
-    vm4.invoke(() -> verifySenderDestroyed("ln", false));
-    vm5.invoke(() -> verifySenderDestroyed("ln", false));
+    doDestroyAndVerifyGatewaySender("ln", null, null,
+        "testCreateDestroyGatewaySenderWithGatewayTransportFilters", Arrays.asList(vm3, vm4, vm5),
+        5, false);
   }
 
   /**
@@ -526,29 +440,8 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     vm3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
         1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null));
 
-    // Test Destroy Command.
-    command = CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__MEMBER + "=" + vm3Member.getId();
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter()
-          .info("testCreateDestroyGatewaySender_OnMember stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(1, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-
-    } else {
-      fail("testCreateDestroyGatewaySender_OnMember failed as did not get CommandResult");
-    }
-
-    vm3.invoke(() -> verifySenderDestroyed("ln", false));
+    doDestroyAndVerifyGatewaySender("ln", null, vm3Member,
+        "testCreateDestroyGatewaySender_OnMember", Arrays.asList(vm3), 1, false);
   }
 
   /**
@@ -610,31 +503,8 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     vm4.invoke(() -> verifySenderState("ln", true, false));
     vm5.invoke(() -> verifySenderState("ln", true, false));
 
-    // Test Destroy Command
-    command = CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.DESTROY_GATEWAYSENDER__GROUP + "=SenderGroup1";
-
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter()
-          .info("testCreateDestroyGatewaySender_Group stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(3, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-    } else {
-      fail("testCreateDestroyGatewaySender_Group failed as did not get CommandResult");
-    }
-
-    vm3.invoke(() -> verifySenderDestroyed("ln", false));
-    vm4.invoke(() -> verifySenderDestroyed("ln", false));
-    vm5.invoke(() -> verifySenderDestroyed("ln", false));
+    doDestroyAndVerifyGatewaySender("ln", "SenderGroup1", null,
+        "testCreateDestroyGatewaySender_Group", Arrays.asList(vm3, vm4, vm5), 3, false);
 
   }
 
@@ -697,31 +567,8 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
     vm3.invoke(() -> verifySenderState("ln", true, false));
     vm4.invoke(() -> verifySenderState("ln", true, false));
 
-
-    // Test Destroy Command
-    command = CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.DESTROY_GATEWAYSENDER__GROUP + "=SenderGroup1";
-
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testCreateDestroyGatewaySender_Group_Scenario2 stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(2, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-    } else {
-      fail("testCreateDestroyGatewaySender_Group_Scenario2 failed as did not get CommandResult");
-    }
-
-    vm3.invoke(() -> verifySenderDestroyed("ln", false));
-    vm4.invoke(() -> verifySenderDestroyed("ln", false));
+    doDestroyAndVerifyGatewaySender("ln", "SenderGroup1", null,
+        "testCreateDestroyGatewaySender_Group_Scenario2", Arrays.asList(vm3, vm4), 2, false);
 
   }
 
@@ -791,30 +638,8 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
         () -> verifySenderAttributes("ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, GatewaySender.DEFAULT_DISPATCHER_THREADS, null, null, null));
 
-    // Test Destroy Command
-    command =
-        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter()
-          .info("testCreateDestroyParallelGatewaySender stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
-      for (int i = 0; i < status.size(); i++) {
-        assertTrue("GatewaySender destroy failed with: " + status.get(i),
-            status.get(i).indexOf("ERROR:") == -1);
-      }
-
-    } else {
-      fail("testCreateDestroyParallelGatewaySender failed as did not get CommandResult");
-    }
-    vm3.invoke(() -> verifySenderDestroyed("ln", true));
-    vm4.invoke(() -> verifySenderDestroyed("ln", true));
-    vm5.invoke(() -> verifySenderDestroyed("ln", true));
+    doDestroyAndVerifyGatewaySender("ln", null, null, "testCreateDestroyParallelGatewaySender",
+        Arrays.asList(vm3, vm4), 5, true);
   }
 
   /**
@@ -916,6 +741,54 @@ public class WanCommandCreateDestroyGatewaySenderDUnitTest extends WANCommandTes
 
     } else {
       fail("testCreateDestroyParallelGatewaySender failed as did not get CommandResult");
+    }
+  }
+
+  /**
+   * doDestroyAndVerifyGatewaySender helper command.
+   *
+   * @param id if of the Gateway Sender
+   * @param group Group for the GatewaySender
+   * @param member Distributed Member for memeber id.
+   * @param testName testName for the logging
+   * @param vms list of vms where to verify the destroyed gateway sender
+   * @param size command result.
+   * @param isParallel true if parallel , false otherwise.
+   */
+
+  private void doDestroyAndVerifyGatewaySender(final String id, final String group,
+      final DistributedMember member, final String testName, final List<VM> vms, final int size,
+      final boolean isParallel) {
+    String command =
+        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=" + id;
+
+    if (group != null) {
+      command += " --" + CliStrings.DESTROY_GATEWAYSENDER__GROUP + "=" + group;
+    }
+
+    if (member != null) {
+      command += " --" + CliStrings.CREATE_GATEWAYSENDER__MEMBER + "=" + member.getId();
+    }
+
+    final CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
+    if (cmdResult != null) {
+      String strCmdResult = commandResultToString(cmdResult);
+      getLogWriter().info(testName + " stringResult : " + strCmdResult + ">>>>");
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
+      List<String> status = resultData.retrieveAllValues("Status");
+      assertEquals(size, status.size());
+      for (int i = 0; i < status.size(); i++) {
+        assertTrue("GatewaySender destroy failed with: " + status.get(i),
+            status.get(i).indexOf("ERROR:") == -1);
+      }
+
+    } else {
+      fail(testName + " failed as did not get CommandResult");
+    }
+    for (VM vm : vms) {
+      vm.invoke(() -> verifySenderDestroyed(id, isParallel));
     }
   }
 }
