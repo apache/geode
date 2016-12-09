@@ -30,6 +30,13 @@ import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
+// TODO this class has been made unintelligible with different combinations of response values.
+// It needs to have an enum that indicates what type of response is in the message or it
+// needs to be broken into multiple message classes.
+// 1. a response saying the member has now joined
+// 2. a response indicating that the coordinator is now a different process
+// 3. a response containing the cluster encryption key
+
 public class JoinResponseMessage extends HighPriorityDistributionMessage {
 
   private NetView currentView;

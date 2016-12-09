@@ -14,6 +14,20 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.jayway.awaitility.Awaitility;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -32,10 +46,15 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.TcpClientWrapper;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewCreator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewReplyProcessor;
-import org.apache.geode.distributed.internal.membership.gms.messages.*;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Version;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
@@ -50,12 +69,16 @@ import org.mockito.verification.Timeout;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.*;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSJoinLeaveJUnitTest {
@@ -1055,6 +1078,34 @@ public class GMSJoinLeaveJUnitTest {
       }
       Timeout to = new Timeout(2 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, never());
       verify(messenger, to).send(isA(NetworkPartitionMessage.class));
+
+    } finally {
+      System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
+    }
+  }
+
+  @Test
+  public void testViewNotSentWhenShuttingDown() throws Exception {
+    try {
+      initMocks(false);
+      System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+      gmsJoinLeave.join();
+      installView(1, gmsJoinLeaveMemberId, createMemberList(mockMembers[0], mockMembers[1],
+          mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
+
+      assertTrue(gmsJoinLeave.getViewCreator().isAlive());
+
+      when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
+      for (int i = 1; i < 4; i++) {
+        RemoveMemberMessage msg =
+            new RemoveMemberMessage(gmsJoinLeaveMemberId, mockMembers[i], "crashed");
+        msg.setSender(gmsJoinLeaveMemberId);
+        gmsJoinLeave.processMessage(msg);
+      }
+
+      Awaitility.await("waiting for view creator to stop").atMost(5000, TimeUnit.MILLISECONDS)
+          .until(() -> !gmsJoinLeave.getViewCreator().isAlive());
+      assertEquals(1, gmsJoinLeave.getView().getViewId());
 
     } finally {
       System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);

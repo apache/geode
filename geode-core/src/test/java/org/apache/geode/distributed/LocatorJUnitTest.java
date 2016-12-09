@@ -108,6 +108,7 @@ public class LocatorJUnitTest {
     dsprops.setProperty(JMX_MANAGER_START, "true");
     dsprops.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsprops.setProperty(LOG_FILE, "");
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not
                                                                                           // needed
     try {
@@ -159,6 +160,8 @@ public class LocatorJUnitTest {
         fail("expected " + threadCount + " threads or fewer but found " + Thread.activeCount()
             + ".  Check log file for a thread dump.");
       }
+    } finally {
+      JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
     }
   }
 
