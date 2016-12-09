@@ -475,7 +475,8 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     this.lockObtainingThread.start();
   }
 
-  public void waitToBecomePrimary() throws InterruptedException {
+  public void waitToBecomePrimary(AbstractGatewaySenderEventProcessor callingProcessor)
+      throws InterruptedException {
     if (isPrimary()) {
       return;
     }
@@ -484,7 +485,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
           LocalizedStrings.GatewayImpl_0__WAITING_TO_BECOME_PRIMARY_GATEWAY, this.sender.getId()));
       while (!isPrimary()) {
         this.primaryLock.wait(1000);
-        if (sender.getEventProcessor() != null && sender.getEventProcessor().isStopped()) {
+        if (sender.getEventProcessor() != null && callingProcessor.isStopped()) {
           logger.info("The event processor is stopped, not to wait for being primary any more.");
           return;
         }

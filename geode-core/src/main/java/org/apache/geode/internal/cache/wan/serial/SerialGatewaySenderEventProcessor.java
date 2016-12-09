@@ -143,7 +143,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   protected boolean waitForPrimary() {
 
     try {
-      this.sender.getSenderAdvisor().waitToBecomePrimary();
+      this.sender.getSenderAdvisor().waitToBecomePrimary(this);
     } catch (InterruptedException e) {
       // No need to set the interrupt bit, we're exiting the thread.
       if (!stopped()) {
