@@ -245,6 +245,12 @@ public class HandShake implements ClientHandShake {
    */
   private static short overrideClientVersion = -1;
 
+  /** Constructor used for mocking */
+  protected HandShake() {
+    system = null;
+    id = null;
+  }
+
   /** Constructor used by server side connection */
   public HandShake(Socket sock, int timeout, DistributedSystem sys, Version clientVersion,
       byte communicationMode) throws IOException, AuthenticationRequiredException {
@@ -852,6 +858,18 @@ public class HandShake implements ClientHandShake {
     return _encrypt;
   }
 
+  /**
+   * Throws AuthenticationRequiredException if authentication is required but there are no
+   * credentials.
+   */
+  static void throwIfMissingRequiredCredentials(boolean requireAuthentication,
+      boolean hasCredentials) {
+    if (requireAuthentication && !hasCredentials) {
+      throw new AuthenticationRequiredException(
+          LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
+    }
+  }
+
   // This assumes that authentication is the last piece of info in handshake
   public Properties readCredential(DataInputStream dis, DataOutputStream dos,
       DistributedSystem system) throws GemFireSecurityException, IOException {
@@ -860,14 +878,8 @@ public class HandShake implements ClientHandShake {
     boolean requireAuthentication = securityService.isClientSecurityRequired();
     try {
       byte secureMode = dis.readByte();
-      if (secureMode == CREDENTIALS_NONE) {
-        // when server is configured with authenticator, new joiner must
-        // pass its credentials.
-        if (requireAuthentication) {
-          throw new AuthenticationRequiredException(
-              LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED.toLocalizedString());
-        }
-      } else if (secureMode == CREDENTIALS_NORMAL) {
+      throwIfMissingRequiredCredentials(requireAuthentication, secureMode != CREDENTIALS_NONE);
+      if (secureMode == CREDENTIALS_NORMAL) {
         this.appSecureMode = CREDENTIALS_NORMAL;
         /*
          * if (requireAuthentication) { credentials = DataSerializer.readProperties(dis); } else {
@@ -1553,14 +1565,8 @@ public class HandShake implements ClientHandShake {
     Properties credentials = null;
     try {
       byte secureMode = dis.readByte();
-      if (secureMode == CREDENTIALS_NONE) {
-        // when server is configured with authenticator, new joiner must
-        // pass its credentials.
-        if (requireAuthentication) {
-          throw new AuthenticationRequiredException(
-              LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED.toLocalizedString());
-        }
-      } else if (secureMode == CREDENTIALS_NORMAL) {
+      throwIfMissingRequiredCredentials(requireAuthentication, secureMode != CREDENTIALS_NONE);
+      if (secureMode == CREDENTIALS_NORMAL) {
         if (requireAuthentication) {
           credentials = DataSerializer.readProperties(dis);
         } else {

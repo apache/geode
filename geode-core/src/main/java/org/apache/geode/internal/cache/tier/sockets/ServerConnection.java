@@ -238,6 +238,8 @@ public class ServerConnection implements Runnable {
 
   private Principal principal;
 
+  private MessageIdExtractor messageIdExtractor = new MessageIdExtractor();
+
   /**
    * A debug flag used for testing Backward compatibility
    */
@@ -393,6 +395,10 @@ public class ServerConnection implements Runnable {
     this.executeFunctionResponseMsg.setVersion(v);
     this.registerInterestResponseMsg.setVersion(v);
     this.keySetResponseMsg.setVersion(v);
+  }
+
+  public void setRequestMsg(Message requestMsg) {
+    this.requestMsg = requestMsg;
   }
 
   public Version getClientVersion() {
@@ -1441,8 +1447,7 @@ public class ServerConnection implements Runnable {
     if (isClosed()) {
       return false;
     }
-    if (this.communicationMode == Acceptor.CLIENT_TO_SERVER
-        || this.communicationMode == Acceptor.GATEWAY_TO_GATEWAY
+    if (this.communicationMode == Acceptor.CLIENT_TO_SERVER || isGatewayConnection()
         || this.communicationMode == Acceptor.MONITOR_TO_SERVER
     /* || this.communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE */) {
       getAcceptor().decClientServerCnxCount();
@@ -1703,34 +1708,6 @@ public class ServerConnection implements Runnable {
     this.userAuthId = uniqueId;
   }
 
-  private static class AuthIds {
-    private long connectionId;
-    private long uniqueId;
-
-    public AuthIds(byte[] bytes) throws Exception {
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
-      if (bytes.length == 8) {
-        // only connectionid
-        connectionId = dis.readLong();
-      } else if (bytes.length == 16) {
-        // first connectionId and then uniqueID
-        connectionId = dis.readLong();
-        uniqueId = dis.readLong();
-      } else {
-        throw new Exception("Auth ids are not in right form");
-      }
-    }
-
-
-    public long getConnectionId() {
-      return connectionId;
-    }
-
-    public long getUniqueId() {
-      return this.uniqueId;
-    }
-  }
-
   private byte[] encryptId(long id, ServerConnection servConn) throws Exception {
     // deserialize this using handshake keys
     HeapDataOutputStream hdos = null;
@@ -1748,38 +1725,20 @@ public class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId = 0;
 
-    if (this.handshake.getVersion().compareTo(Version.GFE_65) < 0
-        || this.communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
+    if (this.handshake.getVersion().isPre65() || isGatewayConnection()) {
       uniqueId = this.userAuthId;
+    } else if (this.requestMsg.isSecureMode()) {
+      uniqueId = messageIdExtractor.getUniqueIdFromMessage(this.requestMsg,
+          (HandShake) this.handshake, this.connectionId);
     } else {
-      try {
-        // this.logger.fine("getAuthzRequest() isSecureMode = " + this.requestMsg.isSecureMode());
-        if (this.requestMsg.isSecureMode()) {
-          // get uniqueID from message
-          byte[] secureBytes = this.requestMsg.getSecureBytes();
-
-          secureBytes = ((HandShake) this.handshake).decryptBytes(secureBytes);
-          AuthIds aIds = new AuthIds(secureBytes);
-
-          if (this.connectionId != aIds.getConnectionId()) {
-            throw new AuthenticationRequiredException(
-                LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED.toLocalizedString());
-          } else {
-            uniqueId = aIds.getUniqueId();
-          }
-
-        } else {
-          throw new AuthenticationRequiredException(
-              LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED.toLocalizedString());
-        }
-      } catch (AuthenticationRequiredException are) {
-        throw are;
-      } catch (Exception ex) {
-        throw new AuthenticationRequiredException(
-            LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED.toLocalizedString());
-      }
+      throw new AuthenticationRequiredException(
+          LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
     }
     return uniqueId;
+  }
+
+  private boolean isGatewayConnection() {
+    return getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY;
   }
 
   public AuthorizeRequest getAuthzRequest() throws AuthenticationRequiredException, IOException {
@@ -1861,5 +1820,13 @@ public class ServerConnection implements Runnable {
 
   public void setClientDisconnectedException(Throwable e) {
     this.clientDisconnectedException = e;
+  }
+
+  public void setMessageIdExtractor(MessageIdExtractor messageIdExtractor) {
+    this.messageIdExtractor = messageIdExtractor;
+  }
+
+  public MessageIdExtractor getMessageIdExtractor() {
+    return this.messageIdExtractor;
   }
 }

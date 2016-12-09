@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -44,5 +45,12 @@ public class VersionJUnitTest {
     assertTrue(later.compareTo(earlier.ordinal()) > 0);
     assertTrue(later.compareTo(later.ordinal()) == 0);
     assertTrue(earlier.compareTo(later.ordinal()) < 0);
+  }
+
+  @Test
+  public void testIsPre65() {
+    assertTrue(Version.GFE_61.isPre65());
+    assertFalse(Version.GFE_65.isPre65());
+    assertFalse(Version.GFE_70.isPre65());
   }
 }

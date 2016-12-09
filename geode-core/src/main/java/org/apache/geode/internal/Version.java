@@ -587,4 +587,7 @@ public final class Version implements Comparable<Version> {
     return bytes;
   }
 
+  public boolean isPre65() {
+    return compareTo(Version.GFE_65) < 0;
+  }
 }
