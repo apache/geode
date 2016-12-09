@@ -50,8 +50,9 @@ public class BundledJarsJUnitTest {
     String expectedJarFile =
         TestUtil.getResourcePath(BundledJarsJUnitTest.class, "/expected_jars.txt");
     expectedJars = Files
-            .lines(Paths.get(SystemUtils.IS_OS_WINDOWS ? expectedJarFile.substring(1) : expectedJarFile))
-            .collect(Collectors.toSet());
+        .lines(
+            Paths.get(SystemUtils.IS_OS_WINDOWS ? expectedJarFile.substring(1) : expectedJarFile))
+        .collect(Collectors.toSet());
   }
 
   @Test
