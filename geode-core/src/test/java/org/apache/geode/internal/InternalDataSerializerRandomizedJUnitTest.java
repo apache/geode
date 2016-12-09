@@ -90,20 +90,9 @@ public class InternalDataSerializerRandomizedJUnitTest {
   @Test
   public void testABigString() throws IOException {
     RandomStringGenerator stringGenerator = new RandomStringGenerator();
-    final int strlen = 128001;
+    final int strlen = 1024 * 1024 * 5;
 
-    StringBuilder stringBuilder = new StringBuilder(strlen);
-    while (stringBuilder.length() < strlen) {
-      stringBuilder.append(stringGenerator.randomCodepoint());
-    }
-    // the last few we have to worry about codepoinuts being too big.
-    while (stringBuilder.length() < strlen) {
-      int codepoint = stringGenerator.randomCodepoint();
-      if (codepoint <= strlen) {
-        stringBuilder.append(codepoint);
-      }
-    }
-    testStringSerializedDeserializesToSameValue(stringBuilder.toString());
+    testStringSerializedDeserializesToSameValue(stringGenerator.randomString(strlen));
   }
 
   private static class RandomStringGenerator {
