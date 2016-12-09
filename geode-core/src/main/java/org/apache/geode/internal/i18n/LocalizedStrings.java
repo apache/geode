@@ -5350,8 +5350,8 @@ public class LocalizedStrings {
       new StringId(4192, "Server expecting SSL connection");
   public static final StringId HandShake_FAILED_TO_ACQUIRE_AUTHINITIALIZE_METHOD_0 =
       new StringId(4194, "Failed to acquire AuthInitialize method {0}");
-  public static final StringId HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED =
-      new StringId(4195, "No security-* properties are provided");
+  public static final StringId HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED =
+      new StringId(4195, "No security credentials are provided");
   public static final StringId HandShake_FAILURE_IN_READING_CREDENTIALS =
       new StringId(4196, "Failure in reading credentials");
   public static final StringId HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT =
