@@ -54,15 +54,7 @@ public class CustomConfiguration {
     // CUSTOM: level=%level time=%date{yyyy/MM/dd HH:mm:ss.SSS z}
     // message=%message%nthrowable=%throwable%n
     return CONFIG_LAYOUT_PREFIX + ": level=" + level.toString() + " time=" + ".*" + " message="
-        + message + "\nthrowable=\n";
-  }
-
-  public static String defineLogStatementRegex(final Level level, final String message,
-      final String throwable) {
-    // CUSTOM: level=%level time=%date{yyyy/MM/dd HH:mm:ss.SSS z}
-    // message=%message%nthrowable=%throwable%n
-    return CONFIG_LAYOUT_PREFIX + ": level=" + level.toString() + " time=" + ".*" + " message="
-        + message + "\nthrowable=" + throwable + "\n";
+        + message + System.lineSeparator() + "throwable=" + System.lineSeparator();
   }
 
 }
