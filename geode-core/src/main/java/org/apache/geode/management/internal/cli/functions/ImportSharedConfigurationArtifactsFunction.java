@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -24,6 +23,8 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+
+import java.io.File;
 
 /******
  * This function copies the zipped shared configuration, renames the existing shared configuration

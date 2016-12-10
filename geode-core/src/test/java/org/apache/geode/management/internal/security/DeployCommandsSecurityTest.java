@@ -62,7 +62,6 @@ public class DeployCommandsSecurityTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     File zipFile = temporaryFolder.newFile(zipFileName);
-    zipFile.createNewFile();
     deployCommand = "deploy --jar=" + zipFile.getAbsolutePath();
   }
 

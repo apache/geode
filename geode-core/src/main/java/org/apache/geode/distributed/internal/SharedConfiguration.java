@@ -14,40 +14,13 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.xpath.XPathExpressionException;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -82,6 +55,33 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.xpath.XPathExpressionException;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 public class SharedConfiguration {
@@ -617,9 +617,9 @@ public class SharedConfiguration {
     if (configDirFile.exists()) {
       String configDirFileName2 = CLUSTER_CONFIG_ARTIFACTS_DIR_NAME
           + new SimpleDateFormat("yyyyMMddhhmm").format(new Date()) + "." + System.nanoTime();
-      File configDirFile2 = new File(FilenameUtils.concat(configDirFileName2, configDirFileName2));
+      File configDirFile2 = new File(configDirFile.getParent(), configDirFileName2);
       try {
-        FileUtils.moveDirectoryToDirectory(configDirFile, configDirFile2, true);
+        FileUtils.moveDirectory(configDirFile, configDirFile2);
       } catch (IOException e) {
         logger.info(e);
       }

@@ -90,19 +90,8 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
     GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule(
         lsRule.getMember(0).getPort(), GfshShellConnectionRule.PortType.locator);
 
-    // when we connect too soon, we would get "Failed to retrieve RMIServer stub:
-    // javax.naming.CommunicationException [Root exception is java.rmi.NoSuchObjectException: no
-    // such object in table]" Exception.
-    // Tried to wait on jmx connector server being ready, but it doesn't work.
-    // Add the retry logic here to try at most 10 times for connection.
-    for (int i = 0; i < 10; i++) {
-      gfshConnector.connect(CliStrings.CONNECT__SECURITY_PROPERTIES,
-          securityPropsFile.getCanonicalPath());
-      if (gfshConnector.isConnected()) {
-        break;
-      }
-      Thread.currentThread().sleep(3000);
-    }
+    gfshConnector.connect(CliStrings.CONNECT__SECURITY_PROPERTIES,
+        securityPropsFile.getCanonicalPath());
 
     assertTrue(gfshConnector.isConnected());
     gfshConnector.close();

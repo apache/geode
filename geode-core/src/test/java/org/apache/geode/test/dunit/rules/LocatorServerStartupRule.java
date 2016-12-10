@@ -19,7 +19,6 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
 
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;

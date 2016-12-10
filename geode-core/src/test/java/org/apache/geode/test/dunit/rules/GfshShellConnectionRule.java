@@ -81,9 +81,22 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       }
     }
 
-    gfsh.executeCommand(connectCommand.toString());
-
-    CommandResult result = (CommandResult) gfsh.getResult();
+    // when we connect too soon, we would get "Failed to retrieve RMIServer stub:
+    // javax.naming.CommunicationException [Root exception is java.rmi.NoSuchObjectException: no
+    // such object in table]" Exception.
+    // Tried to wait on jmx connector server being ready, but it doesn't work.
+    // Add the retry logic here to try at most 10 times for connection.
+    CommandResult result = null;
+    for (int i = 0; i < 50; i++) {
+      System.out.println("trying to connect, attempt " + i);
+      gfsh.executeCommand(connectCommand.toString());
+      result = (CommandResult) gfsh.getResult();
+      System.out.println(gfsh.outputString);
+      if (!gfsh.outputString.contains("no such object in table")) {
+        break;
+      }
+      Thread.currentThread().sleep(2000);
+    }
     connected = (result.getStatus() == Result.Status.OK);
   }
 
@@ -107,6 +120,11 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public HeadlessGfsh getGfsh() {
     return gfsh;
+  }
+
+  public CommandResult executeCommand(String command) throws Exception {
+    gfsh.executeCommand(command);
+    return (CommandResult) gfsh.getResult();
   }
 
   public boolean isConnected() {
