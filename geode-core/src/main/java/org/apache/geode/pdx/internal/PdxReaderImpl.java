@@ -854,7 +854,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
    */
   private PdxReaderImpl prepForOrderedReading() {
     PdxReaderImpl result = this;
-    if (this.dis instanceof PdxInstanceInputStream) {
+    if (this.dis instanceof PdxInputStream) {
       result = new PdxReaderImpl(this);
     }
     int pos = 0;

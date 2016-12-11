@@ -101,7 +101,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
   private static PdxInputStream createDis(DataInput in, int len) {
     PdxInputStream dis;
     if (in instanceof PdxInputStream) {
-      dis = new PdxInstanceInputStream((PdxInputStream) in, len);
+      dis = (PdxInputStream)in;
       try {
         int bytesSkipped = in.skipBytes(len);
         int bytesRemaining = len - bytesSkipped;
@@ -119,7 +119,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
       } catch (IOException ex) {
         throw new PdxSerializationException("Could not deserialize PDX", ex);
       }
-      dis = new PdxInstanceInputStream(bytes);
+      dis = new PdxInputStream(bytes);
     }
     return dis;
   }
