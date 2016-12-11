@@ -655,7 +655,6 @@ org/apache/geode/pdx/internal/FieldNotFoundInPdxVersion,true,1292033563588485577
 org/apache/geode/pdx/internal/PdxInputStream,false
 org/apache/geode/pdx/internal/PdxInstanceEnum,true,-7417287878052772302,className:java/lang/String,enumName:java/lang/String,enumOrdinal:int
 org/apache/geode/pdx/internal/PdxInstanceImpl,true,-1669268527103938431
-org/apache/geode/pdx/internal/PdxInstanceInputStream,false
 org/apache/geode/pdx/internal/PdxReaderImpl,true,-6094553093860427759,blobType:org/apache/geode/pdx/internal/PdxType,dis:org/apache/geode/pdx/internal/PdxInputStream
 org/apache/geode/pdx/internal/WritablePdxInstanceImpl,true,7398999150097596214,dirtyFields:java/lang/Object[]
 org/apache/geode/redis/internal/RedisCommandParserException,true,4707944288714910949

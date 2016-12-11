@@ -39,6 +39,7 @@ import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.pdx.JSONFormatter;
@@ -101,7 +102,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
   private static PdxInputStream createDis(DataInput in, int len) {
     PdxInputStream dis;
     if (in instanceof PdxInputStream) {
-      dis = new PdxInstanceInputStream((PdxInputStream) in, len);
+      dis = new PdxInputStream((ByteBufferInputStream) in, len);
       try {
         int bytesSkipped = in.skipBytes(len);
         int bytesRemaining = len - bytesSkipped;
@@ -119,7 +120,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
       } catch (IOException ex) {
         throw new PdxSerializationException("Could not deserialize PDX", ex);
       }
-      dis = new PdxInstanceInputStream(bytes);
+      dis = new PdxInputStream(bytes);
     }
     return dis;
   }
