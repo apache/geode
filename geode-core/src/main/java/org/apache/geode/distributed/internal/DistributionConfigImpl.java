@@ -124,7 +124,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   private File logFile = DEFAULT_LOG_FILE;
 
-  protected File deployWorkingDir = new File(System.getProperty("user.dir"));
+  protected File deployWorkingDir = DEFAULT_DEPLOY_WORKING_DIR;
 
   /**
    * The level at which log messages are logged
