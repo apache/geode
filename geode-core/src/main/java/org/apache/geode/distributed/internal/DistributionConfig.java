@@ -384,7 +384,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Default will be the current working directory as determined by
    * <code>System.getProperty("user.dir")</code>.
    */
-  File DEFAULT_DEPLOY_WORKING_DIR = new File(".");
+  File DEFAULT_DEPLOY_WORKING_DIR = new File(System.getProperty("user.dir"));
 
   /**
    * Returns the value of the {@link ConfigurationProperties#USER_COMMAND_PACKAGES} property
