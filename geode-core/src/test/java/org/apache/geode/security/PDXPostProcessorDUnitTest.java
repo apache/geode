@@ -149,6 +149,7 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     assertEquals(pp.getCount(), 2);
   }
 
+  @Category(FlakyTest.class) // GEODE-2204
   @Test
   public void testRegisterInterest() {
     client1.invoke(() -> {
