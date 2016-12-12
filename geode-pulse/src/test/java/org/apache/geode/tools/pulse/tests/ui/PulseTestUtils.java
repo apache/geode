@@ -63,7 +63,7 @@ public final class PulseTestUtils {
 
   public static WebElement waitForElement(By by) {
     WebElement element = (new WebDriverWait(driverProvider.get(), maxWaitTime))
-      .until((ExpectedCondition<WebElement>) d -> d.findElement(by));
+        .until((ExpectedCondition<WebElement>) d -> d.findElement(by));
     assertNotNull(element);
     return element;
   }
