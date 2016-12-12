@@ -25,7 +25,9 @@ import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -56,38 +58,42 @@ public final class PulseTestUtils {
   public static int maxWaitTime = 30;
 
   public static WebElement waitForElementWithId(String id) {
+    return waitForElement(By.id(id));
+  }
+
+  public static WebElement waitForElement(By by) {
     WebElement element = (new WebDriverWait(driverProvider.get(), maxWaitTime))
-        .until(new ExpectedCondition<WebElement>() {
-          @Override
-          public WebElement apply(WebDriver d) {
-            return d.findElement(By.id(id));
-          }
-        });
+      .until((ExpectedCondition<WebElement>) d -> d.findElement(by));
     assertNotNull(element);
     return element;
   }
 
-
-  public static WebElement findElementUsingXpath(String xpath) {
-    return getDriver().findElement(By.xpath(xpath));
-  }
-
   public static void clickElementUsingId(String id) {
-    waitForElementWithId(id).click();
+    WebDriverException lastException = null;
+    int attempts = 3;
+    while (attempts > 0) {
+      try {
+        waitForElementWithId(id).click();
+        return;
+      } catch (StaleElementReferenceException sere) {
+        lastException = sere;
+      }
+      attempts++;
+    }
+
+    throw lastException;
   }
 
   public static void clickElementUsingXpath(String xpath) {
-    findElementUsingXpath(xpath).click();
+    findElementByXpath(xpath).click();
   }
-
 
   public static void sendKeysUsingId(String Id, String textToEnter) {
     waitForElementWithId(Id).sendKeys(textToEnter);
   }
 
-
   public static WebElement findElementByXpath(String xpath) {
-    return getDriver().findElement(By.xpath(xpath));
+    return waitForElement(By.xpath(xpath));
   }
 
   public static String getTextUsingXpath(String xpath) {
@@ -99,25 +105,25 @@ public final class PulseTestUtils {
   }
 
   public static String getPersistanceEnabled(Region r) {
-    String persitance = null;
+    String persistence = null;
 
     if (r.getPersistentEnabled()) {
-      persitance = "ON";
+      persistence = "ON";
     } else if (!r.getPersistentEnabled()) {
-      persitance = "OFF";
+      persistence = "OFF";
     }
-    return persitance;
+    return persistence;
   }
 
   public static String getPersistanceEnabled(String trueOrFalse) {
-    String persitance = null;
+    String persistence = null;
 
     if (trueOrFalse.contains("true")) {
-      persitance = "ON";
+      persistence = "ON";
     } else if (trueOrFalse.contains("false")) {
-      persitance = "OFF";
+      persistence = "OFF";
     }
-    return persitance;
+    return persistence;
   }
 
   public static void validateServerGroupGridData() {
