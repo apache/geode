@@ -70,6 +70,24 @@ public class MapRangeIndexMaintenanceJUnitTest {
   }
 
   @Test
+  public void testNullMapAsValueOnIndexInitDoesNotThrowException() throws Exception {
+    region =
+        CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("portfolio");
+    qs = CacheUtils.getQueryService();
+
+    Portfolio p = new Portfolio(1, 1);
+    p.positions = null;
+    region.put(1, p);
+
+    keyIndex1 = (IndexProtocol) qs.createIndex(INDEX_NAME, "positions[*]", "/portfolio ");
+
+    SelectResults result = (SelectResults) qs
+        .newQuery("select * from /portfolio p where p.positions['SUN'] = null").execute();
+    assertEquals(0, result.size());
+  }
+
+
+  @Test
   public void testMapIndexIsUsedWithBindKeyParameter() throws Exception {
     // Create Region
     region =
