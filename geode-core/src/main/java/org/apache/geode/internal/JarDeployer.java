@@ -623,7 +623,8 @@ public class JarDeployer implements Serializable {
     if (exception != null) {
       throw new IOException("Unable to write to deploy directory", exception);
     }
-    throw new IOException("Unable to write to deploy directory");
+    throw new IOException(
+        "Unable to write to deploy directory: " + this.deployDirectory.getCanonicalPath());
   }
 
   private byte[] getJarContent(File jarFile) throws IOException {

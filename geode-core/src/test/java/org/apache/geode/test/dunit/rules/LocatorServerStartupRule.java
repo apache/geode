@@ -52,11 +52,15 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    */
   public static LocatorStarterRule locatorStarter;
 
+  private DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
+
   private TemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   private Member[] members;
 
   @Before
-  public void before() throws IOException {
+  public void before() throws Throwable {
+    restoreSystemProperties.before();
     temporaryFolder.create();
     Invoke.invokeInEveryVM("Stop each VM", this::stop);
     members = new Member[4];
@@ -64,6 +68,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   @After
   public void after() {
+    restoreSystemProperties.after();
     temporaryFolder.delete();
     Invoke.invokeInEveryVM("Stop each VM", this::stop);
   }
