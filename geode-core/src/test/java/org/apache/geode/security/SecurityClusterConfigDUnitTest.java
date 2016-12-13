@@ -105,6 +105,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     assertTrue(secProps.containsKey("security-post-processor"));
   }
 
+  @Category(FlakyTest.class) // GEODE-1975
   @Test
   public void serverWithDifferentSecurityManagerShouldThrowException() {
     Properties props = new Properties();
