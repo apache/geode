@@ -34,14 +34,8 @@ The transaction host may be the same member or different member from the transac
 **Note:**
 If you have consistency checking enabled in your region, the transaction will generate all necessary version information for the region update when the transaction commits. See [Transactions and Consistent Regions](working_with_transactions.html#transactions_and_consistency) for more details.
 
--   **[Transactions and Partitioned Regions](../../developing/transactions/cache_transactions_by_region_type.html#concept_ysk_xj1_wk)**
-
--   **[Transactions and Replicated Regions](../../developing/transactions/cache_transactions_by_region_type.html#concept_nl5_pk1_wk)**
-
--   **[Transactions and Persistent Regions](../../developing/transactions/cache_transactions_by_region_type.html#concept_omy_341_wk)**
-
 ## Transactions and Partitioned Regions
-<a id="concept_ysk_xj1_wk">
+<a id="concept_ysk_xj1_wk"></a>
 
 In partitioned regions, transaction operations are done first on the primary data store then distributed to other members from there, regardless of which member initiates the cache operation. This is the same as is done for normal cache operations on partitioned regions.
 
@@ -133,7 +127,7 @@ When encountering conflicts with local scope, the first transaction to start the
 <img src="../../images_svg/transactions_replicate_local_1.svg" id="concept_nl5_pk1_wk__image_A37172C328404796AE1F318068C18F43" class="image" />
 
 ## Transactions and Persistent Regions
-<a id="concept_omy_341_wk">
+<a id="concept_omy_341_wk"></a>
 
 By default, Geode does not allow transactions on persistent regions. You can enable the use of transactions on persistent regions by setting the property `gemfire.ALLOW_PERSISTENT_TRANSACTIONS` to true. This may also be accomplished at server startup using gfsh:
 
