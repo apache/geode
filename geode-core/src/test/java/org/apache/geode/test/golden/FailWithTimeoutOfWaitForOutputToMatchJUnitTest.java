@@ -16,9 +16,11 @@ package org.apache.geode.test.golden;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.process.ProcessWrapper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -46,6 +48,8 @@ public class FailWithTimeoutOfWaitForOutputToMatchJUnitTest extends FailOutputTe
   /**
    * Process output has an extra line and should fail
    */
+  @Category(FlakyTest.class) // GEODE-209
+  @Ignore // cause of GEODE-209 is process.destroy() closes the stream
   @Test
   public void testFailWithTimeoutOfWaitForOutputToMatch() throws Exception {
     this.process =
