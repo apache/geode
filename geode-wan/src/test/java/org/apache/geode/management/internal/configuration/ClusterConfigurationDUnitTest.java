@@ -344,6 +344,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
    * 
    * @since GemFire 8.1
    */
+  @Category(FlakyTest.class) // GEODE-1333
   @Test
   public void testDestroyExtensions() throws Exception {
     Object[] result = setup();
