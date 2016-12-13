@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -58,7 +57,6 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 @Category(DistributedTest.class)
-
 public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
@@ -66,9 +64,9 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  protected File jks = null;
-  protected File securityPropsFile = null;
-  protected Properties securityProps;
+  private File jks = null;
+  private File securityPropsFile = null;
+  private Properties securityProps;
 
   @Before
   public void before() throws Exception {
@@ -82,7 +80,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
     securityPropsFile.delete();
   }
 
-  public void setUpLocatorAndConnect(Properties securityProps) throws Exception {
+  private void setUpLocatorAndConnect(Properties securityProps) throws Exception {
     lsRule.startLocatorVM(0, securityProps);
 
     // saving the securityProps to a file
