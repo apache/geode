@@ -14,10 +14,12 @@
  */
 package org.apache.geode.cache30;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -42,7 +44,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.test.dunit.*;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -476,8 +477,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         });
   }
 
-
-  @Category(FlakyTest.class) // GEODE-1407
   @Test
   public void testReconnectALocator() throws Exception {
     Host host = Host.getHost(0);
@@ -524,7 +523,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable create1 =
         new SerializableCallable("Create Cache and Regions from cache.xml") {
           public Object call() throws CacheException {
-            // DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             locatorPort = locPort;
             Properties props = getDistributedSystemProperties();
             props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
@@ -534,41 +532,35 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             Cache cache = getCache();
             Region myRegion = cache.getRegion("root/myRegion");
             myRegion.put("MyKey1", "MyValue1");
-            // myRegion.put("Mykey2", "MyValue2");
             return savedSystem.getDistributedMember();
           }
         };
     vm1.invoke(create1);
 
-
     try {
-
       dm = getDMID(vm0);
       createGfshWaitingThread(vm0);
       forceDisconnect(vm0);
       newdm = waitForReconnect(vm0);
       assertGfshWaitingThreadAlive(vm0);
 
-      vm0.invoke(new SerializableRunnable("check for running locator") {
-        public void run() {
-          WaitCriterion wc = new WaitCriterion() {
-            public boolean done() {
-              return Locator.getLocator() != null;
-            }
-
-            public String description() {
-              return "waiting for locator to restart";
-            }
-          };
-          Wait.waitForCriterion(wc, 30000, 1000, false);
+      boolean running = (Boolean) vm0.invoke(new SerializableCallable("check for running locator") {
+        public Object call() {
+          Awaitility.await("waiting for locator to restart").atMost(30, TimeUnit.SECONDS)
+              .until(Locator::getLocator, notNullValue());
           if (Locator.getLocator() == null) {
-            fail("expected to find a running locator but getLocator() returns null");
+            LogWriterUtils.getLogWriter()
+                .error("expected to find a running locator but getLocator() returns null");
+            return false;
           }
           if (((InternalLocator) Locator.getLocator()).isStopped()) {
-            fail("found a stopped locator");
+            LogWriterUtils.getLogWriter().error("found a stopped locator");
+            return false;
           }
+          return true;
         }
       });
+      assertTrue("Expected the restarted member to be hosting a running locator", running);
 
       assertNotSame("expected a reconnect to occur in the locator", dm, newdm);
 
