@@ -144,6 +144,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
+  @Category(FlakyTest.class) // GEODE-1974
   @Test
   public void serverConnectingToSecuredLocatorMustUseClusterConfig() {
     Properties props = new Properties();
