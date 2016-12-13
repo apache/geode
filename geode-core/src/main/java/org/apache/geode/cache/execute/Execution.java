@@ -89,7 +89,7 @@ public interface Execution {
    * 
    * @since GemFire 6.0
    */
-  public ResultCollector<?, ?> execute(String functionId) throws FunctionException;
+  public <T, S> ResultCollector<T, S> execute(String functionId) throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -106,7 +106,7 @@ public interface Execution {
    * 
    * @since GemFire 6.0
    */
-  public ResultCollector<?, ?> execute(Function function) throws FunctionException;
+  public <T, S> ResultCollector<T, S> execute(Function function) throws FunctionException;
 
   /**
    * Executes the function using its {@linkplain Function#getId() id}
