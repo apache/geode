@@ -199,12 +199,6 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public List getOperations() {
-      return Collections.singletonList(new QueuedOperation(getOperation(), this.key, null, null,
-          DistributedCacheOperation.DESERIALIZATION_POLICY_NONE, this.callbackArg));
-    }
-
-    @Override
     public ConflationKey getConflationKey() {
       if (!super.regionAllowsConflation || getProcessorId() != 0) {
         // if the publisher's region attributes do not support conflation
