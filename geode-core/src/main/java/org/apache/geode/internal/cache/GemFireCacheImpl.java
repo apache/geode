@@ -876,8 +876,6 @@ public class GemFireCacheImpl
 
       this.cqService = CqServiceProvider.create(this);
 
-      this.rmqFactory = new ReliableMessageQueueFactoryImpl();
-
       // Create the CacheStatistics
       this.cachePerfStats = new CachePerfStats(system);
       CachePerfStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
@@ -2319,17 +2317,6 @@ public class GemFireCacheImpl
           }
 
           PoolManager.close(keepalive);
-
-          if (isDebugEnabled) {
-            logger.debug("{}: closing reliable message queue...", this);
-          }
-          try {
-            getReliableMessageQueueFactory().close(true);
-          } catch (CancelException e) {
-            if (isDebugEnabled) {
-              logger.debug("Ignored cancellation while closing reliable message queue", e);
-            }
-          }
 
           if (isDebugEnabled) {
             logger.debug("{}: notifying admins of close...", this);
@@ -4488,21 +4475,7 @@ public class GemFireCacheImpl
     PoolManagerImpl.readyForEvents(this.system, false);
   }
 
-  /**
-   * This cache's reliable message queue factory. Should always have an instance of it.
-   */
-  private final ReliableMessageQueueFactory rmqFactory;
-
   private List<File> backupFiles = Collections.emptyList();
-
-  /**
-   * Returns this cache's ReliableMessageQueueFactory.
-   *
-   * @since GemFire 5.0
-   */
-  public ReliableMessageQueueFactory getReliableMessageQueueFactory() {
-    return this.rmqFactory;
-  }
 
   public InternalResourceManager getResourceManager() {
     return getResourceManager(true);
