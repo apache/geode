@@ -1580,8 +1580,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Set<Integer> bucketSet = new HashSet<Integer>();
         bucketSet.add(2);
         ResultCollector<Integer, List<Integer>> rc =
-            (ResultCollector<Integer, List<Integer>>) dataSet.withBucketFilter(bucketSet)
-                .execute(function);
+            dataSet.withBucketFilter(bucketSet).execute(function);
 
         List<Integer> results = rc.getResult();
         assertEquals(bucketSet.size(), results.size());
@@ -1604,8 +1603,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         bucketSet.add(2);
         bucketSet.add(3);
         ResultCollector<Integer, List<Integer>> rc =
-            (ResultCollector<Integer, List<Integer>>) dataSet.withBucketFilter(bucketSet)
-                .execute(function);
+            dataSet.withBucketFilter(bucketSet).execute(function);
 
         List<Integer> results = rc.getResult();
         assertEquals(bucketSet.size(), results.size());
@@ -1631,8 +1629,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         bucketSet.add(0);
         bucketSet.add(4);
         ResultCollector<Integer, List<Integer>> rc =
-            (ResultCollector<Integer, List<Integer>>) dataSet.withBucketFilter(bucketSet)
-                .execute(function);
+            dataSet.withBucketFilter(bucketSet).execute(function);
 
         List<Integer> results = rc.getResult();
         assertEquals(bucketSet.size(), results.size());
@@ -1713,8 +1710,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         expectedBucketSet.add(3);
         expectedBucketSet.add(4);
         ResultCollector<Integer, List<Integer>> rc =
-            (ResultCollector<Integer, List<Integer>>) dataSet.withBucketFilter(bucketSet)
-                .withFilter(keySet).execute(function);
+            dataSet.withBucketFilter(bucketSet).withFilter(keySet).execute(function);
 
         List<Integer> results = rc.getResult();
         assertEquals(keySet.size(), results.size());
