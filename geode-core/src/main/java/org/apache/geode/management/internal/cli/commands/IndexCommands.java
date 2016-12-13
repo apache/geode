@@ -652,7 +652,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliAvailabilityIndicator({CliStrings.LIST_INDEX, CliStrings.CREATE_INDEX,
-      CliStrings.DESTROY_INDEX})
+      CliStrings.DESTROY_INDEX, CliStrings.CREATE_DEFINED_INDEXES, CliStrings.CLEAR_DEFINED_INDEXES,
+      CliStrings.DEFINE_INDEX})
   public boolean indexCommandsAvailable() {
     return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
   }
