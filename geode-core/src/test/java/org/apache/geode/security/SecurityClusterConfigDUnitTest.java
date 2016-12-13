@@ -32,6 +32,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -62,6 +63,7 @@ public class SecurityClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     lsRule.startLocatorVM(0, props);
   }
 
+  @Category(FlakyTest.class) // GEODE-1977
   @Test
   public void testStartServerWithClusterConfig() throws Exception {
     Properties props = new Properties();
