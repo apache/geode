@@ -102,7 +102,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
   private static PdxInputStream createDis(DataInput in, int len) {
     PdxInputStream dis;
     if (in instanceof PdxInputStream) {
-      dis = new PdxInputStream((ByteBufferInputStream)in, len);
+      dis = new PdxInputStream((ByteBufferInputStream) in, len);
       try {
         int bytesSkipped = in.skipBytes(len);
         int bytesRemaining = len - bytesSkipped;
