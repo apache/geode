@@ -200,7 +200,7 @@ public class ClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     Member locator = lsRule.startLocatorVM(0, locatorProps);
     // server1 in no group
     Member server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
-    //server2 in group1
+    // server2 in group1
     serverProps.setProperty(GROUPS, "group1");
     Member server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
     // server3 in group1 and group2
@@ -418,7 +418,7 @@ public class ClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     server.invoke(() -> verifyServerConfigInMemory(expectedConfig));
   }
 
-  public static void verifyLocatorConfig(ExpectedConfig expectedConfig, Member locator){
+  public static void verifyLocatorConfig(ExpectedConfig expectedConfig, Member locator) {
     // verify info exists in memeory
     locator.invoke(() -> {
       InternalLocator internalLocator = LocatorServerStartupRule.locatorStarter.locator;
@@ -428,13 +428,14 @@ public class ClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     });
 
     // verify files exists on disc
-    for(String jar : expectedConfig.jars) {
-      assertThat(new File(locator.getWorkingDir(), "/cluster_config/"+expectedConfig.name+"/"+jar))
-          .exists();
+    for (String jar : expectedConfig.jars) {
+      assertThat(
+          new File(locator.getWorkingDir(), "/cluster_config/" + expectedConfig.name + "/" + jar))
+              .exists();
     }
   }
 
-  public static void verifyLocatorConfigNotExist(String configName, Member locator){
+  public static void verifyLocatorConfigNotExist(String configName, Member locator) {
     // verify info not in memeory
     locator.invoke(() -> {
       InternalLocator internalLocator = LocatorServerStartupRule.locatorStarter.locator;
@@ -444,8 +445,7 @@ public class ClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     });
 
     // verify files does not
-    assertThat(new File(locator.getWorkingDir(), "/cluster_config/"+configName))
-        .doesNotExist();
+    assertThat(new File(locator.getWorkingDir(), "/cluster_config/" + configName)).doesNotExist();
   }
 
   private static void verifyServerConfigInMemory(ExpectedConfig expectedConfig)
@@ -473,7 +473,9 @@ public class ClusterConfigDUnitTest extends JUnit4DistributedTestCase {
     for (String jarName : jarNames) {
       expectedJarNames.add(getServerJarName(jarName));
     }
-    Set<String> actualJarNames = Arrays.stream(workingDir.list((dir, filename) -> filename.contains(".jar"))).collect(Collectors.toSet());
+    Set<String> actualJarNames =
+        Arrays.stream(workingDir.list((dir, filename) -> filename.contains(".jar")))
+            .collect(Collectors.toSet());
     assertThat(actualJarNames).isEqualTo(expectedJarNames);
   }
 
@@ -533,7 +535,7 @@ public class ClusterConfigDUnitTest extends JUnit4DistributedTestCase {
       return this;
     }
 
-    public ExpectedConfig name(String name){
+    public ExpectedConfig name(String name) {
       this.name = name;
       return this;
     }
