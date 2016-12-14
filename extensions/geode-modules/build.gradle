@@ -26,6 +26,7 @@ dependencies {
   }
   compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
 
+  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
   testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
