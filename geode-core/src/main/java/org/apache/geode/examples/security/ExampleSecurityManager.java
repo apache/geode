@@ -46,7 +46,7 @@ import java.util.stream.StreamSupport;
  * A Geode member must be configured with the following:
  *
  * <p>
- * {@code security-manager = org.apache.geode.security.examples.SampleSecurityManager}
+ * {@code security-manager = org.apache.geode.security.examples.ExampleSecurityManager}
  *
  * <p>
  * The class can be initialized with from a JSON resource called {@code security.json}. This file
@@ -130,7 +130,7 @@ public class ExampleSecurityManager implements SecurityManager {
 
     if (!initializeFromJsonResource(jsonPropertyValue)) {
       throw new AuthenticationFailedException(
-          "SampleSecurityManager: unable to find json resource \"" + jsonPropertyValue
+          "ExampleSecurityManager: unable to find json resource \"" + jsonPropertyValue
               + "\" as specified by [" + SECURITY_JSON + "].");
     }
   }
@@ -142,11 +142,11 @@ public class ExampleSecurityManager implements SecurityManager {
 
     User userObj = this.userNameToUser.get(user);
     if (userObj == null) {
-      throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
+      throw new AuthenticationFailedException("ExampleSecurityManager: wrong username/password");
     }
 
     if (user != null && !userObj.password.equals(password) && !"".equals(user)) {
-      throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
+      throw new AuthenticationFailedException("ExampleSecurityManager: wrong username/password");
     }
 
     return user;
@@ -165,7 +165,7 @@ public class ExampleSecurityManager implements SecurityManager {
     }
   }
 
-  boolean initializeFromJsonResource(final String jsonResource) {
+  public boolean initializeFromJsonResource(final String jsonResource) {
     try {
       InputStream input = ClassLoader.getSystemResourceAsStream(jsonResource);
       if (input != null) {
@@ -177,7 +177,7 @@ public class ExampleSecurityManager implements SecurityManager {
     return false;
   }
 
-  User getUser(final String user) {
+  public User getUser(final String user) {
     return this.userNameToUser.get(user);
   }
 
@@ -257,15 +257,65 @@ public class ExampleSecurityManager implements SecurityManager {
     return roleMap;
   }
 
-  static class Role {
+  public static class Role {
     List<ResourcePermission> permissions = new ArrayList<>();
+
+    public List<ResourcePermission> getPermissions() {
+      return permissions;
+    }
+
+    public void setPermissions(final List<ResourcePermission> permissions) {
+      this.permissions = permissions;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    public String getServerGroup() {
+      return serverGroup;
+    }
+
+    public void setServerGroup(final String serverGroup) {
+      this.serverGroup = serverGroup;
+    }
+
     String name;
     String serverGroup;
   }
 
-  static class User {
+  public static class User {
     String name;
     Set<Role> roles = new HashSet<>();
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    public Set<Role> getRoles() {
+      return roles;
+    }
+
+    public void setRoles(final Set<Role> roles) {
+      this.roles = roles;
+    }
+
+    public String getPassword() {
+      return password;
+    }
+
+    public void setPassword(final String password) {
+      this.password = password;
+    }
+
     String password;
   }
 
