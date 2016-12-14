@@ -22,7 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,6 +43,7 @@ import org.apache.geode.cache30.MyGatewayEventFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -315,4 +318,91 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     }
   }
 
+  /**
+   * Test to validate that the maximum number of senders can be created and used successfully.
+   */
+  @Test
+  public void testCreateMaximumSenders() {
+    // Create locators
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    // Create receiver and region
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_RR"));
+
+    // Create maximum number of senders
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    StringBuilder builder = new StringBuilder();
+    long maxSenders = ThreadIdentifier.Bits.GATEWAY_ID.mask() + 1;
+    for (int i = 0; i < maxSenders; i++) {
+      String senderId = "ln-" + i;
+      builder.append(senderId);
+      if (i + 1 != maxSenders) {
+        builder.append(',');
+      }
+      vm4.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers(senderId, 2, false, 100, 10,
+          false, false, null, false, 1, OrderPolicy.KEY));
+    }
+
+    // Create region with the sender ids
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
+        builder.toString(), isOffHeap()));
+
+    // Do puts
+    int numPuts = 100;
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", numPuts));
+
+    // Verify receiver listener events
+    vm2.invoke(() -> SerialGatewaySenderQueueDUnitTest.verifyListenerEvents(maxSenders * numPuts));
+  }
+
+  private static void verifyListenerEvents(final long expectedNumEvents) {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> listener1.getNumEvents() == expectedNumEvents);
+  }
+
+  /**
+   * Test to validate that the maximum number of senders plus one fails to be created.
+   */
+  @Test
+  public void testCreateMaximumPlusOneSenders() {
+    // Create locators
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    // Create receiver
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+
+    // Create maximum number of senders
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    for (int i = 0; i < ThreadIdentifier.Bits.GATEWAY_ID.mask() + 1; i++) {
+      String senderId = "ln-" + i;
+      vm4.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers(senderId, 2, false, 100, 10,
+          false, false, null, false, 1, OrderPolicy.KEY));
+    }
+
+    // Attempt to create one more sender
+    vm4.invoke(() -> SerialGatewaySenderQueueDUnitTest.attemptToCreateGatewaySenderOverLimit());
+  }
+
+  private static void attemptToCreateGatewaySenderOverLimit() {
+    IgnoredException exp =
+        IgnoredException.addIgnoredException(IllegalStateException.class.getName());
+    try {
+      createSenderWithMultipleDispatchers("ln-one-too-many", 2, false, 100, 10, false, false, null,
+          false, 1, OrderPolicy.KEY);
+      fail("Should not have been able to create gateway sender");
+    } catch (IllegalStateException e) {
+      /* ignore expected exception */
+    } finally {
+      exp.remove();
+    }
+  }
 }

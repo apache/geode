@@ -7661,6 +7661,10 @@ public class LocalizedStrings {
       new StringId(6646,
           "An unexpected exception occurred processing a BatchException. The thread will continue.");
 
+  public static final StringId AbstractGatewaySender_CANNOT_CREATE_SENDER_0_BECAUSE_MAXIMUM_1_HAS_BEEN_REACHED =
+      new StringId(6647,
+          "Cannot create GatewaySender {0} because the maximum ({1}) has been reached");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**
