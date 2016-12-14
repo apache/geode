@@ -42,7 +42,7 @@ import java.util.stream.StreamSupport;
  * A Geode member must be configured with the following:
  *
  * <p>
- * {@code security-manager = org.apache.geode.security.examples.SampleSecurityManager}
+ * {@code security-manager = org.apache.geode.security.examples.TestSecurityManager}
  *
  * <p>
  * The class can be initialized with from a JSON resource called {@code security.json}. This file
@@ -125,9 +125,8 @@ public class TestSecurityManager implements SecurityManager {
     }
 
     if (!initializeFromJsonResource(jsonPropertyValue)) {
-      throw new AuthenticationFailedException(
-          "SampleSecurityManager: unable to find json resource \"" + jsonPropertyValue
-              + "\" as specified by [" + SECURITY_JSON + "].");
+      throw new AuthenticationFailedException("TestSecurityManager: unable to find json resource \""
+          + jsonPropertyValue + "\" as specified by [" + SECURITY_JSON + "].");
     }
   }
 
@@ -138,11 +137,11 @@ public class TestSecurityManager implements SecurityManager {
 
     User userObj = this.userNameToUser.get(user);
     if (userObj == null) {
-      throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
+      throw new AuthenticationFailedException("TestSecurityManager: wrong username/password");
     }
 
     if (user != null && !userObj.password.equals(password) && !"".equals(user)) {
-      throw new AuthenticationFailedException("SampleSecurityManager: wrong username/password");
+      throw new AuthenticationFailedException("TestSecurityManager: wrong username/password");
     }
 
     return user;
