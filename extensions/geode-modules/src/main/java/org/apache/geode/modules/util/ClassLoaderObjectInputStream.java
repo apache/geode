@@ -33,6 +33,12 @@ public class ClassLoaderObjectInputStream extends ObjectInputStream {
 
   @Override
   public Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
-    return Class.forName(desc.getName(), false, loader);
+    Class<?> theClass;
+    try {
+      theClass = Class.forName(desc.getName(), false, loader);
+    } catch (ClassNotFoundException cnfe) {
+      theClass = Thread.currentThread().getContextClassLoader().loadClass(desc.getName());
+    }
+    return theClass;
   }
 }
