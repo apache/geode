@@ -69,6 +69,10 @@ public class QueueListener implements CacheListener {
     updateList.add(event.getKey());
   }
 
+  public int getNumEvents() {
+    return this.createList.size() + this.updateList.size() + this.destroyList.size();
+  }
+
   public void close() {
     // TODO Auto-generated method stub
 

@@ -89,12 +89,12 @@ public class ThreadIdentifier implements DataSerializable {
    * Provides type-safe bitwise access to the threadID when dealing with generated values for wan id
    * generation.
    */
-  protected enum Bits {
+  public enum Bits {
     THREAD_ID(0, 32), // bits 0-31 thread id (including fake putAll bits)
     WAN(32, 16), // bits 32-47 wan thread index (or bucket for new wan)
     WAN_TYPE(48, 8), // bits 48-55 thread id type
-    GATEWAY_ID(56, 4), // bits 56-59 gateway id
-    RESERVED(60, 4); // bits 60-63 unused
+    GATEWAY_ID(56, 7), // bits 56-62 gateway id (bit 63 would make the thread id negative)
+    RESERVED(63, 1); // bit 63 unused
 
     /** the beginning bit position */
     private final int position;
@@ -123,7 +123,8 @@ public class ThreadIdentifier implements DataSerializable {
      * @return the shifted value
      */
     public long shift(long val) {
-      assert val <= mask();
+      assert val <= mask() : "Input value " + val + " is too large for " + this
+          + " which has a maximum of " + mask();
       return val << position;
     }
 
