@@ -891,6 +891,8 @@ public class IndexManager {
     }
     boolean throwException = false;
     HashMap<String, Exception> exceptionsMap = new HashMap<String, Exception>();
+    boolean oldReadSerialized = DefaultQuery.getPdxReadSerialized();
+    DefaultQuery.setPdxReadSerialized(true);
     try {
       Iterator entryIter = ((LocalRegion) region).getBestIterator(true);
       while (entryIter.hasNext()) {
@@ -931,6 +933,7 @@ public class IndexManager {
         throw new MultiIndexCreationException(exceptionsMap);
       }
     } finally {
+      DefaultQuery.setPdxReadSerialized(oldReadSerialized);
       notifyAfterUpdate();
     }
   }

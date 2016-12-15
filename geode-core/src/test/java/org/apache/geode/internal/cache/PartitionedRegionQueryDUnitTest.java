@@ -14,10 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.IOException;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.query.Struct;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.junit.experimental.categories.Category;
@@ -26,14 +27,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Date;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,7 +65,6 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -89,9 +87,6 @@ import org.apache.geode.test.dunit.VM;
 @Category(DistributedTest.class)
 public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
 
-  /**
-   * @param name
-   */
   public PartitionedRegionQueryDUnitTest() {
     super();
     // TODO Auto-generated constructor stub
@@ -156,6 +151,52 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
         }
 
       }
+    });
+  }
+
+  @Test
+  public void testIndexDoesNotDeserializePdxObjects() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    SerializableRunnableIF createPR = () -> {
+      Cache cache = getCache();
+      PartitionAttributesFactory paf = new PartitionAttributesFactory();
+      paf.setTotalNumBuckets(10);
+      cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(paf.create())
+          .create("region");
+    };
+    vm0.invoke(createPR);
+    vm1.invoke(createPR);
+
+    // Do Puts. These objects can't be deserialized because they throw
+    // and exception from the constructor
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region region = cache.getRegion("region");
+      region.put(0, new PdxNotDeserializableAsset(0, "B"));
+      region.put(10, new PdxNotDeserializableAsset(1, "B"));
+      region.put(1, new PdxNotDeserializableAsset(1, "B"));
+      IntStream.range(11, 100)
+          .forEach(i -> region.put(i, new PdxNotDeserializableAsset(i, Integer.toString(i))));
+    });
+
+    // If this tries to deserialize the assets, it will fail
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      cache.getQueryService().createHashIndex("ContractDocumentIndex", "document", "/region");
+    });
+
+    vm0.invoke(() -> {
+      QueryService qs = getCache().getQueryService();
+      SelectResults<Struct> results = (SelectResults) qs
+          .newQuery("<trace> select assetId,document from /region where document='B' limit 1000")
+          .execute();
+
+      assertEquals(3, results.size());
+      final Index index = qs.getIndex(getCache().getRegion("region"), "ContractDocumentIndex");
+      assertEquals(1, index.getStatistics().getTotalUses());
     });
   }
 
@@ -1139,6 +1180,33 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
       this.score = score;
     }
 
+  }
+
+  public static class PdxNotDeserializableAsset implements PdxSerializable {
+    public int assetId;
+    public String document;
+
+    public PdxNotDeserializableAsset() {
+      throw new RuntimeException("Preventing Deserialization of Asset");
+
+    }
+
+    public PdxNotDeserializableAsset(final int assetId, final String document) {
+      this.assetId = assetId;
+      this.document = document;
+    }
+
+    @Override
+    public void toData(final PdxWriter writer) {
+      writer.writeString("document", document);
+      writer.writeInt("assetId", assetId);
+    }
+
+    @Override
+    public void fromData(final PdxReader reader) {
+      this.document = reader.readString("document");
+      this.assetId = reader.readInt("assetId");
+    }
   }
 
   public static class NotDeserializableAsset implements DataSerializable {
