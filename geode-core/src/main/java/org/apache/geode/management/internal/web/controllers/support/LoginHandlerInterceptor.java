@@ -99,12 +99,13 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
     for (Enumeration<String> requestHeaders = request.getHeaderNames(); requestHeaders
         .hasMoreElements();) {
 
-      final String requestHeader = requestHeaders.nextElement();
+      // since http request headers are case-insensitive and all our security-* properties
+      // are in lower case, it's safe to do toLowerCase here.
+      final String requestHeader = requestHeaders.nextElement().toLowerCase();
 
       if (requestHeader.startsWith(SECURITY_VARIABLE_REQUEST_HEADER_PREFIX)) {
         requestParameterValues.put(requestHeader, request.getHeader(requestHeader));
       }
-
     }
 
     String username = requestParameterValues.get(ResourceConstants.USER_NAME);
