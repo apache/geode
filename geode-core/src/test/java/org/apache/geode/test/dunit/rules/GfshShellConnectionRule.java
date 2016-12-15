@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import com.jayway.awaitility.Awaitility;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
@@ -22,6 +23,9 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
 import org.junit.runner.Description;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class which eases the connection to the jmxManager {@link ConnectionConfiguration} it allows for
@@ -34,6 +38,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private PortType portType = null;
   private HeadlessGfsh gfsh;
   private boolean connected;
+
+  public GfshShellConnectionRule(Locator locator) {
+    this(locator.getPort(), PortType.locator);
+  }
 
   public GfshShellConnectionRule(int port, PortType portType) {
     this.portType = portType;
@@ -59,7 +67,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   public void connect(String... options) throws Exception {
     CliUtil.isGfshVM = true;
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
-
     String endpoint;
     if (portType == PortType.locator) {
       // port is the locator port
@@ -85,20 +92,16 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     // javax.naming.CommunicationException [Root exception is java.rmi.NoSuchObjectException: no
     // such object in table]" Exception.
     // Tried to wait on jmx connector server being ready, but it doesn't work.
-    // Add the retry logic here to try at most 10 times for connection.
-    CommandResult result = null;
-    for (int i = 0; i < 50; i++) {
-      System.out.println("trying to connect, attempt " + i);
+    AtomicReference<CommandResult> result = new AtomicReference<>();
+    Awaitility.await().atMost(2, TimeUnit.MINUTES).pollDelay(2, TimeUnit.SECONDS).until(() -> {
       gfsh.executeCommand(connectCommand.toString());
-      result = (CommandResult) gfsh.getResult();
-      System.out.println(gfsh.outputString);
-      if (!gfsh.outputString.contains("no such object in table")) {
-        break;
-      }
-      Thread.currentThread().sleep(2000);
-    }
-    connected = (result.getStatus() == Result.Status.OK);
+      result.set((CommandResult) gfsh.getResult());
+      return !gfsh.outputString.contains("no such object in table");
+    });
+
+    connected = (result.get().getStatus() == Result.Status.OK);
   }
+
 
   /**
    * Override to tear down your specific external resource.
@@ -116,6 +119,14 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       gfsh = null;
     }
     CliUtil.isGfshVM = false;
+  }
+
+  public void closeQuietly() {
+    try {
+      this.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public HeadlessGfsh getGfsh() {

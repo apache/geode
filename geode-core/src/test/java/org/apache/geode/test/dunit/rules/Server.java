@@ -16,47 +16,12 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 
 import java.io.File;
-import java.io.Serializable;
 
-/**
- * A server or locator inside a DUnit {@link VM}.
- */
-public abstract class Member implements Serializable {
-  private VM vm;
-  private int port;
-  private File workingDir;
-
-  public Member(VM vm, int port, File workingDir) {
-    this.vm = vm;
-    this.port = port;
-    this.workingDir = workingDir;
-  }
-
-  /**
-   * The VM object is an RMI stub which lets us execute code in the JVM of this member.
-   * 
-   * @return the {@link VM}
-   */
-  public VM getVM() {
-    return vm;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  public File getWorkingDir() {
-    return workingDir;
-  }
-
-  /**
-   * Invokes {@code runnable.run()} in the {@code VM} of this member.
-   */
-  public void invoke(final SerializableRunnableIF runnable) {
-    this.vm.invoke(runnable);
+public class Server extends Member {
+  public Server(VM vm, int port, File workingDir) {
+    super(vm, port, workingDir);
   }
 }
