@@ -8738,7 +8738,7 @@ public class PartitionedRegion extends LocalRegion
 
     // First step is creating all the defined indexes.
     // Do not send the IndexCreationMsg to remote nodes now.
-    throwException =
+    throwException |=
         createEmptyIndexes(indexDefinitions, remotelyOriginated, indexes, exceptionsMap);
 
     // If same indexes are created locally and also being created by a remote index creation msg
@@ -8751,18 +8751,26 @@ public class PartitionedRegion extends LocalRegion
 
     // Second step is iterating over REs and populating all the created indexes
     if (unpopulatedIndexes != null && unpopulatedIndexes.size() > 0) {
-      throwException = populateEmptyIndexes(unpopulatedIndexes, exceptionsMap);
+      throwException |= populateEmptyIndexes(unpopulatedIndexes, exceptionsMap);
     }
 
     // Third step is to send the message to remote nodes
     // Locally originated create index request.
     // Send create request to other PR nodes.
-    throwException =
+    throwException |=
         sendCreateIndexesMessage(remotelyOriginated, indexDefinitions, indexes, exceptionsMap);
 
     // If exception is throw in any of the above steps
     if (throwException) {
-      throw new MultiIndexCreationException(exceptionsMap);
+      try {
+        for (String indexName : exceptionsMap.keySet()) {
+          Index index = indexManager.getIndex(indexName);
+          indexManager.removeIndex(index);
+          removeIndex(index, remotelyOriginated);
+        }
+      } finally {
+        throw new MultiIndexCreationException(exceptionsMap);
+      }
     }
 
     // set the populate flag for all the created PR indexes
