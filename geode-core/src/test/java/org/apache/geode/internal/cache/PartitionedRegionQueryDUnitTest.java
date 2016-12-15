@@ -33,12 +33,16 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import org.apache.geode.cache.Cache;
@@ -155,7 +159,45 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testIndexDoesNotDeserializePdxObjects() {
+  public void testHashIndexDoesNotDeserializePdxObjects() {
+    SerializableRunnableIF createIndex = () -> {
+      Cache cache = getCache();
+      cache.getQueryService().createHashIndex("ContractDocumentIndex", "document", "/region");
+    };
+    String queryString = "select assetId,document from /region where document='B' limit 1000";
+
+    PdxAssetFactory value = i -> new PdxNotDeserializableAsset(i, Integer.toString(i));
+    createIndexDoesNotDerializePdxObjects(createIndex, queryString, value);
+  }
+
+  @Test
+  public void tesRangeIndexDoesNotDeserializePdxObjects() {
+    SerializableRunnableIF createIndex = () -> {
+      Cache cache = getCache();
+      cache.getQueryService().createIndex("ContractDocumentIndex", "ref",
+          "/region r, r.references ref");
+    };
+    String queryString =
+        "select r.assetId,r.document from /region r, r.references ref where ref='B_2' limit 1000";
+    PdxAssetFactory value = i -> new PdxNotDeserializableAsset(i, Integer.toString(i));
+    createIndexDoesNotDerializePdxObjects(createIndex, queryString, value);
+  }
+
+  @Test
+  public void tesRangeIndexWithPdxObjects() {
+    SerializableRunnableIF createIndex = () -> {
+      Cache cache = getCache();
+      cache.getQueryService().createIndex("ContractDocumentIndex", "ref",
+          "/region r, r.references ref");
+    };
+    String queryString = "select r from /region r, r.references ref where ref='B_2' limit 1000";
+
+    PdxAssetFactory value = i -> new PdxAsset(i, Integer.toString(i));
+    createIndexDoesNotDerializePdxObjects(createIndex, queryString, value);
+  }
+
+  private void createIndexDoesNotDerializePdxObjects(final SerializableRunnableIF createIndex,
+      final String queryString, PdxAssetFactory valueSupplier) {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -178,21 +220,15 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
       region.put(0, new PdxNotDeserializableAsset(0, "B"));
       region.put(10, new PdxNotDeserializableAsset(1, "B"));
       region.put(1, new PdxNotDeserializableAsset(1, "B"));
-      IntStream.range(11, 100)
-          .forEach(i -> region.put(i, new PdxNotDeserializableAsset(i, Integer.toString(i))));
+      IntStream.range(11, 100).forEach(i -> region.put(i, valueSupplier.getAsset(i)));
     });
 
     // If this tries to deserialize the assets, it will fail
-    vm0.invoke(() -> {
-      Cache cache = getCache();
-      cache.getQueryService().createHashIndex("ContractDocumentIndex", "document", "/region");
-    });
+    vm0.invoke(createIndex);
 
     vm0.invoke(() -> {
       QueryService qs = getCache().getQueryService();
-      SelectResults<Struct> results = (SelectResults) qs
-          .newQuery("<trace> select assetId,document from /region where document='B' limit 1000")
-          .execute();
+      SelectResults<Struct> results = (SelectResults) qs.newQuery(queryString).execute();
 
       assertEquals(3, results.size());
       final Index index = qs.getIndex(getCache().getRegion("region"), "ContractDocumentIndex");
@@ -201,10 +237,21 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
+  public void testFailureToCreateIndexOnLocalNodeThrowsException() {
+    VM vmToFailCreationOn = Host.getHost(0).getVM(0);
+    failToCreateIndexOnNode(vmToFailCreationOn);
+  }
+
+  @Test
   public void testFailureToCreateIndexOnRemoteNodeThrowsException() {
+    VM vmToFailCreationOn = Host.getHost(0).getVM(1);
+    failToCreateIndexOnNode(vmToFailCreationOn);
+  }
+
+  private void failToCreateIndexOnNode(final VM vmToFailCreationOn) {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(-1);
+    VM vm1 = host.getVM(1);
 
     SerializableRunnableIF createPR = () -> {
       Cache cache = getCache();
@@ -219,7 +266,8 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(() -> {
       Cache cache = getCache();
       Region region = cache.getRegion("region");
-      IntStream.range(1, 10).forEach(i -> region.put(i, new NotDeserializableAsset()));
+      IntStream.range(1, 10)
+          .forEach(i -> region.put(i, new NotDeserializableAsset(vmToFailCreationOn.getPid())));
     });
 
     vm0.invoke(() -> {
@@ -237,7 +285,6 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
       final Index index = cache.getQueryService().getIndex(region, "ContractDocumentIndex");
       assertEquals(null, index);
     });
-
   }
 
   /**
@@ -1182,54 +1229,82 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  public static class PdxNotDeserializableAsset implements PdxSerializable {
+  public interface PdxAssetFactory extends Serializable {
+    PdxAsset getAsset(int i);
+  }
+
+  public static class PdxNotDeserializableAsset extends PdxAsset {
     public int assetId;
     public String document;
+    public Collection<String> references = new ArrayList<String>();
 
     public PdxNotDeserializableAsset() {
       throw new RuntimeException("Preventing Deserialization of Asset");
-
     }
 
     public PdxNotDeserializableAsset(final int assetId, final String document) {
+      super(assetId, document);
+    }
+
+    @Override
+    public void fromData(final PdxReader reader) {
+      throw new RuntimeException("Not allowing us to deserialize one of these");
+    }
+  }
+
+  public static class PdxAsset implements PdxSerializable {
+    public int assetId;
+    public String document;
+    public Collection<String> references = new ArrayList<String>();
+
+    public PdxAsset() {
+
+    }
+
+    public PdxAsset(final int assetId, final String document) {
       this.assetId = assetId;
       this.document = document;
+      references.add(document + "_1");
+      references.add(document + "_2");
+      references.add(document + "_3");
     }
 
     @Override
     public void toData(final PdxWriter writer) {
       writer.writeString("document", document);
       writer.writeInt("assetId", assetId);
+      writer.writeObject("references", references);
     }
 
     @Override
     public void fromData(final PdxReader reader) {
       this.document = reader.readString("document");
       this.assetId = reader.readInt("assetId");
+      this.references = (Collection<String>) reader.readObject("references");
     }
   }
 
   public static class NotDeserializableAsset implements DataSerializable {
-    private int allowedPid;
+    private int disallowedPid;
 
     public NotDeserializableAsset() {
 
     }
 
-    public NotDeserializableAsset(final int allowedPid) {
-      this.allowedPid = allowedPid;
+    public NotDeserializableAsset(final int disallowedPid) {
+      this.disallowedPid = disallowedPid;
     }
 
     @Override
     public void toData(final DataOutput out) throws IOException {
-      out.writeInt(allowedPid);
+      out.writeInt(disallowedPid);
 
     }
 
     @Override
     public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
-      allowedPid = in.readInt();
-      if (allowedPid != DUnitEnv.get().getPid()) {
+      disallowedPid = in.readInt();
+      if (disallowedPid == DUnitEnv.get().getPid()) {
         throw new IOException("Cannot deserialize");
       }
     }
