@@ -107,6 +107,7 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
         return e.getResult();
       }
 
+      // this deploys the jars to all the matching servers
       ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(this.deployFunction,
           new Object[] {jarNames, jarBytes}, targetMembers);
 
@@ -132,8 +133,6 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
           }
         }
       }
-
-
 
       if (!accumulatedData) {
         // This really should never happen since if a JAR file is already deployed a result is

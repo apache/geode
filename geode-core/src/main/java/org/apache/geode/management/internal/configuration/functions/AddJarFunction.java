@@ -43,7 +43,7 @@ public class AddJarFunction extends FunctionAdapter implements InternalEntity {
         final String[] groups = (String[]) args[2];
 
         SharedConfiguration sharedConfiguration = locator.getSharedConfiguration();
-        sharedConfiguration.addJars(jarFilenames, jarBytes, groups);
+        sharedConfiguration.addJarsToThisLocator(jarFilenames, jarBytes, groups);
 
       } else {
         configChangeResult

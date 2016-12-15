@@ -57,8 +57,6 @@ public class ConfigGroup implements Serializable {
 
   public ConfigGroup(String name) {
     this.name = name;
-    this.configFiles.add(name + ".xml");
-    this.configFiles.add(name + ".properties");
   }
 
   public ConfigGroup regions(String... regions) {

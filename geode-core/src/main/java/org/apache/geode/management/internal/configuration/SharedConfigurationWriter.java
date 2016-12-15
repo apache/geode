@@ -14,13 +14,6 @@
  */
 package org.apache.geode.management.internal.configuration;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -34,19 +27,27 @@ import org.apache.geode.management.internal.configuration.functions.AddXmlEntity
 import org.apache.geode.management.internal.configuration.functions.DeleteJarFunction;
 import org.apache.geode.management.internal.configuration.functions.DeleteXmlEntityFunction;
 import org.apache.geode.management.internal.configuration.functions.ModifyPropertiesFunction;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /***
  * Class for writing configuration changes to the Shared Configuration at the Locator(s). This class
  * is used in the Gfsh commands, to persist the configuration changes to the shared configuration
  * hosted on locators.
- * 
+ *
  *
  */
 public class SharedConfigurationWriter {
   private static final Logger logger = LogService.getLogger();
 
   private GemFireCacheImpl cache;
-  private final AddJarFunction saveJarFunction = new AddJarFunction();
+  private final AddJarFunction addJarFunction = new AddJarFunction();
   private final DeleteJarFunction deleteJarFunction = new DeleteJarFunction();
   private final AddXmlEntityFunction addXmlEntityFunction = new AddXmlEntityFunction();
   private final DeleteXmlEntityFunction deleteXmlEntityFunction = new DeleteXmlEntityFunction();
@@ -89,7 +90,7 @@ public class SharedConfigurationWriter {
 
 
   public boolean modifyPropertiesAndCacheAttributes(Properties properties, XmlEntity xmlEntity,
-      String[] groups) {
+                                                    String[] groups) {
     Object[] args = new Object[3];
     args[0] = properties;
     args[1] = xmlEntity;
@@ -109,7 +110,7 @@ public class SharedConfigurationWriter {
     args[0] = jarNames;
     args[1] = jarBytes;
     args[2] = groups;
-    return saveConfigChangesAllLocators(saveJarFunction, args);
+    return saveConfigChanges(addJarFunction, args);
   }
 
   // /****
@@ -122,7 +123,7 @@ public class SharedConfigurationWriter {
     Object[] args = new Object[3];
     args[0] = jarNames;
     args[1] = groups;
-    return saveConfigChangesAllLocators(deleteJarFunction, args);
+    return saveConfigChanges(deleteJarFunction, args);
   }
 
 
@@ -130,55 +131,31 @@ public class SharedConfigurationWriter {
     if (!isSharedConfigEnabled) {
       return true;
     }
-    boolean success = false;
     Set<DistributedMember> locators = new HashSet<DistributedMember>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
 
-    if (!locators.isEmpty()) {
-      for (DistributedMember locator : locators) {
-        ResultCollector<?, ?> rc = CliUtil.executeFunction(function, args, locator);
-        @SuppressWarnings("unchecked")
-        List<ConfigurationChangeResult> results = (List<ConfigurationChangeResult>) rc.getResult();
-        if (!results.isEmpty()) {
-          ConfigurationChangeResult configChangeResult = results.get(0);
-          if (configChangeResult.isSuccessful()) {
-            logger.info("Configuration change successful");
-            success = true;
-            break;
-          } else {
-            logger.info("Failed to save the configuration change. {}", configChangeResult);
-            success = false;
-          }
-        }
-      }
+    boolean success = locators.stream()
+        .map((DistributedMember locator) -> saveConfigChangeOnLocator(locator, function, args))
+        .anyMatch((Boolean result) -> result);
+
+    if (!success) {
+      logger.error("Failed to save the configuration change.");
     }
+
     return success;
   }
 
+  private boolean saveConfigChangeOnLocator(DistributedMember locator, Function function,
+                                            Object[] args) {
+    ResultCollector<?, ?> rc = CliUtil.executeFunction(function, args, locator);
+    List<ConfigurationChangeResult> results = (List<ConfigurationChangeResult>) rc.getResult();
 
-  private boolean saveConfigChangesAllLocators(Function function, Object[] args) {
-    if (!isSharedConfigEnabled) {
-      return true;
-    }
-    boolean success = true;
-    Set<DistributedMember> locators = new HashSet<DistributedMember>(
-        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
+    Optional<ConfigurationChangeResult> result = results.stream()
+        .filter(Objects::nonNull)
+        .filter(ConfigurationChangeResult::isSuccessful)
+        .findFirst();
 
-    if (!locators.isEmpty()) {
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(function, args, locators);
-      @SuppressWarnings("unchecked")
-      List<ConfigurationChangeResult> results = (List<ConfigurationChangeResult>) rc.getResult();
-
-      if (!results.isEmpty()) {
-        for (ConfigurationChangeResult configChangeResult : results) {
-          if (!configChangeResult.isSuccessful()) {
-            success = false;
-            break;
-          }
-        }
-      }
-    }
-    return success;
+    return result.isPresent();
   }
 
 }

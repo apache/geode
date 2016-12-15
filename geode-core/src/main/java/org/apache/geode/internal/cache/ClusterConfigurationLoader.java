@@ -255,32 +255,4 @@ public class ClusterConfigurationLoader {
     return groups;
   }
 
-  /***
-   * Get the host and port information of the locators
-   * 
-   * @return List made up of a String array containing host and port
-   */
-  public static List<String[]> getLocatorsInfo(String locatorsString) {
-
-    List<String[]> locatorList = new ArrayList<String[]>();
-
-    if (!StringUtils.isBlank(locatorsString)) {
-      String[] bootstrappedlocators = locatorsString.split(",");
-      for (String bootstrappedlocator : bootstrappedlocators) {
-        locatorList.add(bootstrappedlocator.split("\\[|]"));
-      }
-    }
-    return locatorList;
-  }
-
-  public static List<String[]> getLocatorsInfo(List<String> locatorConnectionStrings) {
-    List<String[]> locatorList = new ArrayList<String[]>();
-
-    for (String locatorConnectionString : locatorConnectionStrings) {
-      locatorList.add(locatorConnectionString.split("\\[|]"));
-    }
-    return locatorList;
-  }
-
-
 }

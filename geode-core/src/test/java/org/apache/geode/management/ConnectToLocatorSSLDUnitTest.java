@@ -85,7 +85,7 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
 
     // saving the securityProps to a file
     OutputStream out = new FileOutputStream(securityPropsFile);
-    securityProps.store(out, "");
+    securityProps.store(out, null);
 
     GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule(
         lsRule.getMember(0).getPort(), GfshShellConnectionRule.PortType.locator);

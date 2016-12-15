@@ -14,6 +14,10 @@
  */
 package org.apache.geode.management.internal.configuration.callbacks;
 
+import com.google.common.collect.Sets;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
@@ -22,14 +26,22 @@ import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 /****
- * CacheListener on ConfigRegion to write the configuration changes to file-system.
+ * CacheListener on ConfigRegion on Locators to write the configuration changes to file-system.
  *
  */
 public class ConfigurationChangeListener extends CacheListenerAdapter<String, Configuration> {
   private static final Logger logger = LogService.getLogger();
 
   private final SharedConfiguration sharedConfig;
+
+  private static final String clusterConfigDirPath = GemFireCacheImpl.getInstance().getDistributedSystem().getConfig().getClusterConfigDir();
+  private static final File clusterConfigDir = new File(clusterConfigDirPath);
 
   public ConfigurationChangeListener(SharedConfiguration sharedConfig) {
     this.sharedConfig = sharedConfig;
@@ -38,23 +50,62 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
   @Override
   public void afterUpdate(EntryEvent<String, Configuration> event) {
     super.afterUpdate(event);
-    writeToFileSystem(event);
+    addOrRemoveJarFromFilesystem(event);
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Configuration> event) {
     super.afterCreate(event);
-    writeToFileSystem(event);
+    addOrRemoveJarFromFilesystem(event);
   }
 
-  private void writeToFileSystem(EntryEvent<String, Configuration> event) {
+  // when a new jar is added, if it exist in the current locator, upload to other locators,
+  // otherwise, download from other locators.
+  // when a jar is removed, remove it from all the locators' file system
+  private void addOrRemoveJarFromFilesystem(EntryEvent<String, Configuration> event) {
+    String group = event.getKey();
     Configuration newConfig = (Configuration) event.getNewValue();
-    try {
-      sharedConfig.writeConfig(newConfig);
-    } catch (Exception e) {
-      logger.info(
-          "Exception occurred while writing the configuration changes to the filesystem: {}",
-          e.getMessage(), e);
+    Configuration oldConfig = (Configuration) event.getOldValue();
+    Set<String> newJars = newConfig.getJarNames();
+    Set<String> oldJars = (oldConfig == null) ? new HashSet<>() : oldConfig.getJarNames();
+
+    Set<String> jarsAdded = Sets.difference(newJars, oldJars);
+    Set<String> jarsRemoved = Sets.difference(oldJars, newJars);
+
+    if (!jarsAdded.isEmpty() && !jarsRemoved.isEmpty()) {
+      throw new IllegalStateException("We don't expect to have jars both added and removed in one event");
     }
+
+    for(String jarAdded: jarsAdded){
+      if (!jarExistsInFilesystem(group, jarAdded)){
+        try {
+          sharedConfig.addJarFromOtherLocators(group, jarAdded);
+        } catch (Exception e) {
+          logger.error("Unable to add jar: " + jarAdded, e);
+        }
+      }
+    }
+
+    for(String jarRemoved: jarsRemoved){
+        File jar = sharedConfig.getPathToJarOnThisLocator(group,jarRemoved).toFile();
+        if (jar.exists()) {
+          try {
+            FileUtils.forceDelete(jar);
+          } catch (IOException e) {
+            logger.error(
+                "Exception occurred while attempting to delete a jar from the filesystem: {}",jarRemoved, e);
+          }
+        }
+    }
+
+    //locator1,2,3 already have an existing jar 1
+    //deploy jar --name=jar1  (new version of jar)
+    //locator1 overwrites jar1 on its filesystem
+    //listener is called on locator 1,2,3
   }
+
+  private boolean jarExistsInFilesystem(String groupName, String jarName) {
+    return sharedConfig.getPathToJarOnThisLocator(groupName, jarName).toFile().exists();
+  }
+
 }

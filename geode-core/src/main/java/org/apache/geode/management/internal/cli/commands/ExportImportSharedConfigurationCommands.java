@@ -14,16 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.primitives.Booleans;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
@@ -37,6 +32,7 @@ import org.apache.geode.management.internal.cli.functions.ImportSharedConfigurat
 import org.apache.geode.management.internal.cli.functions.LoadSharedConfigurationFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -44,10 +40,19 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /****
  * Commands for the shared configuration
@@ -74,47 +79,39 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
       @CliOption(key = {CliStrings.EXPORT_SHARED_CONFIG__DIR},
           help = CliStrings.EXPORT_SHARED_CONFIG__DIR__HELP) String dir) {
-    Result result;
 
-    InfoResultData infoData = ResultBuilder.createInfoResultData();
-    TabularResultData errorTable = ResultBuilder.createTabularResultData();
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    Set<DistributedMember> locators = new HashSet<DistributedMember>(
-        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
-    byte[] byteData;
-    boolean success = false;
+    Set<? extends DistributedMember> locators =
+        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet();
 
-    if (!locators.isEmpty()) {
-      for (DistributedMember locator : locators) {
-        ResultCollector<?, ?> rc =
-            CliUtil.executeFunction(exportSharedConfigurationFunction, null, locator);
-        @SuppressWarnings("unchecked")
-        List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
-        CliFunctionResult functionResult = results.get(0);
+    Optional<CliFunctionResult> functionResult = locators.stream()
+        .map((DistributedMember locator) -> exportSharedConfigurationFromLocator(locator, null))
+        .filter(CliFunctionResult::isSuccessful)
+        .findFirst();
 
-        if (functionResult.isSuccessful()) {
-          byteData = functionResult.getByteData();
-          infoData.addAsFile(zipFileName, byteData, InfoResultData.FILE_TYPE_BINARY,
-              CliStrings.EXPORT_SHARED_CONFIG__DOWNLOAD__MSG, false);
-          success = true;
-          break;
-        } else {
-          errorTable.accumulate(CliStrings.LOCATOR_HEADER, functionResult.getMemberIdOrName());
-          errorTable.accumulate(CliStrings.ERROR__MSG__HEADER, functionResult.getMessage());
-        }
-      }
-      if (success) {
-        result = ResultBuilder.buildResult(infoData);
-      } else {
-        errorTable.setStatus(Result.Status.ERROR);
-        result = ResultBuilder.buildResult(errorTable);
-      }
+    Result result;
+    if (functionResult.isPresent()) {
+      InfoResultData infoData = ResultBuilder.createInfoResultData();
+      byte[] byteData = functionResult.get().getByteData();
+      infoData.addAsFile(zipFileName, byteData, InfoResultData.FILE_TYPE_BINARY,
+          CliStrings.EXPORT_SHARED_CONFIG__DOWNLOAD__MSG, false);
+      result = ResultBuilder.buildResult(infoData);
     } else {
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.SHARED_CONFIGURATION_NO_LOCATORS_WITH_SHARED_CONFIGURATION);
+      ErrorResultData errorData = ResultBuilder.createErrorResultData();
+      errorData.addLine("Export failed");
+      result = ResultBuilder.buildResult(errorData);
     }
+
     return result;
   }
+
+  private CliFunctionResult exportSharedConfigurationFromLocator(DistributedMember locator, Object[] args) {
+    ResultCollector rc = CliUtil.executeFunction(exportSharedConfigurationFunction, args, locator);
+    List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
+
+    return results.get(0);
+  }
+
 
   @CliCommand(value = {CliStrings.IMPORT_SHARED_CONFIG},
       help = CliStrings.IMPORT_SHARED_CONFIG__HELP)
@@ -133,8 +130,8 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
           .createGemFireErrorResult(CliStrings.IMPORT_SHARED_CONFIG__CANNOT__IMPORT__MSG);
     }
 
-    Set<DistributedMember> locators = new HashSet<DistributedMember>(
-        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
+    Set<? extends DistributedMember> locators =
+        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet();
 
     if (locators.isEmpty()) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.NO_LOCATORS_WITH_SHARED_CONFIG);
@@ -150,54 +147,30 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
     Object[] args = new Object[] {zipFileName, zipBytes};
 
-    InfoResultData infoData = ResultBuilder.createInfoResultData();
-    TabularResultData errorTable = ResultBuilder.createTabularResultData();
 
-    boolean success = false;
-    boolean copySuccess = false;
+    Optional<CliFunctionResult> functionResult = locators.stream()
+        .map((DistributedMember locator) -> importSharedConfigurationFromLocator(locator, args))
+        .filter(CliFunctionResult::isSuccessful)
+        .findFirst();
 
-    ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(importSharedConfigurationFunction, args, locators);
-    List<CliFunctionResult> functionResults =
-        CliFunctionResult.cleanResults((List<CliFunctionResult>) rc.getResult());
-
-    for (CliFunctionResult functionResult : functionResults) {
-      if (!functionResult.isSuccessful()) {
-        errorTable.accumulate(CliStrings.LOCATOR_HEADER, functionResult.getMemberIdOrName());
-        errorTable.accumulate(CliStrings.ERROR__MSG__HEADER, functionResult.getMessage());
-      } else {
-        copySuccess = true;
-      }
-    }
-
-    if (!copySuccess) {
-      errorTable.setStatus(Result.Status.ERROR);
-      return ResultBuilder.buildResult(errorTable);
-    }
-
-    errorTable = ResultBuilder.createTabularResultData();
-
-    for (DistributedMember locator : locators) {
-      rc = CliUtil.executeFunction(loadSharedConfiguration, args, locator);
-      functionResults = (List<CliFunctionResult>) rc.getResult();
-      CliFunctionResult functionResult = functionResults.get(0);
-      if (functionResult.isSuccessful()) {
-        success = true;
-        infoData.addLine(functionResult.getMessage());
-        break;
-      } else {
-        errorTable.accumulate(CliStrings.LOCATOR_HEADER, functionResult.getMemberIdOrName());
-        errorTable.accumulate(CliStrings.ERROR__MSG__HEADER, functionResult.getMessage());
-      }
-    }
-
-    if (success) {
+    if (functionResult.isPresent()) {
+      InfoResultData infoData = ResultBuilder.createInfoResultData();
+      infoData.addLine(functionResult.get().getMessage());
       result = ResultBuilder.buildResult(infoData);
     } else {
-      errorTable.setStatus(Result.Status.ERROR);
-      result = ResultBuilder.buildResult(errorTable);
+      ErrorResultData errorData = ResultBuilder.createErrorResultData();
+      errorData.addLine("Import failed");
+      result = ResultBuilder.buildResult(errorData);
     }
+
     return result;
+  }
+
+  private CliFunctionResult importSharedConfigurationFromLocator(DistributedMember locator, Object[] args) {
+    ResultCollector rc = CliUtil.executeFunction(importSharedConfigurationFunction, args, locator);
+    List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
+
+    return results.get(0);
   }
 
 

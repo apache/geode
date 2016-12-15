@@ -82,6 +82,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
     // verify that the previous folder is backed up to "cluster_configxxxxxx".
+    //TODO: Expecting this functionality is a problem since the cluster_config dir will not contain .xml and .properties any longer, and hence not be a useful backup.
     assertThat(locator.getWorkingDir().listFiles())
         .filteredOn((File file) -> !file.getName().equals("cluster_config"))
         .filteredOn((File file) -> file.getName().startsWith("cluster_config")).isNotEmpty();
@@ -126,8 +127,12 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     Set<String> actualZipEnries =
         new ZipFile(exportedZip).stream().map(ZipEntry::getName).collect(Collectors.toSet());
 
+
+    ConfigGroup exportedClusterGroup = cluster.configFiles("cluster.xml", "cluster.properties");
+    ClusterConfig expectedExportedClusterConfig = new ClusterConfig(exportedClusterGroup);
+
     Set<String> expectedZipEntries = new HashSet<>();
-    for (ConfigGroup group : expectedClusterConfig.getGroups()) {
+    for (ConfigGroup group : expectedExportedClusterConfig.getGroups()) {
       String groupDir = group.getName() + "/";
 
       expectedZipEntries.add(groupDir);

@@ -380,9 +380,9 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         assertNotNull(testGroupConfiguration.getCacheXmlContent());
         assertTrue(testGroupConfiguration.getCacheXmlContent().contains(REGION1));
 
-        Object[] jarData = sharedConfig.getAllJars(entireConfiguration.keySet());
-        String[] jarNames = (String[]) jarData[0];
-        byte[][] jarBytes = (byte[][]) jarData[1];
+        Map<String, byte[]> jarData = sharedConfig.getAllJarsFromThisLocator(entireConfiguration.keySet());
+        String[] jarNames = jarData.keySet().stream().toArray(String[]::new);
+        byte[][] jarBytes = jarData.values().toArray(new byte[jarNames.length][]);
 
         assertNotNull(jarNames);
         assertNotNull(jarBytes);
