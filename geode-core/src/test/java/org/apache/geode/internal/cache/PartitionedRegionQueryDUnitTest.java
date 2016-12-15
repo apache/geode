@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.test.dunit.DUnitEnv;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -23,6 +29,9 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Date;
 import java.util.Arrays;
@@ -31,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -147,6 +157,46 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
 
       }
     });
+  }
+
+  @Test
+  public void testFailureToCreateIndexOnRemoteNodeThrowsException() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(-1);
+
+    SerializableRunnableIF createPR = () -> {
+      Cache cache = getCache();
+      PartitionAttributesFactory paf = new PartitionAttributesFactory();
+      paf.setTotalNumBuckets(10);
+      cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(paf.create())
+          .create("region");
+    };
+    vm0.invoke(createPR);
+    vm1.invoke(createPR);
+
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region region = cache.getRegion("region");
+      IntStream.range(1, 10).forEach(i -> region.put(i, new NotDeserializableAsset()));
+    });
+
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      try {
+        cache.getQueryService().createHashIndex("ContractDocumentIndex", "document", "/region");
+        fail("Should have thrown an exception");
+      } catch (Exception expected) {
+      }
+    });
+
+    vm1.invoke(() -> {
+      Cache cache = getCache();
+      Region region = cache.getRegion("region");
+      final Index index = cache.getQueryService().getIndex(region, "ContractDocumentIndex");
+      assertEquals(null, index);
+    });
+
   }
 
   /**
@@ -1091,7 +1141,33 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  private class NestedKeywordObject implements Serializable {
+  public static class NotDeserializableAsset implements DataSerializable {
+    private int allowedPid;
+
+    public NotDeserializableAsset() {
+
+    }
+
+    public NotDeserializableAsset(final int allowedPid) {
+      this.allowedPid = allowedPid;
+    }
+
+    @Override
+    public void toData(final DataOutput out) throws IOException {
+      out.writeInt(allowedPid);
+
+    }
+
+    @Override
+    public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
+      allowedPid = in.readInt();
+      if (allowedPid != DUnitEnv.get().getPid()) {
+        throw new IOException("Cannot deserialize");
+      }
+    }
+  }
+
+  public class NestedKeywordObject implements Serializable {
 
     public Object date;
     public Object nonKeyword;
