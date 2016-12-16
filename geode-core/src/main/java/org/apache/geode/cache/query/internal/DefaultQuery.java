@@ -560,10 +560,7 @@ public class DefaultQuery implements Query {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryObserver observer = QueryObserverHolder.getInstance();
     long startTime = CachePerfStats.getStatTime();
-    TXStateProxy tx = null;
-    if (!((GemFireCacheImpl) this.cache).isClient()) { // fixes bug 42294
-      tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).internalSuspend();
-    }
+    TXStateProxy tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).internalSuspend();
     try {
       observer.startQuery(this);
       observer.beforeQueryEvaluation(compiledQuery, context);
@@ -602,9 +599,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
-      if (tx != null) {
-        ((TXManagerImpl) this.cache.getCacheTransactionManager()).resume(tx);
-      }
+      ((TXManagerImpl) this.cache.getCacheTransactionManager()).resume(tx);
     }
   }
 
