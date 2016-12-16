@@ -18,7 +18,7 @@ import java.util.Properties;
 
 import org.apache.geode.security.SecurityManager;
 
-public class SpySecurityManager implements SecurityManager {
+public class SpySecurityManager extends SimpleTestSecurityManager {
 
   public int initInvoked = 0;
   public int closeInvoked = 0;
@@ -29,8 +29,8 @@ public class SpySecurityManager implements SecurityManager {
   }
 
   @Override
-  public Object authenticate(final Properties props) throws AuthenticationFailedException {
-    return null;
+  public boolean authorize(final Object principal, final ResourcePermission permission) {
+    return true;
   }
 
   @Override
