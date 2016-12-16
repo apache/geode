@@ -297,18 +297,18 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
       // primary set to true.
       Awaitility.await().atMost(15, TimeUnit.SECONDS).until(
-          () -> (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6)
-              && (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3));
+          () -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6)
+              && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3));
 
       // TODO: Verify that all the fpa's are in the map
-      server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-      server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+      server1.invoke(FixedPRSinglehopDUnitTest::printView);
+      server2.invoke(FixedPRSinglehopDUnitTest::printView);
 
       int totalBucketOnServer = 0;
       totalBucketOnServer +=
-          (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
+          (Integer) server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
       totalBucketOnServer +=
-          (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
+          (Integer) server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
 
       verifyMetadata(totalBucketOnServer, 1);
       updateIntoSinglePRFor3Qs();
@@ -326,25 +326,25 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       putIntoPartitionedRegions();
       // Wait to make sure that the buckets have actually moved.
       Awaitility.await().atMost(15, TimeUnit.SECONDS).until(
-          () -> (server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3)
-              && (server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 3)
-              && (server4.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer()) == 6));
+          () -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
+              && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
+              && (server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6));
 
       getFromPartitionedRegions();
-      server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-      server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-      server4.invoke(() -> FixedPRSinglehopDUnitTest.printView());
+      server1.invoke(FixedPRSinglehopDUnitTest::printView);
+      server2.invoke(FixedPRSinglehopDUnitTest::printView);
+      server4.invoke(FixedPRSinglehopDUnitTest::printView);
 
       totalBucketOnServer = 0;
       totalBucketOnServer +=
-          (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
+          (Integer) server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
       totalBucketOnServer +=
-          (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
+          (Integer) server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
       totalBucketOnServer +=
-          (Integer) server4.invoke(() -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer());
+          (Integer) server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
       updateIntoSinglePR();
     } finally {
-      server3.invoke(() -> FixedPRSinglehopDUnitTest.stopLocator());
+      server3.invoke(FixedPRSinglehopDUnitTest::stopLocator);
     }
   }
 
