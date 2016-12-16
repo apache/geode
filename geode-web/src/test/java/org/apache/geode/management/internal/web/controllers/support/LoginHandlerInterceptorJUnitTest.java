@@ -54,12 +54,14 @@ public class LoginHandlerInterceptorJUnitTest {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
     mockContext.setThreadingPolicy(new Synchroniser());
+    LoginHandlerInterceptor.getEnvironment().clear();
   }
 
   @After
   public void tearDown() {
     mockContext.assertIsSatisfied();
     mockContext = null;
+    LoginHandlerInterceptor.getEnvironment().clear();
   }
 
   private String createEnvironmentVariable(final String name) {

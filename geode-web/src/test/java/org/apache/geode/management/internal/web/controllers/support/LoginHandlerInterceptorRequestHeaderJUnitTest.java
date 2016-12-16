@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -27,6 +29,16 @@ import java.util.Map;
 
 @Category(UnitTest.class)
 public class LoginHandlerInterceptorRequestHeaderJUnitTest {
+
+  @Before
+  public void before() {
+    LoginHandlerInterceptor.getEnvironment().clear();
+  }
+
+  @After
+  public void after() {
+    LoginHandlerInterceptor.getEnvironment().clear();
+  }
 
   @Test
   public void testCaseInsensitive() throws Exception {
