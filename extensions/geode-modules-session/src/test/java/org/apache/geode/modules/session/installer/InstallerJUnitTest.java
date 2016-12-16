@@ -22,7 +22,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import org.apache.geode.internal.FileUtil;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
@@ -30,8 +30,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class InstallerJUnitTest {
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
