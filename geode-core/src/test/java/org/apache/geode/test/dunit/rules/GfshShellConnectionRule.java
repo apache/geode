@@ -121,14 +121,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     CliUtil.isGfshVM = false;
   }
 
-  public void closeQuietly() {
-    try {
-      this.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
   public HeadlessGfsh getGfsh() {
     return gfsh;
   }
