@@ -136,12 +136,6 @@ rat {
     'geode-site/website/layouts/**',
 
 
-    // ANTLR generated files
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexer.java',
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexerTokenTypes.java',
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLParser.java',
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexerTokenTypes.txt',
-
     // Service META-INF
     '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
     '**/META-INF/services/org.apache.geode.internal.cache.CacheService',

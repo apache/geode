@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.jmock.Mockery;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +42,6 @@ import org.apache.geode.cache.query.internal.aggregate.MaxMin;
 import org.apache.geode.cache.query.internal.aggregate.Sum;
 import org.apache.geode.cache.query.internal.aggregate.SumDistinct;
 import org.apache.geode.cache.query.internal.aggregate.SumDistinctPRQueryNode;
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

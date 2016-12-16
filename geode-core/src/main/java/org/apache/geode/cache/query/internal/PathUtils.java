@@ -24,8 +24,8 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.types.*;
 
 

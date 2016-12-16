@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+
+apply plugin: 'antlr'
+
 sourceSets {
   jca {
     compileClasspath += configurations.compile

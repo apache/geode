@@ -16,8 +16,8 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 

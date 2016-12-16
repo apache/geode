@@ -17,20 +17,14 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 
-import org.apache.geode.GemFireCacheException;
-import org.apache.geode.GemFireException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
-import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.NameResolutionException;
-import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class represents a compiled form of sort criterian present in order by clause
