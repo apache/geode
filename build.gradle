@@ -91,6 +91,10 @@ subprojects {
   spotless {
     lineEndings = 'unix';
     java {
+      target project.fileTree(project.projectDir) {
+        include '**/*.java'
+        exclude '**/generated-src/**'
+      }
       eclipseFormatFile "${rootProject.projectDir}/etc/eclipse-java-google-style.xml"
     }
   }
