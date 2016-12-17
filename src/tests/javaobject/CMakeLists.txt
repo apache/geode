@@ -1,16 +1,13 @@
-cmake_minimum_required (VERSION 2.8)
-find_package(Java REQUIRED)
-include(UseJava)
+cmake_minimum_required (VERSION 3.4)
 project (javaobject)
 
-# Determine JAVA_HOME.
-get_filename_component(JAVA_BIN ${Java_JAVA_EXECUTABLE} DIRECTORY)
-get_filename_component(JAVA_HOME ${JAVA_BIN} DIRECTORY)
+find_package(Geode REQUIRED)
+find_package(Java REQUIRED)
 
-# Update the class path.
-set(CMAKE_JAVA_INCLUDE_PATH ${JAVA_HOME}/lib/tools.jar)
-LIST(APPEND CMAKE_JAVA_INCLUDE_PATH ${GEMFIRE_HOME}/lib/geode-dependencies.jar)
+include(UseJava)
 
-# Compile and jar the classes.
-file(GLOB_RECURSE JAVA_SOURCES "*.java")
-add_jar(javaobject ${JAVA_SOURCES})
+file(GLOB_RECURSE SOURCES "*.java")
+
+add_jar(javaobject ${SOURCES}
+  INCLUDE_JARS ${Geode_CLASSPATH}
+)

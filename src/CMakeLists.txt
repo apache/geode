@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.4)
 project(nativeclient)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../cmake)
+
 set(BUILD_BITS 64 CACHE STRING "Build for 64 (default) or 32 bit.")
 
 #TODO cache values
@@ -172,7 +174,7 @@ if(DEFINED ENV{CTEST_UNITTEST_VERBOSITY})
     set(CTEST_UNITTEST_VERBOSITY $ENV{CTEST_UNITTEST_VERBOSITY})
 endif()
 
-set(GEMFIRE_HOME "" CACHE PATH "Path to GemFire production installation.")
+find_package(Geode 1.0 REQUIRED)
 
 add_custom_target(client-libraries)
 
