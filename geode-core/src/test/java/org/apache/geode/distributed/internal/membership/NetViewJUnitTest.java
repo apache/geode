@@ -193,6 +193,22 @@ public class NetViewJUnitTest {
     assertEquals(100, view.getNewMembers(copy).size());
   }
 
+  @Test
+  public void testNullPublicKeysNotRetained() throws Exception {
+    NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
+    setFailureDetectionPorts(view);
+
+    NetView newView = new NetView(view, 3);
+    for (InternalDistributedMember member : view.getMembers()) {
+      view.setPublicKey(member, null);
+    }
+    newView.setPublicKeys(view);
+    for (InternalDistributedMember member : view.getMembers()) {
+      assertNull(newView.getPublicKey(member));
+      assertNull(view.getPublicKey(member));
+    }
+  }
+
   /**
    * Test that failed weight calculations are correctly performed. See bug #47342
    */

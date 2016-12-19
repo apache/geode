@@ -14,21 +14,29 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.stream.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * The NetView class represents a membership view. Note that this class is not synchronized, so take
@@ -41,7 +49,7 @@ public class NetView implements DataSerializableFixedID {
   private int viewId;
   private List<InternalDistributedMember> members;
   // TODO this should be a List
-  private Map<InternalDistributedMember, Object> publicKeys = new ConcurrentHashMap<>();
+  private final Map<InternalDistributedMember, Object> publicKeys = new ConcurrentHashMap<>();
   private int[] failureDetectionPorts = new int[10];
   private Set<InternalDistributedMember> shutdownMembers;
   private Set<InternalDistributedMember> crashedMembers;
@@ -113,7 +121,7 @@ public class NetView implements DataSerializableFixedID {
         other.failureDetectionPorts.length);
     this.shutdownMembers = new HashSet<>(other.shutdownMembers);
     this.crashedMembers = new HashSet<>(other.crashedMembers);
-    this.publicKeys = new HashMap<>(other.publicKeys);
+    this.publicKeys.putAll(other.publicKeys);
   }
 
   public NetView(InternalDistributedMember creator, int viewId,
@@ -146,12 +154,17 @@ public class NetView implements DataSerializableFixedID {
   }
 
   public void setPublicKey(InternalDistributedMember mbr, Object key) {
-    publicKeys.put(mbr, key);
+    if (mbr != null && key != null) {
+      publicKeys.put(mbr, key);
+    }
   }
 
   public void setPublicKeys(NetView otherView) {
-    this.publicKeys.putAll(otherView.publicKeys);
+    if (otherView.publicKeys != null) {
+      this.publicKeys.putAll(otherView.publicKeys);
+    }
   }
+
 
 
   public int[] getFailureDetectionPorts() {
@@ -558,10 +571,10 @@ public class NetView implements DataSerializableFixedID {
     if (other == this) {
       return true;
     }
-    if (!(other instanceof NetView)) {
-      return false;
+    if (other instanceof NetView) {
+      return this.members.equals(((NetView) other).getMembers());
     }
-    return this.members.equals(((NetView) other).getMembers());
+    return false;
   }
 
   @Override
@@ -591,7 +604,10 @@ public class NetView implements DataSerializableFixedID {
     shutdownMembers = InternalDataSerializer.readHashSet(in);
     crashedMembers = InternalDataSerializer.readHashSet(in);
     failureDetectionPorts = DataSerializer.readIntArray(in);
-    publicKeys = DataSerializer.readHashMap(in);
+    Map pubkeys = DataSerializer.readHashMap(in);
+    if (pubkeys != null) {
+      publicKeys.putAll(pubkeys);
+    }
   }
 
   /** this will deserialize as an ArrayList */
