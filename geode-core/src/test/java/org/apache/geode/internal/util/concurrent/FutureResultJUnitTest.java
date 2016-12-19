@@ -27,14 +27,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Unit tests for {@link FutureResult}.
-
+ * 
  */
 @Category(UnitTest.class)
 public class FutureResultJUnitTest {
-  
+
   @Test
   public void cancelledFutureResultThrowsExceptionOnGet() throws Exception {
-    TestCancelCriterion cancelCriterion = new TestCancelCriterion();    
+    TestCancelCriterion cancelCriterion = new TestCancelCriterion();
     FutureResult futureResult = new FutureResult(cancelCriterion);
     cancelCriterion.cancelReason = "cancelling for test";
     try {
@@ -53,9 +53,10 @@ public class FutureResultJUnitTest {
       // expected - thrown by the FutureResult
     }
   }
-  
+
   static class TestCancelCriterion extends CancelCriterion {
     String cancelReason = "";
+
     @Override
     public String cancelInProgress() {
       return cancelReason;
