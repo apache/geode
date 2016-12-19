@@ -160,7 +160,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PUT_ALL_MESSAGE = -84;
   public static final byte CLEAR_REGION_MESSAGE = -83;
   public static final byte INVALIDATE_REGION_MESSAGE = -82;
-  public static final byte SEND_QUEUE_MESSAGE = -81;
   public static final byte STATE_MARKER_MESSAGE = -80;
   public static final byte STATE_STABILIZATION_MESSAGE = -79;
   public static final byte STATE_STABILIZED_MESSAGE = -78;

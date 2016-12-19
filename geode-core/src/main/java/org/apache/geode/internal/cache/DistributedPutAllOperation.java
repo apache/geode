@@ -1261,11 +1261,6 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       return s;
     }
 
-    @Override
-    public int getOperationCount() {
-      return this.putAllDataSize;
-    }
-
     public ClientProxyMembershipID getContext() {
       return this.context;
     }
@@ -1274,27 +1269,5 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       return this.putAllData;
     }
 
-    @Override
-    public List getOperations() {
-      QueuedOperation[] ops = new QueuedOperation[getOperationCount()];
-      for (int i = 0; i < ops.length; i++) {
-        PutAllEntryData entry = this.putAllData[i];
-        byte[] valueBytes = null;
-        Object valueObj = null;
-        Object v = entry.getValue();
-        byte deserializationPolicy;
-        if (v instanceof CachedDeserializable) {
-          deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
-          valueBytes = ((CachedDeserializable) v).getSerializedValue();
-        } else {
-          deserializationPolicy = DESERIALIZATION_POLICY_NONE;
-          valueBytes = (byte[]) v;
-        }
-
-        ops[i] = new QueuedOperation(entry.getOp(), entry.getKey(), valueBytes, valueObj,
-            deserializationPolicy, this.callbackArg);
-      }
-      return Arrays.asList(ops);
-    }
   }
 }

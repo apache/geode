@@ -3604,12 +3604,6 @@ public class LocalizedStrings {
   public static final StringId RegisterInterest_CACHECLIENTPROXY_FOR_THIS_CLIENT_IS_NO_LONGER_ON_THE_SERVER_SO_REGISTERINTEREST_OPERATION_IS_UNSUCCESSFUL =
       new StringId(3176,
           "CacheClientProxy for this client is no longer on the server , so registerInterest operation is unsuccessful");
-  public static final StringId ReliableMessageQueueFactoryImpl_REGIONS_WITH_MESSAGE_QUEUING_ALREADY_EXIST =
-      new StringId(3177, "Regions with message queuing already exist");
-  public static final StringId ReliableMessageQueueFactoryImpl_RELIABLE_MESSAGE_QUEUE_IS_CLOSED =
-      new StringId(3178, "reliable message queue is closed");
-  public static final StringId ReliableMessageQueueFactoryImpl_UNEXPECTED_QUEUEDREGIONDATA_0_FOR_REGION_1 =
-      new StringId(3179, "unexpected QueuedRegionData  {0}  for region  {1}");
   public static final StringId RemoteBridgeServer_A_REMOTE_BRIDGESERVER_CANNOT_BE_STARTED =
       new StringId(3180, "A remote BridgeServer cannot be started.");
   public static final StringId RemoteBridgeServer_A_REMOTE_BRIDGESERVER_CANNOT_BE_STOPPED =

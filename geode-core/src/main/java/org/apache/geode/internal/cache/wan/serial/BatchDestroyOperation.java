@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCacheEvent;
-import org.apache.geode.internal.cache.QueuedOperation;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -207,12 +206,6 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
       DataSerializer.writeObject(this.key, out);
       DataSerializer.writeBoolean(Boolean.TRUE, out);
       DataSerializer.writeLong(this.event.getTailKey(), out);
-    }
-
-    @Override
-    public List getOperations() {
-      return Collections.singletonList(new QueuedOperation(getOperation(), this.key, null, null,
-          DistributedCacheOperation.DESERIALIZATION_POLICY_NONE, this.callbackArg));
     }
 
     @Override

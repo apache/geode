@@ -146,14 +146,6 @@ public class InvalidateOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public List getOperations() {
-      byte deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_NONE;
-      QueuedOperation qOp = new QueuedOperation(getOperation(), this.key, null, null,
-          deserializationPolicy, this.callbackArg);
-      return Collections.singletonList(qOp);
-    }
-
-    @Override
     public ConflationKey getConflationKey() {
       if (!super.regionAllowsConflation || getProcessorId() != 0) {
         // if the publisher's region attributes do not support conflation

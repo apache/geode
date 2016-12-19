@@ -1719,15 +1719,13 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
    * Makes sure that the data was distributed to every required role. If it was not it either queues
    * the data for later delivery or it throws an exception.
    *
-   * @param data the data that needs to be reliably distributed
    * @param successfulRecipients the successful recipients
    * @throws RoleException if a required role was not sent the message and the LossAction is either
    *         NO_ACCESS or LIMITED_ACCESS.
    * @since GemFire 5.0
    *
    */
-  protected void handleReliableDistribution(ReliableDistributionData data,
-      Set successfulRecipients) {
+  protected void handleReliableDistribution(Set successfulRecipients) {
     // do nothing by default
   }
 

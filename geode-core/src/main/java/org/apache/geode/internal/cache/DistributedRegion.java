@@ -548,14 +548,12 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   }
 
   @Override
-  protected void handleReliableDistribution(ReliableDistributionData data,
-      Set successfulRecipients) {
-    handleReliableDistribution(data, successfulRecipients, Collections.EMPTY_SET,
-        Collections.EMPTY_SET);
+  protected void handleReliableDistribution(Set successfulRecipients) {
+    handleReliableDistribution(successfulRecipients, Collections.EMPTY_SET, Collections.EMPTY_SET);
   }
 
-  protected void handleReliableDistribution(ReliableDistributionData data, Set successfulRecipients,
-      Set otherRecipients1, Set otherRecipients2) {
+  protected void handleReliableDistribution(Set successfulRecipients, Set otherRecipients1,
+      Set otherRecipients2) {
     if (this.requiresReliabilityCheck) {
       MembershipAttributes ra = getMembershipAttributes();
       Set recipients = successfulRecipients;
@@ -2119,19 +2117,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   public final DistributionConfig getDistributionConfig() {
     return getSystem().getDistributionManager().getConfig();
-  }
-
-  /**
-   * Sends a list of queued messages to members playing a specified role
-   * 
-   * @param list List of QueuedOperation instances to send. Any messages sent will be removed from
-   *        this list
-   * @param role the role that a recipient must be playing
-   * @return true if at least one message made it to at least one guy playing the role
-   */
-  boolean sendQueue(List list, Role role) {
-    SendQueueOperation op = new SendQueueOperation(getDistributionManager(), this, list, role);
-    return op.distribute();
   }
 
   /*

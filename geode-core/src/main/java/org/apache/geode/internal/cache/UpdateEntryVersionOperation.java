@@ -104,12 +104,6 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public List getOperations() {
-      return Collections.singletonList(new QueuedOperation(getOperation(), this.key, null, null,
-          DistributedCacheOperation.DESERIALIZATION_POLICY_NONE, this.callbackArg));
-    }
-
-    @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
       buff.append("; key=");

@@ -445,19 +445,6 @@ public class UpdateOperation extends AbstractUpdateOperation {
       }
     }
 
-    @Override
-    public List getOperations() {
-      byte[] valueBytes = null;
-      Object valueObj = null;
-      if (this.newValueObj != null) {
-        valueBytes = EntryEventImpl.serialize(this.newValueObj);
-      } else {
-        valueBytes = this.newValue;
-      }
-      return Collections.singletonList(new QueuedOperation(getOperation(), this.key, valueBytes,
-          valueObj, this.deserializationPolicy, this.callbackArg));
-    }
-
     public boolean hasBridgeContext() {
       if (this.event != null) {
         return this.event.getContext() != null;

@@ -1042,11 +1042,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       return s;
     }
 
-    @Override
-    public int getOperationCount() {
-      return this.removeAllDataSize;
-    }
-
     public ClientProxyMembershipID getContext() {
       return this.context;
     }
@@ -1055,15 +1050,5 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       return this.removeAllData;
     }
 
-    @Override
-    public List getOperations() {
-      QueuedOperation[] ops = new QueuedOperation[getOperationCount()];
-      for (int i = 0; i < ops.length; i++) {
-        RemoveAllEntryData entry = this.removeAllData[i];
-        ops[i] = new QueuedOperation(entry.getOp(), entry.getKey(), null, null, (byte) 0,
-            this.callbackArg);
-      }
-      return Arrays.asList(ops);
-    }
   }
 }
