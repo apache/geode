@@ -43,8 +43,9 @@ public class LocalThread implements Serializable, ThreadReference {
   private String generateThreadStack(ThreadInfo info) {
     // This is annoying, but the to string method on info sucks.
     StringBuilder result = new StringBuilder();
-    result.append(info.getThreadName()).append(" ID=").append(info.getThreadId()).append(" state=")
-        .append(info.getThreadState());
+    result.append(info.getThreadName()).append(" ID=0x")
+        .append(Long.toHexString(info.getThreadId())).append("(").append(info.getThreadId())
+        .append(") state=").append(info.getThreadState());
 
 
     if (info.getLockInfo() != null) {
