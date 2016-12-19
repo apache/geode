@@ -844,20 +844,16 @@ public class SessionReplicationIntegrationJUnitTest {
     };
 
     tester.setAttribute("callback_1", c_1);
-
     servletHolder.setInitParameter("test.callback", "callback_1");
-
+    String url = tester.createConnector(true);
     tester.start();
-    // ContextManager.getInstance().putContext(
-    // servletHolder.getServlet().getServletConfig().getServletContext());
 
-    request.setMethod("GET");
-    request.setURI("/test/hello");
-    request.setHeader("Host", "tester");
-    request.setVersion("HTTP/1.0");
-    response = HttpTester.parseResponse(tester.getResponses(request.generate()));
+    WebConversation wc = new WebConversation();
+    WebRequest req = new GetMethodWebRequest(url + "/test/hello");
+    req.setHeaderField("Host", "tester");
 
-    assertEquals("OK", response.getContent());
+    final WebResponse webResponse = wc.getResponse(req);
+    assertEquals("OK", webResponse.getResponseMessage());
   }
 
   /**
