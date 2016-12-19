@@ -94,15 +94,15 @@ public class MembershipJUnitTest {
    * manager that joins the system of the first.
    * 
    * It then makes assertions about the state of the membership view, closes one of the managers and
-   * makes more assertions.
+   * makes more assertions. It also ensures that a cache message can be sent from one manager to the
+   * other.
    */
-  @Category(FlakyTest.class) // GEODE-1550
   @Test
   public void testMultipleManagersInSameProcess() throws Exception {
 
     MembershipManager m1 = null, m2 = null;
     Locator l = null;
-    int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
+    // int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     try {
 
@@ -118,7 +118,7 @@ public class MembershipJUnitTest {
       // create configuration objects
       Properties nonDefault = new Properties();
       nonDefault.put(DISABLE_TCP, "true");
-      nonDefault.put(MCAST_PORT, String.valueOf(mcastPort));
+      nonDefault.put(MCAST_PORT, "0");
       nonDefault.put(LOG_FILE, "");
       nonDefault.put(LOG_LEVEL, "fine");
       nonDefault.put(GROUPS, "red, blue");
@@ -171,12 +171,12 @@ public class MembershipJUnitTest {
       System.out.println("testing multicast availability");
       assertTrue(m1.testMulticast());
 
-      System.out.println("multicasting SerialAckedMessage from m1 to m2");
+      System.out.println("sending SerialAckedMessage from m1 to m2");
       SerialAckedMessage msg = new SerialAckedMessage();
       msg.setRecipient(m2.getLocalMember());
-      msg.setMulticast(true);
+      msg.setMulticast(false);
       m1.send(new InternalDistributedMember[] {m2.getLocalMember()}, msg, null);
-      giveUp = System.currentTimeMillis() + 5000;
+      giveUp = System.currentTimeMillis() + 15000;
       boolean verified = false;
       Throwable problem = null;
       while (giveUp > System.currentTimeMillis()) {
@@ -190,14 +190,15 @@ public class MembershipJUnitTest {
         }
       }
       if (!verified) {
+        AssertionError error = new AssertionError("Expected a message to be received");
         if (problem != null) {
-          problem.printStackTrace();
+          error.initCause(error);
         }
-        fail("Expected a multicast message to be received");
+        throw error;
       }
 
       // let the managers idle for a while and get used to each other
-      Thread.sleep(4000l);
+      // Thread.sleep(4000l);
 
       m2.shutdown();
       assertTrue(!m2.isConnected());
