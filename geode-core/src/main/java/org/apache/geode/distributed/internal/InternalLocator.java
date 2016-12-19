@@ -309,8 +309,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param peerLocator enable peer location services
    * @param enableServerLocator enable server location services
    * @param hostnameForClients the name to give to clients for connecting to this locator
-   * @param loadSharedConfigFromDir load the shared configuration from the shared configuration
-   *        directory
    *
    * @throws IOException
    * @since GemFire 7.0
@@ -318,10 +316,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   public static InternalLocator startLocator(int port, File logFile, File stateFile,
       InternalLogWriter logger, InternalLogWriter securityLogger, InetAddress bindAddress,
       java.util.Properties dsProperties, boolean peerLocator, boolean enableServerLocator,
-      String hostnameForClients, boolean loadSharedConfigFromDir) throws IOException {
+      String hostnameForClients) throws IOException {
     return startLocator(port, logFile, stateFile, logger, securityLogger, bindAddress, true,
-        dsProperties, peerLocator, enableServerLocator, hostnameForClients,
-        loadSharedConfigFromDir);
+        dsProperties, peerLocator, enableServerLocator, hostnameForClients);
   }
 
 
@@ -340,15 +337,13 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param peerLocator enable peer location services
    * @param enableServerLocator enable server location services
    * @param hostnameForClients the name to give to clients for connecting to this locator
-   * @param loadSharedConfigFromDir TODO:CONFIG
    *
    * @throws IOException
    */
   public static InternalLocator startLocator(int port, File logFile, File stateFile,
       InternalLogWriter logger, InternalLogWriter securityLogger, InetAddress bindAddress,
       boolean startDistributedSystem, java.util.Properties dsProperties, boolean peerLocator,
-      boolean enableServerLocator, String hostnameForClients, boolean loadSharedConfigFromDir)
-      throws IOException {
+      boolean enableServerLocator, String hostnameForClients) throws IOException {
 
     if (!peerLocator && !enableServerLocator) {
       throw new IllegalArgumentException(

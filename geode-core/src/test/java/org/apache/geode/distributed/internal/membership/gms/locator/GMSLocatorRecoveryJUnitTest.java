@@ -136,7 +136,7 @@ public class GMSLocatorRecoveryJUnitTest {
       // to be created
       // l = Locator.startLocator(port, new File(""), localHost);
       l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false,
-          new Properties(), true, false, null, false);
+          new Properties(), true, false, null);
 
       // create configuration objects
       Properties nonDefault = new Properties();

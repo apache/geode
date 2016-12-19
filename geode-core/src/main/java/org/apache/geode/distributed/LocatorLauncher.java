@@ -641,7 +641,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
               getBindAddress(), getDistributedSystemProperties(), DEFAULT_ENABLE_PEER_LOCATION,
-              DEFAULT_ENABLE_SERVER_LOCATION, getHostnameForClients(), false);
+              DEFAULT_ENABLE_SERVER_LOCATION, getHostnameForClients());
         } finally {
           ProcessLauncherContext.remove();
         }

@@ -253,7 +253,7 @@ public abstract class Locator {
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
     return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress, dsProperties,
-        peerLocator, serverLocator, hostnameForClients, loadSharedConfig);
+        peerLocator, serverLocator, hostnameForClients);
   }
 
   /**
@@ -264,8 +264,7 @@ public abstract class Locator {
       InetAddress bindAddress, java.util.Properties dsProperties, boolean peerLocator,
       boolean serverLocator, String hostnameForClients) throws IOException {
     return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress,
-        startDistributedSystem, dsProperties, peerLocator, serverLocator, hostnameForClients,
-        loadSharedConfig);
+        startDistributedSystem, dsProperties, peerLocator, serverLocator, hostnameForClients);
   }
 
   /**
