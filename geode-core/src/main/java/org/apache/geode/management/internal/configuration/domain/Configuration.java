@@ -16,14 +16,25 @@ package org.apache.geode.management.internal.configuration.domain;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 /**
  * Domain object for all the configuration related data.
@@ -36,18 +47,30 @@ public class Configuration implements DataSerializable {
   private String cacheXmlContent;
   private String cacheXmlFileName;
   private String propertiesFileName;
-  private Properties gemfireProperties = new Properties();
-  Set<String> jarNames = new HashSet<String>();
+  private Properties gemfireProperties;
+  Set<String> jarNames;
 
   // Public no arg constructor required for Deserializable
   public Configuration() {
 
   }
 
+  public Configuration(Configuration that) {
+    this.configName = that.configName;
+    this.cacheXmlContent = that.cacheXmlContent;
+    this.cacheXmlFileName = that.cacheXmlFileName;
+    this.propertiesFileName = that.propertiesFileName;
+    this.gemfireProperties = new Properties();
+    this.gemfireProperties.putAll(that.gemfireProperties);
+    this.jarNames = new HashSet<>(that.jarNames);
+  }
+
   public Configuration(String configName) {
     this.configName = configName;
     this.cacheXmlFileName = configName + ".xml";
-    this.setPropertiesFileName(configName + ".properties");
+    this.propertiesFileName = configName + ".properties";
+    this.gemfireProperties = new Properties();
+    this.jarNames = new HashSet<String>();
   }
 
   public String getCacheXmlContent() {
@@ -58,12 +81,33 @@ public class Configuration implements DataSerializable {
     this.cacheXmlContent = cacheXmlContent;
   }
 
-  public String getCacheXmlFileName() {
-    return cacheXmlFileName;
+  public void setCacheXmlFile(File cacheXmlFile)
+      throws TransformerException, ParserConfigurationException, IOException, SAXException {
+    if (cacheXmlFile.length() == 0) {
+      this.cacheXmlContent = "";
+    } else {
+      Document doc = XmlUtils.getDocumentBuilder().parse(cacheXmlFile);
+      this.cacheXmlContent = XmlUtils.elementToString(doc);
+    }
   }
 
-  public void setCacheXmlFileName(String cacheXmlFileName) {
-    this.cacheXmlFileName = cacheXmlFileName;
+  public void setPropertiesFile(File propertiesFile) throws IOException {
+    if (!propertiesFile.exists())
+      return;
+
+    FileInputStream fis = null;
+    try {
+      fis = new FileInputStream(propertiesFile);
+      this.gemfireProperties.load(fis);
+    } finally {
+      if (fis != null) {
+        fis.close();
+      }
+    }
+  }
+
+  public String getCacheXmlFileName() {
+    return cacheXmlFileName;
   }
 
   public Properties getGemfireProperties() {
@@ -74,35 +118,33 @@ public class Configuration implements DataSerializable {
     this.gemfireProperties = gemfireProperties;
   }
 
-  public String getConfigName() {
-    return configName;
+  public void addGemfireProperties(Properties gemfireProperties) {
+    this.gemfireProperties.putAll(gemfireProperties);
   }
 
-  public void setConfigName(String configName) {
-    this.configName = configName;
+  public String getConfigName() {
+    return configName;
   }
 
   public String getPropertiesFileName() {
     return propertiesFileName;
   }
 
-  public void setPropertiesFileName(String propertiesFileName) {
-    this.propertiesFileName = propertiesFileName;
+  public void addJarNames(Set<String> jarNames) {
+    this.jarNames.addAll(jarNames);
   }
 
   public void addJarNames(String[] jarNames) {
-    if (jarNames != null) {
-      for (String jarName : jarNames) {
-        this.jarNames.add(jarName);
-      }
-    }
+    if (jarNames == null)
+      return;
+
+    this.jarNames.addAll(Stream.of(jarNames).collect(Collectors.toSet()));
   }
+
 
   public void removeJarNames(String[] jarNames) {
     if (jarNames != null) {
-      for (String jarName : jarNames) {
-        this.jarNames.remove(jarName);
-      }
+      this.jarNames.removeAll(Stream.of(jarNames).collect(Collectors.toSet()));
     } else {
       this.jarNames.clear();
     }

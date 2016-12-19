@@ -48,7 +48,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
     locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
     Locator secondLocator = lsRule.startLocatorVM(1, locatorProps);
 
-    CONFIG_FROM_ZIP.verify(secondLocator);
+    REPLICATED_CONFIG_FROM_ZIP.verify(secondLocator);
   }
 
   @Test

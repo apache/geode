@@ -35,9 +35,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class SharedConfigurationJUnitTest {
 
-  /**
-   * Test {@link SharedConfiguration#createAndUpgradeDocumentFromXml(String)}
-   */
   @Test
   public void testCreateAndUpgradeDocumentFromXml() throws Exception {
     Document doc = SharedConfiguration.createAndUpgradeDocumentFromXml(

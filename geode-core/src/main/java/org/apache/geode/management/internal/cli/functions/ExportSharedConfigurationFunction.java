@@ -15,8 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SharedConfiguration;
@@ -28,7 +27,7 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import java.io.File;
 import java.util.UUID;
 
-public class ExportSharedConfigurationFunction extends FunctionAdapter implements InternalEntity {
+public class ExportSharedConfigurationFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
@@ -59,7 +58,7 @@ public class ExportSharedConfigurationFunction extends FunctionAdapter implement
       byte[] zippedConfigData = FileUtils.readFileToByteArray(zipFile);
       FileUtils.forceDelete(zipFile);
       CliFunctionResult result = new CliFunctionResult(locator.getDistributedSystem().getName(),
-          zippedConfigData, new String[]{zipFileName});
+          zippedConfigData, new String[] {zipFileName});
       context.getResultSender().lastResult(result);
     } catch (Exception e) {
       context.getResultSender().lastResult(new CliFunctionResult(memberName, e, e.getMessage()));

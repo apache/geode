@@ -17,6 +17,7 @@
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.management.cli.Result;
@@ -25,6 +26,7 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,7 +69,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
 
   @Test
   public void testImportWithRunningServer() throws Exception {
-    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    lsRule.startServerVM(1, serverProps, locator.getPort());
 
     CommandResult result = gfshConnector.executeCommand(
         "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
@@ -81,11 +83,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
         "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    // verify that the previous folder is backed up to "cluster_configxxxxxx".
-    //TODO: Expecting this functionality is a problem since the cluster_config dir will not contain .xml and .properties any longer, and hence not be a useful backup.
-    assertThat(locator.getWorkingDir().listFiles())
-        .filteredOn((File file) -> !file.getName().equals("cluster_config"))
-        .filteredOn((File file) -> file.getName().startsWith("cluster_config")).isNotEmpty();
+    // TODO: For [GEODE-2229] we will want to assert that a backup is created
     CONFIG_FROM_ZIP.verify(locator);
 
     // start server1 with no group
@@ -101,6 +99,25 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     serverProps.setProperty(GROUPS, "group1,group2");
     Server server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
     new ClusterConfig(CLUSTER, GROUP1, GROUP2).verify(server3);
+  }
+
+  @Test
+  @Category(FlakyTest.class) //remove after GEODE-2261 is implemented
+  public void testImportWithMultipleLocators() throws Exception {
+    locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
+    Locator locator1 = lsRule.startLocatorVM(1, locatorProps);
+
+
+    locatorProps.setProperty(LOCATORS,
+        "localhost[" + locator.getPort() + "],localhost[" + locator1.getPort() + "]");
+    Locator locator2 = lsRule.startLocatorVM(2, locatorProps);
+
+    CommandResult result = gfshConnector.executeCommand(
+        "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    REPLICATED_CONFIG_FROM_ZIP.verify(locator1);
+    REPLICATED_CONFIG_FROM_ZIP.verify(locator2);
   }
 
   @Test

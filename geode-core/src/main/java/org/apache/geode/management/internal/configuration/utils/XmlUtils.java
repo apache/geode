@@ -671,27 +671,4 @@ public class XmlUtils {
       }
     }
   }
-
-  /***
-   * Reads the xml file as a String
-   * 
-   * @param xmlFilePath
-   * @return String containing xml read from the file.
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   * @throws TransformerException
-   * @throws TransformerFactoryConfigurationError
-   */
-  public static String readXmlAsStringFromFile(String xmlFilePath) throws IOException, SAXException,
-      ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException {
-    File file = new File(xmlFilePath);
-    // The file can be empty if the only command we have issued for this group is deployJar
-    if (file.length() == 0) {
-      return "";
-    }
-
-    Document doc = getDocumentBuilder().parse(file);
-    return elementToString(doc);
-  }
 }

@@ -97,18 +97,29 @@ public class ClusterConfig implements Serializable {
       Set<String> actualGroupConfigs = sc.getEntireConfiguration().keySet();
       assertThat(actualGroupConfigs).isEqualTo(expectedGroupConfigs);
 
-      // verify jars are as expected
       for (ConfigGroup configGroup : this.getGroups()) {
+        // verify jars are as expected
         Configuration config = sc.getConfiguration(configGroup.name);
         assertThat(config.getJarNames()).isEqualTo(configGroup.getJars());
+
+        // verify proeprty is as expected
+        if (!StringUtils.isBlank(configGroup.getMaxLogFileSize())) {
+          Properties props = config.getGemfireProperties();
+          assertThat(props.getProperty(LOG_FILE_SIZE_LIMIT))
+              .isEqualTo(configGroup.getMaxLogFileSize());
+        }
+
+        // verify region is in the region xml
+        for (String regionName : configGroup.getRegions()) {
+          String regionXml = "<region name=\"" + regionName + "\"";
+          assertThat(config.getCacheXmlContent()).contains(regionXml);
+        }
       }
 
-      // TODO: assert that groupConfig.getXml() contains expected region names
+
     });
 
     File clusterConfigDir = new File(locator.getWorkingDir(), "/cluster_config");
-//    Set<String> actualGroupDirs = toSetIgnoringHiddenFiles(clusterConfigDir.list());
-//    assertThat(actualGroupDirs).isEqualTo(expectedGroupConfigs);
 
     for (ConfigGroup configGroup : this.getGroups()) {
       Set<String> actualFiles =

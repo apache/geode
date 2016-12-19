@@ -26,7 +26,7 @@ import org.apache.geode.management.internal.configuration.functions.AddJarFuncti
 import org.apache.geode.management.internal.configuration.functions.AddXmlEntityFunction;
 import org.apache.geode.management.internal.configuration.functions.DeleteJarFunction;
 import org.apache.geode.management.internal.configuration.functions.DeleteXmlEntityFunction;
-import org.apache.geode.management.internal.configuration.functions.ModifyPropertiesFunction;
+import org.apache.geode.management.internal.configuration.functions.ModifyXmlAndPropertiesFunction;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashSet;
@@ -51,7 +51,8 @@ public class SharedConfigurationWriter {
   private final DeleteJarFunction deleteJarFunction = new DeleteJarFunction();
   private final AddXmlEntityFunction addXmlEntityFunction = new AddXmlEntityFunction();
   private final DeleteXmlEntityFunction deleteXmlEntityFunction = new DeleteXmlEntityFunction();
-  private final ModifyPropertiesFunction modifyPropertiesFunction = new ModifyPropertiesFunction();
+  private final ModifyXmlAndPropertiesFunction modifyXmlAndPropertiesFunction =
+      new ModifyXmlAndPropertiesFunction();
   private boolean isSharedConfigEnabled;
 
   public SharedConfigurationWriter() {
@@ -90,12 +91,12 @@ public class SharedConfigurationWriter {
 
 
   public boolean modifyPropertiesAndCacheAttributes(Properties properties, XmlEntity xmlEntity,
-                                                    String[] groups) {
+      String[] groups) {
     Object[] args = new Object[3];
     args[0] = properties;
     args[1] = xmlEntity;
     args[2] = groups;
-    return saveConfigChanges(modifyPropertiesFunction, args);
+    return saveConfigChanges(modifyXmlAndPropertiesFunction, args);
   }
 
   // /*****
@@ -146,14 +147,12 @@ public class SharedConfigurationWriter {
   }
 
   private boolean saveConfigChangeOnLocator(DistributedMember locator, Function function,
-                                            Object[] args) {
+      Object[] args) {
     ResultCollector<?, ?> rc = CliUtil.executeFunction(function, args, locator);
     List<ConfigurationChangeResult> results = (List<ConfigurationChangeResult>) rc.getResult();
 
-    Optional<ConfigurationChangeResult> result = results.stream()
-        .filter(Objects::nonNull)
-        .filter(ConfigurationChangeResult::isSuccessful)
-        .findFirst();
+    Optional<ConfigurationChangeResult> result = results.stream().filter(Objects::nonNull)
+        .filter(ConfigurationChangeResult::isSuccessful).findFirst();
 
     return result.isPresent();
   }

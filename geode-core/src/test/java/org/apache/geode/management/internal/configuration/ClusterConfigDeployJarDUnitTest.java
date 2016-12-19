@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.management.cli.Result;
@@ -25,12 +26,23 @@ import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   private GfshShellConnectionRule gfshConnector;
+
+  private String clusterJar, group1Jar, group2Jar;
+
+  @Before
+  public void before() throws Exception {
+    super.before();
+    clusterJar = getClass().getResource("cluster.jar").getPath();
+    group1Jar = getClass().getResource("group1.jar").getPath();
+    group2Jar = getClass().getResource("group2.jar").getPath();
+  }
 
   @After
   public void after() throws Exception {
@@ -54,11 +66,36 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   }
 
   @Test
-  public void testDeploy() throws Exception {
-    String clusterJar = getClass().getResource("cluster.jar").getPath();
-    String group1Jar = getClass().getResource("group1.jar").getPath();
-    String group2Jar = getClass().getResource("group2.jar").getPath();
+  public void testDeployToMultipleLocaotrs() throws Exception {
+    Locator locator = lsRule.startLocatorVM(0, locatorProps);
+    locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
+    Locator locator2 = lsRule.startLocatorVM(1, locatorProps);
+    locatorProps.setProperty(LOCATORS,
+        "localhost[" + locator.getPort() + "],localhost[" + locator2.getPort() + "]");
+    Locator locator3 = lsRule.startLocatorVM(2, locatorProps);
 
+    // has to start a server in order to run deploy command
+    lsRule.startServerVM(3, serverProps, locator.getPort());
+
+    gfshConnector =
+        new GfshShellConnectionRule(locator.getPort(), GfshShellConnectionRule.PortType.locator);
+    gfshConnector.connect();
+    assertThat(gfshConnector.isConnected()).isTrue();
+
+    CommandResult result = gfshConnector.executeCommand("deploy --jar=" + clusterJar);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
+    ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
+
+    expectedClusterConfig.verify(locator);
+    expectedClusterConfig.verify(locator2);
+    expectedClusterConfig.verify(locator3);
+  }
+
+
+  @Test
+  public void testDeploy() throws Exception {
     // set up the locator/servers
     Locator locator = lsRule.startLocatorVM(0, locatorProps);
     // server1 in no group
@@ -109,10 +146,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
 
 
   @Test
-  public void testUndeployMultiGroup() throws Exception {
-    String clusterJar = getClass().getResource("cluster.jar").getPath();
-    String group1Jar = getClass().getResource("group1.jar").getPath();
-
+  public void testUndeploy() throws Exception {
     // set up the locator/servers
     Locator locator = lsRule.startLocatorVM(0, locatorProps);
     serverProps.setProperty(GROUPS, "group1");

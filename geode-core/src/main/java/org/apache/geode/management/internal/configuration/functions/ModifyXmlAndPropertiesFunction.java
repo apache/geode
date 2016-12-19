@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.configuration.functions;
 
 import java.util.Properties;
 
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SharedConfiguration;
@@ -25,7 +25,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.ConfigurationChangeResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class ModifyPropertiesFunction extends FunctionAdapter implements InternalEntity {
+public class ModifyXmlAndPropertiesFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,8 +41,7 @@ public class ModifyPropertiesFunction extends FunctionAdapter implements Interna
         String[] groups = (String[]) args[2];
 
         SharedConfiguration sharedConfig = locator.getSharedConfiguration();
-        sharedConfig.modifyProperties(properties, groups);
-        sharedConfig.modifyCacheAttributes(xmlEntity, groups);
+        sharedConfig.modifyXmlAndProperties(properties, xmlEntity, groups);
       } else {
         configChangeResult
             .setErrorMessage("Shared Configuration has not been started in locator : " + locator);
@@ -57,7 +56,7 @@ public class ModifyPropertiesFunction extends FunctionAdapter implements Interna
 
   @Override
   public String getId() {
-    return ModifyPropertiesFunction.class.getName();
+    return ModifyXmlAndPropertiesFunction.class.getName();
   }
 
 }

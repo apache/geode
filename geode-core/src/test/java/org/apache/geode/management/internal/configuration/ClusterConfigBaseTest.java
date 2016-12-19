@@ -40,6 +40,14 @@ public class ClusterConfigBaseTest extends JUnit4DistributedTestCase {
 
   public static final ClusterConfig CONFIG_FROM_ZIP = new ClusterConfig(CLUSTER, GROUP1, GROUP2);
 
+  public static final ClusterConfig REPLICATED_CONFIG_FROM_ZIP = new ClusterConfig(
+      new ConfigGroup("cluster").maxLogFileSize("5000").jars("cluster.jar")
+          .regions("regionForCluster"),
+      new ConfigGroup("group1").maxLogFileSize("6000").jars("group1.jar")
+          .regions("regionForGroup1"),
+      new ConfigGroup("group2").maxLogFileSize("7000").jars("group2.jar")
+          .regions("regionForGroup2"));
+
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 

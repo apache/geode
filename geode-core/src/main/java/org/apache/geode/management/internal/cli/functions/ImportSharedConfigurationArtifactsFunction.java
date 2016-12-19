@@ -58,9 +58,6 @@ public class ImportSharedConfigurationArtifactsFunction extends FunctionAdapter
         // load it from the disk
         sc.loadSharedConfigurationFromDisk();
 
-        // do we need to delete the xml/properites? this should just be a stale copy.
-        // remember in the ExportSharedConfigurationFunction, we write them to the file system again
-
         CliFunctionResult cliFunctionResult =
             new CliFunctionResult(memberName, true, CliStrings.IMPORT_SHARED_CONFIG__SUCCESS__MSG);
         context.getResultSender().lastResult(cliFunctionResult);

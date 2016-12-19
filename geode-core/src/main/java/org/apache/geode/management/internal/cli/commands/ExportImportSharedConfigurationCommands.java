@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import com.google.common.primitives.Booleans;
-
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -86,8 +84,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
     Optional<CliFunctionResult> functionResult = locators.stream()
         .map((DistributedMember locator) -> exportSharedConfigurationFromLocator(locator, null))
-        .filter(CliFunctionResult::isSuccessful)
-        .findFirst();
+        .filter(CliFunctionResult::isSuccessful).findFirst();
 
     Result result;
     if (functionResult.isPresent()) {
@@ -105,7 +102,8 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
     return result;
   }
 
-  private CliFunctionResult exportSharedConfigurationFromLocator(DistributedMember locator, Object[] args) {
+  private CliFunctionResult exportSharedConfigurationFromLocator(DistributedMember locator,
+      Object[] args) {
     ResultCollector rc = CliUtil.executeFunction(exportSharedConfigurationFunction, args, locator);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
@@ -150,8 +148,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
     Optional<CliFunctionResult> functionResult = locators.stream()
         .map((DistributedMember locator) -> importSharedConfigurationFromLocator(locator, args))
-        .filter(CliFunctionResult::isSuccessful)
-        .findFirst();
+        .filter(CliFunctionResult::isSuccessful).findFirst();
 
     if (functionResult.isPresent()) {
       InfoResultData infoData = ResultBuilder.createInfoResultData();
@@ -166,7 +163,8 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
     return result;
   }
 
-  private CliFunctionResult importSharedConfigurationFromLocator(DistributedMember locator, Object[] args) {
+  private CliFunctionResult importSharedConfigurationFromLocator(DistributedMember locator,
+      Object[] args) {
     ResultCollector rc = CliUtil.executeFunction(importSharedConfigurationFunction, args, locator);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 

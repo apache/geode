@@ -629,8 +629,8 @@ org/apache/geode/management/internal/configuration/functions/AddJarFunction,true
 org/apache/geode/management/internal/configuration/functions/AddXmlEntityFunction,true,1
 org/apache/geode/management/internal/configuration/functions/DeleteJarFunction,true,1
 org/apache/geode/management/internal/configuration/functions/DeleteXmlEntityFunction,true,1
-org/apache/geode/management/internal/configuration/functions/GetAllJarsFunction,true,1
-org/apache/geode/management/internal/configuration/functions/ModifyPropertiesFunction,true,1
+org/apache/geode/management/internal/configuration/functions/ModifyXmlAndPropertiesFunction,true,1
+org/apache/geode/management/internal/configuration/functions/UploadJarFunction,true,1
 org/apache/geode/management/internal/web/domain/Link,false,href:java/net/URI,method:org/apache/geode/management/internal/web/http/HttpMethod,relation:java/lang/String
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/http/HttpHeader,false,name:java/lang/String
