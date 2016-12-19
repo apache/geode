@@ -50,7 +50,7 @@ public class ReplicatedTest {
   private static final String pidkillerScriptFileName = "pidkiller.sh";
   private boolean processRunning = false;
   private ShellUtil shell = new ShellUtil();
-  private final long scriptTimeout = TimeUnit.SECONDS.toMillis(60);
+  private final long scriptTimeout = TimeUnit.SECONDS.toMillis(120);
   private static final Logger logger = Logger.getAnonymousLogger();
 
   @Rule
