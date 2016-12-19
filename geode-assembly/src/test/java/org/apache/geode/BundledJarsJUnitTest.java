@@ -28,7 +28,6 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,10 +48,8 @@ public class BundledJarsJUnitTest {
   public void loadExpectedJars() throws IOException {
     String expectedJarFile =
         TestUtil.getResourcePath(BundledJarsJUnitTest.class, "/expected_jars.txt");
-    expectedJars = Files
-        .lines(
-            Paths.get(SystemUtils.IS_OS_WINDOWS ? expectedJarFile.substring(1) : expectedJarFile))
-        .collect(Collectors.toSet());
+
+    expectedJars = Files.lines(Paths.get(expectedJarFile)).collect(Collectors.toSet());
   }
 
   @Test
