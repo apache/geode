@@ -59,6 +59,10 @@ public class FutureResult implements Future {
   public Object get() throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException(); // check in case latch is null
+    if (this.isCancelled) {
+      throw new CancellationException(
+          LocalizedStrings.FutureResult_FUTURE_WAS_CANCELLED.toLocalizedString());
+    }
     if (this.latch != null)
       this.latch.await();
     if (this.isCancelled) {
@@ -71,6 +75,10 @@ public class FutureResult implements Future {
   public Object get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
     if (Thread.interrupted())
       throw new InterruptedException(); // check in case latch is null
+    if (this.isCancelled) {
+      throw new CancellationException(
+          LocalizedStrings.FutureResult_FUTURE_WAS_CANCELLED.toLocalizedString());
+    }
     if (this.latch != null) {
       if (!this.latch.await(unit.toMillis(timeout))) {
         throw new TimeoutException();
