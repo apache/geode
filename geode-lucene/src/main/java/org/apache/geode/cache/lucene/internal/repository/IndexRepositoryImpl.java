@@ -101,7 +101,7 @@ public class IndexRepositoryImpl implements IndexRepository {
 
   @Override
   public void query(Query query, int limit, IndexResultCollector collector) throws IOException {
-    long start = stats.startQuery();
+    long start = stats.startRepositoryQuery();
     int totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
     try {
@@ -117,7 +117,7 @@ public class IndexRepositoryImpl implements IndexRepository {
       }
     } finally {
       searcherManager.release(searcher);
-      stats.endQuery(start, totalHits);
+      stats.endRepositoryQuery(start, totalHits);
     }
   }
 

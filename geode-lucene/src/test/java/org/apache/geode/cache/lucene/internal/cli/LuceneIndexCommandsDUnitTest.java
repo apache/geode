@@ -148,7 +148,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Collections.singletonList(INDEX_NAME), data.retrieveAllValues("Index Name"));
     assertEquals(Collections.singletonList("Initialized"), data.retrieveAllValues("Status"));
     assertEquals(Collections.singletonList("/region"), data.retrieveAllValues("Region Path"));
-    assertEquals(Collections.singletonList("113"), data.retrieveAllValues("Query Executions"));
+    assertEquals(Collections.singletonList("1"), data.retrieveAllValues("Query Executions"));
     assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Commits"));
     assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Updates"));
     assertEquals(Collections.singletonList("2"), data.retrieveAllValues("Documents"));

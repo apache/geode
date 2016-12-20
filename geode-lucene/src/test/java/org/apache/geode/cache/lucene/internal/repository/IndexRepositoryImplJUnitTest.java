@@ -153,8 +153,8 @@ public class IndexRepositoryImplJUnitTest {
         new Type2("Portland Cream doughnut", 1, 2L, 3.0, 4.0f, "Captain my Captain doughnut"));
     repo.commit();
     checkQuery("Cream", "s", "key2", "key4");
-    verify(stats, times(1)).startQuery();
-    verify(stats, times(1)).endQuery(anyLong(), eq(2));
+    verify(stats, times(1)).startRepositoryQuery();
+    verify(stats, times(1)).endRepositoryQuery(anyLong(), eq(2));
   }
 
   @Test

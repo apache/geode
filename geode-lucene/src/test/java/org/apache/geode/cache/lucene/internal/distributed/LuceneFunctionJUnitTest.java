@@ -32,6 +32,7 @@ import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.StringQueryProvider;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
@@ -71,6 +72,7 @@ public class LuceneFunctionJUnitTest {
   IndexResultCollector mockCollector;
   InternalLuceneService mockService;
   LuceneIndexImpl mockIndex;
+  LuceneIndexStats mockStats;
 
   ArrayList<IndexRepository> repos;
   LuceneFunctionContext<IndexResultCollector> searchArgs;
@@ -269,6 +271,7 @@ public class LuceneFunctionJUnitTest {
     mockRepository1 = mock(IndexRepository.class, "repo1");
     mockRepository2 = mock(IndexRepository.class, "repo2");
     mockCollector = mock(IndexResultCollector.class);
+    mockStats = mock(LuceneIndexStats.class);
 
     repos = new ArrayList<IndexRepository>();
     repos.add(mockRepository1);
@@ -289,6 +292,7 @@ public class LuceneFunctionJUnitTest {
     when(mockService.getIndex(eq("indexName"), eq(regionPath))).thenReturn(mockIndex);
     when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
     when(mockIndex.getFieldNames()).thenReturn(new String[] {"gemfire"});
+    when(mockIndex.getIndexStats()).thenReturn(mockStats);
 
     query = queryProvider.getQuery(mockIndex);
   }

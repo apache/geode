@@ -36,6 +36,10 @@ public class LuceneIndexStats {
   private static final int queryExecutionTimeId;
   private static final int queryExecutionsInProgressId;
   private static final int queryExecutionTotalHitsId;
+  private static final int repositoryQueryExecutionsId;
+  private static final int repositoryQueryExecutionTimeId;
+  private static final int repositoryQueryExecutionsInProgressId;
+  private static final int repositoryQueryExecutionTotalHitsId;
   private static final int updatesId;
   private static final int updateTimeId;
   private static final int updatesInProgressId;
@@ -58,6 +62,14 @@ public class LuceneIndexStats {
             "Number of query executions currently in progress", "operations"),
         f.createLongCounter("queryExecutionTotalHits",
             "Total number of documents returned by query executions", "entries"),
+        f.createIntCounter("repositoryQueryExecutions",
+            "Number of lucene repository queries executed on this member", "operations"),
+        f.createLongCounter("repositoryQueryExecutionTime",
+            "Amount of time spent executing lucene repository queries", "nanoseconds"),
+        f.createIntGauge("repositoryQueryExecutionsInProgress",
+            "Number of repository query executions currently in progress", "operations"),
+        f.createLongCounter("repositoryQueryExecutionTotalHits",
+            "Total number of documents returned by repository query executions", "entries"),
         f.createIntCounter("updates",
             "Number of lucene index documents added/removed on this member", "operations"),
         f.createLongCounter("updateTime",
@@ -75,6 +87,11 @@ public class LuceneIndexStats {
     queryExecutionTimeId = statsType.nameToId("queryExecutionTime");
     queryExecutionsInProgressId = statsType.nameToId("queryExecutionsInProgress");
     queryExecutionTotalHitsId = statsType.nameToId("queryExecutionTotalHits");
+    repositoryQueryExecutionsId = statsType.nameToId("repositoryQueryExecutions");
+    repositoryQueryExecutionTimeId = statsType.nameToId("repositoryQueryExecutionTime");
+    repositoryQueryExecutionsInProgressId =
+        statsType.nameToId("repositoryQueryExecutionsInProgress");
+    repositoryQueryExecutionTotalHitsId = statsType.nameToId("repositoryQueryExecutionTotalHits");
     updatesId = statsType.nameToId("updates");
     updateTimeId = statsType.nameToId("updateTime");
     updatesInProgressId = statsType.nameToId("updatesInProgress");
@@ -87,6 +104,24 @@ public class LuceneIndexStats {
   public LuceneIndexStats(StatisticsFactory f, String name) {
     this.stats = f.createAtomicStatistics(statsType, name);
     stats.setIntSupplier(documentsId, this::computeDocumentCount);
+  }
+
+  /**
+   * @return the timestamp that marks the start of the operation
+   */
+  public long startRepositoryQuery() {
+    stats.incInt(repositoryQueryExecutionsInProgressId, 1);
+    return getStatTime();
+  }
+
+  /**
+   * @param start the timestamp taken when the operation started
+   */
+  public void endRepositoryQuery(long start, final int totalHits) {
+    stats.incLong(repositoryQueryExecutionTimeId, getStatTime() - start);
+    stats.incInt(repositoryQueryExecutionsInProgressId, -1);
+    stats.incInt(repositoryQueryExecutionsId, 1);
+    stats.incLong(repositoryQueryExecutionTotalHitsId, totalHits);
   }
 
   /**

@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;
 
@@ -32,14 +34,11 @@ import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketNotFoundException;
-import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -72,9 +71,10 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
     }
 
     LuceneService service = LuceneServiceProvider.get(region.getCache());
-    InternalLuceneIndex index =
-        (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+    LuceneIndexImpl index =
+        (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
     RepositoryManager repoManager = index.getRepositoryManager();
+    LuceneIndexStats stats = index.getIndexStats();
 
     Query query = null;
     try {
@@ -95,15 +95,23 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
     }
 
     Collection<IndexResultCollector> results = new ArrayList<>();
+    TopEntriesCollector mergedResult = null;
     try {
-      Collection<IndexRepository> repositories = repoManager.getRepositories(ctx);
-      for (IndexRepository repo : repositories) {
-        IndexResultCollector collector = manager.newCollector(repo.toString());
-        logger.debug("Executing search on repo: " + repo.toString());
-        repo.query(query, resultLimit, collector);
-        results.add(collector);
+      long start = stats.startQuery();
+      try {
+        Collection<IndexRepository> repositories = repoManager.getRepositories(ctx);
+        for (IndexRepository repo : repositories) {
+          IndexResultCollector collector = manager.newCollector(repo.toString());
+          if (logger.isDebugEnabled()) {
+            logger.debug("Executing search on repo: " + repo.toString());
+          }
+          repo.query(query, resultLimit, collector);
+          results.add(collector);
+        }
+        mergedResult = (TopEntriesCollector) manager.reduce(results);
+      } finally {
+        stats.endQuery(start, mergedResult == null ? 0 : mergedResult.size());
       }
-      TopEntriesCollector mergedResult = (TopEntriesCollector) manager.reduce(results);
       resultSender.lastResult(mergedResult);
     } catch (IOException | BucketNotFoundException e) {
       logger.warn("", e);

@@ -125,8 +125,9 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     getManagingNode().invoke(() -> waitForMemberProxiesToRefresh(2));
 
     // Verify index metrics
+    int numManagedNodes = getManagedNodeList().size();
     getManagingNode().invoke(() -> verifyMBeanIndexMetricsValues(regionName, indexName, numPuts,
-        113/* 1 query per bucket */, 1/* 1 result */));
+        numManagedNodes/* 1 query per managed node */, 1/* 1 result */));
   }
 
   private static void waitForMemberProxiesToRefresh(int refreshCount) {
