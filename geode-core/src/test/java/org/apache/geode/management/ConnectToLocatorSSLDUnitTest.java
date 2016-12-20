@@ -98,7 +98,6 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-2099
   public void testConnectToLocatorWithSSLJMX() throws Exception {
     securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.JMX);
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
@@ -112,7 +111,6 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-2099
   public void testConnectToLocatorWithLegacyClusterSSL() throws Exception {
     securityProps.setProperty(CLUSTER_SSL_ENABLED, "true");
     securityProps.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
@@ -125,7 +123,6 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-2099
   public void testConnectToLocatorWithLegacyJMXSSL() throws Exception {
     securityProps.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
     securityProps.setProperty(JMX_MANAGER_SSL_KEYSTORE, jks.getCanonicalPath());
