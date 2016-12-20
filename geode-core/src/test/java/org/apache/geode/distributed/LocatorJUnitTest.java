@@ -126,8 +126,6 @@ public class LocatorJUnitTest {
   @Test
   public void testBasicInfo() throws Exception {
     locator = Locator.startLocator(port, tmpFile);
-    assertTrue(locator.isPeerLocator());
-    assertFalse(locator.isServerLocator());
     int boundPort = (port == 0) ? locator.getPort() : port;
     TcpClient client = new TcpClient();
     String[] info = client.getInfo(InetAddress.getLocalHost(), boundPort);
@@ -163,32 +161,6 @@ public class LocatorJUnitTest {
     } finally {
       JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
     }
-  }
-
-  @Test
-  public void testServerOnly() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
-    locator = Locator.startLocatorAndDS(port, tmpFile, null, props, false, true, null);
-    assertFalse(locator.isPeerLocator());
-    assertTrue(locator.isServerLocator());
-    Thread.sleep(1000);
-    doServerLocation(locator.getPort());
-  }
-
-  @Test
-  public void testBothPeerAndServer() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
-
-    locator = Locator.startLocatorAndDS(port, new File(""), null, props);
-    assertTrue(locator.isPeerLocator());
-    assertTrue(locator.isServerLocator());
-    Thread.sleep(1000);
-    doServerLocation(locator.getPort());
-    locator.stop();
   }
 
   /**

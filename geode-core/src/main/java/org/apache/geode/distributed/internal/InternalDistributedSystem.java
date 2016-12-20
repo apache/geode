@@ -795,15 +795,13 @@ public class InternalDistributedSystem extends DistributedSystem
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);
 
-      if (locId.isPeerLocator()) {
-        boolean startedPeerLocation = false;
-        try {
-          this.startedLocator.startPeerLocation(true);
-          startedPeerLocation = true;
-        } finally {
-          if (!startedPeerLocation) {
-            this.startedLocator.stop();
-          }
+      boolean startedPeerLocation = false;
+      try {
+        this.startedLocator.startPeerLocation(true);
+        startedPeerLocation = true;
+      } finally {
+        if (!startedPeerLocation) {
+          this.startedLocator.stop();
         }
       }
     } catch (IOException e) {
@@ -820,17 +818,9 @@ public class InternalDistributedSystem extends DistributedSystem
   private void endInitLocator() throws IOException {
     InternalLocator loc = this.startedLocator;
     if (loc != null) {
-      String locatorString = this.originalConfig.getStartLocator();
-      // DistributionLocatorId locId = new DistributionLocatorId(locatorString);
       boolean finished = false;
       try {
-        // during the period when the product is using only paper licenses we always
-        // start server location services in order to be able to log information
-        // about the use of cache servers
-        // if(locId.isServerLocator()) {
         loc.startServerLocation(this);
-        // }
-
         loc.endStartLocator(this);
         finished = true;
       } finally {

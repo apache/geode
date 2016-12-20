@@ -306,22 +306,15 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param securityLogger the logger to be used for security related log messages
    * @param dsProperties optional properties to configure the distributed system (e.g., mcast
    *        addr/port, other locators)
-   * @param peerLocator enable peer location services
-   * @param enableServerLocator enable server location services
    * @param hostnameForClients the name to give to clients for connecting to this locator
-   * @param loadSharedConfigFromDir load the shared configuration from the shared configuration
-   *        directory
-   *
    * @throws IOException
    * @since GemFire 7.0
    */
   public static InternalLocator startLocator(int port, File logFile, File stateFile,
       InternalLogWriter logger, InternalLogWriter securityLogger, InetAddress bindAddress,
-      java.util.Properties dsProperties, boolean peerLocator, boolean enableServerLocator,
-      String hostnameForClients, boolean loadSharedConfigFromDir) throws IOException {
+      Properties dsProperties, String hostnameForClients) throws IOException {
     return startLocator(port, logFile, stateFile, logger, securityLogger, bindAddress, true,
-        dsProperties, peerLocator, enableServerLocator, hostnameForClients,
-        loadSharedConfigFromDir);
+        dsProperties, hostnameForClients);
   }
 
 
@@ -337,24 +330,14 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param startDistributedSystem if true, a distributed system is started
    * @param dsProperties optional properties to configure the distributed system (e.g., mcast
    *        addr/port, other locators)
-   * @param peerLocator enable peer location services
-   * @param enableServerLocator enable server location services
    * @param hostnameForClients the name to give to clients for connecting to this locator
-   * @param loadSharedConfigFromDir TODO:CONFIG
    *
    * @throws IOException
    */
   public static InternalLocator startLocator(int port, File logFile, File stateFile,
       InternalLogWriter logger, InternalLogWriter securityLogger, InetAddress bindAddress,
-      boolean startDistributedSystem, java.util.Properties dsProperties, boolean peerLocator,
-      boolean enableServerLocator, String hostnameForClients, boolean loadSharedConfigFromDir)
+      boolean startDistributedSystem, Properties dsProperties, String hostnameForClients)
       throws IOException {
-
-    if (!peerLocator && !enableServerLocator) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.InternalLocator_EITHER_PEER_LOCATOR_OR_SERVER_LOCATOR_MUST_BE_ENABLED
-              .toLocalizedString());
-    }
 
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator slocator = null;
@@ -368,13 +351,9 @@ public class InternalLocator extends Locator implements ConnectListener {
       // TODO:GEODE-1243: this.server is now a TcpServer and it should store or return its non-zero
       // port in a variable to use here
 
-      if (enableServerLocator) {
-        slocator.handler.willHaveServerLocator = true;
-      }
+      slocator.handler.willHaveServerLocator = true;
       try {
-        if (peerLocator) {
-          slocator.startPeerLocation(startDistributedSystem);
-        }
+        slocator.startPeerLocation(startDistributedSystem);
         if (startDistributedSystem) {
           try {
             slocator.startDistributedSystem(); // TODO:GEODE-1243: throws Exception if TcpServer
@@ -395,12 +374,6 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
 
 
-      // during the period when the product is using only paper licenses we always
-      // start server location services in order to be able to log information
-      // about the use of cache servers
-      // if(enableServerLocator) {
-      // slocator.startServerLocation(InternalDistributedSystem.getConnectedInstance());
-      // }
       InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
       if (sys != null) {
         try {
@@ -645,6 +618,19 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   public NetLocator getLocatorHandler() {
     return this.locatorImpl;
+  }
+
+  /**
+   * For backward-compatibility we retain this method
+   * 
+   * @deprecated use a form of the method that does not have peerLocator/serverLocator parameters
+   */
+  public static InternalLocator startLocator(int locatorPort, File logFile, File stateFile,
+      InternalLogWriter logger, InternalLogWriter logger1, InetAddress addr,
+      Properties dsProperties, boolean peerLocator, boolean serverLocator, String s, boolean b1)
+      throws IOException {
+    return startLocator(locatorPort, logFile, stateFile, logger, logger1, addr, dsProperties, s);
+
   }
 
   class SharedConfigurationRunnable implements Runnable {

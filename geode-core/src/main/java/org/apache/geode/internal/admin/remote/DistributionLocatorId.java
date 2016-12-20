@@ -42,6 +42,8 @@ public class DistributionLocatorId implements java.io.Serializable {
   private final int port;
   private final String bindAddress;
   transient private SSLConfig sslConfig;
+  // the following two fields are not used but are retained for backward compatibility
+  // as this class is Serializable and is used in WAN locator information exchange
   private boolean peerLocator = true;
   private boolean serverLocator = true;
   private String hostnameForClients;
@@ -78,13 +80,11 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public DistributionLocatorId(InetAddress host, int port, String bindAddress, SSLConfig sslConfig,
-      boolean peerLocator, boolean serverLocator, String hostnameForClients) {
+      String hostnameForClients) {
     this.host = host;
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
-    this.peerLocator = peerLocator;
-    this.serverLocator = serverLocator;
     this.hostnameForClients = hostnameForClients;
   }
 
@@ -155,14 +155,16 @@ public class DistributionLocatorId implements java.io.Serializable {
         String[] optionFields = options[i].split("=");
         if (optionFields.length == 2) {
           if (optionFields[0].equalsIgnoreCase("peer")) {
-            this.peerLocator = Boolean.valueOf(optionFields[1]).booleanValue();
+            // this setting is deprecated
+            // this.peerLocator = Boolean.valueOf(optionFields[1]).booleanValue();
           } else if (optionFields[0].equalsIgnoreCase("server")) {
-            this.serverLocator = Boolean.valueOf(optionFields[1]).booleanValue();
+            // this setting is deprecated
+            // this.serverLocator = Boolean.valueOf(optionFields[1]).booleanValue();
           } else if (optionFields[0].equalsIgnoreCase("hostname-for-clients")) {
             this.hostnameForClients = optionFields[1];
           } else {
             throw new IllegalArgumentException(marshalled + " invalid option " + optionFields[0]
-                + ". valid options are \"peer\" or \"server\"");
+                + ". valid options are \"peer\", \"server\" and \"hostname-for-clients\"");
           }
         }
       }
@@ -172,7 +174,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   public DistributionLocatorId(InetAddress address, Locator locator) {
     this(address, locator.getPort(),
         locator.getBindAddress() == null ? null : locator.getBindAddress().getHostAddress(), null,
-        locator.isPeerLocator(), locator.isServerLocator(), locator.getHostnameForClients());
+        locator.getHostnameForClients());
   }
 
   /**
@@ -228,20 +230,6 @@ public class DistributionLocatorId implements java.io.Serializable {
    */
   public String getBindAddress() {
     return this.bindAddress;
-  }
-
-  /**
-   * @since GemFire 5.7
-   */
-  public boolean isPeerLocator() {
-    return this.peerLocator;
-  }
-
-  /**
-   * @since GemFire 5.7
-   */
-  public boolean isServerLocator() {
-    return this.serverLocator;
   }
 
   /**

@@ -602,9 +602,6 @@ public class InternalDistributedSystemJUnitTest {
     Collection locators = Locator.getLocators();
     Assert.assertEquals(1, locators.size());
     Locator locator = (Locator) locators.iterator().next();
-    Assert.assertTrue(locator.isPeerLocator());
-    // Assert.assertFalse(locator.isServerLocator()); server location is forced on while licensing
-    // is disabled in GemFire
     // Assert.assertIndexDetailsEquals("127.0.0.1", locator.getBindAddress().getHostAddress());
     // removed this check for ipv6 testing
     Assert.assertEquals(unusedPort, locator.getPort().intValue());

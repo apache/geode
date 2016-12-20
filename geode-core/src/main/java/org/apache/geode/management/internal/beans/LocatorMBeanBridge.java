@@ -71,12 +71,12 @@ public class LocatorMBeanBridge {
 
 
   public boolean isPeerLocator() {
-    return loc.isPeerLocator();
+    return true;
   }
 
 
   public boolean isServerLocator() {
-    return loc.isServerLocator();
+    return true;
   }
 
   public String[] listManagers() {

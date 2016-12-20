@@ -79,9 +79,6 @@ public class LocatorHelper {
    */
   private static void addServerLocator(Integer distributedSystemId,
       LocatorMembershipListener locatorListener, DistributionLocatorId locator) {
-    if (!locator.isServerLocator()) {
-      return;
-    }
     ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
         (ConcurrentHashMap<Integer, Set<String>>) locatorListener.getAllServerLocatorsInfo();
 

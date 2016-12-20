@@ -1114,8 +1114,7 @@ public interface ConfigurationProperties {
    * name="ssl-locator-alias"/a>
    * </p>
    * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL
-   * communications for the locator. These Communications would be either locator-client or
-   * locator-server
+   * communications for locators and for communicating with locators.
    * </p>
    * <U><i>Optional</i></U> <U>Default</U>: ""
    * </p>
@@ -1725,16 +1724,12 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"start-locator"</i> property <a name="start-locator"/a>
    * </p>
-   * <U>Description</U>: A host name or bind-address and port
-   * ("host[port],peer=<true|false>,server=<true|false>") that are used to start a locator in the
-   * same process as the DistributedSystem. The locator is started when the DistributedSystem
-   * connects, and is stopped when the DistributedSystem disconnects. To start a locator that is not
-   * tied to the DistributedSystem's lifecycle, see the {@link Locator} class in this same package.
+   * <U>Description</U>: A host name or bind-address and port ("host[port]") that are used to start
+   * a locator in the same process as the DistributedSystem. The locator is started when the
+   * DistributedSystem connects, and is stopped when the DistributedSystem disconnects. To start a
+   * locator that is not tied to the DistributedSystem's lifecycle, see the {@link Locator} class in
+   * this same package.
    * <p>
-   * <p>
-   * The peer and server parameters are optional. They specify whether the locator can be used for
-   * peers to discover each other, or for clients to discover peers. By default both are true.
-   * </p>
    * <U>Default</U>: "" (doesn't start a locator)
    */
   String START_LOCATOR = "start-locator";

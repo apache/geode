@@ -120,18 +120,6 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @deprecated This is specific to the internal implementation and may go away in a future
    *             release.
    */
-  public static final boolean DEFAULT_ENABLE_PEER_LOCATION = true;
-
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
-  public static final boolean DEFAULT_ENABLE_SERVER_LOCATION = true;
-
-  /**
-   * @deprecated This is specific to the internal implementation and may go away in a future
-   *             release.
-   */
   public static final String DEFAULT_LOCATOR_PID_FILE = "vf.gf.locator.pid";
 
   private static final String DEFAULT_LOCATOR_LOG_EXT = ".log";
@@ -640,8 +628,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
         // TODO : remove the extra param for loadFromSharedConfigDir
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
-              getBindAddress(), getDistributedSystemProperties(), DEFAULT_ENABLE_PEER_LOCATION,
-              DEFAULT_ENABLE_SERVER_LOCATION, getHostnameForClients(), false);
+              getBindAddress(), getDistributedSystemProperties(), getHostnameForClients());
         } finally {
           ProcessLauncherContext.remove();
         }
