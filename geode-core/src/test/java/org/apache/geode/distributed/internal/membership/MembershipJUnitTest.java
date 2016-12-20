@@ -24,9 +24,9 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.distributed.internal.membership.gms.messenger.GMSEncrypt;
 import org.apache.logging.log4j.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -47,23 +47,9 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-import org.apache.logging.log4j.Level;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.util.Properties;
-
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
 
 @Category({IntegrationTest.class, MembershipJUnitTest.class})
 public class MembershipJUnitTest {
@@ -80,7 +66,6 @@ public class MembershipJUnitTest {
     // LogService.setBaseLogLevel(baseLogLevel);
   }
 
-
   // @Test
   // public void testRepeat() throws Exception {
   // for (int i=0; i<50; i++) {
@@ -92,13 +77,46 @@ public class MembershipJUnitTest {
   /**
    * This test creates a locator with a colocated membership manager and then creates a second
    * manager that joins the system of the first.
-   * 
+   *
    * It then makes assertions about the state of the membership view, closes one of the managers and
    * makes more assertions. It also ensures that a cache message can be sent from one manager to the
    * other.
    */
   @Test
   public void testMultipleManagersInSameProcess() throws Exception {
+    doTestMultipleManagersInSameProcessWithGroups("red, blue");
+  }
+
+  /**
+   * Ensure that a large membership group doesn't cause communication issues
+   */
+  @Test
+  public void testManagersWithLargeGroups() throws Exception {
+    StringBuilder stringBuilder = new StringBuilder(80000);
+    boolean first = true;
+    // create 8000 10-byte group names
+    for (int thousands = 1; thousands < 9; thousands++) {
+      for (int group = 0; group < 1000; group++) {
+        if (!first) {
+          stringBuilder.append(',');
+        }
+        first = false;
+        stringBuilder.append(String.format("%1$02d%2$08d", thousands, group));
+      }
+    }
+    List<String> result = doTestMultipleManagersInSameProcessWithGroups(stringBuilder.toString());
+    assertEquals(8000, result.size());
+    for (String group : result) {
+      assertEquals(10, group.length());
+    }
+  }
+
+  /**
+   * this runs the test with a given set of member groups. Returns the groups of the member that was
+   * not the coordinator for verification that they were correctly transmitted
+   */
+  private List<String> doTestMultipleManagersInSameProcessWithGroups(String groups)
+      throws Exception {
 
     MembershipManager m1 = null, m2 = null;
     Locator l = null;
@@ -113,7 +131,7 @@ public class MembershipJUnitTest {
       // this locator will hook itself up with the first MembershipManager
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false,
-          new Properties(), true, false, null, false);
+          new Properties(), null);
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -121,7 +139,7 @@ public class MembershipJUnitTest {
       nonDefault.put(MCAST_PORT, "0");
       nonDefault.put(LOG_FILE, "");
       nonDefault.put(LOG_LEVEL, "fine");
-      nonDefault.put(GROUPS, "red, blue");
+      nonDefault.put(GROUPS, groups);
       nonDefault.put(MEMBER_TIMEOUT, "2000");
       nonDefault.put(LOCATORS, localHost.getHostName() + '[' + port + ']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
@@ -168,8 +186,14 @@ public class MembershipJUnitTest {
         }
       }
 
-      System.out.println("testing multicast availability");
-      assertTrue(m1.testMulticast());
+      NetView view = jl1.getView();
+      InternalDistributedMember notCreator;
+      if (view.getCreator().equals(jl1.getMemberID())) {
+        notCreator = view.getMembers().get(1);
+      } else {
+        notCreator = view.getMembers().get(0);
+      }
+      List<String> result = notCreator.getGroups();
 
       System.out.println("sending SerialAckedMessage from m1 to m2");
       SerialAckedMessage msg = new SerialAckedMessage();
@@ -204,6 +228,8 @@ public class MembershipJUnitTest {
       assertTrue(!m2.isConnected());
 
       assertTrue(m1.getView().size() == 1);
+
+      return result;
     } finally {
 
       if (m2 != null) {
@@ -244,7 +270,7 @@ public class MembershipJUnitTest {
       // this locator will hook itself up with the first MembershipManager
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false, p,
-          true, false, null, false);
+          null);
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -368,14 +394,12 @@ public class MembershipJUnitTest {
     sc = new ServiceConfig(transport, config);
     assertEquals(24000, sc.getJoinTimeout());
 
-
     nonDefault.clear();
     nonDefault.put(LOCATORS, SocketCreator.getLocalHost().getHostAddress() + "[" + 12345 + "]");
     config = new DistributionConfigImpl(nonDefault);
     transport = new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
     sc = new ServiceConfig(transport, config);
     assertEquals(60000, sc.getJoinTimeout());
-
 
     timeout = 2000;
     System.setProperty("p2p.joinTimeout", "" + timeout);
