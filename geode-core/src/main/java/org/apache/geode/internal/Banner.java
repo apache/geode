@@ -16,14 +16,20 @@ package org.apache.geode.internal;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.ArgumentRedactor;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 /**
  * Utility class to print banner information at manager startup.
@@ -45,10 +51,10 @@ public class Banner {
 
   /**
    * Print information about this process to the specified stream.
-   * 
+   *
    * @param args possibly null list of command line arguments
    */
-  private static void print(PrintWriter out, String args[]) {
+  static void print(PrintWriter out, String args[]) {
     Map sp = new TreeMap((Properties) System.getProperties().clone()); // fix for 46822
     int processId = -1;
     final String SEPERATOR =
@@ -105,7 +111,7 @@ public class Banner {
     sp.remove("user.dir");
     out.println("Home dir: " + sp.get("user.home"));
     sp.remove("user.home");
-    List<String> allArgs = new ArrayList<String>();
+    List<String> allArgs = new ArrayList<>();
     {
       RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
       if (runtimeBean != null) {
@@ -114,16 +120,13 @@ public class Banner {
     }
 
     if (args != null && args.length != 0) {
-      for (int i = 0; i < args.length; i++) {
-        allArgs.add(args[i]);
-      }
+      Collections.addAll(allArgs, args);
     }
     if (!allArgs.isEmpty()) {
       out.println("Command Line Parameters:");
-      for (String arg : allArgs) {
-        out.println("  " + arg);
-      }
+      out.println(ArgumentRedactor.redact(allArgs));
     }
+
     out.println("Class Path:");
     prettyPrintPath((String) sp.get("java.class.path"), out);
     sp.remove("java.class.path");
@@ -135,22 +138,7 @@ public class Banner {
       out.println("System property logging disabled.");
     } else {
       out.println("System Properties:");
-      Iterator it = sp.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
-        String key = me.getKey().toString();
-        // SW: Filter out the security properties since they may contain
-        // sensitive information.
-        if (!key
-            .startsWith(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.SECURITY_PREFIX_NAME)
-            && !key.startsWith(DistributionConfigImpl.SECURITY_SYSTEM_PREFIX
-                + DistributionConfig.SECURITY_PREFIX_NAME)
-            && !key.toLowerCase().contains("password") /* bug 45381 */) {
-          out.println("    " + key + " = " + me.getValue());
-        } else {
-          out.println("    " + key + " = " + "********");
-        }
-      }
+      out.println(ArgumentRedactor.redact(sp));
       out.println("Log4J 2 Configuration:");
       out.println("    " + LogService.getConfigInformation());
     }
@@ -159,7 +147,7 @@ public class Banner {
 
   /**
    * Return a string containing the banner information.
-   * 
+   *
    * @param args possibly null list of command line arguments
    */
   public static String getString(String args[]) {

@@ -14,42 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
 import jline.Terminal;
 import jline.console.ConsoleReader;
-import org.springframework.shell.core.AbstractShell;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.JLineLogHandler;
-import org.springframework.shell.core.JLineShell;
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ShellStatus.Status;
-
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
+import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.HostName;
 import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.management.cli.CommandProcessingException;
@@ -70,6 +41,35 @@ import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
 import org.apache.geode.management.internal.cli.shell.unsafe.GfshSignalHandler;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
+import org.springframework.shell.core.AbstractShell;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.JLineLogHandler;
+import org.springframework.shell.core.JLineShell;
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ShellStatus.Status;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Extends an interactive shell provided by
@@ -84,7 +84,7 @@ import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
  * <p />
  * Additionally, this class is used to maintain GemFire SHell (gfsh) specific information like:
  * environment TODO
- *
+ * 
  *
  * @since GemFire 7.0
  */
@@ -180,7 +180,7 @@ public class Gfsh extends JLineShell {
 
   /**
    * Create a GemFire shell with console using the specified arguments.
-   *
+   * 
    * @param args arguments to be used to create a GemFire shell instance
    * @throws IOException
    * @throws ClassNotFoundException
@@ -192,7 +192,7 @@ public class Gfsh extends JLineShell {
   /**
    * Create a GemFire shell using the specified arguments. Console for user inputs is made available
    * if <code>launchShell</code> is set to <code>true</code>.
-   *
+   * 
    * @param launchShell whether to make Console available
    * @param args arguments to be used to create a GemFire shell instance or execute command
    * @throws IOException
@@ -208,10 +208,10 @@ public class Gfsh extends JLineShell {
     this.gfshFileLogger = LogWrapper.getInstance();
     this.gfshFileLogger.configure(this.gfshConfig);
     this.ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported()); // TODO -
-                                                                                   // Abhishek :
-                                                                                   // should take it
-                                                                                   // from
-                                                                                   // ConsoleReader.terminal??
+    // Abhishek :
+    // should take it
+    // from
+    // ConsoleReader.terminal??
 
     /* 3. log system properties & gfsh environment */
     this.gfshFileLogger.info(Banner.getString(args));
@@ -397,7 +397,7 @@ public class Gfsh extends JLineShell {
   /**
    * Returns the {@link ExecutionStrategy} implementation used by this implementation of
    * {@link AbstractShell}. {@link Gfsh} uses {@link GfshExecutionStrategy}.
-   *
+   * 
    * @return ExecutionStrategy used by Gfsh
    */
   @Override
@@ -408,7 +408,7 @@ public class Gfsh extends JLineShell {
   /**
    * Returns the {@link Parser} implementation used by this implementation of
    * {@link AbstractShell}.{@link Gfsh} uses {@link GfshParser}.
-   *
+   * 
    * @return Parser used by Gfsh
    */
   @Override
@@ -420,7 +420,7 @@ public class Gfsh extends JLineShell {
   /**
    * Executes the given command string. We have over-ridden the behavior to extend the original
    * implementation to store the 'last command execution status'.
-   *
+   * 
    * @param line command string to be executed
    * @return true if execution is successful; false otherwise
    */
@@ -684,7 +684,7 @@ public class Gfsh extends JLineShell {
 
   /**
    * Set the last command execution status
-   *
+   * 
    * @param lastExecutionStatus last command execution status
    */
   public void setLastExecutionStatus(int lastExecutionStatus) {
@@ -782,7 +782,7 @@ public class Gfsh extends JLineShell {
         String lineRead = "";
         StringBuilder linesBuffer = new StringBuilder();
         String linesBufferString = ""; // used to check whether the string in a buffer contains a
-                                       // ";".
+        // ";".
         int commandSrNum = 0;
         CommentSkipHelper commentSkipper = new CommentSkipHelper();
 
@@ -804,13 +804,12 @@ public class Gfsh extends JLineShell {
           if (!linesBufferString.endsWith(SyntaxConstants.CONTINUATION_CHARACTER)) { // see 45893
             // String command = null;
 
-
             List<String> commandList = MultiCommandHelper.getMultipleCommands(linesBufferString);
             for (String cmdLet : commandList) {
-              String trimmedCommand = cmdLet.trim();
-              if (!trimmedCommand.isEmpty()) {
+              if (!cmdLet.isEmpty()) {
+                String redactedCmdLet = ArgumentRedactor.redact(cmdLet);
                 ++commandSrNum;
-                Gfsh.println(commandSrNum + ". Executing - " + cmdLet);
+                Gfsh.println(commandSrNum + ". Executing - " + redactedCmdLet);
                 Gfsh.println();
                 boolean executeSuccess = executeScriptLine(cmdLet);
                 if (!executeSuccess) {
@@ -1138,14 +1137,14 @@ public class Gfsh extends JLineShell {
    *
    * For example: if the terminal width were 5 and the string "123 456789 01234" were passed in with
    * an indentation level of 2, then the returned string would be:
-   * 
+   *
    * <pre>
    *         123
    *         45678
    *         9
    *         01234
    * </pre>
-   * 
+   *
    * @param string String to wrap (add breakpoints and indent)
    * @param indentationLevel The number of indentation levels to use.
    * @return The wrapped string.
