@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,6 +203,8 @@ public class JSONFormatterJUnitTest {
   }
 
   @Test
+  @Category(value = FlakyTest.class) // GEODE-2239 this test uses fixed port 40405 & fails if it
+                                     // isn't available
   public void testJSONFormatterAPIs() {
     ValidatePdxInstanceToJsonConversion();
     verifyJsonToPdxInstanceConversion();
