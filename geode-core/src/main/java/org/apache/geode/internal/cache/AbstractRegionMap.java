@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.lru.LRUEntry;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -478,7 +479,8 @@ public abstract class AbstractRegionMap implements RegionMap {
     e.decRefCount(null, lr);
   }
 
-  public boolean lruLimitExceeded() {
+  @Override
+  public boolean lruLimitExceeded(DiskRegionView drv) {
     return false;
   }
 

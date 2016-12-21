@@ -55,7 +55,7 @@ import java.util.concurrent.*;
  * 
  * @since Geode 1.0
  */
-public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor {
+public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   private static final Logger logger = LogService.getLogger();
 
   // Allow for an unknown heap pool for VMs we may support in the future.
@@ -397,10 +397,7 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
     }
   }
 
-  float getCriticalThreshold() {
-    return this.thresholds.getCriticalThreshold();
-  }
-
+  @Override
   public boolean hasEvictionThreshold() {
     return this.hasEvictionThreshold;
   }
@@ -447,10 +444,6 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
 
       this.stats.changeEvictionThreshold(this.thresholds.getEvictionThresholdBytes());
     }
-  }
-
-  public float getEvictionThreshold() {
-    return this.thresholds.getEvictionThreshold();
   }
 
   /**
@@ -539,10 +532,12 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
         eventToPopulate.getThresholds());
   }
 
+  @Override
   public MemoryState getState() {
     return this.currentState;
   }
 
+  @Override
   public MemoryThresholds getThresholds() {
     MemoryThresholds saveThresholds = this.thresholds;
 
@@ -634,6 +629,7 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
   /**
    * Returns the number of bytes of memory reported by the tenured pool as currently in use.
    */
+  @Override
   public long getBytesUsed() {
     return getTenuredMemoryPoolMXBean().getUsage().getUsed();
   }

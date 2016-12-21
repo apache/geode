@@ -31,6 +31,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.AbstractLRURegionMap.CDValueWrapper;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
@@ -420,6 +421,11 @@ public final class MemLRUCapacityController extends LRUAlgorithm implements Decl
 
       public boolean mustEvict(LRUStatistics stats, Region region, int delta) {
         return stats.getCounter() + delta > stats.getLimit();
+      }
+
+      @Override
+      public boolean lruLimitExceeded(LRUStatistics lruStatistics, DiskRegionView drv) {
+        return lruStatistics.getCounter() > lruStatistics.getLimit();
       }
     };
   }

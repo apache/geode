@@ -37,7 +37,7 @@ import org.apache.geode.internal.offheap.MemoryUsageListener;
  *
  * @since Geode 1.0
  */
-public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListener {
+public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener {
   private static final Logger logger = LogService.getLogger();
   private volatile MemoryThresholds thresholds = new MemoryThresholds(0);
   private volatile MemoryEvent mostRecentEvent = new MemoryEvent(ResourceType.OFFHEAP_MEMORY,
@@ -230,10 +230,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
     }
   }
 
-  float getCriticalThreshold() {
-    return this.thresholds.getCriticalThreshold();
-  }
-
+  @Override
   public boolean hasEvictionThreshold() {
     return this.hasEvictionThreshold;
   }
@@ -281,10 +278,6 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
 
       this.stats.changeOffHeapEvictionThreshold(this.thresholds.getEvictionThresholdBytes());
     }
-  }
-
-  public float getEvictionThreshold() {
-    return this.thresholds.getEvictionThreshold();
   }
 
   /**
@@ -415,10 +408,12 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
         eventToPopulate.getThresholds());
   }
 
+  @Override
   public MemoryState getState() {
     return this.currentState;
   }
 
+  @Override
   public MemoryThresholds getThresholds() {
     MemoryThresholds saveThresholds = this.thresholds;
 
@@ -429,6 +424,7 @@ public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListene
   /**
    * Returns the number of bytes of memory reported by the memory allocator as currently in use.
    */
+  @Override
   public long getBytesUsed() {
     if (this.memoryAllocator == null) {
       return 0;

@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.lru.LRUStatistics;
 import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
 import org.apache.geode.internal.cache.lru.NewLIFOClockHand;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -572,15 +573,8 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   private boolean mustEvict() {
     LocalRegion owner = _getOwner();
     InternalResourceManager resourceManager = owner.getCache().getResourceManager();
-
-    final boolean monitorStateIsEviction;
-    if (!owner.getAttributes().getOffHeap()) {
-      monitorStateIsEviction = resourceManager.getHeapMonitor().getState().isEviction();
-    } else {
-      monitorStateIsEviction = resourceManager.getOffHeapMonitor().getState().isEviction();
-    }
-
-    return monitorStateIsEviction && this.sizeInVM() > 0;
+    boolean offheap = owner.getAttributes().getOffHeap();
+    return resourceManager.getMemoryMonitor(offheap).getState().isEviction() && this.sizeInVM() > 0;
   }
 
   public final int centralizedLruUpdateCallback() {
@@ -856,8 +850,8 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public final boolean lruLimitExceeded() {
-    return _getCCHelper().mustEvict(_getLruList().stats(), null, 0);
+  public final boolean lruLimitExceeded(DiskRegionView drv) {
+    return _getCCHelper().lruLimitExceeded(_getLruList().stats(), drv);
   }
 
   @Override

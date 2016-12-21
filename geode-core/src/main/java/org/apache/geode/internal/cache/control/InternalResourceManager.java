@@ -265,6 +265,14 @@ public class InternalResourceManager implements ResourceManager {
     return (OffHeapMemoryMonitor) this.resourceMonitors.get(ResourceType.OFFHEAP_MEMORY);
   }
 
+  public MemoryMonitor getMemoryMonitor(boolean offheap) {
+    if (offheap) {
+      return getOffHeapMonitor();
+    } else {
+      return getHeapMonitor();
+    }
+  }
+
   /**
    * Use threshold event processor to execute the event embedded in the runnable.
    * 

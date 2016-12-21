@@ -20,6 +20,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 /**
  * Marker interface to eviction controller that determines if LRU list maintainance is required.
@@ -107,6 +108,8 @@ public interface EnableLRU {
    * Envoked after an entry has been evicted
    */
   public void afterEviction();
+
+  public boolean lruLimitExceeded(LRUStatistics lruStatistics, DiskRegionView drv);
 
 }
 

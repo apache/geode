@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.lru;
 // import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.RegionEntry;
 // import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 /**
  * The lru action on the map for evicting items must be called while the current thread is free of
@@ -54,8 +55,10 @@ public interface LRUMapCallbacks {
   /**
    * Return true if the lru has exceeded its limit and needs to evict. Note that this method is
    * currently used to prevent disk recovery from faulting in values once the limit is exceeded.
+   * 
+   * @param drv the disk region whose limit is checked
    */
-  public boolean lruLimitExceeded();
+  public boolean lruLimitExceeded(DiskRegionView drv);
 
   public void lruCloseStats();
 

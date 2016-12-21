@@ -40,6 +40,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -482,6 +483,11 @@ public class LRUClockJUnitTest {
       final LRUStatistics stats = new LRUStatistics(sf, "TestLRUStatistics" + regionName, this);
       stats.setLimit(limit());
       return stats;
+    }
+
+    @Override
+    public boolean lruLimitExceeded(LRUStatistics lruStatistics, DiskRegionView drv) {
+      throw new UnsupportedOperationException("Not implemented");
     }
   }
 

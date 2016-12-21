@@ -35,6 +35,7 @@ import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.lru.LRUEntry;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
@@ -366,7 +367,8 @@ final class ProxyRegionMap implements RegionMap {
     // nothing needed
   }
 
-  public final boolean lruLimitExceeded() {
+  @Override
+  public final boolean lruLimitExceeded(DiskRegionView drv) {
     return false;
   }
 

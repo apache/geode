@@ -127,7 +127,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
   }
 
   public boolean lruLimitExceeded() {
-    return getRecoveredEntryMap().lruLimitExceeded();
+    return getRecoveredEntryMap().lruLimitExceeded(this);
   }
 
   public DiskStoreID getDiskStoreID() {
