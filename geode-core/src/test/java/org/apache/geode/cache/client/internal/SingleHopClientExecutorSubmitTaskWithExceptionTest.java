@@ -46,15 +46,7 @@ public class SingleHopClientExecutorSubmitTaskWithExceptionTest {
       @Override
       public void run() {
         // test piece throwing exception
-        try {
-          throw new RuntimeException(erroMsg);
-        } catch (RuntimeException e) {
-          // We need to catch and write it to System err
-          // so as to read from SystemErrRule
-          // In actual scenario, Geode LoggingThreadGroup
-          // will handle this.
-          System.err.print(e);
-        }
+        throw new RuntimeException(erroMsg);
       }
     });
 

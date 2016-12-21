@@ -27,6 +27,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
@@ -57,7 +59,9 @@ public class SingleHopClientExecutor {
     AtomicInteger threadNum = new AtomicInteger();
 
     public Thread newThread(final Runnable r) {
-      Thread result = new Thread(r, "Function Execution Thread-" + threadNum.incrementAndGet());
+      Thread result =
+          new Thread(LoggingThreadGroup.createThreadGroup("FunctionExecutionThreadGroup", logger),
+              r, "Function Execution Thread-" + threadNum.incrementAndGet());
       result.setDaemon(true);
       return result;
     }
