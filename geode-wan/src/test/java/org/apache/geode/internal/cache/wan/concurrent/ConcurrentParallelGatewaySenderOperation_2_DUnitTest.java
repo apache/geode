@@ -77,7 +77,6 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
         false));
     vm4.invoke(() -> WANTestBase.createReceiver());
 
-
     vm2.invoke(() -> WANTestBase.startSender("ln"));
     vm2.invoke(() -> WANTestBase.startSender("ln2"));
 
@@ -89,21 +88,37 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     vm3.invoke(() -> WANTestBase.startSender("ln"));
     vm3.invoke(() -> WANTestBase.startSender("ln2"));
 
-    vm2.invokeAsync(() -> {
-      WANTestBase.doPuts(getTestMethodName() + "_PR", 10000);
+    vm2.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm2.invoke(() -> WANTestBase.waitForSenderRunningState("ln2"));
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ln2"));
+
+    AsyncInvocation asyncPuts = vm2.invokeAsync(() -> {
+      WANTestBase.doPuts(getTestMethodName() + "_PR", 1000);
     });
-    vm4.invoke(() -> Awaitility.await().atMost(20, TimeUnit.SECONDS).until(
-        () -> assertEquals(true, WANTestBase.getRegionSize(getTestMethodName() + "_PR") > 100)));
-    vm2.invoke(() -> WANTestBase.stopSender("ln"));
+    // Guarantee some entries are in the queue even if the asyncPuts thread is slow
+    vm2.invoke(() -> {
+      WANTestBase.doPuts(getTestMethodName() + "_PR", 100);
+    });
+    vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> WANTestBase.getSenderStats("ln", -1).get(3) > 0));
+    vm2.invoke(() -> WANTestBase.stopSender("ln")); // Things have dispatched
+    // Dispatch additional values
+    vm2.invoke(() -> {
+      WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 1000, 1100);
+    });
+
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> asyncPuts.isDone());
 
     vm2.invoke(() -> Awaitility.await().atMost(20, TimeUnit.SECONDS)
-        .until(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000)));
+        .until(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
     vm4.invoke(() -> Awaitility.await().atMost(20, TimeUnit.SECONDS)
-        .until(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 10000)));
+        .until(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
 
     vm3.invoke(() -> {
-      Awaitility.await().atMost(20, TimeUnit.SECONDS)
-          .until(() -> WANTestBase.getQueueContentSize("ln", true));
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .until(() -> assertTrue(WANTestBase.getQueueContentSize("ln2", true) + " was the size",
+              WANTestBase.getQueueContentSize("ln2", true) == 0));
     });
   }
 
