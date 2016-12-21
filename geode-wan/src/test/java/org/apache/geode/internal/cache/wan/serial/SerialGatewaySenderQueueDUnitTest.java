@@ -357,12 +357,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", numPuts));
 
     // Verify receiver listener events
-    vm2.invoke(() -> SerialGatewaySenderQueueDUnitTest.verifyListenerEvents(maxSenders * numPuts));
-  }
-
-  private static void verifyListenerEvents(final long expectedNumEvents) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> listener1.getNumEvents() == expectedNumEvents);
+    vm2.invoke(() -> WANTestBase.verifyListenerEvents(maxSenders * numPuts));
   }
 
   /**

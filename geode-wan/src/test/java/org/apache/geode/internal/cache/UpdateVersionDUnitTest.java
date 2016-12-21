@@ -130,6 +130,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             assertTrue(region instanceof PartitionedRegion);
 
             region.put(key, "value-1");
+            region.put(key, "value-2");
             Entry entry = region.getEntry(key);
             assertTrue(entry instanceof EntrySnapshot);
             RegionEntry regionEntry = ((EntrySnapshot) entry).getRegionEntry();
@@ -152,7 +153,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             tag.setIsRemoteForTesting();
 
             EntryEventImpl event =
-                createNewEvent((PartitionedRegion) region, tag, entry.getKey(), "value-2");
+                createNewEvent((PartitionedRegion) region, tag, entry.getKey(), "value-3");
 
             ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
 
@@ -277,6 +278,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             assertTrue(region instanceof DistributedRegion);
 
             region.put(key, "value-1");
+            region.put(key, "value-2");
             Entry entry = region.getEntry(key);
             assertTrue(entry instanceof NonTXEntry);
             RegionEntry regionEntry = ((NonTXEntry) entry).getRegionEntry();
@@ -299,7 +301,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             tag.setIsRemoteForTesting();
 
             EntryEventImpl event =
-                createNewEvent((DistributedRegion) region, tag, entry.getKey(), "value-2");
+                createNewEvent((DistributedRegion) region, tag, entry.getKey(), "value-3");
 
             ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
 
@@ -412,6 +414,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             assertTrue(region instanceof PartitionedRegion);
 
             region.put(key, "value-1");
+            region.put(key, "value-2");
             Entry entry = region.getEntry(key);
             assertTrue(entry instanceof EntrySnapshot);
             RegionEntry regionEntry = ((EntrySnapshot) entry).getRegionEntry();
@@ -434,7 +437,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             tag.setIsRemoteForTesting();
 
             EntryEventImpl event =
-                createNewEvent((PartitionedRegion) region, tag, entry.getKey(), "value-2");
+                createNewEvent((PartitionedRegion) region, tag, entry.getKey(), "value-3");
 
             ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
 
@@ -560,6 +563,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             assertTrue(region instanceof PartitionedRegion);
 
             region.put(key, "value-1");
+            region.put(key, "value-2");
             Entry entry = region.getEntry(key);
             assertTrue(entry instanceof EntrySnapshot);
             RegionEntry regionEntry = ((EntrySnapshot) entry).getRegionEntry();
@@ -582,7 +586,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
             tag.setIsRemoteForTesting();
 
             EntryEventImpl event =
-                createNewEvent((PartitionedRegion) region, tag, entry.getKey(), "value-2");
+                createNewEvent((PartitionedRegion) region, tag, entry.getKey(), "value-3");
 
             ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
 

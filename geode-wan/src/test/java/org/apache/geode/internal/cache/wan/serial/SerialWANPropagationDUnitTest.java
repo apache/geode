@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Scope;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -1261,5 +1263,39 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+  }
+
+  @Test
+  public void testPreloadedSerialPropagation() throws Exception {
+    // Start locators
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    // Create receiver and preloaded region
+    String regionName = getTestMethodName() + "_preloaded";
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, Scope.DISTRIBUTED_ACK,
+        DataPolicy.PRELOADED, isOffHeap()));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(() -> WANTestBase.addListenerOnRegion(regionName));
+
+    // Create sender and preloaded region
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, false));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(regionName, "ln", Scope.DISTRIBUTED_ACK,
+        DataPolicy.PRELOADED, isOffHeap()));
+
+    // Do puts
+    int numEvents = 10;
+    vm4.invoke(() -> WANTestBase.doPuts(regionName, numEvents));
+
+    // Verify receiver listener events
+    vm2.invoke(() -> WANTestBase.verifyListenerEvents(numEvents));
+
+    // Do destroys
+    vm4.invoke(() -> WANTestBase.doDestroys(regionName, numEvents));
+
+    // Verify receiver listener events
+    vm2.invoke(() -> WANTestBase.verifyListenerEvents(numEvents * 2));
   }
 }

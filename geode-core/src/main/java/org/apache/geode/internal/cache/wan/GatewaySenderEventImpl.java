@@ -289,7 +289,7 @@ public class GatewaySenderEventImpl
     // Initialize the creation timestamp
     this.creationTime = System.currentTimeMillis();
 
-    if (event.getVersionTag() != null) {
+    if (event.getVersionTag() != null && event.getVersionTag().hasValidVersion()) {
       this.versionTimeStamp = event.getVersionTag().getVersionTimeStamp();
     }
 

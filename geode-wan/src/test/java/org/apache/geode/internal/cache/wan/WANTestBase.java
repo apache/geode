@@ -3447,6 +3447,11 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     }
   }
 
+  protected static void verifyListenerEvents(final long expectedNumEvents) {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> listener1.getNumEvents() == expectedNumEvents);
+  }
+
   protected Integer[] createLNAndNYLocators() {
     Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
