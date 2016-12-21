@@ -101,15 +101,4 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
     // }
     // }
   }
-
-  /**
-   * overridden from ReplyProcessor21 to allow early-out. If an existing member accepted or rejected
-   * us then we are done.
-   */
-  @Override
-  protected boolean canStopWaiting() {
-    return this.receivedAcceptance || this.receivedRejectionMessage;
-  }
-
-
 }

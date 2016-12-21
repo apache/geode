@@ -57,7 +57,6 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
 
   @Override
   protected void process(DistributionManager dm) {
-    super.process(dm);
     if (this.hostedLocators != null) {
       dm.addHostedLocators(getSender(), this.hostedLocators, this.isSharedConfigurationEnabled);
     }
@@ -65,6 +64,7 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
       logger.debug("Received StartupResponseWithVersionMessage from a member with version: {}",
           this.version);
     }
+    super.process(dm);
   }
 
   public int getDSFID() {
