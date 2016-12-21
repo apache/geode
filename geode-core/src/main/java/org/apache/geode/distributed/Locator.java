@@ -74,8 +74,6 @@ public abstract class Locator {
    */
   protected String hostnameForClients;
 
-  protected static boolean loadSharedConfig = false;
-
   ////////////////////// Static Methods //////////////////////
 
   /**

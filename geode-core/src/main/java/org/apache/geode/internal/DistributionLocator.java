@@ -48,7 +48,6 @@ public class DistributionLocator {
   public static final String DEFAULT_STARTUP_LOG_FILE = "start_locator.log";
 
   public static final int DEFAULT_LOCATOR_PORT = 10334;
-  public static final boolean LOAD_SHARED_CONFIGURATION = false;
 
   public static int parsePort(String portOption) {
     if (portOption == null || portOption.equals("")) {
