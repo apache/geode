@@ -48,7 +48,6 @@ public class DistributionLocator {
   public static final String DEFAULT_STARTUP_LOG_FILE = "start_locator.log";
 
   public static final int DEFAULT_LOCATOR_PORT = 10334;
-  public static final boolean LOAD_SHARED_CONFIGURATION = false;
 
   public static int parsePort(String portOption) {
     if (portOption == null || portOption.equals("")) {
@@ -166,9 +165,9 @@ public class DistributionLocator {
 
       try {
 
-        InternalLocator locator = InternalLocator.startLocator(port, new File(DEFAULT_LOG_FILE),
-            null, null, null, address, (Properties) null, peerLocator, serverLocator,
-            hostnameForClients, LOAD_SHARED_CONFIGURATION);
+        InternalLocator locator =
+            InternalLocator.startLocator(port, new File(DEFAULT_LOG_FILE), null, null, null,
+                address, (Properties) null, peerLocator, serverLocator, hostnameForClients);
 
         ManagerInfo.setLocatorStarted(directory, port, address);
         locator.waitToStop();
