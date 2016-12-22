@@ -95,7 +95,9 @@ subprojects {
         include '**/*.java'
         exclude '**/generated-src/**'
       }
-      eclipseFormatFile "${rootProject.projectDir}/etc/eclipse-java-google-style.xml"
+      // The formatter is relative to geode-core and not the root project as the root project would change
+      // if Geode and submodules are included as part of a different gradle project.
+      eclipseFormatFile "${project(':geode-core').projectDir}/../etc/eclipse-java-google-style.xml"
     }
   }
 }
