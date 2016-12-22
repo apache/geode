@@ -466,7 +466,7 @@ public class HARegionQueue implements RegionQueue {
           while (iterator.hasNext()) {
             mapEntry = (Map.Entry) iterator.next();
             Conflatable val = (Conflatable) mapEntry.getValue();
-            if (val.getEventId() != null) { // bug #44959 null event ID caused NPE
+            if (val != null && val.getEventId() != null) {
               counterInRegion = ((Long) mapEntry.getKey()).intValue();
               // TODO: remove this assertion
               Assert.assertTrue(counterInRegion > max);
