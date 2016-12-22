@@ -91,7 +91,7 @@ subprojects {
   spotless {
     lineEndings = 'unix';
     java {
-      eclipseFormatFile "${rootProject.projectDir}/../open/etc/eclipse-java-google-style.xml"
+      eclipseFormatFile "${rootProject.projectDir}/etc/eclipse-java-google-style.xml"
     }
   }
 }
