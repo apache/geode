@@ -36,7 +36,8 @@ subprojects {
               entry.path.contains('geode-web/build') ||
               entry.path.contains('geode-assembly/build') ||
               entry.path.contains('geode-dependencies.jar')) &&
-              !entry.path.contains('generated-resources')
+              !entry.path.contains('generated-resources') &&
+              !entry.path.contains('generated-src')
             }
 
             //By default, gradle adds the java 1.8 *execution environment*, which has access restrictions on

@@ -208,3 +208,6 @@ configurations {
 dependencies {
   classesOutput sourceSets.main.output
 }
+
+tasks.eclipse.dependsOn(generateTestGrammarSource)
+
