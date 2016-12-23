@@ -7117,9 +7117,9 @@ public class LocalizedStrings {
   public static final StringId Launcher_Command_START_PID_UNAVAILABLE_ERROR_MESSAGE = new StringId(
       5249, "The process ID could not be determined while starting {0} {1} in {2}: {3}");
   public static final StringId Launcher_ServiceStatus_STARTING_MESSAGE = new StringId(5250,
-      "Starting {0} in {1} on {2} as {3} at {4}\nProcess ID: {5}\nGemFire Version: {6}\nJava Version: {7}\nLog File: {8}\nJVM Arguments: {9}\nClass-Path: {10}");
+      "Starting {0} in {1} on {2} as {3} at {4}\nProcess ID: {5}\nGeode Version: {6}\nJava Version: {7}\nLog File: {8}\nJVM Arguments: {9}\nClass-Path: {10}");
   public static final StringId Launcher_ServiceStatus_RUNNING_MESSAGE = new StringId(5251,
-      "{0} in {1} on {2} as {3} is currently {4}.\nProcess ID: {5}\nUptime: {6}\nGemFire Version: {7}\nJava Version: {8}\nLog File: {9}\nJVM Arguments: {10}\nClass-Path: {11}");
+      "{0} in {1} on {2} as {3} is currently {4}.\nProcess ID: {5}\nUptime: {6}\nGeode Version: {7}\nJava Version: {8}\nLog File: {9}\nJVM Arguments: {10}\nClass-Path: {11}");
   public static final StringId Launcher_ServiceStatus_STOPPED_MESSAGE =
       new StringId(5252, "{0} in {1} on {2} has been requested to stop.");
   public static final StringId Launcher_ServiceStatus_MESSAGE =
