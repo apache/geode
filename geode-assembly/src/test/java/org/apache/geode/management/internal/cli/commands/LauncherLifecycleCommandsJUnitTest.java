@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.geode.distributed.LocatorLauncher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -554,6 +555,48 @@ public class LauncherLifecycleCommandsJUnitTest {
         .add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + START_DEV_REST_API + "=" + "true");
     expectedCommandLineElements
         .add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8080");
+    expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + ""
+        + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
+
+
+    for (String commandLineElement : commandLineElements) {
+      expectedCommandLineElements.remove(commandLineElement.toLowerCase());
+    }
+
+    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
+        expectedCommandLineElements.isEmpty());
+  }
+
+  /**
+   * Verify commandline parameters passed for starting locator
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testLocatorCommandLineWithRestAPI() throws Exception {
+    LocatorLauncher locatorLauncher =
+        new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
+            .setMemberName("testLocatorCommandLineWithRestAPI").setBindAddress("localhost")
+            .setPort(11111).build();
+
+    Properties gemfireProperties = new Properties();
+    gemfireProperties.setProperty(HTTP_SERVICE_PORT, "8089");
+    gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+
+
+    String[] commandLineElements = launcherCommands.createStartLocatorCommandLine(locatorLauncher,
+        null, null, gemfireProperties, null, false, new String[0], null, null);
+
+    assertNotNull(commandLineElements);
+    assertTrue(commandLineElements.length > 0);
+
+    Set<String> expectedCommandLineElements = new HashSet<>(6);
+
+    expectedCommandLineElements.add(locatorLauncher.getCommand().getName());
+    expectedCommandLineElements.add(locatorLauncher.getMemberName().toLowerCase());
+    expectedCommandLineElements.add(String.format("--port=%1$d", locatorLauncher.getPort()));
+    expectedCommandLineElements
+        .add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8089");
     expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + ""
         + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
 
