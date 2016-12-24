@@ -2396,6 +2396,12 @@ public class CliStrings {
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR = "cluster-config-dir";
   public static final String START_LOCATOR__CLUSTER__CONFIG__DIR__HELP =
       "Directory used by the cluster configuration service to store the cluster configuration on the filesystem";
+  public static final String START_LOCATOR__HTTP_SERVICE_PORT = "http-service-port";
+  public static final String START_LOCATOR__HTTP_SERVICE_PORT__HELP =
+      "Port on which HTTP Service will listen on";
+  public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS = "http-service-bind-address";
+  public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP =
+      "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
 
   /* 'start manager' command */
   public static final String START_MANAGER = "start manager";

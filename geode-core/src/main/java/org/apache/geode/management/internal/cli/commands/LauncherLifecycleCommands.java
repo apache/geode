@@ -276,7 +276,13 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           unspecifiedDefaultValue = "false",
           help = CliStrings.START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP) final boolean loadSharedConfigurationFromDirectory,
       @CliOption(key = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR, unspecifiedDefaultValue = "",
-          help = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR__HELP) final String clusterConfigDir) {
+          help = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR__HELP) final String clusterConfigDir,
+      @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT__HELP) final Integer httpServicePort,
+      @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress) {
     try {
       if (StringUtils.isBlank(memberName)) {
         // when the user doesn't give us a name, we make one up!
@@ -336,6 +342,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           StringUtils.valueOf(loadSharedConfigurationFromDirectory, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(CLUSTER_CONFIGURATION_DIR,
           StringUtils.valueOf(clusterConfigDir, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(HTTP_SERVICE_PORT,
+          StringUtils.valueOf(httpServicePort, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS,
+          StringUtils.valueOf(httpServiceBindAddress, StringUtils.EMPTY_STRING));
+
 
       // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
       // argument
