@@ -139,6 +139,7 @@ subprojects {
   task clientServerTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.ClientServerTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
@@ -148,6 +149,7 @@ subprojects {
   task dlockTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.DLockTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
@@ -157,6 +159,7 @@ subprojects {
   task membershipTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.MembershipTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
@@ -166,6 +169,7 @@ subprojects {
   task restAPITest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.RestAPITest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
@@ -176,6 +180,7 @@ subprojects {
   task serializationTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.serializationTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
