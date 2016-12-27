@@ -1014,7 +1014,7 @@ public class CacheClientProxy implements ClientSession {
     }
     try {
       this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
-    } catch (CacheClosedException e) {
+    } catch (CancelException e) {
       // ignore if cache is shutting down
     }
     // Commented to fix bug 40259
@@ -2056,7 +2056,7 @@ public class CacheClientProxy implements ClientSession {
     protected FilterProfile getProfile(String regionName) {
       try {
         return this.ccp._cache.getFilterProfile(regionName);
-      } catch (CacheClosedException e) {
+      } catch (CancelException e) {
         return null;
       }
     }

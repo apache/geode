@@ -2363,6 +2363,7 @@ public class Connection implements Runnable {
                 }
                 dominoCount.set(dominoNumber);
                 // this.senderName = dis.readUTF();
+                setThreadName(dominoNumber);
               }
 
               if (!this.sharedResource) {
@@ -3908,15 +3909,7 @@ public class Connection implements Runnable {
                 // if (name == null) {
                 // name = "pid="+OSProcess.getId();
                 // }
-                Thread.currentThread().setName(
-                    // (!this.sharedResource && this.senderName != null? ("<"+this.senderName+"> ->
-                    // ") : "") +
-                    // "[" + name + "] "+
-                    "P2P message reader for " + this.remoteAddr + " "
-                        + (this.sharedResource ? "" : "un") + "shared" + " "
-                        + (this.preserveOrder ? "" : "un") + "ordered" + " uid=" + this.uniqueId
-                        + (dominoNumber > 0 ? (" dom #" + dominoNumber) : "") + " port="
-                        + this.socket.getPort());
+                setThreadName(dominoNumber);
               } catch (Exception e) {
                 this.owner.getConduit().getCancelCriterion().checkCancelInProgress(e); // bug 37101
                 logger.fatal(LocalizedMessage.create(
@@ -3988,6 +3981,17 @@ public class Connection implements Runnable {
         }
       }
     }
+  }
+
+  private void setThreadName(int dominoNumber) {
+    Thread.currentThread().setName(
+        // (!this.sharedResource && this.senderName != null? ("<"+this.senderName+"> ->
+        // ") : "") +
+        // "[" + name + "] "+
+        "P2P message reader for " + this.remoteAddr + " " + (this.sharedResource ? "" : "un")
+            + "shared" + " " + (this.preserveOrder ? "" : "un") + "ordered" + " uid="
+            + this.uniqueId + (dominoNumber > 0 ? (" dom #" + dominoNumber) : "") + " port="
+            + this.socket.getPort());
   }
 
   private void compactOrResizeBuffer(int messageLength) {

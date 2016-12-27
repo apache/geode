@@ -314,7 +314,7 @@ public class EndpointManagerImpl implements EndpointManager {
   public class EndpointListenerForBridgeMembership implements EndpointManager.EndpointListener {
 
     public void endpointCrashed(Endpoint endpoint) {
-      if (endpoint.getMemberId() == null || cancelCriterion.isCancelInProgress()) {
+      if (cancelCriterion.isCancelInProgress()) {
         return;
       }
       // logger.warn("EMANFIRE:CRASH:"+endpoint.getLocation());
@@ -322,7 +322,7 @@ public class EndpointManagerImpl implements EndpointManager {
     }
 
     public void endpointNoLongerInUse(Endpoint endpoint) {
-      if (endpoint.getMemberId() == null || cancelCriterion.isCancelInProgress()) {
+      if (cancelCriterion.isCancelInProgress()) {
         return;
       }
       // logger.warn("EMANFIRE:LEFT:"+endpoint.getLocation());
