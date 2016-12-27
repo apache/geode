@@ -28,6 +28,13 @@ import java.util.Properties;
 
 public class SSLConfigurationFactory {
 
+  public static final String JAVAX_KEYSTORE = "javax.net.ssl.keyStore";
+  public static final String JAVAX_KEYSTORE_TYPE = "javax.net.ssl.keyStoreType";
+  public static final String JAVAX_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
+  public static final String JAVAX_TRUSTSTORE = "javax.net.ssl.trustStore";
+  public static final String JAVAX_TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
+  public static final String JAVAX_TRUSTSTORE_TYPE = "javax.net.ssl.trustStoreType";
+
   private static SSLConfigurationFactory instance = new SSLConfigurationFactory();
   private DistributionConfig distributionConfig = null;
   private Map<SecurableCommunicationChannel, SSLConfig> registeredSSLConfig = new HashMap<>();
@@ -178,7 +185,6 @@ public class SSLConfigurationFactory {
    * Configure a sslConfig for the cluster using the legacy configuration
    * 
    * @return A sslConfig object describing the ssl config for the server component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyClusterSSL(SSLConfig sslConfig) {
@@ -198,7 +204,6 @@ public class SSLConfigurationFactory {
    * Configure a sslConfig for the server using the legacy configuration
    * 
    * @return A sslConfig object describing the ssl config for the server component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyServerSSL(SSLConfig sslConfig) {
@@ -218,7 +223,6 @@ public class SSLConfigurationFactory {
    * Configure a sslConfig for the jmx using the legacy configuration
    * 
    * @return A sslConfig object describing the ssl config for the jmx component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyJMXSSL(SSLConfig sslConfig) {
@@ -238,7 +242,6 @@ public class SSLConfigurationFactory {
    * Configure a sslConfig for the gateway using the legacy configuration
    * 
    * @return A sslConfig object describing the ssl config for the gateway component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyGatewaySSL(SSLConfig sslConfig) {
@@ -258,7 +261,6 @@ public class SSLConfigurationFactory {
    * Configure a sslConfig for the http service using the legacy configuration
    * 
    * @return A sslConfig object describing the ssl config for the http service component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyHttpServiceSSL(SSLConfig sslConfig) {
@@ -281,26 +283,24 @@ public class SSLConfigurationFactory {
   private SSLConfig configureSSLPropertiesFromSystemProperties(SSLConfig sslConfig,
       Properties properties) {
     if (StringUtils.isEmpty(sslConfig.getKeystore())) {
-      sslConfig.setKeystore(getValueFromSystemProperties(properties, "javax.net.ssl.keyStore"));
+      sslConfig.setKeystore(getValueFromSystemProperties(properties, JAVAX_KEYSTORE));
     }
     if (StringUtils.isEmpty(sslConfig.getKeystoreType())) {
-      sslConfig
-          .setKeystoreType(getValueFromSystemProperties(properties, "javax.net.ssl.keyStoreType"));
+      sslConfig.setKeystoreType(getValueFromSystemProperties(properties, JAVAX_KEYSTORE_TYPE));
     }
     if (StringUtils.isEmpty(sslConfig.getKeystorePassword())) {
-      sslConfig.setKeystorePassword(
-          getValueFromSystemProperties(properties, "javax.net.ssl.keyStorePassword"));
+      sslConfig
+          .setKeystorePassword(getValueFromSystemProperties(properties, JAVAX_KEYSTORE_PASSWORD));
     }
     if (StringUtils.isEmpty(sslConfig.getTruststore())) {
-      sslConfig.setTruststore(getValueFromSystemProperties(properties, "javax.net.ssl.trustStore"));
+      sslConfig.setTruststore(getValueFromSystemProperties(properties, JAVAX_TRUSTSTORE));
     }
     if (StringUtils.isEmpty(sslConfig.getTruststorePassword())) {
       sslConfig.setTruststorePassword(
-          getValueFromSystemProperties(properties, "javax.net.ssl.trustStorePassword"));
+          getValueFromSystemProperties(properties, JAVAX_TRUSTSTORE_PASSWORD));
     }
     if (StringUtils.isEmpty(sslConfig.getTruststoreType())) {
-      sslConfig.setTruststoreType(
-          getValueFromSystemProperties(properties, "javax.net.ssl.trustStoreType"));
+      sslConfig.setTruststoreType(getValueFromSystemProperties(properties, JAVAX_TRUSTSTORE_TYPE));
     }
     return sslConfig;
   }

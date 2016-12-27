@@ -14,25 +14,45 @@
  */
 package org.apache.geode.internal.net;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_GATEWAY_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_JMX_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class SSLConfigurationFactoryJUnitTest {
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @After
   public void tearDownTest() {
@@ -185,6 +205,43 @@ public class SSLConfigurationFactoryJUnitTest {
           SSLConfigurationFactory.getSSLConfigForComponent(securableCommunicationChannel),
           securableCommunicationChannel, distributionConfig);
     }
+  }
+
+  @Test
+  public void getSSLConfigUsingJavaProperties() {
+    Properties properties = new Properties();
+    properties.setProperty(CLUSTER_SSL_ENABLED, "true");
+    System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE, "keystore");
+
+    SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.CLUSTER);
+
+    assertEquals(true, sslConfig.isEnabled());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE),
+        sslConfig.getKeystore());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD),
+        sslConfig.getKeystorePassword());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE),
+        sslConfig.getKeystoreType());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE),
+        sslConfig.getTruststore());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD),
+        sslConfig.getTruststorePassword());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE),
+        sslConfig.getTruststoreType());
+    assertEquals(true, sslConfig.isEnabled());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE),
+        sslConfig.getKeystore());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD),
+        sslConfig.getKeystorePassword());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE),
+        sslConfig.getKeystoreType());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE),
+        sslConfig.getTruststore());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD),
+        sslConfig.getTruststorePassword());
+    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE),
+        sslConfig.getTruststoreType());
   }
 
   private void assertSSLConfig(final Properties properties, final SSLConfig sslConfig,
