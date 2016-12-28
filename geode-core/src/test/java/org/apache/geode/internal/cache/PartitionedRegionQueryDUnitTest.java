@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
@@ -282,8 +283,13 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(() -> {
       Cache cache = getCache();
       Region region = cache.getRegion("region");
-      final Index index = cache.getQueryService().getIndex(region, "ContractDocumentIndex");
-      assertEquals(null, index);
+      final AbstractIndex index =
+          (AbstractIndex) cache.getQueryService().getIndex(region, "ContractDocumentIndex");
+      // either the index was not created locally or it was created but is populated flag should not
+      // be set.
+      if (index != null) {
+        assertFalse(index.isPopulated());
+      }
     });
   }
 

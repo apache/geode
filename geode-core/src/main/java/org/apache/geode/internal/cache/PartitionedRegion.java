@@ -8762,15 +8762,7 @@ public class PartitionedRegion extends LocalRegion
 
     // If exception is throw in any of the above steps
     if (throwException) {
-      try {
-        for (String indexName : exceptionsMap.keySet()) {
-          Index index = indexManager.getIndex(indexName);
-          indexManager.removeIndex(index);
-          removeIndex(index, remotelyOriginated);
-        }
-      } finally {
-        throw new MultiIndexCreationException(exceptionsMap);
-      }
+      throw new MultiIndexCreationException(exceptionsMap);
     }
 
     // set the populate flag for all the created PR indexes
