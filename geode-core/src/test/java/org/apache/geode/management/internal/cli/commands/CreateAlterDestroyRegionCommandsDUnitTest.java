@@ -14,33 +14,36 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-import static com.jayway.awaitility.Awaitility.*;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.apache.geode.cache.*;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
@@ -49,9 +52,13 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.FileUtil;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -63,6 +70,26 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.MessageFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 @Category(DistributedTest.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
@@ -839,8 +866,17 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    */
   @Category(FlakyTest.class) // GEODE-2009
   @Test
-  public void testCreateAlterDestroyUpdatesSharedConfig() {
+  public void testCreateAlterDestroyUpdatesSharedConfig() throws Exception {
     disconnectAllFromDS();
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    jmxPort = ports[0];
+    httpPort = ports[1];
+    try {
+      jmxHost = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException ignore) {
+      jmxHost = "localhost";
+    }
+
 
     final String regionName = "testRegionSharedConfigRegion";
     final String regionPath = "/" + regionName;
@@ -848,28 +884,38 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    Host.getHost(0).getVM(3).invoke(() -> {
+
+    final Properties locatorProps = new Properties();
+    locatorProps.setProperty(NAME, "Locator");
+    locatorProps.setProperty(MCAST_PORT, "0");
+    locatorProps.setProperty(LOG_LEVEL, "fine");
+    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+    locatorProps.setProperty(JMX_MANAGER, "true");
+    locatorProps.setProperty(JMX_MANAGER_START, "true");
+    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+
+    Host.getHost(0).getVM(0).invoke(() -> {
       final File locatorLogFile = new File("locator-" + locatorPort + ".log");
-      final Properties locatorProps = new Properties();
-      locatorProps.setProperty(NAME, "Locator");
-      locatorProps.setProperty(MCAST_PORT, "0");
-      locatorProps.setProperty(LOG_LEVEL, "fine");
-      locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
       try {
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
             locatorLogFile, null, locatorProps);
 
         waitAtMost(5, TimeUnit.SECONDS).until(() -> locator.isSharedConfigurationRunning());
+
+        ManagementService managementService =
+            ManagementService.getExistingManagementService(GemFireCacheImpl.getInstance());
+        assertNotNull(managementService);
+        assertTrue(managementService.isManager());
+        assertTrue(checkIfCommandsAreLoadedOrNot());
+
       } catch (IOException ioex) {
         fail("Unable to create a locator with a shared configuration");
       }
     });
 
-    // Start the default manager
-    Properties managerProps = new Properties();
-    managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
+    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -895,7 +941,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     waitForRegionMBeanCreation(regionPath, 1);
 
     // Make sure the region exists in the shared config
-    Host.getHost(0).getVM(3).invoke(() -> {
+    Host.getHost(0).getVM(0).invoke(() -> {
       SharedConfiguration sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
@@ -937,7 +983,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the region was altered in the shared config
-    Host.getHost(0).getVM(3).invoke(() -> {
+    Host.getHost(0).getVM(0).invoke(() -> {
       SharedConfiguration sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
@@ -976,8 +1022,17 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDestroyRegionWithSharedConfig() {
-
     disconnectAllFromDS();
+
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    jmxPort = ports[0];
+    httpPort = ports[1];
+    try {
+      jmxHost = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException ignore) {
+      jmxHost = "localhost";
+    }
+
 
     final String regionName = "testRegionSharedConfigRegion";
     final String regionPath = "/" + regionName;
@@ -985,13 +1040,20 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    Host.getHost(0).getVM(3).invoke(() -> {
+
+    final Properties locatorProps = new Properties();
+    locatorProps.setProperty(NAME, "Locator");
+    locatorProps.setProperty(MCAST_PORT, "0");
+    locatorProps.setProperty(LOG_LEVEL, "fine");
+    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+    locatorProps.setProperty(JMX_MANAGER, "true");
+    locatorProps.setProperty(JMX_MANAGER_START, "true");
+    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+
+    Host.getHost(0).getVM(0).invoke(() -> {
       final File locatorLogFile = new File("locator-" + locatorPort + ".log");
-      final Properties locatorProps = new Properties();
-      locatorProps.setProperty(NAME, "Locator");
-      locatorProps.setProperty(MCAST_PORT, "0");
-      locatorProps.setProperty(LOG_LEVEL, "fine");
-      locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
       try {
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
             locatorLogFile, null, locatorProps);
@@ -1002,11 +1064,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       }
     });
 
-    // Start the default manager
-    Properties managerProps = new Properties();
-    managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
+    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -1032,7 +1090,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     waitForRegionMBeanCreation(regionPath, 1);
 
     // Make sure the region exists in the shared config
-    Host.getHost(0).getVM(3).invoke(() -> {
+    Host.getHost(0).getVM(0).invoke(() -> {
       SharedConfiguration sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
@@ -1051,7 +1109,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the region was removed from the shared config
-    Host.getHost(0).getVM(3).invoke(() -> {
+    Host.getHost(0).getVM(0).invoke(() -> {
       SharedConfiguration sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {

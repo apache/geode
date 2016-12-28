@@ -97,6 +97,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return locator;
   }
 
+  public Locator startLocatorVM(int index) throws IOException {
+    return startLocatorVM(index, new Properties());
+  }
+
   /**
    * starts a cache server that does not connect to a locator
    * 
@@ -104,6 +108,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    */
   public Server startServerVM(int index, Properties properties) throws IOException {
     return startServerVM(index, properties, 0);
+  }
+
+  public Server startServerVM(int index, int locatorPort) throws IOException {
+    return startServerVM(index, new Properties(), locatorPort);
   }
 
   /**

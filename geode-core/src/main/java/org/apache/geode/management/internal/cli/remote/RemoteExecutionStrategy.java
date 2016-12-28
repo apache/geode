@@ -97,6 +97,7 @@ public class RemoteExecutionStrategy {
 
         // Do the locking and annotation check only if the shared configuration service is enabled
         // Else go the usual route of command execution
+        // TODO: why do we need to care about this here?
         if (gfc.getDistributionManager().isSharedConfigurationServiceEnabledForDS()
             && (writesToSharedConfiguration(method) || readsFromSharedConfiguration(method))) {
           DistributedLockService dls = SharedConfiguration

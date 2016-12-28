@@ -14,30 +14,29 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.functions.ExportSharedConfigurationFunction;
-import org.apache.geode.management.internal.cli.functions.ImportSharedConfigurationArtifactsFunction;
-import org.apache.geode.management.internal.cli.functions.LoadSharedConfigurationFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -45,12 +44,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 /****
  * Commands for the shared configuration
@@ -58,14 +52,6 @@ import java.util.Set;
  */
 @SuppressWarnings("unused")
 public class ExportImportSharedConfigurationCommands extends AbstractCommandsSupport {
-
-  private final ExportSharedConfigurationFunction exportSharedConfigurationFunction =
-      new ExportSharedConfigurationFunction();
-  private final ImportSharedConfigurationArtifactsFunction importSharedConfigurationFunction =
-      new ImportSharedConfigurationArtifactsFunction();
-  private final LoadSharedConfigurationFunction loadSharedConfiguration =
-      new LoadSharedConfigurationFunction();
-
   @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},
       help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
   @CliMetaData(
@@ -78,36 +64,37 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
       @CliOption(key = {CliStrings.EXPORT_SHARED_CONFIG__DIR},
           help = CliStrings.EXPORT_SHARED_CONFIG__DIR__HELP) String dir) {
 
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    Set<? extends DistributedMember> locators =
-        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet();
+    InternalLocator locator = InternalLocator.getLocator();
+    if (!locator.isSharedConfigurationRunning()) {
+      return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
+    }
 
-    Optional<CliFunctionResult> functionResult = locators.stream()
-        .map((DistributedMember locator) -> exportSharedConfigurationFromLocator(locator, null))
-        .filter(CliFunctionResult::isSuccessful).findFirst();
+    SharedConfiguration sc = locator.getSharedConfiguration();
+    File zipFile = new File(zipFileName);
+    zipFile.getParentFile().mkdirs();
 
     Result result;
-    if (functionResult.isPresent()) {
+    try {
+      for (Configuration config : sc.getEntireConfiguration().values()) {
+        sc.writeConfig(config);
+      }
+      ZipUtils.zip(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
+
       InfoResultData infoData = ResultBuilder.createInfoResultData();
-      byte[] byteData = functionResult.get().getByteData();
+      byte[] byteData = FileUtils.readFileToByteArray(zipFile);
       infoData.addAsFile(zipFileName, byteData, InfoResultData.FILE_TYPE_BINARY,
           CliStrings.EXPORT_SHARED_CONFIG__DOWNLOAD__MSG, false);
       result = ResultBuilder.buildResult(infoData);
-    } else {
+    } catch (Exception e) {
       ErrorResultData errorData = ResultBuilder.createErrorResultData();
       errorData.addLine("Export failed");
+      logSevere(e);
       result = ResultBuilder.buildResult(errorData);
+    } finally {
+      zipFile.delete();
     }
 
     return result;
-  }
-
-  private CliFunctionResult exportSharedConfigurationFromLocator(DistributedMember locator,
-      Object[] args) {
-    ResultCollector rc = CliUtil.executeFunction(exportSharedConfigurationFunction, args, locator);
-    List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
-
-    return results.get(0);
   }
 
 
@@ -128,49 +115,49 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
           .createGemFireErrorResult(CliStrings.IMPORT_SHARED_CONFIG__CANNOT__IMPORT__MSG);
     }
 
-    Set<? extends DistributedMember> locators =
-        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet();
+    byte[][] shellBytesData = CommandExecutionContext.getBytesFromShell();
+    String zipFileName = CliUtil.bytesToNames(shellBytesData)[0];
+    byte[] zipBytes = CliUtil.bytesToData(shellBytesData)[0];
 
-    if (locators.isEmpty()) {
-      return ResultBuilder.createGemFireErrorResult(CliStrings.NO_LOCATORS_WITH_SHARED_CONFIG);
+    InternalLocator locator = InternalLocator.getLocator();
+
+    if (!locator.isSharedConfigurationRunning()) {
+      ErrorResultData errorData = ResultBuilder.createErrorResultData();
+      errorData.addLine(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
+      return ResultBuilder.buildResult(errorData);
     }
 
     Result result;
-    byte[][] shellBytesData = CommandExecutionContext.getBytesFromShell();
-    String[] names = CliUtil.bytesToNames(shellBytesData);
-    byte[][] bytes = CliUtil.bytesToData(shellBytesData);
+    File zipFile = new File(zipFileName);
+    try {
+      SharedConfiguration sc = locator.getSharedConfiguration();
 
-    String zipFileName = names[0];
-    byte[] zipBytes = bytes[0];
+      // backup the old config
+      for (Configuration config : sc.getEntireConfiguration().values()) {
+        sc.writeConfig(config);
+      }
+      sc.renameExistingSharedConfigDirectory();
 
-    Object[] args = new Object[] {zipFileName, zipBytes};
+      sc.clearSharedConfiguration();
+      FileUtils.writeByteArrayToFile(zipFile, zipBytes);
+      ZipUtils.unzip(zipFileName, sc.getSharedConfigurationDirPath());
 
+      // load it from the disk
+      sc.loadSharedConfigurationFromDisk();
 
-    Optional<CliFunctionResult> functionResult = locators.stream()
-        .map((DistributedMember locator) -> importSharedConfigurationFromLocator(locator, args))
-        .filter(CliFunctionResult::isSuccessful).findFirst();
-
-    if (functionResult.isPresent()) {
       InfoResultData infoData = ResultBuilder.createInfoResultData();
-      infoData.addLine(functionResult.get().getMessage());
+      infoData.addLine(CliStrings.IMPORT_SHARED_CONFIG__SUCCESS__MSG);
       result = ResultBuilder.buildResult(infoData);
-    } else {
+    } catch (Exception e) {
       ErrorResultData errorData = ResultBuilder.createErrorResultData();
       errorData.addLine("Import failed");
+      logSevere(e);
       result = ResultBuilder.buildResult(errorData);
+    } finally {
+      FileUtils.deleteQuietly(zipFile);
     }
-
     return result;
   }
-
-  private CliFunctionResult importSharedConfigurationFromLocator(DistributedMember locator,
-      Object[] args) {
-    ResultCollector rc = CliUtil.executeFunction(importSharedConfigurationFunction, args, locator);
-    List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
-
-    return results.get(0);
-  }
-
 
   @CliAvailabilityIndicator({CliStrings.EXPORT_SHARED_CONFIG, CliStrings.IMPORT_SHARED_CONFIG})
   public boolean sharedConfigCommandsAvailable() {
@@ -186,6 +173,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
    */
   public static class ExportInterceptor extends AbstractCliAroundInterceptor {
     private String saveDirString;
+    private static final Logger logger = LogService.getLogger();
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
@@ -212,28 +200,28 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
           if (dir != null && !dir.isEmpty()) {
             saveDirFile = new File(dir);
             if (saveDirFile.exists()) {
-              if (!saveDirFile.isDirectory())
+              if (!saveDirFile.isDirectory()) {
                 return ResultBuilder.createGemFireErrorResult(
                     CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__MSG__NOT_A_DIRECTORY, dir));
+              }
             } else if (!saveDirFile.mkdirs()) {
               return ResultBuilder.createGemFireErrorResult(
                   CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__MSG__CANNOT_CREATE_DIR, dir));
             }
           }
-          try {
-            if (!saveDirFile.canWrite()) {
-              return ResultBuilder.createGemFireErrorResult(
-                  CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__MSG__NOT_WRITEABLE,
-                      saveDirFile.getCanonicalPath()));
-            }
-          } catch (IOException ioex) {
+          if (!saveDirFile.canWrite()) {
+            return ResultBuilder.createGemFireErrorResult(
+                CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__MSG__NOT_WRITEABLE,
+                    saveDirFile.getCanonicalPath()));
           }
           saveDirString = saveDirFile.getAbsolutePath();
           commandResult.saveIncomingFiles(saveDirString);
           return commandResult;
         } catch (IOException ioex) {
+          logger.error(ioex);
           return ResultBuilder.createShellClientErrorResult(
-              CliStrings.EXPORT_SHARED_CONFIG__UNABLE__TO__EXPORT__CONFIG);
+              CliStrings.EXPORT_SHARED_CONFIG__UNABLE__TO__EXPORT__CONFIG + ": "
+                  + ioex.getMessage());
         }
       }
       return null;

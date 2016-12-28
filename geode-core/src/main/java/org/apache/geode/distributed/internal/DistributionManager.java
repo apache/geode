@@ -1662,6 +1662,14 @@ public class DistributionManager implements DM {
    * Returns a copy of the map of all members hosting locators. The key is the member, and the value
    * is a collection of host[port] strings. If a bind-address was used for a locator then the form
    * is bind-addr[port].
+   *
+   * The member is the vm that hosts one or more locator, if another locator starts up linking to
+   * this locator, it will put that member in this map as well, and this member will in the map on
+   * the other locato vm as well.
+   *
+   * The keyset of the map are the locator vms in this cluster.
+   *
+   * the value is a collection of strings in case one vm can have multiple locators ????
    * 
    * @since GemFire 6.6.3
    */

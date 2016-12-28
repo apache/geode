@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.SystemFailure;
@@ -89,7 +90,6 @@ import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
 import org.apache.geode.management.internal.cli.util.DiskStoreUpgrader;
 import org.apache.geode.management.internal.cli.util.DiskStoreValidater;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
-import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.messages.CompactRequest;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -377,7 +377,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           new Object[] {name, diskStoreAttributes}, targetMembers);
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
-      XmlEntity xmlEntity = null;
+      AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
       for (CliFunctionResult result : results) {
         if (result.getThrowable() != null) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
@@ -390,8 +390,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           tabularData.accumulate("Result", result.getMessage());
           accumulatedData = true;
 
-          if (xmlEntity == null) {
-            xmlEntity = result.getXmlEntity();
+          if (xmlEntity.get() == null) {
+            xmlEntity.set(result.getXmlEntity());
           }
         }
       }
@@ -402,9 +402,9 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
       Result result = ResultBuilder.buildResult(tabularData);
 
-      if (xmlEntity != null) {
-        result
-            .setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
+      if (xmlEntity.get() != null) {
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
       }
 
       return ResultBuilder.buildResult(tabularData);
@@ -1459,7 +1459,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           new Object[] {name}, targetMembers);
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
-      XmlEntity xmlEntity = null;
+      AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
       for (CliFunctionResult result : results) {
         if (result.getThrowable() != null) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
@@ -1472,8 +1472,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           tabularData.accumulate("Result", result.getMessage());
           accumulatedData = true;
 
-          if (xmlEntity == null) {
-            xmlEntity = result.getXmlEntity();
+          if (xmlEntity.get() == null) {
+            xmlEntity.set(result.getXmlEntity());
           }
         }
       }
@@ -1484,9 +1484,9 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       }
 
       Result result = ResultBuilder.buildResult(tabularData);
-      if (xmlEntity != null) {
-        result.setCommandPersisted(
-            (new SharedConfigurationWriter()).deleteXmlEntity(xmlEntity, groups));
+      if (xmlEntity.get() != null) {
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), groups));
       }
 
       return result;

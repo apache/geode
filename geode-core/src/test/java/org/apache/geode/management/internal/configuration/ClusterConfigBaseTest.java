@@ -57,9 +57,10 @@ public class ClusterConfigBaseTest extends JUnit4DistributedTestCase {
   @Before
   public void before() throws Exception {
     locatorProps = new Properties();
-    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-
     serverProps = new Properties();
+
+    // the following are default values, we don't need to set them. We do it for clarity purpose
+    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     serverProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
   }
 }

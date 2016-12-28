@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.jayway.awaitility.Awaitility;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -128,6 +130,13 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   public CommandResult executeCommand(String command) throws Exception {
     gfsh.executeCommand(command);
     return (CommandResult) gfsh.getResult();
+  }
+
+  public CommandResult executeAndVerifyCommand(String command) throws Exception {
+    CommandResult result = executeCommand(command);
+    assertThat(result.getStatus()).describedAs(result.getContent().toString())
+        .isEqualTo(Result.Status.OK);
+    return result;
   }
 
   public boolean isConnected() {

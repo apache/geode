@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.extension.mock;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -28,10 +29,10 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -47,7 +48,7 @@ import org.springframework.shell.core.annotation.CliOption;
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands implements CommandMarker {
+public class MockExtensionCommands extends AbstractCommandsSupport {
 
   public static final String OPTION_VALUE = "value";
 
@@ -191,7 +192,7 @@ public class MockExtensionCommands implements CommandMarker {
     final List<CliFunctionResult> functionResults =
         (List<CliFunctionResult>) resultCollector.getResult();
 
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     final TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     final String errorPrefix = "ERROR: ";
     for (CliFunctionResult functionResult : functionResults) {
@@ -199,7 +200,7 @@ public class MockExtensionCommands implements CommandMarker {
       tabularResultData.accumulate("Member", functionResult.getMemberIdOrName());
       if (success) {
         tabularResultData.accumulate("Status", functionResult.getMessage());
-        xmlEntity = functionResult.getXmlEntity();
+        xmlEntity.set(functionResult.getXmlEntity());
       } else {
         tabularResultData.accumulate("Status", errorPrefix + functionResult.getMessage());
         tabularResultData.setStatus(Status.ERROR);
@@ -209,12 +210,13 @@ public class MockExtensionCommands implements CommandMarker {
     final Result result = ResultBuilder.buildResult(tabularResultData);
 
     System.out.println("MockExtensionCommands: persisting xmlEntity=" + xmlEntity);
-    if (null != xmlEntity) {
+    if (null != xmlEntity.get()) {
       if (addXmlElement) {
-        result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, null));
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), null));
       } else {
-        result.setCommandPersisted(
-            (new SharedConfigurationWriter()).deleteXmlEntity(xmlEntity, null));
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));
       }
     }
 

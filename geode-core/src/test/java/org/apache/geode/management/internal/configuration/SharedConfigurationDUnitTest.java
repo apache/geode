@@ -245,11 +245,9 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       } catch (IOException e) {
         fail("Unable to create a locator with a shared configuration", e);
       }
-
-      return null;
     });
 
-    dataMemberVm.invoke(() -> {
+    XmlEntity xmlEntity = dataMemberVm.invoke(() -> {
       Properties localProps = new Properties();
       localProps.setProperty(MCAST_PORT, "0");
       localProps.setProperty(LOCATORS, "localhost[" + locator1Port + "]");
@@ -269,13 +267,13 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
 
       RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
       regionFactory.create(REGION1);
+      return new XmlEntity(CacheXml.REGION, "name", REGION1);
+    });
 
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", REGION1);
-      final SharedConfigurationWriter scw = new SharedConfigurationWriter();
-      assertTrue(scw.addXmlEntity(xmlEntity, new String[] {testGroup}));
+    locator1Vm.invoke(() -> {
+      SharedConfiguration sc = InternalLocator.getLocator().getSharedConfiguration();
+      sc.addXmlEntity(xmlEntity, new String[] {testGroup});
 
-      xmlEntity = new XmlEntity(CacheXml.DISK_STORE, "name", DISKSTORENAME);
-      assertTrue(scw.addXmlEntity(xmlEntity, new String[] {testGroup}));
       // Modify property and cache attributes
       Properties clusterProperties = new Properties();
       clusterProperties.setProperty(LOG_LEVEL, clusterLogLevel);
@@ -283,22 +281,21 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       Map<String, String> cacheAttributes = new HashMap<String, String>();
       cacheAttributes.put(CacheXml.COPY_ON_READ, "true");
 
-      assertTrue(scw.modifyPropertiesAndCacheAttributes(clusterProperties, cacheEntity, null));
+      sc.modifyXmlAndProperties(clusterProperties, cacheEntity, null);
 
       clusterProperties.setProperty(LOG_LEVEL, groupLogLevel);
-      assertTrue(scw.modifyPropertiesAndCacheAttributes(clusterProperties, cacheEntity,
-          new String[] {testGroup}));
+      sc.modifyXmlAndProperties(clusterProperties, cacheEntity, new String[] {testGroup});
 
       // Add a jar
       byte[][] jarBytes = new byte[1][];
       jarBytes[0] = "Hello".getBytes();
-      assertTrue(scw.addJars(new String[] {"foo.jar"}, jarBytes, null));
+      assertTrue(sc.addJarsToThisLocator(new String[] {"foo.jar"}, jarBytes, null));
 
       // Add a jar for the group
       jarBytes = new byte[1][];
       jarBytes[0] = "Hello".getBytes();
-      assertTrue(scw.addJars(new String[] {"bar.jar"}, jarBytes, new String[] {testGroup}));
-      return null;
+      assertTrue(
+          sc.addJarsToThisLocator(new String[] {"bar.jar"}, jarBytes, new String[] {testGroup}));
     });
 
     final int locator2Port = ports[1];
@@ -363,16 +360,13 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       assertNotNull(jarNames);
       assertNotNull(jarBytes);
 
-      return null;
+      sharedConfig.deleteXmlEntity(new XmlEntity(CacheXml.REGION, "name", REGION1),
+          new String[] {testGroup});
+      sharedConfig.removeJars(new String[] {"foo.jar"}, null);
+      sharedConfig.removeJars(null, null);
     });
 
     dataMemberVm.invoke(() -> {
-      SharedConfigurationWriter scw = new SharedConfigurationWriter();
-      scw.deleteXmlEntity(new XmlEntity(CacheXml.REGION, "name", REGION1),
-          new String[] {testGroup});
-      scw.deleteJars(new String[] {"foo.jar"}, null);
-      scw.deleteJars(null, null);
-
       Set<String> groups = new HashSet<String>();
       groups.add(testGroup);
       ConfigurationRequest configRequest = new ConfigurationRequest(groups);
