@@ -212,7 +212,7 @@ public class SSLConfigurationFactoryJUnitTest {
   public void getSSLConfigUsingJavaProperties() {
     Properties properties = new Properties();
     properties.setProperty(CLUSTER_SSL_ENABLED, "true");
-    properties.setProperty(MCAST_PORT,"0");
+    properties.setProperty(MCAST_PORT, "0");
     System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE, "keystore");
     System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE, "JKS");
     System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD, "keystorePassword");
