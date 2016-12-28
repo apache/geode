@@ -669,9 +669,7 @@ public class TombstoneService {
       if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
         logger.trace(LogMarker.TOMBSTONE, "adding expired tombstone {} to batch", tombstone);
       }
-      synchronized (getBlockGCLock()) {
-        expiredTombstones.add(tombstone);
-      }
+      expiredTombstones.add(tombstone);
     }
 
     @Override
