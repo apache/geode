@@ -60,6 +60,7 @@ import javax.net.ssl.SSLSocket;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.PoolFactory;
@@ -116,6 +117,8 @@ public class HandShake implements ClientHandShake {
 
   protected static final byte REPLY_AUTH_NOT_REQUIRED = (byte) 66;
 
+  public static final byte REPLY_SERVER_IS_LOCATOR = (byte) 67;
+
   private static SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
   private byte code;
@@ -123,11 +126,6 @@ public class HandShake implements ClientHandShake {
 
   private boolean isRead = false;
   protected final DistributedSystem system;
-
-  /** Singleton for client side */
-  // Client has no more a singleton handShake instance. Now each connection will
-  // have its own handShake instance.
-  private static HandShake handshake;
 
   final protected ClientProxyMembershipID id;
 
@@ -251,7 +249,9 @@ public class HandShake implements ClientHandShake {
     id = null;
   }
 
-  /** Constructor used by server side connection */
+  /**
+   * HandShake Constructor used by server side connection
+   */
   public HandShake(Socket sock, int timeout, DistributedSystem sys, Version clientVersion,
       byte communicationMode) throws IOException, AuthenticationRequiredException {
     this.clientVersion = clientVersion;
@@ -325,12 +325,9 @@ public class HandShake implements ClientHandShake {
     return this.clientVersion;
   }
 
-  // private void initSingleton(DistributedSystem sys) {
-  // id = ClientProxyMembershipID.getNewProxyMembership();
-  // this.system = sys;
-  // this.code = REPLY_OK;
-  // }
-
+  /**
+   * Client-side handshake. This form of HandShake can communicate with a server
+   */
   public HandShake(ClientProxyMembershipID id, DistributedSystem sys) {
     this.id = id;
     this.code = REPLY_OK;
@@ -343,6 +340,9 @@ public class HandShake implements ClientHandShake {
     this.id.updateID(idm);
   }
 
+  /**
+   * Clone a HandShake to be used in creating other connections
+   */
   public HandShake(HandShake handShake) {
     this.appSecureMode = handShake.appSecureMode;
     this.clientConflation = handShake.clientConflation;
@@ -361,19 +361,6 @@ public class HandShake implements ClientHandShake {
     this._decrypt = null;
     this._encrypt = null;
   }
-
-  /*
-   * private void read(DataInputStream dis,byte[] toFill) throws IOException { /* this.code = (byte)
-   * in.read(); if (this.code == -1) { throw new
-   * IOException(LocalizedStrings.HandShake_HANDSHAKE_READ_AT_END_OF_STREAM.toLocalizedString()); }
-   * if (this.code != REPLY_OK) { throw new
-   * IOException(LocalizedStrings.HandShake_HANDSHAKE_REPLY_CODE_IS_NOT_OK.toLocalizedString()); }
-   * try { ObjectInput in = new ObjectInputStream(is); this.id =
-   * ClientProxyMembershipID.readCanonicalized(in); } catch(IOException ioe) { this.code = -2; throw
-   * ioe; } catch(ClassNotFoundException cnfe) { this.code = -3; IOException e = new
-   * IOException(LocalizedStrings.HandShake_ERROR_DESERIALIZING_HANDSHAKE.toLocalizedString());
-   * e.initCause(cnfe); throw e; } } finally { synchronized (this) { this.isRead = true; } } }
-   */
 
   // used by the client side
   private byte setClientConflation() {
@@ -455,7 +442,10 @@ public class HandShake implements ClientHandShake {
     }
   }
 
-  public byte write(DataOutputStream dos, DataInputStream dis, byte communicationMode,
+  /**
+   * client-to-server handshake. Nothing is sent to the server prior to invoking this method.
+   */
+  private byte write(DataOutputStream dos, DataInputStream dis, byte communicationMode,
       int replyCode, int readTimeout, List ports, Properties p_credentials,
       DistributedMember member, boolean isCallbackConnection) throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(32, Version.CURRENT);
@@ -529,17 +519,7 @@ public class HandShake implements ClientHandShake {
   }
 
   /**
-   * 
    * This assumes that authentication is the last piece of info in handshake
-   * 
-   * @param dos
-   * @param dis
-   * @param p_credentials
-   * @param isNotification
-   * @param member
-   * @param heapdos stream to append data to.
-   * @throws IOException
-   * @throws GemFireSecurityException
    */
   public void writeCredentials(DataOutputStream dos, DataInputStream dis, Properties p_credentials,
       boolean isNotification, DistributedMember member, HeapDataOutputStream heapdos)
@@ -666,15 +646,6 @@ public class HandShake implements ClientHandShake {
    * This method writes what readCredential() method expects to read. (Note the use of singular
    * credential). It is similar to writeCredentials(), except that it doesn't write
    * credential-properties.
-   * 
-   * @param dos
-   * @param dis
-   * @param authInit
-   * @param isNotification
-   * @param member
-   * @param heapdos
-   * @throws IOException
-   * @throws GemFireSecurityException
    */
   public byte writeCredential(DataOutputStream dos, DataInputStream dis, String authInit,
       boolean isNotification, DistributedMember member, HeapDataOutputStream heapdos)
@@ -1201,20 +1172,23 @@ public class HandShake implements ClientHandShake {
    * @param sock the socket this handshake is operating on
    * @return temporary id to reprent the other vm
    */
-  private DistributedMember getDistributedMember(Socket sock) {
+  private DistributedMember getIDForSocket(Socket sock) {
     return new InternalDistributedMember(sock.getInetAddress(), sock.getPort(), false);
   }
 
-  public ServerQueueStatus greet(Connection conn, ServerLocation location, byte communicationMode)
-      throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
-      ServerRefusedConnectionException {
+  /**
+   * Client-side handshake with a Server
+   */
+  public ServerQueueStatus handshakeWithServer(Connection conn, ServerLocation location,
+      byte communicationMode) throws IOException, AuthenticationRequiredException,
+      AuthenticationFailedException, ServerRefusedConnectionException {
     try {
       ServerQueueStatus serverQStatus = null;
       Socket sock = conn.getSocket();
       DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
       final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
-      DistributedMember member = getDistributedMember(sock);
+      DistributedMember member = getIDForSocket(sock);
       // if running in a loner system, use the new port number in the ID to
       // help differentiate from other clients
       DM dm = ((InternalDistributedSystem) this.system).getDistributionManager();
@@ -1245,6 +1219,10 @@ public class HandShake implements ClientHandShake {
         // SSL
         throw new AuthenticationRequiredException(
             LocalizedStrings.HandShake_SERVER_EXPECTING_SSL_CONNECTION.toLocalizedString());
+      }
+      if (acceptanceCode == REPLY_SERVER_IS_LOCATOR) {
+        throw new GemFireConfigException("Improperly configured client detected.  " + "Server at "
+            + location + " is actually a locator.  Use addPoolLocator to configure locators.");
       }
 
       // Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
@@ -1309,7 +1287,11 @@ public class HandShake implements ClientHandShake {
     }
   }
 
-  public ServerQueueStatus greetNotifier(Socket sock, boolean isPrimary)
+  /**
+   * Used by client-side CacheClientUpdater to handshake with a server in order to receive messages
+   * generated by subscriptions (register-interest, continuous query)
+   */
+  public ServerQueueStatus handshakeWithSubscriptionFeed(Socket sock, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException {
     ServerQueueStatus sqs = null;
@@ -1317,7 +1299,7 @@ public class HandShake implements ClientHandShake {
       DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
       final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
-      DistributedMember member = getDistributedMember(sock);
+      DistributedMember member = getIDForSocket(sock);
       if (!this.multiuserSecureMode) {
         this.credentials = getCredentials(member);
       }
@@ -1465,12 +1447,6 @@ public class HandShake implements ClientHandShake {
     if (!(other instanceof HandShake))
       return false;
     final HandShake that = (HandShake) other;
-
-    /*
-     * if (identity != null && identity.length > 0) { for (int i = 0; i < identity.length; i++) { if
-     * (this.identity[i] != that.identity[i]) return false; } } if (this.code != that.code) return
-     * false; return true;
-     */
 
     if (this.id.isSameDSMember(that.id) && this.code == that.code) {
       return true;

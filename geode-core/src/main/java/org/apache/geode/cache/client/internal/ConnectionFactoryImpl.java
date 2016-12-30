@@ -20,6 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
@@ -139,6 +140,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       connection.setHandShake(connHandShake);
       authenticateIfRequired(connection);
       initialized = true;
+    } catch (GemFireConfigException e) {
+      throw e;
     } catch (CancelException e) {
       // propagate this up, don't retry
       throw e;

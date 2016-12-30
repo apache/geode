@@ -21,6 +21,10 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -743,6 +747,15 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  @Test(expected = GemFireConfigException.class)
+  public void clientIsPreventedFromConnectingToLocatorAsServer() throws Exception {
+    IgnoredException.addIgnoredException("Improperly configured client detected");
+    ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
+    clientCacheFactory.addPoolServer("localhost", DistributedTestUtils.getDUnitLocatorPort());
+    clientCacheFactory.setPoolSubscriptionEnabled(true);
+    getClientCache(clientCacheFactory);
+  }
+
 
   private void createCache(Properties props) throws Exception {
     createCacheV(props);
@@ -1314,22 +1327,6 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
       // assertIndexDetailsEquals(server_k2, r2.getEntry(k2).getValue());
     } catch (Exception ex) {
       Assert.fail("failed while verifyUpdatesOnRegion2()", ex);
-    }
-  }
-
-  @Override
-  public final void postTearDownCacheTestCase() throws Exception {
-    // close the clients first
-    closeCacheAndDisconnect();
-    // then close the servers
-    server1.invoke(() -> ClientServerMiscDUnitTest.closeCacheAndDisconnect());
-  }
-
-  public static void closeCacheAndDisconnect() {
-    Cache cache = new ClientServerMiscDUnitTest().getCache();
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-      cache.getDistributedSystem().disconnect();
     }
   }
 

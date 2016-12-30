@@ -103,7 +103,7 @@ public class ConnectionImpl implements Connection {
     theSocket.setSoTimeout(handShakeTimeout);
     out = theSocket.getOutputStream();
     in = theSocket.getInputStream();
-    this.status = handShake.greet(this, location, communicationMode);
+    this.status = handShake.handshakeWithServer(this, location, communicationMode);
     commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
     if (sender != null) {
       commBufferForAsyncRead = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);

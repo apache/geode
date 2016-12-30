@@ -34,6 +34,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -465,6 +466,8 @@ public class QueueManagerImpl implements QueueManager {
       try {
         connection = factory.createClientToServerConnection(server, true);
       } catch (GemFireSecurityException e) {
+        throw e;
+      } catch (GemFireConfigException e) {
         throw e;
       } catch (Exception e) {
         if (isDebugEnabled) {

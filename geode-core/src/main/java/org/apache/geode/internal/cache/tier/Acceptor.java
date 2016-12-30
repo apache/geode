@@ -26,6 +26,10 @@ import org.apache.geode.internal.Version;
  * @since GemFire 2.0.2
  */
 public abstract class Acceptor {
+
+  // The following are communications "mode" bytes sent as the first byte of a
+  // client/server handshake. They must not be larger than 1 byte
+
   /**
    * Byte meaning that the Socket is being used for 'client to server' communication.
    */
@@ -66,6 +70,7 @@ public abstract class Acceptor {
    * queue (register interest, create cq, etc.).
    */
   public static final byte CLIENT_TO_SERVER_FOR_QUEUE = (byte) 107;
+
 
   /**
    * The GFE version of the server.
