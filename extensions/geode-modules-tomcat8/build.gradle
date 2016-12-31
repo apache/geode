@@ -36,7 +36,7 @@ dependencies {
   testRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
   compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
   testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
-  compile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
+  testCompile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
 
   testCompile project(path: ':geode-junit')
   testCompile files(project(':geode-core').sourceSets.test.output)
