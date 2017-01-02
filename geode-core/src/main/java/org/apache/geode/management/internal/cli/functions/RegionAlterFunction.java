@@ -237,7 +237,7 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
           }
         }
 
-        if (!nameFound) {
+        if (!nameFound && !newCacheListenerName.isEmpty()) {
           Class<CacheListener<K, V>> cacheListenerKlass =
               forName(newCacheListenerName, CliStrings.ALTER_REGION__CACHELISTENER);
           mutator.addCacheListener(
