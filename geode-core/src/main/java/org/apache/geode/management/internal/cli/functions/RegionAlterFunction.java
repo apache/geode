@@ -229,6 +229,9 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
 
       // Add new cache listeners that don't already exist
       for (String newCacheListenerName : newCacheListenerNames) {
+        if (newCacheListenerName.isEmpty()) {
+          continue;
+        }
         boolean nameFound = false;
         for (CacheListener oldCacheListener : oldCacheListeners) {
           if (oldCacheListener.getClass().getName().equals(newCacheListenerName)) {
