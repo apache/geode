@@ -21,6 +21,7 @@ import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -29,6 +30,8 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -123,6 +126,31 @@ public class LocatorJUnitTest {
     }
   }
 
+  /**
+   * GEODE-2253 - a locator should handle a SharedConfigurationStatusRequest regardless of whether
+   * it has the service or not
+   */
+  @Test
+  public void testHandlersAreWaitedOn() throws Exception {
+    Properties dsprops = new Properties();
+    int jmxPort = getRandomAvailablePort(SOCKET);
+    dsprops.setProperty(MCAST_PORT, "0");
+    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsprops.setProperty(LOCATOR_WAIT_TIME, "1"); // seconds
+    dsprops.setProperty(LOG_FILE, "");
+    locator = Locator.startLocatorAndDS(port, null, dsprops);
+    InternalLocator internalLocator = (InternalLocator) locator;
+    // the locator should always install a SharedConfigurationStatusRequest handler
+    assertTrue(internalLocator.hasHandlerForClass(SharedConfigurationStatusRequest.class));
+    // the locator should wait if a handler isn't installed
+    assertFalse(internalLocator.hasHandlerForClass(ConfigurationRequest.class));
+    ConfigurationRequest request = new ConfigurationRequest();
+    Object result = internalLocator.getPrimaryHandler().processRequest(request);
+    assertNull(result);
+    assertTrue(internalLocator.getPrimaryHandler().hasWaitedForHandlerInitialization());
+  }
+
+
   @Test
   public void testBasicInfo() throws Exception {
     locator = Locator.startLocator(port, tmpFile);
@@ -178,23 +206,4 @@ public class LocatorJUnitTest {
     }
   }
 
-  private void doServerLocation(int realPort) throws Exception {
-    {
-      ClientConnectionRequest request =
-          new ClientConnectionRequest(Collections.EMPTY_SET, "group1");
-      ClientConnectionResponse response = (ClientConnectionResponse) new TcpClient()
-          .requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
-      assertEquals(null, response.getServer());
-    }
-
-    {
-      QueueConnectionRequest request = new QueueConnectionRequest(
-          ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getAnyInstance()),
-          3, Collections.EMPTY_SET, "group1", true);
-      QueueConnectionResponse response = (QueueConnectionResponse) new TcpClient()
-          .requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
-      assertEquals(new ArrayList(), response.getServers());
-      assertFalse(response.isDurableQueueFound());
-    }
-  }
 }

@@ -2908,7 +2908,7 @@ public class DistributionManager implements DM {
         continue;
       }
 
-      if (member.equals(this.myid)) { // c'est moi
+      if (member.equals(this.myid)) {
         if (!this.adam && elderCandidates == 1) {
           this.adam = true;
           logger.info(LocalizedMessage.create(
@@ -2917,7 +2917,7 @@ public class DistributionManager implements DM {
           logger.info(LocalizedMessage.create(LocalizedStrings.DistributionManager_I_0_AM_THE_ELDER,
               this.myid));
         }
-      } // c'est moi
+      }
       return member;
     } // while
     // If we get this far then no elder exists
