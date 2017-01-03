@@ -14,22 +14,11 @@
  */
 package org.apache.geode.test.dunit.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Cache;
@@ -44,8 +33,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.DiskStoreObserver;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -58,8 +45,10 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -67,6 +56,19 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+
+import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4.
@@ -113,9 +115,25 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   @Rule
   public SerializableTestName testName = new SerializableTestName();
 
+  private static DUnitBlackboard blackboard;
+
+  /**
+   * Returns a DUnitBlackboard that can be used to pass data between VMs and
+   * synchronize actions.
+   * 
+   * @return the blackboard
+   */
+  public DUnitBlackboard getBlackboard() {
+    return blackboard;
+  }
+
   @BeforeClass
   public static final void initializeDistributedTestCase() {
     DUnitLauncher.launchIfNeeded();
+  }
+
+  public static final void initializeBlackboard() {
+    blackboard = new DUnitBlackboard();
   }
 
   public final String getName() {

@@ -14,11 +14,13 @@
  */
 package org.apache.geode.distributed.internal.deadlock;
 
+import org.apache.geode.test.dunit.ThreadUtils;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.jayway.awaitility.Awaitility;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -28,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -153,56 +156,72 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-1580 uses asyncs with pauses
   @Test
   public void testDistributedDeadlockWithDLock() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
+    getBlackboard().initBlackboard();
 
+    getSystem();
     AsyncInvocation async1 = lockTheDLocks(vm0, "one", "two");
     AsyncInvocation async2 = lockTheDLocks(vm1, "two", "one");
-    getSystem();
+
+    Awaitility.await("waiting for locks to be acquired").atMost(60, TimeUnit.SECONDS)
+        .until(Awaitility.matches(() ->
+            assertTrue(getBlackboard().isGateSignaled("one"))));
+
+    Awaitility.await("waiting for locks to be acquired").atMost(60, TimeUnit.SECONDS)
+        .until(Awaitility.matches(() ->
+            assertTrue(getBlackboard().isGateSignaled("two"))));
+
     GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
-
-    LinkedList<Dependency> deadlock = null;
-    for (int i = 0; i < 60; i++) {
-      deadlock = detect.find().findCycle();
-      if (deadlock != null) {
-        break;
-      }
-      Thread.sleep(1000);
-    }
-
+    LinkedList<Dependency> deadlock = detect.find().findCycle();
+    
     assertTrue(deadlock != null);
-    LogWriterUtils.getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
+
+    System.out.println("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
+
     assertEquals(4, deadlock.size());
+
     disconnectAllFromDS();
-    async1.getResult(30000);
-    async2.getResult(30000);
+    try {
+      waitForAsyncInvocation(async1, 45, TimeUnit.SECONDS);
+    } finally {
+      waitForAsyncInvocation(async2, 45, TimeUnit.SECONDS);
+    }
+  }
+
+  private void waitForAsyncInvocation(AsyncInvocation async1, int howLong, TimeUnit units)
+      throws java.util.concurrent.ExecutionException, InterruptedException {
+    try {
+      async1.get(howLong, units);
+    } catch (TimeoutException e) {
+      fail("test is leaving behind an async invocation thread");
+    }
   }
 
   private AsyncInvocation lockTheDLocks(VM vm, final String first, final String second) {
     return vm.invokeAsync(new SerializableRunnable() {
 
       public void run() {
-        getCache();
-        DistributedLockService dls = DistributedLockService.create("deadlock_test", getSystem());
-        dls.lock(first, 10 * 1000, -1);
-
         try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
+          getCache();
+          DistributedLockService dls = DistributedLockService.create("deadlock_test", getSystem());
+          dls.lock(first, 10 * 1000, -1);
+          getBlackboard().signalGate(first);
+          getBlackboard().waitForGate(second, 30, TimeUnit.SECONDS);
+          // this will block since the other DUnit VM will have locked the second key
+          try {
+            dls.lock(second, 10 * 1000, -1);
+          } catch (LockServiceDestroyedException expected) {
+            // this is ok, the test is terminating
+          } catch (DistributedSystemDisconnectedException expected) {
+            // this is ok, the test is terminating
+          }
+        } catch (Exception e) {
+          throw new RuntimeException("test failed", e);
         }
-        try {
-          dls.lock(second, 10 * 1000, -1);
-        } catch (LockServiceDestroyedException expected) {
-          // this is ok, the test is terminating
-        } catch (DistributedSystemDisconnectedException expected) {
-          // this is ok, the test is terminating
-        }
-
       }
     });
 

@@ -18,6 +18,7 @@ import java.rmi.Naming;
 
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher.MasterRemote;
 
 import org.apache.logging.log4j.Logger;
@@ -50,6 +51,7 @@ public class ChildVM {
       DUnitLauncher.locatorPort = holder.getLocatorPort();
       final RemoteDUnitVM dunitVM = new RemoteDUnitVM();
       Naming.rebind("//localhost:" + namingPort + "/vm" + vmNum, dunitVM);
+      JUnit4DistributedTestCase.initializeBlackboard();
       holder.signalVMReady();
       // This loop is here so this VM will die even if the master is mean killed.
       while (!stopMainLoop) {

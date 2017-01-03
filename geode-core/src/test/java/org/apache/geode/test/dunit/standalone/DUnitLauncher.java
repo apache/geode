@@ -27,6 +27,8 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import hydra.MethExecutorResult;
+
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -144,6 +146,8 @@ public class DUnitLauncher {
     int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Registry registry = LocateRegistry.createRegistry(namingPort);
     System.setProperty(RMI_PORT_PARAM, "" + namingPort);
+
+    JUnit4DistributedTestCase.initializeBlackboard();
 
     final ProcessManager processManager = new ProcessManager(namingPort, registry);
     master = new Master(registry, processManager);
