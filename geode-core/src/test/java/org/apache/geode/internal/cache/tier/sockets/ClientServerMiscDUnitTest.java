@@ -26,7 +26,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -748,7 +747,6 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  @Ignore
   @Test(expected = GemFireConfigException.class)
   public void clientIsPreventedFromConnectingToLocatorAsServer() throws Exception {
     IgnoredException.addIgnoredException("Improperly configured client detected");
