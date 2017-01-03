@@ -102,7 +102,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
   }
 
   @Test
-  @Category(FlakyTest.class) //remove after GEODE-2261 is implemented
+  @Category(FlakyTest.class) // remove after GEODE-2261 is implemented
   public void testImportWithMultipleLocators() throws Exception {
     locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
     Locator locator1 = lsRule.startLocatorVM(1, locatorProps);
