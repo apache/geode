@@ -209,5 +209,5 @@ dependencies {
   classesOutput sourceSets.main.output
 }
 
-tasks.eclipse.dependsOn(generateTestGrammarSource)
+tasks.eclipse.dependsOn(generateGrammarSource)
 
