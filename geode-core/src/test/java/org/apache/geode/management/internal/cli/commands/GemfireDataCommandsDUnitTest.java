@@ -2196,8 +2196,9 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     String memSizeFromFunctionCall = (String) manager.invoke(new SerializableCallable() {
       public Object call() {
         Cache cache = GemFireCacheImpl.getInstance();
-        CliUtil.getMembersForeRegionViaFunction(cache, DATA_REGION_NAME_PATH);
-        return "" + CliUtil.getMembersForeRegionViaFunction(cache, DATA_REGION_NAME_PATH).size();
+        CliUtil.getMembersForeRegionViaFunction(cache, DATA_REGION_NAME_PATH, true);
+        return ""
+            + CliUtil.getMembersForeRegionViaFunction(cache, DATA_REGION_NAME_PATH, true).size();
       }
     });
 
@@ -2238,7 +2239,8 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     String memSizeFromFunctionCall = (String) manager.invoke(new SerializableCallable() {
       public Object call() {
         Cache cache = GemFireCacheImpl.getInstance();
-        return "" + CliUtil.getMembersForeRegionViaFunction(cache, REBALANCE_REGION_NAME).size();
+        return ""
+            + CliUtil.getMembersForeRegionViaFunction(cache, REBALANCE_REGION_NAME, true).size();
       }
     });
 

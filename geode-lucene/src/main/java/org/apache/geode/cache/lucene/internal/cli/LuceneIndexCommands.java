@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -113,7 +115,13 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     final List<Set<LuceneIndexDetails>> results =
         (List<Set<LuceneIndexDetails>>) resultsCollector.getResult();
 
-    return results.stream().flatMap(set -> set.stream()).sorted().collect(Collectors.toList());
+    List<LuceneIndexDetails> sortedResults =
+        results.stream().flatMap(set -> set.stream()).sorted().collect(Collectors.toList());
+    LinkedHashSet<LuceneIndexDetails> uniqResults = new LinkedHashSet<LuceneIndexDetails>();
+    uniqResults.addAll(sortedResults);
+    sortedResults.clear();
+    sortedResults.addAll(uniqResults);
+    return sortedResults;
   }
 
   protected Result toTabularResult(final List<LuceneIndexDetails> indexDetailsList, boolean stats) {
@@ -426,7 +434,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     final Set<DistributedMember> targetMembers;
     if (function != createIndexFunction) {
       targetMembers =
-          CliUtil.getMembersForeRegionViaFunction(getCache(), indexInfo.getRegionPath());
+          CliUtil.getMembersForeRegionViaFunction(getCache(), indexInfo.getRegionPath(), true);
       if (targetMembers.isEmpty()) {
         throw new IllegalArgumentException("Region not found.");
       }
@@ -438,7 +446,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   protected ResultCollector<?, ?> executeSearch(final LuceneQueryInfo queryInfo) throws Exception {
     final Set<DistributedMember> targetMembers =
-        CliUtil.getMembersForeRegionViaFunction(getCache(), queryInfo.getRegionPath());
+        CliUtil.getMembersForeRegionViaFunction(getCache(), queryInfo.getRegionPath(), false);
     if (targetMembers.isEmpty())
       throw new IllegalArgumentException("Region not found.");
     return CliUtil.executeFunction(searchIndexFunction, queryInfo, targetMembers);

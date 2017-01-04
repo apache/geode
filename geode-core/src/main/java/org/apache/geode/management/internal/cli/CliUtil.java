@@ -779,7 +779,7 @@ public class CliUtil {
   }
 
   public static Set<DistributedMember> getMembersForeRegionViaFunction(Cache cache,
-      String regionPath) {
+      String regionPath, boolean returnAll) {
     try {
       Set<DistributedMember> regionMembers = new HashSet<DistributedMember>();
       MembersForRegionFunction membersForRegionFunction = new MembersForRegionFunction();
@@ -810,6 +810,9 @@ public class CliUtil {
               for (DistributedMember mem : dsMems) {
                 if (mem.getId().equals(entry.getKey())) {
                   regionMembers.add(mem);
+                  if (!returnAll) {
+                    return regionMembers;
+                  }
                 }
               }
             }

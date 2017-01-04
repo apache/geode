@@ -1327,7 +1327,7 @@ public class DataCommands implements CommandMarker {
 
     // try with function calls
     if (matchedMembers.size() == 0) {
-      matchedMembers = CliUtil.getMembersForeRegionViaFunction(cache, region);
+      matchedMembers = CliUtil.getMembersForeRegionViaFunction(cache, region, true);
     }
     return matchedMembers;
   }
