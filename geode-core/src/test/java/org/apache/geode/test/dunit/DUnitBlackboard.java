@@ -36,11 +36,11 @@ import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
  */
 public class DUnitBlackboard {
   InternalBlackboard blackboard;
-  
+
   public DUnitBlackboard() {
     blackboard = InternalBlackboardImpl.getInstance();
   }
-  
+
   /**
    * resets the blackboard
    */
@@ -73,7 +73,7 @@ public class DUnitBlackboard {
     } catch (RemoteException e) {
       throw new RuntimeException("remote call failed", e);
     }
-    
+
   }
 
   /**
@@ -86,7 +86,7 @@ public class DUnitBlackboard {
       throw new RuntimeException("remote call failed", e);
     }
   }
-  
+
   /**
    * put an object into a mailbox slot. The object must be java-serializable
    */

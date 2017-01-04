@@ -168,16 +168,14 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     AsyncInvocation async2 = lockTheDLocks(vm1, "two", "one");
 
     Awaitility.await("waiting for locks to be acquired").atMost(60, TimeUnit.SECONDS)
-        .until(Awaitility.matches(() ->
-            assertTrue(getBlackboard().isGateSignaled("one"))));
+        .until(Awaitility.matches(() -> assertTrue(getBlackboard().isGateSignaled("one"))));
 
     Awaitility.await("waiting for locks to be acquired").atMost(60, TimeUnit.SECONDS)
-        .until(Awaitility.matches(() ->
-            assertTrue(getBlackboard().isGateSignaled("two"))));
+        .until(Awaitility.matches(() -> assertTrue(getBlackboard().isGateSignaled("two"))));
 
     GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
     LinkedList<Dependency> deadlock = detect.find().findCycle();
-    
+
     assertTrue(deadlock != null);
 
     System.out.println("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));

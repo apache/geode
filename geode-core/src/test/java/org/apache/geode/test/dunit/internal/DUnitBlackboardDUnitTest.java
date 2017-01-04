@@ -36,21 +36,22 @@ public class DUnitBlackboardDUnitTest extends JUnit4DistributedTestCase {
     final String MBOX = "myMailbox";
     VM vm0 = Host.getHost(0).getVM(0);
     VM vm1 = Host.getHost(0).getVM(1);
-    
-    vm0.invoke("put data in mailbox", () ->
-      getBlackboard().setMailbox(MBOX, "testing"));
-    
-    String result = (String)vm1.invoke("get data from mailbox", () -> {
-      return getBlackboard().getMailbox(MBOX); });
-    
+
+    vm0.invoke("put data in mailbox", () -> getBlackboard().setMailbox(MBOX, "testing"));
+
+    String result = (String) vm1.invoke("get data from mailbox", () -> {
+      return getBlackboard().getMailbox(MBOX);
+    });
+
     assertEquals("testing", result);
   }
+
   @Test
   public void canSignalAnotherVM() throws Exception {
     final String GATE = "myGate";
     VM vm0 = Host.getHost(0).getVM(0);
     VM vm1 = Host.getHost(0).getVM(1);
-    
+
     vm1.invoke("wait on gate not yet signalled", () -> {
       assertFalse(getBlackboard().isGateSignaled(GATE));
       try {
@@ -63,9 +64,8 @@ public class DUnitBlackboardDUnitTest extends JUnit4DistributedTestCase {
       }
       fail("unexpected success");
     });
-    
-    vm0.invoke("signal gate", () ->
-        getBlackboard().signalGate(GATE));
+
+    vm0.invoke("signal gate", () -> getBlackboard().signalGate(GATE));
 
     vm1.invoke("wait on gate not yet signalled", () -> {
       try {
@@ -78,7 +78,7 @@ public class DUnitBlackboardDUnitTest extends JUnit4DistributedTestCase {
       // success expected
     });
   }
-  
+
   @Test
   public void initBlackboardClearsEverything() throws Exception {
     for (int i = 0; i < 100; i++) {
@@ -87,8 +87,7 @@ public class DUnitBlackboardDUnitTest extends JUnit4DistributedTestCase {
       getBlackboard().signalGate("GATE" + i);
       assertTrue(getBlackboard().isGateSignaled("GATE" + i));
     }
-    Host.getHost(0).getVM(1).invoke("clear blackboard", () ->
-        getBlackboard().initBlackboard());
+    Host.getHost(0).getVM(1).invoke("clear blackboard", () -> getBlackboard().initBlackboard());
 
     for (int i = 0; i < 100; i++) {
       assertNull(getBlackboard().getMailbox("MBOX" + i));

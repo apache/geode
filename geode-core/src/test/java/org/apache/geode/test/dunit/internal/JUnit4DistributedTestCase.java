@@ -118,8 +118,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private static DUnitBlackboard blackboard;
 
   /**
-   * Returns a DUnitBlackboard that can be used to pass data between VMs and
-   * synchronize actions.
+   * Returns a DUnitBlackboard that can be used to pass data between VMs and synchronize actions.
    * 
    * @return the blackboard
    */
