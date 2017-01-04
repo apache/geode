@@ -252,6 +252,34 @@ public class SSLConfigurationFactoryJUnitTest {
         sslConfig.getTruststoreType());
   }
 
+  @Test
+  public void getSSLHTTPMutualAuthenticationOffWithDefaultConfiguration() {
+    Properties properties = new Properties();
+    properties.setProperty(CLUSTER_SSL_ENABLED, "true");
+    properties.setProperty(MCAST_PORT, "0");
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+    SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB);
+    assertEquals(false, sslConfig.isRequireAuth());
+    assertEquals(true, sslConfig.isEnabled());
+    sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.CLUSTER);
+    assertEquals(true, sslConfig.isRequireAuth());
+    assertEquals(true, sslConfig.isEnabled());
+    sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.GATEWAY);
+    assertEquals(true, sslConfig.isRequireAuth());
+    assertEquals(true, sslConfig.isEnabled());
+    sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.SERVER);
+    assertEquals(true, sslConfig.isRequireAuth());
+    assertEquals(true, sslConfig.isEnabled());
+    sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.JMX);
+    assertEquals(true, sslConfig.isRequireAuth());
+    assertEquals(true, sslConfig.isEnabled());
+  }
+
   private void assertSSLConfig(final Properties properties, final SSLConfig sslConfig,
       final SecurableCommunicationChannel expectedSecurableComponent,
       final DistributionConfigImpl distributionConfig) {
