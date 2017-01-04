@@ -406,10 +406,10 @@ public class TombstoneService {
      */
     private final ExecutorService executor;
     /**
-     * tombstones that have expired and are awaiting batch removal. This variable is only accessed
-     * by the sweeper thread and so is not guarded
+     * tombstones that have expired and are awaiting batch removal.
      */
     private final List<Tombstone> expiredTombstones;
+    private final Object expiredTombstonesLock = new Object();
 
     /**
      * Force batch expiration
@@ -470,7 +470,7 @@ public class TombstoneService {
     protected boolean removeExpiredIf(Predicate<Tombstone> predicate) {
       boolean result = false;
       long removalSize = 0;
-      synchronized (getBlockGCLock()) {
+      synchronized (expiredTombstonesLock) {
         // Iterate in reverse order to optimize lots of removes.
         // Since expiredTombstones is an ArrayList removing from
         // low indexes requires moving everything at a higher index down.
@@ -520,11 +520,13 @@ public class TombstoneService {
           // Update the GC RVV for all of the affected regions.
           // We need to do this so that we can persist the GC RVV before
           // we start removing entries from the map.
-          for (Tombstone t : expiredTombstones) {
-            DistributedRegion tr = (DistributedRegion) t.region;
-            tr.getVersionVector().recordGCVersion(t.getMemberID(), t.getRegionVersion());
-            if (!reapedKeys.containsKey(tr)) {
-              reapedKeys.put(tr, Collections.emptySet());
+          synchronized (expiredTombstonesLock) {
+            for (Tombstone t : expiredTombstones) {
+              DistributedRegion tr = (DistributedRegion) t.region;
+              tr.getVersionVector().recordGCVersion(t.getMemberID(), t.getRegionVersion());
+              if (!reapedKeys.containsKey(tr)) {
+                reapedKeys.put(tr, Collections.emptySet());
+              }
             }
           }
 
@@ -669,7 +671,9 @@ public class TombstoneService {
       if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
         logger.trace(LogMarker.TOMBSTONE, "adding expired tombstone {} to batch", tombstone);
       }
-      expiredTombstones.add(tombstone);
+      synchronized (expiredTombstonesLock) {
+        expiredTombstones.add(tombstone);
+      }
     }
 
     @Override
