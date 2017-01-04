@@ -296,8 +296,8 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       getFromPartitionedRegionsFor3Qs();
       // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
       // primary set to true.
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(
-          () -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6)
+      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6)
               && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3));
 
       // TODO: Verify that all the fpa's are in the map
@@ -325,8 +325,8 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
       putIntoPartitionedRegions();
       // Wait to make sure that the buckets have actually moved.
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(
-          () -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
+      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
               && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
               && (server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6));
 
