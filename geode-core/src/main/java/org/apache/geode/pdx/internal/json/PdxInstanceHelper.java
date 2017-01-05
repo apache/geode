@@ -149,12 +149,12 @@ public class PdxInstanceHelper {
     }
   }
 
-  public void addObjectField(String fieldName, PdxInstance member) {
+  public void addObjectField(String fieldName, Object member) {
     if (logger.isTraceEnabled()) {
       logger.trace("addObjectField fieldName: {}", fieldName);
     }
     if (fieldName == null)
-      throw new IllegalStateException("addObjectField:PdxInstance should have fieldname");
+      throw new IllegalStateException("addObjectField:Object should have fieldname");
     m_pdxInstanceFactory.writeObject(fieldName, member);
   }
 

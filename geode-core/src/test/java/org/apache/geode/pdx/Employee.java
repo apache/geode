@@ -15,24 +15,24 @@
 package org.apache.geode.pdx;
 
 public class Employee implements PdxSerializable {
-  private Long Id;
+  private Long id;
   private String fname;
   private String lname;
 
   public Employee() {}
 
   public Employee(Long id, String fn, String ln) {
-    this.Id = id;
+    this.id = id;
     this.fname = fn;
     this.lname = ln;
   }
 
   public Long getId() {
-    return Id;
+    return id;
   }
 
   public void setId(Long id) {
-    Id = id;
+    this.id = id;
   }
 
   public String getFname() {
@@ -53,16 +53,31 @@ public class Employee implements PdxSerializable {
 
   @Override
   public void fromData(PdxReader in) {
-    this.Id = in.readLong("Id");
+    this.id = in.readLong("id");
     this.fname = in.readString("fname");
     this.lname = in.readString("lname");
   }
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeLong("Id", Id);
+    out.writeLong("id", id);
     out.writeString("fname", fname);
     out.writeString("lname", lname);
+  }
+
+  @Override
+  public String toString() {
+    return "Employee [Id=" + id + ", fname=" + fname + ", lname=" + lname + "]";
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((fname == null) ? 0 : fname.hashCode());
+    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    result = prime * result + ((lname == null) ? 0 : lname.hashCode());
+    return result;
   }
 
   @Override
@@ -73,17 +88,24 @@ public class Employee implements PdxSerializable {
       return false;
     if (getClass() != obj.getClass())
       return false;
-
     Employee other = (Employee) obj;
-    if (Id.longValue() != other.Id.longValue())
+    if (fname == null) {
+      if (other.fname != null)
+        return false;
+    } else if (!fname.equals(other.fname))
       return false;
-
-    if (!fname.equals(other.fname))
+    if (id == null) {
+      if (other.id != null)
+        return false;
+    } else if (!id.equals(other.id))
       return false;
-
-    if (!lname.equals(other.lname))
+    if (lname == null) {
+      if (other.lname != null)
+        return false;
+    } else if (!lname.equals(other.lname))
       return false;
-
     return true;
   }
+
+
 }

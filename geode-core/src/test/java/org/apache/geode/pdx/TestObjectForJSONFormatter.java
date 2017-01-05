@@ -113,7 +113,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     Employee e3 = new Employee(3L, "Shankar", "Hundekar");
     Employee e4 = new Employee(4L, "Avinash", "Dongre");
     Employee e5 = new Employee(5L, "supriya", "Patil");
-    Employee e6 = new Employee(6L, "Rajesh", "Kumar");
+    Employee e6 = new Employee(6L, "Rajesh", null);
     Employee e7 = new Employee(7L, "Vishal", "Rao");
     Employee e8 = new Employee(8L, "Hitesh", "Khamesara");
     Employee e9 = new Employee(9L, "Sudhir", "Menon");
@@ -990,6 +990,31 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
         return false;
     return true;
   }
+
+  @Override
+  public String toString() {
+    return "TestObjectForJSONFormatter [p_bool=" + p_bool + ", p_byte=" + p_byte + ", p_short="
+        + p_short + ", p_int=" + p_int + ", p_long=" + p_long + ", p_float=" + p_float
+        + ", p_double=" + p_double + ", w_bool=" + w_bool + ", w_byte=" + w_byte + ", w_short="
+        + w_short + ", w_int=" + w_int + ", w_long=" + w_long + ", w_bigInt=" + w_bigInt
+        + ", w_float=" + w_float + ", w_bigDec=" + w_bigDec + ", w_double=" + w_double
+        + ", w_string=" + w_string + ", p_boolArray=" + Arrays.toString(p_boolArray)
+        + ", p_byteArray=" + Arrays.toString(p_byteArray) + ", p_shortArray="
+        + Arrays.toString(p_shortArray) + ", p_intArray=" + Arrays.toString(p_intArray)
+        + ", p_longArray=" + Arrays.toString(p_longArray) + ", p_floatArray="
+        + Arrays.toString(p_floatArray) + ", p_doubleArray=" + Arrays.toString(p_doubleArray)
+        + ", w_boolArray=" + Arrays.toString(w_boolArray) + ", w_byteArray="
+        + Arrays.toString(w_byteArray) + ", w_shortArray=" + Arrays.toString(w_shortArray)
+        + ", w_intArray=" + Arrays.toString(w_intArray) + ", w_longArray="
+        + Arrays.toString(w_longArray) + ", w_bigIntArray=" + Arrays.toString(w_bigIntArray)
+        + ", w_floatArray=" + Arrays.toString(w_floatArray) + ", w_bigDecArray="
+        + Arrays.toString(w_bigDecArray) + ", w_doubleArray=" + Arrays.toString(w_doubleArray)
+        + ", w_strArray=" + Arrays.toString(w_strArray) + ", c_list=" + c_list + ", c_set=" + c_set
+        + ", c_queue=" + c_queue + ", c_deque=" + c_deque + ", c_stack=" + c_stack
+        + ", m_empByCity=" + m_empByCity + ", day=" + day + ", employee=" + employee + "]";
+  }
+
+
 }
 
 

@@ -285,7 +285,7 @@ public class JSONFormatter {
           // write string
           stringFound(currentState);
           currentState = states.SCALER_FOUND;
-          currentPdxInstance.addStringField(currentFieldName, new String(jp.getText()));
+          currentPdxInstance.addObjectField(currentFieldName, new String(jp.getText()));
           currentFieldName = null;
           break;
         }

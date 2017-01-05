@@ -157,6 +157,33 @@ public class PdxStringJUnitTest {
 
   }
 
+  /**
+   * this test verifies that pdxstream with pdxType.Object tyep for string and checks whether we
+   * create PdxString or not
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testJSONFieldNameAsPdxString() throws Exception {
+    String verifyString = "ValueExist";
+    String jsonString = "{name:\"" + verifyString + "\", age:14}";
+    PdxString pdx = new PdxString(verifyString);
+    assertEquals(verifyString, pdx.toString());
+
+    PdxInstanceImpl pi = (PdxInstanceImpl) JSONFormatter.fromJSON(jsonString);
+    pdx = (PdxString) pi.getRawField("name");
+    assertEquals(verifyString, pdx.toString());
+  }
+
+  @Test
+  public void testJSONFieldNameAsNull() throws Exception {
+    String verifyString = null;
+    String jsonString = "{name:null, age:14}";
+
+    PdxInstanceImpl pi = (PdxInstanceImpl) JSONFormatter.fromJSON(jsonString);
+    PdxString pdx = (PdxString) pi.getRawField("name");
+    assertEquals(verifyString, pdx);
+  }
 
 
 }

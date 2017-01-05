@@ -878,8 +878,37 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     if (ft.getFieldType() == FieldType.STRING) {
       return readPdxString(ft);
     } else {
-      return readField(field);
+      PdxString pdxString = getPdxStringFromObjectField(ft);
+      if (pdxString != null)
+        return pdxString;
     }
+    return readField(field);
+  }
+
+  /**
+   * This method checks whether Object field is String type. If its String then it returns PdxString
+   * otherwise null.
+   * 
+   * @param ft
+   * @return
+   */
+  private PdxString getPdxStringFromObjectField(PdxField ft) {
+    if (ft.getFieldType() == FieldType.OBJECT) {
+      ByteSource buffer = dis.getBuffer();
+      byte[] bytes = null;
+      if (buffer.hasArray()) {
+        bytes = buffer.array();
+      } else {
+        throw new IllegalStateException();
+      }
+      int offset = getPositionForField(ft) + buffer.arrayOffset();
+      // Do not create PdxString if the field is NULL
+      if (bytes[offset] == DSCODE.STRING || bytes[offset] == DSCODE.STRING_BYTES
+          || bytes[offset] == DSCODE.HUGE_STRING || bytes[offset] == DSCODE.HUGE_STRING_BYTES) {
+        return new PdxString(bytes, offset);
+      }
+    }
+    return null;
   }
 
   /**
