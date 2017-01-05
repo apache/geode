@@ -19,7 +19,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -51,6 +50,7 @@ public class LuceneListIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testExecute() throws Throwable {
     GemFireCacheImpl cache = Fakes.cache();
+    final String serverName = "mockServer";
     LuceneServiceImpl service = mock(LuceneServiceImpl.class);
     when(cache.getService(InternalLuceneService.class)).thenReturn(service);
 
@@ -62,8 +62,8 @@ public class LuceneListIndexFunctionJUnitTest {
     LuceneIndexImpl index2 = getMockLuceneIndex("index2");
 
     TreeSet expectedResult = new TreeSet();
-    expectedResult.add(new LuceneIndexDetails(index1));
-    expectedResult.add(new LuceneIndexDetails(index2));
+    expectedResult.add(new LuceneIndexDetails(index1, serverName));
+    expectedResult.add(new LuceneIndexDetails(index2, serverName));
 
     ArrayList<LuceneIndex> allIndexes = new ArrayList();
     allIndexes.add(index1);

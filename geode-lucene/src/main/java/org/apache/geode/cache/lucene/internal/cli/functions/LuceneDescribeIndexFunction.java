@@ -15,15 +15,11 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
@@ -60,15 +56,16 @@ public class LuceneDescribeIndexFunction extends FunctionAdapter implements Inte
     LuceneIndexDetails result = null;
 
     final Cache cache = getCache();
+    final String serverName = cache.getDistributedSystem().getDistributedMember().getName();
     final LuceneIndexInfo indexInfo = (LuceneIndexInfo) context.getArguments();
     LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
     LuceneIndex index = service.getIndex(indexInfo.getIndexName(), indexInfo.getRegionPath());
     LuceneIndexCreationProfile profile =
         service.getDefinedIndex(indexInfo.getIndexName(), indexInfo.getRegionPath());
     if (index != null) {
-      result = new LuceneIndexDetails((LuceneIndexImpl) index);
+      result = new LuceneIndexDetails((LuceneIndexImpl) index, serverName);
     } else if (profile != null) {
-      result = new LuceneIndexDetails(profile);
+      result = new LuceneIndexDetails(profile, serverName);
     }
     context.getResultSender().lastResult(result);
   }
