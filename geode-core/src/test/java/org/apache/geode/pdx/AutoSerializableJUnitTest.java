@@ -45,9 +45,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
-/**
- * TODO: fails (on Windows 7?)
- */
 @Category({IntegrationTest.class, SerializationTest.class})
 public class AutoSerializableJUnitTest {
 
@@ -1291,7 +1288,7 @@ public class AutoSerializableJUnitTest {
     List<URL> urls = new ArrayList<URL>();
     String classPathStr = System.getProperty("java.class.path");
     if (classPathStr != null) {
-      String[] cpList = classPathStr.split(":");
+      String[] cpList = classPathStr.split(System.getProperty("path.separator"));
       for (String u : cpList) {
         urls.add(new File(u).toURI().toURL());
       }
