@@ -14,7 +14,6 @@
  */
 package org.apache.geode.pdx;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheFactory;
@@ -1289,8 +1288,7 @@ public class AutoSerializableJUnitTest {
     List<URL> urls = new ArrayList<URL>();
     String classPathStr = System.getProperty("java.class.path");
     if (classPathStr != null) {
-      String[] cpList =
-          SystemUtils.IS_OS_WINDOWS ? classPathStr.split(";") : classPathStr.split(":");
+      String[] cpList = classPathStr.split(System.getProperty("path.separator"));
       for (String u : cpList) {
         urls.add(new File(u).toURI().toURL());
       }
