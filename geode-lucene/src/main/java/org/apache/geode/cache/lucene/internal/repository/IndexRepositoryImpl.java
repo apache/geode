@@ -20,6 +20,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
@@ -163,7 +164,7 @@ public class IndexRepositoryImpl implements IndexRepository {
   private class DocumentCountSupplier implements IntSupplier {
     @Override
     public int getAsInt() {
-      if (isClosed()) {
+      if (isClosed() || !((BucketRegion) userRegion).getBucketAdvisor().isPrimary()) {
         stats.removeDocumentsSupplier(this);
         return 0;
       }
