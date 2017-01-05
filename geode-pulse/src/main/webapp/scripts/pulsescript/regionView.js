@@ -43,11 +43,7 @@ $(document).ready(function() {
   // Load Notification HTML  
   generateNotificationsPanel();
 
-  if (CONST_BACKEND_PRODUCT_SQLFIRE == productname.toLowerCase()) {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_SQLFIRE);
-  } else {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
-  }
+  alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
 
   createMemberTreeMap();
   
@@ -66,13 +62,8 @@ $(document).ready(function() {
  * is sqlfire or gemfire 
  */
 function alterHtmlContainer(prodname){
-  if(CONST_BACKEND_PRODUCT_SQLFIRE == prodname.toLowerCase()){
-    // Show HTML for following
-    $('#subTabQueryStatistics').show();
-  }else{
     // Hide HTML for following
     $('#subTabQueryStatistics').hide();
-  }  
 }
 
 //function used for applying filter of member names in data view screen

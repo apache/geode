@@ -108,12 +108,8 @@ public class ClusterMemberService implements PulseService {
       memberJSON.put("threads", clusterMember.getNumThreads());
 
       // Number of member clients
-      if (PulseController.getPulseProductSupport()
-          .equalsIgnoreCase(PulseConstants.PRODUCT_NAME_SQLFIRE)) {
-        memberJSON.put("clients", clusterMember.getNumSqlfireClients());
-      } else {
-        memberJSON.put("clients", clusterMember.getMemberClientsHMap().size());
-      }
+      memberJSON.put("clients", clusterMember.getMemberClientsHMap().size());
+
       memberJSON.put("queues", clusterMember.getQueueBacklog());
 
       memberListJson.add(memberJSON);

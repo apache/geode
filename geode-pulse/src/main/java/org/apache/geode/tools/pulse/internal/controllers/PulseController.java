@@ -501,18 +501,4 @@ public class PulseController {
       }
     }
   }
-
-  /**
-   * @return the pulseProductSupport
-   */
-  public static String getPulseProductSupport() {
-    return pulseProductSupport;
-  }
-
-  /**
-   * @param pulseProductSupport the pulseProductSupport to set
-   */
-  public static void setPulseProductSupport(String pulseProductSupport) {
-    PulseController.pulseProductSupport = pulseProductSupport;
-  }
 }

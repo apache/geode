@@ -120,13 +120,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       this.MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED =
           new ObjectName(PulseConstants.OBJECT_NAME_STATEMENT_DISTRIBUTED);
 
-      // For SQLFire
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE
-          .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-        this.MBEAN_OBJECT_NAME_TABLE_AGGREGATE =
-            new ObjectName(PulseConstants.OBJECT_NAME_TABLE_AGGREGATE);
-      }
-
     } catch (MalformedObjectNameException e) {
       if (LOGGER.severeEnabled()) {
         LOGGER.severe(e.getMessage(), e);
@@ -439,27 +432,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       Set<ObjectName> tableMBeans =
           this.mbs.queryNames(this.MBEAN_OBJECT_NAME_TABLE_AGGREGATE, null);
 
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE
-          .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-        // For SQLfire
-        for (ObjectName tableMBean : tableMBeans) {
-          String regNameFromTable =
-              StringUtils.getRegionNameFromTableName(tableMBean.getKeyProperty("table"));
-          for (ObjectName regionMBean : regionMBeans) {
-            String regionName = regionMBean.getKeyProperty("name");
-            if (regNameFromTable.equals(regionName)) {
-              updateClusterRegion(regionMBean);
-              // Increment cluster region count
-              cluster.setTotalRegionCount(cluster.getTotalRegionCount() + 1);
-              break;
-            }
-          }
-        }
-      } else {
-        // For Gemfire
-        for (ObjectName regMBean : regionMBeans) {
-          updateClusterRegion(regMBean);
-        }
+      // For Gemfire
+      for (ObjectName regMBean : regionMBeans) {
+        updateClusterRegion(regMBean);
       }
 
       // Remove deleted regions from cluster's regions list
@@ -477,22 +452,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         } else {
           switch (service) {
             case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION:
-              if (PulseConstants.PRODUCT_NAME_SQLFIRE
-                  .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-                // For SQLfire
-                for (ObjectName tableMBean : tableMBeans) {
-                  String regNameFromTable =
-                      StringUtils.getRegionNameFromTableName(tableMBean.getKeyProperty("table"));
-                  String regionName = memMBean.getKeyProperty("name");
-                  if (regNameFromTable.equals(regionName)) {
-                    updateMemberRegion(memMBean);
-                    break;
-                  }
-                }
-              } else {
-                // For Gemfire
-                updateMemberRegion(memMBean);
-              }
+              updateMemberRegion(memMBean);
               break;
             case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_CACHESERVER:
               updateMemberClient(memMBean);
@@ -578,16 +538,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         this.isAddedNotiListner = true;
       }
 
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE
-          .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-        // Reset to zero
-        cluster.setServerCount(0);
-        cluster.setTotalRegionCount(0);
-      } else {
-        String[] serverCnt = (String[]) (this.mbs.invoke(mbeanName,
-            PulseConstants.MBEAN_OPERATION_LISTSERVERS, null, null));
-        cluster.setServerCount(serverCnt.length);
-      }
+      String[] serverCnt = (String[]) (this.mbs.invoke(mbeanName,
+          PulseConstants.MBEAN_OPERATION_LISTSERVERS, null, null));
+      cluster.setServerCount(serverCnt.length);
 
       TabularData table = (TabularData) (this.mbs.invoke(mbeanName,
           PulseConstants.MBEAN_OPERATION_VIEWREMOTECLUSTERSTATUS, null, null));
@@ -714,64 +667,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             cluster.getGarbageCollectionTrend().add(cluster.getGarbageCollectionCount());
             break;
           case PulseConstants.MBEAN_ATTRIBUTE_TOTALREGIONCOUNT:
-            if (!PulseConstants.PRODUCT_NAME_SQLFIRE
-                .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-              // for Gemfire
-              cluster.setTotalRegionCount(
-                  getIntegerAttribute(attribute.getValue(), attribute.getName()));
-            }
+            cluster.setTotalRegionCount(
+                getIntegerAttribute(attribute.getValue(), attribute.getName()));
             break;
         }
-      }
-
-      // SQLFIRE attributes
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE
-          .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-
-        try { // get sqlfire cluster mbean
-
-          ObjectName sfMemberMbeansObjectName =
-              new ObjectName(PulseConstants.OBJECT_NAME_SF_CLUSTER);
-
-          Set<ObjectName> sfCluserMBeans = this.mbs.queryNames(sfMemberMbeansObjectName, null);
-
-          for (ObjectName sfCluserMBean : sfCluserMBeans) {
-
-            AttributeList attrList =
-                this.mbs.getAttributes(sfCluserMBean, PulseConstants.SF_CLUSTER_MBEAN_ATTRIBUTES);
-
-            for (int i = 0; i < attrList.size(); i++) {
-
-              Attribute attribute = (Attribute) attrList.get(i);
-
-              if (attribute.getName()
-                  .equals(PulseConstants.MBEAN_ATTRIBUTE_PROCEDURECALLSINPROGRESS)) {
-                try {
-                  cluster.setRunningFunctionCount(
-                      getIntegerAttribute(attribute.getValue(), attribute.getName()));
-                } catch (Exception e) {
-                  cluster.setRunningFunctionCount(0);
-                  continue;
-                }
-              } else if (attribute.getName()
-                  .equals(PulseConstants.MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS)) {
-                // set number of cluster's clients
-                CompositeData nscConnStats = (CompositeData) attribute.getValue();
-
-                cluster.setClientConnectionCount(getLongAttribute(
-                    nscConnStats.get(PulseConstants.COMPOSITE_DATA_KEY_CONNECTIONSACTIVE),
-                    PulseConstants.COMPOSITE_DATA_KEY_CONNECTIONSACTIVE));
-              }
-            }
-            break;
-          }
-
-        } catch (MalformedObjectNameException e) {
-          LOGGER.warning(e);
-        } catch (NullPointerException e) {
-          LOGGER.warning(e);
-        }
-
       }
 
     } catch (InstanceNotFoundException infe) {
@@ -1682,55 +1581,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           }
           break;
       }
-    }
-
-    // SQLFire specific attributes
-    if (PulseController.getPulseProductSupport()
-        .equalsIgnoreCase(PulseConstants.PRODUCT_NAME_SQLFIRE)) {
-
-      try {
-        // get sqlfire mbeans
-        String memberName = mbeanName.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_MEMBER);
-
-        ObjectName sfMemberMbeansObjectName =
-            new ObjectName(PulseConstants.OBJECT_NAME_SF_MEMBER_PATTERN + memberName);
-
-        Set<ObjectName> sfMemberMBeans = this.mbs.queryNames(sfMemberMbeansObjectName, null);
-        for (ObjectName sfMemberMBean : sfMemberMBeans) {
-
-          AttributeList attrList =
-              this.mbs.getAttributes(sfMemberMBean, PulseConstants.SF_MEMBER_MBEAN_ATTRIBUTES);
-          for (int i = 0; i < attrList.size(); i++) {
-
-            Attribute attribute = (Attribute) attrList.get(i);
-
-            if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_DATASTORE)) {
-              member.setServer(getBooleanAttribute(attribute.getValue(), attribute.getName()));
-
-              // Update Server count
-              if (member.isServer()) {
-                cluster.setServerCount(cluster.getServerCount() + 1);
-              }
-            } else if (attribute.getName()
-                .equals(PulseConstants.MBEAN_ATTRIBUTE_NETWORKSERVERCLIENTCONNECTIONSTATS)) {
-
-              CompositeData nscConnStats = (CompositeData) attribute.getValue();
-
-              // Update sqlfire client count
-              member.setNumSqlfireClients(getLongAttribute(
-                  nscConnStats.get(PulseConstants.COMPOSITE_DATA_KEY_CONNECTIONSACTIVE),
-                  PulseConstants.COMPOSITE_DATA_KEY_CONNECTIONSACTIVE));
-            }
-          }
-          break;
-        }
-
-      } catch (MalformedObjectNameException e) {
-        LOGGER.warning(e);
-      } catch (NullPointerException e) {
-        LOGGER.warning(e);
-      }
-
     }
 
     return member;
