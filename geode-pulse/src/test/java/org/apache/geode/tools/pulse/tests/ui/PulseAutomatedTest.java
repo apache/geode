@@ -208,11 +208,11 @@ public class PulseAutomatedTest extends PulseBase {
   @Test
   public void clickHostShowsMemberTest() {
     clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
-    clickElementUsingId(PulseTestLocators.TopologyView.nodeH1Id);
+    PulseTestUtils.waitForElementWithId(PulseTestLocators.TopologyView.nodeH1Id).click();
     verifyElementPresentById(PulseTestLocators.TopologyView.memberM1Id);
-    clickElementUsingId(PulseTestLocators.TopologyView.nodeH2Id);
+    PulseTestUtils.waitForElementWithId(PulseTestLocators.TopologyView.nodeH2Id).click();
     verifyElementPresentById(PulseTestLocators.TopologyView.memberM2Id);
-    clickElementUsingId(PulseTestLocators.TopologyView.nodeH3Id);
+    PulseTestUtils.waitForElementWithId(PulseTestLocators.TopologyView.nodeH3Id).click();
     verifyElementPresentById(PulseTestLocators.TopologyView.memberM3Id);
   }
 

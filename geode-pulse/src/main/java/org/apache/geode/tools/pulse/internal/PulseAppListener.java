@@ -114,12 +114,6 @@ public class PulseAppListener implements ServletContextListener {
       // in present deployment
       String pulseProduct =
           pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_PRODUCTSUPPORT);
-      // default is gemfire
-
-      if ((pulseProduct != null)
-          && (pulseProduct.trim().equalsIgnoreCase(PulseConstants.PRODUCT_NAME_SQLFIRE))) {
-        PulseController.setPulseProductSupport(PulseConstants.PRODUCT_NAME_SQLFIRE);
-      }
     }
 
     pulseSecurityProperties = loadProperties(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE);
@@ -163,15 +157,6 @@ public class PulseAppListener implements ServletContextListener {
         sysPulseHost = PulseConstants.GEMFIRE_DEFAULT_HOST;
       }
       sysPulsePort = PulseConstants.GEMFIRE_DEFAULT_PORT;
-
-      boolean pulseEmbededSqlf =
-          Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED_SQLF);
-      if (pulseEmbededSqlf) {
-        PulseController.setPulseProductSupport(PulseConstants.PRODUCT_NAME_SQLFIRE);
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_EMBEDDED_SQLF_MODE"));
-        }
-      }
 
     } else {
       // Application Pulse is running in Non-Embedded Mode

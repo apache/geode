@@ -170,12 +170,8 @@ public class ClusterSelectedRegionService implements PulseService {
         regionMember.put("sockets", member.getTotalFileDescriptorOpen());
         regionMember.put("threads", member.getNumThreads());
 
-        if (PulseController.getPulseProductSupport()
-            .equalsIgnoreCase(PulseConstants.PRODUCT_NAME_SQLFIRE)) {
-          regionMember.put("clients", member.getNumSqlfireClients());
-        } else {
-          regionMember.put("clients", member.getMemberClientsHMap().size());
-        }
+        regionMember.put("clients", member.getMemberClientsHMap().size());
+
         regionMember.put("queues", member.getQueueBacklog());
         memberArray.add(regionMember);
       }
@@ -196,13 +192,9 @@ public class ClusterSelectedRegionService implements PulseService {
         regionJSON.put("compressionCodec", PulseService.VALUE_NA);
       }
 
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE
-          .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-        // Convert region path to dot separated region path
-        regionJSON.put("regionPath", StringUtils.getTableNameFromRegionName(reg.getFullPath()));
-      } else {
-        regionJSON.put("regionPath", reg.getFullPath());
-      }
+
+      regionJSON.put("regionPath", reg.getFullPath());
+
 
       regionJSON.put("memoryReadsTrend", mapper.<JsonNode>valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_GETS_PER_SEC_TREND)));
