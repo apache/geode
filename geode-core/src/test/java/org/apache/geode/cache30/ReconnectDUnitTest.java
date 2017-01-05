@@ -498,19 +498,17 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     assertTrue("Expected to find " + locatorViewLog.getPath() + " file", locatorViewLog.exists());
     long logSize = locatorViewLog.length();
 
-    vm0.invoke(new SerializableRunnable("Create a second locator") {
-      public void run() throws CacheException {
-        locatorPort = locPort;
-        Properties props = getDistributedSystemProperties();
-        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
-        props.put(MAX_NUM_RECONNECT_TRIES, "2");
-        props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + locPort + "]");
-        props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-        try {
-          Locator.startLocatorAndDS(secondLocPort, null, props);
-        } catch (IOException e) {
-          Assert.fail("exception starting locator", e);
-        }
+    vm0.invoke("Create a second locator", () -> {
+      locatorPort = locPort;
+      Properties props = getDistributedSystemProperties();
+      props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+      props.put(MAX_NUM_RECONNECT_TRIES, "2");
+      props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + locPort + "]");
+      props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+      try {
+        Locator.startLocatorAndDS(secondLocPort, null, props);
+      } catch (IOException e) {
+        Assert.fail("exception starting locator", e);
       }
     });
 
@@ -520,22 +518,18 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     long log2Size = locator2ViewLog.length();
 
     // create a cache in vm1 so there is more weight in the system
-    SerializableCallable create1 =
-        new SerializableCallable("Create Cache and Regions from cache.xml") {
-          public Object call() throws CacheException {
-            locatorPort = locPort;
-            Properties props = getDistributedSystemProperties();
-            props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-            props.put(MAX_WAIT_TIME_RECONNECT, "1000");
-            props.put(MAX_NUM_RECONNECT_TRIES, "2");
-            ReconnectDUnitTest.savedSystem = getSystem(props);
-            Cache cache = getCache();
-            Region myRegion = cache.getRegion("root/myRegion");
-            myRegion.put("MyKey1", "MyValue1");
-            return savedSystem.getDistributedMember();
-          }
-        };
-    vm1.invoke(create1);
+    vm1.invoke("Create Cache and Regions from cache.xml", () -> {
+      locatorPort = locPort;
+      Properties props = getDistributedSystemProperties();
+      props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+      props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+      props.put(MAX_NUM_RECONNECT_TRIES, "2");
+      ReconnectDUnitTest.savedSystem = getSystem(props);
+      Cache cache = getCache();
+      Region myRegion = cache.getRegion("root/myRegion");
+      myRegion.put("MyKey1", "MyValue1");
+      return savedSystem.getDistributedMember();
+    });
 
     try {
       dm = getDMID(vm0);
@@ -544,23 +538,16 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       newdm = waitForReconnect(vm0);
       assertGfshWaitingThreadAlive(vm0);
 
-      boolean running = (Boolean) vm0.invoke(new SerializableCallable("check for running locator") {
-        public Object call() {
-          Awaitility.await("waiting for locator to restart").atMost(30, TimeUnit.SECONDS)
-              .until(Locator::getLocator, notNullValue());
-          if (Locator.getLocator() == null) {
-            LogWriterUtils.getLogWriter()
-                .error("expected to find a running locator but getLocator() returns null");
-            return false;
-          }
-          if (((InternalLocator) Locator.getLocator()).isStopped()) {
-            LogWriterUtils.getLogWriter().error("found a stopped locator");
-            return false;
-          }
-          return true;
-        }
-      });
-      assertTrue("Expected the restarted member to be hosting a running locator", running);
+      assertTrue("Expected the restarted member to be hosting a running locator",
+          vm0.invoke("check for running locator", () -> {
+            Awaitility.await("waiting for locator to restart").atMost(30, TimeUnit.SECONDS)
+                .until(Locator::getLocator, notNullValue());
+            if (((InternalLocator) Locator.getLocator()).isStopped()) {
+              LogWriterUtils.getLogWriter().error("found a stopped locator");
+              return false;
+            }
+            return true;
+          }));
 
       assertNotSame("expected a reconnect to occur in the locator", dm, newdm);
 
