@@ -131,6 +131,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       for (final LuceneIndexDetails indexDetails : indexDetailsList) {
         indexData.accumulate("Index Name", indexDetails.getIndexName());
         indexData.accumulate("Region Path", indexDetails.getRegionPath());
+        indexData.accumulate("Server Name", indexDetails.getServerName());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
         indexData.accumulate("Status",

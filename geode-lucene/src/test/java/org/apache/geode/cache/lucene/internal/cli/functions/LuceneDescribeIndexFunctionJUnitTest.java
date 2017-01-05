@@ -17,15 +17,11 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
@@ -41,7 +37,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 @Category(UnitTest.class)
 
@@ -51,6 +46,7 @@ public class LuceneDescribeIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testExecute() throws Throwable {
     GemFireCacheImpl cache = Fakes.cache();
+    final String serverName = "mockServer";
     LuceneServiceImpl service = mock(LuceneServiceImpl.class);
     when(cache.getService(InternalLuceneService.class)).thenReturn(service);
     FunctionContext context = mock(FunctionContext.class);
@@ -69,7 +65,7 @@ public class LuceneDescribeIndexFunctionJUnitTest {
         ArgumentCaptor.forClass(LuceneIndexDetails.class);
     verify(resultSender).lastResult(resultCaptor.capture());
     LuceneIndexDetails result = resultCaptor.getValue();
-    LuceneIndexDetails expected = new LuceneIndexDetails(index1);
+    LuceneIndexDetails expected = new LuceneIndexDetails(index1, "mockServer");
 
     assertEquals(expected.getIndexName(), result.getIndexName());
     assertEquals(expected.getRegionPath(), result.getRegionPath());
