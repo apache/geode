@@ -33,6 +33,7 @@ import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
@@ -78,17 +79,22 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
     // create PR chunkRegion, but not to create its buckets for now
     final String chunkRegionName = createChunkRegionName();
+
+    // we will create RegionDirectories on the fly when data comes in
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+    PartitionedRepositoryManager partitionedRepositoryManager =
+        new PartitionedRepositoryManager(this, mapper);
+    LucenePrimaryBucketListener lucenePrimaryBucketListener =
+        new LucenePrimaryBucketListener(partitionedRepositoryManager);
     if (!chunkRegionExists(chunkRegionName)) {
       chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes,
-          chunkRegionName, regionAttributes);
+          chunkRegionName, regionAttributes, lucenePrimaryBucketListener);
     }
     fileSystemStats.setFileSupplier(() -> (int) getFileRegion().getLocalSize());
     fileSystemStats.setChunkSupplier(() -> (int) getChunkRegion().getLocalSize());
     fileSystemStats.setBytesSupplier(() -> getChunkRegion().getPrStats().getDataStoreBytesInUse());
 
-    // we will create RegionDirectories on the fly when data comes in
-    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
-    return new PartitionedRepositoryManager(this, mapper);
+    return partitionedRepositoryManager;
   }
 
   public PartitionedRegion getFileRegion() {
@@ -110,7 +116,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   Region createFileRegion(final RegionShortcut regionShortCut, final String fileRegionName,
       final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes) {
     return createRegion(fileRegionName, regionShortCut, this.regionPath, partitionAttributes,
-        regionAttributes);
+        regionAttributes, null);
   }
 
   public String createFileRegionName() {
@@ -123,9 +129,10 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   Region<ChunkKey, byte[]> createChunkRegion(final RegionShortcut regionShortCut,
       final String fileRegionName, final PartitionAttributes partitionAttributes,
-      final String chunkRegionName, final RegionAttributes regionAttributes) {
+      final String chunkRegionName, final RegionAttributes regionAttributes,
+      final PartitionListener lucenePrimaryBucketListener) {
     return createRegion(chunkRegionName, regionShortCut, fileRegionName, partitionAttributes,
-        regionAttributes);
+        regionAttributes, lucenePrimaryBucketListener);
   }
 
   public String createChunkRegionName() {
@@ -142,9 +149,13 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   protected <K, V> Region<K, V> createRegion(final String regionName,
       final RegionShortcut regionShortCut, final String colocatedWithRegionName,
-      final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes) {
+      final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes,
+      PartitionListener lucenePrimaryBucketListener) {
     PartitionAttributesFactory partitionAttributesFactory =
         new PartitionAttributesFactory<String, File>();
+    if (lucenePrimaryBucketListener != null) {
+      partitionAttributesFactory.addPartitionListener(lucenePrimaryBucketListener);
+    }
     partitionAttributesFactory.setColocatedWith(colocatedWithRegionName);
     configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
 
