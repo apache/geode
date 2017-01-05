@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -2741,6 +2742,12 @@ public class InternalDistributedSystem extends DistributedSystem
               } else {
                 // this try failed. The new cache will call reconnect again
               }
+            } catch (CacheXmlException e) {
+              logger.warn("Exception occured while trying to create the cache during reconnect", e);
+              reconnectDS.disconnect();
+              reconnectDS = null;
+              reconnectCancelled = true;
+              break;
             } catch (CancelException ignor) {
               logger.warn("Exception occured while trying to create the cache during reconnect",
                   ignor);

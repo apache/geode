@@ -2500,6 +2500,9 @@ public class GemFireCacheImpl
   // see Cache.getReconnectedCache()
   public Cache getReconnectedCache() {
     GemFireCacheImpl c = GemFireCacheImpl.getInstance();
+    if (c == null) {
+      return null;
+    }
     if (c == this || !c.isInitialized()) {
       c = null;
     }

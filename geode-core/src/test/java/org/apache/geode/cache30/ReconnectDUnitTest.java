@@ -1096,6 +1096,60 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
+  /**
+   * GEODE-2155 Auto-reconnect fails with NPE due to a cache listener not implementing Declarable
+   */
+  @Test
+  public void testReconnectFailsDueToBadCacheXML() throws Exception {
+
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    final int locPort = locatorPort;
+
+    final String xmlFileLoc = (new File(".")).getAbsolutePath();
+
+    SerializableRunnable createCache = new SerializableRunnable("Create Cache and Regions") {
+      public void run() {
+        locatorPort = locPort;
+        final Properties props = getDistributedSystemProperties();
+        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+        dsProperties = props;
+        ReconnectDUnitTest.savedSystem = getSystem(props);
+        ReconnectDUnitTest.savedCache = (GemFireCacheImpl) getCache();
+        Region myRegion = createRegion("myRegion", createAtts());
+        myRegion.put("MyKey", "MyValue");
+        myRegion.getAttributesMutator().addCacheListener(new NonDeclarableListener());
+      }
+    };
+
+    vm0.invoke(createCache); // vm0 keeps the locator from losing quorum when vm1 crashes
+
+    createCache.run();
+    IgnoredException.addIgnoredException(
+        "DistributedSystemDisconnectedException|ForcedDisconnectException", vm1);
+    forceDisconnect(null);
+
+    final GemFireCacheImpl cache = ReconnectDUnitTest.savedCache;
+    Wait.waitForCriterion(new WaitCriterion() {
+      public boolean done() {
+        return cache.isReconnecting() || cache.getDistributedSystem().isReconnectCancelled();
+      }
+
+      public String description() {
+        return "waiting for cache to begin reconnecting";
+      }
+    }, 30000, 100, true);
+    try {
+      cache.waitUntilReconnected(20, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      fail("interrupted");
+    }
+    assertTrue(cache.getDistributedSystem().isReconnectCancelled());
+    assertNull(cache.getReconnectedCache());
+  }
+
   private CacheSerializableRunnable getRoleAPlayerRunnable(final int locPort,
       final String regionName, final String myKey, final String myValue,
       final String startupMessage) {
@@ -1200,8 +1254,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  public boolean forceDisconnect(VM vm) {
-    return (Boolean) vm.invoke(new SerializableCallable("crash distributed system") {
+  public boolean forceDisconnect(VM vm) throws Exception {
+    SerializableCallable fd = new SerializableCallable("crash distributed system") {
       public Object call() throws Exception {
         // since the system will disconnect and attempt to reconnect
         // a new system the old reference to DTC.system can cause
@@ -1224,7 +1278,12 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         }
         return true;
       }
-    });
+    };
+    if (vm != null) {
+      return (Boolean) vm.invoke(fd);
+    } else {
+      return (Boolean) fd.call();
+    }
   }
 
   private static int getPID() {
@@ -1236,6 +1295,13 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       // something changed in the RuntimeMXBean name
     }
     return 0;
+  }
+
+  /**
+   * A non-Declarable listener will be rejected by the XML parser when rebuilding the cache, causing
+   * auto-reconnect to fail.
+   */
+  public static class NonDeclarableListener extends CacheListenerAdapter {
   }
 
   /**
