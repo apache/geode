@@ -122,6 +122,7 @@ public class PulseControllerJUnitTest {
         add(MEMBER_NAME);
       }
     });
+
     region.setPutsRate(12.31D);
     region.setGetsRate(27.99D);
     Cluster.RegionOnMember regionOnMember = new Cluster.RegionOnMember();
@@ -827,14 +828,6 @@ public class PulseControllerJUnitTest {
             .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
         .andExpect(status().isOk()).andExpect(
             jsonPath("$.queryHistory[0].queryText").value("\"SELECT * FROM " + REGION_PATH + "\""));
-  }
-
-  @Test
-  public void pulseProductSupport() throws Exception {
-    this.mockMvc
-        .perform(get("/pulseProductSupport")
-            .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
-        .andExpect(status().isOk()).andExpect(jsonPath("$.product").value("gemfire"));
   }
 
   @Test

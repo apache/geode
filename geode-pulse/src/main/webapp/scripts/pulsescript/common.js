@@ -19,7 +19,6 @@
 
 // CONSTANTS
 var CONST_BACKEND_PRODUCT_GEMFIRE = "gemfire";
-var CONST_BACKEND_PRODUCT_SQLFIRE = "gemfirexd";  // "sqlfire";
 
 var host = '';
 var port = '';
@@ -71,8 +70,6 @@ function changeLocale(language, pagename) {
 
 function customizeUI() {
 
-  productname = getCookie("productname");
-
   // common call back function for default and selected languages
   var propertiesFileLoadedCallBackFunction = function() {
     // $.holdReady(false);
@@ -95,7 +92,7 @@ function customizeUI() {
   // TODO : retrieve locale from VM and use it later i.e. returned from server
   var locale_language = 'en';
   jQuery.i18n.properties({
-    name : [ productname, 'default' ],
+    name : [ "gemfire", 'default' ],
     path : 'properties/',
     mode : 'map',
     cache : true,

@@ -79,14 +79,7 @@ public class MemberRegionsService implements PulseService {
         ObjectNode regionJSON = mapper.createObjectNode();
         regionJSON.put(this.NAME, memberRegion.getName());
 
-        if (PulseConstants.PRODUCT_NAME_SQLFIRE
-            .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-          // Convert region path to dot separated region path
-          regionJSON.put("fullPath",
-              StringUtils.getTableNameFromRegionName(memberRegion.getFullPath()));
-        } else {
-          regionJSON.put("fullPath", memberRegion.getFullPath());
-        }
+        regionJSON.put("fullPath", memberRegion.getFullPath());
 
         regionJSON.put("type", memberRegion.getRegionType());
         regionJSON.put("entryCount", memberRegion.getSystemRegionEntryCount());
