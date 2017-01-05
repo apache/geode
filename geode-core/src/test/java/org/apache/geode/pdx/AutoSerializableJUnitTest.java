@@ -14,6 +14,7 @@
  */
 package org.apache.geode.pdx;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheFactory;
@@ -45,9 +46,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
-/**
- * TODO: fails (on Windows 7?)
- */
 @Category({IntegrationTest.class, SerializationTest.class})
 public class AutoSerializableJUnitTest {
 
@@ -1291,7 +1289,8 @@ public class AutoSerializableJUnitTest {
     List<URL> urls = new ArrayList<URL>();
     String classPathStr = System.getProperty("java.class.path");
     if (classPathStr != null) {
-      String[] cpList = classPathStr.split(":");
+      String[] cpList =
+          SystemUtils.IS_OS_WINDOWS ? classPathStr.split(";") : classPathStr.split(":");
       for (String u : cpList) {
         urls.add(new File(u).toURI().toURL());
       }
