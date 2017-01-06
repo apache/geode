@@ -169,6 +169,18 @@ public class PeerTypeRegistration implements TypeRegistration {
     });
 
     factory.setCacheWriter(new CacheWriterAdapter<Object, Object>() {
+      
+      @Override
+      public void beforeCreate(EntryEvent<Object, Object> event) throws CacheWriterException {
+        Object newValue = event.getNewValue();
+        if (newValue instanceof PdxType) {
+          logger.info("Adding type to PdxTypes: {}",
+              ((PdxType) event.getNewValue()).toFormattedString());
+        } else {
+          logger.info("Adding enum to PdxTypes: {} {}", event.getKey(),
+              ((EnumInfo)newValue).toFormattedString());
+        }
+      }
 
       @Override
       public void beforeUpdate(EntryEvent<Object, Object> event) throws CacheWriterException {
@@ -178,15 +190,6 @@ public class PeerTypeRegistration implements TypeRegistration {
                   + event.getKey() + ", existing pdx type " + event.getOldValue() + ", new type "
                   + event.getNewValue());
           throw new CacheWriterException(ex);
-        } else {
-          Object newValue = event.getNewValue();
-          if (newValue instanceof PdxType) {
-            logger.info("(CacheWriter) Adding type to PdxTypes: {}/{}", event.getKey(),
-                ((PdxType) event.getNewValue()).toFormattedString());
-          } else {
-            logger.info("(CacheWriter) Adding enum to PdxTypes: {}/{}", event.getKey(),
-                ((EnumInfo)newValue).toFormattedString());
-          }
         }
       }
 
