@@ -55,9 +55,6 @@ public class JSONFormatterJUnitTest {
     this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true)
         .create();
 
-    // start cache-server
-    CacheServer server = c.addCacheServer();
-
     // Create region, primitiveKVStore
     final AttributesFactory<Object, Object> af1 = new AttributesFactory<Object, Object>();
     af1.setDataPolicy(DataPolicy.PARTITION);
@@ -245,8 +242,6 @@ public class JSONFormatterJUnitTest {
   }
 
   @Test
-  @Category(value = FlakyTest.class) // GEODE-2239 this test uses fixed port 40405 & fails if it
-                                     // isn't available
   public void testJSONFormatterAPIs() {
     ValidatePdxInstanceToJsonConversion();
     verifyJsonToPdxInstanceConversion();
