@@ -82,6 +82,7 @@ dependencies {
   testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
   testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
   testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+  testCompile 'com.tdunning:json:' + project.'open-json.version'
 
   testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
   testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'

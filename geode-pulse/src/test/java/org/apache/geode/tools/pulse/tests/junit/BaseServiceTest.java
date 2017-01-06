@@ -19,8 +19,6 @@ package org.apache.geode.tools.pulse.tests.junit;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.geode.test.junit.categories.UITest;
-import com.google.gson.JsonObject;
-import org.apache.geode.tools.pulse.internal.json.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
