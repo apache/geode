@@ -33,7 +33,7 @@ public class LuceneQueriesPeerPROverflowDUnitTest extends LuceneQueriesPRBase {
     EvictionAttributes evicAttr =
         EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
     getCache().createRegionFactory(RegionShortcut.PARTITION_OVERFLOW)
-        .setPartitionAttributes(getPartitionAttributes()).setEvictionAttributes(evicAttr)
+        .setPartitionAttributes(getPartitionAttributes(false)).setEvictionAttributes(evicAttr)
         .create(REGION_NAME);
   }
 
