@@ -14,6 +14,22 @@
  */
 package org.apache.geode.management.internal.configuration;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.stream.Collectors.joining;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.core.ConditionFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -34,17 +50,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.dunit.Host.getHost;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static java.util.stream.Collectors.joining;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1165
 public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   @Override
@@ -82,12 +89,11 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1979
   @Test
   public void basicClusterConfigDirWithTwoLocators() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);
@@ -105,12 +111,11 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1165: random ports, BindException, time sensitive, awaitility
   @Test
   public void updateClusterConfigDirWithTwoLocatorsNoRollingServerRestart() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);
@@ -158,12 +163,11 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1989: need to increase await timeouts in these tests
   @Test
   public void updateClusterConfigDirWithTwoLocatorsAndRollingServerRestart() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);
@@ -206,7 +210,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -249,7 +253,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -288,7 +292,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
   private void waitForSharedConfiguration(final VM vm) {
     vm.invoke("Waiting for shared configuration", () -> {
       final InternalLocator locator = InternalLocator.getLocator();
-      waitAtMost(15, TimeUnit.SECONDS).until(() -> {
+      await().until(() -> {
         return locator.isSharedConfigurationRunning();
       });
     });
@@ -322,5 +326,9 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   private String getLocatorStr(final int[] locatorPorts) {
     return Arrays.stream(locatorPorts).mapToObj(p -> "localhost[" + p + "]").collect(joining(","));
+  }
+
+  private ConditionFactory await() {
+    return Awaitility.await().atMost(2, MINUTES);
   }
 }
