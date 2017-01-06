@@ -58,15 +58,19 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInitializationException;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  */
 public class PeerTypeRegistration implements TypeRegistration {
+  private static final Logger logger = LogService.getLogger();
+
   /**
    * 
    */
@@ -174,6 +178,15 @@ public class PeerTypeRegistration implements TypeRegistration {
                   + event.getKey() + ", existing pdx type " + event.getOldValue() + ", new type "
                   + event.getNewValue());
           throw new CacheWriterException(ex);
+        } else {
+          Object newValue = event.getNewValue();
+          if (newValue instanceof PdxType) {
+            logger.info("(CacheWriter) Adding type to PdxTypes: {}/{}", event.getKey(),
+                ((PdxType) event.getNewValue()).toFormattedString());
+          } else {
+            logger.info("(CacheWriter) Adding enum to PdxTypes: {}/{}", event.getKey(),
+                ((EnumInfo)newValue).toFormattedString());
+          }
         }
       }
 

@@ -58,7 +58,7 @@ public class EnumInfo implements DataSerializableFixedID {
   }
 
   public EnumInfo() {}
-
+  
   public int getDSFID() {
     return ENUM_INFO;
   }
@@ -156,6 +156,10 @@ public class EnumInfo implements DataSerializableFixedID {
   @Override
   public String toString() {
     return clazz + "." + name;
+  }
+
+  public String toFormattedString() {
+    return getClass().getSimpleName() + "[\n" + clazz + "." + name + "]";
   }
 
   @Override
